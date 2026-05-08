@@ -2,7 +2,6 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import {
-    ArrowLeft,
     ShieldCheck,
     Star,
     Sparkles,
@@ -10,8 +9,13 @@ import {
     Crown,
     Calendar,
     ChevronRight,
-    Camera
+    Camera,
+    TrendingUp,
+    History,
+    Gift,
+    ArrowLeft
 } from 'lucide-react';
+import AppBackButton from '../../components/app/AppBackButton';
 import { useCustomerTheme } from '../../contexts/CustomerThemeContext';
 import { useCustomerAuth } from '../../contexts/CustomerAuthContext';
 import { useWallet } from '../../contexts/WalletContext';
@@ -74,131 +78,123 @@ const AppLoyaltyPage = () => {
 
     return (
         <div style={{
-            minHeight: '100vh',
+            minHeight: '100svh',
             background: colors.bg,
             color: colors.text,
-            padding: '60px 24px',
             fontFamily: "'Outfit', 'Inter', sans-serif"
-        }}>
+        }} className="pb-10">
             {/* Header */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '32px' }}>
-                <motion.button
-                    whileTap={{ scale: 0.9 }}
-                    onClick={() => navigate(-1)}
-                    style={{ 
-                        background: colors.card, border: `1px solid ${colors.border}`, 
-                        color: colors.text, width: 44, height: 44, borderRadius: '14px',
-                        display: 'flex', alignItems: 'center', justifyContent: 'center'
-                    }}
-                >
-                    <ArrowLeft size={20} />
-                </motion.button>
-                <h1 style={{ fontSize: '20px', fontWeight: 900, margin: 0 }}>Loyalty Hub</h1>
+            <div className="sticky top-0 z-50 px-4 pt-6 pb-4 flex items-center justify-between" style={{ background: colors.bg, backdropFilter: 'blur(20px)' }}>
+                <div className="flex items-center gap-3">
+                    <AppBackButton />
+                    <h1 className="text-xl font-black italic tracking-tight" style={{ color: colors.text }}>Loyalty Rituals</h1>
+                </div>
             </div>
 
-            {/* Profile Section */}
-            <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                style={{
-                    display: 'flex', alignItems: 'center', gap: '16px',
-                    background: 'rgba(255,255,255,0.02)',
-                    padding: '20px', borderRadius: '24px',
-                    marginBottom: '24px', border: `1px solid ${colors.border}`
-                }}
-            >
-                <div style={{ position: 'relative' }}>
-                    <div style={{ 
-                        width: 60, height: 60, borderRadius: '20px', 
-                        background: 'linear-gradient(135deg, #333 0%, #111 100%)',
-                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        fontSize: '20px', fontWeight: 900, color: colors.accent,
-                        border: `1px solid ${colors.border}`
-                    }}>
-                        {customer?.name?.charAt(0) || 'U'}
-                    </div>
-                    <div style={{
-                        position: 'absolute', bottom: -4, right: -4,
-                        width: 24, height: 24, borderRadius: '8px',
-                        background: colors.accent, border: `2px solid ${colors.bg}`,
-                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        color: '#FFF'
-                    }}>
-                        <Camera size={12} />
-                    </div>
-                </div>
-                <div style={{ flex: 1 }}>
-                    <h2 style={{ fontSize: '18px', fontWeight: 900, margin: 0 }}>{customer?.name || 'Valued Guest'}</h2>
-                    <p style={{ fontSize: '13px', color: colors.textMuted, margin: '2px 0 0' }}>{customer?.phone || 'Connect with us'}</p>
-                </div>
-            </motion.div>
-
-            {/* Active Membership Card (Conditional) */}
-            {activeMembership && (
+            <div style={{ padding: '0 24px' }}>
+                {/* Profile Section */}
                 <motion.div
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ delay: 0.1 }}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
                     style={{
-                        background: activeMembership.planId?.gradient || 'linear-gradient(135deg, #1A1A1A 0%, #333 100%)',
-                        borderRadius: '40px 10px 40px 10px',
-                        padding: '32px',
-                        color: '#FFF',
-                        marginBottom: '32px',
-                        position: 'relative',
-                        overflow: 'hidden',
-                        boxShadow: '0 20px 40px rgba(0,0,0,0.2)',
-                        border: '1px solid rgba(255,255,255,0.1)'
+                        display: 'flex', alignItems: 'center', gap: '16px',
+                        background: 'rgba(255,255,255,0.02)',
+                        padding: '20px', borderRadius: '24px',
+                        marginBottom: '24px', border: `1px solid ${colors.border}`
                     }}
                 >
-                    <div style={{
-                        position: 'absolute', top: '-10%', right: '-10%',
-                        width: '200px', height: '200px',
-                        background: 'rgba(255,255,255,0.05)',
-                        filter: 'blur(40px)', borderRadius: '50%'
-                    }} />
-
-                    <div style={{ position: 'relative', zIndex: 1 }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '40px' }}>
-                            <div style={{ 
-                                width: 44, height: 44, borderRadius: '14px', 
-                                background: 'rgba(255,255,255,0.1)', 
-                                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                backdropFilter: 'blur(10px)', border: '1px solid rgba(255,255,255,0.1)'
-                            }}>
-                                <Crown size={22} color="#FFF" />
-                            </div>
-                            <div style={{ textAlign: 'right' }}>
-                                <p style={{ fontSize: '10px', fontWeight: 900, color: 'rgba(255,255,255,0.5)', margin: 0, textTransform: 'uppercase', letterSpacing: '0.1em' }}>Membership Status</p>
-                                <p style={{ fontSize: '14px', fontWeight: 900, color: '#FFF', margin: 0 }}>ACTIVE</p>
-                            </div>
+                    <div style={{ position: 'relative' }}>
+                        <div style={{ 
+                            width: 60, height: 60, borderRadius: '20px', 
+                            background: 'linear-gradient(135deg, #333 0%, #111 100%)',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            fontSize: '20px', fontWeight: 900, color: colors.accent,
+                            border: `1px solid ${colors.border}`
+                        }}>
+                            {customer?.name?.charAt(0) || 'U'}
                         </div>
-
-                        <h3 style={{ fontSize: '28px', fontWeight: 900, margin: '0 0 8px', letterSpacing: '-0.02em', textTransform: 'uppercase' }}>
-                            {activeMembership.planId?.name}
-                        </h3>
-                        
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '40px', opacity: 0.7 }}>
-                            <Calendar size={14} />
-                            <p style={{ fontSize: '12px', fontWeight: 700, margin: 0 }}>
-                                VALID THRU: {new Date(activeMembership.expiryDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })}
-                            </p>
-                        </div>
-
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
-                            <div>
-                                <p style={{ fontSize: '10px', color: 'rgba(255,255,255,0.4)', margin: '0 0 4px', fontWeight: 800, textTransform: 'uppercase' }}>Member ID</p>
-                                <p style={{ fontSize: '14px', fontWeight: 800, margin: 0, letterSpacing: '0.05em' }}>WAP-{customer?._id?.slice(-6).toUpperCase() || 'XXXXXX'}</p>
-                            </div>
-                            <div style={{ width: 32, height: 32, borderRadius: '50%', background: 'rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                <ChevronRight size={18} />
-                            </div>
+                        <div style={{
+                            position: 'absolute', bottom: -4, right: -4,
+                            width: 24, height: 24, borderRadius: '8px',
+                            background: colors.accent, border: `2px solid ${colors.bg}`,
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            color: '#FFF'
+                        }}>
+                            <Camera size={12} />
                         </div>
                     </div>
+                    <div style={{ flex: 1 }}>
+                        <h2 style={{ fontSize: '18px', fontWeight: 900, margin: 0 }}>{customer?.name || 'Valued Guest'}</h2>
+                        <p style={{ fontSize: '13px', color: colors.textMuted, margin: '2px 0 0' }}>{customer?.phone || 'Connect with us'}</p>
+                    </div>
                 </motion.div>
-            )}
 
-            <p style={{ fontSize: '11px', fontWeight: 900, color: colors.textMuted, margin: '0 0 16px', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Rewards Balance</p>
+                {/* Active Membership Card (Conditional) */}
+                {activeMembership && (
+                    <motion.div
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ delay: 0.1 }}
+                        style={{
+                            background: activeMembership.planId?.gradient || 'linear-gradient(135deg, #1A1A1A 0%, #333 100%)',
+                            borderRadius: '40px 10px 40px 10px',
+                            padding: '32px',
+                            color: '#FFF',
+                            marginBottom: '32px',
+                            position: 'relative',
+                            overflow: 'hidden',
+                            boxShadow: '0 20px 40px rgba(0,0,0,0.2)',
+                            border: '1px solid rgba(255,255,255,0.1)'
+                        }}
+                    >
+                        <div style={{
+                            position: 'absolute', top: '-10%', right: '-10%',
+                            width: '200px', height: '200px',
+                            background: 'rgba(255,255,255,0.05)',
+                            filter: 'blur(40px)', borderRadius: '50%'
+                        }} />
+
+                        <div style={{ position: 'relative', zIndex: 1 }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '40px' }}>
+                                <div style={{ 
+                                    width: 44, height: 44, borderRadius: '14px', 
+                                    background: 'rgba(255,255,255,0.1)', 
+                                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                    backdropFilter: 'blur(10px)', border: '1px solid rgba(255,255,255,0.1)'
+                                }}>
+                                    <Crown size={22} color="#FFF" />
+                                </div>
+                                <div style={{ textAlign: 'right' }}>
+                                    <p style={{ fontSize: '10px', fontWeight: 900, color: 'rgba(255,255,255,0.5)', margin: 0, textTransform: 'uppercase', letterSpacing: '0.1em' }}>Membership Status</p>
+                                    <p style={{ fontSize: '14px', fontWeight: 900, color: '#FFF', margin: 0 }}>ACTIVE</p>
+                                </div>
+                            </div>
+
+                            <h3 style={{ fontSize: '28px', fontWeight: 900, margin: '0 0 8px', letterSpacing: '-0.02em', textTransform: 'uppercase' }}>
+                                {activeMembership.planId?.name}
+                            </h3>
+                            
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '40px', opacity: 0.7 }}>
+                                <Calendar size={14} />
+                                <p style={{ fontSize: '12px', fontWeight: 700, margin: 0 }}>
+                                    VALID THRU: {new Date(activeMembership.expiryDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })}
+                                </p>
+                            </div>
+
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+                                <div>
+                                    <p style={{ fontSize: '10px', color: 'rgba(255,255,255,0.4)', margin: '0 0 4px', fontWeight: 800, textTransform: 'uppercase' }}>Member ID</p>
+                                    <p style={{ fontSize: '14px', fontWeight: 800, margin: 0, letterSpacing: '0.05em' }}>WAP-{customer?._id?.slice(-6).toUpperCase() || 'XXXXXX'}</p>
+                                </div>
+                                <div style={{ width: 32, height: 32, borderRadius: '50%', background: 'rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                    <ChevronRight size={18} />
+                                </div>
+                            </div>
+                        </div>
+                    </motion.div>
+                )}
+
+                <p style={{ fontSize: '11px', fontWeight: 900, color: colors.textMuted, margin: '0 0 16px', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Rewards Balance</p>
 
             {/* Ritual Points Card */}
             <motion.div
@@ -294,7 +290,8 @@ const AppLoyaltyPage = () => {
                 </div>
             </motion.div>
         </div>
-    );
+    </div>
+);
 };
 
 export default AppLoyaltyPage;

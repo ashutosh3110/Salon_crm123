@@ -11,9 +11,9 @@ import { useCart } from '../contexts/CartContext';
 import CartDrawer from '../components/app/CartDrawer';
 
 const pageVariants = {
-    initial: { opacity: 0, y: 15 },
-    animate: { opacity: 1, y: 0 },
-    exit: { opacity: 0, y: -15 },
+    initial: { opacity: 0 },
+    animate: { opacity: 1 },
+    exit: { opacity: 0 },
 };
 
 export default function AppLayout() {
@@ -58,7 +58,19 @@ export default function AppLayout() {
     }, [authLoading, isInitializing, customer, gender, activeOutletId, navigate, location.pathname]);
 
     const hideNavPaths = ['/app/product', '/app/notifications', '/app/bookings/', '/app/orders/'];
-    const hideHeaderPaths = ['/app/product', '/app/bookings/', '/app/orders/'];
+    const hideHeaderPaths = [
+        '/app/product', 
+        '/app/bookings', 
+        '/app/orders', 
+        '/app/services', 
+        '/app/favorites',
+        '/app/wallet',
+        '/app/transactions',
+        '/app/referral',
+        '/app/loyalty',
+        '/app/help',
+        '/app/reviews'
+    ];
     const searchParams = new URLSearchParams(location.search);
     const hasProductModal = searchParams.get('product');
     const shouldHideNav = hideNavPaths.some(path => location.pathname.startsWith(path)) || hasProductModal;
@@ -257,7 +269,7 @@ export default function AppLayout() {
                 </div>
 
                 {!shouldHideHeader && <AppHeader />}
-                <AnimatePresence mode="wait" initial={false}>
+                <AnimatePresence mode="popLayout" initial={false}>
                     {(() => {
                         const isFromModal = location.state?.fromModal;
                         const customVariants = isFromModal ? {

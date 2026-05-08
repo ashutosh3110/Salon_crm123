@@ -123,8 +123,18 @@ export default function AppMyBookingsPage() {
             <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                style={{ background: colors.bg, minHeight: '100svh' }} className="pb-10"
+                style={{ background: colors.bg, minHeight: '100svh' }}
+                className="pb-10"
             >
+                {/* Header */}
+                <div className="sticky top-0 z-50 px-4 pt-6 pb-4 flex items-center justify-between" style={{ background: colors.bg, backdropFilter: 'blur(20px)' }}>
+                    <div className="flex items-center gap-3">
+                        <AppBackButton />
+                        <h1 className="text-xl font-black italic tracking-tight" style={{ color: colors.text }}>My Rituals</h1>
+                    </div>
+                </div>
+
+                <div className="px-4 space-y-6">
                 <div style={{ background: colors.toggle, border: `1px solid ${colors.border}` }} className="flex gap-1 rounded-2xl p-1 shadow-sm">
                     {tabs.map((tab) => (
                         <button
@@ -189,7 +199,8 @@ export default function AppMyBookingsPage() {
                         ))
                     )}
                 </div>
-            </motion.div>
+            </div>
+        </motion.div>
 
             <ReviewModal
                 isOpen={!!selectedReviewBooking}

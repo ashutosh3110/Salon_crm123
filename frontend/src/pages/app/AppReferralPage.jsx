@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { Copy, Share2, Gift, Check, UserPlus, MapPin, ArrowLeft } from 'lucide-react';
+import { Copy, Share2, Gift, Check, UserPlus, MapPin } from 'lucide-react';
+import AppBackButton from '../../components/app/AppBackButton';
 import { useCustomerAuth } from '../../contexts/CustomerAuthContext';
 import { useCustomerTheme } from '../../contexts/CustomerThemeContext';
 import { useBusiness } from '../../contexts/BusinessContext';
@@ -118,40 +119,21 @@ export default function AppReferralPage() {
     const fadeUp = { hidden: { opacity: 0, y: 14 }, show: { opacity: 1, y: 0, transition: { duration: 0.4, ease: [0.16, 1, 0.3, 1] } } };
 
     return (
-        <motion.div variants={stagger} initial="hidden" animate="show" className="space-y-6 pb-10 px-4">
-            
-            <motion.div
-                variants={fadeUp}
-                style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '12px',
-                    padding: '8px 0'
-                }}
-            >
-                <button
-                    onClick={() => navigate(-1)}
-                    style={{
-                        width: '40px',
-                        height: '40px',
-                        borderRadius: '12px',
-                        background: colors.card,
-                        border: `1.5px solid ${colors.border}`,
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        color: colors.text,
-                        boxShadow: '0 4px 12px rgba(0,0,0,0.03)'
-                    }}
-                    className="active:scale-90 transition-transform"
-                >
-                    <ArrowLeft size={18} />
-                </button>
+        <div style={{ background: colors.bg, minHeight: '100svh' }} className="pb-10">
+            <div className="sticky top-0 z-50 px-4 pt-6 pb-4 flex items-center justify-between" style={{ background: colors.bg, backdropFilter: 'blur(20px)' }}>
+                <div className="flex items-center gap-3">
+                    <AppBackButton />
+                    <h1 className="text-xl font-black italic tracking-tight" style={{ color: colors.text }}>Refer & Earn</h1>
+                </div>
+            </div>
 
+            <motion.div variants={stagger} initial="hidden" animate="show" className="space-y-6 px-4">
+            
+            <motion.div variants={fadeUp} className="flex items-center gap-4">
                 <div style={{
-                    width: '32px',
-                    height: '32px',
-                    borderRadius: '10px',
+                    width: '40px',
+                    height: '40px',
+                    borderRadius: '12px',
                     background: isLight ? '#FFF' : '#242424',
                     display: 'flex',
                     alignItems: 'center',
@@ -159,7 +141,7 @@ export default function AppReferralPage() {
                     boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
                     border: `1.5px solid ${colors.border}`
                 }}>
-                    <MapPin size={16} color="#C8956C" />
+                    <MapPin size={20} color="#C8956C" />
                 </div>
                 <div>
                   <p style={{ fontSize: '9px', fontWeight: 900, color: colors.accent, textTransform: 'uppercase', letterSpacing: '0.1em', margin: 0 }}>Exclusive Referral Program</p>
@@ -167,11 +149,7 @@ export default function AppReferralPage() {
                 </div>
             </motion.div>
 
-            <h1 className="text-2xl font-black tracking-tight" style={{ color: colors.text, fontFamily: "'SF Pro Display', sans-serif" }}>
-                Refer & <span className="text-[#C8956C]">Earn</span>
-            </h1>
-
-            {/* Hero Card - Replicating Home Page Exclusive Offer Style (Compact) */}
+            {/* Hero Card */}
             <motion.div
                 variants={fadeUp}
                 style={{
@@ -204,19 +182,10 @@ export default function AppReferralPage() {
                     <p style={{ fontSize: '10px', color: colors.textMuted, opacity: 0.8 }}>
                         Friend gets {settings.referredReward} points {triggerLabel}. Reward valid for {settings.expiryDays || 90} days.
                     </p>
-
-                    <div className="flex items-center justify-between">
-                        <div style={{ background: isLight ? '#F5F5F7' : 'rgba(255,255,255,0.05)', padding: '6px 12px', borderRadius: '8px', fontSize: '9px', fontWeight: 800, color: colors.accent, letterSpacing: '0.02em' }}>
-                            JOIN INNER CIRCLE
-                        </div>
-                        <div style={{ fontSize: '9px', fontWeight: 900, color: colors.text, letterSpacing: '0.05em', opacity: 0.8 }}>
-                            EXCLUSIVE
-                        </div>
-                    </div>
                 </div>
             </motion.div>
 
-            {/* Referral Code - Matching Style (Compact) */}
+            {/* Referral Code */}
             <motion.div
                 variants={fadeUp}
                 style={{
@@ -303,5 +272,6 @@ export default function AppReferralPage() {
                 </motion.div>
             )}
         </motion.div>
-    );
+    </div>
+);
 }

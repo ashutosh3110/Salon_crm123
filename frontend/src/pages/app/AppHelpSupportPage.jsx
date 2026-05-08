@@ -1,11 +1,7 @@
-import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useState, useEffect } from 'react';
-import { 
-    ArrowLeft, MessageCircle, Mail, Phone, ExternalLink, 
-    ChevronRight, HelpCircle, Search, FileText, Plus,
-    Loader2, AlertCircle, Clock, CheckCircle2, X
-} from 'lucide-react';
+import { HelpCircle, MessageSquare, ChevronRight, Search, Mail, FileText, Plus, Loader2, AlertCircle, Clock, CheckCircle2, X } from 'lucide-react';
+import AppBackButton from '../../components/app/AppBackButton';
 import { useCustomerTheme } from '../../contexts/CustomerThemeContext';
 import api from '../../services/mock/mockApi';
 
@@ -21,7 +17,6 @@ const TICKET_CATEGORIES = [
 ];
 
 export default function AppHelpSupportPage() {
-    const navigate = useNavigate();
     const [activeFaq, setActiveFaq] = useState(null);
     const [activeTab, setActiveTab] = useState('faq'); // 'faq' or 'tickets'
     const { theme } = useCustomerTheme();
@@ -94,27 +89,13 @@ export default function AppHelpSupportPage() {
     };
 
     return (
-        <div style={{ background: colors.bg, minHeight: '100svh', color: colors.text }}>
+        <div style={{ background: colors.bg, minHeight: '100svh' }} className="pb-10">
             {/* Header */}
-            <div style={{
-                padding: '20px 16px',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '16px',
-                position: 'sticky',
-                top: 0,
-                background: colors.bg,
-                zIndex: 10,
-                borderBottom: `1px solid ${colors.border}`
-            }}>
-                <motion.button
-                    whileTap={{ scale: 0.9 }}
-                    onClick={() => navigate(-1)}
-                    style={{ background: 'none', border: 'none', padding: 0 }}
-                >
-                    <ArrowLeft size={20} />
-                </motion.button>
-                <h1 style={{ fontSize: '18px', fontWeight: 800 }}>Help & Support</h1>
+            <div className="sticky top-0 z-50 px-4 pt-6 pb-4 flex items-center justify-between" style={{ background: colors.bg, backdropFilter: 'blur(20px)' }}>
+                <div className="flex items-center gap-3">
+                    <AppBackButton />
+                    <h1 className="text-xl font-black italic tracking-tight" style={{ color: colors.text }}>Help Center</h1>
+                </div>
             </div>
 
             <div style={{ padding: '20px 16px' }}>

@@ -128,6 +128,7 @@ export default function AppWalletPage() {
                     </div>
                 </div>
             </motion.div>
+        </div>
 
 
             {/* Add Money Modal */}

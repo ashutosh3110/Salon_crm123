@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { Star, ChevronLeft, MessageSquare, Loader2 } from 'lucide-react';
+import { Star, MessageSquare, Loader2 } from 'lucide-react';
+import AppBackButton from '../../components/app/AppBackButton';
 import { useCustomerTheme } from '../../contexts/CustomerThemeContext';
 import { useCustomerAuth } from '../../contexts/CustomerAuthContext';
 import api from '../../services/api';
@@ -69,14 +70,8 @@ export default function AppReviewsPage() {
             style={{ background: colors.bg }}
         >
             {/* Header */}
-            <div className="pt-12 pb-6 flex items-center gap-4">
-                <button 
-                    onClick={() => navigate(-1)}
-                    style={{ background: colors.card, border: `1px solid ${colors.border}` }}
-                    className="w-10 h-10 rounded-xl flex items-center justify-center shadow-sm"
-                >
-                    <ChevronLeft size={20} style={{ color: colors.text }} />
-                </button>
+            <div className="sticky top-0 z-50 pt-6 pb-6 flex items-center gap-4" style={{ background: colors.bg }}>
+                <AppBackButton />
                 <div>
                     <h1 className="text-2xl font-black italic tracking-tighter" style={{ color: colors.text, fontFamily: "'SF Pro Display', sans-serif" }}>
                         My <span className="text-[#C8956C]">Reviews</span>

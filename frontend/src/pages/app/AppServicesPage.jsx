@@ -1,7 +1,8 @@
 import { useState, useMemo, useEffect, useCallback, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, ArrowLeft, Clock, ShoppingBag, Heart, Star, ChevronRight, SlidersHorizontal, Armchair, DoorClosed, LayoutGrid } from 'lucide-react';
+import { Search, Clock, ShoppingBag, Heart, Star, ChevronRight, SlidersHorizontal, Armchair, DoorClosed, LayoutGrid } from 'lucide-react';
+import AppBackButton from '../../components/app/AppBackButton';
 import { useCustomerTheme } from '../../contexts/CustomerThemeContext';
 import { useBusiness } from '../../contexts/BusinessContext';
 import { useGender } from '../../contexts/GenderContext';
@@ -259,18 +260,11 @@ export default function AppServicesPage() {
     return (
         <div style={{ background: colors.bg, minHeight: '100svh' }} className="pb-24">
             {/* Header */}
-            <div className="sticky top-[60px] z-40 px-4 pt-4 pb-4" style={{ background: colors.bg, backdropFilter: 'blur(20px)' }}>
+            <div className="sticky top-0 z-40 px-4 pt-6 pb-4" style={{ background: colors.bg, backdropFilter: 'blur(20px)' }}>
                 {/* Salon Info & Gender Badge */}
                 <div className="flex items-center justify-between mb-4 px-1">
                     <div className="flex items-center gap-3">
-                        <motion.button
-                            whileTap={{ scale: 0.9 }}
-                            onClick={() => navigate(-1)}
-                            className="w-10 h-10 rounded-2xl flex items-center justify-center border"
-                            style={{ borderColor: colors.border, background: colors.card, color: colors.text }}
-                        >
-                            <ArrowLeft size={18} />
-                        </motion.button>
+                        <AppBackButton />
                         <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-[#C8956C] to-[#A06844] flex items-center justify-center shadow-lg shadow-[#C8956C]/20">
                             <ShoppingBag className="text-white" size={18} />
                         </div>

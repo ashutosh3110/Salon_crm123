@@ -2,10 +2,11 @@ import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { 
-    ChevronLeft, TrendingUp, TrendingDown, Clock, Search, 
+    TrendingUp, TrendingDown, Clock, Search, 
     Filter, Wallet, Gem, ShoppingBag, Calendar, ArrowRightLeft,
     CheckCircle2, XCircle, AlertCircle
 } from 'lucide-react';
+import AppBackButton from '../../components/app/AppBackButton';
 import { useWallet } from '../../contexts/WalletContext';
 import { useCustomerTheme } from '../../contexts/CustomerThemeContext';
 
@@ -68,13 +69,7 @@ export default function AppTransactionHistoryPage() {
             {/* Header */}
             <div className="sticky top-0 z-30 px-4 pt-6 pb-4" style={{ background: colors.bg + 'CC', backdropFilter: 'blur(10px)' }}>
                 <div className="flex items-center gap-4 mb-6">
-                    <button 
-                        onClick={() => navigate(-1)}
-                        className="w-10 h-10 rounded-full flex items-center justify-center border transition-colors"
-                        style={{ borderColor: colors.border, background: colors.card }}
-                    >
-                        <ChevronLeft size={20} style={{ color: colors.text }} />
-                    </button>
+                    <AppBackButton />
                     <h1 className="text-xl font-black tracking-tight" style={{ color: colors.text }}>Transaction History</h1>
                 </div>
 
