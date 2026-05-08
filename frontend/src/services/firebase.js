@@ -29,12 +29,12 @@ export const registerToken = async () => {
     }
 
     // 1. Explicitly register the service worker
-    console.log('[Firebase] Registering Service Worker...');
+
     const registration = await navigator.serviceWorker.register('/firebase-messaging-sw.js', {
       scope: '/'
     });
     await navigator.serviceWorker.ready;
-    console.log('[Firebase] SW Registered and Ready:', registration.scope);
+
 
     // 2. Get the FCM token
     const token = await getToken(messaging, { 
@@ -43,7 +43,7 @@ export const registerToken = async () => {
     });
     
     if (token) {
-      console.log('[Firebase] FCM Token:', token);
+
       // Register token with backend
       await mockApi.post('/notifications/register-token', { fcmToken: token });
       localStorage.setItem('fcm_token', token);
@@ -67,7 +67,7 @@ export const registerToken = async () => {
 export const onMessageListener = () =>
   new Promise((resolve) => {
     onMessage(messaging, (payload) => {
-      console.log('[Firebase] Foreground message:', payload);
+
       resolve(payload);
     });
   });

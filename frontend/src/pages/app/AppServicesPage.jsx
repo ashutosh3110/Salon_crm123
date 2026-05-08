@@ -7,6 +7,29 @@ import { useBusiness } from '../../contexts/BusinessContext';
 import { useGender } from '../../contexts/GenderContext';
 import api from '../../services/api';
 
+const ServiceSkeleton = ({ colors, isLight }) => (
+    <div 
+        style={{ 
+            background: colors.card, 
+            borderRadius: '16px', 
+            border: `1.5px solid ${colors.border}`,
+            boxShadow: isLight ? '0 4px 12px rgba(0,0,0,0.03)' : '0 4px 12px rgba(0,0,0,0.2)'
+        }} 
+        className="flex flex-col h-full overflow-hidden animate-pulse"
+    >
+        <div className="aspect-square bg-black/5 dark:bg-white/5" />
+        <div className="p-2.5 space-y-2 flex-1">
+            <div className="h-2 w-12 bg-[#C8956C]/10 rounded" />
+            <div className="h-3 w-full bg-black/5 dark:bg-white/5 rounded" />
+            <div className="h-2 w-3/4 bg-black/5 dark:bg-white/5 rounded" />
+            <div className="mt-auto flex items-center justify-between pt-2">
+                <div className="h-4 w-10 bg-[#C8956C]/10 rounded" />
+                <div className="h-6 w-12 bg-[#C8956C]/20 rounded" />
+            </div>
+        </div>
+    </div>
+);
+
 const ServiceCard = ({ service, onBook, colors, isLight, categories, navigate }) => {
     const categoryName = useMemo(() => {
         if (!categories || categories.length === 0) return service.category;
@@ -236,7 +259,7 @@ export default function AppServicesPage() {
     return (
         <div style={{ background: colors.bg, minHeight: '100svh' }} className="pb-24">
             {/* Header */}
-            <div className="sticky top-0 z-40 px-4 pt-4 pb-4" style={{ background: colors.bg, backdropFilter: 'blur(20px)' }}>
+            <div className="sticky top-[60px] z-40 px-4 pt-4 pb-4" style={{ background: colors.bg, backdropFilter: 'blur(20px)' }}>
                 {/* Salon Info & Gender Badge */}
                 <div className="flex items-center justify-between mb-4 px-1">
                     <div className="flex items-center gap-3">
@@ -369,39 +392,48 @@ export default function AppServicesPage() {
                 animate="show"
                 className="px-4 mt-2 space-y-10"
             >
-                {finalGroups.map((group) => (
-                    <div key={group._id || group.id} className="space-y-4">
-                        <div className="flex items-center gap-3">
-                            <h3 className="text-sm font-black uppercase tracking-widest text-[#C8956C]">{group.name}</h3>
-                            <div className="h-px flex-1 bg-gradient-to-r from-[#C8956C]/30 to-transparent" />
-                            <span className="text-[10px] font-bold opacity-30">{group.services.length} Items</span>
-                        </div>
-                        
-                        <div className="grid grid-cols-2 gap-x-3 gap-y-5">
-                            {group.services.map((service, index) => (
-                                <motion.div key={service._id || service.id} variants={fadeUp} custom={index}>
-                                    <ServiceCard
-                                        service={service}
-                                        onBook={handleBook}
-                                        colors={colors}
-                                        isLight={isLight}
-                                        categories={categories}
-                                        navigate={navigate}
-                                    />
-                                </motion.div>
-                            ))}
-                        </div>
-                    </div>
-                ))}
-
-
                 {isLoading ? (
-                    <div className="grid grid-cols-2 gap-4">
-                        {[1, 2, 3, 4].map(i => (
-                            <div key={i} className="aspect-[4/5] rounded-2xl animate-pulse bg-[#C8956C]/5 border border-[#C8956C]/10" />
+                    <div className="space-y-8">
+                        {[1, 2].map(group => (
+                            <div key={group} className="space-y-4">
+                                <div className="flex items-center gap-3">
+                                    <div className="h-4 w-24 bg-[#C8956C]/10 rounded animate-pulse" />
+                                    <div className="h-px flex-1 bg-gradient-to-r from-[#C8956C]/10 to-transparent" />
+                                </div>
+                                <div className="grid grid-cols-2 gap-x-3 gap-y-5">
+                                    {[1, 2, 3, 4].map(i => (
+                                        <ServiceSkeleton key={i} colors={colors} isLight={isLight} />
+                                    ))}
+                                </div>
+                            </div>
                         ))}
                     </div>
-                ) : finalGroups.length === 0 ? (
+                ) : finalGroups.length > 0 ? (
+                    finalGroups.map((group) => (
+                        <div key={group._id || group.id} className="space-y-4">
+                            <div className="flex items-center gap-3">
+                                <h3 className="text-sm font-black uppercase tracking-widest text-[#C8956C]">{group.name}</h3>
+                                <div className="h-px flex-1 bg-gradient-to-r from-[#C8956C]/30 to-transparent" />
+                                <span className="text-[10px] font-bold opacity-30">{group.services.length} Items</span>
+                            </div>
+                            
+                            <div className="grid grid-cols-2 gap-x-3 gap-y-5">
+                                {group.services.map((service, index) => (
+                                    <motion.div key={service._id || service.id} variants={fadeUp} custom={index}>
+                                        <ServiceCard
+                                            service={service}
+                                            onBook={handleBook}
+                                            colors={colors}
+                                            isLight={isLight}
+                                            categories={categories}
+                                            navigate={navigate}
+                                        />
+                                    </motion.div>
+                                ))}
+                            </div>
+                        </div>
+                    ))
+                ) : (
                     <div className="py-20 text-center">
                         <div className="w-20 h-20 bg-[#C8956C]/5 rounded-full flex items-center justify-center mx-auto mb-4 border border-[#C8956C]/10">
                             <Search size={32} className="text-[#C8956C] opacity-40" />
@@ -416,7 +448,7 @@ export default function AppServicesPage() {
                             Refresh Services
                         </motion.button>
                     </div>
-                ) : null}
+                )}
             </motion.div>
         </div>
     );

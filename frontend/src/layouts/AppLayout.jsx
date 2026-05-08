@@ -33,8 +33,7 @@ export default function AppLayout() {
         if (!customer) {
             if (location.pathname !== '/app/login') {
                 const search = location.search;
-                const redirectFlag = search.includes('redirect=') ? '' : (search ? '&' : '?') + 'redirect=services';
-                navigate(`/app/login${search}${redirectFlag}`, { replace: true });
+                navigate(`/app/login${search}`, { replace: true });
             }
             return;
         }
@@ -49,9 +48,9 @@ export default function AppLayout() {
 
         // 3. Must have an active salon/outlet selected
         if (!activeOutletId) {
-            const publicPaths = ['/app/login', '/app/gender', '/app/select-salon', '/app/discovery', '/app/nearby-outlets'];
+            const publicPaths = ['/app/login', '/app/gender', '/app/nearby-outlets', '/app/profile', '/app/wallet', '/app/notifications'];
             if (!publicPaths.includes(location.pathname)) {
-                navigate('/app/select-salon', { replace: true });
+                navigate('/app/nearby-outlets', { replace: true });
             }
             return;
         }
@@ -258,8 +257,7 @@ export default function AppLayout() {
                 </div>
 
                 {!shouldHideHeader && <AppHeader />}
-
-                <AnimatePresence mode="popLayout" initial={false}>
+                <AnimatePresence mode="wait" initial={false}>
                     {(() => {
                         const isFromModal = location.state?.fromModal;
                         const customVariants = isFromModal ? {

@@ -55,6 +55,7 @@ const initCronJobs = require('./Utils/cronJobs');
 
 // Mount routers
 app.use('/auth', customerAuth);
+app.use('/customer', customerAuth);
 app.use('/auth', auth);
 app.use('/salons', salons);
 app.use('/outlets', outlets);
@@ -99,6 +100,16 @@ app.use('/reviews', reviews);
 app.use('/membership-plans', membershipPlans);
 app.use('/loyalty-rules', loyaltyRules);
 app.use('/service-categories', serviceCategories);
+
+// Explicit Lazy Section Aliases
+const { getCustomerFavorites } = require('./Controllers/customerAuthController');
+const { getCustomerTransactions } = require('./Controllers/walletController');
+const { getCustomerFeedbacks } = require('./Controllers/feedbackController');
+const { protect } = require('./Middleware/auth');
+
+app.get('/liked-items/customer/:customerId', protect, getCustomerFavorites);
+app.get('/transactions/customer/:customerId', protect, getCustomerTransactions);
+app.get('/reviews/customer/:customerId', protect, getCustomerFeedbacks);
 
 const { getBookingDetails } = require('./Controllers/bookingController');
 app.get('/booking-details/:bookingId', getBookingDetails);

@@ -129,7 +129,7 @@ export default function AppHeader() {
                             </span>
                             <motion.button
                                 whileTap={{ scale: 0.98 }}
-                                onClick={() => navigate('/app/discovery')}
+                                onClick={() => navigate('/app/nearby-outlets')}
                                 style={{
                                     display: 'flex',
                                     alignItems: 'center',

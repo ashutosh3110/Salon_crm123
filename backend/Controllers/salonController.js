@@ -12,6 +12,9 @@ const Product = require('../Models/Product');
 const ProductCategory = require('../Models/ProductCategory');
 const Cms = require('../Models/Cms');
 const Customer = require('../Models/Customer');
+const Cart = require('../Models/Cart');
+const Booking = require('../Models/Booking');
+const WalletTransaction = require('../Models/WalletTransaction');
 const sendEmail = require('../Utils/sendEmail');
 const { sendWhatsAppTemplate, sendWapixoMessage, sendWapixoTemplate } = require('../Utils/whatsapp');
 const bcrypt = require('bcryptjs');
@@ -683,6 +686,16 @@ exports.resendCredentials = async (req, res) => {
 exports.getCustomerInitialData = async (req, res) => {
     try {
         const salonId = req.params.id;
+
+        // CRITICAL: Validate salonId is a valid ObjectId
+        if (!mongoose.Types.ObjectId.isValid(salonId)) {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid Salon ID format",
+                error: `Cast to ObjectId failed for value "${salonId}"`
+            });
+        }
+
         const { customerId, outletId, lat, lng, radius = 5 } = req.query;
 
         // Base filters
@@ -729,12 +742,12 @@ exports.getCustomerInitialData = async (req, res) => {
         // ADDED: User-specific data queries if customerId is present
         if (customerId && mongoose.Types.ObjectId.isValid(customerId)) {
             queries.push(Customer.findById(customerId));
-            queries.push(mongoose.model('Cart').findOne({ customerId }).populate('items.productId'));
-            queries.push(mongoose.model('Wallet').findOne({ customerId }));
-            queries.push(mongoose.model('Booking').find({ customerId }).sort({ createdAt: -1 }).limit(5));
+            queries.push(Cart.findOne({ customerId }).populate('items.productId'));
+            queries.push(WalletTransaction.find({ customerId }).sort({ createdAt: -1 }).limit(10));
+            queries.push(Booking.find({ customerId }).sort({ createdAt: -1 }).limit(5));
             queries.push(Product.find({ likedBy: customerId }).populate('categoryId', 'name'));
             queries.push(Outlet.find({ likedBy: customerId }));
-            queries.push(mongoose.model('Notification').countDocuments({ recipient: customerId, isRead: false }));
+            queries.push(Promise.resolve(0)); // Placeholder for Notification count until model is created
         } else {
             queries.push(Promise.resolve(null));
             queries.push(Promise.resolve(null));
@@ -813,7 +826,10 @@ exports.getCustomerInitialData = async (req, res) => {
                 user: customerId ? {
                     profile: customerProfile,
                     cart: customerCart,
-                    wallet: customerWallet,
+                    wallet: {
+                        balance: customerProfile?.walletBalance || 0,
+                        transactions: customerWallet || []
+                    },
                     bookings: customerBookings,
                     favoriteProducts,
                     favoriteOutlets,

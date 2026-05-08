@@ -63,6 +63,12 @@ export function WalletProvider({ children }) {
     }, [customer?._id]);
 
     useEffect(() => {
+        if (customer?.walletBalance !== undefined) {
+            setBalance(customer.walletBalance);
+        }
+    }, [customer?.walletBalance]);
+
+    useEffect(() => {
         // Optimization: Use data from initial-data if available
         if (userSession?.wallet) {
             setBalance(userSession.wallet.balance || 0);
@@ -75,11 +81,12 @@ export function WalletProvider({ children }) {
             return;
         }
 
-        if (customer?._id && !location.pathname.startsWith('/superadmin')) {
+        const isProfilePage = location.pathname === '/app/profile';
+        
+        if (customer?._id && !location.pathname.startsWith('/superadmin') && !isProfilePage) {
             refreshWallet();
         }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [customer?._id, refreshWallet, userSession?.wallet]);
+    }, [customer?._id, refreshWallet, userSession?.wallet, location.pathname]);
 
     const createWalletOrder = async (amount) => {
         const res = await api.post('/wallet/topup/order', { amount });

@@ -4,11 +4,41 @@ import { useNavigate } from 'react-router-dom';
 import BookingCard from '../../components/app/BookingCard';
 import ReviewModal from '../../components/app/ReviewModal';
 import { CalendarX, Loader2 } from 'lucide-react';
+import AppBackButton from '../../components/app/AppBackButton';
 import { useCustomerTheme } from '../../contexts/CustomerThemeContext';
 import { useCustomerAuth } from '../../contexts/CustomerAuthContext';
 import api from '../../services/api';
 
 const tabs = ['Upcoming', 'Past'];
+
+const BookingSkeleton = () => {
+    const { theme } = useCustomerTheme();
+    const isLight = theme === 'light';
+    const bg = isLight ? 'rgba(0,0,0,0.05)' : 'rgba(255,255,255,0.05)';
+    
+    return (
+        <div 
+            className="rounded-2xl p-5 border animate-pulse"
+            style={{ 
+                background: isLight ? '#FFFFFF' : '#1A1A1A',
+                borderColor: isLight ? 'rgba(0,0,0,0.06)' : 'rgba(255,255,255,0.05)'
+            }}
+        >
+            <div className="flex items-start justify-between gap-3 mb-4">
+                <div className="flex-1 space-y-2">
+                    <div className="h-4 w-3/4 rounded-md" style={{ background: bg }} />
+                    <div className="h-3 w-1/2 rounded-md" style={{ background: bg }} />
+                </div>
+                <div className="h-7 w-20 rounded-lg" style={{ background: bg }} />
+            </div>
+            <div className="flex items-center gap-4 pt-4 border-t" style={{ borderTopColor: isLight ? 'rgba(0,0,0,0.06)' : 'rgba(255,255,255,0.05)' }}>
+                <div className="h-3 w-20 rounded-md" style={{ background: bg }} />
+                <div className="h-3 w-20 rounded-md" style={{ background: bg }} />
+                <div className="ml-auto h-5 w-16 rounded-md" style={{ background: bg }} />
+            </div>
+        </div>
+    );
+};
 
 export default function AppMyBookingsPage() {
     const { customer } = useCustomerAuth();
@@ -93,17 +123,8 @@ export default function AppMyBookingsPage() {
             <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                className="space-y-6 px-4 pb-8"
-                style={{ background: colors.bg, minHeight: '100svh' }}
+                style={{ background: colors.bg, minHeight: '100svh' }} className="pb-10"
             >
-                <div className="pt-12 pb-2">
-                    <h1 className="text-2xl font-black tracking-tight" style={{ color: colors.text, fontFamily: "'SF Pro Display', sans-serif" }}>
-                        My <span className="text-[#C8956C]">Bookings</span>
-                    </h1>
-                    <p className="text-xs uppercase tracking-widest mt-1 opacity-60" style={{ color: colors.textMuted }}>Track your sessions</p>
-                </div>
-
-                {/* Tab Switcher */}
                 <div style={{ background: colors.toggle, border: `1px solid ${colors.border}` }} className="flex gap-1 rounded-2xl p-1 shadow-sm">
                     {tabs.map((tab) => (
                         <button
@@ -127,9 +148,8 @@ export default function AppMyBookingsPage() {
                 {/* Bookings List */}
                 <div className="space-y-3">
                     {loading ? (
-                        <div className="py-20 flex flex-col items-center justify-center opacity-40">
-                            <Loader2 className="w-8 h-8 animate-spin mb-4" style={{ color: colors.text }} />
-                            <p className="text-[10px] font-black uppercase tracking-widest">Loading your sessions...</p>
+                        <div className="space-y-3">
+                            {[1, 2, 3].map(i => <BookingSkeleton key={i} />)}
                         </div>
                     ) : displayBookings.length === 0 ? (
                         <motion.div

@@ -62,8 +62,19 @@ export function BusinessProvider({ children }) {
     const [userSession, setUserSession] = useState(null);
 
 
-    const [activeOutletId, setActiveOutletId] = useState(() => localStorage.getItem('active_outlet_id') || null);
     const [activeSalonId, setActiveSalonId] = useState(() => localStorage.getItem('active_salon_id') || null);
+
+    // CRITICAL: Cleanup invalid/mock salon IDs from previous sessions
+    useEffect(() => {
+        const sid = localStorage.getItem('active_salon_id');
+        if (sid && sid !== 'null' && sid !== 'undefined' && !/^[0-9a-fA-F]{24}$/.test(sid)) {
+            console.warn('Detecting invalid Salon ID format, cleaning up...', sid);
+            localStorage.removeItem('active_salon_id');
+            setActiveSalonId(null);
+        }
+    }, []);
+
+    const [activeOutletId, setActiveOutletId] = useState(() => localStorage.getItem('active_outlet_id') || null);
 
     const activeOutlet = useMemo(() => (outlets || []).find((o) => String(o._id || o.id) === String(activeOutletId || '')) || null, [outlets, activeOutletId]);
 
@@ -415,8 +426,6 @@ export function BusinessProvider({ children }) {
                 setLoyaltyPlans(lpData);
                 setUserSession(uData);
                 
-                console.log(`[InitialData] Fetched: ${pData?.length} products, ${sData?.name} salon`);
-
                 // We can also store these here to avoid separate context fetches
                 if (setProducts) setProducts(pData);
                 if (setProductCategories) setProductCategories(pcData);
@@ -952,8 +961,6 @@ export function BusinessProvider({ children }) {
         const effectiveTid = urlId || activeSalonId || localStorage.getItem('active_salon_id');
         const effectiveOid = urlOutletId || activeOutletId || localStorage.getItem('active_outlet_id');
 
-        console.log(`[BusinessContext] Init Path: ${location.pathname}, TID: ${effectiveTid}, OID: ${effectiveOid}`);
-
         if (urlId && urlId !== activeSalonId) {
             localStorage.setItem('active_salon_id', urlId);
             setActiveSalonId(urlId);
@@ -984,8 +991,8 @@ export function BusinessProvider({ children }) {
         }
 
         if ((isAuthenticated || isCustomerAuthenticated) && user?.role !== 'superadmin') {
-            if (location.pathname === '/app/services' || location.pathname === '/app') {
-                // These pages now handle their own granular API fetching.
+            if (['/app/services', '/app', '/app/profile'].includes(location.pathname)) {
+                // These pages now handle their own granular API fetching or are lightweight.
                 // We just stop initialization here.
                 setIsInitializing(false);
             } else {
@@ -997,8 +1004,8 @@ export function BusinessProvider({ children }) {
 
             const initGuest = async () => {
                 try {
-                    if (location.pathname === '/app/services' || location.pathname === '/app') {
-                        // These pages now handle their own granular API fetching.
+                    if (['/app/services', '/app', '/app/profile'].includes(location.pathname)) {
+                        // Skip initial-data for lightweight/granular pages
                     } else {
                         await fetchCustomerInitialData();
                     }

@@ -405,7 +405,7 @@ export default function AppHomePage() {
                     fetchNearest(coords.lat, coords.lng);
                 },
                 (err) => {
-                    console.log('Location access denied or error');
+
                     fetchNearest(); // fetch without lat/lng
                 }
             );

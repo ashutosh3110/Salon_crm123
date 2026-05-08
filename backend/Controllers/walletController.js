@@ -246,3 +246,39 @@ exports.bulkRecharge = async (req, res) => {
         res.status(500).json({ success: false, message: err.message });
     }
 };
+// @desc    Get wallet balance for a specific customer
+// @route   GET /api/wallet/customer/:customerId
+// @access  Private
+exports.getCustomerWallet = async (req, res) => {
+    try {
+        const customer = await Customer.findById(req.params.customerId);
+        if (!customer) {
+            return res.status(404).json({ success: false, message: 'Customer not found' });
+        }
+        res.json({
+            success: true,
+            balance: customer.walletBalance || 0
+        });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+};
+
+// @desc    Get transactions for a specific customer
+// @route   GET /api/wallet/transactions/customer/:customerId
+// @access  Private
+exports.getCustomerTransactions = async (req, res) => {
+    try {
+        const transactions = await WalletTransaction.find({ customerId: req.params.customerId })
+            .sort({ createdAt: -1 })
+            .limit(100);
+
+        res.json({
+            success: true,
+            count: transactions.length,
+            data: transactions
+        });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+};

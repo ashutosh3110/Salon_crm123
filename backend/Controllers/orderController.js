@@ -198,3 +198,23 @@ exports.getOrders = async (req, res) => {
         res.status(500).json({ success: false, message: err.message });
     }
 };
+// @desc    Get orders for a specific customer
+// @route   GET /api/orders/customer/:customerId
+// @access  Private
+exports.getCustomerOrders = async (req, res) => {
+    try {
+        const orders = await Order.find({ customerId: req.params.customerId })
+            .populate('items.productId', 'name image price sellingPrice')
+            .populate('salonId', 'name logo')
+            .populate('outletId', 'name city')
+            .sort({ createdAt: -1 });
+
+        res.json({
+            success: true,
+            count: orders.length,
+            data: orders
+        });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+};

@@ -98,3 +98,26 @@ exports.updateFeedbackStatus = async (req, res) => {
         res.status(400).json({ success: false, message: err.message });
     }
 };
+// @desc    Get feedbacks for a specific customer
+// @route   GET /api/feedbacks/customer/:customerId
+// @access  Private
+exports.getCustomerFeedbacks = async (req, res) => {
+    try {
+        const { status } = req.query;
+        let query = { customerId: req.params.customerId };
+        if (status) query.status = status;
+
+        const feedbacks = await Feedback.find(query)
+            .populate('salonId', 'name logo')
+            .populate('outletId', 'name')
+            .sort({ createdAt: -1 });
+
+        res.json({
+            success: true,
+            count: feedbacks.length,
+            data: feedbacks
+        });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+};

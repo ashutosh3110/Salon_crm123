@@ -75,7 +75,7 @@ export function CustomerAuthProvider({ children }) {
     };
 
     // Login: combines OTP verify + localStorage save
-    const customerLogin = async (phone, otp, tenantId, outletId = '', referralCode = '') => {
+    const customerLogin = useCallback(async (phone, otp, tenantId, outletId = '', referralCode = '') => {
         const { customer: cust, token } = await verifyOtp(phone, otp, tenantId, outletId, referralCode);
         localStorage.setItem('customer_token', token);
         localStorage.setItem('customer_user', JSON.stringify(cust));
@@ -83,7 +83,7 @@ export function CustomerAuthProvider({ children }) {
         // Register for push notifications after login
         requestForToken().catch(err => console.error('[CustomerAuth] Push registration error:', err));
         return cust;
-    };
+    }, []);
 
     const customerLogout = async () => {
         const fcmToken = localStorage.getItem('fcm_token');
@@ -102,10 +102,10 @@ export function CustomerAuthProvider({ children }) {
     };
 
 
-    const updateCustomer = async (data) => {
+    const updateCustomer = useCallback(async (data) => {
         const payload = { ...data };
         try {
-            const res = await api.patch('/auth/profile', payload);
+            const res = await api.patch('/customer/profile', payload);
             if (res.data?.success) {
                 const updated = { ...customer, ...res.data.data };
                 localStorage.setItem('customer_user', JSON.stringify(updated));
@@ -120,23 +120,26 @@ export function CustomerAuthProvider({ children }) {
             setCustomer(updated);
             return updated;
         }
-    };
+    }, [customer]);
 
-    const refreshProfile = async () => {
+    const refreshProfile = useCallback(async () => {
         if (!localStorage.getItem('customer_token')) return;
         if (location.pathname.startsWith('/superadmin')) return;
         try {
-            const res = await api.get('/auth/profile');
+            const res = await api.get('/customer/profile');
             if (res.data?.success) {
-                const refreshed = { ...customer, ...res.data.data };
-                localStorage.setItem('customer_user', JSON.stringify(refreshed));
-                setCustomer(refreshed);
-                return refreshed;
+                // Use functional update to avoid dependency on 'customer'
+                setCustomer(prev => {
+                    const refreshed = { ...prev, ...res.data.data };
+                    localStorage.setItem('customer_user', JSON.stringify(refreshed));
+                    return refreshed;
+                });
+                return res.data.data;
             }
         } catch (err) {
             console.error('[CustomerAuth] Profile refresh failed:', err);
         }
-    };
+    }, [location.pathname]); // Removed 'customer' dependency by using functional update
 
     // Automatic profile refresh removed to prevent redundant calls on Home page.
     // Pages can call refreshProfile() manually if needed.

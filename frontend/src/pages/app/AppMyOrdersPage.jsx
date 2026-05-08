@@ -3,8 +3,42 @@ import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import OrderCard from '../../components/app/OrderCard';
 import { PackageX, Loader2, ChevronLeft } from 'lucide-react';
+import AppBackButton from '../../components/app/AppBackButton';
 import { useCustomerTheme } from '../../contexts/CustomerThemeContext';
 import api from '../../services/api';
+
+const OrderSkeleton = () => {
+    const { theme } = useCustomerTheme();
+    const isLight = theme === 'light';
+    const bg = isLight ? 'rgba(0,0,0,0.05)' : 'rgba(255,255,255,0.05)';
+    
+    return (
+        <div 
+            className="rounded-2xl p-5 border animate-pulse"
+            style={{ 
+                background: isLight ? '#FFFFFF' : '#1A1A1A',
+                borderColor: isLight ? 'rgba(0,0,0,0.06)' : 'rgba(255,255,255,0.05)'
+            }}
+        >
+            <div className="flex items-start justify-between gap-3 mb-4">
+                <div className="flex-1 space-y-2">
+                    <div className="h-4 w-3/4 rounded-md" style={{ background: bg }} />
+                    <div className="h-3 w-1/2 rounded-md" style={{ background: bg }} />
+                </div>
+                <div className="h-7 w-24 rounded-lg" style={{ background: bg }} />
+            </div>
+            <div className="flex gap-2 mb-4 overflow-x-auto pb-1">
+                {[1, 2, 3].map(i => (
+                    <div key={i} className="shrink-0 w-12 h-12 rounded-xl" style={{ background: bg }} />
+                ))}
+            </div>
+            <div className="flex items-center justify-between pt-4 border-t" style={{ borderTopColor: isLight ? 'rgba(0,0,0,0.06)' : 'rgba(255,255,255,0.05)' }}>
+                <div className="h-3 w-16 rounded-md" style={{ background: bg }} />
+                <div className="h-4 w-20 rounded-md" style={{ background: bg }} />
+            </div>
+        </div>
+    );
+};
 
 export default function AppMyOrdersPage() {
     const [orders, setOrders] = useState([]);
@@ -45,14 +79,8 @@ export default function AppMyOrdersPage() {
             style={{ background: colors.bg }}
         >
             {/* Header */}
-            <div className="pt-12 pb-6 flex items-center gap-4">
-                <button 
-                    onClick={() => navigate(-1)}
-                    style={{ background: colors.card, border: `1px solid ${colors.border}` }}
-                    className="w-10 h-10 rounded-xl flex items-center justify-center"
-                >
-                    <ChevronLeft size={20} style={{ color: colors.text }} />
-                </button>
+            <div className="sticky top-0 z-50 pt-6 pb-6 flex items-center gap-4" style={{ background: colors.bg }}>
+                <AppBackButton />
                 <div>
                     <h1 className="text-2xl font-black tracking-tight" style={{ color: colors.text, fontFamily: "'SF Pro Display', sans-serif" }}>
                         My <span className="text-[#C8956C]">Orders</span>
@@ -64,9 +92,8 @@ export default function AppMyOrdersPage() {
             {/* Orders List */}
             <div className="space-y-4">
                 {loading ? (
-                    <div className="py-20 flex flex-col items-center justify-center opacity-40">
-                        <Loader2 className="w-8 h-8 animate-spin mb-4" style={{ color: colors.text }} />
-                        <p className="text-[10px] font-black uppercase tracking-widest">Loading orders...</p>
+                    <div className="space-y-4">
+                        {[1, 2, 3].map(i => <OrderSkeleton key={i} />)}
                     </div>
                 ) : orders.length === 0 ? (
                     <motion.div

@@ -377,7 +377,8 @@ exports.updateProfile = async (req, res) => {
 // @access  Private (Customer)
 exports.getProfile = async (req, res) => {
     try {
-        let customer = await Customer.findById(req.user.id);
+        const userId = req.user.id || req.user._id;
+        let customer = await Customer.findById(userId);
         
         if (!customer) {
             // Fallback: If authenticated as Admin/Staff, use that profile
@@ -388,9 +389,20 @@ exports.getProfile = async (req, res) => {
             }
         }
 
+        // Fetch active membership to include in profile data
+        const CustomerMembership = require('../Models/CustomerMembership');
+        const activeMembership = await CustomerMembership.findOne({
+            customerId: customer._id,
+            status: 'active',
+            expiryDate: { $gt: new Date() }
+        }).populate('planId');
+
         res.json({
             success: true,
-            data: customer
+            data: {
+                ...customer.toObject(),
+                activeMembership: activeMembership || null
+            }
         });
 
     } catch (err) {
@@ -416,6 +428,29 @@ exports.deleteAccount = async (req, res) => {
 
     } catch (err) {
         console.error('Delete account error:', err);
+        res.status(500).json({ success: false, message: 'Server error' });
+    }
+};
+// @desc    Get favorites for a specific customer
+// @route   GET /api/auth/favorites/customer/:customerId
+// @access  Private
+exports.getCustomerFavorites = async (req, res) => {
+    try {
+        const customerId = req.params.customerId;
+        const [products, outlets] = await Promise.all([
+            Product.find({ likedBy: customerId }).populate('categoryId', 'name'),
+            Outlet.find({ likedBy: customerId })
+        ]);
+
+        res.json({
+            success: true,
+            data: {
+                products,
+                outlets
+            }
+        });
+    } catch (err) {
+        console.error('Get customer favorites error:', err);
         res.status(500).json({ success: false, message: 'Server error' });
     }
 };

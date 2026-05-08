@@ -66,7 +66,7 @@ export default function AppLoginPage() {
         dob: '',
         anniversary: '',
     });
-    const [otpDebug, setOtpDebug] = useState('');
+
     const [appliedReferralCode, setAppliedReferralCode] = useState(referralCodeFromUrl);
     const [showLocationModal, setShowLocationModal] = useState(false);
     const otpRefs = [useRef(), useRef(), useRef(), useRef()];
@@ -331,7 +331,7 @@ export default function AppLoginPage() {
         try {
             // Send OTP without tenantId if needed, backend currently doesn't strictly check for it for demo logic
             const res = await requestOtp(phone, tenantId || 'system');
-            if (res.otp) setOtpDebug(res.otp);
+
             setCd(30); goTo(2);
         } catch (e) { setError(e.message || 'Failed to send OTP'); }
         finally {
@@ -369,7 +369,7 @@ export default function AppLoginPage() {
             // Keep existing OTP login flow
             setPhone(payload.phone);
             const res = await requestOtp(payload.phone, tenantId);
-            if (res.otp) setOtpDebug(res.otp);
+
             setCd(30);
             setShowRegisterModal(false);
             goTo(2);

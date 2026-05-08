@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import { createContext, useContext, useState, useRef,useEffect, useCallback } from 'react';
 import { useLocation } from 'react-router-dom';
 import api from '../services/api';
 import { useCustomerAuth } from './CustomerAuthContext';
@@ -14,6 +14,7 @@ export const CartProvider = ({ children }) => {
     const [isCartOpen, setIsCartOpen] = useState(false);
     const location = useLocation();
 
+    const fetchedRef = useRef(false);
     const fetchCart = useCallback(async () => {
         if (!customer) return;
         setLoading(true);
@@ -27,20 +28,27 @@ export const CartProvider = ({ children }) => {
         } finally {
             setLoading(false);
         }
-    }, [customer]);
+    }, [customer?._id]);
 
     useEffect(() => {
+        if (fetchedRef.current) return;
+        
         // Optimization: Use data from initial-data if available
         if (userSession?.cart) {
             setCart(userSession.cart);
+            fetchedRef.current = true;
             return;
         }
 
-        if (!location.pathname.startsWith('/superadmin')) {
+        if (location.pathname.startsWith('/superadmin') || location.pathname === '/app/profile') {
+            return;
+        }
+
+        if (customer?._id) {
+            fetchedRef.current = true;
             fetchCart();
         }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [fetchCart, userSession?.cart]);
+    }, [fetchCart, userSession?.cart, customer?._id, location.pathname]);
 
     const addToCart = async (productId, quantity = 1) => {
         if (!customer) {

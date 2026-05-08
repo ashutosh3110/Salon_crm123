@@ -88,7 +88,7 @@ import AppLayout from './layouts/AppLayout';
 import AppLoginPage from './pages/app/AppLoginPage';
 import AppHomePage from './pages/app/AppHomePage';
 import AppWalletPage from './pages/app/AppWalletPage';
-import AppDiscoveryPage from './pages/app/AppDiscoveryPage';
+
 import SalonProfilePage from './pages/app/SalonProfilePage';
 
 import AppBookingPage from './pages/app/AppBookingPage';
@@ -112,11 +112,11 @@ import GenderSelectPage from './pages/app/GenderSelectPage';
 import AppHelpSupportPage from './pages/app/AppHelpSupportPage';
 import AppPrivacyPolicyPage from './pages/app/AppPrivacyPolicyPage';
 import AppFavoritesPage from './pages/app/AppFavoritesPage';
-import SalonSelectionPage from './pages/app/SalonSelectionPage';
 import AppExpertsPage from './pages/app/AppExpertsPage';
 import NearbyOutletsPage from './pages/app/NearbyOutletsPage';
 import AppOrderDetailsPage from './pages/app/AppOrderDetailsPage';
 import AppTransactionHistoryPage from './pages/app/AppTransactionHistoryPage';
+import AppReviewsPage from './pages/app/AppReviewsPage';
 import { CartProvider } from './contexts/CartContext';
 import { GenderProvider } from './contexts/GenderContext';
 import CustomerAppWrapper from './layouts/CustomerAppWrapper';
@@ -125,7 +125,7 @@ import { PettyCashProvider } from './contexts/PettyCashContext';
 import { FinanceProvider } from './contexts/FinanceContext';
 import { CMSProvider } from './contexts/CMSContext';
 import { AttendanceProvider } from './contexts/AttendanceContext';
-import DebugOverlay from './components/common/DebugOverlay';
+
 
 
 function ScrollToHash() {
@@ -486,12 +486,11 @@ function App() {
                           <Route path="/app/gender" element={<GenderSelectPage />} />
                           <Route element={<AppLayout />}>
                             <Route path="/app" element={<AppHomePage />} />
-                            <Route path="/app/select-salon" element={<SalonSelectionPage />} />
                             <Route path="/app/nearby-outlets" element={<NearbyOutletsPage />} />
                             <Route path="/app/salon/:id" element={<SalonProfilePage />} />
-                            <Route path="/app/discovery" element={<AppDiscoveryPage />} />
                             <Route path="/app/wallet" element={<AppWalletPage />} />
                             <Route path="/app/transactions" element={<AppTransactionHistoryPage />} />
+                            <Route path="/app/reviews" element={<AppReviewsPage />} />
                             <Route path="/app/likes" element={<AppFavoritesPage />} />
 
                             <Route path="/app/booking" element={<AppBookingPage />} />
@@ -568,7 +567,7 @@ function App() {
           </BusinessProvider>
         </CustomerAuthProvider>
       </AuthProvider>
-      <DebugOverlay />
+
     </Router>
   );
 }

@@ -59,11 +59,7 @@ api.interceptors.request.use(
                 lastPath = currentPath;
             }
             callCount++;
-            console.log(`%c[API #${callCount}] %cPage: ${currentPath} %cURL: ${config.url}`, 
-                'color: #C8956C; font-weight: bold; font-size: 10px;', 
-                'color: #888; font-size: 10px;', 
-                'color: #2e7d32; font-weight: bold; font-size: 10px;');
-            if (currentPath === '/app') console.trace('API Call Trace');
+
         }
 
         // Attach the global abort signal
@@ -126,7 +122,6 @@ api.interceptors.response.use(
     }
 );
 
-console.log(`%c[SYSTEM] %cActive API URL: ${API_URL}`, 'color: #C8956C; font-weight: bold;', 'color: #fff;');
-console.log(`%c[SYSTEM] %cEnvironment: ${import.meta.env.MODE}`, 'color: #C8956C; font-weight: bold;', 'color: #fff;');
+
 
 export default api;

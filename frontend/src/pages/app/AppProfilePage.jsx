@@ -16,8 +16,8 @@ import { AnimatePresence } from 'framer-motion';
 import api from '../../services/api';
 
 export default function AppProfilePage() {
-    const { customer, updateCustomer, customerLogout } = useCustomerAuth();
-    const { balance, transactions, initializeWallet } = useWallet();
+    const { customer, updateCustomer, customerLogout, refreshProfile } = useCustomerAuth();
+    const { balance, transactions } = useWallet();
     const navigate = useNavigate();
     const { theme } = useCustomerTheme();
     const isLight = theme === 'light';
@@ -115,8 +115,7 @@ export default function AppProfilePage() {
         anniversary: customer?.anniversary || ''
     });
     const [focusedField, setFocusedField] = useState(null);
-    const [activeMembership, setActiveMembership] = useState(null);
-    const [loadingMembership, setLoadingMembership] = useState(false);
+    const activeMembership = customer?.activeMembership || null;
 
     // Sync form when customer loads or changes
     useEffect(() => {
@@ -145,52 +144,36 @@ export default function AppProfilePage() {
         minRedeemPoints: 100,
     });
 
-    useEffect(() => {
-        if (customer?._id) {
-            initializeWallet().catch(() => {});
-        }
-    }, [customer?._id, initializeWallet]);
+    // Removed Lazy Loading State for Sections (replaced by direct navigation)
+
+
+    const fetchedRef = useRef(false);
 
     useEffect(() => {
-        let cancelled = false;
-        const loadActiveMembership = async () => {
-            setLoadingMembership(true);
-            try {
-                const res = await api.get('/loyalty/membership/active');
-                if (!cancelled) setActiveMembership(res.data?.data || null);
-            } catch (e) {
-                console.error('Failed to load membership', e);
-            } finally {
-                if (!cancelled) setLoadingMembership(false);
-            }
-        };
-        if (customer?._id) loadActiveMembership();
-        return () => { cancelled = true; };
-    }, [customer?._id]);
+        if (!customer?._id || fetchedRef.current) return;
+        fetchedRef.current = true;
 
-    useEffect(() => {
-        let cancelled = false;
-        const loadRules = async () => {
+        const loadData = async () => {
             try {
+                // 1. Profile API (Updates customer context which includes balance)
+                await refreshProfile();
+
+                // 2. Loyalty Rules API
                 const res = await api.get('/loyalty/rules');
                 const data = res?.data?.data || res?.data || {};
-                if (!cancelled) {
-                    setRules((prev) => ({
-                        ...prev,
-                        ...data,
-                        pointsRate: Number(data?.pointsRate ?? prev.pointsRate ?? 100),
-                        minRedeemPoints: Number(data?.minRedeemPoints ?? prev.minRedeemPoints ?? 100),
-                    }));
-                }
-            } catch {
-                // keep defaults
+                setRules((prev) => ({
+                    ...prev,
+                    ...data,
+                    pointsRate: Number(data?.pointsRate ?? prev.pointsRate ?? 100),
+                    minRedeemPoints: Number(data?.minRedeemPoints ?? prev.minRedeemPoints ?? 100),
+                }));
+            } catch (err) {
+                console.error('Failed to load profile data', err);
             }
         };
-        if (customer?._id) loadRules();
-        return () => {
-            cancelled = true;
-        };
-    }, [customer?._id]);
+
+        loadData();
+    }, [customer?._id, refreshProfile]);
 
     const formatDate = (dateStr) => {
         return new Date(dateStr).toLocaleDateString('en-IN', { month: 'short', day: 'numeric', year: 'numeric' });
@@ -241,13 +224,13 @@ export default function AppProfilePage() {
     };
 
     const quickLinks = [
-        { icon: Calendar, label: 'My Bookings', path: '/app/bookings', color: isLight ? 'text-blue-600' : 'text-blue-400' },
-        { icon: ShoppingBag, label: 'My Orders', path: '/app/orders', color: isLight ? 'text-orange-600' : 'text-orange-400' },
-        { icon: Heart, label: 'Liked Items', path: '/app/likes', color: isLight ? 'text-rose-500' : 'text-rose-400' },
-        { icon: Wallet, label: `My Wallet (₹${balance.toLocaleString()})`, path: '/app/wallet', color: isLight ? 'text-[#C8956C]' : 'text-[#C8956C]' },
-        { icon: History, label: 'Transaction History', path: '/app/transactions', color: isLight ? 'text-indigo-600' : 'text-indigo-400' },
-        { icon: Star, label: 'Post a Review', onClick: () => setShowReviewModal(true), color: isLight ? 'text-amber-500' : 'text-amber-400' },
-        { icon: Users, label: 'Refer Friends', path: '/app/referrals', color: isLight ? 'text-emerald-600' : 'text-emerald-400' },
+        { id: 'bookings', icon: Calendar, label: 'My Bookings', path: '/app/bookings', color: isLight ? 'text-blue-600' : 'text-blue-400' },
+        { id: 'orders', icon: ShoppingBag, label: 'My Orders', path: '/app/orders', color: isLight ? 'text-orange-600' : 'text-orange-400' },
+        { id: 'liked', icon: Heart, label: 'Liked Items', path: '/app/likes', color: isLight ? 'text-rose-500' : 'text-rose-400' },
+        { id: 'wallet', icon: Wallet, label: `My Wallet (₹${balance.toLocaleString()})`, path: '/app/wallet', color: isLight ? 'text-[#C8956C]' : 'text-[#C8956C]' },
+        { id: 'transactions', icon: History, label: 'Transaction History', path: '/app/transactions', color: isLight ? 'text-indigo-600' : 'text-indigo-400' },
+        { id: 'reviews', icon: Star, label: 'My Reviews', path: '/app/reviews', color: isLight ? 'text-amber-500' : 'text-amber-400' },
+        { id: 'referrals', icon: Users, label: 'Refer Friends', path: '/app/referrals', color: isLight ? 'text-emerald-600' : 'text-emerald-400' },
     ];
 
     const [redeemSuccess, setRedeemSuccess] = useState(false);
@@ -264,8 +247,8 @@ export default function AppProfilePage() {
                         walletBalance: res.data.walletBalance
                     });
                 }
-                // Refresh records
-                initializeWallet();
+                // Refresh records via Profile API
+                refreshProfile();
                 setTimeout(() => setRedeemSuccess(false), 4000);
             }
         } catch (err) {
@@ -317,44 +300,63 @@ export default function AppProfilePage() {
                 )}
             </AnimatePresence>
 
-            <div className="pt-6 pb-4">
-                <h1 className="text-3xl font-black" style={{ color: colors.text, fontFamily: "'SF Pro Display', sans-serif" }}>Profile</h1>
-                <p className="text-[10px] uppercase tracking-widest font-bold opacity-50" style={{ color: colors.textMuted }}>Account & Privileges</p>
+            <div className="pt-10 pb-6">
+                <motion.span 
+                    initial={{ letterSpacing: '0.1em', opacity: 0 }}
+                    animate={{ letterSpacing: '0.3em', opacity: 0.4 }}
+                    className="text-[10px] font-black uppercase mb-1 block"
+                    style={{ color: colors.textMuted }}
+                >
+                    Premium Membership
+                </motion.span>
+                <h1 className="text-4xl font-black italic tracking-tighter" style={{ color: colors.text, fontFamily: "'SF Pro Display', sans-serif" }}>
+                    My <span className="text-[#C8956C]">Profile</span>
+                </h1>
             </div>
 
 
             {/* Profile Card */}
-            <motion.div variants={fadeUp} style={{ background: colors.card, border: `1px solid ${colors.border}`, marginTop: '12px' }} className="rounded-2xl p-5 shadow-sm">
-                <div className="flex items-center gap-4">
+            <motion.div 
+                variants={fadeUp} 
+                style={{ 
+                    background: isLight ? 'rgba(255,255,255,0.7)' : 'rgba(30,30,30,0.6)', 
+                    backdropFilter: 'blur(20px)',
+                    border: `1px solid ${isLight ? 'rgba(0,0,0,0.05)' : 'rgba(255,255,255,0.05)'}`,
+                    marginTop: '12px',
+                    boxShadow: isLight ? '0 20px 40px rgba(0,0,0,0.02)' : '0 20px 40px rgba(0,0,0,0.2)'
+                }} 
+                className="rounded-[32px] p-6 relative overflow-hidden"
+            >
+                <div className="flex items-center gap-5 relative z-10">
                     <div className="relative group">
-                        <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[#C8956C]/20 to-[#C8956C]/10 flex items-center justify-center shrink-0 border border-[#C8956C]/20 overflow-hidden">
-                            {uploadingAvatar ? (
-                                <Loader2 className="w-6 h-6 animate-spin text-[#C8956C]" />
-                            ) : customer?.avatar ? (
-                                <img src={customer.avatar} alt="Profile" className="w-full h-full object-cover" />
-                            ) : (
-                                <span className="text-xl font-black text-[#C8956C]">{getInitials(customer?.name)}</span>
-                            )}
+                        <div className="w-20 h-20 rounded-3xl bg-gradient-to-br from-[#C8956C] to-[#A06844] p-[2px] shrink-0 shadow-xl shadow-[#C8956C]/20">
+                            <div className="w-full h-full rounded-[22px] bg-white dark:bg-[#1A1A1A] flex items-center justify-center overflow-hidden">
+                                {uploadingAvatar ? (
+                                    <Loader2 className="w-6 h-6 animate-spin text-[#C8956C]" />
+                                ) : customer?.avatar ? (
+                                    <img src={customer.avatar} alt="Profile" className="w-full h-full object-cover" />
+                                ) : (
+                                    <span className="text-2xl font-black text-[#C8956C]">{getInitials(customer?.name)}</span>
+                                )}
+                            </div>
                         </div>
-                        <button
+                        <motion.button
+                            whileHover={{ scale: 1.1 }}
+                            whileTap={{ scale: 0.9 }}
                             onClick={() => avatarInputRef.current.click()}
-                            className="absolute -bottom-1 -right-1 w-6 h-6 bg-[#C8956C] rounded-full border-2 border-white dark:border-[#1A1A1A] flex items-center justify-center text-white"
-                            title={`Max: ${platformSettings?.maxImageSize || 5}${platformSettings?.maxImageSizeUnit || 'MB'}`}
+                            className="absolute -bottom-2 -right-2 w-8 h-8 bg-[#C8956C] rounded-full border-4 border-white dark:border-[#1A1A1A] flex items-center justify-center text-white shadow-lg"
                         >
-                            <Camera size={12} />
-                        </button>
-                        <input
-                            type="file"
-                            ref={avatarInputRef}
-                            onChange={handleAvatarChange}
-                            accept="image/*"
-                            style={{ display: 'none' }}
-                        />
+                            <Camera size={14} />
+                        </motion.button>
+                        <input type="file" ref={avatarInputRef} onChange={handleAvatarChange} accept="image/*" style={{ display: 'none' }} />
                     </div>
                     <div className="flex-1 min-w-0">
-                        <h2 className="text-base font-bold truncate" style={{ color: colors.text }}>{customer?.name || 'Customer'}</h2>
-                        <p className="text-xs" style={{ color: colors.textMuted }}>{customer?.phone ? `+91 ${customer.phone}` : ''}</p>
-                        {customer?.email && <p className="text-xs" style={{ color: colors.textMuted }}>{customer.email}</p>}
+                        <h2 className="text-xl font-black italic tracking-tight" style={{ color: colors.text }}>{customer?.name || 'Customer'}</h2>
+                        <div className="flex items-center gap-2 mt-1">
+                            <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                            <p className="text-xs font-bold opacity-40 uppercase tracking-widest" style={{ color: colors.textMuted }}>{customer?.phone ? `+91 ${customer.phone}` : 'No Phone'}</p>
+                        </div>
+                        {customer?.email && <p className="text-[11px] font-bold opacity-30 mt-0.5 truncate" style={{ color: colors.textMuted }}>{customer.email}</p>}
                     </div>
                     <motion.button
                         whileTap={{ scale: 0.9 }}
@@ -370,12 +372,19 @@ export default function AppProfilePage() {
                             }
                             setEditing(!editing);
                         }}
-                        style={{ background: isLight ? 'rgba(0,0,0,0.03)' : 'rgba(255,255,255,0.05)', border: `1px solid ${colors.border}` }}
-                        className="w-10 h-10 rounded-xl flex items-center justify-center transition-colors"
+                        style={{ 
+                            background: isLight ? 'rgba(0,0,0,0.03)' : 'rgba(255,255,255,0.05)', 
+                            border: `1px solid ${colors.border}` 
+                        }}
+                        className="w-12 h-12 rounded-2xl flex items-center justify-center transition-colors"
                     >
-                        <Edit3 className="w-4 h-4" style={{ color: colors.textMuted }} />
+                        <Edit3 className="w-5 h-5" style={{ color: colors.textMuted }} />
                     </motion.button>
                 </div>
+                
+                {/* Background Decoration */}
+                <div className="absolute top-0 right-0 w-32 h-32 bg-[#C8956C]/5 rounded-full -translate-y-16 translate-x-16 blur-3xl" />
+                <div className="absolute bottom-0 left-0 w-24 h-24 bg-[#C8956C]/5 rounded-full translate-y-12 -translate-x-12 blur-2xl" />
 
                 {/* Edit Form */}
                 {editing && (
@@ -649,30 +658,39 @@ export default function AppProfilePage() {
                     <div
                         onClick={() => navigate('/app/membership')}
                         style={{ 
-                            background: colors.card,
-                            border: `1.5px dashed ${colors.border}`,
+                            background: isLight ? 'rgba(255,255,255,0.7)' : 'rgba(255,255,255,0.02)',
+                            border: `1.5px dashed ${isLight ? '#E5E7EB' : 'rgba(255,255,255,0.1)'}`,
+                            backdropFilter: 'blur(10px)',
                             cursor: 'pointer'
                         }}
-                        className="rounded-2xl p-6 flex items-center justify-between group hover:border-[#C8956C] transition-colors"
+                        className="rounded-3xl p-8 flex flex-col items-center justify-center group hover:border-[#C8956C] transition-all duration-500"
                     >
-                        <div className="flex items-center gap-4">
-                            <div className="w-12 h-12 rounded-2xl bg-[#C8956C]/10 flex items-center justify-center group-hover:bg-[#C8956C] transition-colors">
-                                <Crown size={24} className="text-[#C8956C] group-hover:text-white transition-colors" />
-                            </div>
-                            <div>
-                                <h4 className="text-sm font-black uppercase tracking-widest" style={{ color: colors.text }}>Unlock Benefits</h4>
-                                <p className="text-[10px] font-bold opacity-40 uppercase tracking-widest">Join our Membership Hub</p>
-                            </div>
+                        <motion.div 
+                            whileHover={{ rotate: 15, scale: 1.1 }}
+                            className="w-16 h-16 rounded-3xl bg-[#C8956C]/10 flex items-center justify-center mb-4 group-hover:bg-[#C8956C] transition-colors"
+                        >
+                            <Crown size={32} className="text-[#C8956C] group-hover:text-white transition-colors" />
+                        </motion.div>
+                        <h4 className="text-lg font-black italic tracking-tight" style={{ color: colors.text }}>Unlock Benefits</h4>
+                        <p className="text-[10px] font-bold opacity-40 uppercase tracking-[0.2em] mt-1">Join our Exclusive Membership</p>
+                        <div className="mt-6 flex items-center gap-2 text-[#C8956C]">
+                            <span className="text-[10px] font-black uppercase tracking-widest">Explore Plans</span>
+                            <ChevronRight size={14} className="group-hover:translate-x-1 transition-transform" />
                         </div>
-                        <ChevronRight size={20} className="opacity-20 group-hover:opacity-100 group-hover:text-[#C8956C] transition-all" />
                     </div>
                 )}
             </motion.div>
 
             {/* Loyalty Section */}
-            <motion.div variants={fadeUp} className="mt-10 space-y-4">
+            <motion.div variants={fadeUp} className="mt-12 space-y-5">
                 <div className="flex items-center justify-between px-1">
-                    <h3 className="text-[10px] font-bold uppercase tracking-[0.2em]" style={{ color: colors.textMuted }}>Rewards Balance</h3>
+                    <div>
+                        <h3 className="text-[10px] font-black uppercase tracking-[0.2em]" style={{ color: colors.textMuted }}>Rewards Balance</h3>
+                        <p className="text-[9px] font-bold text-[#C8956C] uppercase tracking-widest mt-0.5">Exclusive Perk Program</p>
+                    </div>
+                    <div className="w-8 h-8 rounded-full bg-black/5 flex items-center justify-center">
+                        <Zap size={14} className="text-[#C8956C]" />
+                    </div>
                 </div>
 
                 <LoyaltyCard 
@@ -682,36 +700,68 @@ export default function AppProfilePage() {
                     minRedeem={rules.minRedeemPoints}
                 />
 
-                <div className="grid grid-cols-2 gap-2.5 mt-6">
-                    <div style={{ background: colors.card, border: `1px solid ${colors.border}` }} className="rounded-xl p-4 text-center shadow-sm">
-                        <p className="text-[9px] font-black uppercase tracking-widest mb-1" style={{ color: colors.textMuted }}>Redemption Rule</p>
-                        <p className="text-xl font-black text-[#C8956C]">{rules.pointsRate} Pts = ₹1</p>
-                        <p className="text-[9px] italic mt-1 font-bold" style={{ color: colors.textMuted }}>Exchange Rate</p>
+                <div className="grid grid-cols-2 gap-4 mt-6">
+                    <div 
+                        style={{ 
+                            background: isLight ? 'rgba(255,255,255,0.6)' : 'rgba(255,255,255,0.02)', 
+                            border: `1px solid ${colors.border}`,
+                            backdropFilter: 'blur(10px)'
+                        }} 
+                        className="rounded-2xl p-4 shadow-sm"
+                    >
+                        <div className="flex items-center gap-2 mb-2 opacity-40">
+                            <History size={12} />
+                            <p className="text-[8px] font-black uppercase tracking-widest">Exchange Rate</p>
+                        </div>
+                        <p className="text-lg font-black italic">{rules.pointsRate} <span className="text-[10px] uppercase opacity-40 not-italic ml-1">Pts</span> <span className="mx-1 text-[#C8956C]">→</span> ₹1</p>
                     </div>
-                    <div style={{ background: colors.card, border: `1px solid ${colors.border}` }} className="rounded-xl p-4 text-center shadow-sm">
-                        <p className="text-[9px] font-black uppercase tracking-widest mb-1" style={{ color: colors.textMuted }}>Min. Redeem</p>
-                        <p className="text-xl font-black text-emerald-500">{rules.minRedeemPoints}</p>
-                        <p className="text-[9px] italic mt-1 font-bold" style={{ color: colors.textMuted }}>PTS required</p>
+                    <div 
+                        style={{ 
+                            background: isLight ? 'rgba(255,255,255,0.6)' : 'rgba(255,255,255,0.02)', 
+                            border: `1px solid ${colors.border}`,
+                            backdropFilter: 'blur(10px)'
+                        }} 
+                        className="rounded-2xl p-4 shadow-sm"
+                    >
+                        <div className="flex items-center gap-2 mb-2 opacity-40">
+                            <Shield size={12} />
+                            <p className="text-[8px] font-black uppercase tracking-widest">Threshold</p>
+                        </div>
+                        <p className="text-lg font-black italic">{rules.minRedeemPoints} <span className="text-[10px] uppercase opacity-40 not-italic ml-1">Pts</span></p>
                     </div>
                 </div>
             </motion.div>
             {/* Quick Links */}
-            <motion.div variants={fadeUp} className="mt-10 space-y-3">
-                {quickLinks.map((link) => (
-                    <motion.button
-                        key={link.label}
-                        whileTap={{ scale: 0.98 }}
-                        onClick={link.onClick || (() => navigate(link.path))}
-                        style={{ background: colors.card, border: `1px solid ${colors.border}` }}
-                        className="w-full flex items-center gap-4 rounded-xl p-4 hover:bg-black/5 dark:hover:bg-white/5 transition-all shadow-sm"
-                    >
-                        <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 bg-black/5 dark:bg-white/5`}>
-                            <link.icon className={`w-6 h-6 ${link.color}`} />
-                        </div>
-                        <span className="text-sm font-bold tracking-tight flex-1 text-left" style={{ color: colors.text }}>{link.label}</span>
-                        <ChevronRight className="w-4 h-4 opacity-20" />
-                    </motion.button>
-                ))}
+            <motion.div variants={fadeUp} className="mt-12 space-y-4">
+                <div className="flex items-center justify-between px-1 mb-2">
+                    <h3 className="text-[10px] font-black uppercase tracking-[0.2em]" style={{ color: colors.textMuted }}>Quick Navigation</h3>
+                </div>
+                <div className="grid grid-cols-1 gap-3">
+                    {quickLinks.map((link, idx) => (
+                        <motion.button
+                            key={link.label}
+                            whileTap={{ scale: 0.98 }}
+                            onClick={link.onClick || (() => navigate(link.path))}
+                            style={{ 
+                                background: isLight ? 'rgba(255,255,255,0.7)' : 'rgba(255,255,255,0.02)', 
+                                border: `1px solid ${colors.border}`,
+                                backdropFilter: 'blur(10px)'
+                            }}
+                            className="w-full flex items-center gap-5 rounded-3xl p-5 hover:bg-[#C8956C]/5 transition-all group"
+                        >
+                            <div className={`w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 bg-black/5 dark:bg-white/5 group-hover:bg-[#C8956C]/10 transition-colors`}>
+                                <link.icon className={`w-7 h-7 ${link.color} group-hover:scale-110 transition-transform`} />
+                            </div>
+                            <div className="flex-1 text-left">
+                                <span className="text-sm font-black italic tracking-tight block" style={{ color: colors.text }}>{link.label}</span>
+                                <p className="text-[9px] font-bold opacity-40 uppercase tracking-widest mt-0.5">View Details</p>
+                            </div>
+                            <div className="w-8 h-8 rounded-full flex items-center justify-center bg-black/5 dark:bg-white/5 opacity-0 group-hover:opacity-100 transition-all">
+                                <ChevronRight className="w-4 h-4" />
+                            </div>
+                        </motion.button>
+                    ))}
+                </div>
             </motion.div>
 
             <AnimatePresence>
@@ -871,42 +921,115 @@ export default function AppProfilePage() {
                     <span className="text-sm font-bold flex-1 text-left" style={{ color: colors.text }}>Privacy Policy</span>
                     <ChevronRight className="w-4 h-4 opacity-20" />
                 </button>
-                <button
-                    onClick={() => setShowDeleteConfirm(true)}
-                    className="w-full flex items-center gap-4 p-4 hover:bg-red-500/5 transition-colors group"
-                >
-                    <Shield className="w-5 h-5 text-red-500 opacity-40 group-hover:opacity-100" />
-                    <span className="text-sm font-bold flex-1 text-left text-red-500 opacity-60 group-hover:opacity-100">Delete Account</span>
-                    <ChevronRight className="w-4 h-4 opacity-10" />
-                </button>
             </motion.div>
 
-            {/* Delete Confirmation */}
+
+            <motion.div variants={fadeUp} className="mt-12 space-y-3">
+                <div className="flex items-center justify-between px-1 mb-2">
+                    <h3 className="text-[10px] font-black uppercase tracking-[0.2em]" style={{ color: colors.textMuted }}>Management</h3>
+                </div>
+                
+                <div style={{ background: isLight ? 'rgba(255,255,255,0.7)' : 'rgba(255,255,255,0.02)', border: `1px solid ${colors.border}`, backdropFilter: 'blur(10px)' }} className="rounded-3xl overflow-hidden shadow-sm">
+                    <button
+                        onClick={() => setShowDeleteConfirm(true)}
+                        className="w-full flex items-center gap-5 p-5 hover:bg-red-500/5 transition-colors group"
+                    >
+                        <div className="w-12 h-12 rounded-2xl bg-red-500/5 flex items-center justify-center group-hover:bg-red-500/10 transition-colors">
+                            <Shield className="w-6 h-6 text-red-500/60 group-hover:text-red-500 transition-colors" />
+                        </div>
+                        <div className="flex-1 text-left">
+                            <span className="text-sm font-black italic tracking-tight block text-red-500/80 group-hover:text-red-500 transition-colors">Privacy & Data</span>
+                            <p className="text-[9px] font-bold opacity-40 uppercase tracking-widest mt-0.5">Delete My Account</p>
+                        </div>
+                        <ChevronRight className="w-4 h-4 opacity-10" />
+                    </button>
+
+                    <div className="h-[1px] mx-6 bg-black/5 dark:bg-white/5" />
+
+                    {!showLogoutConfirm ? (
+                        <button
+                            onClick={() => setShowLogoutConfirm(true)}
+                            className="w-full flex items-center gap-5 p-5 hover:bg-orange-500/5 transition-colors group"
+                        >
+                            <div className="w-12 h-12 rounded-2xl bg-orange-500/5 flex items-center justify-center group-hover:bg-orange-500/10 transition-colors">
+                                <LogOut className="w-6 h-6 text-orange-500/60 group-hover:text-orange-500 transition-colors" />
+                            </div>
+                            <div className="flex-1 text-left">
+                                <span className="text-sm font-black italic tracking-tight block text-orange-500/80 group-hover:text-orange-500 transition-colors">Session Security</span>
+                                <p className="text-[9px] font-bold opacity-40 uppercase tracking-widest mt-0.5">Secure Log Out</p>
+                            </div>
+                            <ChevronRight className="w-4 h-4 opacity-10" />
+                        </button>
+                    ) : (
+                        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="p-5 flex gap-2">
+                            <button
+                                onClick={() => setShowLogoutConfirm(false)}
+                                style={{ border: `1.5px solid ${colors.border}`, color: colors.textMuted }}
+                                className="flex-1 py-4 rounded-2xl text-[11px] font-black uppercase tracking-widest bg-transparent"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={customerLogout}
+                                className="flex-1 py-4 rounded-2xl bg-[#C8956C] text-white text-[11px] font-black uppercase tracking-widest shadow-lg shadow-[#C8956C]/20"
+                            >
+                                Yes, Log Out
+                            </button>
+                        </motion.div>
+                    )}
+                </div>
+            </motion.div>
+
+            {/* Delete Confirmation Modal */}
             <AnimatePresence>
                 {showDeleteConfirm && (
-                    <div style={{ position: 'fixed', inset: 0, zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px' }}>
-                        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => !isDeleting && setShowDeleteConfirm(false)} style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(8px)' }} />
-                        <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }} style={{ background: colors.card, width: '100%', maxWidth: '340px', borderRadius: '32px', padding: '32px', position: 'relative', border: `1px solid ${colors.border}` }}>
-                            <div className="w-16 h-16 bg-red-600/10 rounded-full flex items-center justify-center mx-auto mb-6">
-                                <Shield size={32} className="text-red-600" />
+                    <div style={{ position: 'fixed', inset: 0, zIndex: 2000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px' }}>
+                        <motion.div 
+                            initial={{ opacity: 0 }} 
+                            animate={{ opacity: 1 }} 
+                            exit={{ opacity: 0 }} 
+                            onClick={() => !isDeleting && setShowDeleteConfirm(false)} 
+                            style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(15px)' }} 
+                        />
+                        <motion.div 
+                            initial={{ scale: 0.9, opacity: 0, y: 20 }} 
+                            animate={{ scale: 1, opacity: 1, y: 0 }} 
+                            exit={{ scale: 0.9, opacity: 0, y: 20 }} 
+                            style={{ 
+                                background: colors.card, 
+                                width: '100%', 
+                                maxWidth: '360px', 
+                                borderRadius: '40px', 
+                                padding: '40px 32px', 
+                                position: 'relative', 
+                                border: `1px solid ${colors.border}`,
+                                boxShadow: '0 40px 100px rgba(0,0,0,0.5)'
+                            }}
+                        >
+                            <div className="w-20 h-20 bg-red-500/10 rounded-[32px] flex items-center justify-center mx-auto mb-8 relative">
+                                <Shield size={40} className="text-red-500" />
+                                <div className="absolute inset-0 border-2 border-red-500/20 rounded-[32px] animate-pulse" />
                             </div>
-                            <h3 className="text-xl font-black text-center mb-2 text-red-600">Delete Account?</h3>
-                            <p className="text-center text-xs opacity-60 mb-8 font-bold uppercase tracking-tighter leading-relaxed underline decoration-red-600/30">Warning: This action is permanent. All your bookings, loyalty points, and wallet balance will be lost forever.</p>
+                            <h3 className="text-2xl font-black text-center mb-3 italic tracking-tight" style={{ color: colors.text }}>Delete Account?</h3>
+                            <p className="text-center text-[10px] font-black uppercase tracking-[0.1em] mb-10 leading-relaxed opacity-40">
+                                This action is permanent. All your ritual data, points, and wallet balance will be lost forever.
+                            </p>
                             <div className="flex flex-col gap-3">
-                                <button 
+                                <motion.button 
+                                    whileTap={{ scale: 0.98 }}
                                     disabled={isDeleting}
                                     onClick={handleDeleteAccount} 
-                                    className="w-full py-4 rounded-xl bg-red-600 text-white font-black uppercase text-[10px] tracking-[0.2em] shadow-lg shadow-red-600/20"
+                                    className="w-full py-5 rounded-2xl bg-red-600 text-white font-black uppercase text-[10px] tracking-[0.2em] shadow-xl shadow-red-600/20"
                                 >
-                                    {isDeleting ? 'Deleting Forever...' : 'I Understand, Delete Now'}
-                                </button>
+                                    {isDeleting ? 'Erasing Data...' : 'Confirm Destruction'}
+                                </motion.button>
                                 <button 
                                     disabled={isDeleting}
                                     onClick={() => setShowDeleteConfirm(false)} 
-                                    className="w-full py-3 rounded-xl font-black uppercase text-[10px] tracking-widest border border-white/10" 
+                                    className="w-full py-4 rounded-2xl font-black uppercase text-[10px] tracking-widest border border-black/5 dark:border-white/5" 
                                     style={{ color: colors.text }}
                                 >
-                                    Cancel
+                                    Go Back
                                 </button>
                             </div>
                         </motion.div>
@@ -914,36 +1037,9 @@ export default function AppProfilePage() {
                 )}
             </AnimatePresence>
 
-            {/* Logout */}
-            <motion.div variants={fadeUp} className="mt-8 mb-6">
-                {!showLogoutConfirm ? (
-                    <button
-                        onClick={() => setShowLogoutConfirm(true)}
-                        className="w-full flex items-center justify-center gap-2 py-4 rounded-xl border border-red-500/20 text-[11px] font-black uppercase tracking-widest text-red-500 hover:bg-red-500/5 transition-all"
-                    >
-                        <LogOut className="w-4 h-4" /> Log Out
-                    </button>
-                ) : (
-                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex gap-2">
-                        <button
-                            onClick={() => setShowLogoutConfirm(false)}
-                            style={{ border: `1px solid ${colors.border}`, color: colors.textMuted }}
-                            className="flex-1 py-4 rounded-xl text-[11px] font-black uppercase"
-                        >
-                            Cancel
-                        </button>
-                        <button
-                            onClick={customerLogout}
-                            className="flex-1 py-4 rounded-xl bg-red-500 text-white text-[11px] font-black uppercase tracking-widest shadow-lg shadow-red-500/20"
-                        >
-                            Yes, Log Out
-                        </button>
-                    </motion.div>
-                )}
-            </motion.div>
-
             {/* App Version */}
             <p className="text-center text-[10px] font-black uppercase tracking-[0.2em] opacity-20 pb-4" style={{ color: colors.text }}>Wapixo v1.0.0</p>
+
         </motion.div>
     );
 }
