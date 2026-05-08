@@ -361,7 +361,7 @@ export default function NearbyOutletsPage() {
                                         <div className="flex gap-5">
                                             <div className="w-28 h-28 rounded-2xl overflow-hidden shrink-0">
                                                 <img
-                                                    src={o.image || "https://images.unsplash.com/photo-1560066984-138dadb4c035?q=80&w=800"}
+                                                    src={(o.image || "").replace('wapixo.com/uploads', 'api.wapixo.com/uploads') || "https://images.unsplash.com/photo-1560066984-138dadb4c035?q=80&w=800"}
                                                     alt={o.name}
                                                     className="w-full h-full object-cover grayscale-[30%] group-hover:grayscale-0 group-hover:scale-105 transition-all duration-700"
                                                     onError={(e) => { 

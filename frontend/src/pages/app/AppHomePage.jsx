@@ -35,6 +35,12 @@ const getImageUrl = (p) => {
     if (!p) return null;
     if (typeof p !== 'string') return null;
     let path = p.replace(/\\/g, '/');
+    
+    // Fix incorrectly stored production URLs
+    if (path.includes('wapixo.com/uploads') && !path.includes('api.wapixo.com/uploads')) {
+        path = path.replace('wapixo.com/uploads', 'api.wapixo.com/uploads');
+    }
+    
     if (path.startsWith('http') || path.startsWith('data:') || path.startsWith('blob:')) return path;
     const baseUrl = api.defaults.baseURL.replace('/api', '');
     return `${baseUrl}${path.startsWith('/') ? '' : '/'}${path}`;

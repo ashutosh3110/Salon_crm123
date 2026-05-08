@@ -7,6 +7,11 @@ const getImageUrl = (p) => {
     if (!p) return DEFAULT_IMAGE;
     if (typeof p !== 'string' || !p.trim()) return DEFAULT_IMAGE;
     let path = p.trim().replace(/\\/g, '/');
+
+    if (path.includes('wapixo.com/uploads') && !path.includes('api.wapixo.com/uploads')) {
+        path = path.replace('wapixo.com/uploads', 'api.wapixo.com/uploads');
+    }
+
     if (path.startsWith('http') || path.startsWith('data:') || path.startsWith('blob:')) return path;
     const baseUrl = api.defaults.baseURL.replace('/api', '');
     return `${baseUrl}${path.startsWith('/') ? '' : '/'}${path}`;

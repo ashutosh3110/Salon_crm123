@@ -666,7 +666,7 @@ export default function AppLoginPage() {
                                                                 <div className="absolute inset-0 bg-gradient-to-r from-[#C8956C]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                                                                 <div className={`w-20 h-20 rounded-2xl overflow-hidden shrink-0 border relative z-10 shadow-2xl ${isLight ? 'border-neutral-100' : 'border-white/10'}`}>
                                                                     <img
-                                                                        src={o.images?.[0] || o.image || "https://images.unsplash.com/photo-1560066984-138dadb4c035?q=80&w=800"}
+                                                                        src={(o.images?.[0] || o.image || "").replace('wapixo.com/uploads', 'api.wapixo.com/uploads') || "https://images.unsplash.com/photo-1560066984-138dadb4c035?q=80&w=800"}
                                                                         alt={o.name}
                                                                         className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
                                                                         onError={(e) => { 
