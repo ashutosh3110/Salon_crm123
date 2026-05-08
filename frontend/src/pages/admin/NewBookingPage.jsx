@@ -46,6 +46,11 @@ export default function NewBookingPage() {
     // Image URL Resolver
     const getImageUrl = (path) => {
         if (!path) return null;
+        
+        if (path.includes('wapixo.com/uploads') && !path.includes('api.wapixo.com/uploads')) {
+            path = path.replace('wapixo.com/uploads', 'api.wapixo.com/uploads');
+        }
+        
         if (path.startsWith('http')) return path;
         const baseUrl = API_BASE_URL.endsWith('/api') ? API_BASE_URL.slice(0, -4) : API_BASE_URL.replace(/\/api\//, '/');
         return `${baseUrl}${path.startsWith('/') ? '' : '/'}${path}`;

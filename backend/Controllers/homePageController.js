@@ -55,6 +55,8 @@ exports.getServicesByOutlet = async (req, res) => {
         const services = await Service.find({ 
             $or: [
                 { outletIds: outletId },
+                { outletIds: { $size: 0 } },
+                { outletIds: { $exists: false } },
                 { outletId: outletId },
                 { outletId: 'all' }
             ]
@@ -90,6 +92,8 @@ exports.getProductsByOutlet = async (req, res) => {
         const products = await Product.find({
             $or: [
                 { outletIds: outletId },
+                { outletIds: { $size: 0 } },
+                { outletIds: { $exists: false } },
                 { outletId: outletId },
                 { outletId: 'all' }
             ]

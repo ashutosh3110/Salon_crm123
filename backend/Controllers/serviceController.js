@@ -6,14 +6,24 @@ const Category = require('../Models/Category');
 // @access  Private
 exports.getServices = async (req, res) => {
     try {
-        let salonId = req.user?.salonId;
+        let salonId = req.query.salonId || req.user?.salonId;
         
         // If superadmin, allow overriding via query
         if (req.user?.role === 'superadmin' && req.query.salonId) {
             salonId = req.query.salonId;
         }
+        
+        // For customers, ALWAYS prioritize the salonId from query (multi-tenant app navigation)
+        if (req.user?.role === 'customer' && req.query.salonId) {
+            salonId = req.query.salonId;
+        }
 
         const outletId = req.query.outletId;
+
+        console.log("==== GET SERVICES ====");
+        console.log("User:", req.user?._id, "Role:", req.user?.role);
+        console.log("Query:", req.query);
+        console.log("Resolved SalonId:", salonId);
 
         if (!salonId) {
             return res.status(400).json({ success: false, message: 'Salon ID is required' });
@@ -28,7 +38,9 @@ exports.getServices = async (req, res) => {
             query.$or = [
                 { outletIds: outletId },
                 { outletIds: { $size: 0 } },
-                { outletIds: { $exists: false } }
+                { outletIds: { $exists: false } },
+                { outletId: outletId },
+                { outletId: 'all' }
             ];
         }
 

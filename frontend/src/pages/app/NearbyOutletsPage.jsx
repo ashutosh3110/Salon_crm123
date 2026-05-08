@@ -353,7 +353,7 @@ export default function NearbyOutletsPage() {
                                         transition={{ delay: idx * 0.1 }}
                                         onClick={() => {
                                             localStorage.setItem('wapixo_selected_outlet', JSON.stringify(o));
-                                            navigate(`/app/login?outletSelected=1&tenantId=${encodeURIComponent(o.tenantId)}`);
+                                            navigate(`/app/login?outletSelected=1&tenantId=${encodeURIComponent(o.tenantId)}&outletId=${o._id || o.id}`);
                                         }}
                                         style={{ background: colors.card, border: `1px solid ${colors.border}` }}
                                         className="group relative p-4 rounded-[28px] overflow-hidden cursor-pointer shadow-xl transition-all hover:border-accent hover:shadow-accent/5"
@@ -361,7 +361,7 @@ export default function NearbyOutletsPage() {
                                         <div className="flex gap-5">
                                             <div className="w-28 h-28 rounded-2xl overflow-hidden shrink-0">
                                                 <img
-                                                    src={o.image || "https://images.unsplash.com/photo-1560066984-138dadb4c035?q=80&w=800"}
+                                                    src={(o.image || "").replace('wapixo.com/uploads', 'api.wapixo.com/uploads') || "https://images.unsplash.com/photo-1560066984-138dadb4c035?q=80&w=800"}
                                                     alt={o.name}
                                                     className="w-full h-full object-cover grayscale-[30%] group-hover:grayscale-0 group-hover:scale-105 transition-all duration-700"
                                                     onError={(e) => { 

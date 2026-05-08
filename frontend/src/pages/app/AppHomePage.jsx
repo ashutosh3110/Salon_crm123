@@ -35,6 +35,12 @@ const getImageUrl = (p) => {
     if (!p) return null;
     if (typeof p !== 'string') return null;
     let path = p.replace(/\\/g, '/');
+    
+    // Fix incorrectly stored production URLs
+    if (path.includes('wapixo.com/uploads') && !path.includes('api.wapixo.com/uploads')) {
+        path = path.replace('wapixo.com/uploads', 'api.wapixo.com/uploads');
+    }
+    
     if (path.startsWith('http') || path.startsWith('data:') || path.startsWith('blob:')) return path;
     const baseUrl = api.defaults.baseURL.replace('/api', '');
     return `${baseUrl}${path.startsWith('/') ? '' : '/'}${path}`;
@@ -333,8 +339,8 @@ export default function AppHomePage() {
     const [isLoadingData, setIsLoadingData] = useState(true);
     const [userLocation, setUserLocation] = useState(null);
 
-    const services = useMemo(() => (outletServices || []).slice(0, 10), [outletServices]);
-    const products = useMemo(() => (outletProducts || []).slice(0, 15), [outletProducts]);
+    const services = useMemo(() => (outletServices || []), [outletServices]);
+    const products = useMemo(() => (outletProducts || []), [outletProducts]);
     const reviews = useMemo(() => (trustedReviews || []).slice(0, 10), [trustedReviews]);
     const banners = pageBanners || [];
     const membershipPlans = outletPlans || [];
@@ -452,7 +458,9 @@ export default function AppHomePage() {
 
     const filteredPopularServices = useMemo(() => {
         return (services || []).filter(s => {
-            if (s.outletIds && Array.isArray(s.outletIds) && s.outletIds.length > 0) {
+            if (!s.outletIds || s.outletIds.length === 0) {
+                // Common service for all outlets
+            } else if (s.outletIds && Array.isArray(s.outletIds) && s.outletIds.length > 0) {
                 if (!s.outletIds.map(id => String(id)).includes(String(activeOutletId))) return false;
             } else if (s.outletId && s.outletId !== 'all' && String(s.outletId) !== String(activeOutletId)) {
                 return false;

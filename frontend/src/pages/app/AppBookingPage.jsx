@@ -41,7 +41,8 @@ export default function AppBookingPage() {
         fetchStaff,
         loyaltySettings,
         activeSalonId,
-        salon
+        salon,
+        fetchServices
     } = useBusiness();
 
     const [selectedOutlet, setSelectedOutlet] = useState(() => {
@@ -58,6 +59,11 @@ export default function AppBookingPage() {
     }, [outlets, outletId, activeOutlet, selectedOutlet]);
 
     const currentOutlet = selectedOutlet;
+
+    useEffect(() => {
+        fetchStaff?.();
+        fetchServices?.();
+    }, [fetchStaff, fetchServices]);
 
     const [step, setStep] = useState(0);
     const [direction, setDirection] = useState(1);
@@ -758,6 +764,7 @@ export default function AppBookingPage() {
                                     <span className="text-[9px] font-black uppercase tracking-widest">{currentOutlet.name}</span>
                                 </div>
                             )}
+                            <div className="text-[10px] text-red-500 font-bold">DEBUG: {businessServices.length} services found in context. preSelected: {preSelectedServiceId}</div>
                         </div>
 
                         <div className="flex flex-col gap-4 mb-4">
@@ -866,6 +873,11 @@ export default function AppBookingPage() {
                         </h2>
 
                         <div className="grid grid-cols-1 gap-4 max-h-[60vh] overflow-y-auto no-scrollbar pb-8">
+                            {outletStaff.length === 0 && (
+                                <div className="text-center py-10 opacity-50 font-bold text-sm">
+                                    No stylists available for this outlet.
+                                </div>
+                            )}
                             {outletStaff.map((s, i) => {
                                 const sid = s._id || s.id;
                                 const isSelected = !!selectedStaff && String(selectedStaff._id || selectedStaff.id) === String(sid);

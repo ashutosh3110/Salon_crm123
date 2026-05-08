@@ -96,14 +96,17 @@ export default function AppLoginPage() {
                 setSelectedOutlet({ _id: urlOutletId, id: urlOutletId, tenantId: urlTenantId, salonId: urlTenantId });
             }
         } else if (!urlOutletId) {
-            // Force clear outlet selection if no ID in URL
-            setTenantId('');
-            setSelectedOutlet(null);
-            localStorage.removeItem('active_outlet_id');
-            localStorage.removeItem('active_salon_id');
-            localStorage.removeItem('wapixo_selected_outlet');
-            setActiveOutletId(null);
-            setActiveSalonId(null);
+            // Check if we already have a selection in localStorage before clearing
+            const hasStoredOutlet = localStorage.getItem('active_outlet_id');
+            if (!hasStoredOutlet) {
+                setTenantId('');
+                setSelectedOutlet(null);
+                localStorage.removeItem('active_outlet_id');
+                localStorage.removeItem('active_salon_id');
+                localStorage.removeItem('wapixo_selected_outlet');
+                setActiveOutletId(null);
+                setActiveSalonId(null);
+            }
         }
     }, [searchParams]);
 
@@ -666,7 +669,7 @@ export default function AppLoginPage() {
                                                                 <div className="absolute inset-0 bg-gradient-to-r from-[#C8956C]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                                                                 <div className={`w-20 h-20 rounded-2xl overflow-hidden shrink-0 border relative z-10 shadow-2xl ${isLight ? 'border-neutral-100' : 'border-white/10'}`}>
                                                                     <img
-                                                                        src={o.images?.[0] || o.image || "https://images.unsplash.com/photo-1560066984-138dadb4c035?q=80&w=800"}
+                                                                        src={(o.images?.[0] || o.image || "").replace('wapixo.com/uploads', 'api.wapixo.com/uploads') || "https://images.unsplash.com/photo-1560066984-138dadb4c035?q=80&w=800"}
                                                                         alt={o.name}
                                                                         className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
                                                                         onError={(e) => { 
