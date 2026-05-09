@@ -14,6 +14,12 @@ export const useFirebaseNotifications = (isAuthenticated) => {
     if (!isAuthenticated) return;
 
     const setupNotifications = async () => {
+      // Safety check for environments without Notification API (like some mobile WebViews)
+      if (typeof Notification === 'undefined') {
+        console.warn('[useFirebaseNotifications] Notification API not supported in this environment');
+        return;
+      }
+
       const currentPermission = Notification.permission;
       try {
         const permission = await Notification.requestPermission();
@@ -30,35 +36,38 @@ export const useFirebaseNotifications = (isAuthenticated) => {
 
     setupNotifications();
 
-    // 2. Listen for foreground messages
-    const unsubscribe = onMessage(messaging, (payload) => {
-      const { title, body } = payload.notification || {};
-      
-      // Rich Toast notification
-      toast.success(
-        <div style={{ cursor: 'pointer' }}>
-          <p className="font-bold text-sm tracking-tight">{title || 'New Notification'}</p>
-          <p className="text-xs opacity-75 mt-0.5 line-clamp-2">{body}</p>
-          <div className="mt-2 text-[10px] font-bold text-primary uppercase tracking-widest">Click to View ➔</div>
-        </div>,
-        {
-          duration: 8000,
-          position: 'top-right',
-          id: 'foreground-push-' + Date.now(),
-          onClick: () => {
-             const url = payload.data?.actionUrl || '/';
-             console.log('[useFirebaseNotifications] Navigating to:', url);
-             window.location.href = url;
+    // 2. Listen for foreground messages - only if messaging is supported
+    let unsubscribe = null;
+    if (messaging) {
+      unsubscribe = onMessage(messaging, (payload) => {
+        const { title, body } = payload.notification || {};
+        
+        // Rich Toast notification
+        toast.success(
+          <div style={{ cursor: 'pointer' }}>
+            <p className="font-bold text-sm tracking-tight">{title || 'New Notification'}</p>
+            <p className="text-xs opacity-75 mt-0.5 line-clamp-2">{body}</p>
+            <div className="mt-2 text-[10px] font-bold text-primary uppercase tracking-widest">Click to View ➔</div>
+          </div>,
+          {
+            duration: 8000,
+            position: 'top-right',
+            id: 'foreground-push-' + Date.now(),
+            onClick: () => {
+               const url = payload.data?.actionUrl || '/';
+               console.log('[useFirebaseNotifications] Navigating to:', url);
+               window.location.href = url;
+            }
           }
-        }
-      );
+        );
 
-      // 3. Trigger a custom event for other components to react
-      window.dispatchEvent(new CustomEvent('notification_received', { detail: payload }));
-    });
+        // 3. Trigger a custom event for other components to react
+        window.dispatchEvent(new CustomEvent('notification_received', { detail: payload }));
+      });
+    }
 
     return () => {
-      if (unsubscribe) unsubscribe();
+      if (typeof unsubscribe === 'function') unsubscribe();
     };
   }, [isAuthenticated]);
 
