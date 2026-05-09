@@ -103,17 +103,27 @@ exports.registerToken = async (req, res) => {
         }
 
         const userId = req.user.id || req.user._id;
+        const phone = req.user.phone;
         const updateField = (platform === 'mobile' || platform === 'app') ? { fcmTokenMobile: token } : { fcmTokenWeb: token };
+
+        console.log(`[FCM Register] UserID: ${userId}, Phone: ${phone}, Platform: ${platform}`);
 
         // Use $addToSet to add token to array without duplicates
         const updateQuery = { $addToSet: updateField };
 
-        // 1. Try direct update (if they are a customer)
+        // 1. Try direct update by ID
         let customer = await Customer.findByIdAndUpdate(userId, updateQuery, { new: true });
 
-        // 2. If not found, they might be an Admin/Staff testing. Try finding customer by phone.
-        if (!customer && req.user.phone) {
-            customer = await Customer.findOneAndUpdate({ phone: req.user.phone }, updateQuery, { new: true });
+        // 2. If not found, try by phone number (handling potential country code issues)
+        if (!customer && phone) {
+            // Try exact match first
+            customer = await Customer.findOneAndUpdate({ phone: phone }, updateQuery, { new: true });
+            
+            // If still not found and phone is long, try matching last 10 digits
+            if (!customer && phone.length >= 10) {
+                const last10 = phone.slice(-10);
+                customer = await Customer.findOneAndUpdate({ phone: new RegExp(last10 + '$') }, updateQuery, { new: true });
+            }
         }
 
         if (!customer) {
