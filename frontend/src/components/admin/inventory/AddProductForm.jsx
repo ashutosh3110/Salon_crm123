@@ -34,7 +34,7 @@ import CustomSelect from '../common/CustomSelect';
 import Barcode from 'react-barcode';
 import { useInventory } from '../../../contexts/InventoryContext';
 import { useBusiness } from '../../../contexts/BusinessContext';
-import { convertToWebP } from '../../../utils/imageUtils';
+import getImageUrl, { convertToWebP } from '../../../utils/imageUtils';
 import api from '../../../services/api';
 
 export default function AddProductForm({ onSave, initialData, onCancel }) {
@@ -459,7 +459,7 @@ export default function AddProductForm({ onSave, initialData, onCancel }) {
                         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
                             {(formData.images || []).map((img, idx) => (
                                 <div key={idx} className="relative aspect-square bg-background border border-border group overflow-hidden">
-                                    <img src={img} className="w-full h-full object-cover" alt={`Gallery ${idx}`} />
+                                    <img src={getImageUrl(img)} className="w-full h-full object-cover" alt={`Gallery ${idx}`} />
                                     <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                                         <button 
                                             onClick={() => {

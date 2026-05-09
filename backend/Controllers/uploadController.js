@@ -37,14 +37,19 @@ exports.uploadImage = async (req, res) => {
                 });
         }
 
-        // Convert to WebP using sharp
-        await sharp(originalPath)
-            .webp({ quality: 80 })
-            .toFile(webpPath);
+        // Convert to WebP using sharp only if not already webp
+        if (path.extname(originalPath).toLowerCase() !== '.webp') {
+            await sharp(originalPath)
+                .webp({ quality: 80 })
+                .toFile(webpPath);
 
-        // Delete the original file
-        if (fs.existsSync(originalPath)) {
-            fs.unlinkSync(originalPath);
+            // Delete the original file only if it was converted
+            if (fs.existsSync(originalPath)) {
+                fs.unlinkSync(originalPath);
+            }
+        } else {
+            // If already webp, webpPath is same as originalPath, no need to convert
+            console.log('File is already WebP, skipping conversion');
         }
 
         const protocol = req.protocol;
