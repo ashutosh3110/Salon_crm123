@@ -224,13 +224,13 @@ export default function AppProfilePage() {
     };
 
     const quickLinks = [
-        { id: 'bookings', icon: Calendar, label: 'My Bookings', path: '/app/bookings', color: isLight ? 'text-blue-600' : 'text-blue-400' },
-        { id: 'orders', icon: ShoppingBag, label: 'My Orders', path: '/app/orders', color: isLight ? 'text-orange-600' : 'text-orange-400' },
-        { id: 'liked', icon: Heart, label: 'Liked Items', path: '/app/likes', color: isLight ? 'text-rose-500' : 'text-rose-400' },
-        { id: 'wallet', icon: Wallet, label: `My Wallet (₹${balance.toLocaleString()})`, path: '/app/wallet', color: isLight ? 'text-[#C8956C]' : 'text-[#C8956C]' },
-        { id: 'transactions', icon: History, label: 'Transaction History', path: '/app/transactions', color: isLight ? 'text-indigo-600' : 'text-indigo-400' },
-        { id: 'reviews', icon: Star, label: 'My Reviews', path: '/app/reviews', color: isLight ? 'text-amber-500' : 'text-amber-400' },
-        { id: 'referrals', icon: Users, label: 'Refer Friends', path: '/app/referrals', color: isLight ? 'text-emerald-600' : 'text-emerald-400' },
+        { id: 'bookings', icon: Calendar, label: 'My Bookings', path: '/app/bookings', color: isLight ? 'text-blue-600' : 'text-blue-400', subLabel: 'VIEW BOOKINGS' },
+        { id: 'orders', icon: ShoppingBag, label: 'My Orders', path: '/app/orders', color: isLight ? 'text-orange-600' : 'text-orange-400', subLabel: 'VIEW ORDERS' },
+        { id: 'liked', icon: Heart, label: 'Liked Items', path: '/app/likes', color: isLight ? 'text-rose-500' : 'text-rose-400', subLabel: 'VIEW LIKES' },
+        { id: 'wallet', icon: Wallet, label: `My Wallet (₹${balance.toLocaleString()})`, path: '/app/wallet', color: isLight ? 'text-[#C8956C]' : 'text-[#C8956C]', subLabel: 'VIEW BALANCE' },
+        { id: 'transactions', icon: History, label: 'Transaction History', path: '/app/transactions', color: isLight ? 'text-indigo-600' : 'text-indigo-400', subLabel: 'VIEW HISTORY' },
+        { id: 'reviews', icon: Star, label: 'My Reviews', path: '/app/reviews', color: isLight ? 'text-amber-500' : 'text-amber-400', subLabel: 'VIEW REVIEWS' },
+        { id: 'referrals', icon: Users, label: 'Refer Friends', path: '/app/referrals', color: isLight ? 'text-emerald-600' : 'text-emerald-400', subLabel: 'VIEW REFERRALS' },
     ];
 
     const [redeemSuccess, setRedeemSuccess] = useState(false);
@@ -754,7 +754,7 @@ export default function AppProfilePage() {
                             </div>
                             <div className="flex-1 text-left">
                                 <span className="text-sm font-black italic tracking-tight block" style={{ color: colors.text }}>{link.label}</span>
-                                <p className="text-[9px] font-bold opacity-40 uppercase tracking-widest mt-0.5">View Details</p>
+                                <p className="text-[9px] font-bold opacity-40 uppercase tracking-widest mt-0.5">{link.subLabel || 'View Details'}</p>
                             </div>
                             <div className="w-8 h-8 rounded-full flex items-center justify-center bg-black/5 dark:bg-white/5 opacity-0 group-hover:opacity-100 transition-all">
                                 <ChevronRight className="w-4 h-4" />

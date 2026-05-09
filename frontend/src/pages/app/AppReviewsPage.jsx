@@ -6,6 +6,8 @@ import AppBackButton from '../../components/app/AppBackButton';
 import { useCustomerTheme } from '../../contexts/CustomerThemeContext';
 import { useCustomerAuth } from '../../contexts/CustomerAuthContext';
 import api from '../../services/api';
+import ReviewModal from '../../components/app/ReviewModal';
+import { Plus } from 'lucide-react';
 
 export default function AppReviewsPage() {
     const { customer } = useCustomerAuth();
@@ -14,6 +16,21 @@ export default function AppReviewsPage() {
     const navigate = useNavigate();
     const { theme } = useCustomerTheme();
     const isLight = theme === 'light';
+    const [isModalOpen, setIsModalOpen] = useState(false);
+
+    const fetchReviews = async () => {
+        if (!customer?._id) return;
+        try {
+            const res = await api.get(`/reviews/customer/${customer._id}`);
+            if (res.data?.success) {
+                setReviews(res.data.data || []);
+            }
+        } catch (err) {
+            console.error('Failed to fetch reviews', err);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     const colors = {
         bg: isLight ? '#FCF9F6' : '#0F0F0F',
@@ -24,19 +41,6 @@ export default function AppReviewsPage() {
     };
 
     useEffect(() => {
-        const fetchReviews = async () => {
-            if (!customer?._id) return;
-            try {
-                const res = await api.get(`/reviews/customer/${customer._id}?status=approved`);
-                if (res.data?.success) {
-                    setReviews(res.data.data || []);
-                }
-            } catch (err) {
-                console.error('Failed to fetch reviews', err);
-            } finally {
-                setLoading(false);
-            }
-        };
         fetchReviews();
     }, [customer?._id]);
 
@@ -78,6 +82,12 @@ export default function AppReviewsPage() {
                     </h1>
                     <p className="text-[10px] uppercase tracking-widest mt-0.5 opacity-60 font-bold text-[#C8956C]">Shared Experiences</p>
                 </div>
+                <button 
+                    onClick={() => setIsModalOpen(true)}
+                    className="ml-auto w-10 h-10 rounded-full bg-[#C8956C]/10 flex items-center justify-center text-[#C8956C] border border-[#C8956C]/20"
+                >
+                    <Plus size={20} />
+                </button>
             </div>
 
             {/* Reviews List */}
@@ -100,12 +110,20 @@ export default function AppReviewsPage() {
                         <p className="text-[10px] font-bold uppercase tracking-widest leading-relaxed opacity-40 max-w-[200px] mx-auto" style={{ color: colors.textMuted }}>
                             Your voice matters. Review your past sessions to help others.
                         </p>
-                        <button 
-                            onClick={() => navigate('/app/bookings')}
-                            className="mt-8 px-8 py-3 bg-[#C8956C] text-white text-[10px] font-black uppercase tracking-[0.2em] rounded-xl shadow-lg shadow-[#C8956C]/20"
-                        >
-                            View Bookings
-                        </button>
+                        <div className="mt-8 flex flex-col gap-3">
+                            <button 
+                                onClick={() => setIsModalOpen(true)}
+                                className="px-8 py-3 bg-[#C8956C] text-white text-[10px] font-black uppercase tracking-[0.2em] rounded-xl shadow-lg shadow-[#C8956C]/20 w-full"
+                            >
+                                Write a Review
+                            </button>
+                            <button 
+                                onClick={() => navigate('/app/bookings')}
+                                className="px-8 py-3 bg-white/[0.05] border border-white/10 text-white text-[10px] font-black uppercase tracking-[0.2em] rounded-xl w-full"
+                            >
+                                View Bookings
+                            </button>
+                        </div>
                     </motion.div>
                 ) : (
                     reviews.map((r, i) => (
@@ -135,17 +153,30 @@ export default function AppReviewsPage() {
                                 </div>
                                 <span className="text-[9px] font-black uppercase tracking-widest opacity-40">{r.status}</span>
                             </div>
-                            <p className="text-sm font-black italic leading-relaxed" style={{ color: colors.text }}>"{r.comment}"</p>
-                            {r.targetName && (
-                                <div className="mt-4 pt-4 border-t border-black/5 dark:border-white/5 flex items-center justify-between">
-                                    <p className="text-[9px] font-black uppercase text-[#C8956C] tracking-widest">Service: {r.targetName}</p>
-                                    <p className="text-[8px] font-bold opacity-30 uppercase tracking-tighter">{new Date(r.createdAt).toLocaleDateString()}</p>
-                                </div>
-                            )}
+                            
+                            <div className="mb-4">
+                                <p className="text-[10px] font-black uppercase text-[#C8956C] tracking-widest mb-1">{r.customerName || 'Anonymous'}</p>
+                                <p className="text-sm font-black italic leading-relaxed" style={{ color: colors.text }}>"{r.comment}"</p>
+                            </div>
+
+                            <div className="mt-4 pt-4 border-t border-black/5 dark:border-white/5 flex items-center justify-between">
+                                <p className="text-[9px] font-black uppercase text-[#C8956C] tracking-widest">
+                                    {r.targetType === 'service' ? 'Service' : 'Outlet'}: {r.targetName || 'General'}
+                                </p>
+                                <p className="text-[8px] font-bold opacity-30 uppercase tracking-tighter">{new Date(r.createdAt).toLocaleDateString()}</p>
+                            </div>
                         </motion.div>
                     ))
                 )}
             </div>
+
+            <ReviewModal 
+                isOpen={isModalOpen}
+                onClose={() => setIsModalOpen(false)}
+                onSuccess={fetchReviews}
+                targetType="general"
+                targetName="Salon Experience"
+            />
         </motion.div>
     );
 }
