@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { TrendingUp, Users, Calendar, Search, Globe } from 'lucide-react';
+import { TrendingUp, Users, Calendar, Search, Globe, ArrowUpRight, ArrowRight } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import AnimatedCounter from '../../components/common/AnimatedCounter';
 import api from '../../services/api';
@@ -44,10 +45,10 @@ export default function DashboardPage() {
     const activeStats = useMemo(() => {
         const s = payload?.stats || {};
         return [
-            { label: 'Total Outlets', value: s.outlets ?? 0, trend: 'Outlets', positive: true, icon: Globe },
-            { label: 'Total Bookings', value: s.bookingsTotal ?? 0, trend: 'Bookings', positive: true, icon: Calendar },
-            { label: 'Active Clients', value: s.clients ?? 0, trend: 'CRM', positive: true, icon: Users },
-            { label: 'Staff Members', value: s.staff ?? 0, trend: 'Team', positive: true, icon: TrendingUp },
+            { label: 'Total Outlets', value: s.outlets ?? 0, trend: 'Outlets', positive: true, icon: Globe, path: '/admin/outlets' },
+            { label: 'Total Bookings', value: s.bookingsTotal ?? 0, trend: 'Bookings', positive: true, icon: Calendar, path: '/admin/bookings' },
+            { label: 'Active Clients', value: s.clients ?? 0, trend: 'CRM', positive: true, icon: Users, path: '/admin/crm/customers' },
+            { label: 'Staff Members', value: s.staff ?? 0, trend: 'Team', positive: true, icon: TrendingUp, path: '/admin/staff' },
         ];
     }, [payload]);
 
@@ -72,7 +73,14 @@ export default function DashboardPage() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 {activeStats.map((stat, i) => (
-                    <div key={i} className="bg-surface py-7 px-7 rounded-2xl border border-border shadow-sm group relative overflow-hidden">
+                    <Link 
+                        to={stat.path} 
+                        key={i} 
+                        className="bg-surface py-7 px-7 rounded-2xl border border-border shadow-sm group relative overflow-hidden transition-all hover:shadow-xl hover:border-primary/20 hover:-translate-y-1 active:scale-[0.98]"
+                    >
+                        <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <ArrowUpRight className="w-4 h-4 text-primary" />
+                        </div>
                         <div className="relative z-10">
                             <div className="flex items-center justify-between mb-4">
                                 <div className="flex items-center gap-3">
@@ -87,15 +95,20 @@ export default function DashboardPage() {
                                 <div className={`text-[10px] font-black ${stat.positive ? 'text-emerald-500' : 'text-rose-500'}`}>{stat.trend}</div>
                             </div>
                         </div>
-                    </div>
+                    </Link>
                 ))}
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <div className="lg:col-span-2 bg-white p-8 rounded-2xl border border-border shadow-sm">
-                    <h2 className="text-lg font-bold text-text tracking-tight mb-8">Revenue Trends (Weekly)</h2>
-                    <div className="h-[300px] w-full">
-                        <ResponsiveContainer width="100%" height="100%">
+                <div className="lg:col-span-2 bg-white p-8 rounded-2xl border border-border shadow-sm group hover:shadow-md transition-all">
+                    <div className="flex items-center justify-between mb-8">
+                        <h2 className="text-lg font-bold text-text tracking-tight">Revenue Trends (Weekly)</h2>
+                        <Link to="/admin/finance/dashboard" className="p-2 rounded-lg bg-primary/5 text-primary opacity-0 group-hover:opacity-100 transition-all hover:bg-primary hover:text-white">
+                            <ArrowUpRight className="w-4 h-4" />
+                        </Link>
+                    </div>
+                    <div className="h-[300px] w-full min-w-0 overflow-hidden">
+                        <ResponsiveContainer width="100%" height="100%" minWidth={0}>
                             <AreaChart data={revenueData}>
                                 <CartesianGrid strokeDasharray="3 3" vertical={false} strokeOpacity={0.1} />
                                 <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 10, fontWeight: 900 }} />
@@ -105,10 +118,15 @@ export default function DashboardPage() {
                         </ResponsiveContainer>
                     </div>
                 </div>
-                <div className="bg-white p-8 rounded-2xl border border-border shadow-sm">
-                    <h2 className="text-lg font-bold text-text tracking-tight mb-8">Service Split</h2>
-                    <div className="h-[220px]">
-                        <ResponsiveContainer width="100%" height="100%">
+                <div className="bg-white p-8 rounded-2xl border border-border shadow-sm group hover:shadow-md transition-all">
+                    <div className="flex items-center justify-between mb-8">
+                        <h2 className="text-lg font-bold text-text tracking-tight">Service Split</h2>
+                        <Link to="/admin/hr/performance" className="p-2 rounded-lg bg-primary/5 text-primary opacity-0 group-hover:opacity-100 transition-all hover:bg-primary hover:text-white">
+                            <ArrowUpRight className="w-4 h-4" />
+                        </Link>
+                    </div>
+                    <div className="h-[220px] w-full min-w-0 overflow-hidden">
+                        <ResponsiveContainer width="100%" height="100%" minWidth={0}>
                             <PieChart>
                                 <Pie data={serviceDistribution} dataKey="value" innerRadius={60} outerRadius={80} paddingAngle={8}>
                                     {serviceDistribution.map((entry, index) => <Cell key={index} fill={entry.color} />)}
@@ -121,8 +139,13 @@ export default function DashboardPage() {
             </div>
 
             <div className="grid grid-cols-1 gap-6 text-left">
-                <div className="bg-white rounded-2xl border border-border shadow-sm overflow-hidden">
-                    <div className="px-8 py-6 border-b border-border bg-surface-alt/10 text-left"><h3 className="text-lg font-bold text-text tracking-tight">Recent Activity Stream</h3></div>
+                <div className="bg-white rounded-2xl border border-border shadow-sm overflow-hidden group hover:shadow-md transition-all">
+                    <div className="px-8 py-6 border-b border-border bg-surface-alt/10 flex items-center justify-between">
+                        <h3 className="text-lg font-bold text-text tracking-tight">Recent Activity Stream</h3>
+                        <Link to="/pos/invoices" className="flex items-center gap-2 text-xs font-bold text-primary uppercase tracking-widest hover:underline">
+                            View All Invoices <ArrowRight className="w-4 h-4" />
+                        </Link>
+                    </div>
                     <div className="divide-y divide-border/50 text-left">
                         {liveRecentActivity.map((activity, i) => (
                             <div key={i} className="px-8 py-5 flex items-center justify-between hover:bg-surface-alt/30 transition-colors">

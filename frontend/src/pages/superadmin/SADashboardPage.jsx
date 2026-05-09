@@ -74,9 +74,12 @@ const renderPieLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent })
 /* ─── Metric card ────────────────────────────────────────────────────────── */
 function MetricCard({ label, value, icon: Icon, gradient, shadow, change, prefix = '', loading, to }) {
     const content = (
-        <div className={`bg-surface rounded-2xl border border-border p-5 hover:border-primary/20 hover:shadow-md transition-all group shadow-sm${to ? ' cursor-pointer' : ''}`}>
+        <div className={`bg-surface rounded-2xl border border-border p-5 hover:border-primary/20 hover:shadow-xl hover:-translate-y-1 transition-all group shadow-sm relative overflow-hidden${to ? ' cursor-pointer' : ''}`}>
+            <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
+                <ArrowUpRight className="w-4 h-4 text-primary" />
+            </div>
             <div className="flex items-center justify-between mb-4">
-                <div className={`w-11 h-11 rounded-xl bg-gradient-to-br ${gradient} flex items-center justify-center shadow-lg ${shadow}`}>
+                <div className={`w-11 h-11 rounded-xl bg-gradient-to-br ${gradient} flex items-center justify-center shadow-lg ${shadow} group-hover:scale-110 transition-transform`}>
                     <Icon className="w-5 h-5 text-white" />
                 </div>
                 {change !== undefined && (
@@ -255,14 +258,19 @@ export default function SADashboardPage() {
             <div className="grid lg:grid-cols-3 gap-6">
 
                 {/* Monthly Revenue — AreaChart (spans 2 cols) */}
-                <div className="lg:col-span-2 bg-surface rounded-2xl border border-border shadow-sm p-5">
+                <div className="lg:col-span-2 bg-surface rounded-2xl border border-border shadow-sm p-5 group hover:shadow-md transition-all">
                     <SectionHeader
                         title="Income Trends"
                         subtitle="Earnings performance over the last 6 months"
                         action={
-                            <span className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/30 px-2 py-1 rounded-full">
-                                ↑ 11.9% MoM
-                            </span>
+                            <div className="flex items-center gap-3">
+                                <span className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/30 px-2 py-1 rounded-full">
+                                    ↑ 11.9% MoM
+                                </span>
+                                <Link to="/superadmin/billing" className="p-1.5 rounded-lg bg-primary/5 text-primary opacity-0 group-hover:opacity-100 transition-all hover:bg-primary hover:text-white">
+                                    <ArrowUpRight className="w-3.5 h-3.5" />
+                                </Link>
+                            </div>
                         }
                     />
                     <ResponsiveContainer width="100%" height={220}>
@@ -285,8 +293,16 @@ export default function SADashboardPage() {
                 </div>
 
                 {/* Plan Distribution — PieChart */}
-                <div className="bg-surface rounded-2xl border border-border shadow-sm p-5">
-                    <SectionHeader title="Most Popular Plans" subtitle="Subscription breakdown by plan type" />
+                <div className="bg-surface rounded-2xl border border-border shadow-sm p-5 group hover:shadow-md transition-all">
+                    <SectionHeader 
+                        title="Most Popular Plans" 
+                        subtitle="Subscription breakdown" 
+                        action={
+                            <Link to="/superadmin/salons" className="p-1.5 rounded-lg bg-primary/5 text-primary opacity-0 group-hover:opacity-100 transition-all hover:bg-primary hover:text-white">
+                                <ArrowUpRight className="w-3.5 h-3.5" />
+                            </Link>
+                        }
+                    />
                     <ResponsiveContainer width="100%" height={160}>
                         <PieChart>
                             <Pie data={currentPlanDist} cx="50%" cy="50%" innerRadius={45} outerRadius={72}
@@ -315,14 +331,19 @@ export default function SADashboardPage() {
             <div className="grid lg:grid-cols-2 gap-6">
 
                 {/* New Registrations — BarChart */}
-                <div className="bg-surface rounded-2xl border border-border shadow-sm p-5">
+                <div className="bg-surface rounded-2xl border border-border shadow-sm p-5 group hover:shadow-md transition-all">
                     <SectionHeader
                         title="Salons Joined Recently"
                         subtitle="New monthly registrations"
                         action={
-                            <span className="text-[11px] font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/30 px-2 py-1 rounded-full">
-                                34 this month
-                            </span>
+                            <div className="flex items-center gap-3">
+                                <span className="text-[11px] font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/30 px-2 py-1 rounded-full">
+                                    34 this month
+                                </span>
+                                <Link to="/superadmin/salons" className="p-1.5 rounded-lg bg-primary/5 text-primary opacity-0 group-hover:opacity-100 transition-all hover:bg-primary hover:text-white">
+                                    <ArrowUpRight className="w-3.5 h-3.5" />
+                                </Link>
+                            </div>
                         }
                     />
                     <ResponsiveContainer width="100%" height={200}>
@@ -343,14 +364,19 @@ export default function SADashboardPage() {
                 </div>
 
                 {/* Churn Rate — LineChart */}
-                <div className="bg-surface rounded-2xl border border-border shadow-sm p-5">
+                <div className="bg-surface rounded-2xl border border-border shadow-sm p-5 group hover:shadow-md transition-all">
                     <SectionHeader
                         title="Cancellations Rate"
                         subtitle="Tracing salons who left our platform"
                         action={
-                            <span className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/30 px-2 py-1 rounded-full">
-                                ↓ Improving
-                            </span>
+                            <div className="flex items-center gap-3">
+                                <span className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/30 px-2 py-1 rounded-full">
+                                    ↓ Improving
+                                </span>
+                                <Link to="/superadmin/salons?status=expired" className="p-1.5 rounded-lg bg-primary/5 text-primary opacity-0 group-hover:opacity-100 transition-all hover:bg-primary hover:text-white">
+                                    <ArrowUpRight className="w-3.5 h-3.5" />
+                                </Link>
+                            </div>
                         }
                     />
                     <ResponsiveContainer width="100%" height={200}>

@@ -291,6 +291,12 @@ export default function OutletForm() {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        
+        if (form.phone && form.phone.length !== 10) {
+            setError("Contact number must be exactly 10 digits.");
+            return;
+        }
+
         setSaving(true);
         setError(null);
 

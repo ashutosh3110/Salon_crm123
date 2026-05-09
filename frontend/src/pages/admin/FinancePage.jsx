@@ -19,6 +19,7 @@ import {
     BarChart,
     Bar,
 } from 'recharts';
+import { Link } from 'react-router-dom';
 import api from '../../services/api';
 import FinanceDashboard from '../../components/admin/finance/FinanceDashboard';
 import SupplierManager from '../../components/admin/finance/SupplierManager';
@@ -135,6 +136,7 @@ export default function FinancePage({ tab = 'dashboard' }) {
                         icon={TrendingUp}
                         color="blue"
                         trend="POS invoices"
+                        to="/admin/finance/invoices"
                     />
                     <FinanceKPICard
                         className="lg:col-span-2"
@@ -143,6 +145,7 @@ export default function FinancePage({ tab = 'dashboard' }) {
                         icon={ArrowDownRight}
                         color="rose"
                         trend="Ledger"
+                        to="/admin/finance/expenses"
                     />
                     <FinanceKPICard
                         className="lg:col-span-2"
@@ -151,6 +154,7 @@ export default function FinancePage({ tab = 'dashboard' }) {
                         icon={Package}
                         color="violet"
                         trend="Stock-in"
+                        to="/admin/finance/invoices"
                     />
                     <FinanceKPICard
                         className="lg:col-span-3"
@@ -159,6 +163,7 @@ export default function FinancePage({ tab = 'dashboard' }) {
                         icon={Users}
                         color="orange"
                         trend={kpis.liabilityHint ? String(kpis.liabilityHint).slice(0, 28) : '—'}
+                        to="/admin/finance/invoices"
                     />
                     <FinanceKPICard
                         className="lg:col-span-3"
@@ -167,6 +172,7 @@ export default function FinancePage({ tab = 'dashboard' }) {
                         icon={Activity}
                         color="emerald"
                         trend="Inflow − expenses"
+                        to="/admin/finance/dashboard"
                     />
                 </div>
 
@@ -320,7 +326,7 @@ const trendBadgeClass = (color) => {
     return map[color] || map.emerald;
 };
 
-function FinanceKPICard({ title, value, icon: Icon, color, trend, className = '' }) {
+function FinanceKPICard({ title, value, icon: Icon, color, trend, className = '', to }) {
     const colors = {
         blue: 'text-primary',
         rose: 'text-rose-500',
@@ -331,10 +337,8 @@ function FinanceKPICard({ title, value, icon: Icon, color, trend, className = ''
 
     const trendText = trend != null ? String(trend) : '—';
 
-    return (
-        <div
-            className={`bg-surface p-5 sm:p-6 rounded-none border border-border shadow-sm hover:shadow-xl hover:translate-y-[-2px] transition-all group relative overflow-hidden text-left font-black flex flex-col min-h-[160px] ${className}`}
-        >
+    const content = (
+        <>
             <div className={`absolute -right-4 -top-4 w-20 h-20 bg-primary/5 rotate-12 transition-all group-hover:bg-primary/10`} />
             <div className="flex justify-between items-start gap-2 mb-4 text-left font-black min-h-[2.75rem]">
                 <div className={`shrink-0 p-3 rounded-none ${colors[color]} border border-current bg-surface shadow-inner group-hover:scale-105 transition-transform`}>
@@ -353,6 +357,22 @@ function FinanceKPICard({ title, value, icon: Icon, color, trend, className = ''
                 </h3>
                 <div className="text-2xl sm:text-3xl font-black text-text tracking-tighter tabular-nums break-words">{value}</div>
             </div>
+        </>
+    );
+
+    const cardClasses = `bg-surface p-5 sm:p-6 rounded-none border border-border shadow-sm hover:shadow-xl hover:translate-y-[-2px] transition-all group relative overflow-hidden text-left font-black flex flex-col min-h-[160px] ${className}`;
+
+    if (to) {
+        return (
+            <Link to={to} className={cardClasses}>
+                {content}
+            </Link>
+        );
+    }
+
+    return (
+        <div className={cardClasses}>
+            {content}
         </div>
     );
 }

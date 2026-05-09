@@ -25,6 +25,7 @@ import {
     PieChart,
     Pie
 } from 'recharts';
+import { Link } from 'react-router-dom';
 import AnimatedCounter from '../../components/common/AnimatedCounter';
 import StockOverview from '../../components/admin/inventory/StockOverview';
 import StockIn from '../../components/admin/inventory/StockIn';
@@ -35,7 +36,7 @@ import AddProductForm from '../../components/admin/inventory/AddProductForm';
 import ShopCategoriesManager from '../../components/admin/inventory/ShopCategoriesManager';
 import ProductCategoryManager from '../../components/admin/inventory/ProductCategoryManager';
 import { useInventory } from '../../contexts/InventoryContext';
-import { useNavigate } from 'react-router-dom'; // Added useNavigate for AddProductForm
+import { useNavigate } from 'react-router-dom';
 
 const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#6366f1'];
 
@@ -91,10 +92,10 @@ export default function InventoryPage({ tab = 'products' }) {
             {activeTab === 'overview' && (
                 <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 animate-in fade-in slide-in-from-top-2 duration-300">
                     <div className="lg:col-span-2 grid grid-cols-2 gap-3">
-                        <InventoryStatCard title="Total SKU" value={stats.totalProducts} icon={TrendingUp} color="blue" trend="Catalog" />
-                        <InventoryStatCard title="Critical" value={stats.lowStockCount} icon={AlertTriangle} color="rose" trend="Replenish" />
-                        <InventoryStatCard title="Live" value={products.filter(p => p.status === 'active').length} icon={ArrowUpRight} color="emerald" trend="Active" />
-                        <InventoryStatCard title="Cold" value={products.filter(p => p.status === 'inactive').length} icon={ArrowDownRight} color="orange" trend="Archived" />
+                        <InventoryStatCard title="Total SKU" value={stats.totalProducts} icon={TrendingUp} color="blue" trend="Catalog" to="/admin/inventory/products" />
+                        <InventoryStatCard title="Critical" value={stats.lowStockCount} icon={AlertTriangle} color="rose" trend="Replenish" to="/admin/inventory/stock-overview" />
+                        <InventoryStatCard title="Live" value={products.filter(p => p.status === 'active').length} icon={ArrowUpRight} color="emerald" trend="Active" to="/admin/inventory/products" />
+                        <InventoryStatCard title="Cold" value={products.filter(p => p.status === 'inactive').length} icon={ArrowDownRight} color="orange" trend="Archived" to="/admin/inventory/products" />
                     </div>
 
                     <div className="bg-white p-4 border border-border flex flex-col justify-between group h-[120px]">
@@ -188,7 +189,7 @@ export default function InventoryPage({ tab = 'products' }) {
 }
 
 
-function InventoryStatCard({ title, value, icon: Icon, color, trend }) {
+function InventoryStatCard({ title, value, icon: Icon, color, trend, to }) {
     const trendColors = {
         rose: 'text-rose-500',
         emerald: 'text-emerald-500',
@@ -196,8 +197,8 @@ function InventoryStatCard({ title, value, icon: Icon, color, trend }) {
         orange: 'text-orange-500'
     };
 
-    return (
-        <div className="bg-surface py-6 px-8 rounded-none border border-border shadow-sm hover:shadow-xl hover:translate-y-[-2px] transition-all group overflow-hidden relative text-left font-black">
+    const content = (
+        <>
             <div className="absolute -right-6 -top-6 w-24 h-24 bg-primary/5 rotate-12 transition-all group-hover:bg-primary/10" />
 
             <div className="relative z-10 h-full flex flex-col justify-between text-left">
@@ -222,6 +223,22 @@ function InventoryStatCard({ title, value, icon: Icon, color, trend }) {
                     </div>
                 </div>
             </div>
+        </>
+    );
+
+    const cardClasses = "bg-surface py-6 px-8 rounded-none border border-border shadow-sm hover:shadow-xl hover:translate-y-[-2px] transition-all group overflow-hidden relative text-left font-black block";
+
+    if (to) {
+        return (
+            <Link to={to} className={cardClasses}>
+                {content}
+            </Link>
+        );
+    }
+
+    return (
+        <div className={cardClasses}>
+            {content}
         </div>
     );
 }

@@ -137,21 +137,23 @@ export default function SAAnalyticsPage() {
             {/* ── Growth Charts ── */}
             <div className="grid lg:grid-cols-2 gap-6">
                 <Section title="Revenue Growth" subtitle="MRR Trend (Last 6 Months)" icon={TrendingUp}>
-                    <ResponsiveContainer width="100%" height={260}>
-                        <AreaChart data={growth.mrrTrend} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
-                            <defs>
-                                <linearGradient id="colorRev" x1="0" y1="0" x2="0" y2="1">
-                                    <stop offset="5%" stopColor="#B85C5C" stopOpacity={0.3} />
-                                    <stop offset="95%" stopColor="#B85C5C" stopOpacity={0} />
-                                </linearGradient>
-                            </defs>
-                            <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
-                            <XAxis dataKey="month" tick={{ fontSize: 11, fill: '#94a3b8' }} axisLine={false} tickLine={false} />
-                            <YAxis tick={{ fontSize: 11, fill: '#94a3b8' }} axisLine={false} tickLine={false} tickFormatter={v => `₹${(v / 1000).toFixed(0)}k`} />
-                            <Tooltip content={<CustomTooltip />} />
-                            <Area type="monotone" dataKey="revenue" name="Revenue" stroke="#B85C5C" strokeWidth={3} fillOpacity={1} fill="url(#colorRev)" />
-                        </AreaChart>
-                    </ResponsiveContainer>
+                    <div className="w-full min-w-0 overflow-hidden">
+                        <ResponsiveContainer width="100%" height={260} minWidth={0}>
+                            <AreaChart data={growth.mrrTrend} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                                <defs>
+                                    <linearGradient id="colorRev" x1="0" y1="0" x2="0" y2="1">
+                                        <stop offset="5%" stopColor="#B85C5C" stopOpacity={0.3} />
+                                        <stop offset="95%" stopColor="#B85C5C" stopOpacity={0} />
+                                    </linearGradient>
+                                </defs>
+                                <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
+                                <XAxis dataKey="month" tick={{ fontSize: 11, fill: '#94a3b8' }} axisLine={false} tickLine={false} />
+                                <YAxis tick={{ fontSize: 11, fill: '#94a3b8' }} axisLine={false} tickLine={false} tickFormatter={v => `₹${(v / 1000).toFixed(0)}k`} />
+                                <Tooltip content={<CustomTooltip />} />
+                                <Area type="monotone" dataKey="revenue" name="Revenue" stroke="#B85C5C" strokeWidth={3} fillOpacity={1} fill="url(#colorRev)" />
+                            </AreaChart>
+                        </ResponsiveContainer>
+                    </div>
                 </Section>
 
                 <Section title="Salon Acquisition" subtitle="New Monthly Signups" icon={Users}>
@@ -172,7 +174,8 @@ export default function SAAnalyticsPage() {
                 <div className="lg:col-span-1">
                     <Section title="Plan Distribution" subtitle="Active Subscriptions" icon={PieIcon}>
                         <div className="flex flex-col items-center">
-                            <ResponsiveContainer width="100%" height={200}>
+                            <div className="w-full min-w-0 overflow-hidden">
+                                <ResponsiveContainer width="100%" height={200} minWidth={0}>
                                 <PieChart>
                                     <Pie data={planDistribution} cx="50%" cy="50%" innerRadius={60} outerRadius={80} paddingAngle={5} dataKey="value" stroke="none">
                                         {planDistribution.map((entry, index) => (
@@ -182,6 +185,7 @@ export default function SAAnalyticsPage() {
                                     <Tooltip tooltip={CustomTooltip} />
                                 </PieChart>
                             </ResponsiveContainer>
+                    </div>
                             <div className="w-full mt-4 space-y-2">
                                 {planDistribution.map((p, index) => (
                                     <div key={p.name} className="flex items-center justify-between text-xs">

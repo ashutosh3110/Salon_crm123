@@ -98,6 +98,29 @@ export default function StaffPage() {
         availability: JSON.parse(JSON.stringify(DEFAULT_AVAILABILITY))
     });
 
+    const [errors, setErrors] = useState({});
+
+    const validateForm = () => {
+        const newErrors = {};
+        if (!form.name?.trim()) newErrors.name = 'Name is required';
+        if (!form.email?.trim()) newErrors.email = 'Email is required';
+        else if (!/\S+@\S+\.\S+/.test(form.email)) newErrors.email = 'Invalid email format';
+        
+        if (!form.phone) newErrors.phone = 'Phone is required';
+        else if (form.phone.length !== 10) newErrors.phone = 'Phone must be 10 digits';
+        
+        if (!form.roleId) newErrors.roleId = 'Role is required';
+        if (!form.outletId) newErrors.outletId = 'Salon assignment is required';
+
+        if (form.pan) {
+            const panRegex = /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/;
+            if (!panRegex.test(form.pan)) newErrors.pan = 'Invalid PAN format (ABCDE1234F)';
+        }
+
+        setErrors(newErrors);
+        return Object.keys(newErrors).length === 0;
+    };
+
     useEffect(() => {
         let result = staff;
         if (search) {
@@ -145,6 +168,7 @@ export default function StaffPage() {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        if (!validateForm()) return;
         setLoading(true);
         try {
             const formData = new FormData();
@@ -507,10 +531,14 @@ export default function StaffPage() {
                                         required
                                         autoFocus
                                         value={form.name}
-                                        onChange={(e) => setForm({ ...form, name: e.target.value.replace(/[^a-zA-Z\s]/g, '') })}
-                                        className="w-full px-3 py-2 bg-surface-alt border border-border text-[11px] font-black outline-none focus:border-text uppercase font-mono"
+                                        onChange={(e) => {
+                                            setForm({ ...form, name: e.target.value.replace(/[^a-zA-Z\s]/g, '') });
+                                            if (errors.name) setErrors(prev => ({ ...prev, name: null }));
+                                        }}
+                                        className={`w-full px-3 py-2 bg-surface-alt border ${errors.name ? 'border-rose-500' : 'border-border'} text-[11px] font-black outline-none focus:border-text uppercase font-mono`}
                                         placeholder="ENTER NAME"
                                     />
+                                    {errors.name && <p className="text-[8px] font-bold text-rose-500 mt-1 uppercase">{errors.name}</p>}
                                 </div>
                                 <div className="space-y-1">
                                      <label className="text-[9px] font-black text-text-muted uppercase tracking-widest font-mono">Email Address</label>
@@ -518,10 +546,14 @@ export default function StaffPage() {
                                         type="email"
                                         required
                                         value={form.email}
-                                        onChange={(e) => setForm({ ...form, email: e.target.value })}
-                                        className="w-full px-3 py-2 bg-surface-alt border border-border text-[11px] font-black outline-none focus:border-text font-mono"
+                                        onChange={(e) => {
+                                            setForm({ ...form, email: e.target.value });
+                                            if (errors.email) setErrors(prev => ({ ...prev, email: null }));
+                                        }}
+                                        className={`w-full px-3 py-2 bg-surface-alt border ${errors.email ? 'border-rose-500' : 'border-border'} text-[11px] font-black outline-none focus:border-text font-mono`}
                                         placeholder="email@example.com"
                                     />
+                                    {errors.email && <p className="text-[8px] font-bold text-rose-500 mt-1 uppercase">{errors.email}</p>}
                                 </div>
                                  <div className="space-y-1">
                                     <label className="text-[9px] font-black text-text-muted uppercase tracking-widest font-mono">Phone Number</label>
@@ -531,10 +563,12 @@ export default function StaffPage() {
                                         onChange={(e) => {
                                             const val = e.target.value.replace(/\D/g, '');
                                             if (val.length <= 10) setForm({ ...form, phone: val });
+                                            if (errors.phone) setErrors(prev => ({ ...prev, phone: null }));
                                         }}
-                                        className="w-full px-3 py-2 bg-surface-alt border border-border text-[11px] font-black outline-none focus:border-text font-mono"
+                                        className={`w-full px-3 py-2 bg-surface-alt border ${errors.phone ? 'border-rose-500' : 'border-border'} text-[11px] font-black outline-none focus:border-text font-mono`}
                                         placeholder="10-DIGIT NUM"
                                     />
+                                    {errors.phone && <p className="text-[8px] font-bold text-rose-500 mt-1 uppercase">{errors.phone}</p>}
                                 </div>
                                 <div className="space-y-1">
                                     <label className="text-[9px] font-black text-text-muted uppercase tracking-widest font-mono">Profession/Role</label>
@@ -551,30 +585,37 @@ export default function StaffPage() {
                                                 updates.availability = JSON.parse(JSON.stringify(DEFAULT_AVAILABILITY));
                                             }
                                             setForm({ ...form, ...updates });
+                                            if (errors.roleId) setErrors(prev => ({ ...prev, roleId: null }));
                                         }}
-                                        className="w-full px-3 py-2 bg-surface-alt border border-border text-[10px] font-black outline-none focus:border-text font-mono uppercase"
+                                        className={`w-full px-3 py-2 bg-surface-alt border ${errors.roleId ? 'border-rose-500' : 'border-border'} text-[10px] font-black outline-none focus:border-text font-mono uppercase`}
                                     >
                                         <option value="">Select Role</option>
                                         {roles.map(r => (
                                             <option key={r._id} value={r._id}>{r.name.toUpperCase()}</option>
                                         ))}
                                     </select>
+                                    {errors.roleId && <p className="text-[8px] font-bold text-rose-500 mt-1 uppercase">{errors.roleId}</p>}
                                 </div>
                                 <div className="space-y-1">
                                      <label className="text-[9px] font-black text-text-muted uppercase tracking-widest font-mono">Assign to Salon</label>
                                     <select 
                                         value={form.outletId} 
-                                        onChange={(e) => setForm({ ...form, outletId: e.target.value })}
-                                        className="w-full px-3 py-2 bg-surface-alt border border-border text-[10px] font-black outline-none focus:border-text font-mono uppercase"
+                                        onChange={(e) => {
+                                            setForm({ ...form, outletId: e.target.value });
+                                            if (errors.outletId) setErrors(prev => ({ ...prev, outletId: null }));
+                                        }}
+                                        className={`w-full px-3 py-2 bg-surface-alt border ${errors.outletId ? 'border-rose-500' : 'border-border'} text-[10px] font-black outline-none focus:border-text font-mono uppercase`}
                                     >
                                         <option value="">Select Salon</option>
                                         {outlets.map(o => <option key={o._id} value={o._id}>{o.name}</option>)}
                                     </select>
+                                    {errors.outletId && <p className="text-[8px] font-bold text-rose-500 mt-1 uppercase">{errors.outletId}</p>}
                                 </div>
                                 <div className="space-y-1">
                                     <label className="text-[9px] font-black text-text-muted uppercase tracking-widest font-mono">DOB</label>
                                     <input
                                         type="date"
+                                        max={new Date().toISOString().split('T')[0]}
                                         value={form.dob || ''}
                                         onChange={(e) => setForm({ ...form, dob: e.target.value })}
                                         className="w-full px-3 py-2 bg-surface-alt border border-border text-[10px] font-black outline-none focus:border-text font-mono"
@@ -585,10 +626,14 @@ export default function StaffPage() {
                                     <input
                                         type="text"
                                         value={form.pan || ''}
-                                        onChange={(e) => setForm({ ...form, pan: e.target.value.toUpperCase() })}
-                                        className="w-full px-3 py-2 bg-surface-alt border border-border text-[10px] font-black outline-none focus:border-text font-mono"
+                                        onChange={(e) => {
+                                            setForm({ ...form, pan: e.target.value.toUpperCase() });
+                                            if (errors.pan) setErrors(prev => ({ ...prev, pan: null }));
+                                        }}
+                                        className={`w-full px-3 py-2 bg-surface-alt border ${errors.pan ? 'border-rose-500' : 'border-border'} text-[10px] font-black outline-none focus:border-text font-mono`}
                                         placeholder="ABCDE1234F"
                                     />
+                                    {errors.pan && <p className="text-[8px] font-bold text-rose-500 mt-1 uppercase">{errors.pan}</p>}
                                 </div>
                                 <div className="space-y-1 col-span-2">
                                      <label className="text-[9px] font-black text-text-muted uppercase tracking-widest font-mono">Residential Address</label>

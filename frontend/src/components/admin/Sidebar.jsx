@@ -78,9 +78,6 @@ export default function Sidebar({ collapsed, setCollapsed, isHovered, setIsHover
 
         const restricted = hasNoPlan || !salonActive;
 
-        if (process.env.NODE_ENV === 'development') {
-            console.log('[Sidebar] Gating Debug:', { planName, salonActive, restricted, role: user?.role });
-        }
 
         return restricted;
     }, [salon, user]);

@@ -15,6 +15,7 @@ const Customer = require('../Models/Customer');
 const Cart = require('../Models/Cart');
 const Booking = require('../Models/Booking');
 const WalletTransaction = require('../Models/WalletTransaction');
+const Staff = require('../Models/Staff');
 const sendEmail = require('../Utils/sendEmail');
 const { sendWhatsAppTemplate, sendWapixoMessage, sendWapixoTemplate } = require('../Utils/whatsapp');
 const bcrypt = require('bcryptjs');
@@ -77,7 +78,7 @@ exports.createSalon = async (req, res) => {
                 street: address,
                 city: city
             },
-            status: 'pending', // Default status for review flow
+            status: req.body.status || 'active', 
             isActive: true,
             subscriptionPlan: planName,
             subscriptionExpiry: expiryDate,

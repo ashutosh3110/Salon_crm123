@@ -323,7 +323,8 @@ function CityAutocomplete({ value, onChange, labelCls, inputCls }) {
         return () => document.removeEventListener('mousedown', h);
     }, []);
 
-    const handleInput = (val) => {
+    const handleInput = (rawVal) => {
+        const val = rawVal.replace(/[^a-zA-Z\s]/g, '');
         onChange(val);
         if (val.length > 0) {
             const filtered = INDIAN_CITIES.filter(c => c.toLowerCase().includes(val.toLowerCase())).slice(0, 3);
@@ -418,7 +419,16 @@ function SalonModal({ mode, tenant, onClose, onSave, saving }) {
                                 <label className={labelCls}>Salon Name *</label>
                                 <div className="relative">
                                     <Building2 className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
-                                    <input className={`${inputCls} pl-10`} value={form.name} onChange={e => set('name', e.target.value)} placeholder="e.g. Glam Studio" required />
+                                    <input 
+                                        className={`${inputCls} pl-10`} 
+                                        value={form.name} 
+                                        onChange={e => {
+                                            const val = e.target.value.replace(/[^a-zA-Z\s]/g, '');
+                                            set('name', val);
+                                        }} 
+                                        placeholder="e.g. Glam Studio" 
+                                        required 
+                                    />
                                 </div>
                             </div>
                             <div className="col-span-2">
@@ -442,7 +452,16 @@ function SalonModal({ mode, tenant, onClose, onSave, saving }) {
                         <div className="grid grid-cols-2 gap-4">
                             <div>
                                 <label className={labelCls}>Owner Name *</label>
-                                <input className={inputCls} value={form.ownerName} onChange={e => set('ownerName', e.target.value)} placeholder="Full name" required />
+                                <input 
+                                    className={inputCls} 
+                                    value={form.ownerName} 
+                                    onChange={e => {
+                                        const val = e.target.value.replace(/[^a-zA-Z\s]/g, '');
+                                        set('ownerName', val);
+                                    }} 
+                                    placeholder="Full name" 
+                                    required 
+                                />
                             </div>
                             <div>
                                 <label className={labelCls}>Email *</label>
@@ -702,11 +721,25 @@ export default function SATenantsPage() {
             return;
         }
 
+        if (form.phone && form.phone.length !== 10) {
+            showToast('Phone number must be exactly 10 digits.', 'error');
+            return;
+        }
+
+        if (form.gstNumber) {
+            const gstRegex = /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/;
+            if (!gstRegex.test(form.gstNumber)) {
+                showToast('Invalid GST format. (Ex: 27AAAAA1234A1Z5)', 'error');
+                return;
+            }
+        }
 
         setSaving(true);
         try {
             if (modal.mode === 'create') {
-                await api.post('/salons', form);
+                // Ensure new salons are active
+                const payload = { ...form, status: 'active' };
+                await api.post('/salons', payload);
                 showToast(`Salon "${form.name}" created!`);
             } else {
                 await api.put(`/salons/${modal.tenant._id}`, form);

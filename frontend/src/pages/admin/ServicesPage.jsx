@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import {
-    ChevronRight, Zap, TrendingUp, Layers, Settings2, Plus, Scissors, XCircle
+    ChevronRight, Zap, TrendingUp, Layers, Settings2, Plus, Scissors, XCircle,
+    Search, RefreshCcw, Download, Upload
 } from 'lucide-react';
 import ServiceList from '../../components/admin/services/ServiceList';
 import ServiceForm from '../../components/admin/services/ServiceForm';
@@ -30,6 +31,10 @@ export default function ServicesPage({ tab = 'list' }) {
     } = useBusiness();
 
     const [selectedOutletId, setSelectedOutletId] = useState('all');
+    const [searchTerm, setSearchTerm] = useState('');
+    const [filterCategory, setFilterCategory] = useState('All');
+    const [filterOutlet, setFilterOutlet] = useState('All Outlets');
+    const [importing, setImporting] = useState(false);
 
     const [isFormModalOpen, setIsFormModalOpen] = useState(false);
     const [editingService, setEditingService] = useState(null);
@@ -76,6 +81,70 @@ export default function ServicesPage({ tab = 'list' }) {
         setEditingService(null);
     };
 
+    const handleRefresh = async () => {
+        await Promise.all([fetchServices(), fetchCategories()]);
+    };
+
+    const handleDownloadTemplate = () => {
+        const templateData = [
+            {
+                'Name': 'Classic Haircut',
+                'Category': 'Hair Care',
+                'Price': 499,
+                'Duration (mins)': 45,
+                'Gender': 'both',
+                'Outlets (Comma Separated)': '',
+                'Description': 'Professional precision haircutting',
+                'GST %': 18,
+                'Commission Applicable': 'yes',
+                'Commission Type': 'percent',
+                'Commission Value': 10,
+                'Resource Type': 'chair'
+            }
+        ];
+
+        const XLSX = import('xlsx').then(m => {
+            const ws = m.utils.json_to_sheet(templateData);
+            const wb = m.utils.book_new();
+            m.utils.book_append_sheet(wb, ws, 'Services');
+            
+            const helpData = outlets.map(o => ({ 'Available Outlets': o.name }));
+            const wsHelp = m.utils.json_to_sheet(helpData);
+            m.utils.book_append_sheet(wb, wsHelp, 'Outlet_Guide');
+
+            m.writeFile(wb, 'Services_Bulk_Upload_Template.xlsx');
+            import('react-hot-toast').then(t => t.toast.success('Template downloaded!'));
+        });
+    };
+
+    const handleDirectUpload = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        setImporting(true);
+        const formData = new FormData();
+        formData.append('file', file);
+
+        try {
+            const response = await import('../../services/api').then(m => m.default.post('/services/bulk-import', formData, {
+                headers: { 'Content-Type': 'multipart/form-data' }
+            }));
+
+            if (response.data.success) {
+                import('react-hot-toast').then(t => t.toast.success(`Successfully imported ${response.data.importedCount} services!`));
+                handleRefresh();
+            }
+        } catch (error) {
+            import('react-hot-toast').then(t => t.toast.error(error.response?.data?.message || 'Bulk import failed'));
+        } finally {
+            setImporting(false);
+            e.target.value = '';
+        }
+    };
+
+    const categoriesList = ['All', ...new Set(services.map(s => s.category))];
+    const outletOptions = ['All Outlets', ...outlets.map(o => o.name)];
+
     return (
         <div className="space-y-6 animate-reveal text-left font-black">
             {/* Header */}
@@ -89,8 +158,81 @@ export default function ServicesPage({ tab = 'list' }) {
                     <h1 className="text-3xl font-black text-text tracking-tighter uppercase leading-none">Portfolio Services</h1>
                     <p className="text-[10px] font-black text-text-muted mt-2 uppercase tracking-[0.3em] opacity-60">Architect and manage your salon service portfolio</p>
                 </div>
-              
             </div>
+
+            {/* Toolbar - Moved to Top */}
+            {activeTab === 'list' && (
+                <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 bg-white p-4 rounded-2xl border border-border shadow-sm">
+                    <div className="relative flex-1 max-w-full lg:max-w-md">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
+                        <input
+                            type="text"
+                            placeholder="Search services by name..."
+                            className="w-full pl-10 pr-4 py-3 rounded-xl border border-border bg-slate-50 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all font-medium"
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                        />
+                    </div>
+
+                    <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+                        <CustomDropdown
+                            value={filterCategory}
+                            onChange={setFilterCategory}
+                            options={categoriesList}
+                            className="flex-1 lg:flex-none min-w-[120px] lg:min-w-[150px]"
+                        />
+
+                        <CustomDropdown
+                            value={filterOutlet}
+                            onChange={setFilterOutlet}
+                            options={outletOptions}
+                            className="flex-1 lg:flex-none min-w-[140px] lg:min-w-[180px]"
+                        />
+
+                        <div className="flex items-center gap-2 w-full sm:w-auto mt-2 sm:mt-0">
+                            <button
+                                onClick={handleRefresh}
+                                className="flex-1 sm:flex-none p-2.5 rounded-xl bg-white border border-border text-text-muted hover:text-primary transition-all active:scale-95 flex justify-center items-center"
+                                title="Refresh List"
+                            >
+                                <RefreshCcw className="w-4 h-4" />
+                            </button>
+
+                            <button
+                                onClick={handleDownloadTemplate}
+                                className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl bg-white border border-border text-text-muted hover:text-primary transition-all active:scale-95 text-[10px] font-black uppercase tracking-tight"
+                            >
+                                <Download className="w-3.5 h-3.5" /> Sample
+                            </button>
+
+                            <div className="relative flex-1 sm:flex-none">
+                                <input
+                                    type="file"
+                                    id="bulk-upload-top"
+                                    className="hidden"
+                                    accept=".xlsx, .xls, .csv"
+                                    onChange={handleDirectUpload}
+                                />
+                                <button
+                                    onClick={() => document.getElementById('bulk-upload-top').click()}
+                                    disabled={importing}
+                                    className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-white border border-border text-text-muted hover:text-primary transition-all active:scale-95 text-[10px] font-black uppercase tracking-tight disabled:opacity-50"
+                                >
+                                    {importing ? <RefreshCcw className="w-3.5 h-3.5 animate-spin" /> : <Upload className="w-3.5 h-3.5" />}
+                                    {importing ? 'Importing...' : 'Bulk Upload'}
+                                </button>
+                            </div>
+
+                            <button
+                                onClick={handleAddClick}
+                                className="flex-[2] sm:flex-none flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-primary text-white text-[11px] font-black uppercase tracking-tight shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all"
+                            >
+                                <Plus className="w-4 h-4" /> Add Service
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {/* Outlet Filter */}
             {activeTab === 'list' && (
@@ -159,6 +301,9 @@ export default function ServicesPage({ tab = 'list' }) {
                         onToggleStatus={toggleServiceStatus}
                         onEdit={handleEditClick}
                         onAdd={handleAddClick}
+                        searchTerm={searchTerm}
+                        filterCategory={filterCategory}
+                        filterOutlet={filterOutlet}
                     />
                 )}
                 {activeTab === 'categories' && (
@@ -178,9 +323,9 @@ export default function ServicesPage({ tab = 'list' }) {
 
             {/* Service Form Modal */}
             {isFormModalOpen && (
-                <div className="fixed inset-0 z-[1000] flex items-end justify-center p-0 overflow-hidden">
+                <div className="fixed inset-0 z-[1000] flex items-start justify-center p-0 overflow-hidden">
                     <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md" onClick={() => setIsFormModalOpen(false)} />
-                    <div className="relative bg-white w-full max-w-5xl shadow-[0_-8px_32px_rgba(0,0,0,0.2)] animate-in slide-in-from-bottom-20 duration-500 flex flex-col h-[92vh] rounded-t-[40px] border-t border-white/20">
+                    <div className="relative bg-white w-full max-w-6xl shadow-2xl animate-in fade-in zoom-in-95 duration-300 flex flex-col h-screen sm:h-[95vh] sm:mt-0 rounded-none sm:rounded-t-[32px] sm:rounded-b-[32px] border border-white/20 overflow-hidden">
                         <div className="flex items-center justify-between px-6 py-3 border-b border-border bg-slate-50/50">
                             <div className="flex items-center gap-3">
                                 <div className="p-2 bg-primary text-white rounded-lg shadow-lg shadow-primary/20">

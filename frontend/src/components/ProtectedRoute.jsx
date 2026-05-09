@@ -64,17 +64,6 @@ export default function ProtectedRoute({ allowedRoles, feature, permission }) {
         // 2. If has no plan AND is NOT in trial AND is NOT pending -> Redirect
         const shouldRedirect = !salonActive || (hasNoPlan && !isTrial && !isPending);
 
-        if (process.env.NODE_ENV === 'development') {
-            console.log('[ProtectedRoute] Gating Debug:', { 
-                path: window.location.pathname, 
-                planName, 
-                salonStatus,
-                isTrial,
-                isPending,
-                salonActive, 
-                shouldRedirect 
-            });
-        }
 
         // Redirect to subscription page if restriction applies
         if (shouldRedirect && !isSubscriptionPage && !isSupportPage) {
