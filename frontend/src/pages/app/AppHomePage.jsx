@@ -580,7 +580,6 @@ export default function AppHomePage() {
             </div>
         );
     }
-    console.log(getImageUrl(''));
 
     return (
         <div style={{ position: 'relative', overflow: 'hidden' }}>

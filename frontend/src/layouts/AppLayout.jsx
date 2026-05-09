@@ -66,10 +66,13 @@ export default function AppLayout() {
 
     }, [authLoading, isInitializing, customer, gender, activeOutletId, navigate, location.pathname]);
     
+    const hasRegisteredToken = useRef(false);
+
     // Register Notification Token
     useEffect(() => {
         const handleNotificationToken = async () => {
-            if (customer && !authLoading) {
+            if (customer && !authLoading && !hasRegisteredToken.current) {
+                hasRegisteredToken.current = true;
                 const token = await requestForToken();
                 if (token) {
                     try {
@@ -80,6 +83,8 @@ export default function AppLayout() {
                         console.log('FCM Token registered successfully');
                     } catch (err) {
                         console.error('Failed to register FCM Token', err);
+                        // If it fails, allow retry on next render/mount
+                        hasRegisteredToken.current = false;
                     }
                 }
             }

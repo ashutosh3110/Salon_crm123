@@ -105,10 +105,23 @@ exports.registerToken = async (req, res) => {
         const userId = req.user.id || req.user._id;
         const updateField = platform === 'mobile' ? { fcmTokenMobile: token } : { fcmTokenWeb: token };
 
-        const customer = await Customer.findByIdAndUpdate(userId, updateField, { new: true });
+        // Use $addToSet to add token to array without duplicates
+        const updateQuery = { $addToSet: updateField };
+
+        // 1. Try direct update (if they are a customer)
+        let customer = await Customer.findByIdAndUpdate(userId, updateQuery, { new: true });
+
+        // 2. If not found, they might be an Admin/Staff testing. Try finding customer by phone.
+        if (!customer && req.user.phone) {
+            customer = await Customer.findOneAndUpdate({ phone: req.user.phone }, updateQuery, { new: true });
+        }
 
         if (!customer) {
-            return res.status(404).json({ success: false, message: 'Customer record not found' });
+            // Silently fail or return success to prevent console errors for Admins
+            return res.json({
+                success: true,
+                message: 'Token received, but no customer record found to link it with.'
+            });
         }
 
         res.json({

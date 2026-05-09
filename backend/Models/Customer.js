@@ -82,8 +82,8 @@ const customerSchema = new mongoose.Schema({
         type: Boolean,
         default: false
     },
-    fcmTokenWeb: String,
-    fcmTokenMobile: String
+    fcmTokenWeb: [String],
+    fcmTokenMobile: [String],
 }, {
     timestamps: true
 });
