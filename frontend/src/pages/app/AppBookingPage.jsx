@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect, useRef } from 'react';
 import { useSearchParams, useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, ArrowRight, Check, Clock, Sparkles, Loader2, Search, SlidersHorizontal, ChevronLeft, ChevronRight, MapPin, Crown, Star, Armchair, DoorClosed, Zap, Wallet, CreditCard } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Check, Clock, Sparkles, Loader2, Search, SlidersHorizontal, ChevronLeft, ChevronRight, MapPin, Crown, Star, Armchair, DoorClosed, Zap, Wallet, CreditCard, User } from 'lucide-react';
 import StepIndicator from '../../components/app/StepIndicator';
 import { MOCK_SERVICES, MOCK_STAFF, MOCK_OUTLET, MOCK_OUTLETS, generateTimeSlots } from '../../data/appMockData';
 import { useCustomerTheme } from '../../contexts/CustomerThemeContext';
@@ -281,17 +281,15 @@ export default function AppBookingPage() {
             const isStylist = s.isStylist !== false;
             if (!isStylist) return false;
             
-            const staffOutlets = (s.outletIds || (s.outletId ? [s.outletId] : [])).filter(Boolean);
+            // Salon check - must match the active salon
+            const sSalonId = String(s.salonId?._id || s.salonId || '');
+            const targetSalonId = String(activeSalonId || salon?._id || '');
             
-            // If staff has no outlets assigned, they are global staff
-            if (staffOutlets.length === 0) return true;
+            if (sSalonId && targetSalonId && sSalonId !== targetSalonId) return false;
             
-            return staffOutlets.some(id => {
-                const oid = id && typeof id === 'object' ? id._id : id;
-                return String(oid || '') === targetOutletId;
-            });
+            return true;
         });
-    }, [businessStaff, currentOutlet]);
+    }, [businessStaff, activeSalonId, salon?._id]);
 
     const finalPrice = Math.max(0, totalPrice - membershipDiscount - promoDiscount);
 
@@ -740,7 +738,6 @@ export default function AppBookingPage() {
 
             {/* Step Content */}
             <AnimatePresence mode="wait" custom={direction}>
-                {/* STEP 0: Stylist Selection */}
                 {step === 0 && (
                     <motion.div
                         key="step-0"
@@ -750,172 +747,103 @@ export default function AppBookingPage() {
                         transition={{ duration: 0.3 }}
                         className="space-y-6"
                     >
+                        {/* Selected Service Banner */}
+                        {selectedServices.length > 0 ? (
+                            <div
+                                className="flex items-center justify-between px-4 py-3 rounded-2xl"
+                                style={{ background: 'rgba(200,149,108,0.08)', border: '1px solid rgba(200,149,108,0.2)' }}
+                            >
+                                <div className="flex items-center gap-3">
+                                    <Sparkles size={14} className="text-[#C8956C]" />
+                                    <div>
+                                        <p className="text-[11px] font-black uppercase tracking-wider" style={{ color: colors.text }}>{selectedServices[0].name}</p>
+                                        <p className="text-[9px] opacity-50 font-black uppercase tracking-widest">{selectedServices[0].duration} min · ₹{selectedServices[0].price}</p>
+                                    </div>
+                                </div>
+                                <button
+                                    onClick={() => navigate(-1)}
+                                    className="text-[9px] font-black uppercase text-[#C8956C] underline"
+                                >
+                                    Change
+                                </button>
+                            </div>
+                        ) : (
+                            <div
+                                className="flex items-center justify-between px-4 py-3 rounded-2xl cursor-pointer"
+                                style={{ background: 'rgba(200,149,108,0.05)', border: '1px dashed rgba(200,149,108,0.3)' }}
+                                onClick={() => navigate('/app/services')}
+                            >
+                                <div className="flex items-center gap-3">
+                                    <Sparkles size={14} className="text-[#C8956C] opacity-40" />
+                                    <p className="text-[10px] font-black uppercase tracking-widest opacity-40">No service selected</p>
+                                </div>
+                                <span className="text-[9px] font-black uppercase text-[#C8956C]">Pick →</span>
+                            </div>
+                        )}
+
+                        {/* Heading */}
                         <div className="flex flex-col gap-0">
                             <h2 className="text-xl font-bold uppercase tracking-tight" style={{ fontFamily: "'Libre Baskerville', serif" }}>
-                                {currentOutlet ? 'Choose ' : 'Select '} 
-                                <span className="text-[#C8956C]">{currentOutlet ? 'Expert' : 'Location'}</span>
+                                Choose <span className="text-[#C8956C]">Expert</span>
                             </h2>
-                            {currentOutlet && (
-                                <div className="flex items-center gap-1.5 opacity-60 mb-2">
-                                    <MapPin size={10} className="text-[#C8956C]" />
-                                    <span className="text-[9px] font-black uppercase tracking-widest">{currentOutlet.name}</span>
-                                    <button onClick={() => setSelectedOutlet(null)} className="ml-2 text-[#C8956C] underline text-[8px] font-black">Change</button>
-                                </div>
-                            )}
+                            <p className="text-[10px] opacity-40 font-black uppercase tracking-widest mt-1">Who would you like to work with?</p>
                         </div>
 
-                        {/* Outlet Selection if none selected */}
-                        {!currentOutlet && (
-                            <div className="grid grid-cols-1 gap-3 max-h-[50vh] overflow-y-auto no-scrollbar pb-4">
-                                {outlets.map((o) => (
-                                    <button
-                                        key={o._id || o.id}
-                                        onClick={() => setSelectedOutlet(o)}
-                                        style={{ background: colors.card, borderColor: colors.border }}
-                                        className="w-full flex items-center justify-between p-4 rounded-2xl border-2 text-left"
+                        {/* Stylist Grid — always show all salon-wide staff */}
+                        <div className="grid grid-cols-1 gap-4 max-h-[55vh] overflow-y-auto no-scrollbar pb-2">
+                            {outletStaff.length === 0 && (
+                                <div className="text-center py-16 px-6">
+                                    <div className="w-16 h-16 bg-black/5 dark:bg-white/5 rounded-full flex items-center justify-center mx-auto mb-4">
+                                        <User size={24} className="opacity-20" />
+                                    </div>
+                                    <p className="text-sm font-bold opacity-50 mb-2">No experts found</p>
+                                    <p className="text-[10px] opacity-30 font-medium uppercase tracking-widest">Please assign staff in the admin panel.</p>
+                                </div>
+                            )}
+                            {outletStaff.map((s, i) => {
+                                const sid = s._id || s.id;
+                                const isSelected = !!selectedStaff && String(selectedStaff._id || selectedStaff.id) === String(sid);
+                                return (
+                                    <motion.button
+                                        key={sid || i}
+                                        onClick={() => setSelectedStaff(s)}
+                                        style={{
+                                            background: isSelected ? 'rgba(200,149,108,0.1)' : colors.card,
+                                            borderColor: isSelected ? '#C8956C' : colors.border
+                                        }}
+                                        className="w-full flex items-center gap-5 p-5 rounded-[24px] border-2 transition-all"
                                     >
-                                        <div>
-                                            <p className="text-sm font-bold">{o.name}</p>
-                                            <p className="text-[9px] opacity-50 font-black uppercase tracking-widest mt-1">{o.city || 'Local Outlet'}</p>
+                                        <div className="w-16 h-16 rounded-2xl overflow-hidden bg-gray-100 dark:bg-gray-800 flex-shrink-0">
+                                            {s.image ? (
+                                                <img src={s.image} alt={s.name} className="w-full h-full object-cover" />
+                                            ) : (
+                                                <div className="w-full h-full flex items-center justify-center font-bold text-[#C8956C] text-xl">
+                                                    {s.name?.charAt(0)}
+                                                </div>
+                                            )}
                                         </div>
-                                        <ArrowRight size={16} className="text-[#C8956C]" />
-                                    </button>
-                                ))}
-                                {outlets.length === 0 && (
-                                    <div className="text-center py-10 opacity-50 font-bold text-sm">
-                                        No outlets available.
-                                    </div>
-                                )}
-                            </div>
-                        )}
-
-                        {/* Stylist Grid */}
-                        {currentOutlet && (
-                            <div className="grid grid-cols-1 gap-4 max-h-[40vh] overflow-y-auto no-scrollbar pb-2">
-                                {outletStaff.length === 0 && (
-                                    <div className="text-center py-10 opacity-50 font-bold text-sm">
-                                        No stylists available at this location.
-                                    </div>
-                                )}
-                                {outletStaff.map((s, i) => {
-                                    const sid = s._id || s.id;
-                                    const isSelected = !!selectedStaff && String(selectedStaff._id || selectedStaff.id) === String(sid);
-                                    return (
-                                        <motion.button
-                                            key={sid || i}
-                                            onClick={() => setSelectedStaff(s)}
-                                            style={{
-                                                background: isSelected ? 'rgba(200,149,108,0.1)' : colors.card,
-                                                borderColor: isSelected ? '#C8956C' : colors.border
-                                            }}
-                                            className="w-full flex items-center gap-5 p-5 rounded-[24px] border-2 transition-all"
-                                        >
-                                            <div className="w-16 h-16 rounded-2xl overflow-hidden bg-gray-100 dark:bg-gray-800">
-                                                {s.image ? (
-                                                    <img src={s.image} alt={s.name} className="w-full h-full object-cover" />
-                                                ) : (
-                                                    <div className="w-full h-full flex items-center justify-center font-bold text-[#C8956C] text-xl">
-                                                        {s.name?.charAt(0)}
-                                                    </div>
+                                        <div className="text-left flex-1">
+                                            <p className="text-lg font-bold" style={{ color: colors.text }}>{s.name}</p>
+                                            <div className="flex items-center gap-2 mt-0.5">
+                                                <p className="text-[10px] font-black uppercase tracking-widest text-[#C8956C]">{s.role || 'Expert'}</p>
+                                                {s.outletId && outlets.length > 1 && (
+                                                    <span className="text-[8px] bg-black/5 dark:bg-white/5 px-2 py-0.5 rounded-full opacity-50 font-bold">
+                                                        {outlets.find(o => (o._id || o.id) === s.outletId)?.name || 'Branch'}
+                                                    </span>
                                                 )}
                                             </div>
-                                            <div className="text-left flex-1">
-                                                <p className="text-lg font-bold" style={{ color: colors.text }}>{s.name}</p>
-                                                <p className="text-[10px] font-black uppercase tracking-widest text-[#C8956C]">{s.role || 'Staff'}</p>
-                                            </div>
-                                            {isSelected && <Check size={24} className="text-[#C8956C]" />}
-                                        </motion.button>
-                                    );
-                                })}
-                            </div>
-                        )}
-
-                        {/* Service Selection (Integrated) */}
-                        <div className="space-y-4 pt-4 border-t border-black/5 dark:border-white/5">
-                            <h3 className="text-xs font-black uppercase tracking-widest text-[#C8956C]">
-                                {selectedServices.length > 0 ? 'Selected Services' : 'Select Service'}
-                            </h3>
-                            
-                            {selectedServices.length > 0 ? (
-                                <div className="space-y-2">
-                                    {selectedServices.map(svc => (
-                                        <div key={svc._id || svc.id} className="flex items-center justify-between p-4 rounded-2xl bg-black/5 dark:bg-white/5 border border-black/5">
-                                            <div>
-                                                <p className="text-[11px] font-bold uppercase tracking-tight">{svc.name}</p>
-                                                <p className="text-[9px] opacity-50 uppercase font-black tracking-widest">{svc.duration} min · ₹{svc.price}</p>
-                                            </div>
-                                            <button onClick={() => toggleService(svc)} className="text-[10px] font-black uppercase text-[#C8956C] underline">Change</button>
                                         </div>
-                                    ))}
-                                </div>
-                            ) : (
-                                <div className="space-y-4">
-                                    <div className="flex flex-col gap-4">
-                                        <div
-                                            style={{
-                                                background: isLight
-                                                    ? 'linear-gradient(135deg, #FFF9F5 0%, #F3EAE3 100%)'
-                                                    : 'linear-gradient(135deg, #2A211B 0%, #1A1411 100%)',
-                                                borderRadius: '20px 6px 20px 6px',
-                                                padding: '0 16px',
-                                                height: '48px',
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                gap: '12px'
-                                            }}
-                                        >
-                                            <Search size={16} style={{ color: colors.textMuted }} />
-                                            <input
-                                                type="text"
-                                                value={serviceSearch}
-                                                onChange={(e) => setServiceSearch(e.target.value)}
-                                                placeholder="Search rituals..."
-                                                style={{ background: 'transparent', border: 'none', outline: 'none', color: colors.text, width: '100%', fontSize: '13px', fontWeight: 600 }}
-                                            />
-                                        </div>
-                                    </div>
-                                    <div className="max-h-[30vh] overflow-y-auto no-scrollbar space-y-6">
-                                        {isInitializing ? (
-                                            <div className="py-10 text-center">
-                                                <Loader2 size={20} className="opacity-20 animate-spin mx-auto mb-2" />
-                                                <p className="text-[9px] font-black uppercase tracking-widest opacity-40">Loading rituals...</p>
-                                            </div>
-                                        ) : finalGroups.length === 0 ? (
-                                            <div className="py-10 text-center">
-                                                <Search size={20} className="opacity-20 mx-auto mb-2" />
-                                                <p className="text-[9px] font-black uppercase tracking-widest opacity-40">No rituals found</p>
-                                            </div>
-                                        ) : (
-                                            finalGroups.map((group) => (
-                                                <div key={group._id || group.id} className="space-y-3">
-                                                    <p className="text-[9px] font-black uppercase tracking-[0.2em] opacity-40">{group.name}</p>
-                                                    <div className="grid grid-cols-1 gap-2">
-                                                        {group.services.map((svc) => (
-                                                            <button
-                                                                key={svc._id || svc.id}
-                                                                onClick={() => toggleService(svc)}
-                                                                className="flex items-center justify-between p-3 rounded-xl bg-black/5 dark:bg-white/5 border border-transparent hover:border-[#C8956C]/30 transition-all text-left"
-                                                            >
-                                                                <div>
-                                                                    <p className="text-[10px] font-bold uppercase">{svc.name}</p>
-                                                                    <p className="text-[8px] opacity-40 font-black uppercase tracking-widest">{svc.duration} min</p>
-                                                                </div>
-                                                                <div className="text-[10px] font-black text-[#C8956C]">₹{svc.price}</div>
-                                                            </button>
-                                                        ))}
-                                                    </div>
-                                                </div>
-                                            ))
-                                        )}
-                                    </div>
-                                </div>
-                            )}
+                                        {isSelected && <Check size={24} className="text-[#C8956C] flex-shrink-0" />}
+                                    </motion.button>
+                                );
+                            })}
                         </div>
 
+                        {/* Continue Button */}
                         <button
                             onClick={() => goTo(1)}
                             disabled={!selectedStaff || selectedServices.length === 0}
-                            className="w-full py-5 rounded-[20px] bg-black text-white text-[12px] font-black uppercase tracking-[0.4em] flex items-center justify-center gap-4 disabled:opacity-20 shadow-xl mt-4"
+                            className="w-full py-5 rounded-[20px] bg-black text-white text-[12px] font-black uppercase tracking-[0.4em] flex items-center justify-center gap-4 disabled:opacity-20 shadow-xl"
                         >
                             Continue <ArrowRight size={16} />
                         </button>
