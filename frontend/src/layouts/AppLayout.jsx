@@ -76,11 +76,15 @@ export default function AppLayout() {
                 const token = await requestForToken();
                 if (token) {
                     try {
+                        // Detect platform
+                        const isMobileApp = window.ReactNativeWebView || /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+                        const platform = isMobileApp ? 'app' : 'web';
+
                         await api.post('/notifications/register-token', { 
                             token, 
-                            platform: 'web' 
+                            platform: platform
                         });
-                        console.log('FCM Token registered successfully');
+                        console.log(`FCM Token registered successfully for ${platform}`);
                     } catch (err) {
                         console.error('Failed to register FCM Token', err);
                         // If it fails, allow retry on next render/mount
