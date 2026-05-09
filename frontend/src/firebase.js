@@ -16,8 +16,21 @@ const messaging = getMessaging(app);
 
 export const requestForToken = async () => {
   try {
+    // 1. Check if Notification API is available (prevents ReferenceError in WebViews)
+    if (!('Notification' in window)) {
+      console.log("This browser does not support desktop notification");
+      return null;
+    }
+
     const permission = await Notification.requestPermission();
     if (permission === "granted") {
+      // 2. Check if messaging is supported
+      const supported = await isSupported();
+      if (!supported) {
+        console.log("Messaging not supported in this environment");
+        return null;
+      }
+
       const currentToken = await getToken(messaging, {
         vapidKey: "BNLLMYHhpoGyPv8w-EWLCnNSaDXIiBYoMNky3dyzTLDjksUjnLUSCoFv9qvqf-J2--E_twkOHEia7WVNcRHZu5o"
       });
