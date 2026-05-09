@@ -324,12 +324,8 @@ function App() {
                             <Route element={<ProtectedRoute feature="finance" permission="finance" />}>
                                 <Route path="/admin/finance" element={<FinancePage tab="dashboard" />} />
                                 <Route path="/admin/finance/dashboard" element={<FinancePage tab="dashboard" />} />
-                                <Route path="/admin/finance/suppliers" element={<FinancePage tab="suppliers" />} />
-                                <Route path="/admin/finance/invoices" element={<FinancePage tab="invoices" />} />
                                 <Route path="/admin/finance/expenses" element={<FinancePage tab="expenses" />} />
-                                <Route path="/admin/finance/petty-cash" element={<FinancePage tab="petty-cash" />} />
-                                <Route path="/admin/finance/reconciliation" element={<FinancePage tab="reconciliation" />} />
-                                <Route path="/admin/finance/tax" element={<FinancePage tab="tax" />} />
+                                <Route path="/admin/finance/reports" element={<FinancePage tab="reports" />} />
                                 <Route path="/admin/finance/eod" element={<FinancePage tab="eod" />} />
                             </Route>
 
@@ -338,11 +334,8 @@ function App() {
                                 <Route path="/admin/hr" element={<HRPage tab="staff" />} />
                                 <Route path="/admin/hr/staff" element={<HRPage tab="staff" />} />
                                 <Route path="/admin/hr/attendance" element={<HRPage tab="attendance" />} />
-                                <Route path="/admin/hr/shifts" element={<HRPage tab="shifts" />} />
                                 <Route path="/admin/hr/payroll" element={<HRPage tab="payroll" />} />
                                 <Route path="/admin/hr/performance" element={<HRPage tab="performance" />} />
-                                <Route path="/admin/hr/leaves" element={<HRPage tab="leaves" />} />
-                                <Route path="/admin/hr/approvals" element={<HRPage tab="approvals" />} />
                             </Route>
 
                             <Route path="/admin/promotions" element={<PromotionsPage />} />

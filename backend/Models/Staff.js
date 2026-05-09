@@ -89,7 +89,13 @@ const staffSchema = new mongoose.Schema({
     // HR Related Fields
     hrProfile: {
         joiningDate: Date,
+        salaryType: {
+            type: String,
+            enum: ['Base', 'Commission', 'Hybrid'],
+            default: 'Base'
+        },
         baseSalary: { type: Number, default: 0 },
+        commissionPercentage: { type: Number, default: 0 },
         aadhaarNumber: String,
         panNumber: String,
         bankDetails: {

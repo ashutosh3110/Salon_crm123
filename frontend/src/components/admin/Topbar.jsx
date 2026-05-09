@@ -1,5 +1,6 @@
 import { Menu, Bell, Search, Moon, Sun, LogOut, Clock, ExternalLink } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
+import { getImageUrl } from '../../utils/imageUtils';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useNotifications } from '../../contexts/NotificationContext';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -205,8 +206,16 @@ export default function Topbar({ onMenuClick }) {
 
                 {/* User Profile */}
                 <div className="flex items-center gap-3 pl-3 ml-1 border-l border-border/40">
-                    <div className="w-9 h-9 bg-primary/10 flex items-center justify-center text-[10px] font-black text-primary border border-primary/20 shadow-inner">
-                        {initials}
+                    <div className="w-9 h-9 bg-primary/10 flex items-center justify-center text-[10px] font-black text-primary border border-primary/20 shadow-inner overflow-hidden">
+                        {user?.avatar ? (
+                            <img 
+                                src={getImageUrl(user.avatar)} 
+                                alt={user.name} 
+                                className="w-full h-full object-cover"
+                            />
+                        ) : (
+                            initials
+                        )}
                     </div>
                     <div className="hidden md:block text-left leading-none font-black">
                         <div className="text-[11px] font-black text-text uppercase tracking-tight">{user?.name || 'User'}</div>

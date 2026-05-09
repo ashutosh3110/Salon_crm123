@@ -19,16 +19,12 @@ import api from '../../../services/api';
 import { useBusiness } from '../../../contexts/BusinessContext';
 
 const CATEGORY_OPTIONS = [
-    { value: 'rent', label: 'Rent' },
-    { value: 'utilities', label: 'Electricity / Utilities' },
-    { value: 'welfare', label: 'Staff welfare / Tea & snacks' },
-    { value: 'maintenance', label: 'Repairs & maintenance' },
-    { value: 'marketing', label: 'Marketing' },
-    { value: 'supplies', label: 'Cleaning / supplies' },
-    { value: 'salary', label: 'Salary / payroll' },
-    { value: 'inventory', label: 'Inventory (non-supplier)' },
-    { value: 'commission', label: 'Commission' },
-    { value: 'other', label: 'Other' },
+    { value: 'Rent', label: 'Rent' },
+    { value: 'Salary', label: 'Salary' },
+    { value: 'Electricity', label: 'Electricity' },
+    { value: 'Product Purchase', label: 'Product Purchase' },
+    { value: 'Maintenance', label: 'Maintenance' },
+    { value: 'Other', label: 'Other' },
 ];
 
 const CATEGORY_LABEL = Object.fromEntries(CATEGORY_OPTIONS.map((o) => [o.value, o.label]));
@@ -90,7 +86,7 @@ function ExpenseList({ onAdd }) {
         setLoading(true);
         setError(null);
         try {
-            const res = await mockApi.get('/finance/expenses', { params: { limit: 200, page: 1 } });
+            const res = await api.get('/finance/expenses', { params: { limit: 200, page: 1 } });
             setRows(pickExpenseRows(res));
         } catch (e) {
             setError(e?.networkHint || e?.response?.data?.message || e.message || 'Failed to load expenses');
@@ -236,7 +232,7 @@ function ExpenseList({ onAdd }) {
                                 </td>
                                 <td className="px-8 py-5">
                                     <span className="px-2.5 py-1 bg-surface border border-border rounded-lg text-[9px] font-bold text-text-secondary uppercase tracking-widest">
-                                        {exp.outletName || '—'}
+                                        {exp.outletId?.name || exp.outletName || '—'}
                                     </span>
                                 </td>
                                 <td className="px-8 py-5 text-right">
@@ -269,7 +265,7 @@ function ExpenseList({ onAdd }) {
 function ExpenseForm({ onCancel, onSaved }) {
     const { outlets, fetchOutlets } = useBusiness();
     const [saving, setSaving] = useState(false);
-    const [category, setCategory] = useState('other');
+    const [category, setCategory] = useState('Other');
     const [amount, setAmount] = useState('');
     const [paymentMode, setPaymentMode] = useState('cash'); // cash | online (maps to cash | online)
     const [outletId, setOutletId] = useState('');
@@ -289,10 +285,10 @@ function ExpenseForm({ onCancel, onSaved }) {
         }
         setSaving(true);
         try {
-            await mockApi.post('/finance/expenses', {
+            await api.post('/finance/expenses', {
                 amount: amt,
                 category,
-                paymentMethod: paymentMode === 'cash' ? 'cash' : 'online',
+                paymentMethod: paymentMode === 'cash' ? 'cash' : 'upi', // Mapping 'online' to 'upi' to match backend enum
                 description: notes.trim(),
                 date: dateStr ? new Date(dateStr).toISOString() : undefined,
                 outletId: outletId || undefined,

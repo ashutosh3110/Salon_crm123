@@ -4,7 +4,7 @@ import api from '../../services/api';
 import {
     ArrowLeft, MapPin, Phone, Mail,
     CheckCircle, XCircle, AlertTriangle, Clock,
-    Ban, ChevronRight, Building2, CreditCard
+    Ban, ChevronRight, Building2, CreditCard, Settings2, Save
 } from 'lucide-react';
 
 /* ─── Helpers ─────────────────────────────────────────────────────────── */
@@ -57,7 +57,30 @@ export default function SATenantDetailPage() {
     const [toast, setToast] = useState(null);
     const [loading, setLoading] = useState(true);
     const [statusLoading, setStatusLoading] = useState(false);
+    const [isSaving, setIsSaving] = useState(false);
     const [selectedTenant, setSelectedTenant] = useState(null);
+    const [fiscalForm, setFiscalForm] = useState({
+        state: '',
+        stateCode: '',
+        serviceGst: 18,
+        productGst: 12
+    });
+
+    const states = [
+        { name: "Andhra Pradesh", code: "37" }, { name: "Arunachal Pradesh", code: "12" }, { name: "Assam", code: "18" },
+        { name: "Bihar", code: "10" }, { name: "Chhattisgarh", code: "22" }, { name: "Goa", code: "30" },
+        { name: "Gujarat", code: "24" }, { name: "Haryana", code: "06" }, { name: "Himachal Pradesh", code: "02" },
+        { name: "Jammu and Kashmir", code: "01" }, { name: "Jharkhand", code: "20" }, { name: "Karnataka", code: "29" },
+        { name: "Kerala", code: "32" }, { name: "Madhya Pradesh", code: "23" }, { name: "Maharashtra", code: "27" },
+        { name: "Manipur", code: "14" }, { name: "Meghalaya", code: "17" }, { name: "Mizoram", code: "15" },
+        { name: "Nagaland", code: "13" }, { name: "Odisha", code: "21" }, { name: "Punjab", code: "03" },
+        { name: "Rajasthan", code: "08" }, { name: "Sikkim", code: "11" }, { name: "Tamil Nadu", code: "33" },
+        { name: "Telangana", code: "36" }, { name: "Tripura", code: "16" }, { name: "Uttar Pradesh", code: "09" },
+        { name: "Uttarakhand", code: "05" }, { name: "West Bengal", code: "19" }, { name: "Andaman and Nicobar Islands", code: "35" },
+        { name: "Chandigarh", code: "04" }, { name: "Dadra and Nagar Haveli and Daman and Diu", code: "26" },
+        { name: "Lakshadweep", code: "31" }, { name: "Delhi", code: "07" }, { name: "Puducherry", code: "34" },
+        { name: "Ladakh", code: "38" }
+    ];
 
     useEffect(() => {
         fetchTenant();
@@ -67,12 +90,40 @@ export default function SATenantDetailPage() {
         setLoading(true);
         try {
             const response = await api.get(`/salons/${id}`);
-            setSelectedTenant(response.data.data);
+            const data = response.data.data;
+            setSelectedTenant(data);
+            setFiscalForm({
+                state: data.settings?.state || 'Uttar Pradesh',
+                stateCode: data.settings?.stateCode || '09',
+                serviceGst: data.settings?.serviceGst || 18,
+                productGst: data.settings?.productGst || 12
+            });
         } catch (error) {
             console.error('Error fetching tenant:', error);
             showToast('Failed to load salon details.', 'error');
         } finally {
             setLoading(false);
+        }
+    };
+
+    const handleUpdateFiscal = async () => {
+        setIsSaving(true);
+        try {
+            await api.put(`/salons/${id}`, {
+                settings: {
+                    ...selectedTenant.settings,
+                    state: fiscalForm.state,
+                    stateCode: fiscalForm.stateCode,
+                    serviceGst: fiscalForm.serviceGst,
+                    productGst: fiscalForm.productGst
+                }
+            });
+            showToast('Fiscal settings updated successfully');
+            fetchTenant();
+        } catch (error) {
+            showToast('Failed to update fiscal settings', 'error');
+        } finally {
+            setIsSaving(false);
         }
     };
 
@@ -176,6 +227,7 @@ export default function SATenantDetailPage() {
             <div className="flex items-center gap-2 border-b border-border pb-1">
                 <Tab id="info" active={tab === 'info'} icon={Building2} label="Basic Info" onClick={setTab} />
                 <Tab id="plan" active={tab === 'plan'} icon={CreditCard} label="Plan Info" onClick={setTab} />
+                <Tab id="fiscal" active={tab === 'fiscal'} icon={Settings2} label="Fiscal Settings" onClick={setTab} />
             </div>
 
             {/* ── Tab Content ── */}
@@ -204,6 +256,7 @@ export default function SATenantDetailPage() {
 
             {tab === 'plan' && (
                 <div className="bg-white rounded-2xl border border-border shadow-sm p-6">
+                    {/* ... plan content ... */}
                     <h3 className="font-bold text-text text-sm border-b border-border pb-2 mb-4">Subscription Plan Details</h3>
                     
                     {(!selectedTenant.subscriptionPlan || selectedTenant.subscriptionPlan.toLowerCase() === 'free' || selectedTenant.subscriptionPlan.toLowerCase() === 'none') ? (
@@ -235,6 +288,88 @@ export default function SATenantDetailPage() {
                             </div>
                         </div>
                     )}
+                </div>
+            )}
+
+            {tab === 'fiscal' && (
+                <div className="bg-white rounded-2xl border border-border shadow-sm p-6 space-y-6">
+                    <div className="flex items-center justify-between border-b border-border pb-2">
+                        <h3 className="font-bold text-text text-sm">Fiscal & GST Settings</h3>
+                        <p className="text-[10px] font-bold text-text-muted uppercase tracking-widest bg-surface px-3 py-1 rounded-full border border-border">Superadmin Only</p>
+                    </div>
+
+                    <div className="grid sm:grid-cols-2 gap-6">
+                        <div className="space-y-2">
+                            <label className="text-[10px] font-black text-text-muted uppercase tracking-widest pl-1">
+                                Registration State
+                            </label>
+                            <select
+                                value={fiscalForm.state}
+                                onChange={(e) => {
+                                    const s = states.find((st) => st.name === e.target.value);
+                                    if (s) setFiscalForm({ ...fiscalForm, state: s.name, stateCode: s.code });
+                                }}
+                                className="w-full px-4 py-3 rounded-xl border border-border text-sm font-bold focus:border-primary outline-none transition-all bg-surface/30"
+                            >
+                                {states.map((s) => (
+                                    <option key={s.code} value={s.name}>
+                                        {s.name} ({s.code})
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+
+                        <div className="space-y-2">
+                            <label className="text-[10px] font-black text-text-muted uppercase tracking-widest pl-1">
+                                State Code
+                            </label>
+                            <input
+                                type="text"
+                                readOnly
+                                value={fiscalForm.stateCode}
+                                className="w-full px-4 py-3 rounded-xl border border-border text-sm font-bold bg-surface-alt/20 cursor-not-allowed outline-none"
+                            />
+                        </div>
+
+                        <div className="space-y-2">
+                            <label className="text-[10px] font-black text-text-muted uppercase tracking-widest pl-1">
+                                Default Service GST (%)
+                            </label>
+                            <input
+                                type="number"
+                                value={fiscalForm.serviceGst}
+                                onChange={(e) => setFiscalForm({ ...fiscalForm, serviceGst: Number(e.target.value) })}
+                                className="w-full px-4 py-3 rounded-xl border border-border text-sm font-bold focus:border-primary outline-none transition-all bg-surface/30"
+                            />
+                        </div>
+
+                        <div className="space-y-2">
+                            <label className="text-[10px] font-black text-text-muted uppercase tracking-widest pl-1">
+                                Default Product GST (%)
+                            </label>
+                            <input
+                                type="number"
+                                value={fiscalForm.productGst}
+                                onChange={(e) => setFiscalForm({ ...fiscalForm, productGst: Number(e.target.value) })}
+                                className="w-full px-4 py-3 rounded-xl border border-border text-sm font-bold focus:border-primary outline-none transition-all bg-surface/30"
+                            />
+                        </div>
+                    </div>
+
+                    <div className="pt-4">
+                        <button
+                            onClick={handleUpdateFiscal}
+                            disabled={isSaving}
+                            className="flex items-center justify-center gap-2 w-full sm:w-auto px-8 py-3.5 bg-primary text-white text-[10px] font-black uppercase tracking-[0.2em] rounded-xl hover:shadow-xl hover:shadow-primary/20 transition-all disabled:opacity-50"
+                        >
+                            {isSaving ? (
+                                <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin" />
+                            ) : (
+                                <Save className="w-4 h-4" />
+                            )}
+                            Save Fiscal Settings
+                        </button>
+                    </div>
                 </div>
             )}
         </div>

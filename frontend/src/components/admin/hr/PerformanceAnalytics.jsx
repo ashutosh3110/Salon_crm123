@@ -177,7 +177,7 @@ export default function PerformanceAnalytics() {
         }
         setGoalSaving(true);
         try {
-            await mockApi.patch(`/hr-performance/staff/${goalModal.id}/goal`, { goal: val });
+            await api.patch(`/hr-performance/staff/${goalModal.id}/goal`, { goal: val });
             setPerf((prev) => prev.map((p) => (p.id === goalModal.id ? { ...p, goal: val } : p)));
             showToast(`Goal updated for ${goalModal.staff}`);
             setGoalModal(null);

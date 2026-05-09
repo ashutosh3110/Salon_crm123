@@ -245,7 +245,8 @@ exports.updateDetails = async (req, res) => {
     try {
         const fieldsToUpdate = {
             name: req.body.name,
-            email: req.body.email
+            email: req.body.email,
+            avatar: req.body.avatar
         };
 
         let Model;

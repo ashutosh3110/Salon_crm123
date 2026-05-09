@@ -3,8 +3,11 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
 import { useAuth } from '../../contexts/AuthContext';
 import { useBusiness } from '../../contexts/BusinessContext';
-import { MapPin } from 'lucide-react';
+import { MapPin, Camera, Upload, User as UserIcon } from 'lucide-react';
 import PasswordField from '../../components/common/PasswordField';
+import { getImageUrl } from '../../utils/imageUtils';
+import { useRef } from 'react';
+import api from '../../services/api';
 
 const VALID_SECTIONS = ['profile', 'notifications', 'security', 'business'];
 
@@ -30,6 +33,8 @@ export default function SettingsPage() {
     const { user, updateProfile, changePassword, refreshUser } = useAuth();
     const { salon, salonLoading, updateSalon, fetchSalon } = useBusiness();
     const [isSaving, setIsSaving] = useState(false);
+    const [isUploading, setIsUploading] = useState(false);
+    const fileInputRef = useRef(null);
 
     const activeTab = VALID_SECTIONS.includes(section) ? section : 'profile';
 
@@ -138,12 +143,58 @@ export default function SettingsPage() {
                 name: profileForm.name.trim(),
                 email: profileForm.email.trim(),
                 phone: profileForm.phone.trim(),
+                avatar: user?.avatar // Preserve existing avatar unless changed via separate upload
             });
             toast.success('Profile updated successfully.');
         } catch (error) {
             toast.error(error?.message || 'Failed to update profile');
         } finally {
             setIsSaving(false);
+        }
+    };
+
+    const handleAvatarClick = () => {
+        fileInputRef.current?.click();
+    };
+
+    const handleFileChange = async (e) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        // Simple validation
+        if (!file.type.startsWith('image/')) {
+            toast.error('Please select an image file.');
+            return;
+        }
+
+        if (file.size > 5 * 1024 * 1024) {
+            toast.error('Image size must be less than 5MB.');
+            return;
+        }
+
+        setIsUploading(true);
+        const formData = new FormData();
+        formData.append('image', file);
+
+        try {
+            const res = await api.post('/upload', formData, {
+                headers: { 'Content-Type': 'multipart/form-data' }
+            });
+
+            if (res.data.success) {
+                const newAvatar = res.data.url;
+                await updateProfile({
+                    ...profileForm,
+                    avatar: newAvatar
+                });
+                toast.success('Profile picture updated!');
+                await refreshUser?.();
+            }
+        } catch (error) {
+            console.error('Upload error:', error);
+            toast.error('Failed to upload image.');
+        } finally {
+            setIsUploading(false);
         }
     };
 
@@ -177,10 +228,7 @@ export default function SettingsPage() {
                 name: fiscal.businessName.trim(),
                 gstNumber: fiscal.gstin.trim() || undefined,
                 settings: {
-                    state: fiscal.state,
-                    stateCode: fiscal.stateCode,
-                    serviceGst: Number(fiscal.serviceGst) || 0,
-                    productGst: Number(fiscal.productGst) || 0,
+                    ...salon?.settings, // Preserve existing settings
                     inclusiveTax: !!fiscal.inclusiveTax,
                 },
             };
@@ -271,7 +319,6 @@ export default function SettingsPage() {
                 {[
                     { id: 'profile', label: 'Profile' },
                     { id: 'business', label: 'Business Info' },
-                    { id: 'notifications', label: 'Notifications' },
                     { id: 'security', label: 'Security' },
                 ].map((t) => (
                     <Link key={t.id} to={`/admin/settings/${t.id}`} className={tabClass(t.id)}>
@@ -290,21 +337,56 @@ export default function SettingsPage() {
                             </div>
 
                             <div className="flex items-center gap-6 p-6 rounded-2xl bg-surface-alt/10 border border-border">
-                                <div className="w-20 h-20 rounded-2xl bg-primary/5 flex items-center justify-center text-2xl font-bold text-primary border border-primary/20 shadow-sm relative overflow-hidden group">
-                                    <span className="relative z-10">
-                                        {user?.name
-                                            ?.split(' ')
-                                            .map((n) => n[0])
-                                            .join('')
-                                            .toUpperCase()
-                                            .slice(0, 2) || 'U'}
-                                    </span>
+                                <div 
+                                    onClick={handleAvatarClick}
+                                    className={`w-24 h-24 rounded-2xl bg-primary/5 flex items-center justify-center text-2xl font-bold text-primary border border-primary/20 shadow-sm relative overflow-hidden group cursor-pointer hover:border-primary transition-all ${isUploading ? 'animate-pulse' : ''}`}
+                                >
+                                    {user?.avatar ? (
+                                        <img 
+                                            src={getImageUrl(user.avatar)} 
+                                            alt={user.name} 
+                                            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                                        />
+                                    ) : (
+                                        <span className="relative z-10 group-hover:scale-110 transition-transform duration-300">
+                                            {user?.name
+                                                ?.split(' ')
+                                                .map((n) => n[0])
+                                                .join('')
+                                                .toUpperCase()
+                                                .slice(0, 2) || 'U'}
+                                        </span>
+                                    )}
+                                    
+                                    <div className="absolute inset-0 bg-black/40 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                                        <Camera className="w-6 h-6 text-white mb-1" />
+                                        <span className="text-[8px] text-white font-black uppercase tracking-widest">Change</span>
+                                    </div>
+
+                                    {isUploading && (
+                                        <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
+                                            <div className="w-6 h-6 border-2 border-white/20 border-t-white rounded-full animate-spin" />
+                                        </div>
+                                    )}
+
+                                    <input 
+                                        type="file" 
+                                        ref={fileInputRef}
+                                        onChange={handleFileChange}
+                                        className="hidden" 
+                                        accept="image/*"
+                                    />
                                 </div>
                                 <div className="space-y-2">
                                     <h3 className="font-bold text-2xl text-text leading-tight tracking-tight">{user?.name || '—'}</h3>
-                                    <p className="text-[11px] font-bold text-primary uppercase tracking-wider inline-flex items-center px-3 py-1 rounded-full bg-primary/10 border border-primary/20">
-                                        {user?.role || 'ADMIN'}
-                                    </p>
+                                    <div className="flex flex-wrap items-center gap-2">
+                                        <p className="text-[11px] font-bold text-primary uppercase tracking-wider inline-flex items-center px-3 py-1 rounded-full bg-primary/10 border border-primary/20">
+                                            {user?.role || 'ADMIN'}
+                                        </p>
+                                        <p className="text-[10px] font-bold text-text-muted uppercase tracking-widest px-3 py-1 bg-surface border border-border rounded-full">
+                                            {user?.email}
+                                        </p>
+                                    </div>
                                 </div>
                             </div>
 
@@ -496,50 +578,6 @@ export default function SettingsPage() {
                                             maxLength={15}
                                             value={fiscal.gstin}
                                             onChange={(e) => setFiscal({ ...fiscal, gstin: e.target.value.toUpperCase() })}
-                                            className="w-full px-5 py-3.5 rounded-none border border-border text-sm font-bold focus:border-primary outline-none transition-all bg-surface-alt/50"
-                                        />
-                                    </div>
-                                    <div className="space-y-2">
-                                        <label className="text-[10px] font-black text-text-muted uppercase tracking-widest pl-1">
-                                            Registration State
-                                        </label>
-                                        <select
-                                            value={fiscal.state}
-                                            onChange={(e) => {
-                                                const s = states.find((st) => st.name === e.target.value);
-                                                if (s) setFiscal({ ...fiscal, state: s.name, stateCode: s.code });
-                                            }}
-                                            className="w-full px-5 py-3.5 rounded-none border border-border text-sm font-bold focus:border-primary outline-none transition-all bg-surface-alt/50"
-                                        >
-                                            {states.map((s) => (
-                                                <option key={s.code} value={s.name}>
-                                                    {s.name} ({s.code})
-                                                </option>
-                                            ))}
-                                        </select>
-                                    </div>
-                                </div>
-
-                                <div className="grid sm:grid-cols-2 gap-6">
-                                    <div className="space-y-2">
-                                        <label className="text-[10px] font-black text-text-muted uppercase tracking-widest pl-1">
-                                            Default Service GST (%)
-                                        </label>
-                                        <input
-                                            type="number"
-                                            value={fiscal.serviceGst}
-                                            onChange={(e) => setFiscal({ ...fiscal, serviceGst: Number(e.target.value) })}
-                                            className="w-full px-5 py-3.5 rounded-none border border-border text-sm font-bold focus:border-primary outline-none transition-all bg-surface-alt/50"
-                                        />
-                                    </div>
-                                    <div className="space-y-2">
-                                        <label className="text-[10px] font-black text-text-muted uppercase tracking-widest pl-1">
-                                            Default Product GST (%)
-                                        </label>
-                                        <input
-                                            type="number"
-                                            value={fiscal.productGst}
-                                            onChange={(e) => setFiscal({ ...fiscal, productGst: Number(e.target.value) })}
                                             className="w-full px-5 py-3.5 rounded-none border border-border text-sm font-bold focus:border-primary outline-none transition-all bg-surface-alt/50"
                                         />
                                     </div>

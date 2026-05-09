@@ -27,6 +27,7 @@ const salonSchema = new mongoose.Schema({
         type: String,
         trim: true
     },
+    avatar: String,
     gstNumber: {
         type: String,
         trim: true

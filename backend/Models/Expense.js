@@ -13,7 +13,11 @@ const expenseSchema = new mongoose.Schema({
     category: {
         type: String,
         required: true,
-        enum: ['Rent', 'Electricity', 'Water', 'Marketing', 'Maintenance', 'Salaries', 'Laundry', 'Consumables', 'Taxes', 'Others']
+        enum: ['Rent', 'Salary', 'Electricity', 'Product Purchase', 'Maintenance', 'Other']
+    },
+    outletId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Outlet'
     },
     amount: {
         type: Number,

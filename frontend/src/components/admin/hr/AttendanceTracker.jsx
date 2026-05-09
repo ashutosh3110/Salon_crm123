@@ -208,7 +208,7 @@ export default function AttendanceTracker() {
 
     const bulkMarkPresent = async () => {
         try {
-            await mockApi.post('/attendance/bulk', {
+            await api.post('/attendance/bulk', {
                 date: selectedDate,
                 status: 'present',
                 defaultCheckIn: '09:00',
@@ -223,7 +223,7 @@ export default function AttendanceTracker() {
 
     const bulkMarkAbsent = async () => {
         try {
-            await mockApi.post('/attendance/bulk', { date: selectedDate, status: 'absent' });
+            await api.post('/attendance/bulk', { date: selectedDate, status: 'absent' });
             setBulkModal(false);
             showToast(`All staff marked absent for ${selectedDate}`);
             await loadDay();
@@ -236,7 +236,7 @@ export default function AttendanceTracker() {
         e.preventDefault();
         if (!remarkModal) return;
         try {
-            await mockApi.post('/attendance', {
+            await api.post('/attendance', {
                 userId: remarkModal.id,
                 date: selectedDate,
                 status: remarkModal.status,

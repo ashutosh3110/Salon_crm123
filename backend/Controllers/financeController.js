@@ -55,7 +55,7 @@ exports.getExpenses = async (req, res) => {
         if (category && category !== 'All') {
             query.category = category;
         }
-        const expenses = await Expense.find(query).sort({ date: -1 });
+        const expenses = await Expense.find(query).populate('outletId', 'name').sort({ date: -1 });
         res.status(200).json({ success: true, data: expenses });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });

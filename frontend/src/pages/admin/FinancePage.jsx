@@ -22,13 +22,9 @@ import {
 import { Link } from 'react-router-dom';
 import api from '../../services/api';
 import FinanceDashboard from '../../components/admin/finance/FinanceDashboard';
-import SupplierManager from '../../components/admin/finance/SupplierManager';
-import SupplierInvoices from '../../components/admin/finance/SupplierInvoices';
 import ExpenseTracker from '../../components/admin/finance/ExpenseTracker';
-import CashAndBank from '../../components/admin/finance/CashAndBank';
-import TaxReports from '../../components/admin/finance/TaxReports';
+import SalesReports from '../../components/admin/finance/SalesReports';
 import EndOfDay from '../../components/admin/finance/EndOfDay';
-import PettyCashPage from '../accountant/PettyCashPage';
 
 const CHART_COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'];
 
@@ -181,9 +177,9 @@ export default function FinancePage({ tab = 'dashboard' }) {
                         <span className="text-[9px] font-black text-text-muted uppercase tracking-[0.2em]">Expense mix (90d)</span>
                         <PieIcon className="w-4 h-4 text-primary" />
                     </div>
-                    <div className="h-[120px] w-full text-left relative">
+                    <div className="h-[120px] w-full text-left relative overflow-hidden">
                         {hasExpenseMix ? (
-                            <ResponsiveContainer width="100%" height="100%">
+                            <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
                                 <PieChart>
                                     <Pie
                                         data={allocationData}
@@ -239,7 +235,7 @@ export default function FinancePage({ tab = 'dashboard' }) {
                         <span className="text-[9px] font-black text-text-muted uppercase tracking-[0.2em]">Recent months</span>
                         <BarChart3 className="w-4 h-4 text-primary" />
                     </div>
-                    <div className="h-[120px] w-full text-left">
+                    <div className="h-[120px] w-full text-left relative overflow-hidden">
                         {flowData.length === 0 ? (
                             <div className="h-full flex flex-col items-center justify-center text-center px-2">
                                 <p className="text-[10px] font-black uppercase tracking-widest text-text-muted opacity-70">
@@ -250,7 +246,7 @@ export default function FinancePage({ tab = 'dashboard' }) {
                                 </p>
                             </div>
                         ) : (
-                            <ResponsiveContainer width="100%" height="100%">
+                            <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
                                 <BarChart data={flowData}>
                                     <Bar dataKey="inflow" fill="var(--primary)" radius={0} />
                                     <Bar dataKey="outflow" fill="#8B1A2D" radius={0} />
@@ -303,12 +299,8 @@ export default function FinancePage({ tab = 'dashboard' }) {
                         onRetry={loadFinance}
                     />
                 )}
-                {activeTab === 'suppliers' && <SupplierManager />}
-                {activeTab === 'invoices' && <SupplierInvoices />}
                 {activeTab === 'expenses' && <ExpenseTracker />}
-                {activeTab === 'petty-cash' && <PettyCashPage />}
-                {activeTab === 'reconciliation' && <CashAndBank />}
-                {activeTab === 'tax' && <TaxReports />}
+                {activeTab === 'reports' && <SalesReports />}
                 {activeTab === 'eod' && <EndOfDay />}
             </div>
         </div>
