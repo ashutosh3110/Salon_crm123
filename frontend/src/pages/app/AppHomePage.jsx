@@ -467,10 +467,8 @@ export default function AppHomePage() {
                 const isActive = p.status?.toLowerCase() === 'active' || p.status === undefined;
                 const matchesGender = !p.gender || p.gender === 'all' || p.gender === g;
                 
+                // Show all banners regardless of selected outlet
                 let matchesOutlet = true;
-                if (p.outletId && String(p.outletId).trim() !== '' && String(p.outletId) !== 'all' && activeOutletId) {
-                    matchesOutlet = String(p.outletId) === String(activeOutletId);
-                }
 
                 return isActive && matchesGender && matchesOutlet;
             })
