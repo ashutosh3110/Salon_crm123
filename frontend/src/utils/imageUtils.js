@@ -36,13 +36,21 @@ export const getImageUrl = (p) => {
         return path;
     }
 
+    if (!path) return null;
+
+    // Handle absolute URLs
+    if (path.startsWith('http://') || path.startsWith('https://')) return path;
+
     // Handle Data/Blob URLs
     if (path.startsWith('data:') || path.startsWith('blob:')) return path;
 
-    // Handle Relative Paths
-    // Ensure we don't have double slashes
-    const separator = path.startsWith('/') ? '' : '/';
-    return `${apiBase}${separator}${path}`;
+    // Standardize path: remove leading slash if present to avoid double slashes with apiBase
+    const cleanPath = path.startsWith('/') ? path.slice(1) : path;
+    
+    // Ensure we don't have double slashes between apiBase and cleanPath
+    const base = apiBase.endsWith('/') ? apiBase.slice(0, -1) : apiBase;
+    
+    return `${base}/${cleanPath}`;
 };
 
 /**

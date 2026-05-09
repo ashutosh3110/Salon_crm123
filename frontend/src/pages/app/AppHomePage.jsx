@@ -393,13 +393,13 @@ export default function AppHomePage() {
         setIsLoadingData(true);
         try {
             const [sRes, pRes, rRes, plRes] = await Promise.all([
-                api.get(`/services/outlet/${activeOutletId}`),
-                api.get(`/products/outlet/${activeOutletId}`),
+                api.get(`/services?salonId=${activeSalonId}`),
+                api.get(`/products?salonId=${activeSalonId}`),
                 api.get(`/reviews/trusted/${activeOutletId}`),
                 api.get(`/membership-plans/${activeOutletId}`)
             ]);
-            setOutletServices(sRes.data?.data || []);
-            setOutletProducts(pRes.data?.data || []);
+            setOutletServices(sRes.data?.data || sRes.data?.results || []);
+            setOutletProducts(pRes.data?.data || pRes.data?.results || []);
             setTrustedReviews(rRes.data?.data || []);
             setOutletPlans(plRes.data?.data || []);
         } catch (error) {
@@ -800,7 +800,7 @@ export default function AppHomePage() {
                             display: 'flex', 
                             gap: '12px', 
                             overflowX: 'auto', 
-                            paddingBottom: '20px', 
+                        paddingBottom: '20px', 
                             marginLeft: '-16px', 
                             paddingLeft: '16px', 
                             marginRight: '-16px', 
@@ -808,13 +808,9 @@ export default function AppHomePage() {
                         }}
                     >
                         {(() => {
-                            // If nearestOutlets is empty, we show all active outlets from the business context as fallback
-                            const sourceOutlets = (nearestOutlets && nearestOutlets.length > 0) 
-                                ? nearestOutlets 
-                                : (outlets || []); 
+                            const sourceOutlets = (outlets || []); 
 
                             const otherSalons = sourceOutlets
-                                .filter(o => String(o._id || o.id) !== String(activeOutletId))
                                 .map(o => {
                                     const dist = userLocation && o.location?.coordinates?.length === 2
                                         ? calculateDistance(userLocation.lat, userLocation.lng, o.location.coordinates[1], o.location.coordinates[0])
@@ -926,11 +922,8 @@ export default function AppHomePage() {
                             style={{ display: 'flex', gap: '12px', overflowX: 'auto', paddingBottom: '20px' }}
                         >
                             {(() => {
-                                const sourceServices = services || [];
-                                const filtered = sourceServices.filter(s =>
-                                    s.status === 'active' &&
-                                    (!selectedServiceCategory || s.category === selectedServiceCategory)
-                                );
+                                const sourceServices = outletServices.length > 0 ? outletServices : (services || []);
+                                const filtered = sourceServices.filter(s => s.status === 'active');
                                 if (filtered.length === 0) {
                                     return (
                                         <div style={{ width: '100%', padding: '20px', textAlign: 'center', color: colors.textMuted, fontSize: '12px' }}>
