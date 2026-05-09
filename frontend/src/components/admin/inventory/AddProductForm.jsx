@@ -27,7 +27,8 @@ import {
     ArrowLeft,
     Smartphone,
     Package,
-    CloudUpload
+    CloudUpload,
+    ShoppingBag
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import CustomSelect from '../common/CustomSelect';
@@ -278,6 +279,26 @@ export default function AddProductForm({ onSave, initialData, onCancel }) {
                                     className="h-[46px] !text-[11px] font-black"
                                 />
                             </div>
+                        </div>
+
+                        {/* Shop Visibility Toggle */}
+                        <div className="p-4 bg-primary/5 border border-primary/20 rounded-2xl flex items-center justify-between group hover:bg-primary/10 transition-all">
+                            <div className="flex items-center gap-3">
+                                <div className="w-8 h-8 bg-primary/20 rounded-lg flex items-center justify-center text-primary">
+                                    <ShoppingBag className="w-4 h-4" />
+                                </div>
+                                <div>
+                                    <p className="text-[10px] font-black uppercase tracking-widest text-text">Show in Customer Shop</p>
+                                    <p className="text-[8px] text-text-muted font-bold uppercase tracking-tighter">Visible to customers in the salon app</p>
+                                </div>
+                            </div>
+                            <button
+                                type="button"
+                                onClick={() => setFormData(prev => ({ ...prev, isShopProduct: !prev.isShopProduct }))}
+                                className={`w-12 h-6 rounded-full p-1 transition-all duration-300 ${formData.isShopProduct ? 'bg-primary' : 'bg-border'}`}
+                            >
+                                <div className={`w-4 h-4 rounded-full bg-white transition-all duration-300 transform ${formData.isShopProduct ? 'translate-x-6' : 'translate-x-0'}`} />
+                            </button>
                         </div>
 
                         <div className="grid grid-cols-2 gap-4">
@@ -532,27 +553,7 @@ export default function AddProductForm({ onSave, initialData, onCancel }) {
             </div>
 
             {/* 9. Status & 10. Actions */}
-            <div className="mt-8 flex flex-col sm:flex-row sm:items-center justify-between gap-6 p-6 bg-surface-alt rounded-3xl border border-border text-left">
-                <div className="flex items-center gap-6">
-                    <div className="flex items-center gap-4">
-                        <span className="text-[10px] font-bold text-text-muted uppercase tracking-widest">9. Status:</span>
-                        <div className="flex p-1 bg-surface rounded-xl border border-border">
-                            <button
-                                onClick={() => setFormData({ ...formData, status: 'active' })}
-                                className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${formData.status === 'active' ? 'bg-emerald-500 text-white shadow-sm dark:shadow-emerald-950/40' : 'text-text-muted hover:text-text'}`}
-                            >
-                                Active
-                            </button>
-                            <button
-                                onClick={() => setFormData({ ...formData, status: 'inactive' })}
-                                className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${formData.status === 'inactive' ? 'bg-rose-500 text-white shadow-sm dark:shadow-rose-950/40' : 'text-text-muted hover:text-text'}`}
-                            >
-                                Inactive
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
+            <div className="mt-8 flex flex-col sm:flex-row sm:items-center justify-end gap-6 p-6 bg-surface-alt rounded-3xl border border-border text-left">
                 <div className="flex items-center gap-3">
                     <button
                         type="button"

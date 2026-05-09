@@ -22,6 +22,7 @@ import { useNavigate } from 'react-router-dom';
 import CustomSelect from '../common/CustomSelect';
 import { useBusiness } from '../../../contexts/BusinessContext';
 import { API_BASE_URL } from '../../../services/api';
+import { convertToWebP } from '../../../utils/imageUtils';
 
 export default function ServiceForm({ onSave, onCancel, categories = [], initialData, isModal = false }) {
     const navigate = useNavigate();
@@ -51,7 +52,7 @@ export default function ServiceForm({ onSave, onCancel, categories = [], initial
 
     const [imageFile, setImageFile] = useState(null);
 
-    const handleImageUpload = (e) => {
+    const handleImageUpload = async (e) => {
         const file = e.target.files[0];
         if (file) {
             const maxSize = platformSettings?.maxImageSize || 5;
@@ -63,12 +64,27 @@ export default function ServiceForm({ onSave, onCancel, categories = [], initial
                 alert(`File size too large. Max ${maxSize}${unit} allowed.`);
                 return;
             }
-            setImageFile(file);
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                setFormData({ ...formData, image: reader.result });
-            };
-            reader.readAsDataURL(file);
+
+            try {
+                // Convert to WebP for optimization
+                const webpFile = await convertToWebP(file);
+                setImageFile(webpFile);
+                
+                const reader = new FileReader();
+                reader.onloadend = () => {
+                    setFormData({ ...formData, image: reader.result });
+                };
+                reader.readAsDataURL(webpFile);
+            } catch (error) {
+                console.error('Image conversion failed:', error);
+                // Fallback to original file if conversion fails
+                setImageFile(file);
+                const reader = new FileReader();
+                reader.onloadend = () => {
+                    setFormData({ ...formData, image: reader.result });
+                };
+                reader.readAsDataURL(file);
+            }
         }
     };
 

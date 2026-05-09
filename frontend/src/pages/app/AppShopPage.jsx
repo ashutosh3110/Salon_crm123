@@ -9,7 +9,7 @@ import { useCustomerTheme } from '../../contexts/CustomerThemeContext';
 import { useFavorites } from '../../contexts/FavoritesContext';
 import { useBusiness } from '../../contexts/BusinessContext';
 import { useCustomerAuth } from '../../contexts/CustomerAuthContext';
-import { isVisibleInCustomerShop, stockQtyForOutlet } from '../../utils/shopVisibility';
+import { isVisibleInCustomerShop, stockQtyForOutlet, productAvailableAtOutlet } from '../../utils/shopVisibility';
 import { mapInventoryProductToShopProduct } from '../../utils/shopProductMapper';
 import api from '../../services/api';
 import { getImageUrl } from '../../utils/imageUtils';
@@ -172,11 +172,25 @@ export default function AppShopPage() {
     }, []);
 
     const shopProducts = useMemo(() => {
+        if (!inventoryProducts) return [];
+        
+        // Debugging visibility
+        inventoryProducts.forEach(p => {
+            const hasShopFlag = !!p.isShopProduct;
+            const isAvail = productAvailableAtOutlet(p, activeOutletId);
+            if (!hasShopFlag || !isAvail) {
+                console.log(`[Shop Debug] Hiding "${p.name}":`, { 
+                    reason: !hasShopFlag ? "Show in Shop is UNCHECKED" : "Not assigned to this outlet",
+                    pId: p._id 
+                });
+            }
+        });
+
         return inventoryProducts
             .filter((p) => p.isShopProduct)
             .map((p) => mapInventoryProductToShopProduct(p, shopCategories))
             .filter(Boolean);
-    }, [inventoryProducts, shopCategories]);
+    }, [inventoryProducts, shopCategories, activeOutletId]);
 
     const categories = useMemo(() => {
         // Count products for each category to determine popularity
@@ -419,7 +433,7 @@ export default function AppShopPage() {
                 <div className="grid grid-cols-2 gap-3">
                     <AnimatePresence mode="popLayout">
                         {filteredProducts.map((product, i) => {
-                            const hasStock = stockQtyForOutlet(product, activeOutletId) > 0;
+                            const hasStock = true; // Always show as available even if stock is 0 for now
                             return (
                                 <ProductCard 
                                     key={product._id} 

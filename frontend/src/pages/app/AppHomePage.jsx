@@ -323,6 +323,8 @@ export default function AppHomePage() {
         loyaltySettings: contextLoyalty,
         isInitializing: isContextInitializing
     } = useBusiness();
+    const servicesScrollRef = useRef(null);
+    const outletsScrollRef = useRef(null);
 
     const [selectedServiceCategory, setSelectedServiceCategory] = useState('');
     
@@ -454,21 +456,65 @@ export default function AppHomePage() {
         setRefreshing(false);
     }, [fetchStaticData, fetchOutletSpecificData]);
 
+    // Auto-scroll logic for services
+    useEffect(() => {
+        let interval;
+        const startAutoScroll = () => {
+            const scrollContainer = servicesScrollRef.current;
+            if (!scrollContainer || (services || []).length < 2) return;
+
+            interval = setInterval(() => {
+                const maxScroll = scrollContainer.scrollWidth - scrollContainer.clientWidth;
+                if (scrollContainer.scrollLeft >= maxScroll - 20) {
+                    scrollContainer.scrollTo({ left: 0, behavior: 'smooth' });
+                } else {
+                    scrollContainer.scrollBy({ left: 212, behavior: 'smooth' });
+                }
+            }, 4000);
+        };
+
+        // Small delay to ensure layout is ready
+        const timeout = setTimeout(startAutoScroll, 1000);
+
+        return () => {
+            clearTimeout(timeout);
+            if (interval) clearInterval(interval);
+        };
+    }, [services]);
+
+    // Auto-scroll logic for outlets
+    useEffect(() => {
+        let interval;
+        const startAutoScroll = () => {
+            const scrollContainer = outletsScrollRef.current;
+            if (!scrollContainer || (outlets || []).length < 2) return;
+
+            interval = setInterval(() => {
+                const maxScroll = scrollContainer.scrollWidth - scrollContainer.clientWidth;
+                if (scrollContainer.scrollLeft >= maxScroll - 20) {
+                    scrollContainer.scrollTo({ left: 0, behavior: 'smooth' });
+                } else {
+                    scrollContainer.scrollBy({ left: 172, behavior: 'smooth' });
+                }
+            }, 4500);
+        };
+
+        const timeout = setTimeout(startAutoScroll, 1500);
+        return () => {
+            clearTimeout(timeout);
+            if (interval) clearInterval(interval);
+        };
+    }, [outlets]);
+
     const filteredPopularServices = useMemo(() => {
         return (services || []).filter(s => {
-            if (!s.outletIds || s.outletIds.length === 0) {
-                // Common service for all outlets
-            } else if (s.outletIds && Array.isArray(s.outletIds) && s.outletIds.length > 0) {
-                if (!s.outletIds.map(id => String(id)).includes(String(activeOutletId))) return false;
-            } else if (s.outletId && s.outletId !== 'all' && String(s.outletId) !== String(activeOutletId)) {
-                return false;
-            }
+            // Remove outlet filtering for popular section
             const cat = categories?.find(c => c.name === s.category);
             if (!cat) return true;
             if (!gender) return true;
             return cat.gender === 'both' || cat.gender === gender;
-        }).slice(0, 6);
-    }, [activeOutletId, services, gender, categories]);
+        });
+    }, [services, gender, categories]);
 
     const filteredPromos = useMemo(() => {
         return (banners || [])
@@ -749,6 +795,7 @@ export default function AppHomePage() {
 
                     <div 
                         className="app-scroll no-scrollbar" 
+                        ref={outletsScrollRef}
                         style={{ 
                             display: 'flex', 
                             gap: '12px', 
@@ -757,8 +804,7 @@ export default function AppHomePage() {
                             marginLeft: '-16px', 
                             paddingLeft: '16px', 
                             marginRight: '-16px', 
-                            paddingRight: '16px',
-                            scrollSnapType: 'x mandatory'
+                            paddingRight: '16px'
                         }}
                     >
                         {(() => {
@@ -876,7 +922,8 @@ export default function AppHomePage() {
                             exit={{ opacity: 0, x: -20 }}
                             transition={{ duration: 0.3 }}
                             className="app-scroll no-scrollbar"
-                            style={{ display: 'flex', gap: '12px', overflowX: 'auto', paddingBottom: '20px', scrollSnapType: 'x mandatory' }}
+                            ref={servicesScrollRef}
+                            style={{ display: 'flex', gap: '12px', overflowX: 'auto', paddingBottom: '20px' }}
                         >
                             {(() => {
                                 const sourceServices = services || [];
