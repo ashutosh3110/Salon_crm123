@@ -1,5 +1,6 @@
 const Outlet = require('../Models/Outlet');
 const Salon = require('../Models/Salon');
+const mongoose = require('mongoose');
 const { getIO } = require('../Utils/socket');
 
 // @desc    Get all outlets for a salon
@@ -7,10 +8,28 @@ const { getIO } = require('../Utils/socket');
 // @access  Private
 exports.getOutlets = async (req, res) => {
     try {
-        // If superadmin, show ALL outlets. Otherwise, filter by salonId.
-        const matchStage = req.user.role === 'superadmin' 
-            ? {} 
-            : { salonId: req.user.salonId };
+        // Prioritize salonId from query (for public/customer app discovery)
+        let salonId = req.query.salonId || (req.user && req.user.salonId);
+        
+        let matchStage = { isActive: true }; // Default to showing only active outlets for public
+        
+        if (req.user && req.user.role === 'superadmin' && !req.query.salonId) {
+            matchStage = {}; // Superadmin sees everything unless filtering
+        } else if (salonId && mongoose.Types.ObjectId.isValid(salonId)) {
+            matchStage.salonId = new mongoose.Types.ObjectId(salonId);
+        } else if (!req.user) {
+            // Public access without salonId -> maybe show all active? 
+            // For now, let's allow showing all active if no salonId is specified publicly
+            matchStage = { isActive: true };
+        } else if (req.user) {
+            // Logged in non-superadmin without salonId in query -> use their own salon
+            if (req.user.salonId) {
+                matchStage.salonId = new mongoose.Types.ObjectId(req.user.salonId);
+            } else {
+                // Customer or someone without a salonId -> show active ones
+                matchStage = { isActive: true };
+            }
+        }
 
         const outlets = await Outlet.aggregate([
             { $match: matchStage },

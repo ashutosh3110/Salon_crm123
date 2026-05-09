@@ -110,30 +110,33 @@ exports.registerToken = async (req, res) => {
 
         // Use $addToSet to add token to array without duplicates
         const updateQuery = { $addToSet: updateField };
+        console.log(`[FCM Query] ${JSON.stringify(updateQuery)}`);
 
         // 1. Try direct update by ID
+        console.log(`[FCM] Attempting update by ID: ${userId}`);
         let customer = await Customer.findByIdAndUpdate(userId, updateQuery, { new: true });
 
-        // 2. If not found, try by phone number (handling potential country code issues)
+        // 2. If not found, try by phone number
         if (!customer && phone) {
-            // Try exact match first
+            console.log(`[FCM] ID match failed, attempting update by phone: ${phone}`);
             customer = await Customer.findOneAndUpdate({ phone: phone }, updateQuery, { new: true });
             
-            // If still not found and phone is long, try matching last 10 digits
             if (!customer && phone.length >= 10) {
                 const last10 = phone.slice(-10);
+                console.log(`[FCM] Phone match failed, attempting update by last 10 digits: ${last10}`);
                 customer = await Customer.findOneAndUpdate({ phone: new RegExp(last10 + '$') }, updateQuery, { new: true });
             }
         }
 
         if (!customer) {
-            // Silently fail or return success to prevent console errors for Admins
+            console.error(`[FCM Error] No customer record found for UserID: ${userId} or Phone: ${phone}`);
             return res.json({
                 success: true,
                 message: 'Token received, but no customer record found to link it with.'
             });
         }
 
+        console.log(`[FCM Success] Token registered for customer: ${customer.name} (${customer._id})`);
         res.json({
             success: true,
             message: 'Token registered successfully'

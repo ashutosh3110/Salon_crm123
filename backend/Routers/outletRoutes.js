@@ -19,6 +19,7 @@ const checkImageLimit = require('../Middleware/imageLimit');
 router.get('/nearest', require('../Controllers/homePageController').getNearestOutlets);
 router.get('/nearby', getNearbyOutlets);
 router.get('/reverse-geocode', reverseGeocode);
+router.get('/', getOutlets);
 
 // Protected routes
 router.use(protect);
@@ -26,7 +27,6 @@ router.use(protect);
 router.post('/:id/like', toggleLike);
 
 router.route('/')
-    .get(getOutlets)
     .post(authorize('admin', 'manager'), optimizedUpload.array('images', 5), checkImageLimit, processToWebP('outlets'), createOutlet);
 
 router.route('/:id')
