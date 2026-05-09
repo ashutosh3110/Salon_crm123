@@ -30,7 +30,7 @@ exports.getNotifications = async (req, res) => {
 exports.markAsRead = async (req, res) => {
     try {
         const notification = await Notification.findOneAndUpdate(
-            { _id: req.params.id, customerId: req.user._id },
+            { _id: req.params.id, $or: [{ customerId: req.user._id }, { userId: req.user._id }] },
             { isRead: true },
             { new: true }
         );
