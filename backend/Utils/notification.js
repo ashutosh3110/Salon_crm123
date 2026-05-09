@@ -35,8 +35,12 @@ exports.sendNotification = async ({ customerId, salonId, title, message, image, 
         }
 
         const tokens = [];
-        if (customer.fcmTokenWeb) tokens.push(customer.fcmTokenWeb);
-        if (customer.fcmTokenMobile) tokens.push(customer.fcmTokenMobile);
+        if (customer.fcmTokenWeb && Array.isArray(customer.fcmTokenWeb)) {
+            tokens.push(...customer.fcmTokenWeb);
+        }
+        if (customer.fcmTokenMobile && Array.isArray(customer.fcmTokenMobile)) {
+            tokens.push(...customer.fcmTokenMobile);
+        }
 
         if (tokens.length === 0) {
             return { success: true, dbId: newNotification._id, message: 'Notification saved but no FCM tokens found' };
