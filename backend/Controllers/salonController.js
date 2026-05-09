@@ -404,13 +404,28 @@ exports.deleteSalon = async (req, res) => {
             return res.status(404).json({ success: false, message: 'Salon not found' });
         }
 
-        // Delete all staff associated with this salon
-        await Staff.deleteMany({ salonId: req.params.id });
+        const salonId = req.params.id;
 
-        // Delete the salon
+        // Cascade delete all salon-specific data in parallel
+        await Promise.all([
+            Staff.deleteMany({ salonId }),
+            User.deleteMany({ salonId }),
+            Outlet.deleteMany({ salonId }),
+            Service.deleteMany({ salonId }),
+            Category.deleteMany({ salonId }),
+            Booking.deleteMany({ salonId }),
+            Product.deleteMany({ salonId }),
+            ProductCategory.deleteMany({ salonId }),
+            MembershipPlan.deleteMany({ salonId }),
+            Setting.deleteMany({ salonId }),
+            Feedback.deleteMany({ salonId }),
+            Cart.deleteMany({ salonId }),
+        ]);
+
+        // Delete the salon itself
         await salon.deleteOne();
 
-        res.json({ success: true, message: 'Salon and associated users deleted' });
+        res.json({ success: true, message: 'Salon and all associated data deleted' });
     } catch (err) {
         console.error('Delete error:', err);
         res.status(500).json({ success: false, message: 'Server Error' });

@@ -69,7 +69,7 @@ const planIcons = { free: null, basic: null, pro: Crown, premium: Crown, enterpr
 
 const STATUS_CFG = {
     active: { label: 'Active', cls: 'bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800', icon: CheckCircle },
-    trial: { label: 'Active', cls: 'bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800', icon: CheckCircle },
+    trial: { label: 'Trial', cls: 'bg-blue-50 dark:bg-blue-950/30 text-blue-600 dark:text-blue-400 border-blue-200 dark:border-blue-800', icon: Clock },
     expired: { label: 'Ended', cls: 'bg-orange-50 dark:bg-orange-950/30 text-orange-600 dark:text-orange-400 border-orange-200 dark:border-orange-800', icon: AlertTriangle },
     suspended: { label: 'Paused', cls: 'bg-red-50 dark:bg-red-950/30 text-red-600 dark:text-red-400 border-red-200 dark:border-red-800', icon: XCircle },
     inactive: { label: 'Inactive', cls: 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 border-slate-200 dark:border-slate-700', icon: null },
@@ -365,6 +365,11 @@ function CityAutocomplete({ value, onChange, labelCls, inputCls }) {
 
 /* ─── Create / Edit Salon Modal ──────────────────────────────────────────── */
 function SalonModal({ mode, tenant, onClose, onSave, saving }) {
+    useEffect(() => {
+        document.body.style.overflow = 'hidden';
+        return () => { document.body.style.overflow = ''; };
+    }, []);
+
     const [form, setForm] = useState({
         name: tenant?.name || '',
         ownerName: tenant?.ownerName || '',
@@ -445,11 +450,21 @@ function SalonModal({ mode, tenant, onClose, onSave, saving }) {
                             </div>
                             <div>
                                 <label className={labelCls}>Phone</label>
-                                <input type="tel" className={inputCls} value={form.phone} onChange={e => set('phone', e.target.value)} placeholder="+91 00000 00000" />
+                                <input type="tel" className={inputCls} value={form.phone}
+                                    onChange={e => {
+                                        const val = e.target.value.replace(/\D/g, '');
+                                        if (val.length <= 10) set('phone', val);
+                                    }}
+                                    placeholder="10-digit number" maxLength={10} />
                             </div>
                             <div>
                                 <label className={labelCls}>GST Number</label>
-                                <input className={inputCls} value={form.gstNumber} onChange={e => set('gstNumber', e.target.value)} placeholder="15-digit GSTIN" />
+                                <input className={inputCls} value={form.gstNumber}
+                                    onChange={e => {
+                                        const val = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+                                        if (val.length <= 15) set('gstNumber', val);
+                                    }}
+                                    placeholder="e.g. 27AAAAA1234A1Z5" maxLength={15} />
                             </div>
                             <div className="col-span-2">
                                 <label className={labelCls}>Street Address</label>

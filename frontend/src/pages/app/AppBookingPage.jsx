@@ -110,6 +110,9 @@ export default function AppBookingPage() {
     const { balance, refreshWallet } = useWallet();
     const { customer, isCustomerAuthenticated, loading: authLoading } = useCustomerAuth();
 
+    // Scroll to top on page mount
+    useEffect(() => { window.scrollTo(0, 0); }, []);
+
     // Redirection logic if not authenticated
     useEffect(() => {
         if (!authLoading && !isCustomerAuthenticated) {
@@ -273,20 +276,19 @@ export default function AppBookingPage() {
     }, [activeMembership, totalPrice]);
 
     const outletStaff = useMemo(() => {
-        if (!currentOutlet || !businessStaff) return [];
-        
-        const targetOutletId = String(currentOutlet._id || currentOutlet.id);
-        
+        if (!businessStaff) return [];
+
+        const targetSalonId = String(activeSalonId || salon?._id || '');
+
         return (businessStaff || []).filter(s => {
+            // Include all staff not explicitly marked as non-stylist
             const isStylist = s.isStylist !== false;
             if (!isStylist) return false;
-            
+
             // Salon check - must match the active salon
             const sSalonId = String(s.salonId?._id || s.salonId || '');
-            const targetSalonId = String(activeSalonId || salon?._id || '');
-            
             if (sSalonId && targetSalonId && sSalonId !== targetSalonId) return false;
-            
+
             return true;
         });
     }, [businessStaff, activeSalonId, salon?._id]);

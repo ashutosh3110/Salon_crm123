@@ -27,9 +27,24 @@ const NOTIFICATION_COLORS = {
     default: 'text-text-muted'
 };
 
-const NotificationCard = ({ notification, onRead, onDelete, colors, isLight }) => {
+const NOTIFICATION_ROUTES = {
+    booking_confirmed: '/app/bookings',
+    booking_new: '/app/bookings',
+    booking_cancelled: '/app/bookings',
+    offer: '/app/services',
+    shop_order: '/app/shop',
+    loyalty: '/app/wallet',
+};
+
+const NotificationCard = ({ notification, onRead, onDelete, colors, isLight, onNavigate }) => {
     const Icon = NOTIFICATION_ICONS[notification.type] || NOTIFICATION_ICONS.default;
     const colorClass = NOTIFICATION_COLORS[notification.type] || NOTIFICATION_COLORS.default;
+    const route = NOTIFICATION_ROUTES[notification.type];
+
+    const handleCardClick = () => {
+        if (!notification.isRead) onRead(notification._id);
+        if (route) onNavigate(route);
+    };
 
     return (
         <motion.div
@@ -37,13 +52,15 @@ const NotificationCard = ({ notification, onRead, onDelete, colors, isLight }) =
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95 }}
+            onClick={handleCardClick}
             style={{
                 background: colors.card,
                 borderRadius: '12px',
                 border: `1px solid ${colors.border}`,
                 marginBottom: '8px',
                 overflow: 'hidden',
-                position: 'relative'
+                position: 'relative',
+                cursor: route ? 'pointer' : 'default',
             }}
             className="group"
         >
@@ -157,6 +174,7 @@ export default function AppNotificationPage() {
                                     onDelete={deleteNotification}
                                     colors={colors}
                                     isLight={isLight}
+                                    onNavigate={navigate}
                                 />
                             ))
                         ) : (

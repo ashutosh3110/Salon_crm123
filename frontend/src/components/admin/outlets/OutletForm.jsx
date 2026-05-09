@@ -189,6 +189,11 @@ export default function OutletForm() {
 
     const handleChange = (e) => {
         const { name, value } = e.target;
+        if (name === 'phone') {
+            const digits = value.replace(/\D/g, '');
+            if (digits.length <= 10) setForm(prev => ({ ...prev, phone: digits }));
+            return;
+        }
         setForm(prev => ({ ...prev, [name]: value }));
     };
 
@@ -402,9 +407,11 @@ export default function OutletForm() {
                                     <input
                                         name="phone"
                                         required
+                                        type="tel"
+                                        maxLength={10}
                                         value={form.phone}
                                         onChange={handleChange}
-                                        placeholder="+91 XXXXX XXXXX"
+                                        placeholder="10-digit number"
                                         className="w-full px-6 py-4 rounded-2xl bg-slate-50 border border-border text-sm font-bold focus:bg-white focus:ring-4 focus:ring-primary/10 outline-none transition-all"
                                     />
                                 </div>

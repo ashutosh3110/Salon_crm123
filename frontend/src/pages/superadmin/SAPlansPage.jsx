@@ -126,6 +126,11 @@ function PlanModal({ plan, onClose, onSave, saving }) {
     const set = (k, v) => setForm(p => ({ ...p, [k]: v }));
     const setLimit = (k, v) => setForm(p => ({ ...p, limits: { ...p.limits, [k]: v } }));
 
+    useEffect(() => {
+        document.body.style.overflow = 'hidden';
+        return () => { document.body.style.overflow = ''; };
+    }, []);
+
     const inputCls = 'w-full px-4 py-2.5 rounded-xl bg-surface border border-border text-text text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all font-bold';
     const labelCls = 'block text-[11px] font-black text-text-muted uppercase tracking-wider mb-1.5 ml-1';
 
@@ -185,7 +190,12 @@ function PlanModal({ plan, onClose, onSave, saving }) {
                                     </div>
                                     <div>
                                         <label className={labelCls}>Base Price (₹) *</label>
-                                        <input type="number" className={inputCls} value={form.price} onChange={e => set('price', +e.target.value)} />
+                                        <input type="number" className={inputCls}
+                                            value={form.price === 0 ? '' : form.price}
+                                            onFocus={e => { if (+e.target.value === 0) set('price', ''); }}
+                                            onBlur={e => { if (e.target.value === '') set('price', 0); }}
+                                            onChange={e => set('price', e.target.value === '' ? '' : +e.target.value)}
+                                            placeholder="0" min={0} />
                                     </div>
                                 </>
                             )}

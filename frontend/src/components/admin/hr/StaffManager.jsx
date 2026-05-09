@@ -254,8 +254,16 @@ export default function StaffManager() {
     const saveStaff = async (e) => {
         e.preventDefault();
         try {
+            if (!form.name.trim()) { showToast('Member name is required'); return; }
+            if (!form.email.trim()) { showToast('Email address is required'); return; }
+            if (!form.phone || form.phone.length !== 10) { showToast('Phone number must be exactly 10 digits'); return; }
+            if (!editTarget && !form.avatar) { showToast('Profile photo is required for new members'); return; }
             if (!editTarget && (!form.password || form.password.length < 8)) {
-                showToast('Password kam se kam 8 characters (naya staff)');
+                showToast('Password must be at least 8 characters');
+                return;
+            }
+            if (form.pan && !/^[A-Z]{5}[0-9]{4}[A-Z]{1}$/.test(form.pan)) {
+                showToast('PAN number format is invalid (e.g. AAAAA1234A)');
                 return;
             }
             if (editTarget) {
@@ -532,7 +540,7 @@ export default function StaffManager() {
                                                         <Plus className="w-8 h-8 text-text-muted group-hover:text-primary transition-colors" />
                                                     )}
                                                 </div>
-                                                <input type="file" accept="image/*" onChange={handleImageChange} className="absolute inset-0 opacity-0 cursor-pointer" />
+                                                <input type="file" accept="image/*" onChange={handleImageChange} className="absolute inset-0 opacity-0 cursor-pointer" required={!editTarget && !form.avatar} />
                                                 <div className="absolute -bottom-2 -right-2 bg-primary text-white p-2 shadow-lg group-hover:scale-110 transition-transform">
                                                     <Edit2 className="w-4 h-4" />
                                                 </div>
@@ -545,7 +553,7 @@ export default function StaffManager() {
                                             <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Member Name *</label>
                                             <input required type="text" placeholder="e.g. John Doe"
                                                 className="w-full px-5 py-4 rounded-none bg-background border border-border text-xs font-black uppercase tracking-widest focus:border-primary outline-none"
-                                                value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value.replace(/[^a-zA-Z\s]/g, '') }))} />
+                                                value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value.replace(/[^a-zA-Z0-9\s'\-\.]/g, '') }))} />
                                         </div>
                                         <div className="space-y-2 text-left">
                                             <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Role *</label>
@@ -585,6 +593,14 @@ export default function StaffManager() {
                                                 }} />
                                         </div>
 
+                                        <div className="space-y-2 text-left">
+                                            <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Date of Birth</label>
+                                            <input type="date"
+                                                max={new Date().toISOString().split('T')[0]}
+                                                className="w-full px-5 py-4 rounded-none bg-background border border-border text-xs font-black uppercase tracking-widest focus:border-primary outline-none"
+                                                value={form.dob} onChange={e => setForm(f => ({ ...f, dob: e.target.value }))} />
+                                        </div>
+
                                         <div className="col-span-2 text-[10px] font-black text-primary uppercase tracking-[0.3em] pb-2 border-b border-border/20 mt-4 mb-2">Payout & Bank Details</div>
 
                                         <div className="space-y-2 text-left">
@@ -595,9 +611,11 @@ export default function StaffManager() {
                                         </div>
                                         <div className="space-y-2 text-left">
                                             <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">PAN Number</label>
-                                            <input type="text" placeholder="PAN_IDENTIFIER"
+                                            <input type="text" placeholder="e.g. AAAAA1234A" maxLength={10}
+                                                pattern="[A-Z]{5}[0-9]{4}[A-Z]{1}"
+                                                title="PAN format: 5 letters, 4 digits, 1 letter (e.g. AAAAA1234A)"
                                                 className="w-full px-5 py-4 rounded-none bg-background border border-border text-xs font-black uppercase tracking-widest focus:border-primary outline-none"
-                                                value={form.pan} onChange={e => setForm(f => ({ ...f, pan: e.target.value }))} />
+                                                value={form.pan} onChange={e => setForm(f => ({ ...f, pan: e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 10) }))} />
                                         </div>
                                         <div className="space-y-2 text-left">
                                             <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Bank Institution</label>

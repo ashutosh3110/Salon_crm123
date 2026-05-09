@@ -72,9 +72,9 @@ const renderPieLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent })
 };
 
 /* ─── Metric card ────────────────────────────────────────────────────────── */
-function MetricCard({ label, value, icon: Icon, gradient, shadow, change, prefix = '', loading }) {
-    return (
-        <div className={`bg-surface rounded-2xl border border-border p-5 hover:border-primary/20 hover:shadow-md transition-all group shadow-sm`}>
+function MetricCard({ label, value, icon: Icon, gradient, shadow, change, prefix = '', loading, to }) {
+    const content = (
+        <div className={`bg-surface rounded-2xl border border-border p-5 hover:border-primary/20 hover:shadow-md transition-all group shadow-sm${to ? ' cursor-pointer' : ''}`}>
             <div className="flex items-center justify-between mb-4">
                 <div className={`w-11 h-11 rounded-xl bg-gradient-to-br ${gradient} flex items-center justify-center shadow-lg ${shadow}`}>
                     <Icon className="w-5 h-5 text-white" />
@@ -93,6 +93,8 @@ function MetricCard({ label, value, icon: Icon, gradient, shadow, change, prefix
             <div className="text-xs text-text-muted font-medium mt-1">{label}</div>
         </div>
     );
+    if (to) return <Link to={to} className="block no-underline">{content}</Link>;
+    return content;
 }
 
 /* ─── Section header ─────────────────────────────────────────────────────── */
@@ -168,13 +170,13 @@ export default function SADashboardPage() {
     }));
 
     const metricCards = [
-        { label: 'Total Registered', value: kpi.totalSalons, icon: Building2, gradient: 'from-primary to-[#8B1A2D]', shadow: 'shadow-primary/20' },
-        { label: 'Active Salons', value: kpi.activeSubs, icon: CheckCircle2, gradient: 'from-emerald-500 to-teal-600', shadow: 'shadow-emerald-500/20' },
-        { label: 'Pending Approval', value: kpi.pendingSalons, icon: Clock, gradient: 'from-blue-500 to-indigo-600', shadow: 'shadow-blue-500/20' },
-        { label: 'Inactive / Suspended', value: kpi.suspendedSalons, icon: AlertTriangle, gradient: 'from-slate-600 to-slate-800', shadow: 'shadow-slate-500/20' },
-        { label: "Today's Earnings", value: kpi.revenueToday, icon: DollarSign, gradient: 'from-violet-500 to-purple-600', shadow: 'shadow-violet-500/20', prefix: '₹' },
-        { label: "Total Revenue", value: kpi.revenueMonth, icon: TrendingUp, gradient: 'from-amber-500 to-orange-600', shadow: 'shadow-amber-500/20', prefix: '₹' },
-        { label: 'Expired Licenses', value: kpi.expiredPlans, icon: XCircle, gradient: 'from-red-500 to-rose-600', shadow: 'shadow-red-500/20' },
+        { label: 'Total Registered', value: kpi.totalSalons, icon: Building2, gradient: 'from-primary to-[#8B1A2D]', shadow: 'shadow-primary/20', to: '/superadmin/salons' },
+        { label: 'Active Salons', value: kpi.activeSubs, icon: CheckCircle2, gradient: 'from-emerald-500 to-teal-600', shadow: 'shadow-emerald-500/20', to: '/superadmin/salons?status=active' },
+        { label: 'Pending Approval', value: kpi.pendingSalons, icon: Clock, gradient: 'from-blue-500 to-indigo-600', shadow: 'shadow-blue-500/20', to: '/superadmin/salons?status=pending' },
+        { label: 'Inactive / Suspended', value: kpi.suspendedSalons, icon: AlertTriangle, gradient: 'from-slate-600 to-slate-800', shadow: 'shadow-slate-500/20', to: '/superadmin/salons?status=suspended' },
+        { label: "Today's Earnings", value: kpi.revenueToday, icon: DollarSign, gradient: 'from-violet-500 to-purple-600', shadow: 'shadow-violet-500/20', prefix: '₹', to: '/superadmin/billing' },
+        { label: "Total Revenue", value: kpi.revenueMonth, icon: TrendingUp, gradient: 'from-amber-500 to-orange-600', shadow: 'shadow-amber-500/20', prefix: '₹', to: '/superadmin/billing' },
+        { label: 'Expired Licenses', value: kpi.expiredPlans, icon: XCircle, gradient: 'from-red-500 to-rose-600', shadow: 'shadow-red-500/20', to: '/superadmin/salons?status=expired' },
     ];
 
     return (

@@ -6,7 +6,9 @@
       "Bash(node -e \"require\\('./backend/Controllers/marketingController.js'\\); console.log\\('OK'\\)\")",
       "Bash(node -e \"require\\('./backend/Routers/financeRoutes.js'\\); console.log\\('OK'\\)\")",
       "Bash(node -e \"require\\('./backend/Routers/promotionRoutes.js'\\); console.log\\('OK'\\)\")",
-      "Bash(node -e \"require\\('./backend/Routers/marketingRoutes.js'\\); console.log\\('OK'\\)\")"
+      "Bash(node -e \"require\\('./backend/Routers/marketingRoutes.js'\\); console.log\\('OK'\\)\")",
+      "Bash(Get-ChildItem -Path \"C:\\\\Users\\\\AnkitAhirwar\\\\OneDrive\\\\Desktop\\\\Wapixo\" -Directory)",
+      "Bash(Select-Object Name)"
     ]
   }
 }

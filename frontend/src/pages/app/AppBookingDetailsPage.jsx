@@ -112,10 +112,10 @@ export default function AppBookingDetailsPage() {
     const StatusIcon = currentStatus.icon;
 
     // Derived values for robust breakdown display
-    const itemsTotal = booking?.subtotal || booking?.service?.price || 0;
-    const totalAmount = booking?.totalPrice || booking?.price || 0;
+    const itemsTotal = booking?.subtotal ?? booking?.service?.price ?? 0;
+    const totalAmount = booking?.totalPrice ?? booking?.price ?? 0;
     // Calculate discount if it's explicitly stored OR infer it from the difference
-    const membershipDiscount = booking?.membershipDiscount || Math.max(0, itemsTotal - totalAmount);
+    const membershipDiscount = booking?.membershipDiscount ?? Math.max(0, itemsTotal - totalAmount);
 
     return (
         <motion.div 

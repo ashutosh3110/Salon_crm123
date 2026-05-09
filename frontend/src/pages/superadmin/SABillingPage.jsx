@@ -475,7 +475,9 @@ export default function SABillingPage() {
                             placeholder="All Status"
                             options={[
                                 { value: '', label: 'All Status' },
+                                { value: 'captured', label: 'Collected', icon: CheckCircle },
                                 { value: 'paid', label: 'Paid', icon: CheckCircle },
+                                { value: 'pending', label: 'Pending', icon: Clock },
                                 { value: 'failed', label: 'Failed', icon: XCircle },
                                 { value: 'refunded', label: 'Refunded', icon: RotateCcw },
                             ]}
@@ -600,7 +602,9 @@ export default function SABillingPage() {
                             placeholder="All Status"
                             options={[
                                 { value: '', label: 'All Status' },
+                                { value: 'captured', label: 'Collected', icon: CheckCircle },
                                 { value: 'paid', label: 'Paid', icon: CheckCircle },
+                                { value: 'pending', label: 'Pending', icon: Clock },
                                 { value: 'overdue', label: 'Overdue', icon: AlertCircle },
                                 { value: 'refunded', label: 'Refunded', icon: RotateCcw },
                             ]}

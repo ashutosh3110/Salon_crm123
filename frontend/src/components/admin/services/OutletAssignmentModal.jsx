@@ -64,14 +64,14 @@ export default function OutletAssignmentModal({ isOpen, onClose, onSave, service
 
                     <div className="max-h-[300px] overflow-y-auto space-y-2 pr-2 custom-scrollbar">
                         <button
-                            onClick={() => setSelectedOutletIds([])}
-                            className={`w-full flex items-center justify-between p-3 rounded-2xl border transition-all ${selectedOutletIds.length === 0 ? 'bg-primary/5 border-primary shadow-sm' : 'bg-surface-alt border-transparent hover:border-border'}`}
+                            onClick={() => setSelectedOutletIds(outlets.map(o => o._id))}
+                            className={`w-full flex items-center justify-between p-3 rounded-2xl border transition-all ${selectedOutletIds.length === outlets.length && outlets.length > 0 ? 'bg-primary/5 border-primary shadow-sm' : 'bg-surface-alt border-transparent hover:border-border'}`}
                         >
                             <div className="flex items-center gap-3">
-                                <div className={`w-5 h-5 rounded-md border flex items-center justify-center transition-all ${selectedOutletIds.length === 0 ? 'bg-primary border-primary text-white' : 'bg-surface border-border'}`}>
-                                    {selectedOutletIds.length === 0 && <Check className="w-3.5 h-3.5" />}
+                                <div className={`w-5 h-5 rounded-md border flex items-center justify-center transition-all ${selectedOutletIds.length === outlets.length && outlets.length > 0 ? 'bg-primary border-primary text-white' : 'bg-surface border-border'}`}>
+                                    {selectedOutletIds.length === outlets.length && outlets.length > 0 && <Check className="w-3.5 h-3.5" />}
                                 </div>
-                                <span className={`text-sm font-bold ${selectedOutletIds.length === 0 ? 'text-primary' : 'text-text'}`}>All Outlets (Global)</span>
+                                <span className={`text-sm font-bold ${selectedOutletIds.length === outlets.length && outlets.length > 0 ? 'text-primary' : 'text-text'}`}>Select All Outlets</span>
                             </div>
                         </button>
 

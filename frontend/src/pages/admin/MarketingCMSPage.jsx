@@ -82,6 +82,15 @@ export default function MarketingCMSPage() {
 
     const [activeTab, setActiveTab] = useState(isSuperAdmin ? 'banners' : 'experts');
     const [isModalOpen, setIsModalOpen] = useState(false);
+
+    useEffect(() => {
+        if (isModalOpen) {
+            document.body.style.overflow = 'hidden';
+        } else {
+            document.body.style.overflow = '';
+        }
+        return () => { document.body.style.overflow = ''; };
+    }, [isModalOpen]);
     const [modalType, setModalType] = useState('banner'); // 'banner', 'offer', or 'lookbook'
     const [selectedGender, setSelectedGender] = useState('all'); // 'all', 'men', 'women'
     const [editingId, setEditingId] = useState(null);

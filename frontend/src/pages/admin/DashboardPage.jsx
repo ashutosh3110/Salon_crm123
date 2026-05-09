@@ -29,6 +29,8 @@ export default function DashboardPage() {
 
     useEffect(() => {
         loadDashboard();
+        const interval = setInterval(loadDashboard, 60000);
+        return () => clearInterval(interval);
     }, [loadDashboard]);
 
     const revenueData = useMemo(() => {

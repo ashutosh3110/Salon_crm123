@@ -42,7 +42,7 @@ exports.getBookings = async (req, res) => {
             .populate('staffId', 'name profileImage')
             .populate('outletId', 'name address city')
             .populate('salonId', 'name logo')
-            .sort({ appointmentDate: -1 });
+            .sort({ createdAt: -1 });
 
         // Transform for frontend compatibility
         const result = bookings.map(b => ({
@@ -70,7 +70,13 @@ exports.getBookings = async (req, res) => {
 exports.createBooking = async (req, res) => {
     try {
         const salonId = req.user.salonId || req.body.salonId || req.body.tenantId;
+        if (!salonId) {
+            return res.status(400).json({ success: false, message: 'Cannot identify salon for this booking' });
+        }
         const { serviceId, paymentMethod, appointmentDate, source } = req.body;
+        if (!serviceId) {
+            return res.status(400).json({ success: false, message: 'Service is required' });
+        }
         
         // Prevent booking in the past for app bookings
         if (source === 'APP' && new Date(appointmentDate) < new Date()) {

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     Scissors,
     Tag,
@@ -27,6 +27,9 @@ export default function ServiceForm({ onSave, onCancel, categories = [], initial
     const navigate = useNavigate();
     const { outlets, platformSettings } = useBusiness();
     const [isSaving, setIsSaving] = useState(false);
+
+    useEffect(() => { window.scrollTo(0, 0); }, []);
+
     const [formData, setFormData] = useState({
         _id: initialData?._id || null,
         name: initialData?.name || '',
