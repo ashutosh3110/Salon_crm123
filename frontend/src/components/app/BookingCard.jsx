@@ -1,8 +1,9 @@
+import { memo } from 'react';
 import { motion } from 'framer-motion';
-import { Calendar, Clock, User } from 'lucide-react';
+import { Calendar, Clock, User, Star } from 'lucide-react';
 import { useCustomerTheme } from '../../contexts/CustomerThemeContext';
 
-export default function BookingCard({ booking, onTap, index = 0 }) {
+const BookingCard = memo(({ booking, onTap, index = 0 }) => {
     const { theme } = useCustomerTheme();
     const isLight = theme === 'light';
 
@@ -111,4 +112,6 @@ export default function BookingCard({ booking, onTap, index = 0 }) {
             )}
         </motion.div>
     );
-}
+});
+
+export default BookingCard;

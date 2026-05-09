@@ -7,7 +7,7 @@ const tabs = [
     { id: 'home', label: 'Home', icon: Home, path: '/app' },
     { id: 'services', label: 'Services', icon: Scissors, path: '/app/services' },
     { id: 'book', label: 'Booking', icon: CalendarPlus, path: '/app/bookings' },
-    { id: 'wallet', label: 'Wallet', icon: Wallet, path: '/app/wallet' },
+    { id: 'shop', label: 'Shop', icon: ShoppingBag, path: '/app/shop' },
     { id: 'profile', label: 'Profile', icon: User, path: '/app/profile' },
 ];
 

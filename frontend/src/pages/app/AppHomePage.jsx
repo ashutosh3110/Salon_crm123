@@ -1,5 +1,5 @@
 // Updated at 22:45 for stability
-import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
+import { memo, useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useCustomerAuth } from '../../contexts/CustomerAuthContext';
 import { useGender } from '../../contexts/GenderContext';
@@ -34,7 +34,7 @@ const getAddressString = (addr) => {
 
 const fallbackImage = "data:image/svg+xml;charset=UTF-8,%3Csvg%20width%3D%22400%22%20height%3D%22400%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Crect%20width%3D%22100%25%22%20height%3D%22100%25%22%20fill%3D%22%23222222%22%2F%3E%3Cpath%20d%3D%22M200%20150%20L250%20220%20L150%20220%20Z%22%20fill%3D%22%23444444%22%2F%3E%3Ccircle%20cx%3D%22160%22%20cy%3D%22150%22%20r%3D%2215%22%20fill%3D%22%23444444%22%2F%3E%3Ctext%20x%3D%2250%25%22%20y%3D%22260%22%20dominant-baseline%3D%22middle%22%20text-anchor%3D%22middle%22%20fill%3D%22%23666666%22%20font-family%3D%22sans-serif%22%20font-size%3D%2220%22%20font-weight%3D%22bold%22%3EWapixo%3C%2Ftext%3E%3C%2Fsvg%3E";
 
-const ServiceCard = ({ service, onBook, onClick, colors, isLight }) => {
+const ServiceCard = memo(({ service, onBook, onClick, colors, isLight }) => {
 
     return (
         <motion.div
@@ -56,6 +56,7 @@ const ServiceCard = ({ service, onBook, onClick, colors, isLight }) => {
                 <img
                     src={getImageUrl(service.image) || fallbackImage}
                     alt={service.name}
+                    loading="lazy"
                     style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                     className="group-hover:scale-110 transition-transform duration-700"
                     onError={(e) => { e.target.onerror = null; e.target.src = fallbackImage; }}
@@ -116,7 +117,7 @@ const ServiceCard = ({ service, onBook, onClick, colors, isLight }) => {
             </div>
         </motion.div>
     );
-};
+});
 
 function HeartBtn({ size = 20 }) {
     const [liked, setLiked] = useState(false);
@@ -143,7 +144,7 @@ function StarRow({ rating }) {
     );
 }
 
-const MembershipPlanCard = ({ plan, colors, isLight }) => {
+const MembershipPlanCard = memo(({ plan, colors, isLight }) => {
     const isPlatinum = plan.name.toLowerCase().includes('platinum');
     const isGold = plan.name.toLowerCase().includes('gold') || plan.name.toLowerCase().includes('royale');
 
@@ -218,7 +219,7 @@ const MembershipPlanCard = ({ plan, colors, isLight }) => {
             </motion.button>
         </motion.div>
     );
-};
+});
 
 const Particle = ({ i }) => (
     <motion.div
@@ -646,6 +647,7 @@ export default function AppHomePage() {
                             <img
                                 src={tab === 'men' ? boyIcon : girlIcon}
                                 alt={tab}
+                                loading="lazy"
                                 style={{ width: '28px', height: '28px', objectFit: 'contain' }}
                             />
                             {tab === 'men' ? 'Men' : 'Women'}
@@ -684,6 +686,7 @@ export default function AppHomePage() {
                                         <img
                                             src={getImageUrl(filteredPromos[currentPromoIndex].img || filteredPromos[currentPromoIndex].image)}
                                             alt="Promo"
+                                            loading="lazy"
                                             style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', opacity: 0.35, borderRadius: '24px' }}
                                             onError={(e) => { e.target.onerror = null; e.target.style.display = 'none'; }}
                                         />
@@ -810,6 +813,7 @@ export default function AppHomePage() {
                                         <img
                                             src={getImageUrl(outlet.images?.[0] || outlet.image) || fallbackImage}
                                             alt={outlet.name}
+                                            loading="lazy"
                                             style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                                             onError={(e) => { e.target.onerror = null; e.target.src = fallbackImage; }}
                                         />

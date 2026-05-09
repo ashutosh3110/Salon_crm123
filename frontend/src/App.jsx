@@ -1,5 +1,5 @@
 import { BrowserRouter as Router, Routes, Route, Outlet, useLocation, Navigate } from 'react-router-dom';
-import { useEffect } from 'react';
+import { useEffect, lazy, Suspense } from 'react';
 import { motion } from 'framer-motion';
 import { AuthProvider } from './contexts/AuthContext';
 import { BusinessProvider } from './contexts/BusinessContext';
@@ -11,127 +11,182 @@ import useFirebaseNotifications from './hooks/useFirebaseNotifications.jsx';
 import { useAuth } from './contexts/AuthContext';
 import { useCustomerAuth } from './contexts/CustomerAuthContext';
 import { NotificationProvider } from './contexts/NotificationContext';
-
-// Public pages
-import LandingPage from './pages/landing/LandingPage';
-import AuthPage from './pages/auth/AuthPage';
-import ForgotPasswordPage from './pages/auth/ForgotPasswordPage';
-import BlogPage from './pages/landing/BlogPage';
-import BlogPostDetailPage from './pages/landing/BlogPostDetailPage';
-import WapixoContactPage from './pages/landing/WapixoContactPage';
-import PrivacyPolicy from './pages/legal/PrivacyPolicy';
-import TermsOfService from './pages/legal/TermsOfService';
-import CookiePolicy from './pages/legal/CookiePolicy';
-import PanelLaunchpad from './pages/PanelLaunchpad';
-
-// Admin layout & pages
-import ProtectedRoute from './components/ProtectedRoute';
-import AdminLayout from './layouts/AdminLayout';
-import DashboardPage from './pages/admin/DashboardPage';
-import ClientsPage from './pages/admin/ClientsPage';
-import BookingsPage from './pages/admin/BookingsPage';
-import ServicesPage from './pages/admin/ServicesPage';
-import ProductsPage from './pages/admin/ProductsPage';
-import StaffPage from './pages/admin/StaffPage';
-import OutletsPage from './pages/admin/OutletsPage';
-import OutletDetailPage from './pages/admin/OutletDetailPage';
-import ServiceDetailPage from './pages/admin/ServiceDetailPage';
-import OutletForm from './components/admin/outlets/OutletForm';
-import CustomersPage from './pages/admin/CustomersPage';
-import PromotionsPage from './pages/admin/PromotionsPage';
-import InvoicesPage from './pages/admin/InvoicesPage';
-import SettingsPage from './pages/admin/SettingsPage';
-import FinancePage from './pages/admin/FinancePage';
-import HRPage from './pages/admin/HRPage';
-import InventoryPage from './pages/admin/InventoryPage';
-import MarketingCMSPage from './pages/admin/MarketingCMSPage';
-import MarketingHubPage from './pages/admin/MarketingHubPage';
-import LoyaltyMembershipPage from './pages/admin/LoyaltyMembershipPage';
-import InquiryPage from './pages/admin/InquiryPage';
-import RemindersPage from './pages/admin/RemindersPage';
-import PublicCataloguePage from './pages/catalogue/PublicCataloguePage';
-import SubscriptionPage from './pages/admin/SubscriptionPage';
-import RolesPage from './pages/admin/RolesPage';
-import NewBookingPage from './pages/admin/NewBookingPage';
-import SupportPage from './pages/admin/SupportPage';
-import FeatureLockedPage from './pages/admin/FeatureLockedPage';
-import BookingDetailPage from './pages/admin/BookingDetailPage';
-import ProductManagementPage from './pages/admin/ProductManagementPage';
-import ProductCategoriesPage from './pages/admin/ProductCategoriesPage';
-import StockOverviewPage from './pages/admin/StockOverviewPage';
-import AddProductPage from './pages/admin/AddProductPage';
-import ProductDetailsPage from './pages/admin/ProductDetailsPage';
-
-// POS App (standalone)
-import POSLayout from './layouts/POSLayout';
-import POSBillingPage from './pages/pos/POSBillingPage';
-import POSDashboardPage from './pages/pos/POSDashboardPage';
-import POSInvoicesPage from './pages/pos/POSInvoicesPage';
-import POSPaymentsPage from './pages/pos/POSPaymentsPage';
-import POSRefundsPage from './pages/pos/POSRefundsPage';
-import POSNotificationsPage from './pages/pos/POSNotificationsPage';
-import POSSettingsPage from './pages/pos/POSSettingsPage';
-
-// Super Admin layout & pages
-import SuperAdminLayout from './layouts/SuperAdminLayout';
-import SuperAdminLoginPage from './pages/superadmin/SuperAdminLoginPage';
-import SADashboardPage from './pages/superadmin/SADashboardPage';
-import SATenantsPage from './pages/superadmin/SATenantsPage';
-import SATenantDetailPage from './pages/superadmin/SATenantDetailPage';
-import SASubscriptionsPage from './pages/superadmin/SASubscriptionsPage';
-import SAPlansPage from './pages/superadmin/SAPlansPage';
-import SABillingPage from './pages/superadmin/SABillingPage';
-import SASettingsPage from './pages/superadmin/SASettingsPage';
-import SASupportPage from './pages/superadmin/SASupportPage';
-import SAAnalyticsPage from './pages/superadmin/SAAnalyticsPage';
-import SAInquiriesPage from './pages/superadmin/SAInquiriesPage';
-import SACMSPage from './pages/superadmin/SACMSPage';
-import SABlogPage from './pages/superadmin/SABlogPage';
-
-// Customer App layout & pages
-import AppLayout from './layouts/AppLayout';
-import AppLoginPage from './pages/app/AppLoginPage';
-import AppHomePage from './pages/app/AppHomePage';
-import AppWalletPage from './pages/app/AppWalletPage';
-
-import SalonProfilePage from './pages/app/SalonProfilePage';
-
-import AppBookingPage from './pages/app/AppBookingPage';
-import AppMyBookingsPage from './pages/app/AppMyBookingsPage';
-import AppMyOrdersPage from './pages/app/AppMyOrdersPage';
-import AppBookingDetailsPage from './pages/app/AppBookingDetailsPage';
-import AppServicesPage from './pages/app/AppServicesPage';
-import AppReferralPage from './pages/app/AppReferralPage';
-import AppProfilePage from './pages/app/AppProfilePage';
-import AppShopPage from './pages/app/AppShopPage';
-import AppProductCategoriesPage from './pages/app/AppProductCategoriesPage';
-import AppProductDetailsPage from './pages/app/AppProductDetailsPage';
-import AppServiceDetailsPage from './pages/app/AppServiceDetailsPage';
-import AppCheckoutPage from './pages/app/AppCheckoutPage';
-import AppNotificationPage from './pages/app/AppNotificationPage';
-import AppLoyaltyPage from './pages/app/AppLoyaltyPage';
-import AppMembershipPage from './pages/app/AppMembershipPage';
-import AppMembershipCheckoutPage from './pages/app/AppMembershipCheckoutPage';
-import AppMembershipSuccessPage from './pages/app/AppMembershipSuccessPage';
-import GenderSelectPage from './pages/app/GenderSelectPage';
-import AppHelpSupportPage from './pages/app/AppHelpSupportPage';
-import AppPrivacyPolicyPage from './pages/app/AppPrivacyPolicyPage';
-import AppFavoritesPage from './pages/app/AppFavoritesPage';
-import AppExpertsPage from './pages/app/AppExpertsPage';
-import NearbyOutletsPage from './pages/app/NearbyOutletsPage';
-import AppOrderDetailsPage from './pages/app/AppOrderDetailsPage';
-import AppTransactionHistoryPage from './pages/app/AppTransactionHistoryPage';
-import AppReviewsPage from './pages/app/AppReviewsPage';
 import { CartProvider } from './contexts/CartContext';
 import { GenderProvider } from './contexts/GenderContext';
-import CustomerAppWrapper from './layouts/CustomerAppWrapper';
 import { InventoryProvider } from './contexts/InventoryContext';
 import { PettyCashProvider } from './contexts/PettyCashContext';
 import { FinanceProvider } from './contexts/FinanceContext';
 import { CMSProvider } from './contexts/CMSContext';
 import { AttendanceProvider } from './contexts/AttendanceContext';
+import { BookingRegistryProvider } from './contexts/BookingRegistryContext';
 
+// Loading Component
+const PageLoader = () => (
+  <div className="min-h-[60vh] flex flex-col items-center justify-center p-8 space-y-4">
+    <div className="w-12 h-12 border-4 border-primary/20 border-t-primary rounded-full animate-spin" />
+    <p className="text-sm font-medium text-muted-foreground animate-pulse">Loading experience...</p>
+  </div>
+);
 
+// Public pages - Lazy Loaded
+const LandingPage = lazy(() => import('./pages/landing/LandingPage'));
+const AuthPage = lazy(() => import('./pages/auth/AuthPage'));
+const ForgotPasswordPage = lazy(() => import('./pages/auth/ForgotPasswordPage'));
+const BlogPage = lazy(() => import('./pages/landing/BlogPage'));
+const BlogPostDetailPage = lazy(() => import('./pages/landing/BlogPostDetailPage'));
+const WapixoContactPage = lazy(() => import('./pages/landing/WapixoContactPage'));
+const PrivacyPolicy = lazy(() => import('./pages/legal/PrivacyPolicy'));
+const TermsOfService = lazy(() => import('./pages/legal/TermsOfService'));
+const CookiePolicy = lazy(() => import('./pages/legal/CookiePolicy'));
+const PanelLaunchpad = lazy(() => import('./pages/PanelLaunchpad'));
+
+// Admin pages - Lazy Loaded
+const AdminLayout = lazy(() => import('./layouts/AdminLayout'));
+const ProtectedRoute = lazy(() => import('./components/ProtectedRoute'));
+const DashboardPage = lazy(() => import('./pages/admin/DashboardPage'));
+const ClientsPage = lazy(() => import('./pages/admin/ClientsPage'));
+const BookingsPage = lazy(() => import('./pages/admin/BookingsPage'));
+const ServicesPage = lazy(() => import('./pages/admin/ServicesPage'));
+const ProductsPage = lazy(() => import('./pages/admin/ProductsPage'));
+const StaffPage = lazy(() => import('./pages/admin/StaffPage'));
+const OutletsPage = lazy(() => import('./pages/admin/OutletsPage'));
+const OutletDetailPage = lazy(() => import('./pages/admin/OutletDetailPage'));
+const ServiceDetailPage = lazy(() => import('./pages/admin/ServiceDetailPage'));
+const OutletForm = lazy(() => import('./components/admin/outlets/OutletForm'));
+const CustomersPage = lazy(() => import('./pages/admin/CustomersPage'));
+const PromotionsPage = lazy(() => import('./pages/admin/PromotionsPage'));
+const InvoicesPage = lazy(() => import('./pages/admin/InvoicesPage'));
+const SettingsPage = lazy(() => import('./pages/admin/SettingsPage'));
+const FinancePage = lazy(() => import('./pages/admin/FinancePage'));
+const HRPage = lazy(() => import('./pages/admin/HRPage'));
+const InventoryPage = lazy(() => import('./pages/admin/InventoryPage'));
+const MarketingCMSPage = lazy(() => import('./pages/admin/MarketingCMSPage'));
+const MarketingHubPage = lazy(() => import('./pages/admin/MarketingHubPage'));
+const LoyaltyMembershipPage = lazy(() => import('./pages/admin/LoyaltyMembershipPage'));
+const InquiryPage = lazy(() => import('./pages/admin/InquiryPage'));
+const RemindersPage = lazy(() => import('./pages/admin/RemindersPage'));
+const PublicCataloguePage = lazy(() => import('./pages/catalogue/PublicCataloguePage'));
+const SubscriptionPage = lazy(() => import('./pages/admin/SubscriptionPage'));
+const RolesPage = lazy(() => import('./pages/admin/RolesPage'));
+const NewBookingPage = lazy(() => import('./pages/admin/NewBookingPage'));
+const SupportPage = lazy(() => import('./pages/admin/SupportPage'));
+const FeatureLockedPage = lazy(() => import('./pages/admin/FeatureLockedPage'));
+const BookingDetailPage = lazy(() => import('./pages/admin/BookingDetailPage'));
+const ProductManagementPage = lazy(() => import('./pages/admin/ProductManagementPage'));
+const ProductCategoriesPage = lazy(() => import('./pages/admin/ProductCategoriesPage'));
+const StockOverviewPage = lazy(() => import('./pages/admin/StockOverviewPage'));
+const AddProductPage = lazy(() => import('./pages/admin/AddProductPage'));
+const ProductDetailsPage = lazy(() => import('./pages/admin/ProductDetailsPage'));
+
+// POS App - Lazy Loaded
+const POSLayout = lazy(() => import('./layouts/POSLayout'));
+const POSBillingPage = lazy(() => import('./pages/pos/POSBillingPage'));
+const POSDashboardPage = lazy(() => import('./pages/pos/POSDashboardPage'));
+const POSInvoicesPage = lazy(() => import('./pages/pos/POSInvoicesPage'));
+const POSPaymentsPage = lazy(() => import('./pages/pos/POSPaymentsPage'));
+const POSRefundsPage = lazy(() => import('./pages/pos/POSRefundsPage'));
+const POSNotificationsPage = lazy(() => import('./pages/pos/POSNotificationsPage'));
+const POSSettingsPage = lazy(() => import('./pages/pos/POSSettingsPage'));
+
+// Super Admin - Lazy Loaded
+const SuperAdminLayout = lazy(() => import('./layouts/SuperAdminLayout'));
+const SuperAdminLoginPage = lazy(() => import('./pages/superadmin/SuperAdminLoginPage'));
+const SADashboardPage = lazy(() => import('./pages/superadmin/SADashboardPage'));
+const SATenantsPage = lazy(() => import('./pages/superadmin/SATenantsPage'));
+const SATenantDetailPage = lazy(() => import('./pages/superadmin/SATenantDetailPage'));
+const SASubscriptionsPage = lazy(() => import('./pages/superadmin/SASubscriptionsPage'));
+const SAPlansPage = lazy(() => import('./pages/superadmin/SAPlansPage'));
+const SABillingPage = lazy(() => import('./pages/superadmin/SABillingPage'));
+const SASettingsPage = lazy(() => import('./pages/superadmin/SASettingsPage'));
+const SASupportPage = lazy(() => import('./pages/superadmin/SASupportPage'));
+const SAAnalyticsPage = lazy(() => import('./pages/superadmin/SAAnalyticsPage'));
+const SAInquiriesPage = lazy(() => import('./pages/superadmin/SAInquiriesPage'));
+const SACMSPage = lazy(() => import('./pages/superadmin/SACMSPage'));
+const SABlogPage = lazy(() => import('./pages/superadmin/SABlogPage'));
+
+// Customer App - Lazy Loaded
+const AppLayout = lazy(() => import('./layouts/AppLayout'));
+const AppLoginPage = lazy(() => import('./pages/app/AppLoginPage'));
+const AppHomePage = lazy(() => import('./pages/app/AppHomePage'));
+const AppWalletPage = lazy(() => import('./pages/app/AppWalletPage'));
+const SalonProfilePage = lazy(() => import('./pages/app/SalonProfilePage'));
+const AppBookingPage = lazy(() => import('./pages/app/AppBookingPage'));
+const AppMyBookingsPage = lazy(() => import('./pages/app/AppMyBookingsPage'));
+const AppMyOrdersPage = lazy(() => import('./pages/app/AppMyOrdersPage'));
+const AppBookingDetailsPage = lazy(() => import('./pages/app/AppBookingDetailsPage'));
+const AppServicesPage = lazy(() => import('./pages/app/AppServicesPage'));
+const AppReferralPage = lazy(() => import('./pages/app/AppReferralPage'));
+const AppProfilePage = lazy(() => import('./pages/app/AppProfilePage'));
+const AppShopPage = lazy(() => import('./pages/app/AppShopPage'));
+const AppProductCategoriesPage = lazy(() => import('./pages/app/AppProductCategoriesPage'));
+const AppProductDetailsPage = lazy(() => import('./pages/app/AppProductDetailsPage'));
+const AppServiceDetailsPage = lazy(() => import('./pages/app/AppServiceDetailsPage'));
+const AppCheckoutPage = lazy(() => import('./pages/app/AppCheckoutPage'));
+const AppNotificationPage = lazy(() => import('./pages/app/AppNotificationPage'));
+const AppLoyaltyPage = lazy(() => import('./pages/app/AppLoyaltyPage'));
+const AppMembershipPage = lazy(() => import('./pages/app/AppMembershipPage'));
+const AppMembershipCheckoutPage = lazy(() => import('./pages/app/AppMembershipCheckoutPage'));
+const AppMembershipSuccessPage = lazy(() => import('./pages/app/AppMembershipSuccessPage'));
+const GenderSelectPage = lazy(() => import('./pages/app/GenderSelectPage'));
+const AppHelpSupportPage = lazy(() => import('./pages/app/AppHelpSupportPage'));
+const AppPrivacyPolicyPage = lazy(() => import('./pages/app/AppPrivacyPolicyPage'));
+const AppFavoritesPage = lazy(() => import('./pages/app/AppFavoritesPage'));
+const AppExpertsPage = lazy(() => import('./pages/app/AppExpertsPage'));
+const NearbyOutletsPage = lazy(() => import('./pages/app/NearbyOutletsPage'));
+const AppOrderDetailsPage = lazy(() => import('./pages/app/AppOrderDetailsPage'));
+const AppTransactionHistoryPage = lazy(() => import('./pages/app/AppTransactionHistoryPage'));
+const AppReviewsPage = lazy(() => import('./pages/app/AppReviewsPage'));
+const CustomerAppWrapper = lazy(() => import('./layouts/CustomerAppWrapper'));
+
+// Role-Specific Layouts - Lazy Loaded
+const ReceptionistLayout = lazy(() => import('./layouts/ReceptionistLayout'));
+const ReceptionistDashboard = lazy(() => import('./pages/receptionist/ReceptionistDashboard'));
+const AppointmentsPage = lazy(() => import('./pages/receptionist/AppointmentsPage'));
+const QueuePage = lazy(() => import('./pages/receptionist/QueuePage'));
+const CheckInPage = lazy(() => import('./pages/receptionist/CheckInPage'));
+const ReceptionistInvoicesPage = lazy(() => import('./pages/receptionist/InvoicesPage'));
+const PaymentsPage = lazy(() => import('./pages/receptionist/PaymentsPage'));
+const ReceptionistSettingsPage = lazy(() => import('./pages/receptionist/ReceptionistSettingsPage'));
+const PettyCashPage = lazy(() => import('./pages/accountant/PettyCashPage'));
+
+const StylistLayout = lazy(() => import('./layouts/StylistLayout'));
+const StylistDashboard = lazy(() => import('./pages/stylist/StylistDashboard'));
+const StylistClientsPage = lazy(() => import('./pages/stylist/StylistClientsPage'));
+const StylistCommissionsPage = lazy(() => import('./pages/stylist/StylistCommissionsPage'));
+const StylistTimeOffPage = lazy(() => import('./pages/stylist/StylistTimeOffPage'));
+const StylistAttendance = lazy(() => import('./pages/stylist/StylistAttendance'));
+const StylistSettingsPage = lazy(() => import('./pages/stylist/StylistSettingsPage'));
+
+const AccountantLayout = lazy(() => import('./layouts/AccountantLayout'));
+const AccountantDashboard = lazy(() => import('./pages/accountant/AccountantDashboard'));
+const RevenuePage = lazy(() => import('./pages/accountant/RevenuePage'));
+const ExpensesPage = lazy(() => import('./pages/accountant/ExpensesPage'));
+const SupplierInvoicesPage = lazy(() => import('./pages/accountant/SupplierInvoicesPage'));
+const PayrollPage = lazy(() => import('./pages/accountant/PayrollPage'));
+const TaxPage = lazy(() => import('./pages/accountant/TaxPage'));
+const ReconciliationPage = lazy(() => import('./pages/accountant/ReconciliationPage'));
+const AccountantSettingsPage = lazy(() => import('./pages/accountant/AccountantSettingsPage'));
+
+const InventoryLayout = lazy(() => import('./layouts/InventoryLayout'));
+const InventoryDashboard = lazy(() => import('./pages/inventory/InventoryDashboard'));
+const InventoryStockOverview = lazy(() => import('./pages/inventory/StockOverviewPage'));
+const PurchasePage = lazy(() => import('./pages/inventory/PurchasePage'));
+const StockTransferPage = lazy(() => import('./pages/inventory/StockTransferPage'));
+const LowStockAlertsPage = lazy(() => import('./pages/inventory/LowStockAlertsPage'));
+const UsageReportsPage = lazy(() => import('./pages/inventory/UsageReportsPage'));
+const InventorySettingsPage = lazy(() => import('./pages/inventory/InventorySettingsPage'));
+
+const ManagerLayout = lazy(() => import('./layouts/ManagerLayout'));
+const ManagerDashboard = lazy(() => import('./pages/manager/ManagerDashboard'));
+const TeamPage = lazy(() => import('./pages/manager/TeamPage'));
+const PerformancePage = lazy(() => import('./pages/manager/PerformancePage'));
+const AttendancePage = lazy(() => import('./pages/manager/AttendancePage'));
+const TargetsPage = lazy(() => import('./pages/manager/TargetsPage'));
+const FeedbackPage = lazy(() => import('./pages/manager/FeedbackPage'));
+const ShiftsPage = lazy(() => import('./pages/manager/ShiftsPage'));
+const ManagerSettingsPage = lazy(() => import('./pages/manager/ManagerSettingsPage'));
+const CatalogueEditorPage = lazy(() => import('./pages/manager/CatalogueEditorPage'));
+const ServiceApprovalPage = lazy(() => import('./pages/manager/ServiceApprovalPage'));
 
 function ScrollToHash() {
   const { pathname, hash, state } = useLocation();
@@ -161,57 +216,6 @@ function NotificationHandler() {
   
   return null;
 }
-
-// Role-Specific Layouts & Dashboards
-import ReceptionistLayout from './layouts/ReceptionistLayout';
-import ReceptionistDashboard from './pages/receptionist/ReceptionistDashboard';
-import AppointmentsPage from './pages/receptionist/AppointmentsPage';
-import QueuePage from './pages/receptionist/QueuePage';
-import CheckInPage from './pages/receptionist/CheckInPage';
-import ReceptionistInvoicesPage from './pages/receptionist/InvoicesPage';
-import PaymentsPage from './pages/receptionist/PaymentsPage';
-import ReceptionistSettingsPage from './pages/receptionist/ReceptionistSettingsPage';
-
-import StylistLayout from './layouts/StylistLayout';
-import StylistDashboard from './pages/stylist/StylistDashboard';
-import StylistClientsPage from './pages/stylist/StylistClientsPage';
-import StylistCommissionsPage from './pages/stylist/StylistCommissionsPage';
-import StylistTimeOffPage from './pages/stylist/StylistTimeOffPage';
-import StylistAttendance from './pages/stylist/StylistAttendance';
-import StylistSettingsPage from './pages/stylist/StylistSettingsPage';
-
-import AccountantLayout from './layouts/AccountantLayout';
-import AccountantDashboard from './pages/accountant/AccountantDashboard';
-import RevenuePage from './pages/accountant/RevenuePage';
-import ExpensesPage from './pages/accountant/ExpensesPage';
-import SupplierInvoicesPage from './pages/accountant/SupplierInvoicesPage';
-import PayrollPage from './pages/accountant/PayrollPage';
-import TaxPage from './pages/accountant/TaxPage';
-import ReconciliationPage from './pages/accountant/ReconciliationPage';
-import AccountantSettingsPage from './pages/accountant/AccountantSettingsPage';
-import PettyCashPage from './pages/accountant/PettyCashPage';
-
-import InventoryLayout from './layouts/InventoryLayout';
-import InventoryDashboard from './pages/inventory/InventoryDashboard';
-import InventoryStockOverview from './pages/inventory/StockOverviewPage';
-import PurchasePage from './pages/inventory/PurchasePage';
-import StockTransferPage from './pages/inventory/StockTransferPage';
-import LowStockAlertsPage from './pages/inventory/LowStockAlertsPage';
-import UsageReportsPage from './pages/inventory/UsageReportsPage';
-import InventorySettingsPage from './pages/inventory/InventorySettingsPage';
-
-import ManagerLayout from './layouts/ManagerLayout';
-import ManagerDashboard from './pages/manager/ManagerDashboard';
-import TeamPage from './pages/manager/TeamPage';
-import PerformancePage from './pages/manager/PerformancePage';
-import AttendancePage from './pages/manager/AttendancePage';
-import TargetsPage from './pages/manager/TargetsPage';
-import FeedbackPage from './pages/manager/FeedbackPage';
-import ShiftsPage from './pages/manager/ShiftsPage';
-import ManagerSettingsPage from './pages/manager/ManagerSettingsPage';
-import CatalogueEditorPage from './pages/manager/CatalogueEditorPage';
-import ServiceApprovalPage from './pages/manager/ServiceApprovalPage';
-import { BookingRegistryProvider } from './contexts/BookingRegistryContext';
 
 function App() {
   return (
@@ -243,6 +247,7 @@ function App() {
                         <FinanceProvider>
                           <InventoryProvider>
                             <CartProvider>
+                            <Suspense fallback={<PageLoader />}>
                             <Routes>
                         {/* Public Routes */}
                         <Route path="/" element={<LandingPage />} />
@@ -561,6 +566,7 @@ function App() {
                               </div>
                             } />
                           </Routes>
+                          </Suspense>
                           </CartProvider>
                           </InventoryProvider>
                         </FinanceProvider>

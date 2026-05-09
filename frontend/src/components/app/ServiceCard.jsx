@@ -1,8 +1,9 @@
+import { memo } from 'react';
 import { motion } from 'framer-motion';
 import { Clock, ChevronRight, Armchair, DoorClosed } from 'lucide-react';
 import { useCustomerTheme } from '../../contexts/CustomerThemeContext';
 
-export default function ServiceCard({ service, onBook, index = 0 }) {
+const ServiceCard = memo(({ service, onBook, index = 0 }) => {
     const { theme } = useCustomerTheme();
     const isLight = theme === 'light';
 
@@ -71,4 +72,6 @@ export default function ServiceCard({ service, onBook, index = 0 }) {
             </div>
         </motion.div>
     );
-}
+});
+
+export default ServiceCard;
