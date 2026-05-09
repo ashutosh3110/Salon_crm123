@@ -429,26 +429,39 @@ exports.getEODSummary = async (req, res) => {
         const date = req.query.date ? new Date(req.query.date) : new Date();
         const start = new Date(date); start.setHours(0, 0, 0, 0);
         const end = new Date(date); end.setHours(23, 59, 59, 999);
+        
+        // Fetch last closed EOD for opening cash
+        const lastEod = await EndOfDay.findOne({ salonId, date: { $lt: start } }).sort({ date: -1 });
+        const openingCash = lastEod?.actualCash || 0;
 
         const invoices = await Invoice.find({ salonId, createdAt: { $gte: start, $lte: end } });
         const expenses = await Expense.find({ salonId, date: { $gte: start, $lte: end } });
 
         const totalRevenue = invoices.reduce((s, i) => s + (i.total || 0), 0);
         const totalExpenses = expenses.reduce((s, e) => s + (e.amount || 0), 0);
-        const cashRevenue = invoices.filter(i => i.paymentMethod === 'cash').reduce((s, i) => s + (i.total || 0), 0);
+        const cashSales = invoices.filter(i => i.paymentMethod === 'cash').reduce((s, i) => s + (i.total || 0), 0);
+        const cashExpenses = expenses.filter(e => e.paymentMethod === 'cash').reduce((s, e) => s + (e.amount || 0), 0);
+        
         const cardRevenue = invoices.filter(i => i.paymentMethod === 'card').reduce((s, i) => s + (i.total || 0), 0);
-        const onlineRevenue = invoices.filter(i => i.paymentMethod === 'online').reduce((s, i) => s + (i.total || 0), 0);
+        const onlineRevenue = invoices.filter(i => i.paymentMethod === 'online' || i.paymentMethod === 'upi').reduce((s, i) => s + (i.total || 0), 0);
 
-        const dateStr = date.toISOString().split('T')[0];
+        const netCashEstimate = openingCash + cashSales - cashExpenses;
+
         const existingClose = await EndOfDay.findOne({ salonId, date: { $gte: start, $lte: end } });
 
         res.json({
             success: true,
             data: {
                 metrics: {
-                    totalRevenue, totalExpenses, netRevenue: totalRevenue - totalExpenses,
+                    totalSales: totalRevenue,
+                    dailyExpenses: totalExpenses,
+                    netForDay: totalRevenue - totalExpenses,
                     invoiceCount: invoices.length,
-                    cashRevenue, cardRevenue, onlineRevenue,
+                    cashSales,
+                    cardSales: cardRevenue,
+                    onlineSales: onlineRevenue,
+                    openingCash,
+                    netCashEstimate
                 },
                 dayClosed: !!existingClose,
                 closure: existingClose || null,

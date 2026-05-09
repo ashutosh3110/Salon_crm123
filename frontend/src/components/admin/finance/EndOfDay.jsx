@@ -34,6 +34,8 @@ export default function EndOfDay() {
     const [error, setError] = useState(null);
     const [data, setData] = useState(null);
     const [notes, setNotes] = useState('');
+    const [openingCash, setOpeningCash] = useState('0');
+    const [actualCash, setActualCash] = useState('');
     const [history, setHistory] = useState([]);
     const [showHistory, setShowHistory] = useState(false);
 
@@ -75,15 +77,27 @@ export default function EndOfDay() {
 
     const handleCloseDay = async () => {
         if (dayClosed) return;
+        if (!actualCash) return setError('Actual Cash (Drawer count) is required');
+        
         if (!window.confirm('Kya aap sure hain? Close hone ke baad is din ke liye dubara EOD nahi lagega.')) return;
+        
+        const expected = (m?.netCashEstimate || 0) + Number(openingCash || 0);
+        const actual = Number(actualCash || 0);
+        const disc = actual - expected;
+
         setClosing(true);
         setError(null);
         try {
             await api.post('/finance/eod/close', {
                 businessDate,
+                openingCash: Number(openingCash),
+                actualCash: actual,
+                expectedCash: expected,
+                discrepancy: disc,
                 notes: notes.trim(),
             });
             setNotes('');
+            setActualCash('');
             await load();
         } catch (e) {
             setError(e?.response?.data?.message || e.message || 'Close failed');
@@ -311,9 +325,46 @@ export default function EndOfDay() {
                         <div className="space-y-2">
                             <h3 className="text-2xl font-bold text-rose-900 tracking-tight">Perform daily closure</h3>
                             <p className="text-sm text-rose-700 font-medium max-w-md mx-auto">
-                                Close karne par is date ka snapshot save ho jata hai — dubara same din close nahi ho sakta.
+                                Din bhar ka cash aur difference verify karein.
                             </p>
                         </div>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full max-w-md">
+                            <div className="text-left space-y-1">
+                                <label className="text-[10px] font-black uppercase text-rose-900 ml-1">Opening Cash (Subah ka cash)</label>
+                                <input
+                                    type="number"
+                                    value={openingCash}
+                                    onChange={(e) => setOpeningCash(e.target.value)}
+                                    placeholder="0"
+                                    disabled={dayClosed}
+                                    className="w-full p-4 rounded-2xl border border-rose-200 text-sm bg-white disabled:opacity-50"
+                                />
+                            </div>
+                            <div className="text-left space-y-1">
+                                <label className="text-[10px] font-black uppercase text-rose-900 ml-1">Actual Cash (Drawer me kitna hai)</label>
+                                <input
+                                    type="number"
+                                    value={actualCash}
+                                    onChange={(e) => setActualCash(e.target.value)}
+                                    placeholder="0"
+                                    disabled={dayClosed}
+                                    className="w-full p-4 rounded-2xl border border-rose-200 text-sm bg-white disabled:opacity-50 font-black text-rose-600"
+                                />
+                            </div>
+                        </div>
+
+                        {!dayClosed && actualCash && (
+                            <div className="p-4 rounded-2xl bg-white border border-rose-100 w-full max-w-md">
+                                <div className="flex justify-between items-center text-[11px] font-black uppercase">
+                                    <span className="text-text-muted">Difference (Variance)</span>
+                                    <span className={Number(actualCash) - ((m?.netCashEstimate || 0) + Number(openingCash)) >= 0 ? 'text-emerald-600' : 'text-rose-600'}>
+                                        {formatInr(Number(actualCash) - ((m?.netCashEstimate || 0) + Number(openingCash)))}
+                                    </span>
+                                </div>
+                            </div>
+                        )}
+
                         <textarea
                             value={notes}
                             onChange={(e) => setNotes(e.target.value)}

@@ -33,7 +33,20 @@ const MOCK_DATA = {
 
 export default function SalesReports() {
     const [period, setPeriod] = useState('monthly');
-    const [loading, setLoading] = useState(false);
+    const [loading, setLoading] = useState(true);
+    const [data, setData] = useState(null);
+
+    useEffect(() => {
+        setLoading(true);
+        api.get('/finance/summary')
+            .then(res => setData(res.data?.data))
+            .catch(() => setData(null))
+            .finally(() => setLoading(false));
+    }, []);
+
+    const trend = data?.monthlyTrend || MOCK_DATA.daily;
+    const services = (data?.costAllocation || []).map(c => ({ name: c.label, value: c.percentage }));
+    const recent = data?.recentTransactions || [];
 
     return (
         <div className="p-6 space-y-8 animate-reveal">
@@ -81,7 +94,7 @@ export default function SalesReports() {
                 </div>
                 <div className="h-[300px] w-full relative overflow-hidden">
                     <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
-                        <AreaChart data={MOCK_DATA.daily}>
+                        <AreaChart data={trend}>
                             <defs>
                                 <linearGradient id="colorSales" x1="0" y1="0" x2="0" y2="1">
                                     <stop offset="5%" stopColor="var(--primary)" stopOpacity={0.3}/>
@@ -139,7 +152,7 @@ export default function SalesReports() {
                     </div>
                     <div className="h-[250px] w-full relative overflow-hidden">
                         <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
-                            <BarChart data={MOCK_DATA.serviceWise} layout="vertical">
+                            <BarChart data={services.length ? services : MOCK_DATA.serviceWise} layout="vertical">
                                 <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="var(--border)" opacity={0.3} />
                                 <XAxis type="number" hide />
                                 <YAxis 
@@ -159,7 +172,7 @@ export default function SalesReports() {
                                         fontWeight: '900'
                                     }}
                                 />
-                                <Bar dataKey="value" fill="var(--primary)" radius={[0, 4, 4, 0]} barSize={20} />
+                                <Bar dataKey={services.length ? 'value' : 'value'} fill="var(--primary)" radius={[0, 4, 4, 0]} barSize={20} />
                             </BarChart>
                         </ResponsiveContainer>
                     </div>

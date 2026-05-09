@@ -8,8 +8,7 @@ const endOfDaySchema = new mongoose.Schema({
     },
     date: {
         type: Date,
-        default: Date.now,
-        unique: true // Ensure only one report per day per salon
+        default: Date.now
     },
     openingCash: {
         type: Number,
@@ -56,5 +55,7 @@ const endOfDaySchema = new mongoose.Schema({
 }, {
     timestamps: true
 });
+
+endOfDaySchema.index({ salonId: 1, date: 1 }, { unique: true });
 
 module.exports = mongoose.model('EndOfDay', endOfDaySchema);
