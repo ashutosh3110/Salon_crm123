@@ -1,6 +1,8 @@
 const Notification = require('../Models/Notification');
 const { broadcastNotification, sendNotification } = require('../Utils/notification');
 const Customer = require('../Models/Customer');
+const User = require('../Models/User');
+const Staff = require('../Models/Staff');
 
 // @desc    Get notifications for a customer
 // @route   GET /api/notifications
@@ -104,39 +106,50 @@ exports.registerToken = async (req, res) => {
 
         const userId = req.user.id || req.user._id;
         const phone = req.user.phone;
+        const role = req.user.role;
         const updateField = (platform === 'mobile' || platform === 'app') ? { fcmTokenMobile: token } : { fcmTokenWeb: token };
-
-        console.log(`[FCM Register] UserID: ${userId}, Phone: ${phone}, Platform: ${platform}`);
-
-        // Use $addToSet to add token to array without duplicates
         const updateQuery = { $addToSet: updateField };
-        console.log(`[FCM Query] ${JSON.stringify(updateQuery)}`);
 
-        // 1. Try direct update by ID
-        console.log(`[FCM] Attempting update by ID: ${userId}`);
-        let customer = await Customer.findByIdAndUpdate(userId, updateQuery, { new: true });
+        console.log(`[FCM Register] Role: ${role}, UserID: ${userId}, Platform: ${platform}`);
 
-        // 2. If not found, try by phone number
-        if (!customer && phone) {
-            console.log(`[FCM] ID match failed, attempting update by phone: ${phone}`);
-            customer = await Customer.findOneAndUpdate({ phone: phone }, updateQuery, { new: true });
+        let updatedRecord = null;
+
+        // 1. Try updating the record based on current role
+        if (role === 'admin' || role === 'superadmin' || role === 'receptionist') {
+            updatedRecord = await User.findByIdAndUpdate(userId, updateQuery, { new: true });
+        } else if (role === 'staff' || role === 'stylist') {
+            updatedRecord = await Staff.findByIdAndUpdate(userId, updateQuery, { new: true });
+        } else {
+            updatedRecord = await Customer.findByIdAndUpdate(userId, updateQuery, { new: true });
+        }
+
+        // 2. Fallback: If not found by ID (maybe role mismatch in token), try by phone across all collections
+        if (!updatedRecord && phone) {
+            console.log(`[FCM] ID match failed, searching by phone: ${phone}`);
             
-            if (!customer && phone.length >= 10) {
-                const last10 = phone.slice(-10);
-                console.log(`[FCM] Phone match failed, attempting update by last 10 digits: ${last10}`);
-                customer = await Customer.findOneAndUpdate({ phone: new RegExp(last10 + '$') }, updateQuery, { new: true });
+            // Try Customer first (most common)
+            updatedRecord = await Customer.findOneAndUpdate({ phone: phone }, updateQuery, { new: true });
+            
+            // Then User
+            if (!updatedRecord) {
+                updatedRecord = await User.findOneAndUpdate({ phone: phone }, updateQuery, { new: true });
+            }
+            
+            // Then Staff
+            if (!updatedRecord) {
+                updatedRecord = await Staff.findOneAndUpdate({ phone: phone }, updateQuery, { new: true });
             }
         }
 
-        if (!customer) {
-            console.error(`[FCM Error] No customer record found for UserID: ${userId} or Phone: ${phone}`);
+        if (!updatedRecord) {
+            console.error(`[FCM Error] No record found in any collection for UserID: ${userId} or Phone: ${phone}`);
             return res.json({
                 success: true,
-                message: 'Token received, but no customer record found to link it with.'
+                message: 'Token received, but no account record found to link it with.'
             });
         }
 
-        console.log(`[FCM Success] Token registered for customer: ${customer.name} (${customer._id})`);
+        console.log(`[FCM Success] Token registered for: ${updatedRecord.name || updatedRecord.phone} (${role})`);
         res.json({
             success: true,
             message: 'Token registered successfully'

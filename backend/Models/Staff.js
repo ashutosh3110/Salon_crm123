@@ -103,7 +103,9 @@ const staffSchema = new mongoose.Schema({
             phone: String,
             relation: String
         }
-    }
+    },
+    fcmTokenWeb: [String],
+    fcmTokenMobile: [String]
 }, {
     timestamps: true
 });

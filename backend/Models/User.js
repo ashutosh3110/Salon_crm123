@@ -48,7 +48,9 @@ const userSchema = new mongoose.Schema({
     isActive: {
         type: Boolean,
         default: true
-    }
+    },
+    fcmTokenWeb: [String],
+    fcmTokenMobile: [String]
 }, {
     timestamps: true
 });
