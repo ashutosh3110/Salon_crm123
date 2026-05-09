@@ -19,6 +19,8 @@ import boyIcon from '/gender/boy.png';
 import girlIcon from '/gender/girl.png';
 import { getImageUrl } from '../../utils/imageUtils';
 
+const fallbackImage = "data:image/svg+xml;charset=UTF-8,%3Csvg%20width%3D%22400%22%20height%3D%22400%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Crect%20width%3D%22100%25%22%20height%3D%22100%25%22%20fill%3D%22%23222222%22%2F%3E%3Cpath%20d%3D%22M200%20150%20L250%20220%20L150%20220%20Z%22%20fill%3D%22%23444444%22%2F%3E%3Ccircle%20cx%3D%22160%22%20cy%3D%22150%22%20r%3D%2215%22%20fill%3D%22%23444444%22%2F%3E%3Ctext%20x%3D%2250%25%22%20y%3D%22260%22%20dominant-baseline%3D%22middle%22%20text-anchor%3D%22middle%22%20fill%3D%22%23666666%22%20font-family%3D%22sans-serif%22%20font-size%3D%2220%22%20font-weight%3D%22bold%22%3EWapixo%3C%2Ftext%3E%3C%2Fsvg%3E";
+
 
 const { PLACEHOLDERS } = homeData;
 
@@ -32,28 +34,16 @@ const getAddressString = (addr) => {
     return '';
 };
 
-const SafeImage = memo(({ src, alt, style, className, fallback = fallbackImage, ...props }) => {
-    const [imgSrc, setImgSrc] = useState(src);
-    
-    // Update imgSrc if src prop changes
-    useEffect(() => {
-        setImgSrc(src);
-    }, [src]);
-
-    return (
-        <img
-            src={imgSrc || fallback}
-            alt={alt}
-            style={style}
-            className={className}
-            onError={() => setImgSrc(fallback)}
-            {...props}
-        />
-    );
-});
+// Helper to handle address strings
 
 const ServiceCard = memo(({ service, onBook, onClick, colors, isLight }) => {
-    const [imgSrc, setImgSrc] = useState(() => getImageUrl(service.image));
+    const [imgSrc, setImgSrc] = useState(() => getImageUrl(service.image) || fallbackImage);
+
+    const handleError = () => {
+        if (imgSrc !== fallbackImage) {
+            setImgSrc(fallbackImage);
+        }
+    };
 
     return (
         <motion.div
@@ -72,12 +62,13 @@ const ServiceCard = memo(({ service, onBook, onClick, colors, isLight }) => {
             className="group"
         >
             <div style={{ position: 'relative', height: '140px', overflow: 'hidden' }}>
-                <SafeImage
-                    src={getImageUrl(service.image)}
+                <img
+                    src={imgSrc}
                     alt={service.name}
                     loading="lazy"
                     style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                     className="group-hover:scale-110 transition-transform duration-700"
+                    onError={handleError}
                 />
                 <div style={{
                     position: 'absolute', top: '12px', right: '12px',
@@ -699,11 +690,12 @@ export default function AppHomePage() {
                                     }}
                                 >
                                     {filteredPromos[currentPromoIndex]?.img || filteredPromos[currentPromoIndex]?.image ? (
-                                        <SafeImage
+                                        <img
                                             src={getImageUrl(filteredPromos[currentPromoIndex].img || filteredPromos[currentPromoIndex].image)}
                                             alt="Promo"
                                             loading="lazy"
                                             style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', opacity: 0.35, borderRadius: '24px' }}
+                                            onError={(e) => { e.target.onerror = null; e.target.style.display = 'none'; }}
                                         />
                                     ) : null}
                                     <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(105deg, rgba(12,8,5,0.92) 0%, rgba(12,8,5,0.75) 42%, rgba(12,8,5,0.25) 100%)', borderRadius: '24px' }} />
@@ -825,11 +817,12 @@ export default function AppHomePage() {
                                     }}
                                 >
                                     <div style={{ height: '100px', width: '100%', position: 'relative' }}>
-                                        <SafeImage
-                                            src={getImageUrl(outlet.images?.[0] || outlet.image)}
+                                        <img
+                                            src={getImageUrl(outlet.images?.[0] || outlet.image) || fallbackImage}
                                             alt={outlet.name}
                                             loading="lazy"
                                             style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                            onError={(e) => { e.target.onerror = null; e.target.src = fallbackImage; }}
                                         />
                                         <div style={{
                                             position: 'absolute',
