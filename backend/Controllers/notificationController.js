@@ -103,7 +103,7 @@ exports.registerToken = async (req, res) => {
         }
 
         const userId = req.user.id || req.user._id;
-        const updateField = platform === 'mobile' ? { fcmTokenMobile: token } : { fcmTokenWeb: token };
+        const updateField = (platform === 'mobile' || platform === 'app') ? { fcmTokenMobile: token } : { fcmTokenWeb: token };
 
         // Use $addToSet to add token to array without duplicates
         const updateQuery = { $addToSet: updateField };
