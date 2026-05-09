@@ -39,8 +39,10 @@ export default function AppBookingPage() {
         staff: businessStaff,
         fetchGroupedServices,
         fetchStaff,
+        fetchOutlets,
         loyaltySettings,
         activeSalonId,
+        setActiveSalonId,
         salon,
         fetchServices,
         isInitializing
@@ -61,16 +63,23 @@ export default function AppBookingPage() {
     }, [outlets, outletId, activeOutlet, selectedOutlet]);
 
     const currentOutlet = selectedOutlet;
-//
+
     useEffect(() => {
-        fetchStaff?.();
-        // If we have a pre-selected service, fetch all services for the salon to ensure it's found
-        if (preSelectedServiceId && activeSalonId) {
-            fetchServices?.(activeSalonId, null);
+        const urlId = searchParams.get('tenantId') || searchParams.get('salonId');
+        const urlOutletId = searchParams.get('outletId');
+
+        const effectiveTid = urlId || activeSalonId || localStorage.getItem('active_salon_id');
+        const targetSalonId = effectiveTid;
+
+        fetchStaff?.(targetSalonId);
+        fetchOutlets?.(targetSalonId);
+        
+        if (preSelectedServiceId && targetSalonId) {
+            fetchServices?.(targetSalonId, null);
         } else {
-            fetchServices?.();
+            fetchServices?.(targetSalonId);
         }
-    }, [fetchStaff, fetchServices, preSelectedServiceId, activeSalonId]);
+    }, [fetchStaff, fetchOutlets, fetchServices, preSelectedServiceId, activeSalonId, searchParams]);
 
     const [step, setStep] = useState(0);
     const [direction, setDirection] = useState(1);
@@ -81,21 +90,59 @@ export default function AppBookingPage() {
     const [availableSlots, setAvailableSlots] = useState([]);
     const [submitting, setSubmitting] = useState(false);
 
+    // Auto-select first outlet if none selected and outlets are available
+    useEffect(() => {
+        if (!selectedOutlet && outlets.length > 0) {
+            setSelectedOutlet(outlets[0]);
+        }
+    }, [outlets, selectedOutlet]);
+
     // Pre-select service from query
     useEffect(() => {
-        if (!preSelectedServiceId || businessServices.length === 0) return;
+        const discoverAndSelect = async () => {
+            if (!preSelectedServiceId) return;
+            const targetId = String(preSelectedServiceId).trim();
 
-        const svc = businessServices.find(s => String(s._id || s.id) === String(preSelectedServiceId));
-        if (svc) {
-            setSelectedServices([svc]);
-            // No auto-advance needed now as Step 0 is already Stylist
-            
-            if (outletId) {
-                const found = outlets.find(o => String(o.id || o._id) === String(outletId));
-                if (found) setSelectedOutlet(found);
+            // 1. Try to find in existing list
+            let svc = businessServices.find(s => String(s._id || s.id || '').trim() === targetId);
+
+            // 2. If not found in current list, fetch directly from server to discover/confirm salon
+            if (!svc) {
+                try {
+                    const res = await api.get(`/services/${targetId}`);
+                    const foundSvc = res.data?.data || res.data;
+                    if (foundSvc) {
+                        svc = foundSvc;
+                        const discoveredSalonId = String(svc.salonId?._id || svc.salonId || '');
+                        
+                        // If it belongs to a different salon or no salon is set, switch context
+                        if (discoveredSalonId && discoveredSalonId !== activeSalonId) {
+                            console.log("[AppBookingPage] Switching to discovered salon:", discoveredSalonId);
+                            setActiveSalonId(discoveredSalonId);
+                            localStorage.setItem('active_salon_id', discoveredSalonId);
+                            // Important: Re-fetch core data for the new salon
+                            fetchStaff?.(discoveredSalonId);
+                            fetchOutlets?.(discoveredSalonId);
+                            fetchServices?.(discoveredSalonId, null);
+                        }
+                    }
+                } catch (err) {
+                    console.error("[AppBookingPage] Failed to discover service details:", err);
+                }
             }
-        }
-    }, [preSelectedServiceId, businessServices, outletId, outlets]);
+
+            if (svc) {
+                setSelectedServices([svc]);
+                
+                if (outletId) {
+                    const found = outlets.find(o => String(o.id || o._id) === String(outletId));
+                    if (found) setSelectedOutlet(found);
+                }
+            }
+        };
+
+        discoverAndSelect();
+    }, [preSelectedServiceId, businessServices, outletId, outlets, activeSalonId, setActiveSalonId, fetchStaff, fetchOutlets, fetchServices]);
     const submittingRef = useRef(false);
     const [bookingComplete, setBookingComplete] = useState(false);
     const [serviceSearch, setServiceSearch] = useState('');
@@ -109,9 +156,6 @@ export default function AppBookingPage() {
     const [paymentMethod, setPaymentMethod] = useState('salon'); // 'salon', 'online' or 'wallet'
     const { balance, refreshWallet } = useWallet();
     const { customer, isCustomerAuthenticated, loading: authLoading } = useCustomerAuth();
-
-    // Scroll to top on page mount
-    useEffect(() => { window.scrollTo(0, 0); }, []);
 
     // Redirection logic if not authenticated
     useEffect(() => {
@@ -215,7 +259,25 @@ export default function AppBookingPage() {
                         date: dateStr
                     }
                 });
-                setAvailableSlots(res.data?.data || []);
+                const allSlots = res.data?.data || [];
+                
+                // Filter past slots if today is selected
+                const now = new Date();
+                const isToday = d.getFullYear() === now.getFullYear() &&
+                              d.getMonth() === now.getMonth() &&
+                              d.getDate() === now.getDate();
+                
+                if (isToday) {
+                    const currentMinutes = now.getHours() * 60 + now.getMinutes();
+                    // Show slots starting at least 15 mins from now
+                    setAvailableSlots(allSlots.filter(slot => {
+                        const [hours, minutes] = slot.split(':').map(Number);
+                        const slotMinutes = hours * 60 + minutes;
+                        return slotMinutes > currentMinutes + 15; 
+                    }));
+                } else {
+                    setAvailableSlots(allSlots);
+                }
             } catch (err) {
                 console.error("[AppBookingPage] Failed to fetch slots:", err);
                 setAvailableSlots([]);
@@ -277,18 +339,24 @@ export default function AppBookingPage() {
 
     const outletStaff = useMemo(() => {
         if (!businessStaff) return [];
-
+        
         const targetSalonId = String(activeSalonId || salon?._id || '');
-
+        
         return (businessStaff || []).filter(s => {
-            // Include all staff not explicitly marked as non-stylist
-            const isStylist = s.isStylist !== false;
+            // Robust stylist check: Explicit flag OR role check (including 'Stylish' typo/variant)
+            const isStylistRole = ['stylist', 'stylish', 'expert', 'beautician', 'hairdresser', 'barber'].includes(String(s.role || '').toLowerCase());
+            const isStylist = s.isStylist !== false && (s.isStylist === true || isStylistRole);
+            
             if (!isStylist) return false;
 
+            // Basic status checks: Only show active & approved experts
+            if (s.status === 'inactive' || s.isActive === false) return false;
+            if (s.profileStatus && s.profileStatus !== 'Approved') return false;
+            
             // Salon check - must match the active salon
             const sSalonId = String(s.salonId?._id || s.salonId || '');
             if (sSalonId && targetSalonId && sSalonId !== targetSalonId) return false;
-
+            
             return true;
         });
     }, [businessStaff, activeSalonId, salon?._id]);
@@ -843,11 +911,21 @@ export default function AppBookingPage() {
 
                         {/* Continue Button */}
                         <button
-                            onClick={() => goTo(1)}
-                            disabled={!selectedStaff || selectedServices.length === 0}
-                            className="w-full py-5 rounded-[20px] bg-black text-white text-[12px] font-black uppercase tracking-[0.4em] flex items-center justify-center gap-4 disabled:opacity-20 shadow-xl"
+                            onClick={() => {
+                                if (selectedServices.length === 0) {
+                                    navigate('/app/services');
+                                } else {
+                                    goTo(1);
+                                }
+                            }}
+                            disabled={!selectedStaff}
+                            className="w-full py-5 rounded-[20px] bg-black text-white text-[12px] font-black uppercase tracking-[0.4em] flex items-center justify-center gap-4 disabled:opacity-20 shadow-xl transition-all active:scale-[0.98]"
                         >
-                            Continue <ArrowRight size={16} />
+                            {selectedServices.length === 0 ? (
+                                <>Select Service <Sparkles size={16} /></>
+                            ) : (
+                                <>Continue <ArrowRight size={16} /></>
+                            )}
                         </button>
                     </motion.div>
                 )}
