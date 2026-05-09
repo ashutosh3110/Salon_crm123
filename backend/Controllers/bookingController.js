@@ -198,6 +198,25 @@ exports.createBooking = async (req, res) => {
             console.error('Booking WhatsApp failed:', wsErr.message);
         }
 
+        // Send Push Notification
+        try {
+            const { sendNotification } = require('../Utils/notification');
+            const dateStr = new Date(populated.appointmentDate).toLocaleDateString();
+            const timeStr = populated.time || new Date(populated.appointmentDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            
+            await sendNotification({
+                customerId: populated.clientId._id,
+                salonId: populated.salonId._id,
+                title: 'Booking Confirmed! 📅',
+                message: `Hi ${populated.clientId.name}, your booking for ${populated.serviceId.name} at ${populated.salonId.name} on ${dateStr} at ${timeStr} is confirmed.`,
+                type: 'booking',
+                actionUrl: `/app/bookings/${populated._id}`,
+                data: { bookingId: populated._id.toString() }
+            });
+        } catch (pushErr) {
+            console.error('Booking Push Notification failed:', pushErr.message);
+        }
+
         res.status(201).json({
             success: true,
             data: {
@@ -282,6 +301,31 @@ exports.updateStatus = async (req, res) => {
             } catch (error) {
                 console.error('Error awarding loyalty points:', error);
             }
+        }
+
+        // Send Status Update Notification
+        try {
+            const { sendNotification } = require('../Utils/notification');
+            const statusMsgs = {
+                'completed': 'Your service is completed. We hope you enjoyed your ritual! ✨',
+                'cancelled': 'Your booking has been cancelled.',
+                'confirmed': 'Your booking has been confirmed by the salon.',
+                'no-show': 'We missed you! Your booking was marked as a no-show.'
+            };
+
+            if (statusMsgs[booking.status]) {
+                await sendNotification({
+                    customerId: booking.clientId,
+                    salonId: booking.salonId,
+                    title: `Booking ${booking.status.toUpperCase()}!`,
+                    message: statusMsgs[booking.status],
+                    type: 'booking',
+                    actionUrl: `/app/bookings/${booking._id}`,
+                    data: { bookingId: booking._id.toString(), status: booking.status }
+                });
+            }
+        } catch (pushErr) {
+            console.error('Status Update Push failed:', pushErr.message);
         }
 
         res.json({

@@ -132,6 +132,22 @@ exports.createOrder = async (req, res) => {
             console.error('[Order-WhatsApp] Failed:', wsErr.message);
         }
 
+        // Send Push Notification
+        try {
+            const { sendNotification } = require('../Utils/notification');
+            await sendNotification({
+                customerId: order.customerId,
+                salonId: order.salonId,
+                title: 'Order Placed! 🛍️',
+                message: `Your order for ${items.length} items has been placed successfully.`,
+                type: 'order',
+                actionUrl: `/app/orders/${order._id}`,
+                data: { orderId: order._id.toString() }
+            });
+        } catch (pushErr) {
+            console.error('Order Push failed:', pushErr.message);
+        }
+
         res.status(201).json({
             success: true,
             data: order
@@ -225,6 +241,61 @@ exports.getCustomerOrders = async (req, res) => {
             success: true,
             count: orders.length,
             data: orders
+        });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+};
+
+// @desc    Update order status
+// @route   PATCH /api/orders/:id/status
+// @access  Private (Admin)
+exports.updateOrderStatus = async (req, res) => {
+    try {
+        const { status } = req.body;
+        const order = await Order.findById(req.params.id);
+
+        if (!order) {
+            return res.status(404).json({ success: false, message: 'Order not found' });
+        }
+
+        const oldStatus = order.status;
+        order.status = status;
+
+        if (status === 'delivered') {
+            order.paymentStatus = 'paid';
+        }
+
+        await order.save();
+
+        // Send Notification
+        try {
+            const { sendNotification } = require('../Utils/notification');
+            const statusMsgs = {
+                'processing': 'Your order is being processed. 📦',
+                'shipped': 'Your order has been shipped! 🚚',
+                'delivered': 'Your order has been delivered. Enjoy! 🎁',
+                'cancelled': 'Your order has been cancelled.'
+            };
+
+            if (statusMsgs[status]) {
+                await sendNotification({
+                    customerId: order.customerId,
+                    salonId: order.salonId,
+                    title: `Order ${status.toUpperCase()}!`,
+                    message: statusMsgs[status],
+                    type: 'order',
+                    actionUrl: `/app/orders/${order._id}`,
+                    data: { orderId: order._id.toString(), status }
+                });
+            }
+        } catch (pushErr) {
+            console.error('Order Update Push failed:', pushErr.message);
+        }
+
+        res.json({
+            success: true,
+            data: order
         });
     } catch (err) {
         res.status(500).json({ success: false, message: err.message });

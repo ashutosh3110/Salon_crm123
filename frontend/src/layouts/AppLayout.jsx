@@ -9,6 +9,8 @@ import { useCustomerTheme } from '../contexts/CustomerThemeContext';
 import { useBusiness } from '../contexts/BusinessContext';
 import { useCart } from '../contexts/CartContext';
 import CartDrawer from '../components/app/CartDrawer';
+import { requestForToken } from '../firebase';
+import api from '../services/api';
 
 const pageVariants = {
     initial: { opacity: 0 },
@@ -63,6 +65,27 @@ export default function AppLayout() {
         }
 
     }, [authLoading, isInitializing, customer, gender, activeOutletId, navigate, location.pathname]);
+    
+    // Register Notification Token
+    useEffect(() => {
+        const handleNotificationToken = async () => {
+            if (customer && !authLoading) {
+                const token = await requestForToken();
+                if (token) {
+                    try {
+                        await api.post('/notifications/register-token', { 
+                            token, 
+                            platform: 'web' 
+                        });
+                        console.log('FCM Token registered successfully');
+                    } catch (err) {
+                        console.error('Failed to register FCM Token', err);
+                    }
+                }
+            }
+        };
+        handleNotificationToken();
+    }, [customer, authLoading]);
 
     const hideNavPaths = ['/app/product', '/app/notifications', '/app/bookings/', '/app/orders/'];
     const hideHeaderPaths = [

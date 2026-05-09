@@ -170,6 +170,7 @@ export default function MarketingHub() {
         { id: 'whatsapp', label: 'WhatsApp', icon: MessageSquare },
         { id: 'email', label: 'Email', icon: Mail },
         { id: 'automations', label: 'Automations', icon: Zap },
+        { id: 'notifications', label: 'App Notifications', icon: Bell },
     ];
 
     return (
@@ -193,13 +194,39 @@ export default function MarketingHub() {
                 </div>
             </div>
 
+            {/* Tabs */}
+            <div className="flex items-center gap-1 border-b border-border overflow-x-auto no-scrollbar">
+                {tabs.map(tab => (
+                    <button
+                        key={tab.id}
+                        onClick={() => setActiveTab(tab.id)}
+                        className={`flex items-center gap-2 px-6 py-4 text-[10px] font-black uppercase tracking-widest transition-all relative whitespace-nowrap ${
+                            activeTab === tab.id ? 'text-primary' : 'text-text-muted hover:text-text'
+                        }`}
+                    >
+                        <tab.icon className="w-4 h-4" />
+                        {tab.label}
+                        {activeTab === tab.id && (
+                            <motion.div layoutId="activeTab" className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary" />
+                        )}
+                    </button>
+                ))}
+            </div>
+
             {/* Tab Content */}
             <div className="space-y-10">
                 {/* 1. KPI Cards & Performance Chart */}
                 <DashboardContent dashboardData={dashboardData} segments={segments} loading={loading} onRefresh={() => { loadDashboard(); loadSegments(); }} />
                 
                 {/* 2. Campaign List */}
-                <WhatsAppContent campaigns={campaigns} campaignsLoading={campaignsLoading} onNew={() => startCampaign()} onRefresh={loadCampaigns} />
+                {activeTab === 'whatsapp' && (
+                    <WhatsAppContent campaigns={campaigns} campaignsLoading={campaignsLoading} onNew={() => startCampaign()} onRefresh={loadCampaigns} />
+                )}
+
+                {/* 3. Push Notifications */}
+                {activeTab === 'notifications' && (
+                    <NotificationsContent segments={segments} onRefresh={() => { loadCampaigns(); loadSegments(); }} />
+                )}
             </div>
 
             {/* ── Campaign Wizard Modal ── */}
@@ -889,6 +916,147 @@ function ContactListModal({ isOpen, onClose, selectionMode = false, selectedIds 
                     {filtered.length} contact{filtered.length !== 1 ? 's' : ''} shown
                 </div>
             </motion.div>
+        </div>
+    );
+}
+
+function NotificationsContent({ segments, onRefresh }) {
+    const [form, setForm] = useState({
+        title: '',
+        message: '',
+        image: '',
+        type: 'marketing',
+        customerId: 'all'
+    });
+    const [loading, setLoading] = useState(false);
+    const [success, setSuccess] = useState(false);
+
+    const handleSend = async () => {
+        setLoading(true);
+        try {
+            const res = await api.post('/notifications/send', form);
+            if (res.data?.success) {
+                setSuccess(true);
+                setForm({ title: '', message: '', image: '', type: 'marketing', customerId: 'all' });
+                setTimeout(() => setSuccess(false), 3000);
+                onRefresh();
+            }
+        } catch (err) {
+            console.error('Failed to send notification', err);
+            alert(err.response?.data?.message || 'Failed to send notification');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    return (
+        <div className="grid lg:grid-cols-2 gap-8">
+            <div className="bg-white rounded-[2rem] border border-border p-8 shadow-sm space-y-6">
+                <SectionHeader 
+                    title="Push Notifications" 
+                    desc="Send instant mobile & web notifications." 
+                    icon={Bell} 
+                />
+                
+                <div className="space-y-4">
+                    <div className="space-y-2">
+                        <label className="text-[10px] font-black text-text-muted uppercase tracking-widest">Audience</label>
+                        <select 
+                            className="w-full bg-surface border border-border rounded-xl px-4 py-3 text-sm font-bold focus:outline-none"
+                            value={form.customerId}
+                            onChange={(e) => setForm({...form, customerId: e.target.value})}
+                        >
+                            <option value="all">All Active Customers</option>
+                            {/* In a real app, you'd add customer search here */}
+                        </select>
+                    </div>
+
+                    <div className="space-y-2">
+                        <label className="text-[10px] font-black text-text-muted uppercase tracking-widest">Notification Title</label>
+                        <input 
+                            type="text" 
+                            className="w-full bg-surface border border-border rounded-xl px-4 py-3 text-sm font-bold focus:outline-none"
+                            placeholder="e.g. Special Offer Just for You! 🎉"
+                            value={form.title}
+                            onChange={(e) => setForm({...form, title: e.target.value})}
+                        />
+                    </div>
+
+                    <div className="space-y-2">
+                        <label className="text-[10px] font-black text-text-muted uppercase tracking-widest">Message</label>
+                        <textarea 
+                            rows={3}
+                            className="w-full bg-surface border border-border rounded-xl px-4 py-3 text-sm font-medium focus:outline-none resize-none"
+                            placeholder="Type your push message here..."
+                            value={form.message}
+                            onChange={(e) => setForm({...form, message: e.target.value})}
+                        />
+                    </div>
+
+                    <div className="space-y-2">
+                        <label className="text-[10px] font-black text-text-muted uppercase tracking-widest">Image URL (Optional)</label>
+                        <input 
+                            type="text" 
+                            className="w-full bg-surface border border-border rounded-xl px-4 py-3 text-sm font-bold focus:outline-none"
+                            placeholder="https://example.com/banner.jpg"
+                            value={form.image}
+                            onChange={(e) => setForm({...form, image: e.target.value})}
+                        />
+                    </div>
+
+                    <div className="flex gap-3">
+                        <button 
+                            onClick={handleSend}
+                            disabled={loading || !form.title || !form.message}
+                            className="flex-1 py-4 bg-primary text-white text-xs font-black uppercase tracking-[0.2em] rounded-xl hover:brightness-110 shadow-lg shadow-primary/20 disabled:opacity-50 transition-all"
+                        >
+                            {loading ? 'Sending...' : success ? 'Sent Successfully!' : 'Broadcast Notification'}
+                        </button>
+                        <button 
+                            onClick={() => {
+                                // Send test to self logic
+                                setForm(prev => ({ ...prev, customerId: 'self' }));
+                                handleSend();
+                            }}
+                            className="px-6 py-4 border border-border text-text-muted text-[10px] font-black uppercase tracking-widest rounded-xl hover:border-primary/30 hover:text-primary transition-all"
+                        >
+                            Test to Me
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div className="bg-slate-900 rounded-[2rem] p-8 flex flex-col items-center justify-center text-center relative overflow-hidden">
+                <div className="absolute top-0 left-0 w-full h-full opacity-10 pointer-events-none">
+                    <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-primary rounded-full blur-[100px]" />
+                    <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-primary rounded-full blur-[100px]" />
+                </div>
+                
+                <div className="w-48 h-80 bg-black rounded-[2.5rem] border-4 border-slate-800 shadow-2xl relative p-4 flex flex-col">
+                    <div className="w-12 h-1 bg-slate-800 rounded-full mx-auto mb-6" />
+                    
+                    <motion.div 
+                        initial={{ y: 20, opacity: 0 }}
+                        animate={{ y: 0, opacity: 1 }}
+                        key={form.title}
+                        className="bg-white/10 backdrop-blur-md rounded-2xl p-3 text-left border border-white/10"
+                    >
+                        <div className="flex items-center gap-2 mb-1">
+                            <div className="w-4 h-4 bg-primary rounded flex items-center justify-center">
+                                <Bell size={8} className="text-white" />
+                            </div>
+                            <span className="text-[6px] font-black text-white uppercase tracking-widest">Salon App</span>
+                        </div>
+                        <h4 className="text-[8px] font-black text-white truncate">{form.title || 'Notification Title'}</h4>
+                        <p className="text-[7px] text-white/60 line-clamp-2 mt-0.5 leading-tight">{form.message || 'The notification message body will appear here on the user\'s lock screen.'}</p>
+                    </motion.div>
+                </div>
+                
+                <div className="mt-8">
+                    <h3 className="text-white text-lg font-black uppercase tracking-tight">Live Preview</h3>
+                    <p className="text-white/40 text-[10px] font-bold uppercase tracking-widest mt-1">This is how it looks on mobile</p>
+                </div>
+            </div>
         </div>
     );
 }

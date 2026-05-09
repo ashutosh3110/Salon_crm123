@@ -51,6 +51,7 @@ const inventory = require('./Routers/inventoryRoutes');
 const hr = require('./Routers/hrRoutes');
 const finance = require('./Routers/financeRoutes');
 const marketing = require('./Routers/marketingRoutes');
+const notifications = require('./Routers/notificationRoutes');
 const initCronJobs = require('./Utils/cronJobs');
 
 // Mount routers
@@ -87,6 +88,7 @@ app.use('/inventory', inventory);
 app.use('/hr', hr);
 app.use('/finance', finance);
 app.use('/marketing', marketing);
+app.use('/notifications', notifications);
 
 // New Explicit Home Page Routes
 const banners = require('./Routers/bannerRoutes');

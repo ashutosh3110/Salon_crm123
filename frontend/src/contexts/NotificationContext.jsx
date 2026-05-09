@@ -18,18 +18,36 @@ export function NotificationProvider({ children }) {
     const [loading, setLoading] = useState(false);
 
     const fetchNotifications = useCallback(async () => {
-        // Disabled API call as per user request (returning 404)
-        setNotifications([]);
-    }, []);
+        if (!activeUserId) return;
+        setLoading(true);
+        try {
+            const res = await api.get('/notifications');
+            if (res.data?.success) {
+                setNotifications(res.data.data || []);
+            }
+        } catch (error) {
+            console.error('Fetch Notifications Error:', error);
+        } finally {
+            setLoading(false);
+        }
+    }, [activeUserId]);
 
     const fetchUnreadCount = useCallback(async () => {
-        // Disabled API call as per user request (returning 404)
-        setUnreadCount(0);
-    }, []);
+        if (!activeUserId) return;
+        try {
+            const res = await api.get('/notifications');
+            if (res.data?.success) {
+                const unread = res.data.data.filter(n => !n.isRead).length;
+                setUnreadCount(unread);
+            }
+        } catch (error) {
+            console.error('Fetch Unread Error:', error);
+        }
+    }, [activeUserId]);
 
     const markAsRead = useCallback(async (id) => {
         try {
-            await api.patch('/notifications/read', { notificationIds: [id] });
+            await api.patch(`/notifications/${id}/read`);
             setNotifications(prev => prev.map(n => (n._id === id || n.id === id) ? { ...n, isRead: true } : n));
             setUnreadCount(prev => Math.max(0, prev - 1));
         } catch (error) {
@@ -64,9 +82,8 @@ export function NotificationProvider({ children }) {
         }
 
         if (activeUserId) {
-            // Notifications disabled to prevent 404s
-            // fetchNotifications();
-            // fetchUnreadCount();
+            fetchNotifications();
+            fetchUnreadCount();
         } else {
             setNotifications([]);
             setUnreadCount(0);

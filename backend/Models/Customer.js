@@ -81,7 +81,9 @@ const customerSchema = new mongoose.Schema({
     welcomeSent: {
         type: Boolean,
         default: false
-    }
+    },
+    fcmTokenWeb: String,
+    fcmTokenMobile: String
 }, {
     timestamps: true
 });
