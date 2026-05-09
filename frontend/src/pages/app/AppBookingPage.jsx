@@ -61,7 +61,7 @@ export default function AppBookingPage() {
     }, [outlets, outletId, activeOutlet, selectedOutlet]);
 
     const currentOutlet = selectedOutlet;
-
+//
     useEffect(() => {
         fetchStaff?.();
         // If we have a pre-selected service, fetch all services for the salon to ensure it's found
