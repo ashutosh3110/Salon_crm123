@@ -483,21 +483,45 @@ export default function AddProductForm({ onSave, initialData, onCancel }) {
                                     accept="image/*" 
                                     onChange={async (e) => {
                                         const files = Array.from(e.target.files);
-                                        for (let file of files) {
-                                            try {
-                                                // Convert each gallery image to WebP
+                                        if (files.length === 0) return;
+                                        
+                                        setUploading(true);
+                                        try {
+                                            const newImageUrls = [];
+                                            for (let file of files) {
+                                                // 1. Convert to WebP
                                                 const webpFile = await convertToWebP(file);
-                                                const reader = new FileReader();
-                                                reader.onloadend = () => {
-                                                    setFormData(prev => ({
-                                                        ...prev,
-                                                        images: [...(prev.images || []), reader.result]
-                                                    }));
-                                                };
-                                                reader.readAsDataURL(webpFile);
-                                            } catch (err) {
-                                                console.error("Gallery WebP conversion failed", err);
+                                                
+                                                // 2. Prepare FormData for upload
+                                                const uploadFormData = new FormData();
+                                                uploadFormData.append('image', webpFile);
+                                                
+                                                // 3. Upload to server
+                                                const { data: resData } = await api.post('/uploads', uploadFormData, {
+                                                    headers: { 'Content-Type': 'multipart/form-data' }
+                                                });
+                                                
+                                                if (resData.success) {
+                                                    const url = resData.url || resData.data?.url;
+                                                    if (url) newImageUrls.push(url);
+                                                }
                                             }
+                                            
+                                            setFormData(prev => {
+                                                const updatedImages = [...(prev.images || []), ...newImageUrls];
+                                                return {
+                                                    ...prev,
+                                                    images: updatedImages,
+                                                    // Set first image as main appImage if not set
+                                                    appImage: prev.appImage || updatedImages[0] || '',
+                                                    image: prev.image || updatedImages[0] || ''
+                                                };
+                                            });
+                                        } catch (err) {
+                                            console.error("Gallery upload failed", err);
+                                            alert("Some images failed to upload.");
+                                        } finally {
+                                            setUploading(false);
                                         }
                                     }}
                                 />
