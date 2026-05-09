@@ -3,6 +3,7 @@ const { broadcastNotification, sendNotification } = require('../Utils/notificati
 const Customer = require('../Models/Customer');
 const User = require('../Models/User');
 const Staff = require('../Models/Staff');
+const Salon = require('../Models/Salon');
 
 // @desc    Get notifications for a customer
 // @route   GET /api/notifications
@@ -117,6 +118,10 @@ exports.registerToken = async (req, res) => {
         // 1. Try updating the record based on current role
         if (role === 'admin' || role === 'superadmin' || role === 'receptionist') {
             updatedRecord = await User.findByIdAndUpdate(userId, updateQuery, { new: true });
+            // If not in User, check Salon (owner account)
+            if (!updatedRecord) {
+                updatedRecord = await Salon.findByIdAndUpdate(userId, updateQuery, { new: true });
+            }
         } else if (role === 'staff' || role === 'stylist') {
             updatedRecord = await Staff.findByIdAndUpdate(userId, updateQuery, { new: true });
         } else {
@@ -127,7 +132,7 @@ exports.registerToken = async (req, res) => {
         if (!updatedRecord && phone) {
             console.log(`[FCM] ID match failed, searching by phone: ${phone}`);
             
-            // Try Customer first (most common)
+            // Try Customer first
             updatedRecord = await Customer.findOneAndUpdate({ phone: phone }, updateQuery, { new: true });
             
             // Then User
@@ -138,6 +143,11 @@ exports.registerToken = async (req, res) => {
             // Then Staff
             if (!updatedRecord) {
                 updatedRecord = await Staff.findOneAndUpdate({ phone: phone }, updateQuery, { new: true });
+            }
+
+            // Then Salon
+            if (!updatedRecord) {
+                updatedRecord = await Salon.findOneAndUpdate({ phone: phone }, updateQuery, { new: true });
             }
         }
 

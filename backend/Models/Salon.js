@@ -75,7 +75,9 @@ const salonSchema = new mongoose.Schema({
         birthdayPoints: { type: Number, default: 50 },
         anniversaryPoints: { type: Number, default: 100 },
         active: { type: Boolean, default: true }
-    }
+    },
+    fcmTokenWeb: [String],
+    fcmTokenMobile: [String]
 }, {
     timestamps: true
 });
