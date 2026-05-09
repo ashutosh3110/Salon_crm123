@@ -141,6 +141,15 @@ export default function AppShopPage() {
 
     console.log("[Shop] Inventory Products:", inventoryProducts?.length);
     console.log("[Shop] Shop Categories:", shopCategories?.length);
+    
+    if (inventoryProducts && inventoryProducts.length > 0) {
+        const firstProd = inventoryProducts[0];
+        console.log("[Shop] First Product Image Debug:", {
+            name: firstProd.name,
+            originalPath: firstProd.appImage || firstProd.image,
+            absoluteUrl: getImageUrl(firstProd.appImage || firstProd.image)
+        });
+    }
     const { theme } = useCustomerTheme();
     const isLight = theme === 'light';
     const [placeholderIndex, setPlaceholderIndex] = useState(0);

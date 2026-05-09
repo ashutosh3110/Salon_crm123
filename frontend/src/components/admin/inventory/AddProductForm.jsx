@@ -34,6 +34,8 @@ import CustomSelect from '../common/CustomSelect';
 import Barcode from 'react-barcode';
 import { useInventory } from '../../../contexts/InventoryContext';
 import { useBusiness } from '../../../contexts/BusinessContext';
+import { convertToWebP } from '../../../utils/imageUtils';
+import api from '../../../services/api';
 
 export default function AddProductForm({ onSave, initialData, onCancel }) {
     const { productCategories, shopCategories, products } = useInventory();
@@ -108,8 +110,15 @@ export default function AddProductForm({ onSave, initialData, onCancel }) {
     const [uploading, setUploading] = useState(false);
 
     const handleAppImageUpload = async (e) => {
-        const file = e.target.files[0];
+        let file = e.target.files[0];
         if (!file) return;
+
+        // Convert to WebP on the fly
+        try {
+            file = await convertToWebP(file);
+        } catch (err) {
+            console.error("WebP conversion failed, using original file", err);
+        }
 
         const maxSize = platformSettings?.maxImageSize || 5;
         const unit = platformSettings?.maxImageSizeUnit || 'MB';
@@ -472,18 +481,24 @@ export default function AddProductForm({ onSave, initialData, onCancel }) {
                                     className="hidden" 
                                     multiple 
                                     accept="image/*" 
-                                    onChange={(e) => {
+                                    onChange={async (e) => {
                                         const files = Array.from(e.target.files);
-                                        files.forEach(file => {
-                                            const reader = new FileReader();
-                                            reader.onloadend = () => {
-                                                setFormData(prev => ({
-                                                    ...prev,
-                                                    images: [...(prev.images || []), reader.result]
-                                                }));
-                                            };
-                                            reader.readAsDataURL(file);
-                                        });
+                                        for (let file of files) {
+                                            try {
+                                                // Convert each gallery image to WebP
+                                                const webpFile = await convertToWebP(file);
+                                                const reader = new FileReader();
+                                                reader.onloadend = () => {
+                                                    setFormData(prev => ({
+                                                        ...prev,
+                                                        images: [...(prev.images || []), reader.result]
+                                                    }));
+                                                };
+                                                reader.readAsDataURL(webpFile);
+                                            } catch (err) {
+                                                console.error("Gallery WebP conversion failed", err);
+                                            }
+                                        }
                                     }}
                                 />
                             </label>

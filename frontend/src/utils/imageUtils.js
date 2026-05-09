@@ -45,4 +45,39 @@ export const getImageUrl = (p) => {
     return `${apiBase}${separator}${path}`;
 };
 
+/**
+ * Converts an image file to WebP format on the frontend.
+ * Useful for reducing upload size and improving mobile performance.
+ */
+export const convertToWebP = (file, quality = 0.8) => {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = (event) => {
+            const img = new Image();
+            img.src = event.target.result;
+            img.onload = () => {
+                const canvas = document.createElement('canvas');
+                canvas.width = img.width;
+                canvas.height = img.height;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0);
+                canvas.toBlob((blob) => {
+                    if (blob) {
+                        const webpFile = new File([blob], file.name.replace(/\.[^/.]+$/, "") + ".webp", {
+                            type: 'image/webp',
+                            lastModified: Date.now()
+                        });
+                        resolve(webpFile);
+                    } else {
+                        reject(new Error("Canvas toBlob failed"));
+                    }
+                }, 'image/webp', quality);
+            };
+            img.onerror = (err) => reject(err);
+        };
+        reader.onerror = (err) => reject(err);
+    });
+};
+
 export default getImageUrl;
