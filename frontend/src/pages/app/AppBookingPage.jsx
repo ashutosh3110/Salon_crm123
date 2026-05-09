@@ -97,14 +97,17 @@ export default function AppBookingPage() {
         }
     }, [outlets, selectedOutlet]);
 
-    // Pre-select service from query
+    const discoveryAttempted = useRef(null);
+
+    // Pre-select service from query - Optimized to prevent infinite loops
     useEffect(() => {
         const discoverAndSelect = async () => {
-            if (!preSelectedServiceId) return;
+            if (!preSelectedServiceId || discoveryAttempted.current === preSelectedServiceId) return;
+            
             const targetId = String(preSelectedServiceId).trim();
 
             // 1. Try to find in existing list
-            let svc = businessServices.find(s => String(s._id || s.id || '').trim() === targetId);
+            let svc = (businessServices || []).find(s => String(s._id || s.id || '').trim() === targetId);
 
             // 2. If not found in current list, fetch directly from server to discover/confirm salon
             if (!svc) {
@@ -116,11 +119,15 @@ export default function AppBookingPage() {
                         const discoveredSalonId = String(svc.salonId?._id || svc.salonId || '');
                         
                         // If it belongs to a different salon or no salon is set, switch context
-                        if (discoveredSalonId && discoveredSalonId !== activeSalonId) {
+                        if (discoveredSalonId && String(discoveredSalonId) !== String(activeSalonId)) {
                             console.log("[AppBookingPage] Switching to discovered salon:", discoveredSalonId);
                             setActiveSalonId(discoveredSalonId);
                             localStorage.setItem('active_salon_id', discoveredSalonId);
-                            // Important: Re-fetch core data for the new salon
+                            
+                            // Mark as attempted to prevent re-entering this block for the same ID
+                            discoveryAttempted.current = targetId;
+
+                            // Fetch core data for the new salon context
                             fetchStaff?.(discoveredSalonId);
                             fetchOutlets?.(discoveredSalonId);
                             fetchServices?.(discoveredSalonId, null);
@@ -133,8 +140,9 @@ export default function AppBookingPage() {
 
             if (svc) {
                 setSelectedServices([svc]);
+                discoveryAttempted.current = targetId; // Mark as done
                 
-                if (outletId) {
+                if (outletId && outlets?.length > 0) {
                     const found = outlets.find(o => String(o.id || o._id) === String(outletId));
                     if (found) setSelectedOutlet(found);
                 }
@@ -142,7 +150,7 @@ export default function AppBookingPage() {
         };
 
         discoverAndSelect();
-    }, [preSelectedServiceId, businessServices, outletId, outlets, activeSalonId, setActiveSalonId, fetchStaff, fetchOutlets, fetchServices]);
+    }, [preSelectedServiceId, businessServices, activeSalonId, setActiveSalonId]);
     const submittingRef = useRef(false);
     const [bookingComplete, setBookingComplete] = useState(false);
     const [serviceSearch, setServiceSearch] = useState('');
