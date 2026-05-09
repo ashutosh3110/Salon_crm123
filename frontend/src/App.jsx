@@ -1,6 +1,7 @@
 import { BrowserRouter as Router, Routes, Route, Outlet, useLocation, Navigate } from 'react-router-dom';
 import { useEffect, lazy, Suspense } from 'react';
 import { motion } from 'framer-motion';
+import MobileDebugger from './components/MobileDebugger';
 import { AuthProvider } from './contexts/AuthContext';
 import { BusinessProvider } from './contexts/BusinessContext';
 import { CustomerAuthProvider } from './contexts/CustomerAuthContext';
@@ -581,6 +582,7 @@ function App() {
         </CustomerAuthProvider>
       </AuthProvider>
 
+      <MobileDebugger />
     </Router>
   );
 }
