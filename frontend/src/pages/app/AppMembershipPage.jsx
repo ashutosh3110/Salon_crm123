@@ -1,6 +1,6 @@
 import React, { useContext } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import {
     ArrowLeft,
     Crown,
@@ -369,7 +369,7 @@ const AppMembershipPage = () => {
 
             {/* ── FOOTER NOTE ── */}
             <div style={{ padding: '40px 20px', textAlign: 'center', opacity: 0.5 }}>
-                <p style={{ fontSize: '12px', fontWeight: 600, margin: 0 }}>All plans are subject to Terms & Conditions.</p>
+                <p style={{ fontSize: '12px', fontWeight: 600, margin: 0 }}>All plans are subject to <Link to="/app/terms" style={{ color: colors.accent, textDecoration: 'none' }}>Terms & Conditions</Link>.</p>
                 <p style={{ fontSize: '12px', fontWeight: 600, margin: '4px 0 0' }}>Experience salon care like never before.</p>
             </div>
         </div>

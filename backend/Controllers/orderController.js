@@ -25,6 +25,16 @@ exports.createOrder = async (req, res) => {
         } = req.body;
         const customerId = req.user._id;
 
+        // Validation for Home Delivery
+        if (deliveryPreference === 'home') {
+            if (!address || !address.street || !address.city || !address.zip) {
+                return res.status(400).json({ 
+                    success: false, 
+                    message: 'Street address, city, and zip code are mandatory for home delivery.' 
+                });
+            }
+        }
+
         // Handle Wallet Deduction
         if (paymentMethod === 'wallet') {
             const customer = await Customer.findById(customerId);
@@ -71,7 +81,6 @@ exports.createOrder = async (req, res) => {
         });
         
         // Award Loyalty Points if payment is paid (wallet) or otherwise based on business logic
-        // For simplicity, we award on creation if it's wallet/cod as initial status is 'pending' for cod
         if (paymentMethod === 'wallet') {
             try {
                 const salon = await Salon.findById(salonId);
@@ -151,6 +160,7 @@ exports.getMyOrders = async (req, res) => {
         res.status(500).json({ success: false, message: err.message });
     }
 };
+
 // @desc    Get order by ID
 // @route   GET /api/orders/:id
 // @access  Private
@@ -178,6 +188,7 @@ exports.getOrderById = async (req, res) => {
         res.status(500).json({ success: false, message: err.message });
     }
 };
+
 // @desc    Get all orders for a salon (Admin)
 // @route   GET /api/orders
 // @access  Private
@@ -198,6 +209,7 @@ exports.getOrders = async (req, res) => {
         res.status(500).json({ success: false, message: err.message });
     }
 };
+
 // @desc    Get orders for a specific customer
 // @route   GET /api/orders/customer/:customerId
 // @access  Private

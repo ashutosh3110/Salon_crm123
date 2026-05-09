@@ -27,6 +27,7 @@ import CustomSelect from '../../components/admin/common/CustomSelect';
 import { useNavigate } from 'react-router-dom';
 import PasswordField from '../../components/common/PasswordField';
 import api, { API_BASE_URL } from '../../services/api';
+import { getImageUrl } from '../../utils/imageUtils';
 
 const roleColors = {
     admin: 'bg-purple-50 dark:bg-purple-950/30 text-purple-600 dark:text-purple-400',
@@ -349,7 +350,7 @@ export default function StaffPage() {
                                                 <div className="w-8 h-8 bg-surface-alt border border-border flex items-center justify-center text-text font-black text-[10px] font-mono group-hover:border-primary transition-colors overflow-hidden">
                                                     {s.avatar ? (
                                                         <img 
-                                                            src={(s.avatar.startsWith('http') || s.avatar.startsWith('data:')) ? s.avatar : `${API_BASE_URL}${s.avatar}`} 
+                                                            src={getImageUrl(s.avatar)} 
                                                             alt={s.name} 
                                                             className="w-full h-full object-cover" 
                                                         />
@@ -478,7 +479,7 @@ export default function StaffPage() {
                                             <div className="w-24 h-24 bg-surface border-2 border-dashed border-border flex items-center justify-center overflow-hidden transition-all group-hover/photo:border-primary">
                                                 {form.avatar ? (
                                                     <img 
-                                                        src={(form.avatar.startsWith('http') || form.avatar.startsWith('data:')) ? form.avatar : `${API_BASE_URL}${form.avatar}`} 
+                                                        src={getImageUrl(form.avatar)} 
                                                         alt="Preview" 
                                                         className="w-full h-full object-cover" 
                                                     />

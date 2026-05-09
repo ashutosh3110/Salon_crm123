@@ -17,6 +17,7 @@ import api from '../../services/api';
 import logoDarkMode from '/new wapixo logo .png';
 import boyIcon from '/gender/boy.png';
 import girlIcon from '/gender/girl.png';
+import { getImageUrl } from '../../utils/imageUtils';
 
 
 const { PLACEHOLDERS } = homeData;
@@ -29,21 +30,6 @@ const getAddressString = (addr) => {
         return [street, city, state, pincode].filter(Boolean).join(', ');
     }
     return '';
-};
-
-const getImageUrl = (p) => {
-    if (!p) return null;
-    if (typeof p !== 'string') return null;
-    let path = p.replace(/\\/g, '/');
-    
-    // Fix incorrectly stored production URLs
-    if (path.includes('wapixo.com/uploads') && !path.includes('api.wapixo.com/uploads')) {
-        path = path.replace('wapixo.com/uploads', 'api.wapixo.com/uploads');
-    }
-    
-    if (path.startsWith('http') || path.startsWith('data:') || path.startsWith('blob:')) return path;
-    const baseUrl = api.defaults.baseURL.replace('/api', '');
-    return `${baseUrl}${path.startsWith('/') ? '' : '/'}${path}`;
 };
 
 const fallbackImage = "data:image/svg+xml;charset=UTF-8,%3Csvg%20width%3D%22400%22%20height%3D%22400%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Crect%20width%3D%22100%25%22%20height%3D%22100%25%22%20fill%3D%22%23222222%22%2F%3E%3Cpath%20d%3D%22M200%20150%20L250%20220%20L150%20220%20Z%22%20fill%3D%22%23444444%22%2F%3E%3Ccircle%20cx%3D%22160%22%20cy%3D%22150%22%20r%3D%2215%22%20fill%3D%22%23444444%22%2F%3E%3Ctext%20x%3D%2250%25%22%20y%3D%22260%22%20dominant-baseline%3D%22middle%22%20text-anchor%3D%22middle%22%20fill%3D%22%23666666%22%20font-family%3D%22sans-serif%22%20font-size%3D%2220%22%20font-weight%3D%22bold%22%3EWapixo%3C%2Ftext%3E%3C%2Fsvg%3E";
@@ -315,6 +301,7 @@ export default function AppHomePage() {
     const {
         activeOutlet,
         activeOutletId,
+        activeSalonId,
         outlets,
         services: contextServices,
         products: contextProducts,
@@ -371,11 +358,12 @@ export default function AppHomePage() {
     }, [categories, gender, selectedServiceCategory]);
 
     // FETCH STATIC DATA (Banners, Loyalty Rules)
-    const fetchStaticData = useCallback(async () => {
+    const fetchStaticData = useCallback(async (sid) => {
         try {
+            const query = sid ? `?tenantId=${sid}` : '';
             const [bRes, lRes] = await Promise.all([
-                api.get('/banners'),
-                api.get('/loyalty-rules')
+                api.get(`/banners${query}`),
+                api.get(`/loyalty-rules${query}`)
             ]);
             setPageBanners(bRes.data?.data || []);
             setLoyaltyRule(lRes.data?.data || lRes.data || null);
@@ -421,8 +409,8 @@ export default function AppHomePage() {
     }, []);
 
     useEffect(() => {
-        fetchStaticData();
-    }, [fetchStaticData]);
+        fetchStaticData(activeSalonId);
+    }, [fetchStaticData, activeSalonId]);
 
     useEffect(() => {
         fetchOutletSpecificData();
@@ -538,6 +526,7 @@ export default function AppHomePage() {
             </div>
         );
     }
+    console.log(getImageUrl(''));
 
     return (
         <div style={{ position: 'relative', overflow: 'hidden' }}>
@@ -691,9 +680,9 @@ export default function AppHomePage() {
                                         display: 'flex', alignItems: 'flex-end',
                                     }}
                                 >
-                                    {filteredPromos[currentPromoIndex]?.img ? (
+                                    {filteredPromos[currentPromoIndex]?.img || filteredPromos[currentPromoIndex]?.image ? (
                                         <img
-                                            src={getImageUrl(filteredPromos[currentPromoIndex].img)}
+                                            src={getImageUrl(filteredPromos[currentPromoIndex].img || filteredPromos[currentPromoIndex].image)}
                                             alt="Promo"
                                             style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', opacity: 0.35, borderRadius: '24px' }}
                                             onError={(e) => { e.target.onerror = null; e.target.style.display = 'none'; }}

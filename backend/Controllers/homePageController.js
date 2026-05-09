@@ -7,11 +7,25 @@ const Feedback = require('../Models/Feedback');
 const MembershipPlan = require('../Models/MembershipPlan');
 const Setting = require('../Models/Setting');
 
-// 1. Fetch All Banners
+// 1. Fetch Banners (Global + Tenant Specific)
 exports.getBanners = async (req, res) => {
     try {
-        const cmsData = await Cms.find({ section: 'banners' });
+        const tenantId = req.query.tenantId;
+        console.log(`[CMS] Fetching banners. tenantId: ${tenantId}`);
+
+        let query = { section: 'banners' };
+        if (tenantId && mongoose.Types.ObjectId.isValid(tenantId)) {
+            // Fetch both global (null) and specific tenant banners
+            query.tenantId = { $in: [null, new mongoose.Types.ObjectId(tenantId)] };
+        } else {
+            // If no tenantId, only fetch global banners
+            query.tenantId = null;
+        }
+
+        const cmsData = await Cms.find(query);
+        // Merge all banners from found documents
         const banners = cmsData.reduce((acc, curr) => [...acc, ...(curr.content || [])], []);
+        
         res.json({ success: true, data: banners });
     } catch (error) {
         console.error('getBanners error:', error);

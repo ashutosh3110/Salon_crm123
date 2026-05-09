@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { useCustomerAuth } from '../../contexts/CustomerAuthContext';
 import { useBusiness } from '../../contexts/BusinessContext';
 import { useCustomerTheme } from '../../contexts/CustomerThemeContext';
@@ -769,7 +769,7 @@ export default function AppLoginPage() {
 
 
 
-                            <p style={{ fontSize: '12px', color: colors.textMuted, textAlign: 'center', marginTop: '24px' }}>By continuing, you agree to our <a href="/terms" style={{ color: '#C8956C', fontWeight: 600 }}>Terms</a> & <a href="/privacy" style={{ color: '#C8956C', fontWeight: 600 }}>Privacy Policy</a></p>
+                            <p style={{ fontSize: '12px', color: colors.textMuted, textAlign: 'center', marginTop: '24px' }}>By continuing, you agree to our <Link to="/app/terms" style={{ color: '#C8956C', fontWeight: 600 }}>Terms</Link> & <Link to="/app/privacy" style={{ color: '#C8956C', fontWeight: 600 }}>Privacy Policy</Link></p>
                         </div>
                     </motion.div>
                 )}

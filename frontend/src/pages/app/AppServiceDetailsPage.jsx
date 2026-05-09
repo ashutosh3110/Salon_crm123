@@ -8,19 +8,7 @@ import { useFavorites } from '../../contexts/FavoritesContext';
 import api from '../../services/api';
 import ReviewModal from '../../components/app/ReviewModal';
 
-const getImageUrl = (p) => {
-    if (!p) return null;
-    if (typeof p !== 'string' || !p.trim()) return null;
-    let path = p.trim().replace(/\\/g, '/');
-
-    if (path.includes('wapixo.com/uploads') && !path.includes('api.wapixo.com/uploads')) {
-        path = path.replace('wapixo.com/uploads', 'api.wapixo.com/uploads');
-    }
-
-    if (path.startsWith('http') || path.startsWith('data:') || path.startsWith('blob:')) return path;
-    const baseUrl = api.defaults.baseURL.replace('/api', '');
-    return `${baseUrl}${path.startsWith('/') ? '' : '/'}${path}`;
-};
+import { getImageUrl } from '../../utils/imageUtils';
 
 const Accordion = ({ title, subtext, children, isInitialOpen = false, colors }) => {
     const [isOpen, setIsOpen] = useState(isInitialOpen);

@@ -34,10 +34,12 @@ exports.getUsers = async (req, res) => {
 // @access  Private/Admin
 exports.getUser = async (req, res) => {
     try {
-        const staff = await Staff.findOne({
-            _id: req.params.id,
-            salonId: req.user.salonId
-        });
+        const filter = { _id: req.params.id };
+        if (req.user.role !== 'superadmin') {
+            filter.salonId = req.user.salonId;
+        }
+
+        const staff = await Staff.findOne(filter);
 
         if (!staff) {
             return res.status(404).json({ success: false, message: 'Staff member not found' });
@@ -88,7 +90,7 @@ exports.createUser = async (req, res) => {
             role: roleDisplayName,
             avatar: avatarPath,
             password: pass,
-            salonId: req.user.salonId
+            salonId: req.body.salonId || req.user.salonId
         });
 
         // Send Welcome Notifications (Email + WhatsApp)
@@ -154,10 +156,12 @@ exports.createUser = async (req, res) => {
 // @access  Private/Admin
 exports.updateUser = async (req, res) => {
     try {
-        let staff = await Staff.findOne({
-            _id: req.params.id,
-            salonId: req.user.salonId
-        });
+        const filter = { _id: req.params.id };
+        if (req.user.role !== 'superadmin') {
+            filter.salonId = req.user.salonId;
+        }
+        
+        let staff = await Staff.findOne(filter);
 
         if (!staff) {
             return res.status(404).json({ success: false, message: 'Staff member not found' });
@@ -198,10 +202,12 @@ exports.updateUser = async (req, res) => {
 // @access  Private/Admin
 exports.deleteUser = async (req, res) => {
     try {
-        const staff = await Staff.findOne({
-            _id: req.params.id,
-            salonId: req.user.salonId
-        });
+        const filter = { _id: req.params.id };
+        if (req.user.role !== 'superadmin') {
+            filter.salonId = req.user.salonId;
+        }
+
+        const staff = await Staff.findOne(filter);
 
         if (!staff) {
             return res.status(404).json({ success: false, message: 'Staff member not found' });

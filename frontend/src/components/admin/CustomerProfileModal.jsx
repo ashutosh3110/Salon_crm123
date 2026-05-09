@@ -25,6 +25,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { useWallet } from '../../contexts/WalletContext';
 import api from '../../services/api';
 import { maskPhone } from '../../utils/phoneUtils';
+import { getImageUrl } from '../../utils/imageUtils';
 
 export default function CustomerProfileModal({ customer, isOpen, onClose }) {
     const { user } = useAuth();
@@ -203,7 +204,7 @@ export default function CustomerProfileModal({ customer, isOpen, onClose }) {
                         <div className="w-16 h-16 rounded-none bg-text text-white flex items-center justify-center text-2xl font-black shadow-lg overflow-hidden border-2 border-white">
                             {customer.avatar ? (
                                 <img 
-                                    src={customer.avatar.startsWith('http') ? customer.avatar : `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000'}${customer.avatar}`} 
+                                    src={getImageUrl(customer.avatar)} 
                                     alt={customer.name} 
                                     className="w-full h-full object-cover"
                                     onError={(e) => { e.target.onerror = null; e.target.src = ''; e.target.parentElement.innerHTML = customer.name.charAt(0).toUpperCase(); }}

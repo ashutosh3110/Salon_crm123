@@ -15,6 +15,7 @@ import {
 import { useNavigate } from 'react-router-dom';
 import CustomSelect from '../common/CustomSelect';
 import { useBusiness } from '../../../contexts/BusinessContext';
+import { getImageUrl } from '../../../utils/imageUtils';
 
 export default function ProductManager({ products = [], onDelete, onToggleStatus, onEdit, onDuplicate }) {
     const navigate = useNavigate();
@@ -105,7 +106,7 @@ export default function ProductManager({ products = [], onDelete, onToggleStatus
                                                 <div className="w-12 h-12 bg-surface-alt border border-border flex items-center justify-center text-text-muted font-black group-hover:border-primary transition-all overflow-hidden shadow-sm">
                                                     {(product.images && product.images.length > 0) ? (
                                                         <img 
-                                                            src={product.images[0]} 
+                                                            src={getImageUrl(product.images?.[0] || product.image || product.appImage)} 
                                                             alt={product.name}
                                                             className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                                                         />

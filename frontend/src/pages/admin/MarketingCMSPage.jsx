@@ -4,6 +4,7 @@ import { useBusiness } from '../../contexts/BusinessContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import api from '../../services/api';
+import { getImageUrl } from '../../utils/imageUtils';
 import {
     Layout,
     Image as ImageIcon,
@@ -344,11 +345,11 @@ export default function MarketingCMSPage() {
                             .map((banner) => (
                                 <div key={banner.id} className="group bg-surface border border-border/40 rounded-none overflow-hidden hover:border-primary/40 transition-all text-left">
                                     <div className="aspect-[21/9] relative overflow-hidden bg-background">
-                                        <img src={banner.image} alt={banner.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 opacity-80" />
+                                        <img src={getImageUrl(banner.image)} alt={banner.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 opacity-80" />
                                         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                                         <div className="absolute top-3 right-3 flex gap-2 opacity-0 group-hover:opacity-100 translate-y-2 group-hover:translate-y-0 transition-all duration-300 pointer-events-auto z-10">
                                                 <button 
-                                                    onClick={() => window.open(banner.image, '_blank')}
+                                                    onClick={() => window.open(getImageUrl(banner.image), '_blank')}
                                                     title="View Creative"
                                                     className="p-2 bg-white text-black hover:bg-emerald-500 hover:text-white transition-colors"
                                                 >
@@ -497,7 +498,7 @@ export default function MarketingCMSPage() {
                             .map((item) => (
                                 <div key={item.id} className="group bg-surface border border-border/40 rounded-none overflow-hidden hover:border-emerald-500/40 transition-all text-left">
                                     <div className="aspect-[3/4] relative overflow-hidden bg-background">
-                                        <img src={item.image} alt={item.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 opacity-80" />
+                                        <img src={getImageUrl(item.image)} alt={item.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 opacity-80" />
                                         <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-60 group-hover:opacity-100 transition-opacity" />
                                         
                                         <div className="absolute top-3 right-3 flex gap-2 opacity-0 group-hover:opacity-100 translate-y-2 group-hover:translate-y-0 transition-all duration-300 pointer-events-auto z-10">
@@ -565,7 +566,7 @@ export default function MarketingCMSPage() {
                         {experts.map((expert) => (
                             <div key={expert.id || expert._id} className="bg-surface border border-border/40 p-6 flex flex-col gap-4 text-left">
                                 <div className="flex items-center gap-4">
-                                    <img src={expert.img || 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=200&q=80'} className="w-16 h-16 rounded-full border border-border object-cover" alt={expert.name} />
+                                    <img src={getImageUrl(expert.img) || 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=200&q=80'} className="w-16 h-16 rounded-full border border-border object-cover" alt={expert.name} />
                                     <div>
                                         <h3 className="text-sm font-black text-text uppercase tracking-tight">{expert.name}</h3>
                                         <div className={`text-[8px] font-black uppercase px-2 py-0.5 rounded-none mt-1 inline-block ${
@@ -755,7 +756,7 @@ export default function MarketingCMSPage() {
                                                         </div>
                                                     ) : formData.image ? (
                                                         <>
-                                                            <img src={formData.image} className="absolute inset-0 w-full h-full object-cover opacity-20 group-hover:scale-110 transition-transform duration-700" alt="Preview" />
+                                                            <img src={getImageUrl(formData.image)} className="absolute inset-0 w-full h-full object-cover opacity-20 group-hover:scale-110 transition-transform duration-700" alt="Preview" />
                                                             <div className="relative z-10 flex flex-col items-center">
                                                                 <Upload className="w-8 h-8 text-primary mb-2 shadow-sm" />
                                                                 <p className="text-[10px] font-black text-white uppercase tracking-widest bg-black px-4 py-1.5 rounded-full">Change Image</p>

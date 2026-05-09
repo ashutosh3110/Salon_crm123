@@ -24,7 +24,7 @@ import * as XLSX from 'xlsx';
 import { toast } from 'react-hot-toast';
 import CustomSelect from '../common/CustomSelect';
 import { useBusiness } from '../../../contexts/BusinessContext';
-import { API_BASE_URL } from '../../../services/api';
+import { getImageUrl } from '../../../utils/imageUtils';
 import api from '../../../services/api';
 import OutletAssignmentModal from './OutletAssignmentModal';
 import ServiceDetailsModal from './ServiceDetailsModal';
@@ -397,7 +397,7 @@ export default function ServiceList({ services = [], onDelete, onToggleStatus, o
                                                 <div className="w-10 h-10 rounded-xl bg-primary/5 flex items-center justify-center text-primary border border-primary/10 overflow-hidden">
                                                     {service.image ? (
                                                         <img 
-                                                            src={service.image.startsWith('http') ? service.image : `${API_BASE_URL}${service.image}`} 
+                                                            src={getImageUrl(service.image)} 
                                                             alt={service.name} 
                                                             className="w-full h-full object-cover" 
                                                         />
@@ -547,7 +547,7 @@ export default function ServiceList({ services = [], onDelete, onToggleStatus, o
                                         <div className="w-10 h-10 rounded-xl bg-primary/5 flex items-center justify-center text-primary border border-primary/10 shrink-0 overflow-hidden">
                                             {service.image ? (
                                                 <img 
-                                                    src={service.image.startsWith('http') ? service.image : `${API_BASE_URL}${service.image}`} 
+                                                    src={getImageUrl(service.image)} 
                                                     alt={service.name} 
                                                     className="w-full h-full object-cover" 
                                                 />

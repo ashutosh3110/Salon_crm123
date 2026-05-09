@@ -70,7 +70,12 @@ exports.getBookings = async (req, res) => {
 exports.createBooking = async (req, res) => {
     try {
         const salonId = req.user.salonId || req.body.salonId || req.body.tenantId;
-        const { serviceId, paymentMethod } = req.body;
+        const { serviceId, paymentMethod, appointmentDate, source } = req.body;
+        
+        // Prevent booking in the past for app bookings
+        if (source === 'APP' && new Date(appointmentDate) < new Date()) {
+            return res.status(400).json({ success: false, message: 'Cannot book for a past time' });
+        }
         
         // Fetch service to get price if not provided
         const service = await Service.findById(serviceId);
@@ -381,9 +386,22 @@ exports.getAvailableSlots = async (req, res) => {
             }
         });
 
+        // Filter out past slots if the requested date is today
+        const now = new Date();
+        const nowStr = now.getFullYear() + '-' + 
+                      String(now.getMonth() + 1).padStart(2, '0') + '-' + 
+                      String(now.getDate()).padStart(2, '0');
+        
+        const isToday = date === nowStr;
+        const currentMinutes = now.getHours() * 60 + now.getMinutes();
+
+        const finalSlots = isToday 
+            ? availableSlots.filter(slotTime => toMinutes(slotTime) > currentMinutes)
+            : availableSlots;
+
         res.json({
             success: true,
-            data: availableSlots
+            data: finalSlots
         });
 
     } catch (err) {

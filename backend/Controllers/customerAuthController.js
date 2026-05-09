@@ -358,7 +358,10 @@ exports.updateProfile = async (req, res) => {
 
         if (anniversary !== undefined) customer.anniversary = anniversary;
 
-        await customer.save();
+        // Only call save if it's a Mongoose document
+        if (customer.save && typeof customer.save === 'function') {
+            await customer.save();
+        }
 
         res.json({
             success: true,
@@ -397,10 +400,13 @@ exports.getProfile = async (req, res) => {
             expiryDate: { $gt: new Date() }
         }).populate('planId');
 
+        // Use toObject if it's a Mongoose document, otherwise use as is
+        const customerData = customer.toObject ? customer.toObject() : customer;
+
         res.json({
             success: true,
             data: {
-                ...customer.toObject(),
+                ...customerData,
                 activeMembership: activeMembership || null
             }
         });
@@ -410,6 +416,7 @@ exports.getProfile = async (req, res) => {
         res.status(500).json({ success: false, message: 'Server error' });
     }
 };
+
 // @desc    Delete customer profile
 // @route   DELETE /api/auth/profile
 // @access  Private (Customer)
@@ -431,6 +438,7 @@ exports.deleteAccount = async (req, res) => {
         res.status(500).json({ success: false, message: 'Server error' });
     }
 };
+
 // @desc    Get favorites for a specific customer
 // @route   GET /api/auth/favorites/customer/:customerId
 // @access  Private

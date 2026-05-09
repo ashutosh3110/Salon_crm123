@@ -116,6 +116,7 @@ import AppMembershipSuccessPage from './pages/app/AppMembershipSuccessPage';
 import GenderSelectPage from './pages/app/GenderSelectPage';
 import AppHelpSupportPage from './pages/app/AppHelpSupportPage';
 import AppPrivacyPolicyPage from './pages/app/AppPrivacyPolicyPage';
+import AppTermsPage from './pages/app/AppTermsPage';
 import AppFavoritesPage from './pages/app/AppFavoritesPage';
 import AppExpertsPage from './pages/app/AppExpertsPage';
 import NearbyOutletsPage from './pages/app/NearbyOutletsPage';
@@ -491,6 +492,8 @@ function App() {
                         <Route element={<CustomerAppWrapper />}>
                           <Route path="/app/login" element={<AppLoginPage />} />
                           <Route path="/app/gender" element={<GenderSelectPage />} />
+                          <Route path="/app/privacy" element={<AppPrivacyPolicyPage />} />
+                          <Route path="/app/terms" element={<AppTermsPage />} />
                           <Route element={<AppLayout />}>
                             <Route path="/app" element={<AppHomePage />} />
                             <Route path="/app/nearby-outlets" element={<NearbyOutletsPage />} />
@@ -520,7 +523,6 @@ function App() {
                             <Route path="/app/membership/checkout" element={<AppMembershipCheckoutPage />} />
                             <Route path="/app/membership/success" element={<AppMembershipSuccessPage />} />
                             <Route path="/app/help" element={<AppHelpSupportPage />} />
-                            <Route path="/app/privacy" element={<AppPrivacyPolicyPage />} />
                           </Route>
                         </Route>
 

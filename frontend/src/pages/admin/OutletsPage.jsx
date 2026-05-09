@@ -27,6 +27,7 @@ import {
 } from 'recharts';
 import { useBusiness } from '../../contexts/BusinessContext';
 import AnimatedCounter from '../../components/common/AnimatedCounter';
+import { getImageUrl } from '../../utils/imageUtils';
 
 const CHART_COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#6366f1'];
 
@@ -212,9 +213,9 @@ export default function OutletsPage() {
                         >
                             {/* Card Image Banner */}
                             <div className="relative h-48 overflow-hidden bg-slate-100">
-                                {outlet.images?.length > 0 ? (
+                                {outlet.images?.length > 0 || outlet.image ? (
                                     <img 
-                                        src={outlet.images[0].startsWith('http') ? outlet.images[0] : `${import.meta.env.VITE_API_URL}${outlet.images[0]}`} 
+                                        src={getImageUrl(outlet.images?.[0] || outlet.image)} 
                                         alt={outlet.name} 
                                         className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" 
                                     />

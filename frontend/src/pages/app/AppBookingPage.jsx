@@ -63,8 +63,13 @@ export default function AppBookingPage() {
 
     useEffect(() => {
         fetchStaff?.();
-        fetchServices?.();
-    }, [fetchStaff, fetchServices]);
+        // If we have a pre-selected service, fetch all services for the salon to ensure it's found
+        if (preSelectedServiceId && activeSalonId) {
+            fetchServices?.(activeSalonId, null);
+        } else {
+            fetchServices?.();
+        }
+    }, [fetchStaff, fetchServices, preSelectedServiceId, activeSalonId]);
 
     const [step, setStep] = useState(0);
     const [direction, setDirection] = useState(1);
@@ -75,16 +80,25 @@ export default function AppBookingPage() {
     const [availableSlots, setAvailableSlots] = useState([]);
     const [submitting, setSubmitting] = useState(false);
 
-    // Pre-select service from query
+    // Pre-select service from query and auto-advance
+    const autoAdvancedRef = useRef(false);
     useEffect(() => {
-        if (preSelectedServiceId && businessServices.length > 0) {
-            const svc = businessServices.find(s => String(s._id || s.id) === String(preSelectedServiceId));
-            if (svc) {
-                setSelectedServices([svc]);
-                setStep(1); // Auto-advance to Stylist
+        if (autoAdvancedRef.current || !preSelectedServiceId || businessServices.length === 0) return;
+
+        const svc = businessServices.find(s => String(s._id || s.id) === String(preSelectedServiceId));
+        if (svc) {
+            setSelectedServices([svc]);
+            // If outletId is also provided, we can skip even further, but Step 1 (Stylist) is safe
+            setStep(1);
+            autoAdvancedRef.current = true;
+            
+            // If outletId in URL matches an outlet we have, ensure it's selected
+            if (outletId) {
+                const found = outlets.find(o => String(o.id || o._id) === String(outletId));
+                if (found) setSelectedOutlet(found);
             }
         }
-    }, [preSelectedServiceId, businessServices]);
+    }, [preSelectedServiceId, businessServices, outletId, outlets]);
     const submittingRef = useRef(false);
     const [bookingComplete, setBookingComplete] = useState(false);
     const [serviceSearch, setServiceSearch] = useState('');
@@ -226,20 +240,7 @@ export default function AppBookingPage() {
     // Pre-select service from query
     // Redundant fetches removed as data is part of initial-data
 
-    useEffect(() => {
-        if (preSelectedServiceId) {
-            const svc = businessServices.find(s => String(s._id || s.id) === String(preSelectedServiceId));
-            if (svc && !selectedServices.find(s => String(s._id || s.id) === String(preSelectedServiceId))) {
-                setSelectedServices([svc]);
-                // If we also have an outlet selected, move to date/time
-                if (outletId) {
-                    const out = outlets.find(o => o.id === outletId || o._id === outletId);
-                    if (out) setSelectedOutlet(out);
-                    setStep(1); // Jump to Date & Time skip Location selection
-                }
-            }
-        }
-    }, [preSelectedServiceId, outletId, outlets, businessServices]);
+    // Redundant pre-selection effect removed (consolidated above)
 
     const toggleService = (svc) => {
         const svcId = svc._id || svc.id;
@@ -275,20 +276,25 @@ export default function AppBookingPage() {
     }, [activeMembership, totalPrice]);
 
     const outletStaff = useMemo(() => {
-        if (!currentOutlet) return [];
+        if (!currentOutlet || !businessStaff) return [];
+        
+        const targetOutletId = String(currentOutlet._id || currentOutlet.id);
+        
         return (businessStaff || []).filter(s => {
             const sRole = String(s.role || '').toLowerCase();
             const isStylist = sRole.includes('stylist') || 
                              sRole.includes('stylish') || 
                              sRole.includes('stylsih') || 
-                             s.isStylist === true;
+                             sRole.includes('expert') ||
+                             sRole.includes('hair') ||
+                             s.isStylist === true ||
+                             !s.role; // If no role defined, assume they can be booked (safer fallback)
             
             if (!isStylist) return false;
             
-            const targetOutletId = String(currentOutlet._id || currentOutlet.id);
             const staffOutlets = (s.outletIds || [s.outletId]).filter(Boolean);
             
-            // If staff has no outlets assigned, they might be global staff
+            // If staff has no outlets assigned, they might be global/salon-wide staff
             if (staffOutlets.length === 0) return true;
             
             return staffOutlets.some(id => {

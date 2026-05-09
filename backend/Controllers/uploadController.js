@@ -51,14 +51,16 @@ exports.uploadImage = async (req, res) => {
         const host = req.get('host');
         // Determine the relative path for the URL (assuming uploads/general is the structure)
         const relativeDir = originalPath.includes('general') ? 'general' : '';
-        const displayUrl = `${protocol}://${host}/uploads/${relativeDir}/${webpFilename}`;
+        // Return a relative path for database storage and an absolute URL for immediate UI display
+        const relativePath = `uploads/${relativeDir ? relativeDir + '/' : ''}${webpFilename}`;
         
         console.log('File converted to WebP:', webpPath);
-        console.log('Returning URL:', displayUrl);
+        console.log('Relative path:', relativePath);
 
         res.status(200).json({
             success: true,
-            url: displayUrl,
+            url: relativePath, // Return relative path as the primary URL
+            fullUrl: `${req.protocol}://${req.get('host')}/${relativePath}`, // Provide full URL as optional
             public_id: webpFilename
         });
 

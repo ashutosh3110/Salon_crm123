@@ -278,10 +278,12 @@ export default function AppCheckoutPage() {
                                     <label className="text-[9px] font-black uppercase tracking-[0.2em] opacity-40">Street Address</label>
                                     <input 
                                         type="text" 
+                                        placeholder="Enter your street address"
                                         value={address.street} 
                                         onChange={(e) => setAddress({...address, street: e.target.value})}
-                                        className="w-full bg-transparent border-b border-white/10 py-2 font-bold text-sm focus:border-[#C8956C] outline-none transition-colors"
+                                        className="w-full bg-transparent border-b border-white/10 py-2 font-bold text-sm focus:border-[#C8956C] outline-none transition-colors placeholder:text-white/10"
                                         style={{ color: colors.text }}
+                                        required
                                     />
                                 </div>
                                 <div className="grid grid-cols-2 gap-4">
@@ -289,20 +291,24 @@ export default function AppCheckoutPage() {
                                         <label className="text-[9px] font-black uppercase tracking-[0.2em] opacity-40">City</label>
                                         <input 
                                             type="text" 
+                                            placeholder="City"
                                             value={address.city} 
                                             onChange={(e) => setAddress({...address, city: e.target.value})}
-                                            className="w-full bg-transparent border-b border-white/10 py-2 font-bold text-sm focus:border-[#C8956C] outline-none transition-colors"
+                                            className="w-full bg-transparent border-b border-white/10 py-2 font-bold text-sm focus:border-[#C8956C] outline-none transition-colors placeholder:text-white/10"
                                             style={{ color: colors.text }}
+                                            required
                                         />
                                     </div>
                                     <div className="space-y-1">
                                         <label className="text-[9px] font-black uppercase tracking-[0.2em] opacity-40">Zip Code</label>
                                         <input 
                                             type="text" 
+                                            placeholder="Pincode"
                                             value={address.zip} 
                                             onChange={(e) => setAddress({...address, zip: e.target.value})}
-                                            className="w-full bg-transparent border-b border-white/10 py-2 font-bold text-sm focus:border-[#C8956C] outline-none transition-colors"
+                                            className="w-full bg-transparent border-b border-white/10 py-2 font-bold text-sm focus:border-[#C8956C] outline-none transition-colors placeholder:text-white/10"
                                             style={{ color: colors.text }}
+                                            required
                                         />
                                     </div>
                                 </div>
@@ -316,7 +322,15 @@ export default function AppCheckoutPage() {
                             </div>
                         )}
                         <button
-                            onClick={() => setStep(2)}
+                            onClick={() => {
+                                if (homeDelivery) {
+                                    if (!address.street.trim() || !address.city.trim() || !address.zip.trim()) {
+                                        alert('Please fill all address fields for Home Delivery');
+                                        return;
+                                    }
+                                }
+                                setStep(2);
+                            }}
                             className="w-full h-16 bg-[#C8956C] text-white font-black uppercase tracking-[0.4em] text-[11px] rounded-2xl flex items-center justify-center gap-4 shadow-xl shadow-[#C8956C]/20"
                         >
                             CONTINUE TO PAYMENT <ArrowRight size={18} />

@@ -24,6 +24,7 @@ import {
 import { useBusiness } from '../../contexts/BusinessContext';
 import { useInventory } from '../../contexts/InventoryContext';
 import { Scissors, Tag, IndianRupee, Package } from 'lucide-react';
+import { getImageUrl } from '../../utils/imageUtils';
 
 export default function OutletDetailPage() {
     const navigate = useNavigate();
@@ -198,8 +199,8 @@ export default function OutletDetailPage() {
                                     <div key={member._id || member.id} className="px-8 py-5 flex items-center justify-between hover:bg-surface-alt transition-all cursor-pointer group">
                                         <div className="flex items-center gap-5">
                                             <div className="w-11 h-11 overflow-hidden border border-border flex items-center justify-center group-hover:scale-105 transition-transform bg-surface-alt">
-                                                {member.img || member.image ? (
-                                                    <img src={member.img || member.image} className="w-full h-full object-cover" alt={member.name} />
+                                                {member.img || member.avatar || member.image ? (
+                                                    <img src={getImageUrl(member.img || member.avatar || member.image)} className="w-full h-full object-cover" alt={member.name} />
                                                 ) : (
                                                     <User className="w-6 h-6 text-text-muted" />
                                                 )}
