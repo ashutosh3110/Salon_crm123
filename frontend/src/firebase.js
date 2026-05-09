@@ -32,7 +32,7 @@ export const requestForToken = async () => {
       }
 
       const currentToken = await getToken(messaging, {
-        vapidKey: "BNLLMYHhpoGyPv8w-EWLCnNSaDXIiBYoMNky3dyzTLDjksUjnLUSCoFv9qvqf-J2--E_twkOHEia7WVNcRHZu5o"
+        vapidKey: import.meta.env.VITE_FIREBASE_VAPID_KEY || "BNLLMYHhpoGyPv8w-EWLCnNSaDXIiBYoMNky3dyzTLDjksUjnLUSCoFv9qvqf-J2--E_twkOHEia7WVNcRHZu5o"
       });
       if (currentToken) {
         console.log("FCM Token:", currentToken);

@@ -3,7 +3,7 @@ import {
     MessageSquare, Mail, Share2, TrendingUp, Users, Send,
     Plus, Search, Filter, MoreVertical, CheckCircle, Clock,
     Eye, BarChart2, Smartphone, Facebook, Instagram,
-    Zap, Calendar, Layout, Trash2, Edit3, ArrowRight,
+    Zap, Calendar, Layout, Trash2, Edit3, ArrowRight,Bell,
     QrCode, Globe, Percent, XCircle, Save, Star, Download, CheckCircle2, Tag, Gift, ChevronRight, SmartphoneIcon, Target, Megaphone
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
@@ -930,6 +930,8 @@ function NotificationsContent({ segments, onRefresh }) {
     });
     const [loading, setLoading] = useState(false);
     const [success, setSuccess] = useState(false);
+    const [isPickerOpen, setIsPickerOpen] = useState(false);
+    const [selectedCustomerName, setSelectedCustomerName] = useState('');
 
     const handleSend = async () => {
         setLoading(true);
@@ -938,6 +940,7 @@ function NotificationsContent({ segments, onRefresh }) {
             if (res.data?.success) {
                 setSuccess(true);
                 setForm({ title: '', message: '', image: '', type: 'marketing', customerId: 'all' });
+                setSelectedCustomerName('');
                 setTimeout(() => setSuccess(false), 3000);
                 onRefresh();
             }
@@ -961,14 +964,35 @@ function NotificationsContent({ segments, onRefresh }) {
                 <div className="space-y-4">
                     <div className="space-y-2">
                         <label className="text-[10px] font-black text-text-muted uppercase tracking-widest">Audience</label>
-                        <select 
-                            className="w-full bg-surface border border-border rounded-xl px-4 py-3 text-sm font-bold focus:outline-none"
-                            value={form.customerId}
-                            onChange={(e) => setForm({...form, customerId: e.target.value})}
-                        >
-                            <option value="all">All Active Customers</option>
-                            {/* In a real app, you'd add customer search here */}
-                        </select>
+                        <div className="flex gap-2">
+                            <select 
+                                className="flex-1 bg-surface border border-border rounded-xl px-4 py-3 text-sm font-bold focus:outline-none"
+                                value={form.customerId === 'all' ? 'all' : (form.customerId === 'self' ? 'self' : 'specific')}
+                                onChange={(e) => {
+                                    if (e.target.value === 'all') {
+                                        setForm({...form, customerId: 'all'});
+                                        setSelectedCustomerName('');
+                                    } else if (e.target.value === 'self') {
+                                        setForm({...form, customerId: 'self'});
+                                        setSelectedCustomerName('Me (Test)');
+                                    } else {
+                                        setIsPickerOpen(true);
+                                    }
+                                }}
+                            >
+                                <option value="all">All Active Customers</option>
+                                <option value="self">Test to Me (Self)</option>
+                                <option value="specific">Specific Customer {selectedCustomerName ? `(${selectedCustomerName})` : ''}</option>
+                            </select>
+                            {form.customerId !== 'all' && form.customerId !== 'self' && (
+                                <button 
+                                    onClick={() => setIsPickerOpen(true)}
+                                    className="p-3 bg-surface border border-border rounded-xl hover:border-primary/30 text-primary transition-all"
+                                >
+                                    <Search className="w-5 h-5" />
+                                </button>
+                            )}
+                        </div>
                     </div>
 
                     <div className="space-y-2">
@@ -1010,19 +1034,20 @@ function NotificationsContent({ segments, onRefresh }) {
                             disabled={loading || !form.title || !form.message}
                             className="flex-1 py-4 bg-primary text-white text-xs font-black uppercase tracking-[0.2em] rounded-xl hover:brightness-110 shadow-lg shadow-primary/20 disabled:opacity-50 transition-all"
                         >
-                            {loading ? 'Sending...' : success ? 'Sent Successfully!' : 'Broadcast Notification'}
-                        </button>
-                        <button 
-                            onClick={() => {
-                                // Send test to self logic
-                                setForm(prev => ({ ...prev, customerId: 'self' }));
-                                handleSend();
-                            }}
-                            className="px-6 py-4 border border-border text-text-muted text-[10px] font-black uppercase tracking-widest rounded-xl hover:border-primary/30 hover:text-primary transition-all"
-                        >
-                            Test to Me
+                            {loading ? 'Sending...' : success ? 'Sent Successfully!' : (form.customerId === 'all' ? 'Broadcast Notification' : 'Send Notification')}
                         </button>
                     </div>
+
+                    <ContactListModal 
+                        isOpen={isPickerOpen}
+                        onClose={() => setIsPickerOpen(false)}
+                        selectionMode={true}
+                        selectedIds={form.customerId === 'all' || form.customerId === 'self' ? [] : [form.customerId]}
+                        onToggleSelect={(id) => {
+                            setForm({...form, customerId: id});
+                            setIsPickerOpen(false);
+                        }}
+                    />
                 </div>
             </div>
 

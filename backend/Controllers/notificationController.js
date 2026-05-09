@@ -111,8 +111,6 @@ exports.registerToken = async (req, res) => {
         const updateField = (platform === 'mobile' || platform === 'app') ? { fcmTokenMobile: token } : { fcmTokenWeb: token };
         const updateQuery = { $addToSet: updateField };
 
-        console.log(`[FCM Register] Role: ${role}, UserID: ${userId}, Platform: ${platform}`);
-
         let updatedRecord = null;
 
         // 1. Try updating the record based on current role
@@ -130,8 +128,6 @@ exports.registerToken = async (req, res) => {
 
         // 2. Fallback: If not found by ID (maybe role mismatch in token), try by phone across all collections
         if (!updatedRecord && phone) {
-            console.log(`[FCM] ID match failed, searching by phone: ${phone}`);
-            
             // Try Customer first
             updatedRecord = await Customer.findOneAndUpdate({ phone: phone }, updateQuery, { new: true });
             
@@ -152,14 +148,12 @@ exports.registerToken = async (req, res) => {
         }
 
         if (!updatedRecord) {
-            console.error(`[FCM Error] No record found in any collection for UserID: ${userId} or Phone: ${phone}`);
             return res.json({
                 success: true,
                 message: 'Token received, but no account record found to link it with.'
             });
         }
 
-        console.log(`[FCM Success] Token registered for: ${updatedRecord.name || updatedRecord.phone} (${role})`);
         res.json({
             success: true,
             message: 'Token registered successfully'
