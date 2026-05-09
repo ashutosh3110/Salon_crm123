@@ -72,22 +72,20 @@ export default function AppLayout() {
     useEffect(() => {
         const handleNotificationToken = async () => {
             if (customer && !authLoading && !hasRegisteredToken.current) {
+                // Pre-check for support to avoid unnecessary logs
+                if (!('Notification' in window)) return;
+                
                 hasRegisteredToken.current = true;
                 const token = await requestForToken();
                 if (token) {
                     try {
-                        // Detect platform
-                        const isMobileApp = window.ReactNativeWebView || /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-                        const platform = isMobileApp ? 'app' : 'web';
-
                         await api.post('/notifications/register-token', { 
                             token, 
-                            platform: platform
+                            platform: window.ReactNativeWebView || /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) ? 'app' : 'web'
                         });
-                        console.log(`FCM Token registered successfully for ${platform}`);
+                        console.log('FCM Token registered successfully');
                     } catch (err) {
                         console.error('Failed to register FCM Token', err);
-                        // If it fails, allow retry on next render/mount
                         hasRegisteredToken.current = false;
                     }
                 }
