@@ -19,6 +19,10 @@ const feedbackSchema = new mongoose.Schema({
         type: String,
         required: true
     },
+    customerPhone: {
+        type: String,
+        required: false
+    },
     rating: {
         type: Number,
         required: true,

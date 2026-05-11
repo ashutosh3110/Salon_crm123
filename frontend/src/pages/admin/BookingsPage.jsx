@@ -141,7 +141,8 @@ export default function BookingsPage() {
             }
         }
 
-        return result;
+        // Sort by creation date descending (newest on top)
+        return result.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
     }, [bookings, searchTerm, statusFilter, staffFilter, dateFilter]);
 
     // Analytics Calculations
@@ -503,10 +504,9 @@ export default function BookingsPage() {
                                                         e.stopPropagation();
                                                         navigate(`/admin/bookings/${b._id}`);
                                                     }}
-                                                    className="p-3 rounded-none bg-background border border-border text-text-muted hover:text-primary hover:border-primary transition-all flex items-center gap-2 group/btn"
+                                                    className="p-3 rounded-none bg-background border border-border text-text-muted hover:text-primary hover:border-primary transition-all flex items-center justify-center group/btn"
                                                 >
                                                     <Eye className="w-4 h-4" />
-                                                    <span className="text-[9px] font-black uppercase tracking-widest hidden group-hover/btn:inline">Details</span>
                                                 </button>
                                             </td>
                                         </tr>

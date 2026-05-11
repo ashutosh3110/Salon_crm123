@@ -122,6 +122,7 @@ export default function FeedbackList() {
                             <tr className="bg-surface/50 border-b border-border">
                                 <th className="px-6 py-4 text-[10px] font-black text-text-muted uppercase tracking-widest">Customer Info</th>
                                 <th className="px-6 py-4 text-[10px] font-black text-text-muted uppercase tracking-widest text-center">Rating</th>
+                                <th className="px-6 py-4 text-[10px] font-black text-text-muted uppercase tracking-widest text-center">Status</th>
                                 <th className="px-6 py-4 text-[10px] font-black text-text-muted uppercase tracking-widest">Outlet / Location</th>
                                 <th className="px-6 py-4 text-[10px] font-black text-text-muted uppercase tracking-widest">Feedback</th>
                                 <th className="px-6 py-4 text-[10px] font-black text-text-muted uppercase tracking-widest text-right">Action</th>
@@ -139,7 +140,7 @@ export default function FeedbackList() {
                                                 <div className="space-y-0.5">
                                                     <div className="text-sm font-bold text-text leading-none">{fb.customerId?.name || fb.customerName}</div>
                                                     <div className="text-[10px] text-text-muted font-bold flex items-center gap-1 opacity-70">
-                                                        <Phone size={10} /> {fb.customerId?.phone || 'N/A'}
+                                                        <Phone size={10} /> {fb.customerId?.phone || fb.customerPhone || 'N/A'}
                                                     </div>
                                                 </div>
                                             </div>
@@ -148,6 +149,15 @@ export default function FeedbackList() {
                                             <div className="flex items-center justify-center gap-1.5 px-3 py-1.5 bg-yellow-50/50 rounded-xl w-fit mx-auto border border-yellow-100">
                                                 <Star className="w-3 h-3 text-yellow-500 fill-yellow-500" />
                                                 <span className="text-xs font-black text-yellow-700">{fb.rating}</span>
+                                            </div>
+                                        </td>
+                                        <td className="px-6 py-5">
+                                            <div className={`px-2.5 py-1 rounded-none text-[8px] font-black uppercase tracking-widest w-fit mx-auto border ${
+                                                fb.status === 'Approved' ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20' :
+                                                fb.status === 'Rejected' ? 'bg-rose-500/10 text-rose-600 border-rose-500/20' :
+                                                'bg-amber-500/10 text-amber-600 border-amber-500/20'
+                                            }`}>
+                                                {fb.status || 'Pending'}
                                             </div>
                                         </td>
                                         <td className="px-6 py-5">

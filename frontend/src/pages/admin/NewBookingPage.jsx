@@ -71,6 +71,15 @@ export default function NewBookingPage() {
         customerId: '',
     });
 
+    const [activeMembership, setActiveMembership] = useState(null);
+    const [fetchingMembership, setFetchingMembership] = useState(false);
+
+    const { platformSettings, fetchPlatformSettings } = useBusiness();
+
+    useEffect(() => {
+        if (!platformSettings) fetchPlatformSettings?.();
+    }, [platformSettings, fetchPlatformSettings]);
+
     const [availableSlots, setAvailableSlots] = useState([]);
     const [fetchingSlots, setFetchingSlots] = useState(false);
 
@@ -98,6 +107,29 @@ export default function NewBookingPage() {
         };
         fetchSlots();
     }, [selection.staffId, selection.serviceId, selection.date]);
+
+    // Fetch Membership when customer changes
+    useEffect(() => {
+        const fetchMembership = async () => {
+            if (!selection.customerId) {
+                setActiveMembership(null);
+                return;
+            }
+            setFetchingMembership(true);
+            try {
+                const res = await api.get('/loyalty/membership/active', {
+                    params: { customerId: selection.customerId }
+                });
+                setActiveMembership(res.data?.data || null);
+            } catch (err) {
+                console.error('Failed to fetch membership', err);
+                setActiveMembership(null);
+            } finally {
+                setFetchingMembership(false);
+            }
+        };
+        fetchMembership();
+    }, [selection.customerId]);
 
     // Search/Filter States
     const [searchTerms, setSearchTerms] = useState({
@@ -164,6 +196,30 @@ export default function NewBookingPage() {
         );
     }, [customers, searchTerms.customer]);
 
+    // Price Calculations
+    const priceCalculation = useMemo(() => {
+        if (!selectedService) return { original: 0, discount: 0, subtotal: 0, tax: 0, total: 0 };
+        
+        const original = selectedService.price || 0;
+        let discount = 0;
+
+        if (activeMembership && activeMembership.planId) {
+            const plan = activeMembership.planId;
+            if (plan.serviceDiscountType === 'percentage') {
+                discount = Math.round(original * (plan.serviceDiscountValue / 100));
+            } else {
+                discount = Math.min(original, plan.serviceDiscountValue);
+            }
+        }
+
+        const subtotal = original - discount;
+        const gstRate = platformSettings?.serviceGst || 18;
+        const tax = Math.round(subtotal * (gstRate / 100));
+        const total = subtotal + tax;
+
+        return { original, discount, subtotal, tax, total, gstRate };
+    }, [selectedService, activeMembership, platformSettings]);
+
     // Reset pagination on search
     useEffect(() => {
         setCustomerPage(1);
@@ -208,7 +264,9 @@ export default function NewBookingPage() {
                 appointmentDate,
                 time: selection.time,
                 duration: selectedService?.duration || 30,
-                totalPrice: selectedService?.price,
+                totalPrice: priceCalculation.total,
+                taxAmount: priceCalculation.tax,
+                discountAmount: priceCalculation.discount,
                 source: 'admin'
             });
 
@@ -660,13 +718,36 @@ export default function NewBookingPage() {
                                 </div>
                                 <div className="space-y-1">
                                     <p className="text-[8px] font-black text-primary uppercase tracking-[0.3em] font-mono">Customer</p>
-                                    <h4 className="text-xl font-black text-text uppercase italic tracking-tight">{selectedCustomer?.name}</h4>
+                                    <div className="flex items-center gap-2">
+                                        <h4 className="text-xl font-black text-text uppercase italic tracking-tight">{selectedCustomer?.name}</h4>
+                                        {activeMembership && (
+                                            <span className="text-[8px] bg-amber-100 text-amber-700 px-2 py-0.5 rounded font-black uppercase tracking-widest border border-amber-200">
+                                                {activeMembership.planId?.name} Member
+                                            </span>
+                                        )}
+                                    </div>
                                     <p className="text-[10px] font-black text-text-muted font-mono tracking-tighter mt-1 opacity-60 italic">{maskPhone(selectedCustomer?.phone, user?.role)}</p>
                                 </div>
-                                <div className="pt-6 border-t border-border flex items-end justify-between">
-                                    <div>
-                                        <p className="text-[8px] font-black text-emerald-600 uppercase tracking-[0.3em] font-mono italic">Total Price</p>
-                                        <p className="text-4xl font-black text-emerald-600 tracking-tighter font-mono italic">₹{selectedService?.price}</p>
+                                <div className="pt-6 border-t border-border space-y-3">
+                                    <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-widest text-text-muted">
+                                        <span>Base Price</span>
+                                        <span>₹{priceCalculation.original}</span>
+                                    </div>
+                                    {priceCalculation.discount > 0 && (
+                                        <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-widest text-emerald-600">
+                                            <span>Member Discount</span>
+                                            <span>- ₹{priceCalculation.discount}</span>
+                                        </div>
+                                    )}
+                                    <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-widest text-text-muted">
+                                        <span>GST ({priceCalculation.gstRate}%)</span>
+                                        <span>+ ₹{priceCalculation.tax}</span>
+                                    </div>
+                                    <div className="pt-3 border-t border-border flex items-end justify-between">
+                                        <div>
+                                            <p className="text-[8px] font-black text-emerald-600 uppercase tracking-[0.3em] font-mono italic">Final Total</p>
+                                            <p className="text-4xl font-black text-emerald-600 tracking-tighter font-mono italic">₹{priceCalculation.total}</p>
+                                        </div>
                                     </div>
                                 </div>
                             </div>

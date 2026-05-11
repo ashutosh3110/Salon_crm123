@@ -48,6 +48,28 @@ exports.markAsRead = async (req, res) => {
     }
 };
 
+// @desc    Mark all notifications as read
+// @route   PATCH /api/notifications/read-all
+// @access  Private
+exports.markAllAsRead = async (req, res) => {
+    try {
+        await Notification.updateMany(
+            { 
+                $or: [{ customerId: req.user._id }, { userId: req.user._id }],
+                isRead: false 
+            },
+            { isRead: true }
+        );
+
+        res.json({
+            success: true,
+            message: 'All notifications marked as read'
+        });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+};
+
 // @desc    Send manual notification (Admin)
 // @route   POST /api/notifications/send
 // @access  Private (Admin)

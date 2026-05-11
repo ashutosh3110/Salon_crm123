@@ -301,8 +301,15 @@ const Customer = require('../Models/Customer');
 // @access  Private (Customer)
 exports.getActiveMembership = async (req, res) => {
     try {
+        let customerId = req.user._id;
+
+        // Allow admins to check membership for a specific customer
+        if (req.query.customerId && ['admin', 'manager', 'superadmin'].includes(req.user.role)) {
+            customerId = req.query.customerId;
+        }
+
         const membership = await CustomerMembership.findOne({
-            customerId: req.user._id,
+            customerId,
             status: 'active',
             expiryDate: { $gt: new Date() }
         }).populate('planId');

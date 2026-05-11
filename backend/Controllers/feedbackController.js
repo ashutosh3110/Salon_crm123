@@ -46,12 +46,13 @@ exports.getFeedbacks = async (req, res) => {
 // @access  Public (should ideally be auth required, but keeping open for simplicity)
 exports.createFeedback = async (req, res) => {
     try {
-        let { customerName, rating, comment, targetType, targetId, salonId, outletId, targetName } = req.body;
+        let { customerName, customerPhone, rating, comment, targetType, targetId, salonId, outletId, targetName } = req.body;
 
         // If user is logged in, use their details
         const customerId = req.user ? req.user._id : null;
-        if (req.user && !customerName) {
-            customerName = req.user.name || 'Anonymous';
+        if (req.user) {
+            if (!customerName) customerName = req.user.name || 'Anonymous';
+            if (!customerPhone) customerPhone = req.user.phone;
         }
 
         const feedback = await Feedback.create({
@@ -59,6 +60,7 @@ exports.createFeedback = async (req, res) => {
             outletId: outletId || null,
             customerId,
             customerName: customerName || 'Anonymous',
+            customerPhone,
             rating,
             comment,
             targetType,

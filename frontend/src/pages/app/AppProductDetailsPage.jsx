@@ -378,7 +378,7 @@ export default function AppProductDetailsPage() {
                 targetName={product.name}
                 onSuccess={() => {
                     const fetchReviews = async () => {
-                        const res = await api.get(`/feedbacks?targetId=${id}&targetType=product`);
+                        const res = await api.get(`/feedbacks?targetId=${id}&targetType=product&status=Approved`);
                         if (res.data?.success) setReviews(res.data.data);
                     };
                     fetchReviews();

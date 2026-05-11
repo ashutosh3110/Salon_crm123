@@ -1,13 +1,25 @@
 import { useNavigate } from 'react-router-dom';
 import { Menu, Bell, Store, Moon, Sun, Monitor, LogOut, ArrowLeft } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
+import { useBusiness } from '../../contexts/BusinessContext';
 import { useTheme } from '../../contexts/ThemeContext';
+import { getImageUrl } from '../../utils/imageUtils';
 import { motion } from 'framer-motion';
 
 export default function POSTopbar({ onMenuClick }) {
     const { theme, toggleTheme } = useTheme();
-    const { logout, getExitPath } = useAuth();
+    const { logout, getExitPath, user } = useAuth();
+    const { activeOutlet } = useBusiness();
     const navigate = useNavigate();
+
+    const initials = user?.name
+        ? user.name
+            .split(' ')
+            .map((n) => n[0])
+            .join('')
+            .toUpperCase()
+            .slice(0, 2)
+        : 'U';
 
     return (
         <header className="sticky top-0 z-30 bg-background/95 border-b border-border/60 backdrop-blur-md">
@@ -38,8 +50,8 @@ export default function POSTopbar({ onMenuClick }) {
                             <Monitor className="w-4 h-4 text-primary" />
                         </div>
                         <div className="hidden sm:block">
-                            <span className="text-[11px] font-black text-primary uppercase tracking-widest block leading-none">Terminal #01</span>
-                            <span className="text-xs font-bold text-text-secondary">Main Reception</span>
+                            <span className="text-[11px] font-black text-primary uppercase tracking-widest block leading-none">Terminal Mode</span>
+                            <span className="text-xs font-bold text-text-secondary uppercase tracking-tighter italic">{activeOutlet?.name || 'Main Reception'}</span>
                         </div>
                     </div>
                 </div>
@@ -72,11 +84,15 @@ export default function POSTopbar({ onMenuClick }) {
                     {/* User Profile */}
                     <div className="flex items-center gap-4 pl-4 ml-2 border-l border-border/60 h-10">
                         <div className="hidden lg:block text-right">
-                            <p className="text-xs font-black text-text uppercase tracking-tighter leading-none">Ravi Sharma</p>
-                            <p className="text-[10px] font-bold text-text-muted mt-0.5">Senior Cashier</p>
+                            <p className="text-xs font-black text-text uppercase tracking-tighter leading-none">{user?.name || 'Active User'}</p>
+                            <p className="text-[10px] font-bold text-text-muted mt-0.5 uppercase tracking-widest">{user?.role || 'Staff'}</p>
                         </div>
-                        <div className="w-10 h-10 bg-text text-background flex items-center justify-center font-black text-xs relative group cursor-pointer hover:bg-primary hover:text-white transition-colors">
-                            RS
+                        <div className="w-10 h-10 bg-text text-background flex items-center justify-center font-black text-xs relative group cursor-pointer hover:bg-primary hover:text-white transition-colors overflow-hidden">
+                            {user?.avatar ? (
+                                <img src={getImageUrl(user.avatar)} alt="" className="w-full h-full object-cover" />
+                            ) : (
+                                initials
+                            )}
                             <div className="absolute top-0 left-0 w-full h-full border border-background opacity-0 group-hover:opacity-10 scale-90 group-hover:scale-100 transition-all"></div>
                         </div>
                     </div>

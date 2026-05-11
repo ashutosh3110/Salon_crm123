@@ -126,6 +126,7 @@ exports.getTrustedReviews = async (req, res) => {
         // Trusted review check by rating >= 4
         const reviews = await Feedback.find({ 
             outletId: outletId,
+            status: 'Approved',
             rating: { $gte: 4 }
         }).sort({ createdAt: -1 }).limit(10);
         res.json({ success: true, data: reviews });

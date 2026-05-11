@@ -267,6 +267,8 @@ exports.updateStatus = async (req, res) => {
         const oldStatus = booking.status;
         if (req.body.status) booking.status = req.body.status;
         if (req.body.paymentStatus) booking.paymentStatus = req.body.paymentStatus;
+        if (req.body.staffId) booking.staffId = req.body.staffId;
+        if (req.body.notes !== undefined) booking.notes = req.body.notes;
 
         // Auto-complete payment for salon payments when booking is completed
         if (booking.status === 'completed' && booking.paymentMethod === 'salon') {

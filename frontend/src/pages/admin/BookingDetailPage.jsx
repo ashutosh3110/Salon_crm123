@@ -47,6 +47,12 @@ export default function BookingDetailPage() {
     const [loading, setLoading] = useState(true);
     const [isEditingNotes, setIsEditingNotes] = useState(false);
     const [notes, setNotes] = useState('');
+    const [isReassignModalOpen, setIsReassignModalOpen] = useState(false);
+    const { staff, fetchStaff } = useBusiness();
+
+    useEffect(() => {
+        if (staff.length === 0) fetchStaff?.();
+    }, [staff, fetchStaff]);
 
     useEffect(() => {
         const fetchDetail = async () => {
@@ -79,6 +85,16 @@ export default function BookingDetailPage() {
             await updateBookingStatus(id, { paymentStatus });
         } catch (error) {
             console.error(error);
+        }
+    };
+
+    const handleReassignStaff = async (staffId) => {
+        try {
+            await updateBookingStatus(id, { staffId });
+            setIsReassignModalOpen(false);
+            toast.success('Staff reassigned successfully');
+        } catch (error) {
+            toast.error('Reassignment failed');
         }
     };
 
@@ -201,7 +217,10 @@ export default function BookingDetailPage() {
                                         {booking.staffId?.name?.[0] || '?'}
                                     </div>
                                 </div>
-                                <button className="w-full py-3 rounded-xl border border-dashed border-border hover:border-primary/50 hover:text-primary text-[9px] font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2">
+                                <button 
+                                    onClick={() => setIsReassignModalOpen(true)}
+                                    className="w-full py-3 rounded-xl border border-dashed border-border hover:border-primary/50 hover:text-primary text-[9px] font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2"
+                                >
                                     <RotateCcw className="w-3.5 h-3.5" /> Reassign Staff
                                 </button>
                             </div>
@@ -411,6 +430,45 @@ export default function BookingDetailPage() {
                     </div>
                 </div>
             </div>
+            {/* Reassign Staff Modal */}
+            {isReassignModalOpen && (
+                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
+                    <div className="bg-white w-full max-w-md rounded-[2.5rem] border border-border shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200">
+                        <div className="p-8 border-b border-border bg-surface-alt/30">
+                            <h3 className="text-xl font-black text-text uppercase tracking-tight italic">Reassign Expert</h3>
+                            <p className="text-[10px] font-bold text-text-muted uppercase tracking-[0.2em] mt-1">Select new professional for this session</p>
+                        </div>
+                        <div className="p-6 max-h-[400px] overflow-y-auto no-scrollbar space-y-3">
+                            {staff.filter(s => s._id !== booking.staffId?._id).map(s => (
+                                <button
+                                    key={s._id}
+                                    onClick={() => handleReassignStaff(s._id)}
+                                    className="w-full flex items-center justify-between p-4 rounded-2xl bg-surface border border-border hover:border-primary hover:bg-primary/5 transition-all group"
+                                >
+                                    <div className="flex items-center gap-4">
+                                        <div className="w-10 h-10 rounded-xl bg-surface-alt border border-border flex items-center justify-center font-black text-primary">
+                                            {s.name?.[0]}
+                                        </div>
+                                        <div className="text-left">
+                                            <p className="text-sm font-black text-text uppercase tracking-tight group-hover:text-primary transition-colors">{s.name}</p>
+                                            <p className="text-[9px] font-bold text-text-muted uppercase tracking-widest">{s.role}</p>
+                                        </div>
+                                    </div>
+                                    <CheckCircle2 className="w-5 h-5 text-primary opacity-0 group-hover:opacity-100 transition-all" />
+                                </button>
+                            ))}
+                        </div>
+                        <div className="p-6 bg-surface-alt/30 border-t border-border flex justify-end">
+                            <button 
+                                onClick={() => setIsReassignModalOpen(false)}
+                                className="px-8 py-3 text-[10px] font-black uppercase tracking-widest text-text-muted hover:text-text transition-colors"
+                            >
+                                Cancel Protocol
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

@@ -112,6 +112,11 @@ export default function StaffPage() {
         if (!form.roleId) newErrors.roleId = 'Role is required';
         if (!form.outletId) newErrors.outletId = 'Salon assignment is required';
 
+        // Image requirement for new members
+        if (!editing && !avatarFile) {
+            newErrors.avatar = 'Profile photo is required';
+        }
+
         if (form.pan) {
             const panRegex = /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/;
             if (!panRegex.test(form.pan)) newErrors.pan = 'Invalid PAN format (ABCDE1234F)';
@@ -514,7 +519,10 @@ export default function StaffPage() {
                                             <input
                                                 type="file"
                                                 accept="image/*"
-                                                onChange={handleImageChange}
+                                                onChange={(e) => {
+                                                    handleImageChange(e);
+                                                    if (errors.avatar) setErrors(prev => ({ ...prev, avatar: null }));
+                                                }}
                                                 className="absolute inset-0 opacity-0 cursor-pointer"
                                             />
                                             <div className="absolute -bottom-1 -right-1 bg-text text-background p-1.5 shadow-lg group-hover/photo:scale-110 transition-transform">
@@ -522,6 +530,7 @@ export default function StaffPage() {
                                             </div>
                                         </div>
                                     </div>
+                                    {errors.avatar && <p className="text-[8px] font-bold text-rose-500 text-center mt-1 uppercase">{errors.avatar}</p>}
                                 </div>
 
                                 <div className="space-y-1 col-span-2">

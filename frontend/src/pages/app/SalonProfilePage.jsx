@@ -682,7 +682,7 @@ export default function SalonProfilePage() {
                                 </div>
                             )}
 
-                            {feedbacks.map(review => (
+                            {feedbacks.filter(f => f.status === 'Approved').map(review => (
                                 <div key={review.id} style={{ marginBottom: '24px', paddingBottom: '24px', borderBottom: `1px solid ${colors.border}` }}>
                                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
                                         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>

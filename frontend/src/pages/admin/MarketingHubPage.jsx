@@ -18,36 +18,39 @@ import api from '../../services/api';
 
 function StatCard({ label, value, trend, icon: Icon, color }) {
     return (
-        <div className="bg-white rounded-2xl border border-border p-5 shadow-sm">
-            <div className="flex items-center justify-between mb-3">
-                <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${color}`}>
-                    <Icon className="w-5 h-5" />
+        <motion.div 
+            whileHover={{ y: -4 }}
+            className="bg-white rounded-3xl border border-border/60 p-6 shadow-sm hover:shadow-md transition-all duration-300"
+        >
+            <div className="flex items-center justify-between mb-4">
+                <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${color} shadow-inner`}>
+                    <Icon className="w-6 h-6" />
                 </div>
                 {trend && (
-                    <div className="flex items-center gap-1 text-[10px] font-black text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full uppercase tracking-tight">
-                        <TrendingUp className="w-3 h-3" /> {trend}
+                    <div className="flex items-center gap-1.5 text-[10px] font-black text-emerald-600 bg-emerald-50 px-3 py-1 rounded-full uppercase tracking-tight border border-emerald-100">
+                        <TrendingUp className="w-3.5 h-3.5" /> {trend}
                     </div>
                 )}
             </div>
-            <div className="text-2xl font-black text-text">{value}</div>
-            <div className="text-xs text-text-muted font-bold uppercase tracking-wider mt-0.5">{label}</div>
-        </div>
+            <div className="text-3xl font-black text-text tracking-tighter">{value}</div>
+            <div className="text-[10px] text-text-muted font-black uppercase tracking-[0.2em] mt-1.5 opacity-60">{label}</div>
+        </motion.div>
     );
 }
 
 function SectionHeader({ title, desc, icon: Icon, badge }) {
     return (
-        <div className="flex items-center justify-between mb-6">
-            <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary">
-                    <Icon className="w-6 h-6" />
+        <div className="flex items-center justify-between mb-8">
+            <div className="flex items-center gap-5">
+                <div className="w-14 h-14 rounded-[1.25rem] bg-primary/5 border border-primary/10 flex items-center justify-center text-primary shadow-sm">
+                    <Icon className="w-7 h-7" />
                 </div>
                 <div>
-                    <h2 className="text-xl font-black text-text tracking-tight flex items-center gap-2">
+                    <h2 className="text-2xl font-black text-text tracking-tight flex items-center gap-3">
                         {title}
-                        {badge && <span className="text-[10px] bg-primary text-white px-2 py-0.5 rounded-full uppercase tracking-widest">{badge}</span>}
+                        {badge && <span className="text-[9px] bg-primary text-white px-3 py-1 rounded-full uppercase tracking-[0.2em] font-black">{badge}</span>}
                     </h2>
-                    <p className="text-xs text-text-muted font-medium">{desc}</p>
+                    <p className="text-xs text-text-muted font-bold uppercase tracking-widest mt-1 opacity-60">{desc}</p>
                 </div>
             </div>
         </div>
@@ -166,48 +169,42 @@ export default function MarketingHub() {
     };
 
     const tabs = [
-        { id: 'dashboard', label: 'Dashboard', icon: Layout },
         { id: 'whatsapp', label: 'WhatsApp', icon: MessageSquare },
-        { id: 'email', label: 'Email', icon: Mail },
-        { id: 'automations', label: 'Automations', icon: Zap },
         { id: 'notifications', label: 'App Notifications', icon: Bell },
     ];
 
     return (
         <div className="space-y-6 pb-12">
             {/* Header */}
-            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6 text-left">
+            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-8 text-left mb-4">
                 <div className="text-left font-black leading-none">
-                    <h1 className="text-2xl sm:text-3xl font-black text-text tracking-tight uppercase leading-none">WhatsApp Marketing</h1>
-                    <p className="text-[10px] sm:text-sm text-text-secondary mt-2 uppercase tracking-[0.1em] opacity-80 leading-tight">Send templates to all or selected customers</p>
+                    <h1 className="text-3xl sm:text-4xl font-black text-text tracking-tighter uppercase italic leading-none">Marketing Hub</h1>
+                    <p className="text-[10px] sm:text-xs text-text-muted mt-3 uppercase tracking-[0.3em] opacity-50 leading-tight">Unified Audience Engagement & Retention Control</p>
                 </div>
-                <div className="flex flex-wrap items-center gap-3">
-                    <button className="flex-1 lg:flex-none flex items-center justify-center gap-2 px-6 py-4 rounded-none bg-white border border-border text-text-secondary text-[10px] sm:text-xs font-black uppercase tracking-widest hover:border-primary/30 hover:text-primary transition-all shadow-sm">
-                        <Calendar className="w-4 h-4" /> Schedule Campaign
-                    </button>
+                <div className="flex flex-wrap items-center gap-4">
                     <button
                         onClick={startCampaign}
-                        className="flex-1 lg:flex-none flex items-center justify-center gap-2 px-8 py-4 rounded-none bg-primary text-white text-[10px] sm:text-xs font-black uppercase tracking-[0.2em] hover:brightness-110 shadow-xl shadow-primary/25 active:scale-[0.98] transition-all leading-none"
+                        className="flex-1 lg:flex-none flex items-center justify-center gap-3 px-10 py-5 rounded-[1.25rem] bg-primary text-white text-[10px] font-black uppercase tracking-[0.3em] hover:brightness-110 shadow-[0_12px_24px_-8px_rgba(200,149,108,0.4)] active:scale-[0.98] transition-all leading-none"
                     >
-                        <Plus className="w-4 h-4" /> Create Campaign
+                        <Plus className="w-4 h-4" /> New Campaign
                     </button>
                 </div>
             </div>
 
             {/* Tabs */}
-            <div className="flex items-center gap-1 border-b border-border overflow-x-auto no-scrollbar">
+            <div className="flex items-center gap-2 border-b border-border/60 overflow-x-auto no-scrollbar">
                 {tabs.map(tab => (
                     <button
                         key={tab.id}
                         onClick={() => setActiveTab(tab.id)}
-                        className={`flex items-center gap-2 px-6 py-4 text-[10px] font-black uppercase tracking-widest transition-all relative whitespace-nowrap ${
+                        className={`flex items-center gap-2.5 px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] transition-all relative whitespace-nowrap ${
                             activeTab === tab.id ? 'text-primary' : 'text-text-muted hover:text-text'
                         }`}
                     >
-                        <tab.icon className="w-4 h-4" />
+                        <tab.icon className={`w-4 h-4 transition-transform duration-300 ${activeTab === tab.id ? 'scale-110' : 'opacity-50'}`} />
                         {tab.label}
                         {activeTab === tab.id && (
-                            <motion.div layoutId="activeTab" className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary" />
+                            <motion.div layoutId="activeTab" className="absolute bottom-0 left-4 right-4 h-[3px] bg-primary rounded-t-full" />
                         )}
                     </button>
                 ))}
@@ -312,7 +309,7 @@ export default function MarketingHub() {
                                             <input
                                                 type="text"
                                                 placeholder="e.g. Summer Special 2026"
-                                                className="w-full bg-surface border border-border rounded-xl px-4 py-3 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
+                                                className="w-full bg-surface border-2 border-border/60 rounded-2xl px-5 py-4 text-sm font-black uppercase tracking-tight focus:outline-none focus:border-primary transition-all"
                                                 value={campaignForm.name}
                                                 onChange={(e) => setCampaignForm({ ...campaignForm, name: e.target.value })}
                                             />
@@ -516,12 +513,12 @@ function WhatsAppContent({ campaigns, campaignsLoading, onNew, onRefresh }) {
                         <div className="table-responsive">
                             <table className="w-full min-w-[800px]">
                                 <thead>
-                                    <tr className="border-b border-border">
-                                        <th className="px-6 py-4 text-left text-[10px] font-black text-text-muted uppercase tracking-widest">Campaign Name</th>
-                                        <th className="px-6 py-4 text-center text-[10px] font-black text-text-muted uppercase tracking-widest">Status</th>
-                                        <th className="px-6 py-4 text-center text-[10px] font-black text-text-muted uppercase tracking-widest">Sent / Read</th>
-                                        <th className="px-6 py-4 text-center text-[10px] font-black text-text-muted uppercase tracking-widest">Date</th>
-                                        <th className="px-6 py-4 text-right text-[10px] font-black text-text-muted uppercase tracking-widest">Action</th>
+                                    <tr className="bg-surface/50 border-b border-border/60">
+                                        <th className="px-8 py-5 text-left text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Campaign Name</th>
+                                        <th className="px-8 py-5 text-center text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Status</th>
+                                        <th className="px-8 py-5 text-center text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Reach / Reads</th>
+                                        <th className="px-8 py-5 text-center text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Date</th>
+                                        <th className="px-8 py-5 text-right text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Action</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -534,19 +531,19 @@ function WhatsAppContent({ campaigns, campaignsLoading, onNew, onRefresh }) {
                                             const row = mapCampaign(c);
                                             return (
                                                 <tr key={row.id} className="border-b border-border/50 hover:bg-surface/10 transition-colors">
-                                                    <td className="px-6 py-4">
+                                                    <td className="px-8 py-5">
                                                         <div className="text-xs font-black text-text uppercase tracking-tight">{row.name}</div>
                                                     </td>
-                                                    <td className="px-6 py-4 text-center">
+                                                    <td className="px-8 py-5 text-center">
                                                         <span className={`text-[10px] font-black px-2 py-0.5 rounded-full uppercase tracking-widest ${row.status === 'completed' ? 'bg-emerald-50 text-emerald-600' : 'bg-slate-100 text-slate-500'}`}>
                                                             {row.status}
                                                         </span>
                                                     </td>
-                                                    <td className="px-6 py-4 text-center font-black text-xs text-text-secondary">
+                                                    <td className="px-8 py-5 text-center font-black text-xs text-text-secondary">
                                                         {row.sent} <span className="text-text-muted font-bold mx-1">/</span> <span className="text-primary">{row.read}</span>
-                                                    </td>
-                                                    <td className="px-6 py-4 text-center font-bold text-xs text-text-muted italic">{row.date}</td>
-                                                    <td className="px-6 py-4 text-right">
+                                                     </td>
+                                                    <td className="px-8 py-5 text-center font-bold text-xs text-text-muted italic">{row.date}</td>
+                                                    <td className="px-8 py-5 text-right">
                                                         <button className="p-2 hover:bg-surface rounded-lg transition-colors"><MoreVertical className="w-4 h-4 text-text-muted" /></button>
                                                     </td>
                                                 </tr>
@@ -996,10 +993,10 @@ function NotificationsContent({ segments, onRefresh }) {
                     </div>
 
                     <div className="space-y-2">
-                        <label className="text-[10px] font-black text-text-muted uppercase tracking-widest">Notification Title</label>
+                        <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] block">Notification Title</label>
                         <input 
                             type="text" 
-                            className="w-full bg-surface border border-border rounded-xl px-4 py-3 text-sm font-bold focus:outline-none"
+                            className="w-full bg-surface border-2 border-border/60 rounded-2xl px-5 py-4 text-sm font-black uppercase tracking-tight focus:outline-none focus:border-primary transition-all"
                             placeholder="e.g. Special Offer Just for You! 🎉"
                             value={form.title}
                             onChange={(e) => setForm({...form, title: e.target.value})}
@@ -1007,10 +1004,10 @@ function NotificationsContent({ segments, onRefresh }) {
                     </div>
 
                     <div className="space-y-2">
-                        <label className="text-[10px] font-black text-text-muted uppercase tracking-widest">Message</label>
+                        <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] block">Message</label>
                         <textarea 
                             rows={3}
-                            className="w-full bg-surface border border-border rounded-xl px-4 py-3 text-sm font-medium focus:outline-none resize-none"
+                            className="w-full bg-surface border-2 border-border/60 rounded-2xl px-5 py-4 text-sm font-medium focus:outline-none focus:border-primary resize-none transition-all"
                             placeholder="Type your push message here..."
                             value={form.message}
                             onChange={(e) => setForm({...form, message: e.target.value})}
@@ -1018,14 +1015,51 @@ function NotificationsContent({ segments, onRefresh }) {
                     </div>
 
                     <div className="space-y-2">
-                        <label className="text-[10px] font-black text-text-muted uppercase tracking-widest">Image URL (Optional)</label>
-                        <input 
-                            type="text" 
-                            className="w-full bg-surface border border-border rounded-xl px-4 py-3 text-sm font-bold focus:outline-none"
-                            placeholder="https://example.com/banner.jpg"
-                            value={form.image}
-                            onChange={(e) => setForm({...form, image: e.target.value})}
-                        />
+                        <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] block">Image URL (Optional)</label>
+                        <div className="flex gap-3">
+                            <input 
+                                type="text" 
+                                className="flex-1 bg-surface border-2 border-border/60 rounded-2xl px-5 py-4 text-sm font-black uppercase tracking-tight focus:outline-none focus:border-primary transition-all"
+                                placeholder="https://example.com/banner.jpg"
+                                value={form.image}
+                                onChange={(e) => setForm({...form, image: e.target.value})}
+                            />
+                            <button
+                                type="button"
+                                onClick={() => document.getElementById('notif-image-upload').click()}
+                                className="px-6 bg-white border-2 border-border/60 rounded-2xl hover:border-primary/40 hover:text-primary transition-all flex items-center justify-center gap-2 text-[10px] font-black uppercase tracking-widest shadow-sm"
+                            >
+                                <Download className="w-4 h-4" /> Upload
+                            </button>
+                            <input 
+                                id="notif-image-upload"
+                                type="file" 
+                                className="hidden" 
+                                accept="image/*"
+                                onChange={async (e) => {
+                                    const file = e.target.files[0];
+                                    if (!file) return;
+                                    
+                                    const formData = new FormData();
+                                    formData.append('image', file);
+                                    
+                                    try {
+                                        setLoading(true);
+                                        const res = await api.post('/uploads', formData, {
+                                            headers: { 'Content-Type': 'multipart/form-data' }
+                                        });
+                                        if (res.data?.url) {
+                                            setForm(prev => ({ ...prev, image: res.data.url }));
+                                        }
+                                    } catch (err) {
+                                        console.error('Upload failed', err);
+                                        alert('Image upload failed. Please try again.');
+                                    } finally {
+                                        setLoading(false);
+                                    }
+                                }}
+                            />
+                        </div>
                     </div>
 
                     <div className="flex gap-3">
@@ -1074,6 +1108,11 @@ function NotificationsContent({ segments, onRefresh }) {
                         </div>
                         <h4 className="text-[8px] font-black text-white truncate">{form.title || 'Notification Title'}</h4>
                         <p className="text-[7px] text-white/60 line-clamp-2 mt-0.5 leading-tight">{form.message || 'The notification message body will appear here on the user\'s lock screen.'}</p>
+                        {form.image && (
+                            <div className="mt-2 rounded-lg overflow-hidden border border-white/5 bg-black/20 aspect-[16/9] flex items-center justify-center">
+                                <img src={form.image} alt="Preview" className="w-full h-full object-cover" />
+                            </div>
+                        )}
                     </motion.div>
                 </div>
                 

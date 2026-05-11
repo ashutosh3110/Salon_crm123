@@ -97,12 +97,15 @@ const reviews = require('./Routers/reviewRoutes');
 const membershipPlans = require('./Routers/membershipPlanRoutes');
 const loyaltyRules = require('./Routers/loyaltyRuleRoutes');
 const serviceCategories = require('./Routers/serviceCategoryRoutes');
+const reminderLinks = require('./Routers/reminderLinkRoutes');
 
 app.use('/banners', banners);
 app.use('/reviews', reviews);
 app.use('/membership-plans', membershipPlans);
 app.use('/loyalty-rules', loyaltyRules);
 app.use('/service-categories', serviceCategories);
+app.use('/reminders-links', reminderLinks);
+app.use('/v1/reminders-links', reminderLinks);
 
 // Explicit Lazy Section Aliases
 const { getCustomerFavorites } = require('./Controllers/customerAuthController');
