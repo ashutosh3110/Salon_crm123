@@ -250,7 +250,8 @@ exports.updateStatus = async (req, res) => {
         }
 
         const oldStatus = booking.status;
-        booking.status = req.body.status;
+        if (req.body.status) booking.status = req.body.status;
+        if (req.body.paymentStatus) booking.paymentStatus = req.body.paymentStatus;
 
         // Auto-complete payment for salon payments when booking is completed
         if (booking.status === 'completed' && booking.paymentMethod === 'salon') {
@@ -579,7 +580,7 @@ exports.getBookingDetails = async (req, res) => {
     try {
         const { bookingId } = req.params;
         const booking = await Booking.findById(bookingId)
-            .populate('clientId', 'name phone email')
+            .populate('clientId', 'name phone email totalVisits totalSpend')
             .populate('serviceId', 'name price duration description')
             .populate('staffId', 'name profileImage phone')
             .populate('outletId', 'name address city phone')

@@ -34,15 +34,35 @@ exports.updateStaffHR = async (req, res) => {
     }
 };
 
-// @desc    Mark attendance
+// @desc    Mark attendance (Bulk or Single)
 // @route   POST /api/hr/attendance
 // @access  Private/Admin
 exports.markAttendance = async (req, res) => {
     try {
-        const { staffId, date, status, checkIn, checkOut, notes } = req.body;
+        const { staffId, date, status, checkIn, checkOut, notes, bulk } = req.body;
         const salonId = req.user.salonId;
 
-        // Use atomic findOneAndUpdate to handle upsert
+        if (bulk && Array.isArray(bulk)) {
+            const operations = bulk.map(item => ({
+                updateOne: {
+                    filter: { staffId: item.staffId, date: new Date(date).setHours(0,0,0,0) },
+                    update: { 
+                        staffId: item.staffId, 
+                        salonId, 
+                        date: new Date(date).setHours(0,0,0,0), 
+                        status: item.status || 'present',
+                        checkIn: item.checkIn,
+                        checkOut: item.checkOut,
+                        performedBy: req.user._id
+                    },
+                    upsert: true
+                }
+            }));
+            await Attendance.bulkWrite(operations);
+            return res.status(200).json({ success: true, message: 'Bulk attendance marked' });
+        }
+
+        // Single upsert
         const attendance = await Attendance.findOneAndUpdate(
             { staffId, date: new Date(date).setHours(0,0,0,0) },
             { 
@@ -64,25 +84,303 @@ exports.markAttendance = async (req, res) => {
     }
 };
 
+// @desc    Get attendance summary for a month
+// @route   GET /api/hr/attendance/summary
+// @access  Private/Admin
+exports.getAttendanceSummary = async (req, res) => {
+    try {
+        const { month, year, staffId } = req.query;
+        const salonId = req.user.salonId;
+
+        const startDate = new Date(year, month - 1, 1);
+        const endDate = new Date(year, month, 0, 23, 59, 59);
+
+        let query = { 
+            salonId,
+            date: { $gte: startDate, $lte: endDate }
+        };
+        if (staffId) query.staffId = staffId;
+
+        const logs = await Attendance.find(query);
+        
+        // Group by staffId
+        const summary = {};
+        logs.forEach(log => {
+            const sid = log.staffId.toString();
+            if (!summary[sid]) {
+                summary[sid] = { present: 0, absent: 0, halfDay: 0, leave: 0, late: 0, total: 0 };
+            }
+            summary[sid][log.status === 'half-day' ? 'halfDay' : log.status]++;
+            summary[sid].total++;
+        });
+
+        res.status(200).json({ success: true, data: summary });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
+
 // @desc    Get attendance logs
 // @route   GET /api/hr/attendance
 // @access  Private/Admin
 exports.getAttendance = async (req, res) => {
     try {
-        const { startDate, endDate, staffId } = req.query;
+        const { startDate, endDate, staffId, date } = req.query;
         const salonId = req.user.salonId;
 
         let query = { salonId };
         if (staffId) query.staffId = staffId;
-        if (startDate && endDate) {
+        
+        if (date) {
+            query.date = new Date(date).setHours(0,0,0,0);
+        } else if (startDate && endDate) {
             query.date = { 
                 $gte: new Date(startDate).setHours(0,0,0,0), 
                 $lte: new Date(endDate).setHours(23,59,59,999) 
             };
         }
 
-        const attendance = await Attendance.find(query).populate('staffId', 'name role').sort({ date: -1 });
+        const attendance = await Attendance.find(query).populate('staffId', 'name role outletId').sort({ date: -1 });
         res.status(200).json({ success: true, data: attendance });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
+
+// @desc    Generate/Save payroll
+// @route   POST /api/hr/payroll/generate
+// @access  Private/Admin
+exports.generatePayroll = async (req, res) => {
+    try {
+        const { 
+            month, year, staffId, 
+            baseSalary, workingDays, presentDays, leaveDays,
+            incentive, overtime, pf, tax, otherDeductions, 
+            notes, status 
+        } = req.body;
+        const salonId = req.user.salonId;
+
+        // If manual save for single staff
+        if (staffId && baseSalary !== undefined) {
+            const perDaySalary = baseSalary / (workingDays || 30);
+            const earnedSalary = perDaySalary * (presentDays || 0);
+            const netSalary = Math.round(
+                earnedSalary + 
+                (Number(incentive) || 0) + 
+                (Number(overtime) || 0) - 
+                (Number(pf) || 0) - 
+                (Number(tax) || 0) - 
+                (Number(otherDeductions) || 0)
+            );
+
+            const payroll = await Payroll.findOneAndUpdate(
+                { staffId, month, year },
+                { 
+                    staffId, 
+                    salonId, 
+                    month, 
+                    year, 
+                    baseSalary,
+                    workingDays: workingDays || 30,
+                    presentDays: presentDays || 0,
+                    leaveDays: leaveDays || 0,
+                    incentive: Number(incentive) || 0,
+                    overtime: Number(overtime) || 0,
+                    pf: Number(pf) || 0,
+                    tax: Number(tax) || 0,
+                    otherDeductions: Number(otherDeductions) || 0,
+                    netSalary,
+                    notes,
+                    status: status || 'draft',
+                    performedBy: req.user._id
+                },
+                { new: true, upsert: true }
+            );
+            return res.status(200).json({ success: true, data: payroll });
+        }
+
+        // Bulk generation logic
+        const staffList = await Staff.find({ salonId, status: 'active' });
+        const payrollResults = [];
+        const startDate = new Date(year, month - 1, 1);
+        const endDate = new Date(year, month, 0);
+        const totalDaysInMonth = endDate.getDate();
+
+        for (const staff of staffList) {
+            const salary = staff.hrProfile?.baseSalary || 0;
+            
+            const attendance = await Attendance.find({
+                staffId: staff._id,
+                date: { $gte: startDate, $lte: endDate }
+            });
+
+            const presentCount = attendance.filter(a => a.status === 'present' || a.status === 'late').length;
+            const halfDayCount = attendance.filter(a => a.status === 'half-day').length;
+            const leaveCount = attendance.filter(a => a.status === 'leave').length;
+            
+            const effectivePresent = presentCount + (halfDayCount * 0.5);
+            const perDay = salary / totalDaysInMonth;
+            const earned = Math.round(effectivePresent * perDay);
+
+            const payroll = await Payroll.findOneAndUpdate(
+                { staffId: staff._id, month, year },
+                { 
+                    staffId: staff._id, 
+                    salonId, 
+                    month, 
+                    year, 
+                    baseSalary: salary,
+                    workingDays: totalDaysInMonth,
+                    presentDays: effectivePresent,
+                    leaveDays: leaveCount,
+                    netSalary: earned,
+                    status: 'draft',
+                    performedBy: req.user._id
+                },
+                { new: true, upsert: true }
+            );
+            payrollResults.push(payroll);
+        }
+
+        res.status(200).json({ success: true, count: payrollResults.length, data: payrollResults });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
+
+// @desc    Update payroll payment status
+// @route   PATCH /api/hr/payroll/:id/status
+// @access  Private/Admin
+exports.updatePayrollStatus = async (req, res) => {
+    try {
+        const { status, paymentMethod } = req.body;
+        const payroll = await Payroll.findByIdAndUpdate(
+            req.params.id, 
+            { 
+                status, 
+                paymentMethod, 
+                paymentDate: status === 'paid' ? new Date() : undefined 
+            }, 
+            { new: true }
+        );
+        res.status(200).json({ success: true, data: payroll });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
+
+// @desc    Get payroll records
+// @route   GET /api/hr/payroll
+// @access  Private/Admin
+exports.getPayroll = async (req, res) => {
+    try {
+        const { month, year } = req.query;
+        const salonId = req.user.salonId;
+
+        let query = { salonId };
+        if (month) query.month = Number(month);
+        if (year) query.year = Number(year);
+
+        const payroll = await Payroll.find(query).populate('staffId', 'name role').sort({ createdAt: -1 });
+        res.status(200).json({ success: true, data: payroll });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
+
+// @desc    Get leave requests
+// @route   GET /api/hr/leaves
+// @access  Private/Admin
+exports.getLeaveRequests = async (req, res) => {
+    try {
+        const requests = await LeaveRequest.find({ salonId: req.user.salonId }).populate('staffId', 'name role').sort({ createdAt: -1 });
+        res.status(200).json({ success: true, data: requests });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
+
+// @desc    Update leave status
+// @route   PUT /api/hr/leaves/:id
+// @access  Private/Admin
+exports.updateLeaveStatus = async (req, res) => {
+    try {
+        const { status, adminNotes } = req.body;
+        const request = await LeaveRequest.findByIdAndUpdate(
+            req.params.id, 
+            { status, adminNotes, approvedBy: req.user._id }, 
+            { new: true }
+        );
+        res.status(200).json({ success: true, data: request });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
+
+// @desc    Get overall performance
+// @route   GET /api/hr/performance
+// @access  Private/Admin
+exports.getOverallPerformance = async (req, res) => {
+    try {
+        const { startDate, endDate } = req.query;
+        const salonId = req.user.salonId;
+
+        const staff = await Staff.find({ salonId, status: 'active' });
+        
+        const performanceData = await Promise.all(staff.map(async (s) => {
+            const query = {
+                salonId,
+                staffId: s._id,
+                status: 'completed'
+            };
+            if (startDate && endDate) {
+                query.appointmentDate = { $gte: startDate, $lte: endDate };
+            }
+
+            const bookings = await Booking.find(query);
+            const revenue = bookings.reduce((sum, b) => sum + (b.totalPrice || 0), 0);
+            
+            // Repeat customers count (simplified logic)
+            const customerIds = bookings.map(b => b.clientId?.toString()).filter(id => id);
+            const uniqueCustomers = new Set(customerIds);
+            const repeatCount = customerIds.length - uniqueCustomers.size;
+
+            // Cancellation count in the same period
+            const cancelledCount = await Booking.countDocuments({
+                salonId,
+                staffId: s._id,
+                status: 'cancelled',
+                appointmentDate: query.appointmentDate
+            });
+
+            // Tier logic
+            let contribution = 'Low';
+            if (revenue > 50000) contribution = 'Elite';
+            else if (revenue > 20000) contribution = 'High';
+            else if (revenue > 5000) contribution = 'Medium';
+
+            return {
+                id: s._id,
+                staff: s.name,
+                role: s.role,
+                revenue,
+                services: bookings.length,
+                bookings: bookings.length,
+                rating: 4.8, // Placeholder
+                repeatCustomers: repeatCount,
+                cancellations: cancelledCount,
+                goal: s.hrProfile?.revenueTarget || 0,
+                contribution
+            };
+        }));
+
+        res.status(200).json({ 
+            success: true, 
+            data: {
+                period: { startDate, endDate },
+                staff: performanceData
+            }
+        });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
     }
@@ -160,165 +458,3 @@ exports.deleteShift = async (req, res) => {
     }
 };
 
-// @desc    Generate payroll
-// @route   POST /api/hr/payroll/generate
-// @access  Private/Admin
-exports.generatePayroll = async (req, res) => {
-    try {
-        const { month, year, staffId } = req.body;
-        const salonId = req.user.salonId;
-
-        let staffList = [];
-        if (staffId) {
-            const singleStaff = await Staff.findById(staffId);
-            if (singleStaff) staffList.push(singleStaff);
-        } else {
-            staffList = await Staff.find({ salonId, status: 'active' });
-        }
-
-        const payrollResults = [];
-        const startDate = new Date(year, month - 1, 1);
-        const endDate = new Date(year, month, 0);
-
-        for (const staff of staffList) {
-            const baseSalary = staff.hrProfile?.baseSalary || 0;
-            
-            // Calculate deductions based on attendance
-            const attendance = await Attendance.find({
-                staffId: staff._id,
-                date: {
-                    $gte: startDate,
-                    $lte: endDate
-                }
-            });
-
-            const absentDays = attendance.filter(a => a.status === 'absent').length;
-            const dailyRate = baseSalary / 30;
-            const deductions = Math.round(absentDays * dailyRate);
-            const netSalary = baseSalary - deductions;
-
-            const payroll = await Payroll.findOneAndUpdate(
-                { staffId: staff._id, month, year },
-                { 
-                    staffId: staff._id, 
-                    salonId, 
-                    month, 
-                    year, 
-                    baseSalary, 
-                    commission: 0, // Placeholder for calculation logic
-                    deductions, 
-                    netSalary,
-                    status: 'draft',
-                    performedBy: req.user._id
-                },
-                { new: true, upsert: true }
-            );
-            payrollResults.push(payroll);
-        }
-
-        res.status(200).json({ success: true, count: payrollResults.length, data: payrollResults });
-    } catch (error) {
-        res.status(500).json({ success: false, message: error.message });
-    }
-};
-
-// @desc    Get payroll records
-// @route   GET /api/hr/payroll
-// @access  Private/Admin
-exports.getPayroll = async (req, res) => {
-    try {
-        const { month, year } = req.query;
-        const salonId = req.user.salonId;
-
-        let query = { salonId };
-        if (month) query.month = month;
-        if (year) query.year = year;
-
-        const payroll = await Payroll.find(query).populate('staffId', 'name role').sort({ createdAt: -1 });
-        res.status(200).json({ success: true, data: payroll });
-    } catch (error) {
-        res.status(500).json({ success: false, message: error.message });
-    }
-};
-
-// @desc    Get leave requests
-// @route   GET /api/hr/leaves
-// @access  Private/Admin
-exports.getLeaveRequests = async (req, res) => {
-    try {
-        const requests = await LeaveRequest.find({ salonId: req.user.salonId }).populate('staffId', 'name role').sort({ createdAt: -1 });
-        res.status(200).json({ success: true, data: requests });
-    } catch (error) {
-        res.status(500).json({ success: false, message: error.message });
-    }
-};
-
-// @desc    Update leave status
-// @route   PUT /api/hr/leaves/:id
-// @access  Private/Admin
-exports.updateLeaveStatus = async (req, res) => {
-    try {
-        const { status, adminNotes } = req.body;
-        const request = await LeaveRequest.findByIdAndUpdate(
-            req.params.id, 
-            { status, adminNotes, approvedBy: req.user._id }, 
-            { new: true }
-        );
-        res.status(200).json({ success: true, data: request });
-    } catch (error) {
-        res.status(500).json({ success: false, message: error.message });
-    }
-};
-
-// @desc    Get overall performance
-// @route   GET /api/hr/performance
-// @access  Private/Admin
-exports.getOverallPerformance = async (req, res) => {
-    try {
-        const { startDate, endDate } = req.query;
-        const salonId = req.user.salonId;
-
-        const staff = await Staff.find({ salonId, status: 'active' });
-        
-        const performanceData = await Promise.all(staff.map(async (s) => {
-            const query = {
-                salonId,
-                staffId: s._id,
-                status: 'completed'
-            };
-            if (startDate && endDate) {
-                query.appointmentDate = { $gte: startDate, $lte: endDate };
-            }
-
-            const bookings = await Booking.find(query);
-            const revenue = bookings.reduce((sum, b) => sum + (b.totalPrice || 0), 0);
-            
-            // Tier logic
-            let contribution = 'Low';
-            if (revenue > 50000) contribution = 'Elite';
-            else if (revenue > 20000) contribution = 'High';
-            else if (revenue > 5000) contribution = 'Medium';
-
-            return {
-                id: s._id,
-                staff: s.name,
-                role: s.role,
-                revenue,
-                services: bookings.length,
-                rating: 4.5, // Placeholder for now
-                goal: s.hrProfile?.revenueTarget || 0,
-                contribution
-            };
-        }));
-
-        res.status(200).json({ 
-            success: true, 
-            data: {
-                period: { startDate, endDate },
-                staff: performanceData
-            }
-        });
-    } catch (error) {
-        res.status(500).json({ success: false, message: error.message });
-    }
-};

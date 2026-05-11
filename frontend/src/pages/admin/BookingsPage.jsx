@@ -173,7 +173,7 @@ export default function BookingsPage() {
         const safeBookings = Array.isArray(bookings) ? bookings : [];
         return [
             { label: "Total Bookings", value: safeBookings.length, icon: Calendar, color: 'text-primary' },
-            { label: 'Confirmed', value: safeBookings.filter(b => b.status === 'confirmed').length, icon: RotateCcw, color: 'text-blue-500' },
+            { label: 'Accepted', value: safeBookings.filter(b => b.status === 'confirmed').length, icon: RotateCcw, color: 'text-blue-500' },
             { label: 'Completion Rate', value: `${safeBookings.length ? Math.round((safeBookings.filter(b => b.status === 'completed').length / safeBookings.length) * 100) : 0}%`, icon: TrendingUp, color: 'text-emerald-500' },
             { label: 'Cancelled', value: safeBookings.filter(b => b.status === 'cancelled').length, icon: AlertCircle, color: 'text-rose-500' },
         ];

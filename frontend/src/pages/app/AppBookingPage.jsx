@@ -632,7 +632,7 @@ export default function AppBookingPage() {
 
                 const payload = {
                     ...baseBookingData,
-                    status: 'confirmed',
+                    status: 'pending',
                     paymentMethod: 'wallet',
                     paymentStatus: 'paid',
                     notes: `Paid via Wallet${selectedTime ? ` at ${selectedTime}` : ''}`
@@ -645,7 +645,7 @@ export default function AppBookingPage() {
                 // Salon Payment (Offline)
                 const payload = {
                     ...baseBookingData,
-                    status: 'confirmed',
+                    status: 'pending',
                     notes: `Booked via customer app (Pay at Salon)${selectedTime ? ` at ${selectedTime}` : ''}`,
                     paymentMethod: 'salon',
                     paymentStatus: 'unpaid'
@@ -722,7 +722,7 @@ export default function AppBookingPage() {
                         style={{ fontFamily: "'Libre Baskerville', serif" }}
                         className="text-2xl font-bold tracking-tight"
                     >
-                        Booking Confirmed! 🎉
+                        Booking Requested! 🎉
                     </motion.h2>
                     <motion.p
                         initial={{ opacity: 0 }}

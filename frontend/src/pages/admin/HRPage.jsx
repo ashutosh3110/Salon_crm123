@@ -22,15 +22,14 @@ import PayrollManager from '../../components/admin/hr/PayrollManager';
 import PerformanceAnalytics from '../../components/admin/hr/PerformanceAnalytics';
 
 const HR_TABS = [
-    { id: 'staff', label: 'Staff', icon: Users, color: 'text-violet-500', bg: 'bg-violet-500/10' },
-    { id: 'attendance', label: 'Attendance', icon: CalendarCheck, color: 'text-emerald-500', bg: 'bg-emerald-500/10' },
-    { id: 'payroll', label: 'Payroll', icon: DollarSign, color: 'text-blue-500', bg: 'bg-blue-500/10' },
-    { id: 'performance', label: 'Performance', icon: TrendingUp, color: 'text-rose-500', bg: 'bg-rose-500/10' },
+    { id: 'attendance', label: 'Staff Attendance', icon: CalendarCheck, color: 'text-emerald-500', bg: 'bg-emerald-500/10' },
+    { id: 'payroll', label: 'Payroll Management', icon: DollarSign, color: 'text-blue-500', bg: 'bg-blue-500/10' },
+    { id: 'performance', label: 'Performance Tracking', icon: TrendingUp, color: 'text-rose-500', bg: 'bg-rose-500/10' },
 ];
 
 import Skeleton from '../../components/common/Skeleton';
 
-export default function HRPage({ tab = 'staff' }) {
+export default function HRPage({ tab = 'attendance' }) {
     const navigate = useNavigate();
     const [loading, setLoading] = React.useState(false);
 
@@ -53,11 +52,10 @@ export default function HRPage({ tab = 'staff' }) {
         }
 
         switch (tab) {
-            case 'staff': return <StaffManager />;
             case 'attendance': return <AttendanceTracker />;
             case 'payroll': return <PayrollManager />;
             case 'performance': return <PerformanceAnalytics />;
-            default: return <StaffManager />;
+            default: return <AttendanceTracker />;
         }
     };
 

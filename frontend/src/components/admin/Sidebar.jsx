@@ -189,16 +189,15 @@ export default function Sidebar({ collapsed, setCollapsed, isHovered, setIsHover
                 ]
             },
             {
-                label: 'HR / Payroll',
+                label: 'HR & Payroll',
                 icon: Briefcase,
                 path: '/admin/hr',
                 permission: 'hr',
                 feature: 'payroll',
                 subItems: [
-                    { label: 'Staff', icon: Users, path: '/admin/hr/staff' },
-                    { label: 'Attendance', icon: CalendarCheck, path: '/admin/hr/attendance' },
-                    { label: 'Payroll', icon: DollarSign, path: '/admin/hr/payroll' },
-                    { label: 'Performance', icon: TrendingUp, path: '/admin/hr/performance' },
+                    { label: 'Staff Attendance', icon: CalendarCheck, path: '/admin/hr/attendance' },
+                    { label: 'Payroll Management', icon: DollarSign, path: '/admin/hr/payroll' },
+                    { label: 'Performance Tracking', icon: TrendingUp, path: '/admin/hr/performance' },
                 ]
             },
             {

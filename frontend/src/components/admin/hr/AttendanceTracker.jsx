@@ -79,27 +79,49 @@ function buildRow(user, entry) {
 }
 
 export default function AttendanceTracker() {
-    const { staff, fetchStaff } = useBusiness();
-    const [records, setRecords] = useState([]);
-    const [loading, setLoading] = useState(false);
+    const { staff } = useBusiness();
     const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
+    const [records, setRecords] = useState([]);
+    const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
-    const [filterStatus, setFilterStatus] = useState('All');
-    const [remarkModal, setRemarkModal] = useState(null);
-    const [remark, setRemark] = useState('');
-    const [changeStatusModal, setChangeStatusModal] = useState(null);
+    const [filterOutlet, setFilterOutlet] = useState('All');
+    const [toast, setToast] = useState(null);
+    
+    const [editModal, setEditModal] = useState(null);
+    const [newStatus, setNewStatus] = useState('present');
     const [editCheckIn, setEditCheckIn] = useState('');
     const [editCheckOut, setEditCheckOut] = useState('');
     const [bulkModal, setBulkModal] = useState(false);
-    const [newStatus, setNewStatus] = useState('present');
-    const [toast, setToast] = useState(null);
-    const toastTimerRef = useRef(null);
+    const [remarkModal, setRemarkModal] = useState(null);
+    const [remark, setRemark] = useState('');
 
     const showToast = useCallback((msg) => {
         setToast(msg);
-        if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
-        toastTimerRef.current = setTimeout(() => setToast(null), 3500);
+        setTimeout(() => setToast(null), 3000);
     }, []);
+
+    const [viewMode, setViewMode] = useState('daily'); // 'daily' or 'summary'
+    const [summaryData, setSummaryData] = useState({});
+    const [summaryLoading, setSummaryLoading] = useState(false);
+
+    const loadSummary = useCallback(async () => {
+        setSummaryLoading(true);
+        try {
+            const d = new Date(selectedDate);
+            const res = await api.get('/hr/attendance/summary', { 
+                params: { month: d.getMonth() + 1, year: d.getFullYear() } 
+            });
+            setSummaryData(res.data?.data || {});
+        } catch (e) {
+            showToast('Failed to load summary');
+        } finally {
+            setSummaryLoading(false);
+        }
+    }, [selectedDate, showToast]);
+
+    useEffect(() => {
+        if (viewMode === 'summary') loadSummary();
+    }, [viewMode, loadSummary]);
 
     const loadDay = useCallback(async () => {
         const list = Array.isArray(staff) ? staff : [];
@@ -123,23 +145,35 @@ export default function AttendanceTracker() {
                 return {
                     id: uid,
                     staff: u.name || '',
-                    role: ROLE_LABELS[u.role] || u.role,
-                    outlet: u.outletId?.name || (outlets.find(o => String(o._id || o.id) === String(u.outletId))?.name) || '—',
+                    image: u.image || u.hrProfile?.image,
+                    role: u.role || 'Staff',
+                    mobile: u.phone || u.mobile || '—',
+                    outlet: u.outletId?.name || '—',
                     checkIn: record?.checkIn || '-',
                     checkOut: record?.checkOut || '-',
                     hours: '-',
                     status: record?.status || 'absent',
                     loc: record?.notes || 'Salon',
                     remark: record?.notes || '',
-                    attendanceId: record?._id
+                    attendanceId: record?._id,
+                    checkInAt: record?.checkInAt,
+                    checkOutAt: record?.checkOutAt
                 };
             });
             setRecords(merged);
         } catch (e) {
             const msg = e?.response?.data?.message || e?.networkHint || e?.message || 'Failed to load attendance';
             showToast(msg);
-            const merged = list.map((u) => buildRow(u, null));
-            setRecords(merged);
+            setRecords(list.map(u => ({
+                id: String(u._id || u.id),
+                staff: u.name || '',
+                role: u.role || 'Staff',
+                mobile: u.phone || '—',
+                outlet: u.outletId?.name || '—',
+                status: 'absent',
+                checkIn: '-',
+                checkOut: '-'
+            })));
         } finally {
             setLoading(false);
         }
@@ -156,13 +190,26 @@ export default function AttendanceTracker() {
     // Date navigation
     const changeDate = (days) => {
         const d = new Date(selectedDate);
+        if (days > 0) {
+            const tomorrow = new Date();
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            tomorrow.setHours(0,0,0,0);
+            const target = new Date(d);
+            target.setDate(target.getDate() + days);
+            if (target >= tomorrow) {
+                showToast('Cannot mark attendance for future dates');
+                return;
+            }
+        }
         d.setDate(d.getDate() + days);
         setSelectedDate(d.toISOString().split('T')[0]);
     };
 
     // Filtered
     const filtered = useMemo(() => records.filter(r => {
-        const matchSearch = r.staff.toLowerCase().includes(searchTerm.toLowerCase()) || r.outlet.toLowerCase().includes(searchTerm.toLowerCase());
+        const matchSearch = r.staff.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                          r.role.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                          r.mobile.includes(searchTerm);
         const matchStatus = filterStatus === 'All' || r.status === filterStatus;
         return matchSearch && matchStatus;
     }), [records, searchTerm, filterStatus]);
@@ -201,31 +248,25 @@ export default function AttendanceTracker() {
             showToast(`${changeStatusModal.staff} → ${STATUS_META[newStatus]?.label}`);
             setChangeStatusModal(null);
             await loadDay();
+            if (viewMode === 'summary') loadSummary();
         } catch (err) {
             showToast(err?.response?.data?.message || 'Update failed');
         }
     };
 
-    const bulkMarkPresent = async () => {
+    const bulkMarkStatus = async (status) => {
         try {
-            await api.post('/attendance/bulk', {
+            const bulkData = records.map(r => ({
+                staffId: r.id,
+                status,
+                checkIn: status === 'present' ? '09:00' : undefined
+            }));
+            await api.post('/hr/attendance', {
                 date: selectedDate,
-                status: 'present',
-                defaultCheckIn: '09:00',
+                bulk: bulkData
             });
             setBulkModal(false);
-            showToast(`All staff marked present for ${selectedDate}`);
-            await loadDay();
-        } catch (err) {
-            showToast(err?.response?.data?.message || 'Bulk update failed');
-        }
-    };
-
-    const bulkMarkAbsent = async () => {
-        try {
-            await api.post('/attendance/bulk', { date: selectedDate, status: 'absent' });
-            setBulkModal(false);
-            showToast(`All staff marked absent for ${selectedDate}`);
+            showToast(`All staff marked ${status} for ${selectedDate}`);
             await loadDay();
         } catch (err) {
             showToast(err?.response?.data?.message || 'Bulk update failed');
@@ -236,11 +277,11 @@ export default function AttendanceTracker() {
         e.preventDefault();
         if (!remarkModal) return;
         try {
-            await api.post('/attendance', {
-                userId: remarkModal.id,
+            await api.post('/hr/attendance', {
+                staffId: remarkModal.id,
                 date: selectedDate,
                 status: remarkModal.status,
-                remark,
+                notes: remark,
             });
             showToast(`Remark saved for ${remarkModal.staff}`);
             setRemarkModal(null);
@@ -253,8 +294,8 @@ export default function AttendanceTracker() {
 
     // Export CSV
     const exportCSV = () => {
-        const header = 'Staff,Role,Outlet,Check-In,Check-Out,Hours,Status\n';
-        const rows = records.map(r => `${r.staff},${r.role},${r.outlet},${r.checkIn},${r.checkOut},${r.hours}h,${r.status}`).join('\n');
+        const header = 'Staff,Role,Mobile,Check-In,Check-Out,Status\n';
+        const rows = records.map(r => `${r.staff},${r.role},${r.mobile},${r.checkIn},${r.checkOut},${r.status}`).join('\n');
         const blob = new Blob([header + rows], { type: 'text/csv' });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a'); a.href = url;
@@ -265,8 +306,8 @@ export default function AttendanceTracker() {
         <div className="space-y-6 font-black text-left">
             {/* Header card with Chart */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 text-left font-black">
-                <div className="lg:col-span-2 bg-surface p-8 rounded-none border border-border shadow-sm flex flex-col xl:flex-row items-center justify-between gap-8 text-left">
-                    <div className="flex flex-col sm:flex-row items-center gap-6 text-left font-black w-full xl:w-auto">
+                <div className="lg:col-span-2 bg-surface p-8 rounded-none border border-border shadow-sm flex flex-col xl:flex-row items-center justify-between gap-8 text-left relative overflow-hidden">
+                    <div className="flex flex-col sm:flex-row items-center gap-6 text-left font-black w-full xl:w-auto z-10">
                         <div className="p-4 rounded-none bg-primary/10 text-primary border border-primary/20 shrink-0">
                             <CalendarIcon className="w-6 h-6" />
                         </div>
@@ -274,43 +315,25 @@ export default function AttendanceTracker() {
                             <p className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Operational Date</p>
                             <div className="flex items-center gap-3 mt-1 text-left font-black">
                                 <button onClick={() => changeDate(-1)} className="p-1.5 rounded-none hover:bg-surface-alt transition-colors text-text-muted hover:text-text border border-border/20"><ChevronLeft className="w-4 h-4" /></button>
-                                <input type="date" value={selectedDate} onChange={e => setSelectedDate(e.target.value)}
+                                <input type="date" value={selectedDate} max={new Date().toISOString().split('T')[0]} onChange={e => setSelectedDate(e.target.value)}
                                     className="text-lg font-black text-text bg-transparent border-none p-0 focus:ring-0 cursor-pointer outline-none uppercase" />
                                 <button onClick={() => changeDate(1)} className="p-1.5 rounded-none hover:bg-surface-alt transition-colors text-text-muted hover:text-text border border-border/20"><ChevronRight className="w-4 h-4" /></button>
                             </div>
                         </div>
                     </div>
 
-                    <div className="flex-1 h-[140px] w-full max-w-[200px] text-left hidden sm:block">
+                    <div className="flex-1 h-[140px] w-full max-w-[200px] text-left hidden sm:block z-10">
                         <ResponsiveContainer width="100%" height="100%">
                             <PieChart>
-                                <Pie
-                                    data={chartData}
-                                    innerRadius={35}
-                                    outerRadius={55}
-                                    paddingAngle={5}
-                                    dataKey="value"
-                                    stroke="transparent"
-                                >
-                                    {chartData.map((entry, index) => (
-                                        <Cell key={`cell-${index}`} fill={entry.color} />
-                                    ))}
+                                <Pie data={chartData} innerRadius={35} outerRadius={55} paddingAngle={5} dataKey="value" stroke="transparent">
+                                    {chartData.map((entry, index) => <Cell key={`cell-${index}`} fill={entry.color} />)}
                                 </Pie>
-                                <Tooltip
-                                    contentStyle={{
-                                        backgroundColor: 'var(--surface)',
-                                        border: '1px solid var(--border)',
-                                        borderRadius: '0px',
-                                        fontSize: '10px',
-                                        fontWeight: '900',
-                                        textTransform: 'uppercase'
-                                    }}
-                                />
+                                <Tooltip contentStyle={{ backgroundColor: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '0px', fontSize: '10px', fontWeight: '900', textTransform: 'uppercase' }} />
                             </PieChart>
                         </ResponsiveContainer>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-x-8 gap-y-4 text-left font-black w-full xl:w-auto">
+                    <div className="grid grid-cols-2 gap-x-8 gap-y-4 text-left font-black w-full xl:w-auto z-10">
                         {[
                             { label: 'Present', value: stats.present, color: 'text-emerald-500' },
                             { label: 'Late', value: stats.late, color: 'text-amber-500' },
@@ -323,6 +346,7 @@ export default function AttendanceTracker() {
                             </div>
                         ))}
                     </div>
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 -mr-16 -mt-16 rotate-45 pointer-events-none" />
                 </div>
 
                 <div className="bg-text p-8 rounded-none shadow-xl shadow-text/10 relative overflow-hidden flex flex-col justify-between text-left font-black">
@@ -331,22 +355,28 @@ export default function AttendanceTracker() {
                         <h3 className="text-lg font-black mt-2 uppercase tracking-tight">Bulk Status Update</h3>
                     </div>
                     <button onClick={() => setBulkModal(true)} className="relative z-10 mt-6 flex items-center justify-center gap-3 px-6 py-4 rounded-none bg-white text-text text-[10px] font-black uppercase tracking-[0.2em] hover:bg-primary hover:text-white transition-all active:scale-95">
-                        <Check className="w-4 h-4" /> Mark All Members
+                        <Users className="w-4 h-4" /> Open Mark Portal
                     </button>
                     <div className="absolute -bottom-8 -right-8 w-32 h-32 rounded-none bg-white/5 rotate-45" />
                 </div>
+            </div>
+
+            {/* View Mode Switcher */}
+            <div className="flex items-center gap-1 bg-surface p-1 border border-border w-fit rounded-none shadow-sm">
+                <button onClick={() => setViewMode('daily')} className={`px-6 py-2.5 text-[10px] font-black uppercase tracking-widest transition-all ${viewMode === 'daily' ? 'bg-primary text-white shadow-lg' : 'text-text-muted hover:text-text'}`}>Daily Registry</button>
+                <button onClick={() => setViewMode('summary')} className={`px-6 py-2.5 text-[10px] font-black uppercase tracking-widest transition-all ${viewMode === 'summary' ? 'bg-primary text-white shadow-lg' : 'text-text-muted hover:text-text'}`}>Monthly Summary</button>
             </div>
 
             {/* Toolbar */}
             <div className="bg-surface p-5 rounded-none border border-border shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4 text-left font-black">
                 <div className="relative flex-1 max-w-sm text-left">
                     <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
-                    <input type="text" placeholder="Search staff members..."
+                    <input type="text" placeholder="Search staff, role or mobile..."
                         className="w-full pl-12 pr-4 py-3 rounded-none bg-background border border-border text-[10px] font-black uppercase tracking-widest focus:outline-none focus:border-primary transition-all"
                         value={searchTerm} onChange={e => setSearchTerm(e.target.value)} />
                 </div>
                 <div className="flex items-center gap-2 flex-wrap text-left">
-                    {['All', 'present', 'late', 'absent', 'half-day', 'leave'].map(s => (
+                    {viewMode === 'daily' && ['All', 'present', 'late', 'absent', 'half-day', 'leave'].map(s => (
                         <button key={s} onClick={() => setFilterStatus(s)}
                             className={`px-4 py-2 rounded-none text-[9px] font-black uppercase tracking-[0.1em] border transition-all ${filterStatus === s ? 'bg-primary text-white border-primary' : 'bg-surface text-text-muted border-border hover:border-primary'}`}>
                             {s === 'All' ? 'Full View' : STATUS_META[s]?.label}
@@ -359,22 +389,21 @@ export default function AttendanceTracker() {
                 </div>
             </div>
 
-            {/* Table */}
+            {/* Table / Summary Content */}
             <div className="bg-surface rounded-none border border-border shadow-sm overflow-hidden text-left font-black table-responsive relative">
-                {loading && (
+                {(loading || summaryLoading) && (
                     <div className="absolute inset-0 z-10 bg-surface/70 backdrop-blur-[2px] flex items-center justify-center">
-                        <p className="text-[10px] font-black uppercase tracking-[0.3em] text-text-muted">Loading attendance…</p>
+                        <p className="text-[10px] font-black uppercase tracking-[0.3em] text-text-muted italic">Processing staff data…</p>
                     </div>
                 )}
-                <div className="text-left font-black">
+                
+                {viewMode === 'daily' ? (
                     <table className="w-full text-left font-black">
                         <thead>
                             <tr className="bg-surface-alt/50 border-b border-border/40 text-left font-black">
                                 <th className="px-6 py-4 text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Staff Member</th>
-                                <th className="px-6 py-4 text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Check In</th>
-                                <th className="px-6 py-4 text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Check Out</th>
-                                <th className="px-6 py-4 text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Hours</th>
-                                <th className="px-6 py-4 text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Location</th>
+                                <th className="px-6 py-4 text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Role / Mobile</th>
+                                <th className="px-6 py-4 text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Check In/Out</th>
                                 <th className="px-6 py-4 text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Status</th>
                                 <th className="px-6 py-4 text-[10px] font-black text-text-muted uppercase tracking-[0.2em] text-right">Actions</th>
                             </tr>
@@ -384,8 +413,12 @@ export default function AttendanceTracker() {
                                 <tr key={record.id} className="hover:bg-surface-alt/20 transition-colors group text-left font-black">
                                     <td className="px-6 py-5 text-left font-black">
                                         <div className="flex items-center gap-4 text-left font-black">
-                                            <div className="w-9 h-9 rounded-none bg-background border border-border flex items-center justify-center text-text-muted font-black text-[11px] shrink-0">
-                                                {record.staff.split(' ').map(n => n[0]).join('')}
+                                            <div className="w-10 h-10 rounded-none bg-background border border-border flex items-center justify-center text-text-muted font-black text-[11px] shrink-0 overflow-hidden">
+                                                {record.image ? (
+                                                    <img src={record.image} alt="" className="w-full h-full object-cover" />
+                                                ) : (
+                                                    record.staff.split(' ').map(n => n[0]).join('')
+                                                )}
                                             </div>
                                             <div className="text-left font-black">
                                                 <p className="text-xs font-black text-text uppercase tracking-tight text-left leading-none">{record.staff}</p>
@@ -394,20 +427,13 @@ export default function AttendanceTracker() {
                                         </div>
                                     </td>
                                     <td className="px-6 py-5 text-left font-black">
-                                        <div className="flex items-center gap-3 text-[11px] font-black text-text uppercase text-left">
-                                            <Clock className="w-3.5 h-3.5 text-text-muted" />{record.checkIn}
-                                        </div>
+                                        <p className="text-[10px] font-black text-text uppercase tracking-widest">{record.role}</p>
+                                        <p className="text-[9px] text-text-muted font-black uppercase tracking-widest mt-1 italic">{record.mobile}</p>
                                     </td>
                                     <td className="px-6 py-5 text-left font-black">
-                                        <div className="flex items-center gap-3 text-[11px] font-black text-text uppercase text-left">
-                                            <Clock className="w-3.5 h-3.5 text-text-muted" />{record.checkOut}
-                                        </div>
-                                    </td>
-                                    <td className="px-6 py-5 text-[11px] font-black text-primary uppercase text-left font-black">{record.hours}HRS</td>
-                                    <td className="px-6 py-5 text-left font-black">
-                                        <div className="flex items-center gap-2.5 text-[10px] font-black text-text-muted uppercase text-left group-hover:text-primary transition-colors">
-                                            <MapPin className="w-3.5 h-3.5" />
-                                            {record.loc || '-'}
+                                        <div className="flex flex-col gap-1.5 text-[10px] font-black text-text uppercase text-left">
+                                            <div className="flex items-center gap-2 text-emerald-500"><Check className="w-3 h-3" /> {record.checkIn}</div>
+                                            <div className="flex items-center gap-2 text-rose-500"><X className="w-3 h-3" /> {record.checkOut}</div>
                                         </div>
                                     </td>
                                     <td className="px-6 py-5 text-left font-black">
@@ -416,7 +442,7 @@ export default function AttendanceTracker() {
                                         </span>
                                     </td>
                                     <td className="px-6 py-5 text-right font-black">
-                                        <div className="flex items-center justify-end gap-2 transition-opacity font-black">
+                                        <div className="flex items-center justify-end gap-2 font-black">
                                             <button onClick={() => {
                                                 setChangeStatusModal(record);
                                                 setNewStatus(record.status);
@@ -426,7 +452,7 @@ export default function AttendanceTracker() {
                                                 className="p-2 rounded-none text-emerald-500 hover:bg-emerald-500/10 border border-transparent hover:border-emerald-500/20 transition-all">
                                                 <CheckCircle2 className="w-4 h-4" />
                                             </button>
-                                            <button onClick={() => { setRemarkModal(record); setRemark(''); }}
+                                            <button onClick={() => { setRemarkModal(record); setRemark(record.remark); }}
                                                 className="p-2 rounded-none text-primary hover:bg-primary/10 border border-transparent hover:border-primary/20 transition-all">
                                                 <MessageSquare className="w-4 h-4" />
                                             </button>
@@ -436,14 +462,50 @@ export default function AttendanceTracker() {
                             ))}
                         </tbody>
                     </table>
-                </div>
+                ) : (
+                    <table className="w-full text-left font-black">
+                        <thead>
+                            <tr className="bg-surface-alt/50 border-b border-border/40 text-left font-black">
+                                <th className="px-6 py-4 text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Staff Member</th>
+                                <th className="px-6 py-4 text-[10px] font-black text-text-muted uppercase tracking-[0.2em] text-center">Present</th>
+                                <th className="px-6 py-4 text-[10px] font-black text-text-muted uppercase tracking-[0.2em] text-center">Absent</th>
+                                <th className="px-6 py-4 text-[10px] font-black text-text-muted uppercase tracking-[0.2em] text-center">Leaves</th>
+                                <th className="px-6 py-4 text-[10px] font-black text-text-muted uppercase tracking-[0.2em] text-center">Half Days</th>
+                                <th className="px-6 py-4 text-[10px] font-black text-text-muted uppercase tracking-[0.2em] text-right">Total Logs</th>
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-border/40 text-left font-black">
+                            {records.map(record => {
+                                const s = summaryData[record.id] || { present: 0, absent: 0, leave: 0, halfDay: 0, total: 0 };
+                                return (
+                                    <tr key={record.id} className="hover:bg-surface-alt/20 transition-colors group text-left font-black">
+                                        <td className="px-6 py-5 text-left font-black">
+                                            <div className="flex items-center gap-4">
+                                                <div className="w-9 h-9 rounded-none bg-background border border-border flex items-center justify-center text-text-muted font-black text-[11px] shrink-0 uppercase italic">{record.staff.split(' ').map(n => n[0]).join('')}</div>
+                                                <div className="text-left font-black">
+                                                    <p className="text-xs font-black text-text uppercase tracking-tight">{record.staff}</p>
+                                                    <p className="text-[9px] text-text-muted font-black uppercase tracking-widest mt-1 leading-none italic">{record.role}</p>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td className="px-6 py-5 text-center text-sm font-black text-emerald-500">{s.present}</td>
+                                        <td className="px-6 py-5 text-center text-sm font-black text-rose-500">{s.absent}</td>
+                                        <td className="px-6 py-5 text-center text-sm font-black text-violet-500">{s.leave}</td>
+                                        <td className="px-6 py-5 text-center text-sm font-black text-blue-500">{s.halfDay}</td>
+                                        <td className="px-6 py-5 text-right text-[10px] font-black text-text-muted uppercase tracking-widest italic">{s.total} LOGS</td>
+                                    </tr>
+                                );
+                            })}
+                        </tbody>
+                    </table>
+                )}
                 <div className="px-6 py-4 border-t border-border bg-surface-alt/30 flex items-center gap-3 font-black">
                     <AlertCircle className="w-4 h-4 text-primary" />
-                    <p className="text-[10px] text-text-muted font-black uppercase tracking-widest leading-none">Security loop: Logs auto-seal at 23:59:59 daily. manual override requires root access.</p>
+                    <p className="text-[10px] text-text-muted font-black uppercase tracking-widest leading-none italic">Note: Records are calculated based on the selected operational date's month cycle.</p>
                 </div>
             </div>
 
-            {/* Modals remain similarly styled but with sharp industrial themes */}
+            {/* Modals ... */}
             <AnimatePresence>
                 {changeStatusModal && (
                     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
@@ -453,7 +515,7 @@ export default function AttendanceTracker() {
                             <div className="flex items-center justify-between mb-8">
                                 <div>
                                     <h2 className="text-sm font-black text-text uppercase tracking-[0.2em]">Update Status</h2>
-                                    <p className="text-[10px] font-black text-primary mt-1 uppercase tracking-widest">{changeStatusModal.staff}</p>
+                                    <p className="text-[10px] font-black text-primary mt-1 uppercase tracking-widest italic">{changeStatusModal.staff}</p>
                                 </div>
                                 <button onClick={() => setChangeStatusModal(null)} className="w-10 h-10 rounded-none bg-background border border-border flex items-center justify-center text-text-muted hover:text-text hover:border-text transition-all"><X className="w-5 h-5" /></button>
                             </div>
@@ -485,7 +547,27 @@ export default function AttendanceTracker() {
                 )}
             </AnimatePresence>
 
-            {/* Remark Modal, Bulk Modal and Toast styled similarly ... */}
+            <AnimatePresence>
+                {bulkModal && (
+                    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+                        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setBulkModal(false)} className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
+                        <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }}
+                            className="bg-surface w-full max-w-sm rounded-none border border-border shadow-2xl relative p-8 text-center">
+                            <button onClick={() => setBulkModal(false)} className="absolute top-4 right-4 w-9 h-9 rounded-none bg-background border border-border flex items-center justify-center text-text-muted hover:text-text"><X className="w-4 h-4" /></button>
+                            <div className="w-14 h-14 bg-primary/10 rounded-none flex items-center justify-center mx-auto mb-6 border border-primary/20"><Users className="w-6 h-6 text-primary" /></div>
+                             <h3 className="text-xs font-black text-text uppercase tracking-[0.2em]">Mark All Members</h3>
+                             <p className="text-[10px] text-text-muted mt-2 mb-8 uppercase font-bold tracking-widest italic leading-relaxed">Choose status to apply to all staff for {selectedDate}</p>
+                            <div className="grid grid-cols-2 gap-3">
+                                <button onClick={() => bulkMarkStatus('present')} className="py-4 bg-emerald-500 text-white rounded-none text-[10px] font-black uppercase tracking-[0.2em] shadow-xl shadow-emerald-500/10 hover:scale-[1.02] transition-all">Mark Present</button>
+                                <button onClick={() => bulkMarkStatus('absent')} className="py-4 bg-rose-500 text-white rounded-none text-[10px] font-black uppercase tracking-[0.2em] shadow-xl shadow-rose-500/10 hover:scale-[1.02] transition-all">Mark Absent</button>
+                                <button onClick={() => bulkMarkStatus('half-day')} className="py-4 bg-blue-500 text-white rounded-none text-[10px] font-black uppercase tracking-[0.2em] shadow-xl shadow-blue-500/10 hover:scale-[1.02] transition-all">Mark Half Day</button>
+                                <button onClick={() => bulkMarkStatus('leave')} className="py-4 bg-violet-500 text-white rounded-none text-[10px] font-black uppercase tracking-[0.2em] shadow-xl shadow-violet-500/10 hover:scale-[1.02] transition-all">Mark Leave</button>
+                            </div>
+                        </motion.div>
+                    </div>
+                )}
+            </AnimatePresence>
+
             <AnimatePresence>
                 {remarkModal && (
                     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
@@ -493,35 +575,16 @@ export default function AttendanceTracker() {
                         <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }}
                             className="bg-surface w-full max-w-sm rounded-none border border-border shadow-2xl relative p-8">
                             <div className="flex items-center justify-between mb-6">
-                                <h2 className="text-sm font-black text-text uppercase tracking-[0.2em]">Add Remark</h2>
+                                <h2 className="text-sm font-black text-text uppercase tracking-[0.2em]">Daily Note</h2>
                                 <button onClick={() => setRemarkModal(null)} className="w-10 h-10 rounded-none bg-background border border-border flex items-center justify-center text-text-muted hover:text-text"><X className="w-5 h-5" /></button>
                             </div>
-                            <p className="text-[10px] font-black text-primary mb-4 uppercase tracking-widest">{remarkModal.staff} · {STATUS_META[remarkModal.status]?.label}</p>
+                            <p className="text-[10px] font-black text-primary mb-4 uppercase tracking-widest italic">{remarkModal.staff} · {STATUS_META[remarkModal.status]?.label}</p>
                             <form onSubmit={saveRemark} className="space-y-6">
-                                <textarea required rows={4} placeholder="ENTER LOG DETAIL..."
-                                    className="w-full px-5 py-4 rounded-none bg-background border border-border text-[11px] font-black uppercase tracking-widest focus:border-primary outline-none resize-none"
+                                <textarea required rows={4} placeholder="ENTER LOG DETAIL OR REASON..."
+                                    className="w-full px-5 py-4 rounded-none bg-background border border-border text-[11px] font-black uppercase tracking-widest focus:border-primary outline-none resize-none italic"
                                     value={remark} onChange={e => setRemark(e.target.value)} />
-                                <button type="submit" className="w-full py-4 bg-amber-500 text-white rounded-none font-black text-[10px] uppercase tracking-[0.2em] shadow-xl shadow-amber-500/20 hover:scale-[1.02] transition-all">Save Remark</button>
+                                <button type="submit" className="w-full py-4 bg-amber-500 text-white rounded-none font-black text-[10px] uppercase tracking-[0.2em] shadow-xl shadow-amber-500/20 hover:scale-[1.02] transition-all">Save Daily Log</button>
                             </form>
-                        </motion.div>
-                    </div>
-                )}
-            </AnimatePresence>
-
-            <AnimatePresence>
-                {bulkModal && (
-                    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-                        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setBulkModal(false)} className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
-                        <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }}
-                            className="bg-surface w-full max-w-xs rounded-none border border-border shadow-2xl relative p-8 text-center">
-                            <button onClick={() => setBulkModal(false)} className="absolute top-4 right-4 w-9 h-9 rounded-none bg-background border border-border flex items-center justify-center text-text-muted hover:text-text"><X className="w-4 h-4" /></button>
-                            <div className="w-14 h-14 bg-primary/10 rounded-none flex items-center justify-center mx-auto mb-6 border border-primary/20"><Users className="w-6 h-6 text-primary" /></div>
-                             <h3 className="text-xs font-black text-text uppercase tracking-[0.2em]">Mark All Status</h3>
-                             <p className="text-[10px] text-text-muted mt-2 mb-8 uppercase font-bold tracking-widest">Applying status to all staff members for {selectedDate}</p>
-                            <div className="flex flex-col gap-3">
-                                <button onClick={bulkMarkPresent} className="w-full py-4 bg-emerald-500 text-white rounded-none text-[10px] font-black uppercase tracking-[0.2em] shadow-xl shadow-emerald-500/10 hover:scale-[1.02] transition-all">Force Present</button>
-                                <button onClick={bulkMarkAbsent} className="w-full py-4 bg-rose-500 text-white rounded-none text-[10px] font-black uppercase tracking-[0.2em] shadow-xl shadow-rose-500/10 hover:scale-[1.02] transition-all">Force Absent</button>
-                            </div>
                         </motion.div>
                     </div>
                 )}
@@ -532,7 +595,7 @@ export default function AttendanceTracker() {
                     <motion.div initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 40 }}
                         className="fixed bottom-10 left-1/2 -translate-x-1/2 z-[200] flex items-center gap-4 px-8 py-4 bg-text border border-border rounded-none shadow-2xl">
                         <CheckCircle2 className="w-5 h-5 text-emerald-500 shrink-0" />
-                        <p className="text-[10px] font-black text-background uppercase tracking-[0.2em]">{toast}</p>
+                        <p className="text-[10px] font-black text-background uppercase tracking-[0.2em] font-black">{toast}</p>
                     </motion.div>
                 )}
             </AnimatePresence>

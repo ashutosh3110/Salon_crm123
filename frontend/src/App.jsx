@@ -575,7 +575,7 @@ function App() {
         </CustomerAuthProvider>
       </AuthProvider>
 
-      <MobileDebugger />
+      {/* <MobileDebugger /> */}
     </Router>
   );
 }

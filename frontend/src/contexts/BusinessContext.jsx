@@ -857,15 +857,17 @@ export function BusinessProvider({ children }) {
         }
     }, []);
 
-    const updateBookingStatus = useCallback(async (id, status) => {
+    const updateBookingStatus = useCallback(async (id, data) => {
         try {
-            const r = await api.patch(`/bookings/${id}/status`, { status });
+            const payload = typeof data === 'string' ? { status: data } : data;
+            const r = await api.patch(`/bookings/${id}/status`, payload);
             const updated = r.data.data;
-            setBookings(p => p.map(b => b._id === id ? { ...b, status: updated.status } : b));
-            toast.success(`Booking ${status.toUpperCase()}`);
+            setBookings(p => p.map(b => b._id === id ? { ...b, ...updated } : b));
+            if (payload.status) toast.success(`Status updated: ${payload.status.toUpperCase()}`);
+            if (payload.paymentStatus) toast.success(`Payment status: ${payload.paymentStatus.toUpperCase()}`);
             return updated;
         } catch (err) {
-            toast.error('Status update failed');
+            toast.error('Update failed');
             throw err;
         }
     }, []);

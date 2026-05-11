@@ -5,10 +5,12 @@ const {
     updateStaffHR,
     markAttendance,
     getAttendance,
+    getAttendanceSummary,
     getShifts,
     upsertShift,
     generatePayroll,
     getPayroll,
+    updatePayrollStatus,
     getLeaveRequests,
     updateLeaveStatus,
     getOverallPerformance,
@@ -25,6 +27,7 @@ router.put('/staff/:id', updateStaffHR);
 
 router.post('/attendance', markAttendance);
 router.get('/attendance', getAttendance);
+router.get('/attendance/summary', getAttendanceSummary);
 
 router.get('/shifts', getShifts);
 router.post('/shifts', upsertShift);
@@ -33,6 +36,7 @@ router.delete('/shifts/:id', deleteShift);
 
 router.post('/payroll/generate', generatePayroll);
 router.get('/payroll', getPayroll);
+router.patch('/payroll/:id/status', updatePayrollStatus);
 
 router.get('/leaves', getLeaveRequests);
 router.put('/leaves/:id', updateLeaveStatus);

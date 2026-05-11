@@ -216,7 +216,7 @@ export default function BookingModal({ isOpen, onClose }) {
                                     disabled={loading}
                                     className="w-full py-3 rounded-2xl bg-primary text-primary-foreground font-bold text-sm shadow-xl shadow-primary/20 hover:brightness-110 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                                 >
-                                    {loading ? 'Processing...' : 'Confirm Appointment'}
+                                    {loading ? 'Processing...' : 'Create Appointment'}
                                 </button>
                             </div>
                             {error && (

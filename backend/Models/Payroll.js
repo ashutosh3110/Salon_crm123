@@ -19,11 +19,23 @@ const payrollSchema = new mongoose.Schema({
         type: Number,
         required: true
     },
+    workingDays: {
+        type: Number,
+        default: 30
+    },
+    presentDays: {
+        type: Number,
+        default: 0
+    },
+    leaveDays: {
+        type: Number,
+        default: 0
+    },
     baseSalary: {
         type: Number,
         required: true
     },
-    bonus: {
+    incentive: {
         type: Number,
         default: 0
     },
@@ -31,7 +43,19 @@ const payrollSchema = new mongoose.Schema({
         type: Number,
         default: 0
     },
-    deductions: {
+    overtime: {
+        type: Number,
+        default: 0
+    },
+    pf: {
+        type: Number,
+        default: 0
+    },
+    tax: {
+        type: Number,
+        default: 0
+    },
+    otherDeductions: {
         type: Number,
         default: 0
     },
@@ -41,7 +65,7 @@ const payrollSchema = new mongoose.Schema({
     },
     status: {
         type: String,
-        enum: ['draft', 'pending', 'paid'],
+        enum: ['draft', 'pending', 'paid', 'unpaid'],
         default: 'draft'
     },
     paymentDate: Date,
