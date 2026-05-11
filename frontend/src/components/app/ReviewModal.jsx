@@ -98,7 +98,7 @@ export default function ReviewModal({ isOpen, onClose, booking, onSuccess, targe
                                 <CheckCircle2 size={40} />
                             </motion.div>
                             <h3 className="text-xl font-black text-white uppercase tracking-tight">Thank You!</h3>
-                            <p className="text-sm text-white/60 font-medium">Your feedback helps us create better rituals for you.</p>
+                            <p className="text-sm text-white/60 font-medium">Your feedback helps us create better services for you.</p>
                         </div>
                     ) : (
                         <>
@@ -155,11 +155,11 @@ export default function ReviewModal({ isOpen, onClose, booking, onSuccess, targe
 
                                 {/* Comment Area */}
                                 <div className="space-y-2">
-                                    <label className="text-[10px] font-black text-white/40 uppercase tracking-[0.2em] ml-2">Ritual Experience</label>
+                                    <label className="text-[10px] font-black text-white/40 uppercase tracking-[0.2em] ml-2">Your Experience</label>
                                     <textarea
                                         value={comment}
                                         onChange={(e) => setComment(e.target.value)}
-                                        placeholder="Sharing your ritual experience helps others..."
+                                        placeholder="Sharing your experience helps others..."
                                         className="w-full bg-white/[0.04] border border-white/5 rounded-3xl p-5 text-sm text-white placeholder:text-white/20 focus:outline-none focus:bg-white/[0.08] focus:border-[#C8956C]/30 transition-all min-h-[120px] resize-none font-medium leading-relaxed"
                                     />
                                 </div>
@@ -177,7 +177,7 @@ export default function ReviewModal({ isOpen, onClose, booking, onSuccess, targe
                                             className="w-6 h-6 border-2 border-white/30 border-t-white rounded-full"
                                         />
                                     ) : (
-                                        'PUBLISH RITUAL EXPERIENCE'
+                                        'SUBMIT FEEDBACK'
                                     )}
                                 </button>
                             </form>

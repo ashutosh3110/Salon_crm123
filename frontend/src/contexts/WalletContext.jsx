@@ -32,11 +32,28 @@ function mapLoyaltyTx(tx) {
 
 export function WalletProvider({ children }) {
     const { customer } = useCustomerAuth();
-    const { userSession, isInitializing } = useBusiness();
+    const { userSession, isInitializing, customers } = useBusiness();
     const [balance, setBalance] = useState(0);
     const [transactions, setTransactions] = useState([]);
     const [loading, setLoading] = useState(true);
     const location = useLocation();
+
+    // Admin/POS Support: Map customers to a wallet dictionary
+    const allWallets = useMemo(() => {
+        const wallets = {};
+        if (Array.isArray(customers)) {
+            customers.forEach(c => {
+                const id = c._id || c.id;
+                if (id) {
+                    wallets[id] = {
+                        balance: c.walletBalance || 0,
+                        loyaltyPoints: c.loyaltyPoints || 0
+                    };
+                }
+            });
+        }
+        return wallets;
+    }, [customers]);
 
     const refreshWallet = useCallback(async () => {
         if (!customer?._id) return;
@@ -115,14 +132,57 @@ export function WalletProvider({ children }) {
         return res.data;
     };
 
+    // Admin/Staff Functions
+    const bulkRecharge = async (customerIds, amount, note) => {
+        try {
+            const res = await api.post('/wallet/bulk-recharge', { customerIds, amount, note });
+            return res.data;
+        } catch (err) {
+            console.error('Bulk recharge failed:', err);
+            return { success: false, message: err.response?.data?.message || err.message };
+        }
+    };
+
+    const adminAdjustBalance = async (customerId, amount, type, note) => {
+        try {
+            // We can use bulkRecharge for single adjustment too, or if there's a specific endpoint
+            // For now, using bulkRecharge pattern since it's available
+            const res = await api.post('/wallet/bulk-recharge', { 
+                customerIds: [customerId], 
+                amount: type === 'DEBIT' ? -amount : amount, 
+                note 
+            });
+            return res.data;
+        } catch (err) {
+            console.error('Adjust balance failed:', err);
+            return { success: false, message: err.response?.data?.message || err.message };
+        }
+    };
+
+    const initializeWallet = async (customerId) => {
+        // In this system, wallets are implicitly initialized with Customer records.
+        // We just need to fetch the current state if needed.
+        try {
+            const res = await api.get(`/wallet/customer/${customerId}`);
+            return res.data;
+        } catch (err) {
+            console.error('Initialize wallet failed:', err);
+            return { success: false, message: err.message };
+        }
+    };
+
     const value = useMemo(() => ({
         balance,
         transactions,
         loading,
+        allWallets,
         refreshWallet,
         createWalletOrder,
-        verifyWalletTopup
-    }), [balance, transactions, loading, refreshWallet]);
+        verifyWalletTopup,
+        bulkRecharge,
+        adminAdjustBalance,
+        initializeWallet
+    }), [balance, transactions, loading, allWallets, refreshWallet]);
 
     return (
         <WalletContext.Provider value={value}>

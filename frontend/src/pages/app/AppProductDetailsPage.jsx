@@ -264,7 +264,7 @@ export default function AppProductDetailsPage() {
                     </div>
 
                     <div className="space-y-1">
-                        <Accordion title="Know your ritual" isInitialOpen colors={colors}>
+                        <Accordion title="Product Overview" isInitialOpen colors={colors}>
                             <p className="mb-6 leading-relaxed font-medium">
                                 {product.description || "A premium formulation designed to elevate your daily grooming routine. Expertly crafted for professional results at home."}
                             </p>
@@ -274,7 +274,7 @@ export default function AppProductDetailsPage() {
                                     <span className="text-[11px] font-black uppercase italic">{consistency}</span>
                                 </div>
                                 <div className="p-4 rounded-2xl bg-black/3 dark:bg-white/3 border border-black/5 flex flex-col gap-1 text-center">
-                                    <span className="text-[8px] font-black opacity-30 uppercase tracking-widest">Ritual status</span>
+                                    <span className="text-[8px] font-black opacity-30 uppercase tracking-widest">Product status</span>
                                     <span className="text-[11px] font-black uppercase italic text-emerald-500">{ritual}</span>
                                 </div>
                             </div>

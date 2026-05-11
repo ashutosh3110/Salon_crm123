@@ -4,7 +4,7 @@ import {
     Search, ShoppingCart, Plus, Minus, X, Trash2,
     Scissors, Package, Check, Loader2, Scan,
     Sparkles, User, UserPlus, ArrowRight, Percent, Info,
-    Tag, Star, Wallet, Printer, Banknote, Smartphone, FileText,
+    Tag, Star, Wallet, Printer, Banknote, Smartphone, FileText, Download,
     ShoppingBag, CreditCard, Ticket, Gift, History, Calendar, Globe, Building2
 } from 'lucide-react';
 import api from '../../services/api';
@@ -106,10 +106,16 @@ const InvoicePDF = ({ invoice, role, salon, taxRate = 18 }) => (
                         <Text>Subtotal</Text>
                         <Text>₹ {invoice.totals.subtotal.toFixed(0)}</Text>
                     </View>
-                    {invoice.totals.discount > 0 && (
+                    {invoice.totals.serviceDiscount > 0 && (
                         <View style={pdfStyles.summaryRow}>
-                            <Text style={{ color: '#E53E3E' }}>Discount</Text>
-                            <Text style={{ color: '#E53E3E' }}>-₹ {invoice.totals.discount.toFixed(0)}</Text>
+                            <Text style={{ color: '#E53E3E' }}>Service Discount</Text>
+                            <Text style={{ color: '#E53E3E' }}>-₹ {invoice.totals.serviceDiscount.toFixed(0)}</Text>
+                        </View>
+                    )}
+                    {invoice.totals.productDiscount > 0 && (
+                        <View style={pdfStyles.summaryRow}>
+                            <Text style={{ color: '#E53E3E' }}>Product Discount</Text>
+                            <Text style={{ color: '#E53E3E' }}>-₹ {invoice.totals.productDiscount.toFixed(0)}</Text>
                         </View>
                     )}
                     {invoice.totals.isSameState ? (
@@ -380,10 +386,16 @@ export default function POSBillingPage() {
 
     // ─── Calculations ──────────────────────────────────────
     const totals = useMemo(() => {
-        const subtotal = cart.reduce((sum, item) => {
-            if (item.isPackageRedemption) return sum;
-            return sum + (item.price * item.quantity);
-        }, 0);
+        let serviceSubtotal = 0;
+        let productSubtotal = 0;
+
+        cart.forEach(item => {
+            if (item.isPackageRedemption) return;
+            if (item.type === 'service') serviceSubtotal += (item.price * item.quantity);
+            else productSubtotal += (item.price * item.quantity);
+        });
+
+        const subtotal = serviceSubtotal + productSubtotal;
 
         let discount = 0;
         // Manual
@@ -438,14 +450,22 @@ export default function POSBillingPage() {
         const previousDue = (selectedClient?.dueAmount || 0);
         const grandTotal = includePreviousDue ? currentBillTotal + previousDue : currentBillTotal;
 
+        const serviceDiscount = serviceSubtotal * (1 - discountFactor);
+        const productDiscount = productSubtotal * (1 - discountFactor);
+
         return { 
             subtotal, 
+            serviceSubtotal,
+            productSubtotal,
             discount, 
+            serviceDiscount,
+            productDiscount,
             tax: totalTax, 
             cgst, 
             sgst, 
             igst, 
             isSameState,
+            discountFactor,
             total: grandTotal, 
             taxable: totalTaxableValue, 
             currentBillTotal, 
@@ -456,7 +476,7 @@ export default function POSBillingPage() {
     // Get real-time wallet balance
     const clientWalletBalance = useMemo(() => {
         if (!selectedClient?._id) return 0;
-        return allWallets[selectedClient._id]?.balance || 0;
+        return (allWallets || {})[selectedClient._id]?.balance || 0;
     }, [selectedClient, allWallets]);
 
     // Update auto-payment if single payment
@@ -876,10 +896,10 @@ export default function POSBillingPage() {
                 fetchInvoices?.();
                 fetchOrders?.();
 
-                // Auto-navigate to invoices after 3 seconds
+                // Auto-navigate to invoices after 5 seconds
                 setTimeout(() => {
                     navigate('/pos/invoices');
-                }, 3000);
+                }, 5000);
 
                 // WhatsApp Auto-Send logic
                 if (autoSendWhatsApp) {
@@ -1059,7 +1079,8 @@ export default function POSBillingPage() {
                     <div className="border-t border-dashed border-black pt-2 space-y-1">
                         <div className="flex justify-between"><span>Subtotal:</span><span>{successInvoice.totals.subtotal.toFixed(0)}</span></div>
 
-                        {successInvoice.discounts.manual.value > 0 && <div className="flex justify-between text-[10px] italic"><span>Manual Discount:</span><span>-{successInvoice.totals.discount.toFixed(0)}</span></div>}
+                        {successInvoice.totals.serviceDiscount > 0 && <div className="flex justify-between text-[10px] italic"><span>Service Discount:</span><span>-₹{successInvoice.totals.serviceDiscount.toFixed(0)}</span></div>}
+                        {successInvoice.totals.productDiscount > 0 && <div className="flex justify-between text-[10px] italic"><span>Product Discount:</span><span>-₹{successInvoice.totals.productDiscount.toFixed(0)}</span></div>}
                         {successInvoice.discounts.promotion && <div className="flex justify-between text-[10px] italic"><span>Promo ({successInvoice.discounts.promotion.name}):</span><span>Applied</span></div>}
                         {successInvoice.discounts.voucher && <div className="flex justify-between text-[10px] italic"><span>Voucher ({successInvoice.discounts.voucher.code}):</span><span>Applied</span></div>}
 
@@ -1129,10 +1150,10 @@ export default function POSBillingPage() {
                         <button
                             disabled={isGeneratingPDF}
                             onClick={handleDownloadPDF}
-                            className={`bg-surface border border-border p-4 font-black uppercase tracking-widest text-[10px] text-text-secondary flex items-center justify-center gap-3 active:scale-[0.98] transition-all ${isGeneratingPDF ? 'opacity-50 cursor-not-allowed' : 'hover:bg-surface-alt'}`}
+                            className={`bg-surface border border-border p-4 font-black uppercase tracking-widest text-[10px] text-text flex items-center justify-center gap-3 active:scale-[0.98] transition-all shadow-sm ${isGeneratingPDF ? 'opacity-50 cursor-not-allowed' : 'hover:bg-primary hover:text-white hover:border-primary'}`}
                         >
-                            {isGeneratingPDF ? <Loader2 className="w-4 h-4 animate-spin" /> : <FileText className="w-4 h-4 text-primary" />}
-                            {isGeneratingPDF ? 'Generating Document...' : 'Download A4 PDF Invoice'}
+                            {isGeneratingPDF ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
+                            {isGeneratingPDF ? 'Generating Document...' : 'Download Invoice PDF'}
                         </button>
 
                         <div className="grid grid-cols-2 gap-2">
@@ -1194,12 +1215,7 @@ export default function POSBillingPage() {
                     <CreditCard className="w-4 h-4" /> POS Terminal
                 </h1>
                 <div className="flex gap-2">
-                    <button
-                        onClick={() => window.location.href = '/pos/refunds'}
-                        className="px-4 py-1.5 bg-rose-500/10 text-rose-500 border border-rose-500/20 text-[10px] font-black uppercase tracking-widest flex items-center gap-2 hover:bg-rose-500 hover:text-white transition-all active:scale-95"
-                    >
-                        <History className="w-3.5 h-3.5" /> Return / Refund
-                    </button>
+                   
                 </div>
             </div>
 
@@ -1378,7 +1394,14 @@ export default function POSBillingPage() {
                                         {selectedClient.name.charAt(0)}
                                     </div>
                                     <div>
-                                        <p className="text-sm font-black text-text">{selectedClient.name}</p>
+                                        <div className="flex items-center gap-2">
+                                            <p className="text-sm font-black text-text">{selectedClient.name}</p>
+                                            {selectedClient.isVIP && (
+                                                <span className="px-1.5 py-0.5 bg-slate-900 text-[8px] font-black text-amber-400 uppercase tracking-widest border border-amber-400/20 flex items-center gap-1 shadow-sm">
+                                                    <Star className="w-2 h-2 fill-amber-400" /> Premium
+                                                </span>
+                                            )}
+                                        </div>
                                         <p className="text-[11px] text-text-muted font-bold">{maskPhone(selectedClient.phone, user?.role)}</p>
                                     </div>
                                 </div>
@@ -1464,9 +1487,21 @@ export default function POSBillingPage() {
                                                     <span className="px-1.5 py-0.5 bg-amber-500 text-[8px] font-black text-white uppercase tracking-widest">Package</span>
                                                 )}
                                             </div>
-                                            <p className="text-[11px] font-bold text-primary mt-0.5">
-                                                {item.isPackageRedemption ? '₹0 (Redeemed)' : `₹${item.price * item.quantity}`}
-                                            </p>
+                                             <div className="flex items-center gap-2 mt-0.5">
+                                                <p className="text-[11px] font-bold text-primary">
+                                                    {item.isPackageRedemption ? '₹0 (Redeemed)' : `₹${Math.round((item.price * item.quantity) * totals.discountFactor)}`}
+                                                </p>
+                                                {!item.isPackageRedemption && totals.discountFactor < 1 && (
+                                                    <p className="text-[9px] font-bold text-text-muted line-through">
+                                                        ₹{item.price * item.quantity}
+                                                    </p>
+                                                )}
+                                                {!item.isPackageRedemption && totals.discountFactor < 1 && (
+                                                    <span className="text-[8px] font-black text-emerald-500 uppercase tracking-tighter">
+                                                        -₹{Math.round((item.price * item.quantity) * (1 - totals.discountFactor))} OFF
+                                                    </span>
+                                                )}
+                                             </div>
                                         </div>
                                         <div className="flex items-center bg-surface-alt">
                                             <button onClick={() => updateQty(idx, -1)} className="p-1 px-2 hover:bg-border text-text-muted"><Minus className="w-3 h-3" /></button>
@@ -1524,9 +1559,21 @@ export default function POSBillingPage() {
                     <div className="p-4 bg-surface-alt border-t border-border space-y-4">
                         <div className="space-y-1.5 border-b border-border pb-3">
                             <div className="flex justify-between text-xs font-bold text-text-secondary">
-                                <span>CURRENT BILL</span>
-                                <span>₹{totals.currentBillTotal.toFixed(0)}</span>
+                                <span>SUBTOTAL</span>
+                                <span>₹{totals.subtotal.toFixed(0)}</span>
                             </div>
+                            {totals.serviceDiscount > 0 && (
+                                <div className="flex justify-between text-[10px] font-black text-emerald-600 uppercase tracking-tighter">
+                                    <span>SERVICE DISCOUNT</span>
+                                    <span>-₹{totals.serviceDiscount.toFixed(0)}</span>
+                                </div>
+                            )}
+                            {totals.productDiscount > 0 && (
+                                <div className="flex justify-between text-[10px] font-black text-emerald-600 uppercase tracking-tighter">
+                                    <span>PRODUCT DISCOUNT</span>
+                                    <span>-₹{totals.productDiscount.toFixed(0)}</span>
+                                </div>
+                            )}
                             {includePreviousDue && (
                                 <div className="flex justify-between text-xs font-bold text-rose-500">
                                     <span>PREVIOUS DUE</span>

@@ -131,9 +131,7 @@ export default function POSDashboardPage() {
                     </p>
                 </div>
                 <div className="flex items-center gap-3">
-                    <button onClick={() => navigate('/pos/refunds')} className="px-6 py-3 bg-surface border border-border text-text-muted font-black text-[10px] uppercase tracking-[0.2em] hover:bg-surface-alt transition-all shadow-sm flex items-center gap-3 active:scale-95">
-                        <RefreshCcw className="w-4 h-4" /> Refunds
-                    </button>
+                   
                     <button onClick={() => navigate('/pos/billing')} className="px-8 py-3 bg-primary text-white font-black text-[10px] uppercase tracking-[0.2em] hover:bg-primary-dark transition-all shadow-xl shadow-primary/20 flex items-center gap-3 active:scale-95">
                         <Zap className="w-4 h-4" /> Create Bill
                     </button>

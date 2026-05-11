@@ -1,10 +1,11 @@
 import { useState, useMemo, useEffect } from 'react';
 import {
-    Search, Calendar, Eye, X,
+    Search, Calendar, Eye, X, Download,
     Clock, CreditCard, Banknote, Smartphone, Ban,
     ChevronLeft, ChevronRight, FileText, Loader2
 } from 'lucide-react';
 import api from '../../services/api';
+import { useBusiness } from '../../contexts/BusinessContext';
 import {
     Document, Page, Text, View, StyleSheet, pdf, Font
 } from '@react-pdf/renderer';
@@ -42,14 +43,14 @@ const pdfStyles = StyleSheet.create({
     thanks: { fontSize: 16, marginBottom: 5 }
 });
 
-const InvoicePDF = ({ invoice }) => (
+const InvoicePDF = ({ invoice, salon }) => (
     <Document>
         <Page size="A4" style={pdfStyles.page}>
             <View style={pdfStyles.header}>
-                <Text style={pdfStyles.salonName}>XYZ SALON & SPA</Text>
-                <Text style={pdfStyles.salonMeta}>Lucknow Main Branch</Text>
-                <Text style={pdfStyles.salonMeta}>Gomti Nagar, Lucknow, UP | +91 98765 43210</Text>
-                <Text style={pdfStyles.salonMeta}>GSTIN: 09AAFCC0301F1ZN</Text>
+                <Text style={pdfStyles.salonName}>{salon?.name || salon?.businessName || 'OUR SALON'}</Text>
+                <Text style={pdfStyles.salonMeta}>{salon?.address?.street || salon?.address || ''}</Text>
+                <Text style={pdfStyles.salonMeta}>{salon?.address?.city || ''} | {salon?.phone || ''}</Text>
+                <Text style={pdfStyles.salonMeta}>GSTIN: {salon?.gstin || 'N/A'}</Text>
                 <Text style={pdfStyles.invoiceTitle}>INVOICE</Text>
             </View>
 
@@ -111,7 +112,7 @@ const InvoicePDF = ({ invoice }) => (
             </View>
 
             <View style={pdfStyles.footer}>
-                <Text style={pdfStyles.thanks}>Thank you for visiting XYZ Salon!</Text>
+                <Text style={pdfStyles.thanks}>Thank you for visiting {salon?.name || 'our salon'}!</Text>
                 <Text style={{ fontSize: 8, color: '#999' }}>Computer generated invoice. No signature required.</Text>
             </View>
         </Page>
@@ -119,6 +120,7 @@ const InvoicePDF = ({ invoice }) => (
 );
 
 export default function POSInvoicesPage() {
+    const { salon } = useBusiness();
     const [invoices, setInvoices] = useState([]);
     const [loading, setLoading] = useState(true);
 
@@ -150,7 +152,7 @@ export default function POSInvoicesPage() {
         if (!selectedInvoice) return;
         setIsGeneratingPDF(true);
         try {
-            const blob = await pdf(<InvoicePDF invoice={selectedInvoice} />).toBlob();
+            const blob = await pdf(<InvoicePDF invoice={selectedInvoice} salon={salon} />).toBlob();
             const url = URL.createObjectURL(blob);
             const link = document.createElement('a');
             link.href = url;
@@ -168,7 +170,7 @@ export default function POSInvoicesPage() {
     const handleDownloadDirectPDF = async (inv) => {
         setIsGeneratingPDF(true);
         try {
-            const blob = await pdf(<InvoicePDF invoice={inv} />).toBlob();
+            const blob = await pdf(<InvoicePDF invoice={inv} salon={salon} />).toBlob();
             const url = URL.createObjectURL(blob);
             const link = document.createElement('a');
             link.href = url;
@@ -319,10 +321,11 @@ export default function POSInvoicesPage() {
                                                 </button>
                                                 <button 
                                                     onClick={() => handleDownloadDirectPDF(inv)} 
-                                                    className="p-2 border border-border bg-surface hover:bg-emerald-500 hover:border-emerald-500 hover:text-white transition-all group/btn active:scale-95 shadow-sm"
+                                                    className="p-2 border border-border bg-surface hover:bg-emerald-500 hover:border-emerald-500 hover:text-white transition-all group/btn active:scale-95 shadow-sm flex items-center gap-2"
                                                     title="Download PDF"
                                                 >
-                                                    <FileText className="w-4 h-4" />
+                                                    <Download className="w-3.5 h-3.5" />
+                                                    <span className="text-[9px] font-black uppercase">PDF</span>
                                                 </button>
                                             </div>
                                         </td>

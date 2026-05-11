@@ -949,7 +949,7 @@ export default function AppHomePage() {
                             <Crown size={20} color={colors.accent} />
                             <div>
                                 <h3 style={{ fontSize: '16px', fontWeight: 800, color: colors.text, margin: 0 }}>Membership</h3>
-                                <p style={{ fontSize: '10px', color: colors.textMuted, margin: 0 }}>Elevate your status with our tiered privileges</p>
+                                <p style={{ fontSize: '10px', color: colors.textMuted, margin: 0 }}>Join our membership for exclusive benefits</p>
                             </div>
                         </div>
                     </div>
@@ -973,7 +973,7 @@ export default function AppHomePage() {
                         <Gift size={20} color={colors.accent} />
                         <div>
                             <h3 style={{ fontSize: '16px', fontWeight: 800, color: colors.text, margin: 0 }}>Loyalty</h3>
-                            <p style={{ fontSize: '10px', color: colors.textMuted, margin: 0 }}>Turn your visits into rewards</p>
+                            <p style={{ fontSize: '10px', color: colors.textMuted, margin: 0 }}>Earn points and get rewards</p>
                         </div>
                     </div>
 

@@ -87,7 +87,7 @@ const AppLoyaltyPage = () => {
             <div className="sticky top-0 z-50 px-4 pt-6 pb-4 flex items-center justify-between" style={{ background: colors.bg, backdropFilter: 'blur(20px)' }}>
                 <div className="flex items-center gap-3">
                     <AppBackButton />
-                    <h1 className="text-xl font-black italic tracking-tight" style={{ color: colors.text }}>Loyalty Rituals</h1>
+                    <h1 className="text-xl font-black italic tracking-tight" style={{ color: colors.text }}>Loyalty Rewards</h1>
                 </div>
             </div>
 
@@ -226,7 +226,7 @@ const AppLoyaltyPage = () => {
                         <div style={{ background: 'rgba(200,149,108,0.2)', padding: '6px', borderRadius: '10px' }}>
                             <ShieldCheck size={16} color={colors.accent} />
                         </div>
-                        <span style={{ fontSize: '12px', fontWeight: 800, color: colors.accent, textTransform: 'uppercase', letterSpacing: '0.15em' }}>Ritual Points</span>
+                        <span style={{ fontSize: '12px', fontWeight: 800, color: colors.accent, textTransform: 'uppercase', letterSpacing: '0.15em' }}>Loyalty Points</span>
                     </div>
                     
                     <div style={{ display: 'flex', alignItems: 'baseline', gap: '10px', marginBottom: '40px' }}>

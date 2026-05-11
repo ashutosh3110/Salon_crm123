@@ -315,7 +315,7 @@ export default function AppServicesPage() {
                         <div className="flex flex-col">
                             <div className="flex items-center gap-2">
                                 <div className="w-1.5 h-1.5 rounded-full bg-[#C8956C]" />
-                                <p className="text-[8px] font-black uppercase tracking-[0.25em] text-[#C8956C] leading-none">The Ritual</p>
+                                <p className="text-[8px] font-black uppercase tracking-[0.25em] text-[#C8956C] leading-none">The Experience</p>
                             </div>
                             <h2 className="text-[15px] font-black tracking-tight leading-tight mt-0.5" style={{ color: colors.text }}>
                                 {activeOutlet?.name || 'Wapixo Salon'}
@@ -335,7 +335,7 @@ export default function AppServicesPage() {
                     >
                         <div className={`w-1.5 h-1.5 rounded-full ${appGender === 'men' ? 'bg-blue-500' : 'bg-pink-500'} shadow-[0_0_8px] ${appGender === 'men' ? 'shadow-blue-500/50' : 'shadow-pink-500/50'}`} />
                         <span className={`text-[9px] font-black uppercase tracking-widest ${isLight ? 'text-slate-800' : 'text-slate-200'}`}>
-                            {appGender === 'men' ? 'Gentlemen' : 'Ladies'}
+                            {appGender === 'men' ? 'Men' : 'Women'}
                         </span>
                     </motion.div>
                 </div>

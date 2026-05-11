@@ -132,7 +132,7 @@ export default function AppMyBookingsPage() {
                 <div className="sticky top-0 z-50 px-4 pt-6 pb-4 flex items-center justify-between" style={{ background: colors.bg, backdropFilter: 'blur(20px)' }}>
                     <div className="flex items-center gap-3">
                         <AppBackButton />
-                        <h1 className="text-xl font-black italic tracking-tight" style={{ color: colors.text }}>My Rituals</h1>
+                        <h1 className="text-xl font-black italic tracking-tight" style={{ color: colors.text }}>My Bookings</h1>
                     </div>
                 </div>
 

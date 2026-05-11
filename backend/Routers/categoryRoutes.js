@@ -1,10 +1,12 @@
 const express = require('express');
 const router = express.Router();
-const { getCategories, createCategory, updateCategory, deleteCategory } = require('../Controllers/categoryController');
+const { getCategories, createCategory, updateCategory, deleteCategory, bulkImportCategories } = require('../Controllers/categoryController');
 const { optimizedUpload } = require('../Middleware/upload');
 const { processToWebP } = require('../Middleware/imageProcessor');
 const { protect, authorize } = require('../Middleware/auth');
 const checkImageLimit = require('../Middleware/imageLimit');
+
+router.post('/bulk-import', protect, authorize('admin', 'manager'), optimizedUpload.single('file'), bulkImportCategories);
 
 router
     .route('/')

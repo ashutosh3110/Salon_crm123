@@ -164,7 +164,7 @@ export default function AppServiceDetailsPage() {
                 <div className="w-16 h-16 bg-red-500/10 rounded-full flex items-center justify-center mb-6">
                     <span className="text-red-500 font-bold text-2xl">!</span>
                 </div>
-                <h2 className="text-xl font-black italic uppercase tracking-tighter mb-2">Ritual Not Found</h2>
+                <h2 className="text-xl font-black italic uppercase tracking-tighter mb-2">Service Not Found</h2>
                 <p className="text-sm opacity-60 mb-8">This service may have been removed or is unavailable.</p>
                 <button onClick={() => navigate(-1)} className="px-6 py-3 bg-[#C8956C] text-white rounded-xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-[#C8956C]/20">Go Back</button>
             </div>
@@ -245,7 +245,7 @@ export default function AppServiceDetailsPage() {
                     </div>
 
                     <div className="space-y-1">
-                        <Accordion title="The Ritual Experience" isInitialOpen colors={colors}>
+                        <Accordion title="Service Description" isInitialOpen colors={colors}>
                             <p className="mb-4 leading-relaxed font-medium">
                                 {service.description || "Indulge in a premium salon experience tailored to your unique style. Our experts use high-quality products and advanced techniques to ensure exceptional results."}
                             </p>
@@ -295,7 +295,7 @@ export default function AppServiceDetailsPage() {
                             </div>
                         </Accordion>
 
-                        <Accordion title="Policy & Ritual Care" colors={colors}>
+                        <Accordion title="Policy & Care" colors={colors}>
                             <div className="space-y-4">
                                 <div className="flex gap-4">
                                     <div className="w-8 h-8 rounded-full bg-emerald-500/10 flex items-center justify-center shrink-0">

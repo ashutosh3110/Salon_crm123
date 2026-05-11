@@ -111,7 +111,7 @@ export default function ServicesPage({ tab = 'list' }) {
             }
         ];
 
-        const XLSX = import('xlsx').then(m => {
+        import('xlsx').then(m => {
             const ws = m.utils.json_to_sheet(templateData);
             const wb = m.utils.book_new();
             m.utils.book_append_sheet(wb, ws, 'Services');
@@ -150,6 +150,59 @@ export default function ServicesPage({ tab = 'list' }) {
         }
     };
 
+    const handleDownloadCategoryTemplate = () => {
+        const templateData = [
+            {
+                'Name': 'Hair Care',
+                'Gender': 'women',
+                'Status': 'active'
+            },
+            {
+                'Name': 'Facial & Clean-up',
+                'Gender': 'women',
+                'Status': 'active'
+            },
+            {
+                'Name': 'Men\'s Grooming',
+                'Gender': 'men',
+                'Status': 'active'
+            }
+        ];
+
+        import('xlsx').then(m => {
+            const ws = m.utils.json_to_sheet(templateData);
+            const wb = m.utils.book_new();
+            m.utils.book_append_sheet(wb, ws, 'Categories');
+            m.writeFile(wb, 'Service_Categories_Bulk_Upload_Template.xlsx');
+            import('react-hot-toast').then(t => t.toast.success('Template downloaded!'));
+        });
+    };
+
+    const handleCategoryBulkUpload = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        setImporting(true);
+        const formData = new FormData();
+        formData.append('file', file);
+
+        try {
+            const response = await import('../../services/api').then(m => m.default.post('/categories/bulk-import', formData, {
+                headers: { 'Content-Type': 'multipart/form-data' }
+            }));
+
+            if (response.data.success) {
+                import('react-hot-toast').then(t => t.toast.success(`Successfully imported ${response.data.importedCount} categories!`));
+                handleRefresh();
+            }
+        } catch (error) {
+            import('react-hot-toast').then(t => t.toast.error(error.response?.data?.message || 'Bulk import failed'));
+        } finally {
+            setImporting(false);
+            e.target.value = '';
+        }
+    };
+
     const categoriesList = ['All', ...new Set(services.map(s => s.category))];
     const outletOptions = ['All Outlets', ...outlets.map(o => o.name)];
 
@@ -168,7 +221,7 @@ export default function ServicesPage({ tab = 'list' }) {
                 </div>
             </div>
 
-            {/* Toolbar - Moved to Top */}
+            {/* Toolbar */}
             {activeTab === 'list' && (
                 <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 bg-white p-4 rounded-2xl border border-border shadow-sm">
                     <div className="relative flex-1 max-w-full lg:max-w-md">
@@ -242,6 +295,45 @@ export default function ServicesPage({ tab = 'list' }) {
                 </div>
             )}
 
+            {activeTab === 'categories' && (
+                <div className="flex flex-col lg:flex-row lg:items-center justify-end gap-4 bg-white p-4 rounded-2xl border border-border shadow-sm">
+                    <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+                        <button
+                            onClick={handleRefresh}
+                            className="flex-1 sm:flex-none p-2.5 rounded-xl bg-white border border-border text-text-muted hover:text-primary transition-all active:scale-95 flex justify-center items-center"
+                            title="Refresh List"
+                        >
+                            <RefreshCcw className="w-4 h-4" />
+                        </button>
+
+                        <button
+                            onClick={handleDownloadCategoryTemplate}
+                            className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl bg-white border border-border text-text-muted hover:text-primary transition-all active:scale-95 text-[10px] font-black uppercase tracking-tight"
+                        >
+                            <Download className="w-3.5 h-3.5" /> Sample
+                        </button>
+
+                        <div className="relative flex-1 sm:flex-none">
+                            <input
+                                type="file"
+                                id="category-bulk-upload"
+                                className="hidden"
+                                accept=".xlsx, .xls, .csv"
+                                onChange={handleCategoryBulkUpload}
+                            />
+                            <button
+                                onClick={() => document.getElementById('category-bulk-upload').click()}
+                                disabled={importing}
+                                className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-white border border-border text-text-muted hover:text-primary transition-all active:scale-95 text-[10px] font-black uppercase tracking-tight disabled:opacity-50"
+                            >
+                                {importing ? <RefreshCcw className="w-3.5 h-3.5 animate-spin" /> : <Upload className="w-3.5 h-3.5" />}
+                                {importing ? 'Importing...' : 'Bulk Upload'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             {/* Outlet Filter */}
             {activeTab === 'list' && (
                 <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 bg-white/50 p-4 border border-border/40">
@@ -277,7 +369,7 @@ export default function ServicesPage({ tab = 'list' }) {
                 </div>
             )}
 
-            {/* Stats Row - Always Visible in List */}
+            {/* Stats Row */}
             {activeTab === 'list' && (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                     {stats.map((stat, i) => (

@@ -47,10 +47,10 @@ export default function LoyaltyCard({ points = 0, pointsRate = 100, onRedeem, mi
                             <div className="w-6 h-6 rounded-lg bg-[#C8956C]/20 flex items-center justify-center">
                                 <Star size={12} color="#C8956C" fill="#C8956C" />
                             </div>
-                            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[#C8956C]">Prestige Points</span>
+                            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[#C8956C]">Loyalty Points</span>
                         </div>
                         <h2 className="text-5xl font-black italic tracking-tighter">{points.toLocaleString()}</h2>
-                        <p className="text-[9px] font-bold opacity-30 uppercase tracking-[0.3em] mt-1">Accumulated Ritual Balance</p>
+                        <p className="text-[9px] font-bold opacity-30 uppercase tracking-[0.3em] mt-1">Total Points Balance</p>
                     </div>
                     <div className="text-right">
                         <p className="text-[10px] font-black opacity-30 uppercase tracking-widest mb-1">Cash Value</p>
@@ -91,7 +91,7 @@ export default function LoyaltyCard({ points = 0, pointsRate = 100, onRedeem, mi
                         {isRedeemable ? (
                             <>
                                 <Zap size={18} fill="currentColor" />
-                                <span>Instant Redemption</span>
+                                <span>Redeem Now</span>
                                 <motion.div 
                                     className="absolute inset-0 bg-black/5 opacity-0 group-hover/btn:opacity-100 transition-opacity"
                                 />

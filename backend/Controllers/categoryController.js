@@ -101,3 +101,73 @@ exports.deleteCategory = async (req, res) => {
         res.status(500).json({ success: false, message: 'Server Error' });
     }
 };
+
+// @desc    Bulk Import Categories
+// @route   POST /api/categories/bulk-import
+// @access  Private (Admin)
+exports.bulkImportCategories = async (req, res) => {
+    try {
+        const XLSX = require('xlsx');
+        if (!req.file) {
+            return res.status(400).json({ success: false, message: 'Please upload a file' });
+        }
+
+        // Use buffer since optimizedUpload uses memoryStorage
+        const workbook = XLSX.read(req.file.buffer, { type: 'buffer' });
+        const sheetName = workbook.SheetNames[0];
+        const worksheet = workbook.Sheets[sheetName];
+        const data = XLSX.utils.sheet_to_json(worksheet);
+
+        const salonId = req.user.salonId;
+        const results = {
+            totalRows: data.length,
+            importedCount: 0,
+            errors: []
+        };
+
+        for (let i = 0; i < data.length; i++) {
+            const row = data[i];
+            try {
+                // Helper to get value case-insensitively
+                const getValue = (keys) => {
+                    for (const key of keys) {
+                        if (row[key] !== undefined) return row[key];
+                    }
+                    return undefined;
+                };
+
+                const name = getValue(['Name', 'name', 'Category Name', 'category name']);
+                const gender = getValue(['Gender', 'gender', 'Demographic', 'demographic']);
+                const status = getValue(['Status', 'status']);
+
+                // Basic validation
+                if (!name) {
+                    results.errors.push(`Row ${i + 1}: Name is required`);
+                    continue;
+                }
+
+                // Check if category already exists for this salon
+                const existing = await Category.findOne({ salonId, name: new RegExp(`^${name}$`, 'i') });
+                if (existing) {
+                    results.errors.push(`Row ${i + 1}: Category "${name}" already exists`);
+                    continue;
+                }
+
+                await Category.create({
+                    name: name,
+                    gender: (gender || 'both').toLowerCase(),
+                    status: (status || 'active').toLowerCase(),
+                    salonId: salonId
+                });
+                results.importedCount++;
+            } catch (err) {
+                results.errors.push(`Row ${i + 1}: ${err.message}`);
+            }
+        }
+
+        res.json({ success: true, ...results });
+    } catch (err) {
+        console.error('Bulk Import Categories Error:', err);
+        res.status(500).json({ success: false, message: 'Server Error during import' });
+    }
+};

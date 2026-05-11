@@ -248,7 +248,7 @@ export default function AppProfilePage() {
 
             <div className="pt-12 pb-6">
                 <span className="text-[10px] font-black uppercase mb-1 block opacity-40 tracking-[0.2em]" style={{ color: colors.textMuted }}>
-                    Exclusive Account
+                    Account Details
                 </span>
                 <h1 className="text-4xl font-black italic tracking-tighter" style={{ color: colors.text }}>
                     My <span className="text-[#C8956C]">Profile</span>
@@ -316,7 +316,7 @@ export default function AppProfilePage() {
                             />
                         </div>
                         <div className="space-y-1.5">
-                            <label className="text-[9px] font-black uppercase tracking-widest opacity-40 ml-1">Email Ritual</label>
+                            <label className="text-[9px] font-black uppercase tracking-widest opacity-40 ml-1">Email Address</label>
                             <input 
                                 type="email"
                                 value={form.email}
@@ -330,7 +330,7 @@ export default function AppProfilePage() {
                             disabled={saving}
                             className="w-full h-12 bg-[#C8956C] text-white rounded-2xl font-black uppercase text-[10px] tracking-widest flex items-center justify-center gap-2 shadow-lg shadow-[#C8956C]/20"
                         >
-                            {saving ? <Loader2 size={16} className="animate-spin" /> : 'Update Ritual Profile'}
+                            {saving ? <Loader2 size={16} className="animate-spin" /> : 'Update Profile'}
                         </button>
                     </div>
                 )}
@@ -359,8 +359,8 @@ export default function AppProfilePage() {
                     style={{ background: colors.card, border: `1px solid ${colors.border}` }} 
                     className="p-4 rounded-[24px] flex flex-col items-center justify-center text-center cursor-pointer"
                 >
-                    <span className="text-[8px] font-black uppercase tracking-widest opacity-40 mb-1">Rituals</span>
-                    <span className="text-sm font-black italic tracking-tighter">Active</span>
+                    <span className="text-[8px] font-black uppercase tracking-widest opacity-40 mb-1">Visits</span>
+                    <span className="text-sm font-black italic tracking-tighter">History</span>
                 </div>
             </div>
 
@@ -377,7 +377,6 @@ export default function AppProfilePage() {
                             <item.icon size={20} style={{ color: item.color }} />
                         </div>
                         <div className="text-left">
-                            <span className="text-[11px] font-black uppercase tracking-widest opacity-40 block mb-0.5">Explore</span>
                             <span className="text-sm font-black italic tracking-tight" style={{ color: colors.text }}>{item.label}</span>
                         </div>
                     </button>
@@ -401,14 +400,14 @@ export default function AppProfilePage() {
                             <Crown size={22} className={activeMembership.planId?.id === 'gold' ? 'text-black' : 'text-white'} />
                         </div>
                         <div className="text-right">
-                            <p className="text-[8px] font-black uppercase tracking-[0.3em] opacity-50">Private Tier</p>
+                            <p className="text-[8px] font-black uppercase tracking-[0.3em] opacity-50">Private</p>
                             <p className="text-xs font-black tracking-[0.1em]">{activeMembership.planId?.name?.toUpperCase()}</p>
                         </div>
                     </div>
                     <div className="relative z-10 space-y-4">
                         <div>
-                            <p className="text-[10px] font-black uppercase tracking-widest opacity-60 mb-1">Privileges Active</p>
-                            <p className="text-xs font-bold italic">Enjoy specialized member pricing across all rituals</p>
+                            <p className="text-[10px] font-black uppercase tracking-widest opacity-60 mb-1">Benefits Active</p>
+                            <p className="text-xs font-bold italic">Enjoy specialized member pricing on all services</p>
                         </div>
                         <div className="flex justify-between items-end">
                             <p className="text-[10px] font-mono font-bold tracking-[0.2em] opacity-40">EXP: {formatDate(activeMembership.expiryDate)}</p>
@@ -426,8 +425,8 @@ export default function AppProfilePage() {
                     <div className="w-14 h-14 rounded-2xl bg-[#C8956C]/10 flex items-center justify-center mb-4 group-hover:bg-[#C8956C] transition-colors">
                         <Crown size={28} className="text-[#C8956C] group-hover:text-white transition-colors" />
                     </div>
-                    <h4 className="text-lg font-black italic tracking-tight" style={{ color: colors.text }}>Join Private Circle</h4>
-                    <p className="text-[9px] font-bold opacity-30 uppercase tracking-widest mt-1">Unlock specialized member benefits</p>
+                    <h4 className="text-lg font-black italic tracking-tight" style={{ color: colors.text }}>Join Membership</h4>
+                    <p className="text-[9px] font-bold opacity-30 uppercase tracking-widest mt-1">Unlock exclusive member benefits</p>
                 </div>
             )}
 
@@ -462,7 +461,7 @@ export default function AppProfilePage() {
                 ))}
             </div>
 
-            {/* Support & Ritual Management */}
+            {/* Support & Account Management */}
             <div className="space-y-3 mb-10">
                 <div className="flex items-center justify-between px-1 mb-2">
                     <h3 className="text-[10px] font-black uppercase tracking-widest opacity-40">Salon Support</h3>
@@ -475,7 +474,7 @@ export default function AppProfilePage() {
                     </button>
                     <button onClick={() => setShowReviewModal(true)} className="w-full flex items-center gap-4 p-5 border-b border-black/5 dark:border-white/5 hover:bg-black/5 transition-colors">
                         <MessageSquare size={18} className="opacity-40" />
-                        <span className="flex-1 text-left text-sm font-black italic tracking-tight" style={{ color: colors.text }}>Share Ritual Feedback</span>
+                        <span className="flex-1 text-left text-sm font-black italic tracking-tight" style={{ color: colors.text }}>Share Feedback</span>
                         <Star size={16} className="text-[#C8956C]" fill="#C8956C" />
                     </button>
                 </div>
@@ -491,7 +490,7 @@ export default function AppProfilePage() {
                     >
                         <div className="flex items-center gap-4">
                             <LogOut size={20} className="text-orange-500 opacity-60" />
-                            <span className="text-sm font-black italic tracking-tight" style={{ color: colors.text }}>Logout Session</span>
+                            <span className="text-sm font-black italic tracking-tight" style={{ color: colors.text }}>Logout</span>
                         </div>
                         <ChevronRight size={16} className="opacity-20 group-hover:translate-x-1 transition-transform" />
                     </button>
@@ -504,10 +503,14 @@ export default function AppProfilePage() {
 
                 <button
                     onClick={() => setShowDeleteConfirm(true)}
-                    className="w-full h-16 rounded-[24px] flex items-center justify-center gap-2 group"
+                    style={{ 
+                        background: isLight ? 'rgba(239, 68, 68, 0.05)' : 'rgba(239, 68, 68, 0.1)',
+                        border: `1px solid ${isLight ? 'rgba(239, 68, 68, 0.1)' : 'rgba(239, 68, 68, 0.2)'}`
+                    }}
+                    className="w-full h-14 rounded-[20px] flex items-center justify-center gap-3 group transition-all active:scale-[0.98]"
                 >
-                    <Shield size={14} className="text-red-500 opacity-40 group-hover:opacity-100 transition-opacity" />
-                    <span className="text-[10px] font-black uppercase tracking-[0.2em] text-red-500/40 group-hover:text-red-500 transition-colors">Permanently Erase Ritual Data</span>
+                    <Shield size={14} className="text-red-500" />
+                    <span className="text-[11px] font-black uppercase tracking-[0.15em] text-red-500">Delete Account</span>
                 </button>
             </div>
 
@@ -525,8 +528,8 @@ export default function AppProfilePage() {
                                 <div className="w-20 h-20 bg-emerald-500/10 rounded-[32px] flex items-center justify-center mx-auto mb-6">
                                     <Star size={40} className="text-emerald-500" fill="currentColor" />
                                 </div>
-                                <h3 className="text-2xl font-black italic mb-2" style={{ color: colors.text }}>Ritual Shared!</h3>
-                                <p className="text-[10px] font-black uppercase tracking-widest opacity-40">Your feedback elevates our ritual quality</p>
+                                <h3 className="text-2xl font-black italic mb-2" style={{ color: colors.text }}>Feedback Shared!</h3>
+                                <p className="text-[10px] font-black uppercase tracking-widest opacity-40">Your feedback helps us improve</p>
                             </div>
                         ) : (
                             <form onSubmit={handleReviewSubmit} className="space-y-6">
@@ -538,13 +541,13 @@ export default function AppProfilePage() {
                                     ))}
                                 </div>
                                 <div className="space-y-2">
-                                    <label className="text-[10px] font-black uppercase tracking-widest opacity-40 ml-2">Experience Narrative</label>
+                                    <label className="text-[10px] font-black uppercase tracking-widest opacity-40 ml-2">Your Feedback</label>
                                     <textarea 
                                         value={review.comment}
                                         onChange={(e) => setReview({...review, comment: e.target.value})}
                                         style={{ background: colors.input, color: colors.text, border: `1px solid ${colors.border}` }}
                                         className="w-full h-32 p-4 rounded-[24px] text-sm font-bold resize-none outline-none focus:border-[#C8956C]"
-                                        placeholder="Describe your salon ritual..."
+                                        placeholder="Describe your experience..."
                                     />
                                 </div>
                                 <button 
@@ -552,7 +555,7 @@ export default function AppProfilePage() {
                                     disabled={isSubmittingReview || !review.comment.trim()}
                                     className="w-full h-16 bg-[#C8956C] text-white rounded-2xl font-black uppercase tracking-widest text-[11px] disabled:opacity-30 shadow-xl shadow-[#C8956C]/20"
                                 >
-                                    {isSubmittingReview ? 'Broadcasting...' : 'Publish Experience'}
+                                    {isSubmittingReview ? 'Submitting...' : 'Submit Feedback'}
                                 </button>
                             </form>
                         )}
@@ -567,19 +570,19 @@ export default function AppProfilePage() {
                         <div className="w-20 h-20 bg-red-500/10 rounded-[32px] flex items-center justify-center mx-auto mb-6">
                             <Shield size={40} className="text-red-500" />
                         </div>
-                        <h3 className="text-2xl font-black italic tracking-tighter mb-2" style={{ color: colors.text }}>Erase Rituals?</h3>
-                        <p className="text-[10px] font-black uppercase tracking-widest opacity-40 mb-10 leading-relaxed">This action is terminal. All ritual history, points, and digital wallet assets will be permanently unlinked.</p>
+                        <h3 className="text-2xl font-black italic tracking-tighter mb-2" style={{ color: colors.text }}>Delete Account?</h3>
+                        <p className="text-[10px] font-black uppercase tracking-widest opacity-40 mb-10 leading-relaxed">This will permanently delete your account and all data including points and wallet balance.</p>
                         <div className="space-y-3">
                             <button onClick={handleDeleteAccount} disabled={isDeleting} className="w-full h-14 bg-red-600 text-white rounded-2xl font-black uppercase text-[10px] tracking-widest shadow-xl shadow-red-600/20">
-                                {isDeleting ? 'Erasing...' : 'Confirm Destruction'}
+                                {isDeleting ? 'Deleting...' : 'Confirm Delete'}
                             </button>
-                            <button onClick={() => setShowDeleteConfirm(false)} disabled={isDeleting} className="w-full h-12 rounded-2xl font-black uppercase text-[10px] tracking-widest opacity-40">Preserve Rituals</button>
+                            <button onClick={() => setShowDeleteConfirm(false)} disabled={isDeleting} className="w-full h-12 rounded-2xl font-black uppercase text-[10px] tracking-widest opacity-40">Cancel</button>
                         </div>
                     </div>
                 </div>
             )}
 
-            <p className="text-center text-[10px] font-black uppercase tracking-[0.3em] opacity-10 mt-12">Wapixo Rituals v1.0.4 - Premium</p>
+            <p className="text-center text-[10px] font-black uppercase tracking-[0.3em] opacity-10 mt-12">Wapixo v1.0.4</p>
         </div>
     );
 }
