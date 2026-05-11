@@ -1,4 +1,4 @@
-import { motion, AnimatePresence } from 'framer-motion';
+
 import { X, ShoppingBag, Plus, Minus, ArrowRight } from 'lucide-react';
 import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
@@ -8,23 +8,16 @@ const CartDrawer = ({ isOpen, onClose, cart, total, onUpdateQuantity, onRemove, 
     const navigate = useNavigate();
     
     const drawerContent = (
-        <AnimatePresence>
+        <>
             {isOpen && (
-                <div className="fixed inset-0 z-[10001]">
-                    <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
+                <div className="fixed inset-0 z-[10001] flex justify-end">
+                    <div
                         onClick={onClose}
-                        className={`absolute inset-0 ${isLight ? 'bg-black/10' : 'bg-black/30'} backdrop-blur-xl`}
+                        className={`absolute inset-0 ${isLight ? 'bg-black/10' : 'bg-black/30'} backdrop-blur-md`}
                     />
-                    <motion.div
-                        initial={{ x: '100%' }}
-                        animate={{ x: 0 }}
-                        exit={{ x: '100%' }}
-                        transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+                    <div
                         style={{ background: colors.card, borderLeft: `1px solid ${colors.border}` }}
-                        className="absolute top-0 right-0 h-full w-full max-w-sm shadow-2xl flex flex-col"
+                        className="relative h-full w-full max-w-sm shadow-2xl flex flex-col"
                     >
                         <div className="p-8 border-b border-white/5 flex items-center justify-between">
                             <div>
@@ -85,10 +78,10 @@ const CartDrawer = ({ isOpen, onClose, cart, total, onUpdateQuantity, onRemove, 
                                 PROCEED TO CHECKOUT <ArrowRight size={16} />
                             </button>
                         </div>
-                    </motion.div>
+                    </div>
                 </div>
             )}
-        </AnimatePresence>
+        </>
     );
 
     const portalRoot = document.getElementById('app-portal-root');

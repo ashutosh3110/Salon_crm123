@@ -4,7 +4,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { useCustomerAuth } from '../../contexts/CustomerAuthContext';
 import { useGender } from '../../contexts/GenderContext';
 import { useCustomerTheme } from '../../contexts/CustomerThemeContext';
-import { motion, AnimatePresence } from 'framer-motion';
+
 import {
     MapPin, SlidersHorizontal, Heart, Star, ArrowRight, ShieldCheck, Ticket, Crown, Gift, Zap,
     Moon, Bell, Sun, Search, Clock, RefreshCw, Camera, MessageSquare, ExternalLink, Wallet, Scissors, LayoutGrid, Tag, DoorClosed, Armchair, ShoppingBag
@@ -531,9 +531,7 @@ export default function AppHomePage() {
                         justifyContent: 'space-between'
                     }}
                 >
-                    <div
-                        style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'default' }}
-                    >
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'default' }}>
                         <div style={{
                             width: '36px',
                             height: '36px',
@@ -556,7 +554,6 @@ export default function AppHomePage() {
                             </h3>
                         </div>
                     </div>
-
                 </div>
 
                 {/* ── SEARCH BAR ── */}
@@ -645,54 +642,53 @@ export default function AppHomePage() {
                 {/* ── PROMO BANNER (CAROUSEL) ── */}
                 <div style={{ padding: '20px 16px 0', position: 'relative' }}>
                     <div style={{ position: 'relative', height: '170px', borderRadius: '24px', overflow: 'hidden' }}>
-                            {filteredPromos.length > 0 ? (
-                                <div
-                                    key={`${g}-${currentPromoIndex}`}
-                                    style={{
-                                        position: 'absolute', inset: 0,
-                                        background: 'linear-gradient(135deg, #1a120c 0%, #2d2118 50%, #0d0805 100%)',
-                                        display: 'flex', alignItems: 'flex-end',
-                                    }}
+                        {filteredPromos.length > 0 ? (
+                            <div
+                                key={`${g}-${currentPromoIndex}`}
+                                style={{
+                                    position: 'absolute', inset: 0,
+                                    background: 'linear-gradient(135deg, #1a120c 0%, #2d2118 50%, #0d0805 100%)',
+                                    display: 'flex', alignItems: 'flex-end',
+                                }}
+                            >
+                                {filteredPromos[currentPromoIndex]?.img || filteredPromos[currentPromoIndex]?.image ? (
+                                    <img
+                                        src={getImageUrl(filteredPromos[currentPromoIndex].img || filteredPromos[currentPromoIndex].image)}
+                                        alt="Promo"
+                                        loading="lazy"
+                                        style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', opacity: 0.35, borderRadius: '24px' }}
+                                        onError={(e) => { e.target.onerror = null; e.target.style.display = 'none'; }}
+                                    />
+                                ) : null}
+                                <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(105deg, rgba(12,8,5,0.92) 0%, rgba(12,8,5,0.75) 42%, rgba(12,8,5,0.25) 100%)', borderRadius: '24px' }} />
+                                <div 
+                                    style={{ position: 'relative', padding: '20px', zIndex: 2, width: '100%', cursor: 'pointer' }}
+                                    onClick={() => handleBannerClick(filteredPromos[currentPromoIndex])}
                                 >
-                                    {filteredPromos[currentPromoIndex]?.img || filteredPromos[currentPromoIndex]?.image ? (
-                                        <img
-                                            src={getImageUrl(filteredPromos[currentPromoIndex].img || filteredPromos[currentPromoIndex].image)}
-                                            alt="Promo"
-                                            loading="lazy"
-                                            style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', opacity: 0.35, borderRadius: '24px' }}
-                                            onError={(e) => { e.target.onerror = null; e.target.style.display = 'none'; }}
-                                        />
-                                    ) : null}
-                                    <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(105deg, rgba(12,8,5,0.92) 0%, rgba(12,8,5,0.75) 42%, rgba(12,8,5,0.25) 100%)', borderRadius: '24px' }} />
-                                    <div 
-                                        style={{ position: 'relative', padding: '20px', zIndex: 2, width: '100%', cursor: 'pointer' }}
-                                        onClick={() => handleBannerClick(filteredPromos[currentPromoIndex])}
-                                    >
-                                        <p style={{ fontSize: '10px', color: '#C8956C', margin: '0 0 6px', textTransform: 'uppercase', letterSpacing: '0.14em', fontWeight: 800 }}>
-                                            {filteredPromos[currentPromoIndex]?.subtitle}
-                                        </p>
-                                        <h3 style={{ fontSize: '22px', fontWeight: 800, color: '#fff', margin: '0 0 14px', lineHeight: 1.15, letterSpacing: '-0.02em' }}>
-                                            {filteredPromos[currentPromoIndex]?.title?.split('\n').map((l, i) => (<span key={i}>{l}{i === 0 && <br />}</span>))}
-                                        </h3>
-                                        <span 
-                                            style={{
-                                                display: 'inline-block',
-                                                background: colors.accent, border: 'none', borderRadius: '16px',
-                                                padding: '8px 20px', color: '#fff', fontSize: '12px', fontWeight: 800,
-                                                textTransform: 'uppercase'
-                                            }}>
-                                            {filteredPromos[currentPromoIndex]?.btnText}
-                                        </span>
-                                    </div>
+                                    <p style={{ fontSize: '10px', color: '#C8956C', margin: '0 0 6px', textTransform: 'uppercase', letterSpacing: '0.14em', fontWeight: 800 }}>
+                                        {filteredPromos[currentPromoIndex]?.subtitle}
+                                    </p>
+                                    <h3 style={{ fontSize: '22px', fontWeight: 800, color: '#fff', margin: '0 0 14px', lineHeight: 1.15, letterSpacing: '-0.02em' }}>
+                                        {filteredPromos[currentPromoIndex]?.title?.split('\n').map((l, i) => (<span key={i}>{l}{i === 0 && <br />}</span>))}
+                                    </h3>
+                                    <span 
+                                        style={{
+                                            display: 'inline-block',
+                                            background: colors.accent, border: 'none', borderRadius: '16px',
+                                            padding: '8px 20px', color: '#fff', fontSize: '12px', fontWeight: 800,
+                                            textTransform: 'uppercase'
+                                        }}>
+                                        {filteredPromos[currentPromoIndex]?.btnText}
+                                    </span>
                                 </div>
-                            ) : (
-                                <div style={{ height: '100%', background: 'rgba(200,149,108,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                    <p style={{ color: colors.textMuted, fontSize: '12px' }}>No banners available</p>
-                                </div>
-                            )}
+                            </div>
+                        ) : (
+                            <div style={{ height: '100%', background: 'rgba(200,149,108,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                <p style={{ color: colors.textMuted, fontSize: '12px' }}>No banners available</p>
+                            </div>
+                        )}
                     </div>
                 </div>
-
 
                 {/* ── OTHER NEAREST SALONS ── */}
                 <div style={{ padding: '24px 16px 0' }}>
@@ -715,7 +711,7 @@ export default function AppHomePage() {
                             display: 'flex', 
                             gap: '12px', 
                             overflowX: 'auto', 
-                        paddingBottom: '20px', 
+                            paddingBottom: '20px', 
                             marginLeft: '-16px', 
                             paddingLeft: '16px', 
                             marginRight: '-16px', 
@@ -724,15 +720,12 @@ export default function AppHomePage() {
                     >
                         {(() => {
                             const sourceOutlets = (outlets || []); 
-
-                            const otherSalons = sourceOutlets
-                                .map(o => {
-                                    const dist = userLocation && o.location?.coordinates?.length === 2
-                                        ? calculateDistance(userLocation.lat, userLocation.lng, o.location.coordinates[1], o.location.coordinates[0])
-                                        : null;
-                                    return { ...o, calculatedDist: dist };
-                                });
-
+                            const otherSalons = sourceOutlets.map(o => {
+                                const dist = userLocation && o.location?.coordinates?.length === 2
+                                    ? calculateDistance(userLocation.lat, userLocation.lng, o.location.coordinates[1], o.location.coordinates[0])
+                                    : null;
+                                return { ...o, calculatedDist: dist };
+                            });
                             const sortedSalons = [...otherSalons].sort((a, b) => {
                                 if (a.calculatedDist !== null && b.calculatedDist !== null) return a.calculatedDist - b.calculatedDist;
                                 return 0;
@@ -744,12 +737,8 @@ export default function AppHomePage() {
                                         <div className="w-12 h-12 bg-[#C8956C]/10 rounded-full flex items-center justify-center mx-auto mb-3">
                                             <MapPin size={24} color={colors.accent} className="opacity-40" />
                                         </div>
-                                        <p style={{ color: colors.textMuted, fontSize: '11px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em' }}>
-                                            Exploring new horizons
-                                        </p>
-                                        <p style={{ color: colors.textMuted, fontSize: '10px', marginTop: '4px', opacity: 0.6 }}>
-                                            Stay tuned for more outlets nearby
-                                        </p>
+                                        <p style={{ color: colors.textMuted, fontSize: '11px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em' }}>Exploring new horizons</p>
+                                        <p style={{ color: colors.textMuted, fontSize: '10px', marginTop: '4px', opacity: 0.6 }}>Stay tuned for more outlets nearby</p>
                                     </div>
                                 );
                             }
@@ -796,9 +785,7 @@ export default function AppHomePage() {
                                         </div>
                                     </div>
                                     <div style={{ padding: '12px' }}>
-                                        <h4 style={{ fontSize: '13px', fontWeight: 800, color: colors.text, margin: '0 0 2px' }}>
-                                            {outlet.name}
-                                        </h4>
+                                        <h4 style={{ fontSize: '13px', fontWeight: 800, color: colors.text, margin: '0 0 2px' }}>{outlet.name}</h4>
                                         <div style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
                                             <MapPin size={10} color={colors.accent} />
                                             <span style={{ fontSize: '10px', color: colors.textMuted, fontWeight: 700 }}>
@@ -814,42 +801,38 @@ export default function AppHomePage() {
                     </div>
                 </div>
 
-
-
                 {/* ── 5. SERVICES (Filtered list) ── */}
                 <div style={{ padding: '24px 16px 0' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}>
                         <Scissors size={20} color={colors.accent} />
                         <span style={{ fontSize: '16px', fontWeight: 800, color: colors.text }}>Services</span>
                     </div>
-                        <div
-                            className="app-scroll no-scrollbar"
-                            ref={servicesScrollRef}
-                            style={{ display: 'flex', gap: '12px', overflowX: 'auto', paddingBottom: '20px' }}
-                        >
-                            {(() => {
-                                const sourceServices = services || [];
-                                const filtered = sourceServices.filter(s => s.status === 'active');
-                                if (filtered.length === 0) {
-                                    return (
-                                        <div style={{ width: '100%', padding: '20px', textAlign: 'center', color: colors.textMuted, fontSize: '12px' }}>
-                                            No services found
-                                        </div>
-                                    );
-                                }
-                                return filtered.map(service => (
-                                    <div key={service._id || service.id} style={{ flexShrink: 0, width: '200px', scrollSnapAlign: 'start' }}>
-                                        <ServiceCard
-                                            service={service}
-                                            onBook={(id) => navigate(`/app/booking?serviceId=${id}`)}
-                                            onClick={(id) => navigate(`/app/service/${id}`)}
-                                            colors={colors}
-                                            isLight={isLight}
-                                        />
-                                    </div>
-                                ));
-                            })()}
-                        </div>
+                    <div
+                        className="app-scroll no-scrollbar"
+                        ref={servicesScrollRef}
+                        style={{ display: 'flex', gap: '12px', overflowX: 'auto', paddingBottom: '20px' }}
+                    >
+                        {(() => {
+                            const sourceServices = services || [];
+                            const filtered = sourceServices.filter(s => s.status === 'active');
+                            if (filtered.length === 0) {
+                                return (
+                                    <div style={{ width: '100%', padding: '20px', textAlign: 'center', color: colors.textMuted, fontSize: '12px' }}>No services found</div>
+                                );
+                            }
+                            return filtered.map(service => (
+                                <div key={service._id || service.id} style={{ flexShrink: 0, width: '200px', scrollSnapAlign: 'start' }}>
+                                    <ServiceCard
+                                        service={service}
+                                        onBook={(id) => navigate(`/app/booking?serviceId=${id}`)}
+                                        onClick={(id) => navigate(`/app/service/${id}`)}
+                                        colors={colors}
+                                        isLight={isLight}
+                                    />
+                                </div>
+                            ));
+                        })()}
+                    </div>
                 </div>
 
                 {/* ── 5.5 PRODUCTS (Luxe Essentials) ── */}
@@ -868,9 +851,7 @@ export default function AppHomePage() {
                     </div>
                     
                     {products.length === 0 ? (
-                        <div style={{ width: '100%', padding: '20px', textAlign: 'center', color: colors.textMuted, fontSize: '12px' }}>
-                            No products available
-                        </div>
+                        <div style={{ width: '100%', padding: '20px', textAlign: 'center', color: colors.textMuted, fontSize: '12px' }}>No products available</div>
                     ) : (
                         <div
                             className="app-scroll no-scrollbar"
@@ -898,18 +879,15 @@ export default function AppHomePage() {
                                         </div>
                                     </div>
                                     <div style={{ padding: '10px' }}>
-                                        <p style={{ fontSize: '11px', fontWeight: 800, color: colors.text, margin: '0 0 2px' }}>
-                                            {product.name}
-                                        </p>
-                                        <p style={{ fontSize: '12px', fontWeight: 900, color: colors.accent, margin: 0 }}>
-                                            ₹{product.sellingPrice || product.price}
-                                        </p>
+                                        <p style={{ fontSize: '11px', fontWeight: 800, color: colors.text, margin: '0 0 2px' }}>{product.name}</p>
+                                        <p style={{ fontSize: '12px', fontWeight: 900, color: colors.accent, margin: 0 }}>₹{product.sellingPrice || product.price}</p>
                                     </div>
                                 </div>
                             ))}
                         </div>
                     )}
                 </div>
+
                 {/* ── 6. TRUSTED REVIEWS ── */}
                 <div style={{ padding: '32px 16px 24px' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '18px' }}>
@@ -924,9 +902,7 @@ export default function AppHomePage() {
                             const displayReviews = reviews || [];
                             if (displayReviews.length === 0) {
                                 return (
-                                    <div style={{ width: '100%', padding: '20px', textAlign: 'center', color: colors.textMuted, fontSize: '12px' }}>
-                                        No reviews available
-                                    </div>
+                                    <div style={{ width: '100%', padding: '20px', textAlign: 'center', color: colors.textMuted, fontSize: '12px' }}>No reviews available</div>
                                 );
                             }
                             return displayReviews.map((rev) => (
@@ -941,30 +917,20 @@ export default function AppHomePage() {
                                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
                                         <div style={{ display: 'flex', gap: '3px' }}>
                                             {[1, 2, 3, 4, 5].map(s => (
-                                                <Star
-                                                    key={s}
-                                                    size={10}
-                                                    fill={s <= rev.rating ? colors.accent : 'none'}
-                                                    color={s <= rev.rating ? colors.accent : colors.textMuted}
-                                                    strokeWidth={2.5}
-                                                />
+                                                <Star key={s} size={10} fill={s <= rev.rating ? colors.accent : 'none'} color={s <= rev.rating ? colors.accent : colors.textMuted} strokeWidth={2.5} />
                                             ))}
                                         </div>
                                         <div style={{ textAlign: 'right' }}>
                                             <span style={{ display: 'block', fontSize: '8px', fontWeight: 900, color: colors.accent, marginBottom: '2px', letterSpacing: '0.05em' }}>VERIFIED</span>
                                         </div>
                                     </div>
-                                    <p style={{ fontSize: '12px', color: colors.text, margin: '0 0 12px', fontStyle: 'italic', lineHeight: 1.4, lineClamp: 3, display: '-webkit-box', WebkitBoxOrient: 'vertical', WebkitLineClamp: 3, overflow: 'hidden' }}>
-                                        "{rev.comment}"
-                                    </p>
+                                    <p style={{ fontSize: '12px', color: colors.text, margin: '0 0 12px', fontStyle: 'italic', lineHeight: 1.4, lineClamp: 3, display: '-webkit-box', WebkitBoxOrient: 'vertical', WebkitLineClamp: 3, overflow: 'hidden' }}>"{rev.comment}"</p>
                                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                                         <div style={{ width: '20px', height: '20px', borderRadius: '50%', background: colors.accent, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#FFF', fontSize: '9px', fontWeight: 800 }}>
                                             {(rev.customerId?.name || rev.customerName || 'U')[0]}
                                         </div>
                                         <div style={{ flex: 1, minWidth: 0 }}>
-                                            <p style={{ fontSize: '10px', fontWeight: 800, color: colors.text, margin: 0 }}>
-                                                {rev.customerId?.name || rev.customerName}
-                                            </p>
+                                            <p style={{ fontSize: '10px', fontWeight: 800, color: colors.text, margin: 0 }}>{rev.customerId?.name || rev.customerName}</p>
                                         </div>
                                     </div>
                                 </div>
@@ -988,18 +954,11 @@ export default function AppHomePage() {
                         </div>
                     </div>
                     {membershipPlans.length === 0 ? (
-                        <div style={{ width: '100%', padding: '20px', textAlign: 'center', color: colors.textMuted, fontSize: '12px' }}>
-                            No membership plans available
-                        </div>
+                        <div style={{ width: '100%', padding: '20px', textAlign: 'center', color: colors.textMuted, fontSize: '12px' }}>No membership plans available</div>
                     ) : (
                         <div className="app-scroll no-scrollbar" style={{ display: 'flex', gap: '16px', overflowX: 'auto', paddingBottom: '16px', marginLeft: '-16px', paddingLeft: '16px', marginRight: '-16px', paddingRight: '16px' }}>
                             {membershipPlans.filter(p => p.isActive !== false).map((plan) => (
-                                <MembershipPlanCard
-                                    key={plan._id || plan.id}
-                                    plan={plan}
-                                    colors={colors}
-                                    isLight={isLight}
-                                />
+                                <MembershipPlanCard key={plan._id || plan.id} plan={plan} colors={colors} isLight={isLight} />
                             ))}
                         </div>
                     )}
@@ -1019,9 +978,7 @@ export default function AppHomePage() {
                     </div>
 
                     {!loyaltyRule || !loyaltyRule.active ? (
-                        <div style={{ width: '100%', padding: '20px', textAlign: 'center', color: colors.textMuted, fontSize: '12px' }}>
-                            Loyalty rewards currently unavailable
-                        </div>
+                        <div style={{ width: '100%', padding: '20px', textAlign: 'center', color: colors.textMuted, fontSize: '12px' }}>Loyalty rewards currently unavailable</div>
                     ) : (
                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
                             <div style={{ background: colors.card, border: `1px solid ${colors.border}`, padding: '20px', borderRadius: '24px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
@@ -1050,5 +1007,4 @@ export default function AppHomePage() {
             </div>
         </div>
     );
-};
-
+}
