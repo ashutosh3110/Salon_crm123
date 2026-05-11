@@ -89,6 +89,7 @@ app.use('/hr', hr);
 app.use('/finance', finance);
 app.use('/marketing', marketing);
 app.use('/notifications', notifications);
+app.use('/v1/notifications', notifications);
 
 // New Explicit Home Page Routes
 const banners = require('./Routers/bannerRoutes');
