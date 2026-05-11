@@ -33,8 +33,8 @@ export function CustomerAuthProvider({ children }) {
     const requestOtp = async (phone, tenantId) => {
         if (!tenantId) throw new Error('Please select a salon first');
         const res = await api.post('/auth/request-otp', { phone, tenantId });
-        return { 
-            success: true, 
+        return {
+            success: true,
             message: 'OTP sent successfully',
             otp: res.data?.otp // Capture for debug
         };
@@ -96,7 +96,7 @@ export function CustomerAuthProvider({ children }) {
         localStorage.removeItem('active_outlet_id');
         localStorage.removeItem('active_salon_id');
         localStorage.removeItem('wapixo_selected_outlet');
-        
+
         setCustomer(null);
         navigate('/app/login');
     };

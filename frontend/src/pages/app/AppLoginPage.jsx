@@ -83,7 +83,7 @@ export default function AppLoginPage() {
     useEffect(() => {
         const urlOutletId = searchParams.get('outletId');
         const urlTenantId = searchParams.get('tenantId');
-        
+
         if (urlOutletId && urlTenantId) {
             setTenantId(urlTenantId);
             localStorage.setItem('active_outlet_id', urlOutletId);
@@ -408,11 +408,11 @@ export default function AppLoginPage() {
                 if (res.data?.success) {
                     setOtpVerified(true);
                     setError('');
-                    
+
                     // Always show location discovery modal after phone verification 
                     // if no outlet is selected yet
                     setShowLocationModal(true);
-                    
+
                     if (selectedOutlet) {
                         handleVerifyOtpWithTenant(tenantId, selectedOutlet);
                     } else {
@@ -580,10 +580,10 @@ export default function AppLoginPage() {
                                                             fetchOutlets(userCoords?.lat, userCoords?.lng, km);
                                                         }}
                                                         className={`h-10 rounded-xl text-xs font-bold transition-all relative ${searchRadiusKm === km
-                                                                ? 'bg-[#C8956C] text-white shadow-[0_4px_12px_rgba(200,149,108,0.3)]'
-                                                                : isLight
-                                                                    ? 'bg-neutral-50 text-neutral-400 hover:bg-neutral-100 border border-neutral-200'
-                                                                    : 'bg-white/[0.02] text-white/30 hover:bg-white/5 border border-white/[0.03]'
+                                                            ? 'bg-[#C8956C] text-white shadow-[0_4px_12px_rgba(200,149,108,0.3)]'
+                                                            : isLight
+                                                                ? 'bg-neutral-50 text-neutral-400 hover:bg-neutral-100 border border-neutral-200'
+                                                                : 'bg-white/[0.02] text-white/30 hover:bg-white/5 border border-white/[0.03]'
                                                             }`}
                                                     >
                                                         {km} km
@@ -672,9 +672,9 @@ export default function AppLoginPage() {
                                                                         src={(o.images?.[0] || o.image || "").replace('wapixo.com/uploads', 'api.wapixo.com/uploads') || "https://images.unsplash.com/photo-1560066984-138dadb4c035?q=80&w=800"}
                                                                         alt={o.name}
                                                                         className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
-                                                                        onError={(e) => { 
-                                                                            e.target.onerror = null; 
-                                                                            e.target.src = "data:image/svg+xml;charset=UTF-8,%3Csvg%20width%3D%22400%22%20height%3D%22400%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Crect%20width%3D%22100%25%22%20height%3D%22100%25%22%20fill%3D%22%23222222%22%2F%3E%3Ctext%20x%3D%2250%25%22%20y%3D%2250%25%22%20dominant-baseline%3D%22middle%22%20text-anchor%3D%22middle%22%20fill%3D%22%23666666%22%20font-family%3D%22sans-serif%22%20font-size%3D%2220%22%20font-weight%3D%22bold%22%3EWapixo%3C%2Ftext%3E%3C%2Fsvg%3E"; 
+                                                                        onError={(e) => {
+                                                                            e.target.onerror = null;
+                                                                            e.target.src = "data:image/svg+xml;charset=UTF-8,%3Csvg%20width%3D%22400%22%20height%3D%22400%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Crect%20width%3D%22100%25%22%20height%3D%22100%25%22%20fill%3D%22%23222222%22%2F%3E%3Ctext%20x%3D%2250%25%22%20y%3D%2250%25%22%20dominant-baseline%3D%22middle%22%20text-anchor%3D%22middle%22%20fill%3D%22%23666666%22%20font-family%3D%22sans-serif%22%20font-size%3D%2220%22%20font-weight%3D%22bold%22%3EWapixo%3C%2Ftext%3E%3C%2Fsvg%3E";
                                                                         }}
                                                                     />
                                                                 </div>

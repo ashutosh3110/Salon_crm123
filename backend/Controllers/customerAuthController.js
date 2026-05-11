@@ -87,8 +87,8 @@ exports.requestOtp = async (req, res) => {
 
         // Send SMS via SMS India Hub
         const brand = "VAHANCAB";
-        const message =  `Welcome to the ${brand} powered by SMSINDIAHUB. Your OTP for registration is ${otp}`;
-        
+        const message = `Welcome to the ${brand} powered by SMSINDIAHUB. Your OTP for registration is ${otp}`;
+
         try {
             // Skip SMS for demo number
             if (!isDemoNumber) {
@@ -102,7 +102,7 @@ exports.requestOtp = async (req, res) => {
             success: true,
             message: 'OTP sent successfully',
             // Return OTP in dev mode for easier testing
-            otp: process.env.NODE_ENV === 'development' ? otp : undefined 
+            otp: process.env.NODE_ENV === 'development' ? otp : undefined
         });
 
     } catch (err) {
@@ -124,7 +124,7 @@ exports.customerLoginOtp = async (req, res) => {
 
         // 1. Verify OTP from Otp collection
         const otpRecord = await Otp.findOne({ phone, otp });
-        
+
         // Allow '1234' for demo number or development
         const isDemoOtp = (phone === '6268204871' && otp === '1234') || (process.env.NODE_ENV === 'development' && otp === '1234');
         const isOtpValid = otpRecord && otpRecord.expiresAt > new Date();
@@ -154,7 +154,7 @@ exports.customerLoginOtp = async (req, res) => {
         if (!customer) {
             isNewUser = true;
             console.log(`[Referral] New customer ${phone} registering in salon ${tenantId}. Code applied: ${appliedReferralCode}`);
-            
+
             customer = await Customer.create({
                 name: 'Guest',
                 phone,
@@ -167,7 +167,7 @@ exports.customerLoginOtp = async (req, res) => {
             if (appliedReferralCode) {
                 const referrer = await Customer.findOne({ referralCode: appliedReferralCode, salonId: tenantId });
                 console.log(`[Referral] Referrer lookup for code ${appliedReferralCode}: ${referrer ? 'Found (' + referrer.name + ')' : 'Not Found'}`);
-                
+
                 if (referrer && referrer._id.toString() !== customer._id.toString()) {
                     const salon = await Salon.findById(tenantId).select('loyaltySetting');
                     const rewards = salon?.loyaltySetting || {};
@@ -177,7 +177,7 @@ exports.customerLoginOtp = async (req, res) => {
                     // Award points to Referrer
                     referrer.loyaltyPoints = (referrer.loyaltyPoints || 0) + pointsReferrer;
                     await referrer.save();
-                    
+
                     await LoyaltyTransaction.create({
                         customerId: referrer._id,
                         salonId: tenantId,
@@ -190,7 +190,7 @@ exports.customerLoginOtp = async (req, res) => {
                     // Award points to New Customer
                     customer.loyaltyPoints = (customer.loyaltyPoints || 0) + pointsReferred;
                     // We will save customer at the end of the controller
-                    
+
                     await LoyaltyTransaction.create({
                         customerId: customer._id,
                         salonId: tenantId,
@@ -208,14 +208,14 @@ exports.customerLoginOtp = async (req, res) => {
 
         // Check if customer is inactive
         if (customer.status === 'inactive' || customer.status === 'suspended') {
-            return res.status(403).json({ 
-                success: false, 
-                message: 'Your account has been deactivated. Please contact the salon admin.' 
+            return res.status(403).json({
+                success: false,
+                message: 'Your account has been deactivated. Please contact the salon admin.'
             });
         }
 
         customer.lastLogin = new Date();
-        
+
         // Sync salonId (tenantId) to the current business context
         if (tenantId && tenantId !== 'system' && mongoose.Types.ObjectId.isValid(tenantId)) {
             customer.salonId = tenantId;
@@ -295,7 +295,7 @@ exports.registerCustomer = async (req, res) => {
                 // Award points to Referrer
                 referrer.loyaltyPoints = (referrer.loyaltyPoints || 0) + pointsReferrer;
                 await referrer.save();
-                
+
                 await LoyaltyTransaction.create({
                     customerId: referrer._id,
                     salonId: tenantId,
@@ -308,7 +308,7 @@ exports.registerCustomer = async (req, res) => {
                 // Award points to New Customer
                 customer.loyaltyPoints = (customer.loyaltyPoints || 0) + pointsReferred;
                 await customer.save(); // Save the points to customer
-                
+
                 await LoyaltyTransaction.create({
                     customerId: customer._id,
                     salonId: tenantId,
@@ -337,10 +337,10 @@ exports.registerCustomer = async (req, res) => {
 exports.updateProfile = async (req, res) => {
     try {
         const { name, email, gender, avatar, birthday, dob, anniversary } = req.body;
-        
+
         const userId = req.user.id || req.user._id;
         let customer = await Customer.findById(userId);
-        
+
         if (!customer) {
             // Fallback for Admins/Staff testing the profile update
             customer = req.user;
@@ -351,7 +351,7 @@ exports.updateProfile = async (req, res) => {
         if (email !== undefined) customer.email = email;
         if (gender !== undefined) customer.gender = gender;
         if (avatar !== undefined) customer.avatar = avatar;
-        
+
         // Handle both 'birthday' (legacy) and 'dob' (new)
         if (dob !== undefined) customer.dob = dob;
         else if (birthday !== undefined) customer.dob = birthday;
@@ -382,7 +382,7 @@ exports.getProfile = async (req, res) => {
     try {
         const userId = req.user.id || req.user._id;
         let customer = await Customer.findById(userId);
-        
+
         if (!customer) {
             // Fallback: If authenticated as Admin/Staff, use that profile
             if (req.user) {
@@ -423,7 +423,7 @@ exports.getProfile = async (req, res) => {
 exports.deleteAccount = async (req, res) => {
     try {
         const customer = await Customer.findByIdAndDelete(req.user._id);
-        
+
         if (!customer) {
             return res.status(404).json({ success: false, message: 'Customer not found' });
         }

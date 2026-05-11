@@ -57,9 +57,17 @@ api.interceptors.request.use(
             if (currentPath !== lastPath) {
                 callCount = 0;
                 lastPath = currentPath;
+                console.log(`%c[PAGE NAV] %cAPI counter reset for ${currentPath}`, 
+                    'color: #3b82f6; font-weight: bold; padding: 2px 4px; border-radius: 4px; background: rgba(59,130,246,0.1)', 
+                    'color: #888;'
+                );
             }
             callCount++;
-
+            console.log(`%c[API #${callCount}] %c${config.method?.toUpperCase()} %c${config.url}`, 
+                'color: #C8956C; font-weight: bold; padding: 2px 4px; border-radius: 4px; background: rgba(200,149,108,0.1)', 
+                'color: #888; font-weight: bold;', 
+                'color: #555;'
+            );
         }
 
         // Attach the global abort signal
