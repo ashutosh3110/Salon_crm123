@@ -46,20 +46,19 @@ const ServiceCard = memo(({ service, onBook, onClick, colors, isLight }) => {
     };
 
     return (
-        <motion.div
-            whileTap={{ scale: 0.97 }}
+        <div
             onClick={() => onClick && onClick(service._id || service.id)}
             style={{
                 background: colors.card,
-                borderRadius: '28px',
+                borderRadius: '24px',
                 border: `1px solid ${colors.border}`,
-                boxShadow: isLight ? '0 10px 30px rgba(0,0,0,0.03)' : '0 10px 40px rgba(0,0,0,0.25)',
                 overflow: 'hidden',
                 height: '100%',
                 display: 'flex',
-                flexDirection: 'column'
+                flexDirection: 'column',
+                transition: 'transform 0.2s ease'
             }}
-            className="group"
+            className="active:scale-95"
         >
             <div style={{ position: 'relative', height: '140px', overflow: 'hidden' }}>
                 <img
@@ -67,13 +66,12 @@ const ServiceCard = memo(({ service, onBook, onClick, colors, isLight }) => {
                     alt={service.name}
                     loading="lazy"
                     style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                    className="group-hover:scale-110 transition-transform duration-700"
                     onError={handleError}
                 />
                 <div style={{
-                    position: 'absolute', top: '12px', right: '12px',
-                    background: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(8px)',
-                    padding: '4px 10px', borderRadius: '12px',
+                    position: 'absolute', top: '10px', right: '10px',
+                    background: 'rgba(0,0,0,0.6)',
+                    padding: '4px 8px', borderRadius: '8px',
                     display: 'flex', alignItems: 'center', gap: '4px',
                     color: '#FFF', fontSize: '10px', fontWeight: 800
                 }}>
@@ -82,49 +80,36 @@ const ServiceCard = memo(({ service, onBook, onClick, colors, isLight }) => {
                 </div>
             </div>
 
-            <div style={{ padding: '16px', flex: 1, display: 'flex', flexDirection: 'column' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
-                    <span style={{ fontSize: '9px', fontWeight: 900, color: '#C8956C', textTransform: 'uppercase', letterSpacing: '0.1em' }}>
+            <div style={{ padding: '12px', flex: 1, display: 'flex', flexDirection: 'column' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+                    <span style={{ fontSize: '9px', fontWeight: 800, color: '#C8956C', textTransform: 'uppercase' }}>
                         {service.category || 'Specialist'}
                     </span>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '2px' }}>
-                        <Star size={10} fill="#C8956C" color="#C8956C" />
-                        <span style={{ fontSize: '10px', fontWeight: 800, color: colors.text }}>4.9</span>
-                    </div>
                 </div>
 
-                <h3 style={{ fontSize: '14px', fontWeight: 800, color: colors.text, margin: '0 0 4px', lineClamp: 1, display: '-webkit-box', WebkitBoxOrient: 'vertical', WebkitLineClamp: 1, overflow: 'hidden' }}>
+                <h3 style={{ fontSize: '14px', fontWeight: 700, color: colors.text, margin: '0 0 4px' }}>
                     {service.name}
                 </h3>
-                <p style={{ fontSize: '11px', color: colors.textMuted, lineHeight: '1.4', margin: '0 0 16px', lineClamp: 2, display: '-webkit-box', WebkitBoxOrient: 'vertical', WebkitLineClamp: 2, overflow: 'hidden' }}>
-                    {service.description || "Indulge in our premium salon service designed for your wellness."}
-                </p>
 
                 <div style={{ marginTop: 'auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                    <div>
-                        <p style={{ fontSize: '8px', color: colors.textMuted, fontWeight: 700, textTransform: 'uppercase', margin: 0 }}>Starts from</p>
-                        <p style={{ fontSize: '16px', fontWeight: 900, color: colors.text, margin: 0 }}>₹{service.price || 499}</p>
-                    </div>
-                    <motion.button
-                        whileTap={{ scale: 0.92 }}
-                        onClick={() => onBook(service._id || service.id)}
+                    <p style={{ fontSize: '15px', fontWeight: 800, color: colors.text, margin: 0 }}>₹{service.price || 499}</p>
+                    <button
+                        onClick={(e) => { e.stopPropagation(); onBook(service._id || service.id); }}
                         style={{
-                            background: 'linear-gradient(135deg, #C8956C 0%, #A06844 100%)',
+                            background: '#C8956C',
                             color: '#FFF',
                             border: 'none',
-                            padding: '8px 20px',
-                            borderRadius: '12px 4px 12px 4px',
+                            padding: '6px 16px',
+                            borderRadius: '8px',
                             fontSize: '11px',
-                            fontWeight: 900,
-                            textTransform: 'uppercase',
-                            boxShadow: '0 4px 12px rgba(200,149,108,0.2)'
+                            fontWeight: 800
                         }}
                     >
                         Book
-                    </motion.button>
+                    </button>
                 </div>
             </div>
-        </motion.div>
+        </div>
     );
 });
 
@@ -166,8 +151,7 @@ const MembershipPlanCard = memo(({ plan, colors, isLight }) => {
     const bulletColor = isGold ? '#000' : colors.accent;
 
     return (
-        <motion.div
-            whileTap={{ scale: 0.98 }}
+        <div
             style={{
                 flexShrink: 0,
                 width: '260px',
@@ -177,7 +161,7 @@ const MembershipPlanCard = memo(({ plan, colors, isLight }) => {
                 position: 'relative',
                 overflow: 'hidden',
                 color: textColor,
-                boxShadow: '0 12px 30px rgba(0,0,0,0.15)',
+                boxShadow: '0 4px 15px rgba(0,0,0,0.1)',
                 display: 'flex',
                 flexDirection: 'column',
                 gap: '12px'
@@ -208,8 +192,7 @@ const MembershipPlanCard = memo(({ plan, colors, isLight }) => {
                 ))}
             </div>
 
-            <motion.button
-                whileTap={{ scale: 0.95 }}
+            <button
                 style={{
                     marginTop: '8px',
                     width: '100%',
@@ -225,8 +208,8 @@ const MembershipPlanCard = memo(({ plan, colors, isLight }) => {
                 }}
             >
                 Join Now
-            </motion.button>
-        </motion.div>
+            </button>
+        </div>
     );
 });
 
@@ -295,8 +278,8 @@ const HomeSkeleton = ({ colors, isLight }) => (
     </div>
 );
 
-const stagger = { hidden: {}, show: { transition: { staggerChildren: 0.07 } } };
-const fadeUp = { hidden: { opacity: 0, y: 16 }, show: { opacity: 1, y: 0, transition: { duration: 0.38, ease: [0.16, 1, 0.3, 1] } } };
+const stagger = {};
+const fadeUp = {};
 
 export default function AppHomePage() {
     const { customer } = useCustomerAuth();
@@ -310,6 +293,7 @@ export default function AppHomePage() {
     const {
         activeOutlet,
         activeOutletId,
+        setActiveOutletId,
         activeSalonId,
         outlets,
         services: contextServices,
@@ -319,24 +303,16 @@ export default function AppHomePage() {
         nearbyOutlets: contextNearby,
         loyaltyPlans: contextPlans,
         categories: contextCategories,
-        loyaltySettings: contextLoyalty,
+        loyaltySettings: loyaltyRule,
         isInitializing: isContextInitializing
     } = useBusiness();
     const servicesScrollRef = useRef(null);
     const outletsScrollRef = useRef(null);
 
     const [selectedServiceCategory, setSelectedServiceCategory] = useState('');
-    
-    const [pageBanners, setPageBanners] = useState([]);
-    const [nearestOutlets, setNearestOutlets] = useState([]);
-    const [outletServices, setOutletServices] = useState([]);
-    const [outletProducts, setOutletProducts] = useState([]);
-    const [trustedReviews, setTrustedReviews] = useState([]);
-    const [outletPlans, setOutletPlans] = useState([]);
-    const [loyaltyRule, setLoyaltyRule] = useState(null);
-    const [isLoadingData, setIsLoadingData] = useState(true);
     const [userLocation, setUserLocation] = useState(null);
     const [searchQuery, setSearchQuery] = useState('');
+    const [isFocused, setIsFocused] = useState(false);
 
     const handleSearchKeyDown = (e) => {
         if (e.key === 'Enter' && searchQuery.trim()) {
@@ -344,20 +320,24 @@ export default function AppHomePage() {
         }
     };
 
-    const services = useMemo(() => (outletServices || []), [outletServices]);
-    const products = useMemo(() => (outletProducts || []), [outletProducts]);
-    const reviews = useMemo(() => (trustedReviews || []).slice(0, 10), [trustedReviews]);
-    const banners = pageBanners || [];
-    const membershipPlans = outletPlans || [];
+    const services = useMemo(() => (contextServices || []), [contextServices]);
+    const products = useMemo(() => (contextProducts || []), [contextProducts]);
+    const reviews = useMemo(() => (contextReviews || []).slice(0, 10), [contextReviews]);
+    const banners = contextBanners || [];
+    const membershipPlans = contextPlans || [];
     const categories = useMemo(() => {
-        if (!outletServices || outletServices.length === 0) return [];
-        const uniqueCatNames = [...new Set(outletServices.map(s => s.category).filter(Boolean))];
+        if (!contextServices || contextServices.length === 0) return [];
+        const uniqueCatNames = [...new Set(contextServices.map(s => s.category).filter(Boolean))];
         return uniqueCatNames.map(name => ({
             name,
             status: 'active',
             gender: 'both' // Fallback
         }));
-    }, [outletServices]);
+    }, [contextServices]);
+
+    const { } = useBusiness();
+
+    // No more lazy loading here, BusinessContext handles it all in one call!
 
     // Pre-select first category
     useEffect(() => {
@@ -367,7 +347,7 @@ export default function AppHomePage() {
         }
     }, [categories, selectedServiceCategory]);
 
-    // Pre-select first category when categories load
+    // Pre-select first category when categories load/gender changes
     useEffect(() => {
         if (!selectedServiceCategory && categories?.length > 0) {
             const firstCat = categories.find(c => c.status === 'active' && (c.gender === 'both' || !gender || c.gender === gender));
@@ -375,63 +355,12 @@ export default function AppHomePage() {
         }
     }, [categories, gender, selectedServiceCategory]);
 
-    // CONSOLIDATED INITIALIZATION
-    const initializePage = useCallback(async () => {
-        const sid = activeSalonId || localStorage.getItem('active_salon_id');
-        if (!sid) {
-            setIsLoadingData(false);
-            return;
-        }
+    // Page loading state is now managed by BusinessContext initialization
+    const isLoadingData = isContextInitializing;
 
-        setIsLoadingData(true);
-        try {
-            // Get location first if possible
-            let lat = null, lng = null;
-            if ("geolocation" in navigator) {
-                try {
-                    const pos = await new Promise((resolve, reject) => {
-                        navigator.geolocation.getCurrentPosition(resolve, reject, { timeout: 3000 });
-                    });
-                    lat = pos.coords.latitude;
-                    lng = pos.coords.longitude;
-                    setUserLocation({ lat, lng });
-                } catch (e) {
-                    console.warn("Location access denied or timeout");
-                }
-            }
-
-            const query = `?tenantId=${sid}&salonId=${sid}`;
-            const nearestUrl = lat && lng ? `/outlets/nearest?lat=${lat}&lng=${lng}` : '/outlets/nearest';
-
-            const [bRes, lRes, sRes, pRes, rRes, plRes, nRes] = await Promise.all([
-                api.get(`/banners${query}`),
-                api.get(`/loyalty-rules${query}`),
-                api.get(`/services?salonId=${sid}`),
-                api.get(`/products?salonId=${sid}`),
-                api.get(`/reviews/trusted/${activeOutletId || sid}`),
-                api.get(`/membership-plans/${activeOutletId || sid}`),
-                api.get(nearestUrl)
-            ]);
-
-            setPageBanners(bRes.data?.data || []);
-            setLoyaltyRule(lRes.data?.data || lRes.data || null);
-            setOutletServices(sRes.data?.data || sRes.data?.results || []);
-            setOutletProducts(pRes.data?.data || pRes.data?.results || []);
-            setTrustedReviews(rRes.data?.data || []);
-            setOutletPlans(plRes.data?.data || []);
-            setNearestOutlets(nRes.data?.data || []);
-
-        } catch (error) {
-            console.error('Home page initialization error:', error);
-        } finally {
-            // Add a small delay for smoother transition
-            setTimeout(() => setIsLoadingData(false), 300);
-        }
-    }, [activeSalonId, activeOutletId]);
-
-    useEffect(() => {
-        initializePage();
-    }, [initializePage]);
+    const onRefresh = useCallback(async () => {
+        window.location.reload(); 
+    }, []);
 
     const calculateDistance = (lat1, lon1, lat2, lon2) => {
         if (!lat1 || !lon1 || !lat2 || !lon2) return null;
@@ -444,11 +373,6 @@ export default function AppHomePage() {
         return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
     };
 
-    const onRefresh = useCallback(async () => {
-        setRefreshing(true);
-        await initializePage();
-        setRefreshing(false);
-    }, [initializePage]);
 
     // Auto-scroll logic for services
     useEffect(() => {
@@ -555,7 +479,6 @@ export default function AppHomePage() {
 
     const [currentPromoIndex, setCurrentPromoIndex] = useState(0);
     const [placeholderIndex, setPlaceholderIndex] = useState(0);
-    const [isFocused, setIsFocused] = useState(false);
 
     useEffect(() => {
         const timer = setInterval(() => {
@@ -593,19 +516,14 @@ export default function AppHomePage() {
                     opacity: 0.8;
                 }
             `}</style>
-            <motion.div
-                variants={stagger}
-                initial="hidden"
-                animate="show"
+            <div
                 style={{
                     background: colors.bg,
                     minHeight: '100svh',
-                    color: colors.text,
-                    transition: 'all 1.2s cubic-bezier(0.16, 1, 0.3, 1)'
+                    color: colors.text
                 }}
             >
-                <motion.div
-                    variants={fadeUp}
+                <div
                     style={{
                         padding: '16px 16px 10px',
                         display: 'flex',
@@ -613,7 +531,7 @@ export default function AppHomePage() {
                         justifyContent: 'space-between'
                     }}
                 >
-                    <motion.div
+                    <div
                         style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'default' }}
                     >
                         <div style={{
@@ -624,7 +542,6 @@ export default function AppHomePage() {
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
-                            boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
                             border: `1px solid ${colors.border}`
                         }}>
                             <MapPin size={18} color="#C8956C" />
@@ -638,12 +555,12 @@ export default function AppHomePage() {
                                 <span style={{ fontSize: '12px' }}>📍</span>
                             </h3>
                         </div>
-                    </motion.div>
+                    </div>
 
-                </motion.div>
+                </div>
 
                 {/* ── SEARCH BAR ── */}
-                <motion.div variants={fadeUp} style={{ padding: '10px 16px 16px', display: 'flex', gap: '10px', alignItems: 'center' }}>
+                <div style={{ padding: '10px 16px 16px', display: 'flex', gap: '10px', alignItems: 'center' }}>
                     <div
                         style={{
                             flex: 1,
@@ -660,16 +577,14 @@ export default function AppHomePage() {
                             height: '42px',
                             gap: '10px',
                             border: isFocused ? `1.5px solid ${colors.accent}` : `1.5px solid ${isLight ? '#E8ECEF' : 'transparent'}`,
-                            transition: 'all 0.3s cubic-bezier(0.16, 1, 0.3, 1)'
                         }}
                     >
-                        <motion.button
-                            whileTap={{ scale: 0.9 }}
+                        <button
                             onClick={() => searchQuery.trim() && navigate(`/app/services?search=${encodeURIComponent(searchQuery.trim())}`)}
                             style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', display: 'flex', alignItems: 'center' }}
                         >
                             <Search size={18} color={isFocused ? colors.accent : (isLight ? '#444' : 'rgba(255,255,255,0.7)')} />
-                        </motion.button>
+                        </button>
                         <input
                             type="text"
                             className="search-input"
@@ -691,14 +606,13 @@ export default function AppHomePage() {
                             }}
                         />
                     </div>
-                </motion.div>
+                </div>
 
                 {/* ── GENDER TABS ── */}
-                <motion.div variants={fadeUp} style={{ padding: '0 16px 12px', display: 'flex', gap: '0', borderBottom: `1px solid ${colors.border}` }}>
+                <div style={{ padding: '0 16px 12px', display: 'flex', gap: '0', borderBottom: `1px solid ${colors.border}` }}>
                     {['men', 'women'].map((tab) => (
-                        <motion.button
+                        <button
                             key={tab}
-                            whileTap={{ scale: 0.95 }}
                             onClick={() => setGender(tab)}
                             style={{
                                 flex: 1, padding: '10px 0', background: 'none', border: 'none', cursor: 'pointer',
@@ -717,30 +631,23 @@ export default function AppHomePage() {
                             />
                             {tab === 'men' ? 'Men' : 'Women'}
                             {g === tab && (
-                                <motion.div
-                                    layoutId="genderUnderline"
-                                    transition={{ type: "spring", stiffness: 380, damping: 30 }}
+                                <div
                                     style={{
                                         position: 'absolute', bottom: '-1px', left: '15%', right: '15%', height: '3px', background: '#C8956C', borderRadius: '4px',
                                         zIndex: 1
                                     }}
                                 />
                             )}
-                        </motion.button>
+                        </button>
                     ))}
-                </motion.div>
+                </div>
 
                 {/* ── PROMO BANNER (CAROUSEL) ── */}
-                <motion.div variants={fadeUp} style={{ padding: '20px 16px 0', position: 'relative' }}>
+                <div style={{ padding: '20px 16px 0', position: 'relative' }}>
                     <div style={{ position: 'relative', height: '170px', borderRadius: '24px', overflow: 'hidden' }}>
-                        <AnimatePresence mode="wait">
                             {filteredPromos.length > 0 ? (
-                                <motion.div
+                                <div
                                     key={`${g}-${currentPromoIndex}`}
-                                    initial={{ opacity: 0, x: 20 }}
-                                    animate={{ opacity: 1, x: 0 }}
-                                    exit={{ opacity: 0, x: -20 }}
-                                    transition={{ duration: 0.5, ease: "easeOut" }}
                                     style={{
                                         position: 'absolute', inset: 0,
                                         background: 'linear-gradient(135deg, #1a120c 0%, #2d2118 50%, #0d0805 100%)',
@@ -767,32 +674,28 @@ export default function AppHomePage() {
                                         <h3 style={{ fontSize: '22px', fontWeight: 800, color: '#fff', margin: '0 0 14px', lineHeight: 1.15, letterSpacing: '-0.02em' }}>
                                             {filteredPromos[currentPromoIndex]?.title?.split('\n').map((l, i) => (<span key={i}>{l}{i === 0 && <br />}</span>))}
                                         </h3>
-                                        <motion.span 
-                                            whileTap={{ scale: 0.95 }}
+                                        <span 
                                             style={{
                                                 display: 'inline-block',
-                                                background: colors.accent, border: 'none', borderRadius: '22px 5px 22px 5px',
-                                                padding: '10px 26px', color: '#fff', fontSize: '12px', fontWeight: 800,
-                                                boxShadow: '0 8px 24px rgba(200,149,108,0.35)',
-                                                textTransform: 'uppercase', letterSpacing: '0.06em',
+                                                background: colors.accent, border: 'none', borderRadius: '16px',
+                                                padding: '8px 20px', color: '#fff', fontSize: '12px', fontWeight: 800,
+                                                textTransform: 'uppercase'
                                             }}>
                                             {filteredPromos[currentPromoIndex]?.btnText}
-                                        </motion.span>
+                                        </span>
                                     </div>
-                                </motion.div>
+                                </div>
                             ) : (
                                 <div style={{ height: '100%', background: 'rgba(200,149,108,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                                     <p style={{ color: colors.textMuted, fontSize: '12px' }}>No banners available</p>
                                 </div>
                             )}
-                        </AnimatePresence>
-
                     </div>
-                </motion.div>
+                </div>
 
 
                 {/* ── OTHER NEAREST SALONS ── */}
-                <motion.div variants={fadeUp} style={{ padding: '24px 16px 0' }}>
+                <div style={{ padding: '24px 16px 0' }}>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                             <Crown size={20} color={colors.accent} />
@@ -852,20 +755,18 @@ export default function AppHomePage() {
                             }
 
                             return sortedSalons.map(outlet => (
-                                <motion.div
+                                <div
                                     key={outlet._id}
-                                    whileTap={{ scale: 0.98 }}
                                     onClick={() => {
                                         setActiveOutletId(outlet._id);
                                     }}
                                     style={{
                                         flexShrink: 0,
-                                        width: '160px', // Adjusted for "two on screen" feel with partial third
+                                        width: '160px',
                                         background: colors.card,
                                         borderRadius: '20px',
                                         overflow: 'hidden',
                                         border: `1px solid ${colors.border}`,
-                                        boxShadow: isLight ? '0 8px 24px rgba(0,0,0,0.04)' : '0 8px 30px rgba(0,0,0,0.2)',
                                         position: 'relative',
                                         scrollSnapAlign: 'start'
                                     }}
@@ -882,8 +783,7 @@ export default function AppHomePage() {
                                             position: 'absolute',
                                             top: '8px',
                                             right: '8px',
-                                            background: 'rgba(0,0,0,0.6)',
-                                            backdropFilter: 'blur(8px)',
+                                            background: 'rgba(0,0,0,0.7)',
                                             padding: '3px 6px',
                                             borderRadius: '6px',
                                             display: 'flex',
@@ -896,7 +796,7 @@ export default function AppHomePage() {
                                         </div>
                                     </div>
                                     <div style={{ padding: '12px' }}>
-                                        <h4 style={{ fontSize: '13px', fontWeight: 800, color: colors.text, margin: '0 0 2px', lineClamp: 1, display: '-webkit-box', WebkitBoxOrient: 'vertical', WebkitLineClamp: 1, overflow: 'hidden' }}>
+                                        <h4 style={{ fontSize: '13px', fontWeight: 800, color: colors.text, margin: '0 0 2px' }}>
                                             {outlet.name}
                                         </h4>
                                         <div style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
@@ -908,33 +808,27 @@ export default function AppHomePage() {
                                             </span>
                                         </div>
                                     </div>
-                                </motion.div>
+                                </div>
                             ));
                         })()}
                     </div>
-                </motion.div>
+                </div>
 
 
 
                 {/* ── 5. SERVICES (Filtered list) ── */}
-                <motion.div variants={fadeUp} style={{ padding: '24px 16px 0' }}>
+                <div style={{ padding: '24px 16px 0' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}>
                         <Scissors size={20} color={colors.accent} />
                         <span style={{ fontSize: '16px', fontWeight: 800, color: colors.text }}>Services</span>
                     </div>
-                    <AnimatePresence mode="wait">
-                        <motion.div
-                            key={selectedServiceCategory}
-                            initial={{ opacity: 0, x: 20 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            exit={{ opacity: 0, x: -20 }}
-                            transition={{ duration: 0.3 }}
+                        <div
                             className="app-scroll no-scrollbar"
                             ref={servicesScrollRef}
                             style={{ display: 'flex', gap: '12px', overflowX: 'auto', paddingBottom: '20px' }}
                         >
                             {(() => {
-                                const sourceServices = outletServices.length > 0 ? outletServices : (services || []);
+                                const sourceServices = services || [];
                                 const filtered = sourceServices.filter(s => s.status === 'active');
                                 if (filtered.length === 0) {
                                     return (
@@ -955,12 +849,11 @@ export default function AppHomePage() {
                                     </div>
                                 ));
                             })()}
-                        </motion.div>
-                    </AnimatePresence>
-                </motion.div>
+                        </div>
+                </div>
 
                 {/* ── 5.5 PRODUCTS (Luxe Essentials) ── */}
-                <motion.div variants={fadeUp} style={{ padding: '24px 16px 0' }}>
+                <div style={{ padding: '24px 16px 0' }}>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                             <ShoppingBag size={20} color={colors.accent} />
@@ -984,9 +877,8 @@ export default function AppHomePage() {
                             style={{ display: 'flex', gap: '10px', overflowX: 'auto', paddingBottom: '20px', scrollSnapType: 'x mandatory' }}
                         >
                             {products.filter(p => p.isShopProduct).slice(0, 15).map(product => (
-                                <motion.div
+                                <div
                                     key={product._id || product.id}
-                                    whileTap={{ scale: 0.98 }}
                                     onClick={() => navigate(`/app/product/${product._id || product.id}`)}
                                     style={{
                                         flexShrink: 0, width: '125px', background: colors.card,
@@ -1001,25 +893,25 @@ export default function AppHomePage() {
                                             style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                                             onError={(e) => { e.target.onerror = null; e.target.src = fallbackImage; }}
                                         />
-                                        <div style={{ position: 'absolute', top: '6px', right: '6px', background: 'rgba(0,0,0,0.4)', padding: '2px 5px', borderRadius: '4px', color: '#FFF', fontSize: '7px', fontWeight: 900 }}>
+                                        <div style={{ position: 'absolute', top: '6px', right: '6px', background: 'rgba(0,0,0,0.6)', padding: '2px 5px', borderRadius: '4px', color: '#FFF', fontSize: '7px', fontWeight: 900 }}>
                                             {product.brand}
                                         </div>
                                     </div>
                                     <div style={{ padding: '10px' }}>
-                                        <p style={{ fontSize: '11px', fontWeight: 800, color: colors.text, margin: '0 0 2px', lineClamp: 1, display: '-webkit-box', WebkitBoxOrient: 'vertical', WebkitLineClamp: 1, overflow: 'hidden' }}>
+                                        <p style={{ fontSize: '11px', fontWeight: 800, color: colors.text, margin: '0 0 2px' }}>
                                             {product.name}
                                         </p>
                                         <p style={{ fontSize: '12px', fontWeight: 900, color: colors.accent, margin: 0 }}>
                                             ₹{product.sellingPrice || product.price}
                                         </p>
                                     </div>
-                                </motion.div>
+                                </div>
                             ))}
                         </div>
                     )}
-                </motion.div>
+                </div>
                 {/* ── 6. TRUSTED REVIEWS ── */}
-                <motion.div variants={fadeUp} style={{ padding: '32px 16px 24px' }}>
+                <div style={{ padding: '32px 16px 24px' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '18px' }}>
                         <MessageSquare size={20} color={colors.accent} />
                         <div>
@@ -1079,10 +971,10 @@ export default function AppHomePage() {
                             ));
                         })()}
                     </div>
-                </motion.div>
+                </div>
 
                 {/* ── 7. MEMBERSHIP PLANS ── */}
-                <motion.div variants={fadeUp} style={{ padding: '0 16px 32px' }}>
+                <div style={{ padding: '0 16px 32px' }}>
                     <div style={{ color: colors.accent, fontSize: '10px', fontWeight: 900, marginBottom: '6px', letterSpacing: '0.2em', textTransform: 'uppercase' }}>
                         Premium Memberships
                     </div>
@@ -1111,10 +1003,10 @@ export default function AppHomePage() {
                             ))}
                         </div>
                     )}
-                </motion.div>
+                </div>
 
                 {/* ── 8. LOYALTY RULES ── */}
-                <motion.div variants={fadeUp} style={{ padding: '0 16px 32px' }}>
+                <div style={{ padding: '0 16px 32px' }}>
                     <div style={{ color: colors.accent, fontSize: '10px', fontWeight: 900, marginBottom: '6px', letterSpacing: '0.2em', textTransform: 'uppercase' }}>
                         Loyalty Program
                     </div>
@@ -1153,9 +1045,9 @@ export default function AppHomePage() {
                             </div>
                         </div>
                     )}
-                </motion.div>
+                </div>
 
-            </motion.div>
+            </div>
         </div>
     );
 };

@@ -8,7 +8,7 @@ const NotificationContext = createContext();
 
 export function NotificationProvider({ children }) {
     const { user } = useAuth();
-    const { userSession } = useBusiness();
+    const { userSession, isInitializing } = useBusiness();
     const { customer } = useCustomerAuth();
     
     const activeUserId = user?._id || user?.id || customer?._id || customer?.id;
@@ -22,8 +22,10 @@ export function NotificationProvider({ children }) {
         setLoading(true);
         try {
             const res = await api.get('/notifications');
-            if (res.data?.success) {
-                setNotifications(res.data.data || []);
+            if (res.data.success) {
+                setNotifications(res.data.data);
+                const unread = res.data.data.filter(n => !n.isRead).length;
+                setUnreadCount(unread);
             }
         } catch (error) {
             console.error('Fetch Notifications Error:', error);
@@ -35,23 +37,24 @@ export function NotificationProvider({ children }) {
     const fetchUnreadCount = useCallback(async () => {
         if (!activeUserId) return;
         try {
-            const res = await api.get('/notifications');
-            if (res.data?.success) {
-                const unread = res.data.data.filter(n => !n.isRead).length;
-                setUnreadCount(unread);
+            const res = await api.get('/notifications/unread/count');
+            if (res.data.success) {
+                setUnreadCount(res.data.data);
             }
         } catch (error) {
-            console.error('Fetch Unread Error:', error);
+            console.error('Fetch Unread Count Error:', error);
         }
     }, [activeUserId]);
 
     const markAsRead = useCallback(async (id) => {
         try {
             await api.patch(`/notifications/${id}/read`);
-            setNotifications(prev => prev.map(n => (n._id === id || n.id === id) ? { ...n, isRead: true } : n));
+            setNotifications(prev => prev.map(n => 
+                (n._id === id || n.id === id) ? { ...n, isRead: true } : n
+            ));
             setUnreadCount(prev => Math.max(0, prev - 1));
         } catch (error) {
-            console.error('Mark Read Error:', error);
+            console.error('Mark as Read Error:', error);
         }
     }, []);
 
@@ -81,14 +84,15 @@ export function NotificationProvider({ children }) {
             return;
         }
 
+        if (isInitializing) return;
+
         if (activeUserId) {
             fetchNotifications();
-            fetchUnreadCount();
         } else {
             setNotifications([]);
             setUnreadCount(0);
         }
-    }, [activeUserId, userSession]);
+    }, [activeUserId, userSession, fetchNotifications, isInitializing]);
 
     const value = useMemo(() => ({
         notifications,

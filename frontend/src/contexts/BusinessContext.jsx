@@ -75,10 +75,15 @@ export function BusinessProvider({ children }) {
     const [segmentsLoading, setSegmentsLoading] = useState(false);
     const [feedbacksLoading, setFeedbacksLoading] = useState(false);
     const [outletsLoading, setOutletsLoading] = useState(false);
-    const [isInitializing, setIsInitializing] = useState(true);
+    const [isInitializing, setIsInitializing] = useState(false);
     const [loyaltySettings, setLoyaltySettings] = useState(null);
     const [loyaltyPlans, setLoyaltyPlans] = useState([]);
     const [platformSettings, setPlatformSettings] = useState(null);
+    
+    // Initialization Refs
+    const initializationRef = useRef(false);
+    const lastInitializedId = useRef(null);
+    const lastInitializedPath = useRef(null);
     const [banners, setBanners] = useState([]);
     const [offers, setOffers] = useState([]);
     const [lookbook, setLookbook] = useState([]);
@@ -237,7 +242,6 @@ export function BusinessProvider({ children }) {
         } catch { setFeedbacks([]); } finally { setFeedbacksLoading(false); }
     }, [activeSalonId, activeOutletId, salon?._id]);
 
-    const initializationRef = useRef(false);
 
     const fetchServices = useCallback(async (sId, oId) => {
         try {
@@ -402,35 +406,61 @@ export function BusinessProvider({ children }) {
         }
     }, [activeSalonId, salon?._id]);
 
-    const lastInitializedId = useRef(null);
-    const lastInitializedPath = useRef(null);
     const fetchCustomerInitialData = useCallback(async () => {
+        if (initializationRef.current) return;
         const sid = activeSalonId || localStorage.getItem('active_salon_id');
         if (!sid || sid === 'mock_tenant_id' || !/^[0-9a-fA-F]{24}$/.test(sid)) {
             setIsInitializing(false);
             return;
         }
 
+        initializationRef.current = true;
         setIsInitializing(true);
         try {
-            const [sRes, oRes] = await Promise.all([
-                api.get(`/salons/${sid}`),
-                api.get(`/outlets?salonId=${sid}`)
-            ]);
-
-            if (sRes.data.success) setSalon(sRes.data.data);
-            if (oRes.data.success) setOutlets(oRes.data.data || []);
+            const customerId = customer?._id || localStorage.getItem('customer_user') ? JSON.parse(localStorage.getItem('customer_user'))._id : null;
             
-            // Also fetch shop assets
-            await Promise.all([
-                fetchProductCategories(sid),
-                fetchProducts(sid),
-                fetchLoyaltySettings(sid),
-                fetchLoyaltyPlans(sid)
-            ]);
+            // Get location if available
+            let lat, lng;
+            const savedLoc = localStorage.getItem('user_location');
+            if (savedLoc) {
+                const parsed = JSON.parse(savedLoc);
+                lat = parsed.lat;
+                lng = parsed.lng;
+            }
+
+            let url = `/salons/${sid}/initial-data?`;
+            if (customerId) url += `customerId=${customerId}&`;
+            if (lat && lng) url += `lat=${lat}&lng=${lng}&`;
+
+            const res = await api.get(url);
+            
+            if (res.data.success) {
+                const d = res.data.data;
+                setSalon(d.salon);
+                setOutlets(d.outlets || []);
+                setNearbyOutlets(d.nearbyOutlets || []);
+                setServices(d.services || []);
+                setCategories(d.categories || []);
+                setFeedbacks(d.feedbacks || []);
+                setStaff(d.staff || []);
+                setLoyaltySettings(d.loyaltySettings);
+                setLoyaltyPlans(d.loyaltyPlans || []);
+                setProducts((d.products || []).map(normalizeProduct));
+                setProductCategories((d.productCategories || []).map(normalizeShopCat));
+                setBanners(d.cms?.banners || []);
+                setOffers(d.cms?.offers || []);
+                setLookbook(d.cms?.lookbook || []);
+                setExperts(d.cms?.experts || []);
+                
+                // Set the combined user session data
+                if (d.user) {
+                    setUserSession(d.user);
+                }
+            }
         } catch (err) {
-            console.error("Failed to fetch basic salon data:", err);
+            console.error("Failed to fetch consolidated initial data:", err);
         } finally {
+            initializationRef.current = false;
             setIsInitializing(false);
         }
     }, [activeSalonId, fetchProductCategories, fetchProducts, fetchLoyaltySettings, fetchLoyaltyPlans]);
@@ -934,6 +964,7 @@ export function BusinessProvider({ children }) {
         experts, setExperts,
         productCategories, setProductCategories,
         nearbyOutlets, setNearbyOutlets,
+        userSession,
         isPageLoading, setIsPageLoading
     }), [
 
@@ -996,25 +1027,30 @@ export function BusinessProvider({ children }) {
         }
 
         if ((isAuthenticated || isCustomerAuthenticated) && user?.role !== 'superadmin') {
+            // Prevent double initialization if already has data for this salon or already fetching
+            if (initializationRef.current || (salon && String(salon._id) === String(effectiveTid))) return;
             fetchCustomerInitialData();
         } else if (effectiveTid) {
-            if (lastInitializedId.current === effectiveTid && !isInitializing) return;
+            if (lastInitializedId.current === effectiveTid) return;
+            if (isInitializing || initializationRef.current) return;
 
             const initGuest = async () => {
                 try {
+                    initializationRef.current = true;
+                    lastInitializedId.current = effectiveTid;
                     await fetchCustomerInitialData();
                 } catch (err) {
                     console.error("Guest initialization failed:", err);
                 } finally {
+                    initializationRef.current = false;
                     setIsInitializing(false);
                 }
             };
             initGuest();
         } else {
-            // No salon ID at all, we can stop initializing
             setIsInitializing(false);
         }
-    }, [isAuthenticated, isCustomerAuthenticated, location.pathname, activeSalonId, fetchCustomerInitialData]);
+    }, [isAuthenticated, isCustomerAuthenticated, activeSalonId, fetchCustomerInitialData]);
 
     return <BusinessContext.Provider value={value}>{children}</BusinessContext.Provider>;
 }

@@ -77,7 +77,11 @@ export function BookingRegistryProvider({ children }) {
             return;
         }
 
-        if (!location.pathname.startsWith('/superadmin')) {
+        const isBookingRelated = location.pathname.includes('/bookings') || 
+                               location.pathname.includes('/profile') || 
+                               location.pathname.includes('/checkout');
+
+        if (isBookingRelated && !location.pathname.startsWith('/superadmin')) {
             fetchBookings();
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps

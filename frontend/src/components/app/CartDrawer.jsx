@@ -10,7 +10,7 @@ const CartDrawer = ({ isOpen, onClose, cart, total, onUpdateQuantity, onRemove, 
     const drawerContent = (
         <AnimatePresence>
             {isOpen && (
-                <div className="fixed inset-0 z-[6000]">
+                <div className="fixed inset-0 z-[10001]">
                     <motion.div
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
@@ -69,7 +69,7 @@ const CartDrawer = ({ isOpen, onClose, cart, total, onUpdateQuantity, onRemove, 
                             )}
                         </div>
 
-                        <div className="p-8 bg-black/5 dark:bg-white/5 border-t border-black/5 dark:border-white/5 space-y-4">
+                        <div className="p-8 pb-12 bg-black/5 dark:bg-white/5 border-t border-black/5 dark:border-white/5 space-y-4">
                             <div className="flex items-center justify-between" style={{ fontFamily: "'SF Pro Display', sans-serif" }}>
                                 <span className="text-[10px] font-black uppercase tracking-[0.3em] opacity-40" style={{ color: colors.text }}>Subtotal</span>
                                 <span className="text-2xl font-black italic tracking-tighter" style={{ color: colors.text }}>₹{total}</span>

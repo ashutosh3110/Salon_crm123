@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useRef,useEffect, useCallback } from 'react';
+import { createContext, useContext, useState, useRef, useEffect, useCallback } from 'react';
 import { useLocation } from 'react-router-dom';
 import api from '../services/api';
 import { useCustomerAuth } from './CustomerAuthContext';
@@ -8,13 +8,14 @@ const CartContext = createContext(null);
 
 export const CartProvider = ({ children }) => {
     const { customer } = useCustomerAuth();
-    const { activeSalonId, userSession } = useBusiness();
+    const { activeSalonId, userSession, isInitializing } = useBusiness();
     const [cart, setCart] = useState({ items: [] });
     const [loading, setLoading] = useState(false);
     const [isCartOpen, setIsCartOpen] = useState(false);
     const location = useLocation();
 
     const fetchedRef = useRef(false);
+
     const fetchCart = useCallback(async () => {
         if (!customer) return;
         setLoading(true);
@@ -40,21 +41,20 @@ export const CartProvider = ({ children }) => {
             return;
         }
 
-        if (location.pathname.startsWith('/superadmin') || location.pathname === '/app/profile') {
-            return;
-        }
+        if (isInitializing) return;
 
-        if (customer?._id) {
+        const isCartRelated = location.pathname.includes('/shop') || 
+                            location.pathname.includes('/product') || 
+                            location.pathname.includes('/checkout');
+
+        if (customer?._id && !location.pathname.startsWith('/superadmin') && isCartRelated) {
             fetchedRef.current = true;
             fetchCart();
         }
-    }, [fetchCart, userSession?.cart, customer?._id, location.pathname]);
+    }, [fetchCart, userSession?.cart, customer?._id, location.pathname, isInitializing]);
 
     const addToCart = async (productId, quantity = 1) => {
-        if (!customer) {
-            // Optional: handle guest cart in localStorage
-            return;
-        }
+        if (!customer) return;
 
         const pId = typeof productId === 'object' ? (productId._id || productId.id) : productId;
         try {
@@ -75,9 +75,7 @@ export const CartProvider = ({ children }) => {
     };
 
     const updateQuantity = async (productId, quantity) => {
-        if (quantity < 1) {
-            return removeFromCart(productId);
-        }
+        if (quantity < 1) return removeFromCart(productId);
         return addToCart(productId, quantity);
     };
 
@@ -111,16 +109,8 @@ export const CartProvider = ({ children }) => {
 
     return (
         <CartContext.Provider value={{
-            cart,
-            loading,
-            isCartOpen,
-            setIsCartOpen,
-            addToCart,
-            updateQuantity,
-            removeFromCart,
-            clearCart,
-            cartCount,
-            cartTotal,
+            cart, loading, isCartOpen, setIsCartOpen, addToCart,
+            updateQuantity, removeFromCart, clearCart, cartCount, cartTotal,
             refreshCart: fetchCart
         }}>
             {children}

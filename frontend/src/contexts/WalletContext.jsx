@@ -18,25 +18,21 @@ function mapLoyaltyTx(tx) {
             ? 'Wallet Recharge (Loyalty Earn)'
             : tx.type === 'REDEEM'
                 ? 'Wallet Redeem (Loyalty Redeem)'
-                : tx.type === 'REVERSE'
-                    ? 'Wallet Reverse (Loyalty Reverse)'
-                    : 'Loyalty Transaction';
+                : tx.description || 'Wallet Transaction';
 
     return {
-        id: tx?._id || tx?.id,
+        id: tx._id || tx.id || Math.random().toString(),
         type,
         amount,
         description,
         date,
-        status: 'COMPLETED',
-        expiryDate: tx?.expiryDate ? new Date(tx.expiryDate).toISOString() : null,
+        status: 'COMPLETED'
     };
 }
 
-
 export function WalletProvider({ children }) {
     const { customer } = useCustomerAuth();
-    const { userSession } = useBusiness();
+    const { userSession, isInitializing } = useBusiness();
     const [balance, setBalance] = useState(0);
     const [transactions, setTransactions] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -48,15 +44,25 @@ export function WalletProvider({ children }) {
         try {
             const res = await api.get('/wallet');
             if (res.data.success) {
-                setBalance(res.data.balance || 0);
-                setTransactions((res.data.transactions || []).map(tx => ({
+                const data = res.data.data;
+                setBalance(data.balance || 0);
+                setTransactions((data.transactions || []).map(tx => ({
                     ...tx,
                     id: tx._id,
                     date: tx.createdAt
                 })));
             }
-        } catch (err) {
-            console.error('[WalletContext] refresh error:', err);
+        } catch (error) {
+            console.error('Wallet fetch failed, checking loyalty transactions:', error);
+            try {
+                const lRes = await api.get('/loyalty/transactions/me');
+                if (lRes.data.success) {
+                    const ltx = lRes.data.data || [];
+                    setTransactions(ltx.map(mapLoyaltyTx));
+                }
+            } catch (le) {
+                console.error('Loyalty fallback failed:', le);
+            }
         } finally {
             setLoading(false);
         }
@@ -81,113 +87,42 @@ export function WalletProvider({ children }) {
             return;
         }
 
-        const isProfilePage = location.pathname === '/app/profile';
+        if (isInitializing) return;
+
+        const isWalletRelated = location.pathname.includes('/checkout') || 
+                              location.pathname.includes('/wallet') || 
+                              location.pathname.includes('/profile');
         
-        if (customer?._id && !location.pathname.startsWith('/superadmin') && !isProfilePage) {
+        if (customer?._id && !location.pathname.startsWith('/superadmin') && isWalletRelated) {
             refreshWallet();
         }
-    }, [customer?._id, refreshWallet, userSession?.wallet, location.pathname]);
+    }, [customer?._id, refreshWallet, userSession?.wallet, location.pathname, isInitializing]);
 
     const createWalletOrder = async (amount) => {
         const res = await api.post('/wallet/topup/order', { amount });
         return res.data;
     };
 
-    const verifyWalletPayment = async (paymentData) => {
-        const res = await api.post('/wallet/topup/verify', paymentData);
+    const verifyWalletTopup = async (paymentId, orderId, signature) => {
+        const res = await api.post('/wallet/topup/verify', {
+            razorpay_payment_id: paymentId,
+            razorpay_order_id: orderId,
+            razorpay_signature: signature
+        });
         if (res.data.success) {
             await refreshWallet();
         }
         return res.data;
     };
 
-    const spentThisMonth = useMemo(() => {
-        const now = new Date();
-        const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
-        return transactions
-            .filter(tx => tx.type === 'DEBIT' && new Date(tx.date) >= firstDay)
-            .reduce((acc, tx) => acc + Number(tx.amount || 0), 0);
-    }, [transactions]);
-
-    const addMoney = async (amount) => {
-        return new Promise(async (resolve, reject) => {
-            try {
-                const orderData = await createWalletOrder(amount);
-                if (!orderData?.success) return reject(new Error('Failed to create order'));
-
-                const options = {
-                    key: import.meta.env.VITE_RAZORPAY_KEY_ID || 'rzp_test_SatrrxFwKXJX8e',
-                    amount: orderData.order.amount,
-                    currency: orderData.order.currency,
-                    name: 'Salon Wallet Top-up',
-                    description: `Recharge ₹${amount}`,
-                    order_id: orderData.order.id,
-                    handler: async (response) => {
-                        try {
-                            const verifyRes = await verifyWalletPayment({
-                                razorpayOrderId: response.razorpay_order_id,
-                                razorpayPaymentId: response.razorpay_payment_id,
-                                razorpaySignature: response.razorpay_signature,
-                                amount: amount
-                            });
-                            if (verifyRes.success) {
-                                resolve(verifyRes);
-                            } else {
-                                reject(new Error('Verification failed'));
-                            }
-                        } catch (err) {
-                            reject(err);
-                        }
-                    },
-                    prefill: {
-                        name: customer?.name,
-                        email: customer?.email,
-                        contact: customer?.phone
-                    },
-                    theme: { color: '#C8956C' }
-                };
-
-                const rzp = new window.Razorpay(options);
-                rzp.open();
-            } catch (err) {
-                reject(err);
-            }
-        });
-    };
-
-    const initializeWallet = useCallback(async () => {
-        await refreshWallet();
-    }, [refreshWallet]);
-
     const value = useMemo(() => ({
         balance,
         transactions,
-        createWalletOrder,
-        verifyWalletPayment,
-        addMoney,
         loading,
         refreshWallet,
-        spentThisMonth,
-
-        // Admin/POS compatibility
-        allWallets: { [customer?._id]: { balance, transactions } },
-        getWallet: () => ({ balance, transactions }),
-        adminAdjustBalance: async () => ({ success: true }),
-        bulkRecharge: async (customerIds, amount, note) => {
-            try {
-                const res = await api.post('/wallet/bulk-recharge', { customerIds, amount, note });
-                if (res.data.success) {
-                    await refreshWallet();
-                }
-                return res.data;
-            } catch (err) {
-                console.error('Bulk Recharge Error:', err);
-                return { success: false, message: err.message };
-            }
-        },
-        initializeWallet,
-        totalLiability: balance
-    }), [balance, transactions, loading, refreshWallet, spentThisMonth, customer?._id, initializeWallet]);
+        createWalletOrder,
+        verifyWalletTopup
+    }), [balance, transactions, loading, refreshWallet]);
 
     return (
         <WalletContext.Provider value={value}>
@@ -196,6 +131,8 @@ export function WalletProvider({ children }) {
     );
 }
 
-export function useWallet() {
-    return useContext(WalletContext);
-}
+export const useWallet = () => {
+    const context = useContext(WalletContext);
+    if (!context) throw new Error('useWallet must be used within a WalletProvider');
+    return context;
+};

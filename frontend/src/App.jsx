@@ -322,8 +322,8 @@ function App() {
 
       <AuthProvider>
         <CustomerAuthProvider>
-          <NotificationHandler />
           <BusinessProvider>
+            <NotificationHandler />
             <WalletProvider>
               <NotificationProvider>
                 <CMSProvider>
