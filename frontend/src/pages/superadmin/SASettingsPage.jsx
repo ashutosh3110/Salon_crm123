@@ -86,7 +86,9 @@ export default function SASettingsPage() {
         currencySymbol: '₹',
         maxImageSize: 5,
         maxImageSizeUnit: 'MB',
-        defaultTrialDays: 14
+        defaultTrialDays: 14,
+        serviceGst: 18,
+        productGst: 12
     });
     const setPlat = (k, v) => setPlatform(p => ({ ...p, [k]: v }));
     const setSocial = (k, v) => setPlatform(p => ({ ...p, socialLinks: { ...p.socialLinks, [k]: v } }));
@@ -493,6 +495,35 @@ export default function SASettingsPage() {
                                     <div className="flex items-end pb-1.5">
                                         <p className="text-[10px] text-text-muted italic leading-relaxed">
                                             Controls the default trial duration for new salon registrations and image upload size limits.
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="pt-6 border-t border-border">
+                                <h4 className="text-[10px] font-black text-text-muted uppercase tracking-widest mb-3 flex items-center gap-2">
+                                    <DollarSign className="w-3 h-3 text-emerald-600" /> Taxation Settings (GST)
+                                </h4>
+                                <div className="grid sm:grid-cols-3 gap-6">
+                                    <Field 
+                                        label="GST on Services" 
+                                        value={platform.serviceGst} 
+                                        onChange={e => setPlat('serviceGst', e.target.value)} 
+                                        type="number"
+                                        placeholder="18"
+                                        suffix={<span className="text-[10px] font-bold text-text-muted mr-3">%</span>}
+                                    />
+                                    <Field 
+                                        label="GST on Products" 
+                                        value={platform.productGst} 
+                                        onChange={e => setPlat('productGst', e.target.value)} 
+                                        type="number"
+                                        placeholder="12"
+                                        suffix={<span className="text-[10px] font-bold text-text-muted mr-3">%</span>}
+                                    />
+                                    <div className="flex items-end pb-1.5">
+                                        <p className="text-[10px] text-text-muted italic leading-relaxed">
+                                            Default GST percentages applied to services and retail products across the platform.
                                         </p>
                                     </div>
                                 </div>

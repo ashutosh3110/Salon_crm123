@@ -18,6 +18,7 @@ import { useCustomerTheme } from '../../contexts/CustomerThemeContext';
 import { useCustomerAuth } from '../../contexts/CustomerAuthContext';
 import { useWallet } from '../../contexts/WalletContext';
 import api from '../../services/api';
+import { useBusiness } from '../../contexts/BusinessContext';
 
 const AppMembershipCheckoutPage = () => {
     const navigate = useNavigate();
@@ -25,6 +26,13 @@ const AppMembershipCheckoutPage = () => {
     const { theme } = useCustomerTheme();
     const { customer } = useCustomerAuth();
     const { balance, refreshWallet } = useWallet();
+    const { platformSettings, fetchPlatformSettings } = useBusiness();
+
+    useEffect(() => {
+        if (!platformSettings) {
+            fetchPlatformSettings();
+        }
+    }, [platformSettings, fetchPlatformSettings]);
     const isLight = theme === 'light';
     const [isProcessing, setIsProcessing] = useState(false);
     const [razorpayLoaded, setRazorpayLoaded] = useState(false);
@@ -79,7 +87,8 @@ const AppMembershipCheckoutPage = () => {
     };
 
     const numericPrice = getNumericPrice(plan.price);
-    const taxAmount = Math.round(numericPrice * 0.18);
+    const sGst = Number(platformSettings?.serviceGst || 18);
+    const taxAmount = Math.round(numericPrice * (sGst / 100));
     const totalWithTax = numericPrice + taxAmount;
 
     const handlePayment = async () => {
@@ -91,13 +100,13 @@ const AppMembershipCheckoutPage = () => {
         setIsProcessing(true);
         try {
             if (selectedMethod === 'wallet') {
-                if (balance < numericPrice) {
+                if (balance < totalWithTax) {
                     alert('Insufficient Wallet Balance. Please use Razorpay or Top-up your wallet.');
                     setIsProcessing(false);
                     return;
                 }
 
-                if (!window.confirm(`Use ₹${numericPrice} from your wallet to buy ${plan.name}?`)) {
+                if (!window.confirm(`Use ₹${totalWithTax} from your wallet (incl. GST) to buy ${plan.name}?`)) {
                     setIsProcessing(false);
                     return;
                 }
@@ -325,7 +334,7 @@ const AppMembershipCheckoutPage = () => {
                                 <span style={{ fontSize: '15px', fontWeight: 700 }}>₹{numericPrice.toLocaleString()}</span>
                             </div>
                             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '20px' }}>
-                                <span style={{ fontSize: '15px', color: colors.textMuted, fontWeight: 500 }}>GST (18%)</span>
+                                <span style={{ fontSize: '15px', color: colors.textMuted, fontWeight: 500 }}>GST ({sGst}%)</span>
                                 <span style={{ fontSize: '15px', fontWeight: 700 }}>₹{taxAmount.toLocaleString()}</span>
                             </div>
                             <div style={{ height: '1px', background: colors.border, marginBottom: '20px' }} />
@@ -350,7 +359,7 @@ const AppMembershipCheckoutPage = () => {
                             ].map((method) => {
                                 const isSelected = selectedMethod === method.id;
                                 const isWallet = method.id === 'wallet';
-                                const canPayWithWallet = isWallet ? balance >= numericPrice : true;
+                                const canPayWithWallet = isWallet ? balance >= totalWithTax : true;
 
                                 return (
                                     <motion.div 

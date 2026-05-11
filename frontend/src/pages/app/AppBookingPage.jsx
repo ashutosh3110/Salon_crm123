@@ -45,8 +45,16 @@ export default function AppBookingPage() {
         setActiveSalonId,
         salon,
         fetchServices,
-        isInitializing
+        isInitializing,
+        platformSettings,
+        fetchPlatformSettings
     } = useBusiness();
+
+    useEffect(() => {
+        if (!platformSettings) {
+            fetchPlatformSettings();
+        }
+    }, [platformSettings, fetchPlatformSettings]);
 
     const [selectedOutlet, setSelectedOutlet] = useState(() => {
         const found = outlets.find(o => String(o.id || o._id) === String(outletId));
@@ -369,7 +377,13 @@ export default function AppBookingPage() {
         });
     }, [businessStaff, activeSalonId, salon?._id]);
 
-    const finalPrice = Math.max(0, totalPrice - membershipDiscount - promoDiscount);
+    const tax = useMemo(() => {
+        const sGst = Number(platformSettings?.serviceGst || 18);
+        // Assuming AppBookingPage only deals with services for now
+        return (totalPrice - membershipDiscount - promoDiscount) * (sGst / 100);
+    }, [totalPrice, membershipDiscount, promoDiscount, platformSettings]);
+
+    const finalPrice = Math.max(0, totalPrice - membershipDiscount - promoDiscount + tax);
 
     const applyPromo = async (codeOverride) => {
         const raw = codeOverride ?? couponCode;
@@ -767,9 +781,13 @@ export default function AppBookingPage() {
                                 <span>- ₹{membershipDiscount.toLocaleString()}</span>
                             </div>
                         )}
+                        <div className="flex justify-between text-[11px] font-bold uppercase tracking-widest opacity-40">
+                            <span>Tax (GST {platformSettings?.serviceGst || 18}%)</span>
+                            <span>+ ₹{Math.round(tax).toLocaleString()}</span>
+                        </div>
                         <div className="flex justify-between text-base pt-2 uppercase font-black tracking-tighter">
                             <span style={{ color: colors.textMuted }}>Total Payable</span>
-                            <span className="text-[#C8956C]">₹{finalPrice.toLocaleString()}</span>
+                            <span className="text-[#C8956C]">₹{Math.round(finalPrice).toLocaleString()}</span>
                         </div>
                     </div>
                 </motion.div>
@@ -1149,9 +1167,13 @@ export default function AppBookingPage() {
                                         <span className="text-green-500">- ₹{promoDiscount.toLocaleString()}</span>
                                     </div>
                                 )}
+                                <div className="flex justify-between items-center opacity-40 text-xs">
+                                    <span style={{ color: colors.text }}>GST ({platformSettings?.serviceGst || 18}%)</span>
+                                    <span style={{ color: colors.text }}>+ ₹{Math.round(tax).toLocaleString()}</span>
+                                </div>
                                 <div className="flex justify-between text-2xl pt-2">
                                     <span style={{ color: colors.textMuted }}>Total</span>
-                                    <span className="text-[#C8956C]">₹{finalPrice.toLocaleString()}</span>
+                                    <span className="text-[#C8956C]">₹{Math.round(finalPrice).toLocaleString()}</span>
                                 </div>
                                 {loyaltySettings?.active && (
                                     <div className="flex justify-between items-center py-2 px-3 mt-2 rounded-xl bg-[#C8956C]/5 border border-[#C8956C]/20">

@@ -20,8 +20,14 @@ export default function POSPage() {
     const { user } = useAuth();
     const { 
         products, services, bookings, customers, staff, activeOutlet,
-        checkoutPOS 
+        checkoutPOS, platformSettings, fetchPlatformSettings
     } = useBusiness();
+
+    useEffect(() => {
+        if (!platformSettings) {
+            fetchPlatformSettings();
+        }
+    }, [platformSettings, fetchPlatformSettings]);
 
     const [searchTerm, setSearchTerm] = useState('');
     const [cart, setCart] = useState([]);
@@ -105,7 +111,16 @@ export default function POSPage() {
         cart.reduce((acc, item) => acc + (item.price * item.quantity), 0)
     , [cart]);
 
-    const tax = subTotal * 0.18; // 18% GST estimate
+    const tax = useMemo(() => {
+        const sGst = Number(platformSettings?.serviceGst || 18);
+        const pGst = Number(platformSettings?.productGst || 12);
+        
+        return cart.reduce((acc, item) => {
+            const rate = item.type === 'service' ? sGst : pGst;
+            return acc + (item.price * item.quantity * (rate / 100));
+        }, 0);
+    }, [cart, platformSettings]);
+
     const total = subTotal + tax;
 
     const handleCheckout = async () => {
@@ -322,10 +337,12 @@ export default function POSPage() {
                             </div>
                             <div className="flex justify-between items-center text-left">
                                 <div className="flex items-center gap-2">
-                                    <span className="text-[10px] font-black text-text-muted uppercase tracking-widest">Service Tax</span>
+                                    <span className="text-[10px] font-black text-text-muted uppercase tracking-widest">Taxation (GST)</span>
                                     <div className="group relative">
                                         <Info className="w-3 h-3 text-text-muted cursor-help" />
-                                        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 p-2 bg-text text-surface text-[8px] font-black uppercase rounded-none whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity">18% GST (SGST + CGST)</div>
+                                        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 p-2 bg-text text-surface text-[8px] font-black uppercase rounded-none whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity">
+                                            {platformSettings?.serviceGst || 18}% Service / {platformSettings?.productGst || 12}% Product
+                                        </div>
                                     </div>
                                 </div>
                                 <span className="text-sm font-black text-text-secondary tracking-tighter uppercase leading-none text-right">₹{Math.round(tax)}</span>

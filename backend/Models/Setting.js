@@ -70,6 +70,14 @@ const settingSchema = new mongoose.Schema({
     defaultTrialDays: {
         type: Number,
         default: 14
+    },
+    serviceGst: {
+        type: Number,
+        default: 18
+    },
+    productGst: {
+        type: Number,
+        default: 12
     }
 }, {
     timestamps: true

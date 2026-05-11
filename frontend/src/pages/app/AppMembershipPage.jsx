@@ -241,6 +241,9 @@ const AppMembershipPage = () => {
                             <div style={{ marginBottom: '32px' }}>
                                 <span style={{ fontSize: '42px', fontWeight: 900, color: '#FFF' }}>₹{plan.price}</span>
                                 <span style={{ fontSize: '16px', color: 'rgba(255,255,255,0.6)', fontWeight: 600 }}> / month</span>
+                                <p style={{ fontSize: '10px', color: 'rgba(255,255,255,0.4)', fontWeight: 700, margin: '4px 0 0', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                                    + GST Extra
+                                </p>
                             </div>
 
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', marginBottom: '32px' }}>

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronLeft, CreditCard, Wallet, MapPin, Truck, CheckCircle, ArrowRight, Zap, Info, BellRing } from 'lucide-react';
@@ -15,7 +15,13 @@ export default function AppCheckoutPage() {
     const { cart, cartTotal, clearCart } = useCart();
     const { customer } = useCustomerAuth();
     const { balance, refreshWallet } = useWallet();
-    const { loyaltySettings, activeOutlet } = useBusiness();
+    const { loyaltySettings, activeOutlet, platformSettings, fetchPlatformSettings } = useBusiness();
+
+    useEffect(() => {
+        if (!platformSettings) {
+            fetchPlatformSettings();
+        }
+    }, [platformSettings, fetchPlatformSettings]);
     
     const [step, setStep] = useState(1); // 1: Address, 2: Payment, 3: Success
     const [loading, setLoading] = useState(false);
@@ -66,8 +72,13 @@ export default function AppCheckoutPage() {
     const deliveryFee = (homeDelivery && isDeliveryAvailable) 
         ? (activeOutlet?.config?.deliveryCharge || 0)
         : 0;
-    
-    const finalTotal = Math.max(0, cartTotal - membershipDiscount + deliveryFee);
+
+    const tax = useMemo(() => {
+        const pGst = Number(platformSettings?.productGst || 12);
+        return (cartTotal - membershipDiscount) * (pGst / 100);
+    }, [cartTotal, membershipDiscount, platformSettings]);
+
+    const finalTotal = Math.max(0, cartTotal - membershipDiscount + deliveryFee + tax);
 
     const [address, setAddress] = useState({
         street: '',
@@ -197,18 +208,22 @@ export default function AppCheckoutPage() {
                                     {(activeMembership?.planId || activeMembership?.plan)?.productDiscountType === 'percentage' ? '%' : '₹'} OFF
                                 </span>
                             </span>
-                            <span className="text-sm font-black italic tracking-tighter text-[#C8956C]">- ₹{membershipDiscount.toFixed(2)}</span>
+                            <span className="text-sm font-black italic tracking-tighter text-[#C8956C]">- ₹{Math.round(membershipDiscount)}</span>
                         </div>
                     )}
-                    <div className="flex justify-between items-center mb-4">
+                    <div className="flex justify-between items-center mb-1">
                         <span className="text-[10px] font-black uppercase tracking-widest opacity-40">Delivery Fee</span>
                         <span className="text-sm font-black italic tracking-tighter" style={{ color: deliveryFee > 0 ? colors.text : '#10B981' }}>
                             {deliveryFee > 0 ? `₹${deliveryFee}` : 'FREE'}
                         </span>
                     </div>
+                    <div className="flex justify-between items-center mb-1">
+                        <span className="text-[10px] font-black uppercase tracking-widest opacity-40">Tax (GST {platformSettings?.productGst || 12}%)</span>
+                        <span className="text-sm font-black italic tracking-tighter" style={{ color: colors.text }}>+ ₹{Math.round(tax)}</span>
+                    </div>
                     <div className="flex justify-between items-center mb-6 pt-4 border-t border-dashed" style={{ borderTopColor: colors.border }}>
                         <span className="text-[11px] font-black uppercase tracking-[0.2em] opacity-100" style={{ color: colors.text }}>Grand Total</span>
-                        <span className="text-3xl font-black italic tracking-tighter" style={{ color: '#C8956C' }}>₹{finalTotal}</span>
+                        <span className="text-3xl font-black italic tracking-tighter" style={{ color: '#C8956C' }}>₹{Math.round(finalTotal)}</span>
                     </div>
                     {loyaltySettings?.active && (
                         <div className="flex items-center justify-between py-2 px-3 mb-4 rounded-xl bg-[#C8956C]/5 border border-[#C8956C]/10">

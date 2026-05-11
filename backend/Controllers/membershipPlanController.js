@@ -4,6 +4,7 @@ const Salon = require('../Models/Salon');
 const CustomerMembership = require('../Models/CustomerMembership');
 const Razorpay = require('razorpay');
 const crypto = require('crypto');
+const Setting = require('../Models/Setting');
 
 // Initialize Razorpay
 let razorpay;
@@ -187,8 +188,13 @@ exports.createMembershipOrder = async (req, res) => {
             return res.status(404).json({ success: false, message: 'Plan not found' });
         }
 
+        const globalSettings = await Setting.findOne();
+        const sGst = globalSettings?.serviceGst || 18;
+        const taxAmount = Math.round(plan.price * (sGst / 100));
+        const totalWithTax = plan.price + taxAmount;
+
         const options = {
-            amount: Math.round(plan.price * 100), // in paise
+            amount: Math.round(totalWithTax * 100), // in paise
             currency: 'INR',
             receipt: `mem_${req.user._id.toString().slice(-14)}_${Date.now().toString().slice(-10)}`
         };
@@ -251,7 +257,7 @@ exports.verifyMembershipPayment = async (req, res) => {
                 expiryDate,
                 orderId: razorpay_order_id,
                 paymentId: razorpay_payment_id,
-                amount: plan.price
+                amount: plan.price + Math.round(plan.price * ((globalSettings?.serviceGst || 18) / 100))
             },
             { upsert: true, new: true }
         );
@@ -319,21 +325,26 @@ exports.buyMembershipWithWallet = async (req, res) => {
         const customer = await Customer.findById(req.user._id);
         if (!customer) return res.status(404).json({ success: false, message: 'Customer not found' });
 
-        if ((customer.walletBalance || 0) < plan.price) {
+        const globalSettings = await Setting.findOne();
+        const sGst = globalSettings?.serviceGst || 18;
+        const taxAmount = Math.round(plan.price * (sGst / 100));
+        const totalWithTax = plan.price + taxAmount;
+
+        if ((customer.walletBalance || 0) < totalWithTax) {
             return res.status(400).json({ success: false, message: 'Insufficient wallet balance' });
         }
 
         // Deduct balance
-        customer.walletBalance -= plan.price;
+        customer.walletBalance -= totalWithTax;
         await customer.save();
 
         // Create wallet transaction
         await WalletTransaction.create({
             customerId: req.user._id,
             salonId: plan.salonId,
-            amount: plan.price,
+            amount: totalWithTax,
             type: 'DEBIT',
-            description: `Membership Purchase: ${plan.name}`,
+            description: `Membership Purchase: ${plan.name} (Inc. GST)`,
             status: 'COMPLETED'
         });
 
@@ -347,7 +358,7 @@ exports.buyMembershipWithWallet = async (req, res) => {
                 planId,
                 status: 'active',
                 expiryDate,
-                amount: plan.price,
+                amount: totalWithTax,
                 paymentId: `wallet_${Date.now()}`
             },
             { upsert: true, new: true }
