@@ -2,7 +2,7 @@ import { useState, useMemo, useEffect, useCallback } from 'react';
 import {
     TrendingUp, Star, Target, Zap, Search, BarChart3, Award, CheckCircle2,
     ChevronDown, Download, Loader2, Pencil, Users, ShieldAlert, TrendingDown,
-    Activity, ArrowUpRight, ArrowDownRight, Award as Trophy
+    Activity, ArrowUpRight, ArrowDownRight, Award as Trophy, Calendar
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {

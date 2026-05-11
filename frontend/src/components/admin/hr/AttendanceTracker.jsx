@@ -12,10 +12,9 @@ import { useBusiness } from '../../../contexts/BusinessContext';
 import api from '../../../services/api';
 
 const STATUS_META = {
+    pending: { label: 'Not Marked', cls: 'bg-slate-500/10 text-slate-600 border-slate-500/20', color: '#64748b' },
     present: { label: 'Present', cls: 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20', color: '#10b981' },
-    late: { label: 'Late', cls: 'bg-amber-500/10 text-amber-600 border-amber-500/20', color: '#f59e0b' },
     absent: { label: 'Absent', cls: 'bg-rose-500/10 text-rose-600 border-rose-500/20', color: '#ef4444' },
-    'half-day': { label: 'Half Day', cls: 'bg-blue-500/10 text-blue-600 border-blue-500/20', color: '#3b82f6' },
     leave: { label: 'On Leave', cls: 'bg-violet-500/10 text-violet-600 border-violet-500/20', color: '#8b5cf6' },
 };
 
@@ -56,6 +55,7 @@ function buildRow(user, entry) {
             status: 'absent',
             loc: '—',
             remark: '',
+            mobile: user.mobile || '',
             checkInAt: null,
             checkOutAt: null,
         };
@@ -66,6 +66,7 @@ function buildRow(user, entry) {
         staff: entry.userId?.name || name,
         role: entry.userId?.role || role,
         outlet: entry.userId?.outletId?.name || outlet,
+        mobile: entry.userId?.mobile || user.mobile || '',
         checkInAt: entry.checkInAt,
         checkOutAt: entry.checkOutAt,
         checkIn: formatDisplayTime(entry.checkInAt),
@@ -79,15 +80,16 @@ function buildRow(user, entry) {
 }
 
 export default function AttendanceTracker() {
-    const { staff } = useBusiness();
+    const { staff, fetchStaff } = useBusiness();
     const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
     const [records, setRecords] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
     const [filterOutlet, setFilterOutlet] = useState('All');
+    const [activeStatusFilter, setActiveStatusFilter] = useState('All');
     const [toast, setToast] = useState(null);
     
-    const [editModal, setEditModal] = useState(null);
+    const [changeStatusModal, setChangeStatusModal] = useState(null);
     const [newStatus, setNewStatus] = useState('present');
     const [editCheckIn, setEditCheckIn] = useState('');
     const [editCheckOut, setEditCheckOut] = useState('');
@@ -108,8 +110,8 @@ export default function AttendanceTracker() {
         setSummaryLoading(true);
         try {
             const d = new Date(selectedDate);
-            const res = await api.get('/hr/attendance/summary', { 
-                params: { month: d.getMonth() + 1, year: d.getFullYear() } 
+            const res = await api.get('/hr/attendance/summary', {
+                params: { month: d.getMonth() + 1, year: d.getFullYear() }
             });
             setSummaryData(res.data?.data || {});
         } catch (e) {
@@ -152,7 +154,7 @@ export default function AttendanceTracker() {
                     checkIn: record?.checkIn || '-',
                     checkOut: record?.checkOut || '-',
                     hours: '-',
-                    status: record?.status || 'absent',
+                    status: record?.status || 'pending',
                     loc: record?.notes || 'Salon',
                     remark: record?.notes || '',
                     attendanceId: record?._id,
@@ -170,7 +172,7 @@ export default function AttendanceTracker() {
                 role: u.role || 'Staff',
                 mobile: u.phone || '—',
                 outlet: u.outletId?.name || '—',
-                status: 'absent',
+                status: 'pending',
                 checkIn: '-',
                 checkOut: '-'
             })));
@@ -180,20 +182,20 @@ export default function AttendanceTracker() {
     }, [selectedDate, staff, showToast]);
 
     useEffect(() => {
+        fetchStaff();
+    }, [fetchStaff]);
+
+    useEffect(() => {
         loadDay();
     }, [loadDay]);
 
-    useEffect(() => {
-        fetchStaff?.();
-    }, []);
-
-    // Date navigation
+        // Date navigation
     const changeDate = (days) => {
         const d = new Date(selectedDate);
         if (days > 0) {
             const tomorrow = new Date();
             tomorrow.setDate(tomorrow.getDate() + 1);
-            tomorrow.setHours(0,0,0,0);
+            tomorrow.setHours(0, 0, 0, 0);
             const target = new Date(d);
             target.setDate(target.getDate() + days);
             if (target >= tomorrow) {
@@ -207,20 +209,18 @@ export default function AttendanceTracker() {
 
     // Filtered
     const filtered = useMemo(() => records.filter(r => {
-        const matchSearch = r.staff.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                          r.role.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                          r.mobile.includes(searchTerm);
-        const matchStatus = filterStatus === 'All' || r.status === filterStatus;
+        const matchSearch = r.staff.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            r.role.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            (r.mobile && r.mobile.includes(searchTerm));
+        const matchStatus = activeStatusFilter === 'All' || r.status === activeStatusFilter;
         return matchSearch && matchStatus;
-    }), [records, searchTerm, filterStatus]);
+    }), [records, searchTerm, activeStatusFilter]);
 
     // Stats
     const stats = useMemo(() => {
         const counts = {
             present: records.filter(r => r.status === 'present').length,
-            late: records.filter(r => r.status === 'late').length,
             absent: records.filter(r => r.status === 'absent').length,
-            'half-day': records.filter(r => r.status === 'half-day').length,
             leave: records.filter(r => r.status === 'leave').length,
         };
         return counts;
@@ -228,9 +228,7 @@ export default function AttendanceTracker() {
 
     const chartData = useMemo(() => [
         { name: 'Present', value: stats.present, color: STATUS_META.present.color },
-        { name: 'Late', value: stats.late, color: STATUS_META.late.color },
         { name: 'Absent', value: stats.absent, color: STATUS_META.absent.color },
-        { name: 'Half Day', value: stats['half-day'], color: STATUS_META['half-day'].color },
         { name: 'On Leave', value: stats.leave, color: STATUS_META.leave.color },
     ].filter(d => d.value > 0), [stats]);
 
@@ -242,8 +240,6 @@ export default function AttendanceTracker() {
                 staffId: changeStatusModal.id,
                 date: selectedDate,
                 status: newStatus,
-                checkIn: editCheckIn || undefined,
-                checkOut: editCheckOut || undefined,
             });
             showToast(`${changeStatusModal.staff} → ${STATUS_META[newStatus]?.label}`);
             setChangeStatusModal(null);
@@ -294,8 +290,8 @@ export default function AttendanceTracker() {
 
     // Export CSV
     const exportCSV = () => {
-        const header = 'Staff,Role,Mobile,Check-In,Check-Out,Status\n';
-        const rows = records.map(r => `${r.staff},${r.role},${r.mobile},${r.checkIn},${r.checkOut},${r.status}`).join('\n');
+        const header = 'Staff,Role,Mobile,Status\n';
+        const rows = records.map(r => `${r.staff},${r.role},${r.mobile},${r.status}`).join('\n');
         const blob = new Blob([header + rows], { type: 'text/csv' });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a'); a.href = url;
@@ -376,9 +372,9 @@ export default function AttendanceTracker() {
                         value={searchTerm} onChange={e => setSearchTerm(e.target.value)} />
                 </div>
                 <div className="flex items-center gap-2 flex-wrap text-left">
-                    {viewMode === 'daily' && ['All', 'present', 'late', 'absent', 'half-day', 'leave'].map(s => (
-                        <button key={s} onClick={() => setFilterStatus(s)}
-                            className={`px-4 py-2 rounded-none text-[9px] font-black uppercase tracking-[0.1em] border transition-all ${filterStatus === s ? 'bg-primary text-white border-primary' : 'bg-surface text-text-muted border-border hover:border-primary'}`}>
+                    {viewMode === 'daily' && ['All', 'pending', 'present', 'absent', 'leave'].map(s => (
+                        <button key={s} onClick={() => setActiveStatusFilter(s)}
+                            className={`px-4 py-2 rounded-none text-[9px] font-black uppercase tracking-[0.1em] border transition-all ${activeStatusFilter === s ? 'bg-primary text-white border-primary' : 'bg-surface text-text-muted border-border hover:border-primary'}`}>
                             {s === 'All' ? 'Full View' : STATUS_META[s]?.label}
                         </button>
                     ))}
@@ -396,14 +392,13 @@ export default function AttendanceTracker() {
                         <p className="text-[10px] font-black uppercase tracking-[0.3em] text-text-muted italic">Processing staff data…</p>
                     </div>
                 )}
-                
+
                 {viewMode === 'daily' ? (
                     <table className="w-full text-left font-black">
                         <thead>
                             <tr className="bg-surface-alt/50 border-b border-border/40 text-left font-black">
                                 <th className="px-6 py-4 text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Staff Member</th>
                                 <th className="px-6 py-4 text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Role / Mobile</th>
-                                <th className="px-6 py-4 text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Check In/Out</th>
                                 <th className="px-6 py-4 text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Status</th>
                                 <th className="px-6 py-4 text-[10px] font-black text-text-muted uppercase tracking-[0.2em] text-right">Actions</th>
                             </tr>
@@ -430,12 +425,7 @@ export default function AttendanceTracker() {
                                         <p className="text-[10px] font-black text-text uppercase tracking-widest">{record.role}</p>
                                         <p className="text-[9px] text-text-muted font-black uppercase tracking-widest mt-1 italic">{record.mobile}</p>
                                     </td>
-                                    <td className="px-6 py-5 text-left font-black">
-                                        <div className="flex flex-col gap-1.5 text-[10px] font-black text-text uppercase text-left">
-                                            <div className="flex items-center gap-2 text-emerald-500"><Check className="w-3 h-3" /> {record.checkIn}</div>
-                                            <div className="flex items-center gap-2 text-rose-500"><X className="w-3 h-3" /> {record.checkOut}</div>
-                                        </div>
-                                    </td>
+
                                     <td className="px-6 py-5 text-left font-black">
                                         <span className={`px-3 py-1 text-[9px] font-black uppercase tracking-widest border ${STATUS_META[record.status]?.cls || ''}`}>
                                             {STATUS_META[record.status]?.label}
@@ -528,18 +518,7 @@ export default function AttendanceTracker() {
                                         </button>
                                     ))}
                                 </div>
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div className="space-y-2">
-                                        <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Check In</label>
-                                        <input type="time" value={editCheckIn} onChange={(e) => setEditCheckIn(e.target.value)}
-                                            className="w-full px-4 py-3 rounded-none bg-background border border-border text-xs font-black focus:border-primary outline-none uppercase" />
-                                    </div>
-                                    <div className="space-y-2">
-                                        <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Check Out</label>
-                                        <input type="time" value={editCheckOut} onChange={(e) => setEditCheckOut(e.target.value)}
-                                            className="w-full px-4 py-3 rounded-none bg-background border border-border text-xs font-black focus:border-primary outline-none uppercase" />
-                                    </div>
-                                </div>
+
                                 <button type="submit" className="w-full py-4 bg-primary text-white rounded-none font-black text-[10px] uppercase tracking-[0.2em] shadow-xl shadow-primary/20 hover:scale-[1.02] transition-all">Update Status</button>
                             </form>
                         </motion.div>
@@ -555,13 +534,12 @@ export default function AttendanceTracker() {
                             className="bg-surface w-full max-w-sm rounded-none border border-border shadow-2xl relative p-8 text-center">
                             <button onClick={() => setBulkModal(false)} className="absolute top-4 right-4 w-9 h-9 rounded-none bg-background border border-border flex items-center justify-center text-text-muted hover:text-text"><X className="w-4 h-4" /></button>
                             <div className="w-14 h-14 bg-primary/10 rounded-none flex items-center justify-center mx-auto mb-6 border border-primary/20"><Users className="w-6 h-6 text-primary" /></div>
-                             <h3 className="text-xs font-black text-text uppercase tracking-[0.2em]">Mark All Members</h3>
-                             <p className="text-[10px] text-text-muted mt-2 mb-8 uppercase font-bold tracking-widest italic leading-relaxed">Choose status to apply to all staff for {selectedDate}</p>
-                            <div className="grid grid-cols-2 gap-3">
-                                <button onClick={() => bulkMarkStatus('present')} className="py-4 bg-emerald-500 text-white rounded-none text-[10px] font-black uppercase tracking-[0.2em] shadow-xl shadow-emerald-500/10 hover:scale-[1.02] transition-all">Mark Present</button>
-                                <button onClick={() => bulkMarkStatus('absent')} className="py-4 bg-rose-500 text-white rounded-none text-[10px] font-black uppercase tracking-[0.2em] shadow-xl shadow-rose-500/10 hover:scale-[1.02] transition-all">Mark Absent</button>
-                                <button onClick={() => bulkMarkStatus('half-day')} className="py-4 bg-blue-500 text-white rounded-none text-[10px] font-black uppercase tracking-[0.2em] shadow-xl shadow-blue-500/10 hover:scale-[1.02] transition-all">Mark Half Day</button>
-                                <button onClick={() => bulkMarkStatus('leave')} className="py-4 bg-violet-500 text-white rounded-none text-[10px] font-black uppercase tracking-[0.2em] shadow-xl shadow-violet-500/10 hover:scale-[1.02] transition-all">Mark Leave</button>
+                            <h3 className="text-xs font-black text-text uppercase tracking-[0.2em]">Mark All Members</h3>
+                            <p className="text-[10px] text-text-muted mt-2 mb-8 uppercase font-bold tracking-widest italic leading-relaxed">Choose status to apply to all staff for {selectedDate}</p>
+                            <div className="grid grid-cols-1 gap-3">
+                                <button onClick={() => bulkMarkStatus('present')} className="py-4 bg-emerald-500 text-white rounded-none text-[10px] font-black uppercase tracking-[0.2em] shadow-xl shadow-emerald-500/10 hover:scale-[1.02] transition-all">Mark All Present</button>
+                                <button onClick={() => bulkMarkStatus('absent')} className="py-4 bg-rose-500 text-white rounded-none text-[10px] font-black uppercase tracking-[0.2em] shadow-xl shadow-rose-500/10 hover:scale-[1.02] transition-all">Mark All Absent</button>
+                                <button onClick={() => bulkMarkStatus('leave')} className="py-4 bg-violet-500 text-white rounded-none text-[10px] font-black uppercase tracking-[0.2em] shadow-xl shadow-violet-500/10 hover:scale-[1.02] transition-all">Mark All Leave</button>
                             </div>
                         </motion.div>
                     </div>
