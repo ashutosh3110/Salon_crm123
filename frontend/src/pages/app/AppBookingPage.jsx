@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect, useRef } from 'react';
+import { useState, useMemo, useEffect, useRef, useCallback } from 'react';
 import { useSearchParams, useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, ArrowRight, Check, Clock, Sparkles, Loader2, Search, SlidersHorizontal, ChevronLeft, ChevronRight, MapPin, Crown, Star, Armchair, DoorClosed, Zap, Wallet, CreditCard, User } from 'lucide-react';
@@ -72,31 +72,99 @@ export default function AppBookingPage() {
 
     const currentOutlet = selectedOutlet;
 
-    useEffect(() => {
+    const initializeBookingData = useCallback(async () => {
         const urlId = searchParams.get('tenantId') || searchParams.get('salonId');
-        const urlOutletId = searchParams.get('outletId');
-
         const effectiveTid = urlId || activeSalonId || localStorage.getItem('active_salon_id');
-        const targetSalonId = effectiveTid;
-
-        fetchStaff?.(targetSalonId);
-        fetchOutlets?.(targetSalonId);
         
-        if (preSelectedServiceId && targetSalonId) {
-            fetchServices?.(targetSalonId, null);
-        } else {
-            fetchServices?.(targetSalonId);
+        if (!effectiveTid) {
+            setIsLoading(false);
+            return;
         }
-    }, [fetchStaff, fetchOutlets, fetchServices, preSelectedServiceId, activeSalonId, searchParams]);
 
-    const [step, setStep] = useState(0);
+        setIsLoading(true);
+        try {
+            const fetchPromises = [
+                fetchStaff?.(effectiveTid),
+                fetchOutlets?.(effectiveTid),
+                api.get('/loyalty/membership/active'),
+                api.get('/promotions/active', { params: { _t: Date.now() } })
+            ];
+
+            if (preSelectedServiceId) {
+                fetchPromises.push(fetchServices?.(effectiveTid, null));
+            } else {
+                fetchPromises.push(fetchServices?.(effectiveTid));
+            }
+
+            if (!platformSettings) {
+                fetchPromises.push(fetchPlatformSettings());
+            }
+
+            const results = await Promise.all(fetchPromises);
+            
+            // Set membership if it was in the promises
+            const memRes = results.find(r => r?.config?.url === '/loyalty/membership/active');
+            if (memRes) {
+                setActiveMembership(memRes.data?.data || memRes.data || null);
+            }
+
+            // Set coupons
+            const couponRes = results.find(r => r?.config?.url === '/promotions/active');
+            if (couponRes) {
+                const list = Array.isArray(couponRes?.data) ? couponRes.data : (Array.isArray(couponRes?.data?.data) ? couponRes.data.data : []);
+                const codes = list
+                    .filter(p => (p?.couponCode || p?.activationMode === 'COUPON'))
+                    .map(p => String(p.couponCode || p.code || 'OFFER').trim().toUpperCase());
+                setAvailableCoupons(codes.slice(0, 8));
+            }
+
+        } catch (err) {
+            console.error('[AppBookingPage] Initialization failed:', err);
+        } finally {
+            // Smooth transition
+            setTimeout(() => setIsLoading(false), 300);
+        }
+    }, [activeSalonId, preSelectedServiceId, searchParams, fetchStaff, fetchOutlets, fetchServices, fetchPlatformSettings, platformSettings]);
+
+    useEffect(() => {
+        initializeBookingData();
+    }, [initializeBookingData]);
+
+    const [step, setStep] = useState(() => {
+        const s = searchParams.get('step');
+        return s ? parseInt(s, 10) : 0;
+    });
+
+    // Scroll to top when step changes
+    useEffect(() => {
+        window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+        // Also target the main layout if it's the scroll container
+        const main = document.querySelector('main');
+        if (main) main.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+    }, [step]);
     const [direction, setDirection] = useState(1);
     const [selectedServices, setSelectedServices] = useState([]);
     const [selectedDate, setSelectedDate] = useState(null);
     const [selectedTime, setSelectedTime] = useState(null);
-    const [selectedStaff, setSelectedStaff] = useState(null);
+    const [selectedStaff, setSelectedStaff] = useState(() => {
+        const id = searchParams.get('staffId');
+        if (id && businessStaff?.length > 0) {
+            return businessStaff.find(s => String(s._id || s.id) === id) || null;
+        }
+        return null;
+    });
+
+    // Sync selectedStaff if it was in URL but businessStaff wasn't loaded yet
+    useEffect(() => {
+        const id = searchParams.get('staffId');
+        if (id && businessStaff?.length > 0 && !selectedStaff) {
+            const found = businessStaff.find(s => String(s._id || s.id) === id);
+            if (found) setSelectedStaff(found);
+        }
+    }, [businessStaff, searchParams]);
     const [availableSlots, setAvailableSlots] = useState([]);
     const [submitting, setSubmitting] = useState(false);
+    const [isLoading, setIsLoading] = useState(true);
 
     // Auto-select first outlet if none selected and outlets are available
     useEffect(() => {
@@ -315,6 +383,36 @@ export default function AppBookingPage() {
         input: isLight ? 'linear-gradient(135deg, #FFF9F5 0%, #F3EAE3 100%)' : 'linear-gradient(135deg, #2A211B 0%, #1A1411 100%)',
     };
 
+    if (isInitializing || authLoading) {
+        return (
+            <div style={{ background: colors.bg, minHeight: '100svh' }} className="p-4 space-y-6">
+                <style>{`
+                    @keyframes shimmer {
+                        0% { background-position: -200% 0; }
+                        100% { background-position: 200% 0; }
+                    }
+                    .shimmer {
+                        background: ${isLight ? 'linear-gradient(90deg, #F3EAE3 25%, #E8ECEF 50%, #F3EAE3 75%)' : 'linear-gradient(90deg, #1A1411 25%, #2A211B 50%, #1A1411 75%)'};
+                        background-size: 200% 100%;
+                        animation: shimmer 1.5s infinite linear;
+                    }
+                `}</style>
+                <div className="flex items-center gap-4">
+                    <div className="w-10 h-10 rounded-full shimmer" />
+                    <div className="h-6 w-32 shimmer rounded" />
+                </div>
+                <div className="h-12 w-full rounded-2xl shimmer" />
+                <div className="aspect-[16/9] w-full rounded-3xl shimmer" />
+                <div className="space-y-4">
+                    <div className="h-4 w-1/4 shimmer rounded" />
+                    <div className="grid grid-cols-3 gap-4">
+                        {[1, 2, 3].map(i => <div key={i} className="h-24 rounded-2xl shimmer" />)}
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
     // Pre-select service from query
     // Redundant fetches removed as data is part of initial-data
 
@@ -431,6 +529,14 @@ export default function AppBookingPage() {
     const goTo = (newStep) => {
         setDirection(newStep > step ? 1 : -1);
         setStep(newStep);
+        
+        // Persist step and core IDs in URL
+        const newParams = new URLSearchParams(searchParams);
+        newParams.set('step', newStep);
+        if (selectedStaff) {
+            newParams.set('staffId', selectedStaff._id || selectedStaff.id);
+        }
+        navigate({ search: newParams.toString() }, { replace: true });
     };
 
     // Generate days for monthly view
@@ -704,6 +810,31 @@ export default function AppBookingPage() {
         setSubmitting(false);
         submittingRef.current = false;
     };
+
+    // Loading state with a full-screen loader
+    if (isLoading || authLoading) {
+        return (
+            <div style={{ 
+                background: colors.bg, 
+                minHeight: '100svh',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '20px'
+            }}>
+                <motion.div
+                    animate={{ rotate: 360 }}
+                    transition={{ duration: 1.5, repeat: Infinity, ease: "linear" }}
+                >
+                    <Loader2 className="w-10 h-10 text-[#C8956C]" />
+                </motion.div>
+                <p style={{ color: colors.textMuted, fontSize: '12px', fontWeight: 600, letterSpacing: '0.1em' }}>
+                    PREPARING YOUR EXPERIENCE
+                </p>
+            </div>
+        );
+    }
 
     // Success screen
     if (bookingComplete) {

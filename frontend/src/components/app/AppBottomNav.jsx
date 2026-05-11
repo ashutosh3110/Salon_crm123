@@ -26,20 +26,24 @@ export default function AppBottomNav() {
         <nav style={{
             position: 'fixed',
             bottom: 0,
-            left: '50%',
-            transform: 'translateX(-50%)',
+            left: 0,
+            right: 0,
+            margin: '0 auto',
             width: '100%',
             maxWidth: '430px',
-            background: isLight ? '#FFFFFF' : '#1A1A1A',
-            borderTop: isLight ? '1px solid rgba(0,0,0,0.08)' : '1px solid rgba(255,255,255,0.07)',
-            paddingBottom: 'env(safe-area-inset-bottom)',
-            zIndex: 100,
+            background: isLight ? 'rgba(255, 255, 255, 0.85)' : 'rgba(26, 26, 26, 0.85)',
+            backdropFilter: 'blur(20px)',
+            WebkitBackdropFilter: 'blur(20px)',
+            borderTop: isLight ? '1px solid rgba(0,0,0,0.06)' : '1px solid rgba(255,255,255,0.08)',
+            paddingBottom: 'calc(8px + env(safe-area-inset-bottom))',
+            zIndex: 9999,
+            boxShadow: isLight ? '0 -10px 25px rgba(0,0,0,0.04)' : '0 -10px 30px rgba(0,0,0,0.3)',
         }}>
             <div style={{
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'space-around',
-                padding: '8px 8px 10px',
+                padding: '10px 8px',
             }}>
                 {tabs.map((tab) => {
                     const active = isActive(tab.path);

@@ -161,6 +161,8 @@ export default function POSBillingPage() {
         bookings: businessBookings,
         invoices,
         orders: businessOrders,
+        platformSettings,
+        fetchPlatformSettings,
         fetchInvoices,
         fetchOrders,
         fetchBookings
@@ -177,10 +179,16 @@ export default function POSBillingPage() {
     const [customerState, setCustomerState] = useState('Uttar Pradesh'); // Default to Salon State
     const [pendingAppOrder, setPendingAppOrder] = useState(null);
 
+    useEffect(() => {
+        if (!platformSettings) {
+            fetchPlatformSettings();
+        }
+    }, [platformSettings, fetchPlatformSettings]);
+
     // Fiscal Settings (from localStorage)
     const fiscal = useMemo(() => {
         const saved = localStorage.getItem('pos_fiscal_settings');
-        return saved ? JSON.parse(saved) : {
+        const base = saved ? JSON.parse(saved) : {
             businessName: 'XYZ SALON & SPA',
             gstin: '09AAFCC0301F1ZN',
             state: 'Uttar Pradesh',
@@ -189,7 +197,17 @@ export default function POSBillingPage() {
             productGst: 12,
             inclusiveTax: true
         };
-    }, []);
+
+        // Override with platform settings if available
+        if (platformSettings) {
+            return {
+                ...base,
+                serviceGst: Number(platformSettings.serviceGst || base.serviceGst),
+                productGst: Number(platformSettings.productGst || base.productGst)
+            };
+        }
+        return base;
+    }, [platformSettings]);
 
     useEffect(() => {
         if (fiscal.state) setCustomerState(fiscal.state);
@@ -394,7 +412,9 @@ export default function POSBillingPage() {
             if (item.isPackageRedemption) return;
             
             const netItemTotal = (item.price * item.quantity) * discountFactor;
-            const itemTaxRate = (item.type === 'service' ? (fiscal.serviceGst || 18) : (fiscal.productGst || 12)) / 100;
+            const sGst = Number(platformSettings?.serviceGst || fiscal.serviceGst || 18);
+            const pGst = Number(platformSettings?.productGst || fiscal.productGst || 12);
+            const itemTaxRate = (item.type === 'service' ? sGst : pGst) / 100;
             
             if (fiscal.inclusiveTax) {
                 const taxableVal = netItemTotal / (1 + itemTaxRate);

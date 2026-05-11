@@ -104,13 +104,15 @@ export default function AppMyBookingsPage() {
         const upcoming = bookings.filter(b => {
             const bDate = new Date(b.appointmentDate);
             bDate.setHours(0,0,0,0);
-            return (['pending', 'confirmed'].includes(b.status) && bDate >= now);
+            // Keep cancelled bookings in upcoming if the date hasn't passed yet
+            return (['pending', 'confirmed', 'cancelled'].includes(b.status) && bDate >= now);
         }).sort((a, b) => new Date(a.appointmentDate) - new Date(b.appointmentDate));
 
         const past = bookings.filter(b => {
             const bDate = new Date(b.appointmentDate);
             bDate.setHours(0,0,0,0);
-            return (['completed', 'cancelled', 'no-show'].includes(b.status) || bDate < now);
+            // Past is completed, no-show, or anything that has already happened
+            return (['completed', 'no-show'].includes(b.status) || bDate < now);
         }).sort((a, b) => new Date(b.appointmentDate) - new Date(a.appointmentDate));
 
         return { upcoming, past };

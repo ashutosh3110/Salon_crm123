@@ -100,15 +100,20 @@ exports.sendManualNotification = async (req, res) => {
 // @access  Private
 exports.registerToken = async (req, res) => {
     try {
-        const { token, platform } = req.body;
-        if (!token) {
-            return res.status(400).json({ success: false, message: 'Token is required' });
+        const { token, fcmToken, platform } = req.body;
+        const actualToken = token || fcmToken;
+        
+        if (!actualToken) {
+            return res.status(400).json({ success: false, message: 'Token is required (fcmToken)' });
         }
 
         const userId = req.user.id || req.user._id;
         const phone = req.user.phone;
         const role = req.user.role;
-        const updateField = (platform === 'mobile' || platform === 'app') ? { fcmTokenMobile: token } : { fcmTokenWeb: token };
+        
+        // Detect platform type
+        const isMobile = ['android', 'ios', 'mobile', 'app'].includes(String(platform).toLowerCase());
+        const updateField = isMobile ? { fcmTokenMobile: actualToken } : { fcmTokenWeb: actualToken };
         const updateQuery = { $addToSet: updateField };
 
         let updatedRecord = null;

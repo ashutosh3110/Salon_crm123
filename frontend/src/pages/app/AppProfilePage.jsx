@@ -130,6 +130,20 @@ export default function AppProfilePage() {
         }
     }, [customer?._id]);
 
+    useEffect(() => {
+        if (showReviewModal || showDeleteConfirm) {
+            document.body.style.overflow = 'hidden';
+            document.documentElement.style.overflow = 'hidden';
+        } else {
+            document.body.style.overflow = 'auto';
+            document.documentElement.style.overflow = 'auto';
+        }
+        return () => {
+            document.body.style.overflow = 'auto';
+            document.documentElement.style.overflow = 'auto';
+        };
+    }, [showReviewModal, showDeleteConfirm]);
+
     const colors = {
         bg: isLight ? '#FCF9F6' : '#0F0F0F',
         card: isLight ? '#FFFFFF' : '#1A1A1A',
@@ -184,7 +198,20 @@ export default function AppProfilePage() {
         return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
     };
 
+    const validateEmail = (email) => {
+        return String(email)
+            .toLowerCase()
+            .match(
+                /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
+            );
+    };
+
     const handleSave = async () => {
+        if (form.email && !validateEmail(form.email)) {
+            alert('Please enter a valid email address');
+            return;
+        }
+
         setSaving(true);
         try {
             await updateCustomer(form);
@@ -900,11 +927,9 @@ export default function AppProfilePage() {
                 )}
             </AnimatePresence>
 
-            <div className="h-10" />
-
 
             {/* Support & Legal */}
-            <motion.div variants={fadeUp} style={{ background: colors.card, border: `1px solid ${colors.border}` }} className="rounded-2xl overflow-hidden shadow-sm mt-10">
+            <motion.div variants={fadeUp} style={{ background: colors.card, border: `1px solid ${colors.border}` }} className="rounded-2xl overflow-hidden shadow-sm mt-4">
                 <button
                     onClick={() => navigate('/app/help')}
                     className="w-full flex items-center gap-4 p-4 border-b border-black/5 dark:border-white/5 hover:bg-black/5 dark:hover:bg-white/5 transition-colors"

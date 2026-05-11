@@ -146,6 +146,34 @@ export default function AppCheckoutPage() {
         show: { opacity: 1, x: 0 }
     };
 
+    if (fetchingMembership) {
+        return (
+            <div style={{ background: colors.bg, minHeight: '100svh' }} className="p-4 space-y-6">
+                <style>{`
+                    @keyframes shimmer {
+                        0% { background-position: -200% 0; }
+                        100% { background-position: 200% 0; }
+                    }
+                    .shimmer {
+                        background: ${isLight ? 'linear-gradient(90deg, #F3EAE3 25%, #E8ECEF 50%, #F3EAE3 75%)' : 'linear-gradient(90deg, #1A1411 25%, #2A211B 50%, #1A1411 75%)'};
+                        background-size: 200% 100%;
+                        animation: shimmer 1.5s infinite linear;
+                    }
+                `}</style>
+                <div className="flex items-center gap-4">
+                    <div className="w-10 h-10 rounded-full shimmer" />
+                    <div className="h-6 w-32 shimmer rounded" />
+                </div>
+                <div className="space-y-4">
+                    <div className="h-4 w-1/3 shimmer rounded" />
+                    <div className="h-32 w-full rounded-2xl shimmer" />
+                    <div className="h-32 w-full rounded-2xl shimmer" />
+                    <div className="h-40 w-full rounded-3xl shimmer" />
+                </div>
+            </div>
+        );
+    }
+
     if (step === 3) {
         return (
             <div style={{ background: colors.bg, minHeight: '100svh' }} className="flex flex-col items-center justify-center p-8 text-center">

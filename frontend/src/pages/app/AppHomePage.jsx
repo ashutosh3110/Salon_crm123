@@ -264,32 +264,51 @@ const Skeleton = ({ width, height, borderRadius = '12px', margin = '0' }) => (
     }} />
 );
 
-const HomeSkeleton = ({ colors }) => (
-    <div style={{ padding: '20px 16px' }}>
+const HomeSkeleton = ({ colors, isLight }) => (
+    <div style={{ padding: '20px 16px', background: colors.bg, minHeight: '100svh' }}>
         <style>{`
-            @keyframes shimmer {
+            @keyframes shimmer_effect {
                 0% { background-position: -200% 0; }
                 100% { background-position: 200% 0; }
             }
+            .shimmer_box {
+                background: ${isLight ? 'linear-gradient(90deg, #F3EAE3 25%, #E8ECEF 50%, #F3EAE3 75%)' : 'linear-gradient(90deg, #1A1411 25%, #2A211B 50%, #1A1411 75%)'};
+                background-size: 200% 100%;
+                animation: shimmer_effect 1.5s infinite linear;
+            }
         `}</style>
         {/* Header Skeleton */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '30px' }}>
-            <Skeleton width="120px" height="24px" />
-            <div style={{ display: 'flex', gap: '12px' }}>
-                <Skeleton width="32px" height="32px" borderRadius="50%" />
-                <Skeleton width="32px" height="32px" borderRadius="50%" />
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '24px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <div className="shimmer_box" style={{ width: '36px', height: '36px', borderRadius: '12px' }} />
+                <div className="space-y-2">
+                    <div className="shimmer_box" style={{ width: '60px', height: '8px', borderRadius: '4px' }} />
+                    <div className="shimmer_box" style={{ width: '100px', height: '12px', borderRadius: '6px' }} />
+                </div>
             </div>
+            <div className="shimmer_box" style={{ width: '36px', height: '36px', borderRadius: '12px' }} />
         </div>
+
+        {/* Search Skeleton */}
+        <div className="shimmer_box" style={{ width: '100%', height: '42px', borderRadius: '20px 6px 20px 6px', marginBottom: '20px' }} />
+
+        {/* Gender Tabs Skeleton */}
+        <div style={{ display: 'flex', gap: '20px', marginBottom: '24px' }}>
+            <div className="shimmer_box" style={{ flex: 1, height: '32px', borderRadius: '8px' }} />
+            <div className="shimmer_box" style={{ flex: 1, height: '32px', borderRadius: '8px' }} />
+        </div>
+
         {/* Banner Skeleton */}
-        <Skeleton width="100%" height="180px" borderRadius="24px" margin="0 0 30px 0" />
-        {/* Horizontal Sections Skeletons */}
-        {[1, 2, 3].map(i => (
-            <div key={i} style={{ marginBottom: '30px' }}>
-                <Skeleton width="150px" height="20px" margin="0 0 16px 0" />
-                <div style={{ display: 'flex', gap: '16px', overflow: 'hidden' }}>
-                    <Skeleton width="160px" height="120px" borderRadius="20px" />
-                    <Skeleton width="160px" height="120px" borderRadius="20px" />
-                    <Skeleton width="160px" height="120px" borderRadius="20px" />
+        <div className="shimmer_box" style={{ width: '100%', height: '170px', borderRadius: '24px', marginBottom: '32px' }} />
+
+        {/* Sections Skeleton */}
+        {[1, 2].map(i => (
+            <div key={i} style={{ marginBottom: '32px' }}>
+                <div className="shimmer_box" style={{ width: '140px', height: '18px', borderRadius: '6px', marginBottom: '16px' }} />
+                <div style={{ display: 'flex', gap: '12px', overflow: 'hidden' }}>
+                    {[1, 2, 3].map(j => (
+                        <div key={j} className="shimmer_box" style={{ width: '180px', height: '220px', borderRadius: '24px', flexShrink: 0 }} />
+                    ))}
                 </div>
             </div>
         ))}
@@ -337,6 +356,13 @@ export default function AppHomePage() {
     const [loyaltyRule, setLoyaltyRule] = useState(null);
     const [isLoadingData, setIsLoadingData] = useState(true);
     const [userLocation, setUserLocation] = useState(null);
+    const [searchQuery, setSearchQuery] = useState('');
+
+    const handleSearchKeyDown = (e) => {
+        if (e.key === 'Enter' && searchQuery.trim()) {
+            navigate(`/app/services?search=${encodeURIComponent(searchQuery.trim())}`);
+        }
+    };
 
     const services = useMemo(() => (outletServices || []), [outletServices]);
     const products = useMemo(() => (outletProducts || []), [outletProducts]);
@@ -369,75 +395,63 @@ export default function AppHomePage() {
         }
     }, [categories, gender, selectedServiceCategory]);
 
-    // FETCH STATIC DATA (Banners, Loyalty Rules)
-    const fetchStaticData = useCallback(async (sid) => {
-        try {
-            const query = sid ? `?tenantId=${sid}` : '';
-            const [bRes, lRes] = await Promise.all([
-                api.get(`/banners${query}`),
-                api.get(`/loyalty-rules${query}`)
-            ]);
-            setPageBanners(bRes.data?.data || []);
-            setLoyaltyRule(lRes.data?.data || lRes.data || null);
-        } catch (err) {
-            console.error('Static data fetch error:', err);
-        }
-    }, []);
-
-    // FETCH OUTLET-SPECIFIC DATA
-    const fetchOutletSpecificData = useCallback(async () => {
-        if (!activeOutletId) {
+    // CONSOLIDATED INITIALIZATION
+    const initializePage = useCallback(async () => {
+        const sid = activeSalonId || localStorage.getItem('active_salon_id');
+        if (!sid) {
             setIsLoadingData(false);
             return;
         }
+
         setIsLoadingData(true);
         try {
-            const [sRes, pRes, rRes, plRes] = await Promise.all([
-                api.get(`/services?salonId=${activeSalonId}`),
-                api.get(`/products?salonId=${activeSalonId}`),
-                api.get(`/reviews/trusted/${activeOutletId}`),
-                api.get(`/membership-plans/${activeOutletId}`)
+            // Get location first if possible
+            let lat = null, lng = null;
+            if ("geolocation" in navigator) {
+                try {
+                    const pos = await new Promise((resolve, reject) => {
+                        navigator.geolocation.getCurrentPosition(resolve, reject, { timeout: 3000 });
+                    });
+                    lat = pos.coords.latitude;
+                    lng = pos.coords.longitude;
+                    setUserLocation({ lat, lng });
+                } catch (e) {
+                    console.warn("Location access denied or timeout");
+                }
+            }
+
+            const query = `?tenantId=${sid}&salonId=${sid}`;
+            const nearestUrl = lat && lng ? `/outlets/nearest?lat=${lat}&lng=${lng}` : '/outlets/nearest';
+
+            const [bRes, lRes, sRes, pRes, rRes, plRes, nRes] = await Promise.all([
+                api.get(`/banners${query}`),
+                api.get(`/loyalty-rules${query}`),
+                api.get(`/services?salonId=${sid}`),
+                api.get(`/products?salonId=${sid}`),
+                api.get(`/reviews/trusted/${activeOutletId || sid}`),
+                api.get(`/membership-plans/${activeOutletId || sid}`),
+                api.get(nearestUrl)
             ]);
+
+            setPageBanners(bRes.data?.data || []);
+            setLoyaltyRule(lRes.data?.data || lRes.data || null);
             setOutletServices(sRes.data?.data || sRes.data?.results || []);
             setOutletProducts(pRes.data?.data || pRes.data?.results || []);
             setTrustedReviews(rRes.data?.data || []);
             setOutletPlans(plRes.data?.data || []);
+            setNearestOutlets(nRes.data?.data || []);
+
         } catch (error) {
-            console.error('Outlet data fetch error:', error);
+            console.error('Home page initialization error:', error);
         } finally {
-            setIsLoadingData(false);
+            // Add a small delay for smoother transition
+            setTimeout(() => setIsLoadingData(false), 300);
         }
-    }, [activeOutletId]);
-
-    // NEAREST OUTLETS
-    const fetchNearest = useCallback(async (lat, lng) => {
-        if (lat && lng) setUserLocation({ lat, lng });
-        try {
-            let url = '/outlets/nearest';
-            if (lat && lng) url += `?lat=${lat}&lng=${lng}`;
-            const res = await api.get(url);
-            setNearestOutlets(res.data?.data || []);
-        } catch (err) {}
-    }, []);
+    }, [activeSalonId, activeOutletId]);
 
     useEffect(() => {
-        fetchStaticData(activeSalonId);
-    }, [fetchStaticData, activeSalonId]);
-
-    useEffect(() => {
-        fetchOutletSpecificData();
-    }, [fetchOutletSpecificData]);
-
-    useEffect(() => {
-        if ("geolocation" in navigator) {
-            navigator.geolocation.getCurrentPosition(
-                (pos) => fetchNearest(pos.coords.latitude, pos.coords.longitude),
-                () => fetchNearest()
-            );
-        } else {
-            fetchNearest();
-        }
-    }, [fetchNearest]);
+        initializePage();
+    }, [initializePage]);
 
     const calculateDistance = (lat1, lon1, lat2, lon2) => {
         if (!lat1 || !lon1 || !lat2 || !lon2) return null;
@@ -452,9 +466,9 @@ export default function AppHomePage() {
 
     const onRefresh = useCallback(async () => {
         setRefreshing(true);
-        await Promise.all([fetchStaticData(), fetchOutletSpecificData()]);
+        await initializePage();
         setRefreshing(false);
-    }, [fetchStaticData, fetchOutletSpecificData]);
+    }, [initializePage]);
 
     // Auto-scroll logic for services
     useEffect(() => {
@@ -507,14 +521,24 @@ export default function AppHomePage() {
     }, [outlets]);
 
     const filteredPopularServices = useMemo(() => {
-        return (services || []).filter(s => {
+        let result = (services || []);
+        
+        if (searchQuery.trim()) {
+            const q = searchQuery.toLowerCase();
+            result = result.filter(s => 
+                s.name.toLowerCase().includes(q) || 
+                (s.category && s.category.toLowerCase().includes(q))
+            );
+        }
+
+        return result.filter(s => {
             // Remove outlet filtering for popular section
             const cat = categories?.find(c => c.name === s.category);
             if (!cat) return true;
             if (!gender) return true;
             return cat.gender === 'both' || cat.gender === gender;
         });
-    }, [services, gender, categories]);
+    }, [services, gender, categories, searchQuery]);
 
     const filteredPromos = useMemo(() => {
         return (banners || [])
@@ -573,10 +597,10 @@ export default function AppHomePage() {
         setCurrentPromoIndex(0);
     }, [g]);
 
-    if (isLoadingData) {
+    if (isLoadingData || isContextInitializing) {
         return (
-            <div style={{ background: colors.background, minHeight: '100vh' }}>
-                <HomeSkeleton colors={colors} />
+            <div style={{ background: colors.bg, minHeight: '100svh' }}>
+                <HomeSkeleton colors={colors} isLight={isLight} />
             </div>
         );
     }
@@ -659,10 +683,19 @@ export default function AppHomePage() {
                             transition: 'all 0.3s cubic-bezier(0.16, 1, 0.3, 1)'
                         }}
                     >
-                        <Search size={18} color={isFocused ? colors.accent : (isLight ? '#444' : 'rgba(255,255,255,0.7)')} />
+                        <motion.button
+                            whileTap={{ scale: 0.9 }}
+                            onClick={() => searchQuery.trim() && navigate(`/app/services?search=${encodeURIComponent(searchQuery.trim())}`)}
+                            style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', display: 'flex', alignItems: 'center' }}
+                        >
+                            <Search size={18} color={isFocused ? colors.accent : (isLight ? '#444' : 'rgba(255,255,255,0.7)')} />
+                        </motion.button>
                         <input
                             type="text"
                             className="search-input"
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            onKeyDown={handleSearchKeyDown}
                             placeholder={isFocused ? "" : (PLACEHOLDERS?.[placeholderIndex] || "Search...")}
                             onFocus={() => setIsFocused(true)}
                             onBlur={() => setIsFocused(false)}

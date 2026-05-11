@@ -2,6 +2,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { X, ShoppingBag, Plus, Minus, ArrowRight } from 'lucide-react';
 import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
+import { getImageUrl } from '../../utils/imageUtils';
 
 const CartDrawer = ({ isOpen, onClose, cart, total, onUpdateQuantity, onRemove, colors, isLight }) => {
     const navigate = useNavigate();
@@ -48,7 +49,7 @@ const CartDrawer = ({ isOpen, onClose, cart, total, onUpdateQuantity, onRemove, 
                                     return (
                                         <div key={p._id || p.id} className="flex gap-4 group">
                                             <div className="w-16 h-16 rounded-xl bg-black/5 dark:bg-white/5 border border-black/5 dark:border-white/5 overflow-hidden shrink-0">
-                                                <img src={p.appImage || p.image} alt={p.name} className="w-full h-full object-cover" />
+                                                <img src={getImageUrl(p.appImage || p.image)} alt={p.name} className="w-full h-full object-cover" />
                                             </div>
                                             <div className="flex-1 min-w-0">
                                                 <h4 className="font-black text-[11px] uppercase tracking-widest leading-relaxed mb-1 line-clamp-1" style={{ color: colors.text }}>{p.name}</h4>

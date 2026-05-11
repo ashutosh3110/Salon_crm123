@@ -22,7 +22,8 @@ const BusinessContext = createContext({
     platformSettings: null, fetchPlatformSettings: async () => { },
     updateSalon: async () => { }, fetchSalon: async () => { },
     salonLoading: false,
-    banners: [], offers: [], lookbook: [], experts: [], productCategories: [], nearbyOutlets: [], userSession: null
+    banners: [], offers: [], lookbook: [], experts: [], productCategories: [], nearbyOutlets: [], userSession: null,
+    isPageLoading: false, setIsPageLoading: () => { }
 });
 
 export function BusinessProvider({ children }) {
@@ -85,6 +86,7 @@ export function BusinessProvider({ children }) {
     const [productCategories, setProductCategories] = useState([]);
     const [nearbyOutlets, setNearbyOutlets] = useState([]);
     const [userSession, setUserSession] = useState(null);
+    const [isPageLoading, setIsPageLoading] = useState(false);
 
 
     const [activeSalonId, setActiveSalonId] = useState(() => localStorage.getItem('active_salon_id') || null);
@@ -420,15 +422,18 @@ export function BusinessProvider({ children }) {
             if (oRes.data.success) setOutlets(oRes.data.data || []);
             
             // Also fetch shop assets
-            fetchProductCategories(sid);
-            fetchProducts(sid);
-
+            await Promise.all([
+                fetchProductCategories(sid),
+                fetchProducts(sid),
+                fetchLoyaltySettings(sid),
+                fetchLoyaltyPlans(sid)
+            ]);
         } catch (err) {
             console.error("Failed to fetch basic salon data:", err);
         } finally {
             setIsInitializing(false);
         }
-    }, [activeSalonId]);
+    }, [activeSalonId, fetchProductCategories, fetchProducts, fetchLoyaltySettings, fetchLoyaltyPlans]);
     const fetchSalon = useCallback(async () => {
         try {
             const sid = activeSalonId || localStorage.getItem('active_salon_id');
@@ -928,7 +933,8 @@ export function BusinessProvider({ children }) {
         lookbook, setLookbook,
         experts, setExperts,
         productCategories, setProductCategories,
-        nearbyOutlets, setNearbyOutlets
+        nearbyOutlets, setNearbyOutlets,
+        isPageLoading, setIsPageLoading
     }), [
 
         salon, outlets, outletsLoading, staff, services, categories, products, customers, customersMetadata, globalStats, customersLoading, fetchCustomers, addCustomer, deleteCustomer, updateCustomer, bulkImportCustomers,
@@ -947,7 +953,7 @@ export function BusinessProvider({ children }) {
         loyaltyPlans, fetchLoyaltyPlans,
         platformSettings, fetchPlatformSettings,
         updateSalon, fetchSalon,
-        banners, offers, lookbook, experts, productCategories, nearbyOutlets, userSession
+        banners, offers, lookbook, experts, productCategories, nearbyOutlets, userSession, isPageLoading
     ]);
 
 

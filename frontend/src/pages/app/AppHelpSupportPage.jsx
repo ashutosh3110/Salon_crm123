@@ -1,6 +1,6 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { useState, useEffect } from 'react';
-import { HelpCircle, MessageSquare, ChevronRight, Search, Mail, FileText, Plus, Loader2, AlertCircle, Clock, CheckCircle2, X } from 'lucide-react';
+import { HelpCircle, MessageSquare, MessageCircle, ChevronRight, Search, Mail, FileText, Plus, Loader2, AlertCircle, Clock, CheckCircle2, X } from 'lucide-react';
 import AppBackButton from '../../components/app/AppBackButton';
 import { useCustomerTheme } from '../../contexts/CustomerThemeContext';
 import api from '../../services/mock/mockApi';
@@ -60,6 +60,20 @@ export default function AppHelpSupportPage() {
             fetchTickets();
         }
     }, [activeTab]);
+
+    useEffect(() => {
+        if (showCreateModal) {
+            document.body.style.overflow = 'hidden';
+            document.documentElement.style.overflow = 'hidden';
+        } else {
+            document.body.style.overflow = 'auto';
+            document.documentElement.style.overflow = 'auto';
+        }
+        return () => {
+            document.body.style.overflow = 'auto';
+            document.documentElement.style.overflow = 'auto';
+        };
+    }, [showCreateModal]);
 
     const handleCreateTicket = async (e) => {
         e.preventDefault();

@@ -26,7 +26,7 @@ router.get('/available-slots', getAvailableSlots);
 
 router
     .route('/:id/status')
-    .patch(authorize('admin', 'manager', 'receptionist'), updateStatus);
+    .patch(authorize('admin', 'manager', 'receptionist', 'customer'), updateStatus);
 
 const { getCustomerBookings, getBookingDetails } = require('../Controllers/bookingController');
 router.get('/customer/:customerId', getCustomerBookings);

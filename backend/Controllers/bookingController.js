@@ -245,8 +245,23 @@ exports.updateStatus = async (req, res) => {
             return res.status(404).json({ success: false, message: 'Booking not found' });
         }
 
-        if (booking.salonId.toString() !== req.user.salonId.toString()) {
-            return res.status(401).json({ success: false, message: 'Not authorized' });
+        if (req.user.role === 'customer') {
+            if (booking.clientId.toString() !== req.user._id.toString()) {
+                return res.status(401).json({ success: false, message: 'Not authorized to modify this booking' });
+            }
+            // Customers can only change status to 'cancelled'
+            if (req.body.status && req.body.status !== 'cancelled') {
+                return res.status(400).json({ success: false, message: 'Customers are only permitted to cancel bookings' });
+            }
+            // Customers cannot change payment status
+            if (req.body.paymentStatus) {
+                return res.status(400).json({ success: false, message: 'Not authorized to modify payment status' });
+            }
+        } else {
+            // Salon staff authorization
+            if (booking.salonId.toString() !== req.user.salonId.toString()) {
+                return res.status(401).json({ success: false, message: 'Not authorized for this salon' });
+            }
         }
 
         const oldStatus = booking.status;

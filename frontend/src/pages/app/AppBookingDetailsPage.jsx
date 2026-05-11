@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
@@ -23,6 +23,8 @@ import { useBookingRegistry } from '../../contexts/BookingRegistryContext';
 import api from '../../services/api';
 import toast from 'react-hot-toast';
 import { useBusiness } from '../../contexts/BusinessContext';
+import ReviewModal from '../../components/app/ReviewModal';
+import { Star } from 'lucide-react';
 
 export default function AppBookingDetailsPage() {
     const { id } = useParams();
@@ -34,6 +36,8 @@ export default function AppBookingDetailsPage() {
 
     const [booking, setBooking] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
+    const [isCancelling, setIsCancelling] = useState(false);
 
     const colors = {
         bg: isLight ? '#FCF9F6' : '#0F0F0F',
@@ -72,6 +76,45 @@ export default function AppBookingDetailsPage() {
 
         fetchDetail();
     }, [id]);
+
+    const canCancel = useMemo(() => {
+        if (!booking || (booking.status !== 'pending' && booking.status !== 'confirmed')) return false;
+        
+        const appointmentDate = new Date(booking.appointmentDate);
+        const today = new Date();
+        
+        // Reset times to compare only dates
+        appointmentDate.setHours(0, 0, 0, 0);
+        today.setHours(0, 0, 0, 0);
+        
+        // Allowed if today is BEFORE appointmentDate
+        return today < appointmentDate;
+    }, [booking]);
+
+    const handleCancel = async () => {
+        if (!canCancel) {
+            toast.error("Cancellations are not allowed on the day of the booking.");
+            return;
+        }
+        
+        if (!window.confirm('Are you sure you want to cancel this booking? This action cannot be undone.')) return;
+        
+        setIsCancelling(true);
+        try {
+            // Using a generic status update if possible, or we'll need to check if backend supports it
+            // For now, let's assume we can use a dedicated status endpoint or general update
+            const res = await api.patch(`/bookings/${id}/status`, { status: 'cancelled' });
+            if (res.data?.success) {
+                toast.success('Booking cancelled successfully');
+                setBooking(prev => ({ ...prev, status: 'cancelled' }));
+            }
+        } catch (err) {
+            console.error('Cancellation error:', err);
+            toast.error(err.response?.data?.message || 'Failed to cancel booking. Please contact the salon.');
+        } finally {
+            setIsCancelling(false);
+        }
+    };
 
     const statusConfig = {
         pending: { icon: AlertCircle, color: '#f59e0b', label: 'Awaiting Confirmation' },
@@ -271,31 +314,57 @@ export default function AppBookingDetailsPage() {
 
 
                 {/* Cancel Policy */}
-                <div className="p-6 rounded-3xl border border-dashed border-black/10 dark:border-white/10 opacity-40">
-                    <p className="text-[8px] font-black uppercase tracking-[0.2em] leading-relaxed text-center">
-                        Free cancellation available up to 4 hours before the session. Post that, cancellation charges may apply as per salon policy.
+                <div className="p-6 rounded-3xl border border-dashed border-black/10 dark:border-white/10 flex flex-col items-center gap-2">
+                    <p className="text-[8px] font-black uppercase tracking-[0.2em] leading-relaxed text-center opacity-40">
+                        Cancellations are permitted up to 24 hours before the session.
                     </p>
+                    {(!canCancel && (booking.status === 'pending' || booking.status === 'confirmed')) && (
+                        <p className="text-[9px] font-bold text-red-500/60 uppercase tracking-widest text-center">
+                            Note: Today is the day of your booking. Online cancellation is now closed.
+                        </p>
+                    )}
                 </div>
             </main>
 
             {/* Bottom Bar */}
-            <footer className="fixed bottom-0 inset-x-0 p-6 z-50">
+            <footer className="fixed bottom-0 inset-x-0 p-6 z-50 flex gap-3">
+                {booking.status === 'completed' && (
+                    <button 
+                        onClick={() => setIsReviewModalOpen(true)}
+                        className="flex-1 py-5 rounded-[2rem] bg-white border border-[#C8956C] text-[#C8956C] text-[11px] font-black uppercase tracking-[0.2em] shadow-2xl flex items-center justify-center gap-3 active:scale-95 transition-all"
+                    >
+                        Review <Star size={14} fill="#C8956C" />
+                    </button>
+                )}
+
                 {booking.status === 'confirmed' || booking.status === 'pending' ? (
                     <button 
+                        onClick={handleCancel}
+                        disabled={!canCancel || isCancelling}
+                        style={{ opacity: canCancel ? 1 : 0.4 }}
                         className="w-full py-5 rounded-[2rem] bg-black text-white text-[11px] font-black uppercase tracking-[0.4em] shadow-2xl flex items-center justify-center gap-3 active:scale-95 transition-all"
                     >
-                        Reschedule <Calendar size={14} />
+                        {isCancelling ? 'Processing...' : 'Cancel Booking'} <XCircle size={14} />
                     </button>
                 ) : (
                     <button 
                         onClick={() => navigate('/app/booking')}
-                        className="w-full py-5 rounded-[2rem] bg-[#C8956C] text-white text-[11px] font-black uppercase tracking-[0.4em] shadow-2xl flex items-center justify-center gap-3 active:scale-95 transition-all"
+                        className={`py-5 rounded-[2rem] bg-[#C8956C] text-white text-[11px] font-black uppercase tracking-[0.4em] shadow-2xl flex items-center justify-center gap-3 active:scale-95 transition-all ${booking.status === 'completed' ? 'flex-1' : 'w-full'}`}
                     >
                         Book Again <Clock size={14} />
                     </button>
-                )
-            }
+                )}
             </footer>
+
+            <ReviewModal 
+                isOpen={isReviewModalOpen}
+                onClose={() => setIsReviewModalOpen(false)}
+                booking={booking}
+                onSuccess={() => {
+                    setIsReviewModalOpen(false);
+                    toast.success('Thank you for your feedback!');
+                }}
+            />
         </motion.div>
     );
 }

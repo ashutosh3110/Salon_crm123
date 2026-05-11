@@ -16,9 +16,9 @@ import { getImageUrl } from '../../utils/imageUtils';
 
 
 
-const ProductCard = React.memo(({ product, index, onOpenProduct, onAddToCart, colors, isLight, hasStock, onToggleLike }) => {
-    const { customer } = useCustomerAuth();
-    const isLiked = product.likedBy?.includes(customer?._id);
+const ProductCard = React.memo(({ product, index, onOpenProduct, onAddToCart, colors, isLight, hasStock }) => {
+    const { isProductLiked, toggleProductLike } = useFavorites();
+    const isLiked = isProductLiked(product._id || product.id);
 
     return (
         <motion.div
@@ -56,9 +56,9 @@ const ProductCard = React.memo(({ product, index, onOpenProduct, onAddToCart, co
 
             <div className="absolute top-2 right-2 z-20 flex flex-col items-center gap-1">
                 <button
-                    onClick={() => onToggleLike(product._id)}
+                    onClick={() => toggleProductLike(product._id || product.id)}
                     className="w-8 h-8 rounded-full bg-black/20 backdrop-blur-md flex items-center justify-center shadow-sm hover:bg-black/40 transition-colors"
-                    style={{ color: isLiked ? '#e53e3e' : '#fff' }}
+                    style={{ color: isLiked ? '#ff4b4b' : '#fff' }}
                 >
                     <Heart className={`w-4 h-4 ${isLiked ? 'fill-current' : ''}`} />
                 </button>
@@ -126,18 +126,34 @@ export default function AppShopPage() {
         productCategories: shopCategories,
         activeOutletId,
         fetchCustomerInitialData,
-        fetchProducts
+        fetchProducts,
+        isInitializing
     } = useBusiness();
     const { toggleProductLike } = useInventory(); // Keep only for actions if needed, or move toggle to business
+    const [isLoading, setIsLoading] = useState(true);
     const navigate = useNavigate();
 
     // Ensure data is loaded if landing directly on shop
     useEffect(() => {
-        if (!inventoryProducts || inventoryProducts.length === 0) {
-            console.log("[Shop] No products found in context, triggering fetch...");
-            fetchProducts();
-        }
-    }, [inventoryProducts?.length, fetchProducts]);
+        const initShop = async () => {
+            if (!inventoryProducts || inventoryProducts.length === 0 || !shopCategories || shopCategories.length === 0) {
+                setIsLoading(true);
+                try {
+                    await Promise.all([
+                        fetchProducts(),
+                        // Categories are usually fetched in initial data, but we check anyway
+                    ]);
+                } catch (err) {
+                    console.error("Shop initialization failed:", err);
+                } finally {
+                    setTimeout(() => setIsLoading(false), 300);
+                }
+            } else {
+                setIsLoading(false);
+            }
+        };
+        initShop();
+    }, [inventoryProducts?.length, shopCategories?.length, fetchProducts]);
 
     console.log("[Shop] Inventory Products:", inventoryProducts?.length);
     console.log("[Shop] Shop Categories:", shopCategories?.length);
@@ -290,6 +306,48 @@ export default function AppShopPage() {
         }
     };
 
+    if (isLoading || isInitializing) {
+        return (
+            <div className="space-y-8 p-4" style={{ background: colors.bg, minHeight: '100svh' }}>
+                <style>{`
+                    @keyframes shimmer_effect {
+                        0% { background-position: -200% 0; }
+                        100% { background-position: 200% 0; }
+                    }
+                    .shimmer_box {
+                        background: ${isLight ? 'linear-gradient(90deg, #F3EAE3 25%, #E8ECEF 50%, #F3EAE3 75%)' : 'linear-gradient(90deg, #1A1411 25%, #2A211B 50%, #1A1411 75%)'};
+                        background-size: 200% 100%;
+                        animation: shimmer_effect 1.5s infinite linear;
+                    }
+                `}</style>
+                <div className="flex gap-4 mt-2">
+                    <div className="flex-1 h-12 rounded-[20px_6px_20px_6px] shimmer_box" />
+                    <div className="w-12 h-12 rounded-[14px_4px_14px_4px] shimmer_box" />
+                </div>
+                <div className="flex gap-4 overflow-hidden mt-4">
+                    {[1, 2, 3, 4, 5].map(i => (
+                        <div key={i} className="flex flex-col items-center gap-2 flex-shrink-0">
+                            <div className="w-16 h-16 rounded-full shimmer_box" />
+                            <div className="w-12 h-3 rounded shimmer_box" />
+                        </div>
+                    ))}
+                </div>
+                <div className="grid grid-cols-2 gap-4 mt-8">
+                    {[1, 2, 3, 4, 5, 6].map(i => (
+                        <div key={i} className="flex flex-col gap-3">
+                            <div className="aspect-square rounded-2xl shimmer_box" />
+                            <div className="h-4 w-3/4 rounded shimmer_box" />
+                            <div className="flex justify-between items-center">
+                                <div className="h-4 w-1/3 rounded shimmer_box" />
+                                <div className="h-8 w-8 rounded-lg shimmer_box" />
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            </div>
+        );
+    }
+
     return (
         <div className="space-y-8 pb-32" style={{ background: colors.bg, minHeight: '100svh', overflowX: 'hidden' }}>
             <style>{`
@@ -441,7 +499,6 @@ export default function AppShopPage() {
                                     index={i} 
                                     onOpenProduct={handleOpenProduct} 
                                     onAddToCart={handleAddToCart} 
-                                    onToggleLike={toggleProductLike}
                                     colors={colors} 
                                     isLight={isLight} 
                                     hasStock={hasStock}

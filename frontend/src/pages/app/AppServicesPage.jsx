@@ -245,10 +245,14 @@ export default function AppServicesPage() {
     // Synchronize active category with URL parameter
     useEffect(() => {
         const cat = searchParams.get('category');
+        const search = searchParams.get('search');
         if (cat) {
             setActiveCategory(cat);
         } else {
             setActiveCategory('All');
+        }
+        if (search) {
+            setSearchQuery(search);
         }
     }, [searchParams]);
 
@@ -275,6 +279,26 @@ export default function AppServicesPage() {
     const fadeUp = { hidden: { opacity: 0, y: 20 }, show: { opacity: 1, y: 0, transition: { duration: 0.5, ease: [0.16, 1, 0.3, 1] } } };
 
 
+
+    if (isLoading) {
+        return (
+            <div style={{ background: colors.bg, minHeight: '100svh' }} className="flex flex-col items-center justify-center space-y-6">
+                <div className="w-16 h-16 rounded-[20px] bg-[#C8956C]/10 flex items-center justify-center animate-pulse border border-[#C8956C]/20">
+                    <Armchair className="w-8 h-8 text-[#C8956C]" />
+                </div>
+                <div className="flex flex-col items-center space-y-2">
+                    <p style={{ color: colors.text, fontSize: '10px', fontWeight: 800, letterSpacing: '0.2em' }} className="uppercase opacity-60">
+                        Curating Services
+                    </p>
+                    <div className="flex space-x-1.5">
+                        <motion.div animate={{ scale: [1, 1.5, 1], opacity: [0.3, 1, 0.3] }} transition={{ duration: 1, repeat: Infinity, delay: 0 }} className="w-1 h-1 rounded-full bg-[#C8956C]" />
+                        <motion.div animate={{ scale: [1, 1.5, 1], opacity: [0.3, 1, 0.3] }} transition={{ duration: 1, repeat: Infinity, delay: 0.2 }} className="w-1 h-1 rounded-full bg-[#C8956C]" />
+                        <motion.div animate={{ scale: [1, 1.5, 1], opacity: [0.3, 1, 0.3] }} transition={{ duration: 1, repeat: Infinity, delay: 0.4 }} className="w-1 h-1 rounded-full bg-[#C8956C]" />
+                    </div>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div style={{ background: colors.bg, minHeight: '100svh' }} className="pb-24">
@@ -353,13 +377,7 @@ export default function AppServicesPage() {
                     <h2 className="text-sm font-black uppercase tracking-widest" style={{ color: colors.text }}>Categories</h2>
                 </div>
 
-                {isLoading ? (
-                    <div className="px-4 py-3 flex gap-2 overflow-x-auto -mx-4 no-scrollbar">
-                        {[1, 2, 3, 4].map(i => (
-                            <div key={i} className="h-9 w-24 rounded-xl animate-pulse bg-[#C8956C]/10 shrink-0" />
-                        ))}
-                    </div>
-                ) : dynamicCategories.length <= 1 ? (
+                {dynamicCategories.length <= 1 ? (
                     <div className="px-4 py-3 text-center opacity-50 text-[10px] font-bold uppercase tracking-widest" style={{ color: colors.text }}>
                         No categories available
                     </div>
@@ -411,23 +429,7 @@ export default function AppServicesPage() {
                 animate="show"
                 className="px-4 mt-2 space-y-8"
             >
-                {isLoading ? (
-                    <div className="space-y-8">
-                        {[1, 2].map(group => (
-                            <div key={group} className="space-y-4">
-                                <div className="flex items-center gap-3">
-                                    <div className="h-4 w-24 bg-[#C8956C]/10 rounded animate-pulse" />
-                                    <div className="h-px flex-1 bg-gradient-to-r from-[#C8956C]/10 to-transparent" />
-                                </div>
-                                <div className="grid grid-cols-2 gap-x-3 gap-y-5">
-                                    {[1, 2, 3, 4].map(i => (
-                                        <ServiceSkeleton key={i} colors={colors} isLight={isLight} />
-                                    ))}
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                ) : finalServices.length > 0 ? (
+                {finalServices.length > 0 ? (
                     <div className="grid grid-cols-2 gap-x-3 gap-y-5">
                         {finalServices.map((service, index) => (
                             <motion.div key={service._id || service.id} variants={fadeUp} custom={index}>

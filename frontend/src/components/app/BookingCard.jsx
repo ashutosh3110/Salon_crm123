@@ -74,6 +74,11 @@ const BookingCard = memo(({ booking, onTap, index = 0 }) => {
                     <p className="text-[10px] mt-1 flex items-center gap-1.5 font-bold uppercase tracking-widest" style={{ color: colors.textMuted }}>
                         <User className="w-3 h-3 text-[#C8956C]" /> {booking.staff?.name}
                     </p>
+                    {booking.createdAt && (
+                        <p className="text-[8px] mt-1 opacity-40 font-black uppercase tracking-widest">
+                            Booked on: {new Date(booking.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
+                        </p>
+                    )}
                 </div>
                 <span className={`text-[9px] font-black uppercase tracking-widest px-3 py-1.5 rounded-lg shrink-0 border border-current opacity-80 ${status.bg} ${status.text}`}
                 >

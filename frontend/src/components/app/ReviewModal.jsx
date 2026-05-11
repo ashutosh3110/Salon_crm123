@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Star, X, Send, CheckCircle2 } from 'lucide-react';
 import api from '../../services/api';
@@ -14,6 +14,20 @@ export default function ReviewModal({ isOpen, onClose, booking, onSuccess, targe
     const [comment, setComment] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isSuccess, setIsSuccess] = useState(false);
+
+    useEffect(() => {
+        if (isOpen) {
+            document.body.style.overflow = 'hidden';
+            document.documentElement.style.overflow = 'hidden';
+        } else {
+            document.body.style.overflow = 'auto';
+            document.documentElement.style.overflow = 'auto';
+        }
+        return () => {
+            document.body.style.overflow = 'auto';
+            document.documentElement.style.overflow = 'auto';
+        };
+    }, [isOpen]);
 
     const handleSubmit = async (e) => {
         e.preventDefault();

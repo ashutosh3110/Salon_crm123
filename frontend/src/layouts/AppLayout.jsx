@@ -11,6 +11,7 @@ import { useCart } from '../contexts/CartContext';
 import CartDrawer from '../components/app/CartDrawer';
 import { requestForToken } from '../firebase';
 import api from '../services/api';
+import { Loader2 } from 'lucide-react';
 
 const pageVariants = {
     initial: { opacity: 0 },
@@ -24,7 +25,7 @@ export default function AppLayout() {
     const { gender } = useGender();
     const { customer, loading: authLoading } = useCustomerAuth();
     const { theme } = useCustomerTheme();
-    const { activeOutletId, isInitializing } = useBusiness();
+    const { activeOutletId, isInitializing, isPageLoading } = useBusiness();
     const { cart, cartTotal, isCartOpen, setIsCartOpen, updateQuantity, removeFromCart } = useCart();
 
     const isLight = theme === 'light';
@@ -123,6 +124,43 @@ export default function AppLayout() {
 
 
     if (!customer || (!gender && location.pathname !== '/app/gender')) return null;
+
+    if (isInitializing) {
+        return (
+            <div className="fixed inset-0 z-[9999] flex flex-col items-center justify-center overflow-hidden" 
+                 style={{ background: 'linear-gradient(135deg, #1A1A1A 0%, #0F0F0F 100%)' }}>
+                {/* Animated Background Blobs */}
+                <motion.div
+                    animate={{ scale: [1, 1.2, 1], opacity: [0.15, 0.25, 0.15] }}
+                    transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
+                    className="absolute top-[-10%] left-[-10%] w-[400px] h-[400px] rounded-full"
+                    style={{ background: 'radial-gradient(circle, #C8956C 0%, transparent 70%)', filter: 'blur(80px)' }}
+                />
+                <div className="relative z-10 flex flex-col items-center space-y-6">
+                    <motion.div
+                        animate={{ rotate: 360 }}
+                        transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
+                        className="w-20 h-20 rounded-[24px] bg-gradient-to-br from-[#C8956C] to-[#A06844] flex items-center justify-center shadow-2xl shadow-[#C8956C]/20"
+                    >
+                        <span className="text-3xl font-black text-white italic transform -rotate-12">W</span>
+                    </motion.div>
+                    <div className="flex flex-col items-center space-y-2">
+                        <h2 className="text-white text-lg font-bold tracking-tight">WAPIXO</h2>
+                        <div className="flex items-center space-x-1.5">
+                            {[0, 0.2, 0.4].map((d, i) => (
+                                <motion.div
+                                    key={i}
+                                    animate={{ scale: [1, 1.5, 1], opacity: [0.3, 1, 0.3] }}
+                                    transition={{ duration: 1.5, repeat: Infinity, delay: d }}
+                                    className="w-1 h-1 rounded-full bg-[#C8956C]"
+                                />
+                            ))}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div style={{
@@ -297,6 +335,28 @@ export default function AppLayout() {
                             </motion.main>
                         );
                     })()}
+                </AnimatePresence>
+
+                {/* Global Page Loading Overlay */}
+                <AnimatePresence>
+                    {isPageLoading && (
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            className="fixed inset-0 z-[9998] flex flex-col items-center justify-center bg-black/60 backdrop-blur-md"
+                        >
+                            <motion.div
+                                animate={{ rotate: 360 }}
+                                transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                            >
+                                <Loader2 className="w-10 h-10 text-[#C8956C]" />
+                            </motion.div>
+                            <p className="mt-4 text-[#C8956C] text-[10px] font-bold tracking-[0.2em] uppercase">
+                                Refreshing Experience
+                            </p>
+                        </motion.div>
+                    )}
                 </AnimatePresence>
 
                 {!shouldHideNav && <AppBottomNav />}

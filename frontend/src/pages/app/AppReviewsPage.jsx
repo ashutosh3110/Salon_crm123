@@ -117,12 +117,6 @@ export default function AppReviewsPage() {
                             >
                                 Write a Review
                             </button>
-                            <button 
-                                onClick={() => navigate('/app/bookings')}
-                                className="px-8 py-3 bg-white/[0.05] border border-white/10 text-white text-[10px] font-black uppercase tracking-[0.2em] rounded-xl w-full"
-                            >
-                                View Bookings
-                            </button>
                         </div>
                     </motion.div>
                 ) : (

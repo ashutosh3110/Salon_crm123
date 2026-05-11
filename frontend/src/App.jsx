@@ -22,10 +22,86 @@ import { AttendanceProvider } from './contexts/AttendanceContext';
 import { BookingRegistryProvider } from './contexts/BookingRegistryContext';
 
 // Loading Component
+// Loading Component
 const PageLoader = () => (
-  <div className="min-h-[60vh] flex flex-col items-center justify-center p-8 space-y-4">
-    <div className="w-12 h-12 border-4 border-primary/20 border-t-primary rounded-full animate-spin" />
-    <p className="text-sm font-medium text-muted-foreground animate-pulse">Loading experience...</p>
+  <div className="fixed inset-0 z-[9999] flex flex-col items-center justify-center overflow-hidden" 
+       style={{ background: 'linear-gradient(135deg, #1A1A1A 0%, #0F0F0F 100%)' }}>
+    {/* Animated Background Blobs */}
+    <motion.div
+      animate={{
+        scale: [1, 1.2, 1],
+        opacity: [0.15, 0.25, 0.15],
+      }}
+      transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
+      className="absolute top-[-10%] left-[-10%] w-[400px] h-[400px] rounded-full"
+      style={{ background: 'radial-gradient(circle, #C8956C 0%, transparent 70%)', filter: 'blur(80px)' }}
+    />
+    <motion.div
+      animate={{
+        scale: [1, 1.3, 1],
+        opacity: [0.1, 0.2, 0.1],
+      }}
+      transition={{ duration: 10, repeat: Infinity, ease: "easeInOut", delay: 1 }}
+      className="absolute bottom-[-10%] right-[-10%] w-[500px] h-[500px] rounded-full"
+      style={{ background: 'radial-gradient(circle, #A06844 0%, transparent 70%)', filter: 'blur(100px)' }}
+    />
+
+    <div className="relative z-10 flex flex-col items-center space-y-8">
+      {/* Premium Logo / Icon Container */}
+      <motion.div
+        initial={{ opacity: 0, scale: 0.8 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.8, ease: "easeOut" }}
+        className="relative"
+      >
+        <div className="w-24 h-24 rounded-[32px] bg-gradient-to-br from-[#C8956C] to-[#A06844] flex items-center justify-center shadow-2xl shadow-[#C8956C]/20 transform rotate-12">
+          <motion.div 
+            animate={{ rotate: -12 }} 
+            className="w-16 h-16 flex items-center justify-center"
+          >
+             <span className="text-4xl font-black text-white italic">W</span>
+          </motion.div>
+        </div>
+        
+        {/* Orbiting Ring */}
+        <motion.div
+          animate={{ rotate: 360 }}
+          transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
+          className="absolute inset-[-12px] border border-[#C8956C]/30 rounded-full"
+          style={{ borderStyle: 'dashed' }}
+        />
+      </motion.div>
+
+      <div className="flex flex-col items-center space-y-3">
+        <motion.h2 
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.5 }}
+          className="text-white text-xl font-bold tracking-tight"
+          style={{ fontFamily: "'SF Pro Display', sans-serif" }}
+        >
+          WAPIXO
+        </motion.h2>
+        
+        <div className="flex items-center space-x-2">
+          <motion.div
+            animate={{ scale: [1, 1.5, 1], opacity: [0.3, 1, 0.3] }}
+            transition={{ duration: 1.5, repeat: Infinity, delay: 0 }}
+            className="w-1.5 h-1.5 rounded-full bg-[#C8956C]"
+          />
+          <motion.div
+            animate={{ scale: [1, 1.5, 1], opacity: [0.3, 1, 0.3] }}
+            transition={{ duration: 1.5, repeat: Infinity, delay: 0.2 }}
+            className="w-1.5 h-1.5 rounded-full bg-[#C8956C]"
+          />
+          <motion.div
+            animate={{ scale: [1, 1.5, 1], opacity: [0.3, 1, 0.3] }}
+            transition={{ duration: 1.5, repeat: Infinity, delay: 0.4 }}
+            className="w-1.5 h-1.5 rounded-full bg-[#C8956C]"
+          />
+        </div>
+      </div>
+    </div>
   </div>
 );
 
@@ -195,14 +271,24 @@ function ScrollToHash() {
   useEffect(() => {
     if (state?.noScroll) return;
 
-    if (hash) {
-      const element = document.getElementById(hash.replace('#', ''));
-      if (element) {
-        element.scrollIntoView({ behavior: 'smooth' });
+    const scrollToTop = () => {
+      if (hash) {
+        const element = document.getElementById(hash.replace('#', ''));
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth' });
+        }
+      } else {
+        window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+        // Also target common scroll containers just in case
+        const main = document.querySelector('main');
+        if (main) main.scrollTo({ top: 0, left: 0, behavior: 'instant' });
       }
-    } else {
-      window.scrollTo(0, 0);
-    }
+    };
+
+    // Use multiple triggers to ensure it works across different browser rendering timings
+    scrollToTop();
+    const timer = setTimeout(scrollToTop, 100);
+    return () => clearTimeout(timer);
   }, [hash, pathname, state]);
 
   return null;

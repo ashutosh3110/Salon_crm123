@@ -57,7 +57,7 @@ export default function AppServiceDetailsPage() {
     const { id } = useParams();
     const navigate = useNavigate();
     const { colors, isLight } = useCustomerTheme();
-    const { services, categories: businessCategories, fetchServices } = useBusiness();
+    const { services, categories: businessCategories, fetchServices, isInitializing } = useBusiness();
     
     const [reviews, setReviews] = useState([]);
     const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
@@ -112,54 +112,47 @@ export default function AppServiceDetailsPage() {
 
 
 
-    if (isLoading) {
+    if (isLoading || isInitializing) {
         return (
-            <div style={{ background: colors.bg }} className="min-h-screen relative flex flex-col overflow-hidden animate-pulse">
-                {/* Header Actions Skeleton */}
-                <div className="fixed top-6 left-6 w-11 h-11 rounded-2xl bg-black/10 dark:bg-white/10 z-[70]" />
-
-                <div className="flex-1 h-[100dvh]">
-                    {/* Hero Image Skeleton */}
-                    <div className="relative aspect-[4/5] bg-black/5 dark:bg-white/5 w-full">
-                        <div className="absolute bottom-10 left-8 right-8">
-                            <div className="flex items-center gap-3 mb-4">
-                                <div className="h-6 w-20 bg-black/10 dark:bg-white/10 rounded-md" />
-                                <div className="h-6 w-16 bg-black/10 dark:bg-white/10 rounded-md" />
-                                <div className="h-6 w-16 bg-black/10 dark:bg-white/10 rounded-md" />
-                            </div>
-                            <div className="h-10 w-3/4 bg-black/10 dark:bg-white/10 rounded-lg" />
+            <div style={{ background: colors.bg }} className="min-h-screen relative flex flex-col overflow-hidden">
+                <style>{`
+                    @keyframes shimmer_effect {
+                        0% { background-position: -200% 0; }
+                        100% { background-position: 200% 0; }
+                    }
+                    .shimmer_box {
+                        background: ${isLight ? 'linear-gradient(90deg, #F3EAE3 25%, #E8ECEF 50%, #F3EAE3 75%)' : 'linear-gradient(90deg, #1A1411 25%, #2A211B 50%, #1A1411 75%)'};
+                        background-size: 200% 100%;
+                        animation: shimmer_effect 1.5s infinite linear;
+                    }
+                `}</style>
+                {/* Hero Skeleton */}
+                <div className="relative aspect-[4/5] shimmer_box w-full">
+                    <div className="absolute bottom-10 left-8 right-8 space-y-4">
+                        <div className="flex gap-3">
+                            <div className="h-6 w-20 rounded-md shimmer_box opacity-50" />
+                            <div className="h-6 w-16 rounded-md shimmer_box opacity-50" />
+                            <div className="h-6 w-16 rounded-md shimmer_box opacity-50" />
                         </div>
+                        <div className="h-12 w-3/4 rounded-xl shimmer_box opacity-50" />
                     </div>
+                </div>
 
-                    {/* Details Section Skeleton */}
-                    <div className="p-8 pb-32 space-y-9">
-                        <div className="flex items-end justify-between gap-4">
-                            <div className="space-y-2 w-1/3">
-                                <div className="h-3 w-16 bg-black/5 dark:bg-white/5 rounded" />
-                                <div className="h-8 w-24 bg-black/10 dark:bg-white/10 rounded" />
-                            </div>
-                            <div className="h-8 w-24 bg-black/5 dark:bg-white/5 rounded-2xl" />
+                {/* Details Skeleton */}
+                <div className="p-8 space-y-8">
+                    <div className="flex justify-between items-end">
+                        <div className="space-y-2">
+                            <div className="h-3 w-16 rounded shimmer_box" />
+                            <div className="h-10 w-32 rounded shimmer_box" />
                         </div>
-
-                        <div className="space-y-6">
-                            {[1, 2, 3].map(i => (
-                                <div key={i} className="border-b border-black/5 dark:border-white/5 pb-4">
-                                    <div className="h-4 w-1/3 bg-black/10 dark:bg-white/10 rounded mb-4" />
-                                    {i === 1 && (
-                                        <div className="space-y-2">
-                                            <div className="h-3 w-full bg-black/5 dark:bg-white/5 rounded" />
-                                            <div className="h-3 w-full bg-black/5 dark:bg-white/5 rounded" />
-                                            <div className="h-3 w-3/4 bg-black/5 dark:bg-white/5 rounded" />
-                                        </div>
-                                    )}
-                                </div>
-                            ))}
-                        </div>
-
-                        <div className="pt-6">
-                            <div className="w-full h-16 rounded-2xl bg-black/10 dark:bg-white/10" />
-                        </div>
+                        <div className="h-10 w-28 rounded-2xl shimmer_box" />
                     </div>
+                    <div className="space-y-4">
+                        {[1, 2, 3].map(i => (
+                            <div key={i} className="h-14 w-full rounded-xl shimmer_box opacity-40" />
+                        ))}
+                    </div>
+                    <div className="h-16 w-full rounded-2xl shimmer_box" />
                 </div>
             </div>
         );
