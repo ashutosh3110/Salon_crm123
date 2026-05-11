@@ -129,30 +129,30 @@ export default function AppLayout() {
         return (
             <div className="fixed inset-0 z-[9999] flex flex-col items-center justify-center overflow-hidden" 
                  style={{ background: 'linear-gradient(135deg, #1A1A1A 0%, #0F0F0F 100%)' }}>
-                {/* Animated Background Blobs */}
+                {/* Animated Background Blobs - Optimized */}
                 <motion.div
-                    animate={{ scale: [1, 1.2, 1], opacity: [0.15, 0.25, 0.15] }}
+                    animate={{ opacity: [0.15, 0.25, 0.15] }}
                     transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
                     className="absolute top-[-10%] left-[-10%] w-[400px] h-[400px] rounded-full"
-                    style={{ background: 'radial-gradient(circle, #C8956C 0%, transparent 70%)', filter: 'blur(80px)' }}
+                    style={{ 
+                        background: 'radial-gradient(circle, #C8956C 0%, transparent 70%)', 
+                        filter: 'blur(60px)',
+                        willChange: 'opacity'
+                    }}
                 />
                 <div className="relative z-10 flex flex-col items-center space-y-6">
-                    <motion.div
-                        animate={{ rotate: 360 }}
-                        transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
-                        className="w-20 h-20 rounded-[24px] bg-gradient-to-br from-[#C8956C] to-[#A06844] flex items-center justify-center shadow-2xl shadow-[#C8956C]/20"
-                    >
+                    <div className="w-20 h-20 rounded-[24px] bg-gradient-to-br from-[#C8956C] to-[#A06844] flex items-center justify-center shadow-2xl shadow-[#C8956C]/20">
                         <span className="text-3xl font-black text-white italic transform -rotate-12">W</span>
-                    </motion.div>
+                    </div>
                     <div className="flex flex-col items-center space-y-2">
                         <h2 className="text-white text-lg font-bold tracking-tight">WAPIXO</h2>
                         <div className="flex items-center space-x-1.5">
                             {[0, 0.2, 0.4].map((d, i) => (
                                 <motion.div
                                     key={i}
-                                    animate={{ scale: [1, 1.5, 1], opacity: [0.3, 1, 0.3] }}
-                                    transition={{ duration: 1.5, repeat: Infinity, delay: d }}
-                                    className="w-1 h-1 rounded-full bg-[#C8956C]"
+                                    animate={{ scale: [1, 1.2, 1], opacity: [0.4, 1, 0.4] }}
+                                    transition={{ duration: 2, repeat: Infinity, delay: d }}
+                                    className="w-1.5 h-1.5 rounded-full bg-[#C8956C]"
                                 />
                             ))}
                         </div>
@@ -239,66 +239,53 @@ export default function AppLayout() {
                     {/* Pattern Overlay */}
                     <div className="bg-pattern-dots" style={{ position: 'absolute', inset: 0 }} />
 
-                    {/* Animated Blobs (Enhanced) */}
-                    <motion.div
-                        animate={{
-                            x: [0, 60, -30, 0],
-                            y: [0, -40, 60, 0],
-                            rotate: [0, 90, 180, 270, 360]
-                        }}
-                        transition={{ duration: 25, repeat: Infinity, ease: 'linear' }}
+                    {/* Animated Blobs (Optimized - Minimal Movement) */}
+                    <div
                         style={{
                             position: 'absolute', top: '-10%', left: '-20%',
                             width: '450px', height: '450px',
                             background: isLight
-                                ? 'radial-gradient(circle, rgba(200,149,108,0.15) 0%, rgba(255,245,235,0.1) 50%, transparent 100%)'
-                                : 'radial-gradient(circle, rgba(160,104,68,0.1) 0%, rgba(30,20,15,0.05) 50%, transparent 100%)',
-                            filter: 'blur(80px)',
+                                ? 'radial-gradient(circle, rgba(200,149,108,0.12) 0%, transparent 70%)'
+                                : 'radial-gradient(circle, rgba(160,104,68,0.08) 0%, transparent 70%)',
+                            filter: 'blur(60px)',
+                            opacity: 0.6
                         }}
                     />
 
-                    <motion.div
-                        animate={{
-                            x: [0, -80, 40, 0],
-                            y: [0, 60, -70, 0],
-                        }}
-                        transition={{ duration: 30, repeat: Infinity, ease: 'linear' }}
+                    <div
                         style={{
                             position: 'absolute', bottom: '10%', right: '-25%',
                             width: '500px', height: '500px',
                             background: isLight
-                                ? 'radial-gradient(circle, rgba(181,148,114,0.12) 0%, rgba(255,250,240,0.08) 60%, transparent 100%)'
-                                : 'radial-gradient(circle, rgba(42,27,20,0.15) 0%, transparent 100%)',
-                            filter: 'blur(100px)',
+                                ? 'radial-gradient(circle, rgba(181,148,114,0.1) 0%, transparent 70%)'
+                                : 'radial-gradient(circle, rgba(42,27,20,0.12) 0%, transparent 70%)',
+                            filter: 'blur(80px)',
+                            opacity: 0.5
                         }}
                     />
 
-                    {/* Floating Luxury Geometric Elements */}
-                    <motion.div
-                        animate={{ rotate: 360 }}
-                        transition={{ duration: 40, repeat: Infinity, ease: 'linear' }}
+                    {/* Static Luxury Geometric Elements (Removed infinite rotation) */}
+                    <div
                         style={{
                             position: 'absolute', top: '20%', right: '-10%',
                             width: '240px', height: '240px',
-                            border: `0.5px solid ${isLight ? 'rgba(200,149,108,0.15)' : 'rgba(255,255,255,0.05)'}`,
+                            border: `0.5px solid ${isLight ? 'rgba(200,149,108,0.1)' : 'rgba(255,255,255,0.03)'}`,
                             borderRadius: '50%',
                         }}
                     >
                         <div style={{
                             position: 'absolute', top: '10%', left: '10%',
                             width: '20px', height: '20px',
-                            border: `1px solid ${isLight ? 'rgba(200,149,108,0.2)' : 'rgba(255,255,255,0.1)'}`,
+                            border: `1px solid ${isLight ? 'rgba(200,149,108,0.15)' : 'rgba(255,255,255,0.08)'}`,
                             borderRadius: '50%'
                         }} />
-                    </motion.div>
+                    </div>
 
-                    <motion.div
-                        animate={{ rotate: -360 }}
-                        transition={{ duration: 50, repeat: Infinity, ease: 'linear' }}
+                    <div
                         style={{
                             position: 'absolute', bottom: '30%', left: '-10%',
                             width: '300px', height: '300px',
-                            border: `0.5px solid ${isLight ? 'rgba(200,149,108,0.1)' : 'rgba(255,255,255,0.03)'}`,
+                            border: `0.5px solid ${isLight ? 'rgba(200,149,108,0.08)' : 'rgba(255,255,255,0.02)'}`,
                             borderRadius: '30% 70% 70% 30% / 30% 30% 70% 70%',
                         }}
                     />

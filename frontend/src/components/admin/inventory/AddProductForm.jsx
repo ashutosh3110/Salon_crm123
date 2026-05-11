@@ -311,6 +311,7 @@ export default function AddProductForm({ onSave, initialData, onCancel }) {
                                         className="w-full pl-8 pr-4 py-3 bg-background border border-border text-sm font-black focus:border-primary outline-none transition-all"
                                         placeholder="0.00"
                                         value={formData.sellingPrice || ''}
+                                        onFocus={(e) => { if (e.target.value === '0') setFormData(prev => ({ ...prev, sellingPrice: '' })); }}
                                         onChange={(e) => setFormData({ ...formData, sellingPrice: e.target.value })}
                                     />
                                 </div>
@@ -371,6 +372,7 @@ export default function AddProductForm({ onSave, initialData, onCancel }) {
                                     className="w-full px-4 py-3 bg-background border border-border text-sm font-black focus:border-primary outline-none transition-all"
                                     placeholder="0"
                                     value={formData.stock}
+                                    onFocus={(e) => { if (e.target.value === '0') setFormData(prev => ({ ...prev, stock: '' })); }}
                                     onChange={(e) => setFormData({ ...formData, stock: e.target.value })}
                                 />
                             </div>
@@ -384,6 +386,7 @@ export default function AddProductForm({ onSave, initialData, onCancel }) {
                                     className="w-full px-4 py-3 bg-background border border-border text-sm font-black focus:border-primary outline-none transition-all text-rose-600"
                                     placeholder="5"
                                     value={formData.threshold}
+                                    onFocus={(e) => { if (e.target.value === '0') setFormData(prev => ({ ...prev, threshold: '' })); }}
                                     onChange={(e) => setFormData({ ...formData, threshold: e.target.value })}
                                 />
                             </div>

@@ -304,7 +304,11 @@ export default function OutletForm() {
             const formData = new FormData();
             const existingImages = form.images.filter(img => !img.startsWith('data:'));
 
+            const EXCLUDED_FIELDS = ['likes', 'likedBy', '_id', '__v', 'createdAt', 'updatedAt', 'salonId'];
+
             Object.keys(form).forEach(key => {
+                if (EXCLUDED_FIELDS.includes(key)) return;
+
                 if (key === 'images') {
                     existingImages.forEach(img => formData.append('images', img));
                 } else if (key === 'config') {

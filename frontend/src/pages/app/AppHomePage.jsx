@@ -230,27 +230,7 @@ const MembershipPlanCard = memo(({ plan, colors, isLight }) => {
     );
 });
 
-const Particle = ({ i }) => (
-    <motion.div
-        initial={{ opacity: 0, scale: 0 }}
-        animate={{
-            opacity: [0.2, 0.5, 0.2],
-            scale: [1, 1.5, 1],
-            x: [0, Math.random() * 100 - 50, 0],
-            y: [0, Math.random() * 100 - 50, 0]
-        }}
-        transition={{ duration: 5 + Math.random() * 5, repeat: Infinity }}
-        style={{
-            position: 'absolute',
-            width: '2px',
-            height: '2px',
-            background: '#C8956C',
-            borderRadius: '50%',
-            left: `${Math.random() * 100}%`,
-            top: `${Math.random() * 100}%`
-        }}
-    />
-);
+// Removed Particle component for performance optimization
 
 const Skeleton = ({ width, height, borderRadius = '12px', margin = '0' }) => (
     <div style={{
@@ -655,7 +635,7 @@ export default function AppHomePage() {
                             </div>
                             <h3 style={{ fontSize: '14px', fontWeight: 800, color: colors.text, margin: 0, display: 'flex', alignItems: 'center', gap: '4px' }}>
                                 {activeOutlet?.name || 'Wapixo Salon'}
-                                <motion.span animate={{ rotate: [0, 10, -10, 0] }} transition={{ duration: 2, repeat: Infinity }} style={{ fontSize: '12px' }}>📍</motion.span>
+                                <span style={{ fontSize: '12px' }}>📍</span>
                             </h3>
                         </div>
                     </motion.div>

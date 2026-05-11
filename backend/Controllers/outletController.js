@@ -184,6 +184,10 @@ exports.updateOutlet = async (req, res) => {
             req.body.images = [...existingImages, ...newImages];
         }
 
+        // Exclude likes and likedBy from updates (managed via dedicated toggleLike)
+        delete req.body.likes;
+        delete req.body.likedBy;
+
         outlet = await Outlet.findByIdAndUpdate(req.params.id, req.body, {
             new: true,
             runValidators: true

@@ -963,8 +963,8 @@ export default function AppProfilePage() {
                             <Shield className="w-6 h-6 text-red-500/60 group-hover:text-red-500 transition-colors" />
                         </div>
                         <div className="flex-1 text-left">
-                            <span className="text-sm font-black italic tracking-tight block text-red-500/80 group-hover:text-red-500 transition-colors">Privacy & Data</span>
-                            <p className="text-[9px] font-bold opacity-40 uppercase tracking-widest mt-0.5">Delete My Account</p>
+                            <span className="text-sm font-black italic tracking-tight block text-red-500/80 group-hover:text-red-500 transition-colors">Delete Account</span>
+                            <p className="text-[9px] font-bold opacity-40 uppercase tracking-widest mt-0.5">Permanently remove data</p>
                         </div>
                         <ChevronRight className="w-4 h-4 opacity-10" />
                     </button>
@@ -980,8 +980,8 @@ export default function AppProfilePage() {
                                 <LogOut className="w-6 h-6 text-orange-500/60 group-hover:text-orange-500 transition-colors" />
                             </div>
                             <div className="flex-1 text-left">
-                                <span className="text-sm font-black italic tracking-tight block text-orange-500/80 group-hover:text-orange-500 transition-colors">Session Security</span>
-                                <p className="text-[9px] font-bold opacity-40 uppercase tracking-widest mt-0.5">Secure Log Out</p>
+                                <span className="text-sm font-black italic tracking-tight block text-orange-500/80 group-hover:text-orange-500 transition-colors">Logout</span>
+                                <p className="text-[9px] font-bold opacity-40 uppercase tracking-widest mt-0.5">Sign out from session</p>
                             </div>
                             <ChevronRight className="w-4 h-4 opacity-10" />
                         </button>
