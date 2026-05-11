@@ -281,10 +281,6 @@ export default function SASettingsPage() {
                     </div>
                     <p className="text-sm text-white/60 mt-1">{profile.email}</p>
                 </div>
-                <div className="sm:ml-auto bg-white/10 border border-white/20 rounded-xl px-4 py-2.5 text-center">
-                    <div className="text-[11px] font-bold text-white/60 uppercase tracking-wider">Last Login</div>
-                    <div className="text-sm font-bold text-white mt-0.5">Today, 4:12 PM</div>
-                </div>
             </div>
 
             {/* ── Two column layout ── */}
@@ -306,11 +302,11 @@ export default function SASettingsPage() {
                             placeholder="Your full name"
                         />
                         <Field
-                            label="Email Address *"
+                            label="Email Address (Login ID)"
                             icon={Mail}
                             type="email"
                             value={profile.email}
-                            onChange={e => setP('email', e.target.value)}
+                            readOnly={true}
                             placeholder="admin@wapixo.com"
                         />
                     

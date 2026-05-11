@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import api from '../../services/api';
+import { getImageUrl } from '../../utils/imageUtils';
 
 
 export default function SABlogPage() {
@@ -26,6 +27,23 @@ export default function SABlogPage() {
     useEffect(() => {
         fetchPosts();
     }, []);
+
+    useEffect(() => {
+        if (isEditorOpen) {
+            document.body.style.overflow = 'hidden';
+            document.documentElement.style.overflow = 'hidden';
+            document.body.style.paddingRight = '5px';
+        } else {
+            document.body.style.overflow = '';
+            document.documentElement.style.overflow = '';
+            document.body.style.paddingRight = '';
+        }
+        return () => {
+            document.body.style.overflow = '';
+            document.documentElement.style.overflow = '';
+            document.body.style.paddingRight = '';
+        };
+    }, [isEditorOpen]);
 
     const fetchPosts = async () => {
         try {
@@ -214,7 +232,7 @@ export default function SABlogPage() {
                         {/* Preview Asset */}
                         <div className="relative h-64 overflow-hidden bg-black">
                             <img
-                                src={post.image.startsWith('http') ? post.image : `${api.defaults.baseURL.replace('/api', '')}/${post.image}`}
+                                src={getImageUrl(post.image)}
                                 alt={post.title}
                                 className="w-full h-full object-cover group-hover:scale-105 transition-all duration-1000"
                             />
@@ -329,7 +347,7 @@ export default function SABlogPage() {
                                             />
                                             {(previewUrl || editingPost?.image) ? (
                                                 <img 
-                                                    src={previewUrl || (editingPost?.image?.startsWith('http') ? editingPost.image : `${api.defaults.baseURL.replace('/api', '')}/${editingPost?.image}`)} 
+                                                    src={previewUrl || getImageUrl(editingPost?.image)} 
                                                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" 
                                                 />
                                             ) : (

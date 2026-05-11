@@ -433,7 +433,9 @@ export default function SADashboardPage() {
                                             </div>
                                             <div>
                                                 <div className="text-sm font-semibold text-text">{t.name}</div>
-                                                <div className="text-[11px] text-text-muted font-mono">{t.slug}</div>
+                                                <div className="text-[10px] text-primary font-black uppercase tracking-tighter mt-0.5">
+                                                    {t.outlets?.length > 0 ? t.outlets.map(o => o.name).join(' · ') : 'No Outlets'}
+                                                </div>
                                             </div>
                                         </div>
                                     </td>
@@ -441,7 +443,7 @@ export default function SADashboardPage() {
                                         <span className="text-sm text-text-secondary">{t.ownerName}</span>
                                     </td>
                                     <td className="px-5 py-3.5">
-                                        <span className="text-sm text-text-secondary">{t.city}</span>
+                                        <span className="text-sm text-text-secondary uppercase font-bold">{t.address?.city || 'N/A'}</span>
                                     </td>
                                     <td className="px-5 py-3.5">
                                         <span className={`text-[11px] font-bold px-2.5 py-1 rounded-full border uppercase ${planColors[t.subscriptionPlan] || planColors.free}`}>

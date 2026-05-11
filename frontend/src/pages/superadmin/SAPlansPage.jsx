@@ -128,7 +128,13 @@ function PlanModal({ plan, onClose, onSave, saving }) {
 
     useEffect(() => {
         document.body.style.overflow = 'hidden';
-        return () => { document.body.style.overflow = ''; };
+        document.documentElement.style.overflow = 'hidden';
+        document.body.style.paddingRight = '5px';
+        return () => {
+            document.body.style.overflow = '';
+            document.documentElement.style.overflow = '';
+            document.body.style.paddingRight = '';
+        };
     }, []);
 
     const inputCls = 'w-full px-4 py-2.5 rounded-xl bg-surface border border-border text-text text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all font-bold';

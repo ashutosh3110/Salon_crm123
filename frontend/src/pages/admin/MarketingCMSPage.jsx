@@ -86,10 +86,18 @@ export default function MarketingCMSPage() {
     useEffect(() => {
         if (isModalOpen) {
             document.body.style.overflow = 'hidden';
+            document.documentElement.style.overflow = 'hidden';
+            document.body.style.paddingRight = '5px'; // Prevent layout shift from scrollbar disappearing
         } else {
             document.body.style.overflow = '';
+            document.documentElement.style.overflow = '';
+            document.body.style.paddingRight = '';
         }
-        return () => { document.body.style.overflow = ''; };
+        return () => {
+            document.body.style.overflow = '';
+            document.documentElement.style.overflow = '';
+            document.body.style.paddingRight = '';
+        };
     }, [isModalOpen]);
     const [modalType, setModalType] = useState('banner'); // 'banner', 'offer', or 'lookbook'
     const [selectedGender, setSelectedGender] = useState('all'); // 'all', 'men', 'women'

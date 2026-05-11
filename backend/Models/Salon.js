@@ -80,7 +80,16 @@ const salonSchema = new mongoose.Schema({
     fcmTokenWeb: [String],
     fcmTokenMobile: [String]
 }, {
-    timestamps: true
+    timestamps: true,
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true }
+});
+
+// Virtual for outlets
+salonSchema.virtual('outlets', {
+    ref: 'Outlet',
+    localField: '_id',
+    foreignField: 'salonId'
 });
 
 // Hash password before saving

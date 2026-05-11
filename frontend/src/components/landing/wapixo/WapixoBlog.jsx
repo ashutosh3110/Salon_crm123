@@ -3,18 +3,13 @@ import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import api, { API_BASE_URL } from '../../../services/api';
 import { useTheme } from '../../../contexts/ThemeContext';
+import { getImageUrl } from '../../../utils/imageUtils';
 
 export default function WapixoBlog() {
     const { theme } = useTheme();
     const [posts, setPosts] = useState([]);
     const navigate = useNavigate();
 
-    const getImageUrl = (url) => {
-        if (!url) return 'https://images.unsplash.com/photo-1522337660859-02fbefce4ffc?auto=format&fit=crop&q=80&w=1200';
-        if (url.startsWith('http')) return url;
-        const apiHost = API_BASE_URL.replace(/\/v1\/?$/, '');
-        return `${apiHost}${url.startsWith('/') ? '' : '/'}${url}`;
-    };
 
     useEffect(() => {
         const fetchPosts = async () => {

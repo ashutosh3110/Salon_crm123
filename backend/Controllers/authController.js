@@ -276,12 +276,16 @@ exports.updateDetails = async (req, res) => {
 exports.updatePassword = async (req, res) => {
     try {
         let Model;
-        if (req.user.role === 'superadmin') Model = User;
-        else if (req.user.role === 'admin' && !req.user.ownerName) Model = Salon; 
-        else if (req.user.role === 'customer') {
+        if (req.user.role === 'superadmin') {
+            Model = User;
+        } else if (req.user.role === 'customer') {
             const Customer = require('../Models/Customer');
             Model = Customer;
+        } else if (req.user.ownerName || (req.user.role === 'admin' && !req.user.salonId)) {
+            // Salon Owner (Salon collection)
+            Model = Salon;
         } else {
+            // Staff (Staff collection)
             Model = Staff;
         }
 

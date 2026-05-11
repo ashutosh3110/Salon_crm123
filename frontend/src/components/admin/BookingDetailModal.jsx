@@ -28,6 +28,23 @@ export default function BookingDetailModal({ booking, onClose, onUpdateStatus, o
     const [notes, setNotes] = useState(booking?.notes || '');
     const [isEditingNotes, setIsEditingNotes] = useState(false);
 
+    React.useEffect(() => {
+        if (booking) {
+            document.body.style.overflow = 'hidden';
+            document.documentElement.style.overflow = 'hidden';
+            document.body.style.paddingRight = '5px';
+        } else {
+            document.body.style.overflow = '';
+            document.documentElement.style.overflow = '';
+            document.body.style.paddingRight = '';
+        }
+        return () => {
+            document.body.style.overflow = '';
+            document.documentElement.style.overflow = '';
+            document.body.style.paddingRight = '';
+        };
+    }, [booking]);
+
     if (!booking) return null;
 
     return (

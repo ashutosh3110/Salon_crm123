@@ -6,6 +6,7 @@ import WapixoFooter from '../../components/landing/wapixo/WapixoFooter';
 import { useTheme } from '../../contexts/ThemeContext';
 
 import api, { API_BASE_URL } from '../../services/api';
+import { getImageUrl } from '../../utils/imageUtils';
 
 export default function BlogPostDetailPage() {
     const { theme } = useTheme();
@@ -14,12 +15,6 @@ export default function BlogPostDetailPage() {
     const [post, setPost] = useState(null);
     const [loading, setLoading] = useState(true);
 
-    const getImageUrl = (url) => {
-        if (!url) return 'https://images.unsplash.com/photo-1522337660859-02fbefce4ffc?auto=format&fit=crop&q=80&w=1200';
-        if (url.startsWith('http')) return url;
-        const backendUrl = api.defaults.baseURL.replace('/api', '');
-        return `${backendUrl}/${url}`;
-    };
 
     useEffect(() => {
         const fetchPost = async () => {

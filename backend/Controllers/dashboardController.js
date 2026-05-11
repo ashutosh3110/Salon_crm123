@@ -150,7 +150,7 @@ exports.getSuperAdminDashboard = async (req, res) => {
                     }
                 }
             ]),
-            Salon.find().sort({ createdAt: -1 }).limit(5),
+            Salon.find().populate('outlets').sort({ createdAt: -1 }).limit(5),
             Salon.aggregate([
                 { $group: { _id: "$subscriptionPlan", count: { $sum: 1 } } }
             ]),

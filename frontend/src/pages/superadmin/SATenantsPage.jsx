@@ -135,6 +135,23 @@ function ActionMenu({ tenant, onEdit, onSuspend, onDelete, onResendCredentials, 
         },
     ];
 
+    useEffect(() => {
+        if (open) {
+            document.body.style.overflow = 'hidden';
+            document.documentElement.style.overflow = 'hidden';
+            document.body.style.paddingRight = '5px';
+        } else {
+            document.body.style.overflow = '';
+            document.documentElement.style.overflow = '';
+            document.body.style.paddingRight = '';
+        }
+        return () => {
+            document.body.style.overflow = '';
+            document.documentElement.style.overflow = '';
+            document.body.style.paddingRight = '';
+        };
+    }, [open]);
+
     return (
         <div ref={ref} className="relative inline-block text-left">
             <button
@@ -193,6 +210,23 @@ function ActionMenu({ tenant, onEdit, onSuspend, onDelete, onResendCredentials, 
 
 /* ─── Plan Change Modal (Fast Access) ─────────────────────────────────────── */
 function PlanChangeModal({ tenant, onClose, onSave, plans = [] }) {
+    useEffect(() => {
+        if (tenant) {
+            document.body.style.overflow = 'hidden';
+            document.documentElement.style.overflow = 'hidden';
+            document.body.style.paddingRight = '5px';
+        } else {
+            document.body.style.overflow = '';
+            document.documentElement.style.overflow = '';
+            document.body.style.paddingRight = '';
+        }
+        return () => {
+            document.body.style.overflow = '';
+            document.documentElement.style.overflow = '';
+            document.body.style.paddingRight = '';
+        };
+    }, [tenant]);
+
     if (!tenant) return null;
     return (
         <div className="fixed inset-0 z-[150] flex items-center justify-center p-4">
@@ -242,6 +276,24 @@ function PlanChangeModal({ tenant, onClose, onSave, plans = [] }) {
 /* ─── Status Reason Modal (Rejection/Suspension) ─────────────────────────── */
 function StatusReasonModal({ tenant, type, onClose, onConfirm, saving }) {
     const [reason, setReason] = useState('');
+    
+    useEffect(() => {
+        if (tenant) {
+            document.body.style.overflow = 'hidden';
+            document.documentElement.style.overflow = 'hidden';
+            document.body.style.paddingRight = '5px';
+        } else {
+            document.body.style.overflow = '';
+            document.documentElement.style.overflow = '';
+            document.body.style.paddingRight = '';
+        }
+        return () => {
+            document.body.style.overflow = '';
+            document.documentElement.style.overflow = '';
+            document.body.style.paddingRight = '';
+        };
+    }, [tenant]);
+
     if (!tenant) return null;
 
     const isReject = type === 'reject';
@@ -368,7 +420,13 @@ function CityAutocomplete({ value, onChange, labelCls, inputCls }) {
 function SalonModal({ mode, tenant, onClose, onSave, saving }) {
     useEffect(() => {
         document.body.style.overflow = 'hidden';
-        return () => { document.body.style.overflow = ''; };
+        document.documentElement.style.overflow = 'hidden';
+        document.body.style.paddingRight = '5px';
+        return () => {
+            document.body.style.overflow = '';
+            document.documentElement.style.overflow = '';
+            document.body.style.paddingRight = '';
+        };
     }, []);
 
     const [form, setForm] = useState({
