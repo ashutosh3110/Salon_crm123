@@ -5,6 +5,7 @@ import {
     Save, RotateCcw, Eye, Plus, Trash2, Check, X, Upload,
     Edit3, AlertTriangle, Star, ExternalLink, Sparkles,
 } from 'lucide-react';
+import { getImageUrl } from '../../utils/imageUtils';
 
 
 /* ─── Default content (mirrors the actual components) ─────────────────── */
@@ -183,7 +184,7 @@ function ImageField({ label, value, onChange }) {
             </div>
             {preview && (
                 <div className="mt-2 relative">
-                    <img src={preview} alt="preview" className="h-24 w-full object-cover border border-border"
+                    <img src={getImageUrl(preview)} alt="preview" className="h-24 w-full object-cover border border-border"
                         onError={() => setPreview('')} />
                     <div className="absolute inset-0 bg-black/30 opacity-0 hover:opacity-100 transition-opacity flex items-center justify-center">
                         <Image className="w-6 h-6 text-white" />
@@ -388,7 +389,7 @@ function TestimonialsEditor({ data, onChange }) {
                     <div key={t.id} className="border border-border bg-white">
                         <div className="flex items-center justify-between px-4 pt-3 pb-2 border-b border-border/50">
                             <div className="flex items-center gap-2">
-                                <img src={t.image} alt={t.name} className="w-8 h-8 object-cover border border-border" onError={e => e.target.src = 'https://i.pravatar.cc/150'} />
+                                <img src={getImageUrl(t.image)} alt={t.name} className="w-8 h-8 object-cover border border-border" onError={e => e.target.src = 'https://i.pravatar.cc/150'} />
                                 <div>
                                     <div className="text-sm font-black text-text">{t.name}</div>
                                     <div className="flex gap-0.5">{[...Array(5)].map((_, s) => (
@@ -530,7 +531,7 @@ function SpecialOffersEditor({ data, onChange }) {
             {/* Preview strip */}
             <div className="mb-6 p-4 bg-[#4A1D28] flex items-center gap-3 overflow-x-auto border border-white/10 rounded-xl shadow-inner">
                 {data.images.map((img, i) => (
-                    <img key={i} src={img.url} alt="" className="w-14 h-18 object-cover border-2 border-white/30 shrink-0 shadow-lg"
+                    <img key={i} src={getImageUrl(img.url)} alt="" className="w-14 h-18 object-cover border-2 border-white/30 shrink-0 shadow-lg"
                         onError={e => e.currentTarget.style.opacity = '0.2'} />
                 ))}
                 <div className="ml-4 text-left border-l border-white/10 pl-4">
@@ -561,7 +562,7 @@ function SpecialOffersEditor({ data, onChange }) {
                             </div>
                             <div className="space-y-3">
                                 <div className="relative group/img h-40 w-full bg-black/5 overflow-hidden">
-                                    <img src={img.url} alt="" className="w-full h-full object-cover transition-transform group-hover/img:scale-105"
+                                    <img src={getImageUrl(img.url)} alt="" className="w-full h-full object-cover transition-transform group-hover/img:scale-105"
                                         onError={e => e.currentTarget.style.opacity = '0.2'} />
                                     <div className="absolute inset-0 bg-black/40 opacity-0 group-hover/img:opacity-100 transition-opacity flex items-center justify-center">
                                         <Image className="w-6 h-6 text-white" />

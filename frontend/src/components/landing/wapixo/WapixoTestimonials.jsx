@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Star, Quote, X, Send, User, Building } from 'lucide-react';
 import { useTheme } from '../../../contexts/ThemeContext';
+import { getImageUrl } from '../../../utils/imageUtils';
 
 import landingData from '../../../data/landingMockData.json';
 
@@ -180,7 +181,7 @@ export default function WapixoTestimonials({ data }) {
 
                             <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem' }}>
                                 <div style={{ width: '48px', height: '48px', borderRadius: '50%', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.05)' }}>
-                                    <img src={t.image} alt={t.name} style={{ width: '100%', height: '100%', objectFit: 'cover', filter: 'grayscale(1)' }} />
+                                    <img src={getImageUrl(t.image)} alt={t.name} style={{ width: '100%', height: '100%', objectFit: 'cover', filter: 'grayscale(1)' }} />
                                 </div>
                                  <div>
                                     <h4 style={{ color: 'var(--wapixo-text)', fontSize: '0.95rem', fontWeight: 400, margin: 0, letterSpacing: '0.02em' }}>{t.name}</h4>

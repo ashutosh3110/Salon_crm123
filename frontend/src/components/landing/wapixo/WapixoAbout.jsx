@@ -1,5 +1,6 @@
 import { useRef } from 'react';
 import { motion, useMotionValue, useSpring, useTransform } from 'framer-motion';
+import { getImageUrl } from '../../../utils/imageUtils';
 
 export default function WapixoAbout({ data }) {
     const containerRef = useRef(null);
@@ -110,7 +111,7 @@ export default function WapixoAbout({ data }) {
                             }}
                         >
                             <motion.img
-                                src="https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&q=80&w=1200"
+                                src={getImageUrl(data?.image || "https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&q=80&w=1200")}
                                 alt="Salon Mastery"
                                 whileHover={{ scale: 1.05, filter: 'grayscale(0.4) contrast(1.1)', opacity: 1 }}
                                 transition={{ duration: 0.6 }}
