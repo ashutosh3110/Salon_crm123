@@ -436,13 +436,21 @@ export default function AppHomePage() {
         }
 
         return result.filter(s => {
-            // Remove outlet filtering for popular section
+            // Filter by outlet
+            const matchesOutlet = !activeOutletId || 
+                                (s.outletIds && s.outletIds.includes(activeOutletId)) || 
+                                (s.outletId === activeOutletId) ||
+                                (s.outletId === 'all') ||
+                                (!s.outletId && (!s.outletIds || s.outletIds.length === 0));
+
+            if (!matchesOutlet) return false;
+
             const cat = categories?.find(c => c.name === s.category);
             if (!cat) return true;
             if (!gender) return true;
             return cat.gender === 'both' || cat.gender === gender;
         });
-    }, [services, gender, categories, searchQuery]);
+    }, [services, gender, categories, searchQuery, activeOutletId]);
 
     const filteredPromos = useMemo(() => {
         return (banners || [])
@@ -814,7 +822,15 @@ export default function AppHomePage() {
                     >
                         {(() => {
                             const sourceServices = services || [];
-                            const filtered = sourceServices.filter(s => s.status === 'active');
+                            const filtered = sourceServices.filter(s => {
+                                const isActive = s.status === 'active';
+                                const matchesOutlet = !activeOutletId || 
+                                                    (s.outletIds && s.outletIds.includes(activeOutletId)) || 
+                                                    (s.outletId === activeOutletId) ||
+                                                    (s.outletId === 'all') ||
+                                                    (!s.outletId && (!s.outletIds || s.outletIds.length === 0));
+                                return isActive && matchesOutlet;
+                            });
                             if (filtered.length === 0) {
                                 return (
                                     <div style={{ width: '100%', padding: '20px', textAlign: 'center', color: colors.textMuted, fontSize: '12px' }}>No services found</div>

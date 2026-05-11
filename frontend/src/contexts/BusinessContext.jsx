@@ -165,6 +165,7 @@ export function BusinessProvider({ children }) {
             setSegments([]);
             setShifts([]);
             setCatalogue(null);
+            setUserSession(null);
 
             // Critical: Don't clear activeSalonId/activeOutletId here. 
             // They are cleared explicitly in the logout functions if needed.
@@ -430,6 +431,7 @@ export function BusinessProvider({ children }) {
 
             let url = `/salons/${sid}/initial-data?`;
             if (customerId) url += `customerId=${customerId}&`;
+            if (activeOutletId) url += `outletId=${activeOutletId}&`;
             if (lat && lng) url += `lat=${lat}&lng=${lng}&`;
 
             const res = await api.get(url);

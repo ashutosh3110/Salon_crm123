@@ -66,13 +66,23 @@ exports.getNearestOutlets = async (req, res) => {
 exports.getServicesByOutlet = async (req, res) => {
     try {
         const { outletId } = req.params;
+        
+        // Find the outlet to get its salonId
+        const outlet = await Outlet.findById(outletId);
+        if (!outlet) {
+            return res.status(404).json({ success: false, message: 'Outlet not found' });
+        }
+
         const services = await Service.find({ 
             $or: [
                 { outletIds: outletId },
-                { outletIds: { $size: 0 } },
-                { outletIds: { $exists: false } },
-                { outletId: outletId },
-                { outletId: 'all' }
+                { 
+                    salonId: outlet.salonId,
+                    $or: [
+                        { outletIds: { $size: 0 } },
+                        { outletIds: { $exists: false } }
+                    ]
+                }
             ]
         });
         res.json({ success: true, data: services });
@@ -103,13 +113,23 @@ exports.getServiceCategoriesByOutlet = async (req, res) => {
 exports.getProductsByOutlet = async (req, res) => {
     try {
         const { outletId } = req.params;
+        
+        // Find the outlet to get its salonId
+        const outlet = await Outlet.findById(outletId);
+        if (!outlet) {
+            return res.status(404).json({ success: false, message: 'Outlet not found' });
+        }
+
         const products = await Product.find({
             $or: [
                 { outletIds: outletId },
-                { outletIds: { $size: 0 } },
-                { outletIds: { $exists: false } },
-                { outletId: outletId },
-                { outletId: 'all' }
+                { 
+                    salonId: outlet.salonId,
+                    $or: [
+                        { outletIds: { $size: 0 } },
+                        { outletIds: { $exists: false } }
+                    ]
+                }
             ]
         });
         res.json({ success: true, data: products });

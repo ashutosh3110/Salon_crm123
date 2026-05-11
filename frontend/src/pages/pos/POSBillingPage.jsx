@@ -171,7 +171,8 @@ export default function POSBillingPage() {
         fetchPlatformSettings,
         fetchInvoices,
         fetchOrders,
-        fetchBookings
+        fetchBookings,
+        fetchServices
     } = useBusiness();
     const { addRevenue } = useFinance();
     const { allWallets, adminAdjustBalance, initializeWallet } = useWallet();
@@ -224,7 +225,10 @@ export default function POSBillingPage() {
         fetchInvoices?.();
         fetchOrders?.();
         fetchBookings?.();
-    }, [fiscal, fetchInvoices, fetchOrders, fetchBookings]);
+        if (activeOutletId) {
+            fetchServices?.(salon?._id, activeOutletId);
+        }
+    }, [fiscal, fetchInvoices, fetchOrders, fetchBookings, fetchServices, activeOutletId, salon?._id]);
 
     // UI State
     const [activeTab, setActiveTab] = useState('services');
@@ -559,14 +563,24 @@ export default function POSBillingPage() {
     }, [searchItem, isBarcodeMode]);
 
     // ─── Filters & Search ────────────────────────────────────
+    const allOutletItems = useMemo(() => {
+        const items = activeTab === 'services' ? services : products;
+        const itemsList = Array.isArray(items) ? items : [];
+        if (!activeOutletId) return itemsList;
+
+        return itemsList.filter(item => {
+            const itemOutletIds = item.outletIds || [];
+            return itemOutletIds.length === 0 ||
+                itemOutletIds.some(id => String(id?._id || id) === String(activeOutletId));
+        });
+    }, [activeTab, services, products, activeOutletId]);
+
     const categories = useMemo(() => {
-        if (activeTab === 'services' && serviceMode === 'appointments') {
+        if (activeTab === 'services' && serviceMode === 'bookings') {
             return ['All', 'Completed', 'Payment Success'];
         }
-        const items = activeTab === 'services' ? services : products;
-        const itemsArray = Array.isArray(items) ? items : [];
-        return ['All', ...new Set(itemsArray.map(i => i.category).filter(Boolean))];
-    }, [activeTab, services, products, serviceMode]);
+        return ['All', ...new Set(allOutletItems.map(i => i.category).filter(Boolean))];
+    }, [activeTab, allOutletItems, serviceMode]);
 
     const filteredItems = useMemo(() => {
         if (activeTab === 'services' && serviceMode === 'bookings') {
@@ -574,6 +588,11 @@ export default function POSBillingPage() {
             return list.filter(b => {
                 const isPaid = b.paymentStatus?.toLowerCase() === 'paid';
                 if (!isPaid) return false;
+                
+                // Filter by outlet
+                const matchOutlet = !activeOutletId || String(b.outletId?._id || b.outletId) === String(activeOutletId);
+                if (!matchOutlet) return false;
+
                 const alreadyBilled = (invoices || []).some(inv => String(inv.bookingId?._id || inv.bookingId) === String(b._id));
                 if (alreadyBilled) return false;
                 const clientName = b.clientId?.name || b.clientName || 'Walk-in';
@@ -597,6 +616,11 @@ export default function POSBillingPage() {
             return list.filter(o => {
                 const isPaid = o.paymentStatus?.toLowerCase() === 'paid';
                 if (!isPaid) return false;
+
+                // Filter by outlet
+                const matchOutlet = !activeOutletId || String(o.outletId?._id || o.outletId) === String(activeOutletId);
+                if (!matchOutlet) return false;
+
                 const alreadyBilled = (invoices || []).some(inv => String(inv.orderId?._id || inv.orderId) === String(o._id));
                 if (alreadyBilled) return false;
                 const clientName = o.customerId?.name || 'Walk-in';
@@ -615,15 +639,14 @@ export default function POSBillingPage() {
             }));
         }
 
-        const items = activeTab === 'services' ? services : products;
-        const itemsList = Array.isArray(items) ? items : [];
-        return itemsList.filter(item => {
+        return allOutletItems.filter(item => {
             const matchSearch = item.name?.toLowerCase().includes(searchItem.toLowerCase()) ||
                 (item.sku && item.sku.toLowerCase().includes(searchItem.toLowerCase()));
             const matchCat = selectedCategory === 'All' || item.category === selectedCategory;
+
             return matchSearch && matchCat;
         });
-    }, [activeTab, searchItem, selectedCategory, services, products, serviceMode, businessBookings, businessOrders, invoices]);
+    }, [activeTab, searchItem, selectedCategory, serviceMode, businessBookings, businessOrders, invoices, allOutletItems, activeOutletId]);
 
     const filteredClients = useMemo(() => {
         const clientsList = Array.isArray(businessCustomers) ? businessCustomers : [];
@@ -638,8 +661,16 @@ export default function POSBillingPage() {
     // ─── Staff Filtering & Availability ───
     const availableStaff = useMemo(() => {
         const staffList = Array.isArray(businessStaff) ? businessStaff : [];
-        return staffList.filter(s => s.status !== 'inactive');
-    }, [businessStaff]);
+        return staffList.filter(s => {
+            if (s.status === 'inactive') return false;
+            // Filter by outlet
+            if (activeOutletId) {
+                const sOid = String(s.outletId?._id || s.outletId);
+                return sOid === String(activeOutletId);
+            }
+            return true;
+        });
+    }, [businessStaff, activeOutletId]);
 
     // ─── Cart Logic ────────────────────────────────────────
     const addToCart = (item, forcedType) => {

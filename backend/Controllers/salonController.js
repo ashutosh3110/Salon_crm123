@@ -720,8 +720,15 @@ exports.getCustomerInitialData = async (req, res) => {
         const feedbackFilter = { salonId, status: 'active' };
 
         if (outletId && mongoose.Types.ObjectId.isValid(outletId)) {
-            serviceFilter.outletId = outletId;
-            productFilter.outletId = outletId;
+            const outletQuery = {
+                $or: [
+                    { outletIds: outletId },
+                    { outletIds: { $size: 0 } },
+                    { outletIds: { $exists: false } }
+                ]
+            };
+            Object.assign(serviceFilter, outletQuery);
+            Object.assign(productFilter, outletQuery);
             feedbackFilter.outletId = outletId;
         }
 

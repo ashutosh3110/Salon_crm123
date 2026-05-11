@@ -60,6 +60,7 @@ router.post('/membership/wallet-pay', buyMembershipWithWallet);
 
 router.get('/referral-settings', getReferralSettings);
 router.get('/referrals/me', getMyReferrals);
+router.get('/transactions/me', getLoyaltyHistory);
 router.get('/members', authorize('admin', 'manager'), getLoyaltyMembers);
 router.get('/transactions', authorize('admin', 'manager'), getAdminLoyaltyTransactions);
 

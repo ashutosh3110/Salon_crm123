@@ -16,6 +16,14 @@ export const CartProvider = ({ children }) => {
 
     const fetchedRef = useRef(false);
 
+    // Reset fetch flag and cart when customer changes
+    useEffect(() => {
+        fetchedRef.current = false;
+        if (!customer) {
+            setCart({ items: [] });
+        }
+    }, [customer?._id]);
+
     const fetchCart = useCallback(async () => {
         if (!customer) return;
         setLoading(true);

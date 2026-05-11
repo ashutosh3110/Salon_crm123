@@ -38,6 +38,13 @@ export function WalletProvider({ children }) {
     const [loading, setLoading] = useState(true);
     const location = useLocation();
 
+    useEffect(() => {
+        if (!customer) {
+            setBalance(0);
+            setTransactions([]);
+        }
+    }, [customer?._id]);
+
     // Admin/POS Support: Map customers to a wallet dictionary
     const allWallets = useMemo(() => {
         const wallets = {};
