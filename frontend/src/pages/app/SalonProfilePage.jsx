@@ -14,6 +14,7 @@ import { useCMS } from '../../contexts/CMSContext';
 import { useGender } from '../../contexts/GenderContext';
 import { useBusiness } from '../../contexts/BusinessContext';
 import { useAuth } from '../../contexts/AuthContext';
+import { getImageUrl } from '../../utils/imageUtils';
 
 const getAddressString = (addr) => {
     if (!addr) return '';
@@ -176,7 +177,7 @@ export default function SalonProfilePage() {
                         animate={{ opacity: 1, scale: 1 }}
                         exit={{ opacity: 0, scale: 0.9 }}
                         transition={{ duration: 1, ease: 'easeOut' }}
-                        src={outlet.images?.length > 0 ? outlet.images[currentImgIndex] : outlet.image}
+                        src={getImageUrl(outlet.images?.length > 0 ? outlet.images[currentImgIndex] : outlet.image)}
                         alt={outlet.name}
                         style={{ width: '100%', height: '100%', objectFit: 'cover', position: 'absolute' }}
                     />
@@ -522,7 +523,7 @@ export default function SalonProfilePage() {
                                             }}
                                         >
                                             <img
-                                                src={img}
+                                                src={getImageUrl(img)}
                                                 style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                                                 alt={`Salon Look ${idx}`}
                                             />
@@ -702,7 +703,7 @@ export default function SalonProfilePage() {
                                     <div style={{ display: 'flex', gap: '8px', overflowX: 'auto' }} className="no-scrollbar">
                                         {(review.images || []).map((imgUrl, idx) => (
                                             <div key={idx} style={{ width: '80px', height: '80px', borderRadius: '12px', overflow: 'hidden', flexShrink: 0 }}>
-                                                <img src={imgUrl} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="Review" />
+                                                <img src={getImageUrl(imgUrl)} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="Review" />
                                             </div>
                                         ))}
                                     </div>

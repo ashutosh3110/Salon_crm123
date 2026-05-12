@@ -23,6 +23,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import api from '../../services/api';
 import { toast } from 'react-hot-toast';
 
+import { useBusiness } from '../../contexts/BusinessContext';
+
 const STATUS_FLOW = {
     pending: { label: 'Pending', color: 'text-amber-500', bg: 'bg-amber-50', icon: Clock },
     accepted: { label: 'Accepted', color: 'text-blue-500', bg: 'bg-blue-50', icon: CheckCircle2 },
@@ -34,15 +36,18 @@ const STATUS_FLOW = {
 };
 
 export default function ShopOrdersPage() {
+    const { outlets, fetchOutlets } = useBusiness();
     const [orders, setOrders] = useState([]);
     const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState('');
     const [statusFilter, setStatusFilter] = useState('all');
+    const [outletFilter, setOutletFilter] = useState('all');
     const [selectedOrder, setSelectedOrder] = useState(null);
     const [updatingStatus, setUpdatingStatus] = useState(false);
 
     useEffect(() => {
         fetchOrders();
+        if (outlets.length === 0) fetchOutlets();
     }, []);
 
     const fetchOrders = async () => {
@@ -87,10 +92,11 @@ export default function ShopOrdersPage() {
                 o.customerId?.phone?.includes(search);
             
             const matchesStatus = statusFilter === 'all' || o.status === statusFilter;
+            const matchesOutlet = outletFilter === 'all' || String(o.outletId) === String(outletFilter);
             
-            return matchesSearch && matchesStatus;
+            return matchesSearch && matchesStatus && matchesOutlet;
         });
-    }, [orders, search, statusFilter]);
+    }, [orders, search, statusFilter, outletFilter]);
 
     const getNextStatus = (currentStatus) => {
         switch (currentStatus) {
@@ -118,7 +124,7 @@ export default function ShopOrdersPage() {
             </div>
 
             {/* Filters Bar */}
-            <div className="flex flex-col md:flex-row gap-4">
+            <div className="flex flex-col md:flex-row gap-4 items-end">
                 <div className="relative flex-1 group">
                     <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-primary transition-colors" />
                     <input 
@@ -129,12 +135,29 @@ export default function ShopOrdersPage() {
                         onChange={(e) => setSearch(e.target.value)}
                     />
                 </div>
+                
+                {/* Outlet Filter */}
+                <div className="flex flex-col gap-2 min-w-[200px]">
+                    <span className="text-[9px] font-black uppercase tracking-widest text-text-muted pl-1">Target Outlet</span>
+                    <select
+                        value={outletFilter}
+                        onChange={(e) => setOutletFilter(e.target.value)}
+                        className="w-full px-4 py-3 bg-surface border border-border text-[11px] font-black uppercase tracking-widest focus:outline-none focus:border-primary cursor-pointer appearance-none"
+                        style={{ backgroundImage: `url("data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2212%22%20height%3D%2212%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22currentColor%22%20stroke-width%3D%223%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpolyline%20points%3D%226%209%2012%2015%2018%209%22%3E%3C%2Fpolyline%3E%3C%2Fsvg%3E")`, backgroundRepeat: 'no-repeat', backgroundPosition: 'right 1rem center' }}
+                    >
+                        <option value="all">All Outlets</option>
+                        {outlets.map(o => (
+                            <option key={o._id} value={o._id}>{o.name}</option>
+                        ))}
+                    </select>
+                </div>
+
                 <div className="flex items-center gap-2 overflow-x-auto pb-1 md:pb-0 scrollbar-hide">
                     {['all', 'pending', 'accepted', 'dispatched', 'out_for_delivery', 'delivered', 'rejected', 'cancelled'].map(s => (
                         <button
                             key={s}
                             onClick={() => setStatusFilter(s)}
-                            className={`px-4 py-2 text-[9px] font-black uppercase tracking-widest transition-all whitespace-nowrap border ${statusFilter === s ? 'bg-text text-background border-text' : 'bg-surface text-text-muted border-border hover:border-primary'}`}
+                            className={`px-4 py-3 text-[9px] font-black uppercase tracking-widest transition-all whitespace-nowrap border ${statusFilter === s ? 'bg-text text-background border-text' : 'bg-surface text-text-muted border-border hover:border-primary'}`}
                         >
                             {s}
                         </button>
@@ -163,6 +186,7 @@ export default function ShopOrdersPage() {
                                     <th className="px-6 py-5">Timestamp</th>
                                     <th className="px-6 py-5">Customer Profile</th>
                                     <th className="px-6 py-5">Delivery Method</th>
+                                    <th className="px-6 py-5">Origin Outlet</th>
                                     <th className="px-6 py-5 text-right">Amount</th>
                                     <th className="px-6 py-5">Current Status</th>
                                     <th className="px-6 py-5 text-center">Protocol</th>
@@ -205,6 +229,16 @@ export default function ShopOrdersPage() {
                                                     </div>
                                                     <span className="text-[10px] font-black text-text uppercase tracking-widest">
                                                         {order.deliveryPreference === 'home' ? 'Home Delivery' : 'In-Store Collect'}
+                                                    </span>
+                                                </div>
+                                            </td>
+                                            <td className="px-6 py-5">
+                                                <div className="flex flex-col">
+                                                    <span className="text-[10px] font-black text-text uppercase tracking-widest">
+                                                        {outlets.find(out => String(out._id) === String(order.outletId))?.name || 'Main Branch'}
+                                                    </span>
+                                                    <span className="text-[8px] font-bold text-text-muted uppercase tracking-tighter opacity-40">
+                                                        ID: {order.outletId?.slice(-6) || 'N/A'}
                                                     </span>
                                                 </div>
                                             </td>
@@ -322,11 +356,21 @@ export default function ShopOrdersPage() {
                                             <span>Subtotal</span>
                                             <span>₹{selectedOrder.subtotal?.toLocaleString()}</span>
                                         </div>
+                                        {selectedOrder.membershipDiscount > 0 && (
+                                            <div className="flex justify-between text-[10px] font-black text-rose-500 uppercase tracking-widest">
+                                                <span>Membership Discount</span>
+                                                <span>-₹{selectedOrder.membershipDiscount?.toLocaleString()}</span>
+                                            </div>
+                                        )}
                                         <div className="flex justify-between text-[10px] font-black text-text-muted uppercase tracking-widest">
-                                            <span>Tax / Logistics</span>
+                                            <span>Delivery / Logistics</span>
                                             <span>+₹{selectedOrder.deliveryCharge?.toLocaleString()}</span>
                                         </div>
-                                        <div className="flex justify-between text-[10px] font-black text-[#C8956C] uppercase tracking-widest pt-2 border-t border-border/40">
+                                        <div className="flex justify-between text-[10px] font-black text-text-muted uppercase tracking-widest">
+                                            <span>GST / Tax</span>
+                                            <span>+₹{(selectedOrder.taxAmount > 0 ? selectedOrder.taxAmount : Math.round((selectedOrder.subtotal - (selectedOrder.membershipDiscount || 0)) * 0.12)).toLocaleString()}</span>
+                                        </div>
+                                        <div className="flex justify-between text-[10px] font-black text-primary uppercase tracking-widest pt-2 border-t border-border/40">
                                             <span>Final Settlement</span>
                                             <span className="text-lg italic">₹{selectedOrder.totalAmount?.toLocaleString()}</span>
                                         </div>
@@ -354,6 +398,20 @@ export default function ShopOrdersPage() {
 
                                 {/* Logistics Info */}
                                 <div className="grid grid-cols-2 gap-4">
+                                    <div className="p-6 border border-border bg-surface-alt space-y-4 col-span-2">
+                                        <div className="flex items-center gap-2">
+                                            <Package className="w-3.5 h-3.5 text-primary" />
+                                            <h4 className="text-[10px] font-black uppercase tracking-widest text-text">Origin Outlet</h4>
+                                        </div>
+                                        <div className="space-y-1">
+                                            <p className="text-xs font-black text-text uppercase">
+                                                {outlets.find(o => String(o._id) === String(selectedOrder.outletId))?.name || 'Main Branch'}
+                                            </p>
+                                            <p className="text-[10px] font-bold text-text-muted uppercase italic">
+                                                Location ID: {selectedOrder.outletId || 'PRIMARY'}
+                                            </p>
+                                        </div>
+                                    </div>
                                     <div className="p-6 border border-border bg-surface-alt space-y-4">
                                         <div className="flex items-center gap-2">
                                             <User className="w-3.5 h-3.5 text-primary" />

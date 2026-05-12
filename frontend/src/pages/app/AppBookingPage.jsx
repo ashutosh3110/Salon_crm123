@@ -11,6 +11,7 @@ import { useBusiness } from '../../contexts/BusinessContext';
 import { useGender } from '../../contexts/GenderContext';
 import { useWallet } from '../../contexts/WalletContext';
 import api from '../../services/api';
+import { getImageUrl } from '../../utils/imageUtils';
 
 const STEPS = ['Stylist', 'Date & Time', 'Confirm'];
 
@@ -740,7 +741,11 @@ export default function AppBookingPage() {
                 appointmentDate: appointmentDateObj.toISOString(),
                 time: selectedTime,
                 duration: Number(totalDuration || primaryService.duration || 30),
-                price: Number(finalPrice || 0),
+                subtotal: Number(totalPrice || 0),
+                membershipDiscount: Number(membershipDiscount || 0),
+                promoDiscount: Number(promoDiscount || 0),
+                tax: Number(tax || 0),
+                totalPrice: Number(finalPrice || 0),
                 tenantId: currentOutlet?.tenantId || currentOutlet?.tenant_id || activeSalonId || localStorage.getItem('active_salon_id'),
                 source: 'APP'
             };
@@ -1049,7 +1054,7 @@ export default function AppBookingPage() {
                                     >
                                         <div className="w-16 h-16 rounded-2xl overflow-hidden bg-gray-100 dark:bg-gray-800 flex-shrink-0">
                                             {s.image ? (
-                                                <img src={s.image} alt={s.name} className="w-full h-full object-cover" />
+                                                <img src={getImageUrl(s.image)} alt={s.name} className="w-full h-full object-cover" />
                                             ) : (
                                                 <div className="w-full h-full flex items-center justify-center font-bold text-[#C8956C] text-xl">
                                                     {s.name?.charAt(0)}
@@ -1321,7 +1326,7 @@ export default function AppBookingPage() {
                                 </div>
                             </div>
 
-                            <div className="space-y-2 pt-4 border-t border-dashed border-black/10 dark:border-white/10 uppercase font-black tracking-tighter">
+                            <div className="space-y-2 pt-4 border-t border-dashed border-black/10 dark:border-white/10 uppercase font-black tracking-tight">
                                 <div className="flex justify-between items-center opacity-40 text-xs">
                                     <span style={{ color: colors.text }}>Subtotal</span>
                                     <span style={{ color: colors.text }}>₹{totalPrice.toLocaleString()}</span>
@@ -1350,7 +1355,7 @@ export default function AppBookingPage() {
                                 </div>
                                 <div className="flex justify-between text-2xl pt-2">
                                     <span style={{ color: colors.textMuted }}>Total</span>
-                                    <span className="text-[#C8956C]">₹{Math.round(finalPrice).toLocaleString()}</span>
+                                    <span className="text-[#C8956C] px-1">₹{Math.round(finalPrice).toLocaleString()}</span>
                                 </div>
                                 {loyaltySettings?.active && (
                                     <div className="flex justify-between items-center py-2 px-3 mt-2 rounded-xl bg-[#C8956C]/5 border border-[#C8956C]/20">

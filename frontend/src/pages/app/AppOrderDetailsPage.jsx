@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { ChevronLeft, Package, Calendar, CreditCard, Truck, MapPin, CheckCircle, Clock, Hash, ShoppingBag, Zap, XCircle } from 'lucide-react';
 import { useCustomerTheme } from '../../contexts/CustomerThemeContext';
 import api from '../../services/api';
+import { getImageUrl } from '../../utils/imageUtils';
 
 export default function AppOrderDetailsPage() {
     const { id } = useParams();
@@ -33,8 +34,9 @@ export default function AppOrderDetailsPage() {
     const itemsTotal = order?.subtotal || order?.items?.reduce((sum, item) => sum + (item.price * item.quantity), 0) || 0;
     const deliveryFee = order?.deliveryCharge || (order?.deliveryPreference === 'home' ? (order?.outletId?.config?.deliveryCharge || 0) : 0);
     const totalAmount = order?.totalAmount || 0;
+    const taxAmount = order?.taxAmount || 0;
     // Calculate discount if it's explicitly stored OR infer it from the difference
-    const membershipDiscount = order?.membershipDiscount || Math.max(0, (itemsTotal + deliveryFee) - totalAmount);
+    const membershipDiscount = order?.membershipDiscount || Math.max(0, (itemsTotal + deliveryFee + taxAmount) - totalAmount);
 
     const statusConfig = {
         pending: { color: '#F59E0B', label: 'Order Pending', icon: Clock, bg: 'rgba(245,158,11,0.1)' },
@@ -99,8 +101,8 @@ export default function AppOrderDetailsPage() {
                 {/* Branch & Salon Section */}
                 <div className="p-6 rounded-[32px] space-y-4" style={{ background: colors.card, border: `1px solid ${colors.border}` }}>
                     <div className="flex items-center gap-4">
-                        <div className="w-10 h-10 rounded-xl bg-black/5 overflow-hidden">
-                            <img src={order.salonId?.logo} className="w-full h-full object-cover" alt="" />
+                        <div className="w-10 h-10 rounded-xl bg-black/5 overflow-hidden border border-black/5">
+                            <img src={getImageUrl(order.salonId?.logo)} className="w-full h-full object-cover" alt="" />
                         </div>
                         <div>
                             <h4 className="text-[10px] font-black uppercase tracking-widest text-[#C8956C]">{order.salonId?.name || 'Brand'}</h4>
@@ -165,12 +167,15 @@ export default function AppOrderDetailsPage() {
                     <div className="space-y-3">
                         {order.items?.map((item, i) => (
                             <div key={i} className="p-4 rounded-3xl flex items-center gap-4" style={{ background: colors.card, border: `1px solid ${colors.border}` }}>
-                                <div className="w-14 h-14 rounded-2xl bg-black/5 overflow-hidden">
-                                    <img src={item.productId?.image} className="w-full h-full object-cover" alt="" />
+                                <div className="w-14 h-14 rounded-2xl bg-black/5 overflow-hidden border border-black/5">
+                                    <img src={getImageUrl(item.productId?.appImage || (item.productId?.images && item.productId?.images[0]) || item.productId?.image)} className="w-full h-full object-cover" alt="" />
                                 </div>
                                 <div className="flex-1">
                                     <h4 className="text-xs font-black uppercase tracking-tight" style={{ color: colors.text }}>{item.productId?.name}</h4>
-                                    <p className="text-[9px] font-bold opacity-40 uppercase tracking-widest mt-1">Qty: {item.quantity}</p>
+                                    <div className="flex flex-col gap-0.5 mt-1">
+                                        {item.productId?.sku && <p className="text-[8px] font-black opacity-30 uppercase tracking-widest italic">SKU: {item.productId.sku}</p>}
+                                        <p className="text-[9px] font-bold opacity-40 uppercase tracking-widest">Qty: {item.quantity}</p>
+                                    </div>
                                 </div>
                                 <div className="text-right">
                                     <p className="text-sm font-black italic tracking-tighter" style={{ color: colors.text }}>₹{item.price * item.quantity}</p>
@@ -200,19 +205,28 @@ export default function AppOrderDetailsPage() {
                     <div className="flex justify-between items-center text-sm">
                         <span className="opacity-60 font-bold uppercase text-[10px] tracking-widest">Delivery Fee</span>
                         <span className="font-black italic tracking-tighter" style={{ color: deliveryFee > 0 ? colors.text : '#10B981' }}>
-                            {deliveryFee > 0 ? `₹${deliveryFee}` : 'FREE'}
+                            {deliveryFee > 0 ? `₹${deliveryFee.toLocaleString()}` : 'FREE'}
                         </span>
                     </div>
 
+                    {(taxAmount > 0 || !order.taxAmount) && (
+                        <div className="flex justify-between items-center text-sm">
+                            <span className="opacity-60 font-bold uppercase text-[10px] tracking-widest">GST / Tax</span>
+                            <span className="font-black italic tracking-tighter" style={{ color: colors.text }}>
+                                ₹{taxAmount > 0 ? taxAmount.toLocaleString() : Math.round((itemsTotal - membershipDiscount) * 0.12).toLocaleString()}
+                            </span>
+                        </div>
+                    )}
+
                     <div className="pt-4 mt-2 border-t border-dashed space-y-4" style={{ borderTopColor: colors.border }}>
-                        <div className="flex justify-between items-center overflow-hidden">
+                        <div className="flex justify-between items-center">
                              <div className="flex flex-col">
                                 <span className="opacity-100 font-black uppercase text-[12px] tracking-widest" style={{ color: colors.text }}>Total Amount</span>
                                 <p className="text-[9px] font-bold opacity-40 uppercase tracking-widest">
                                     Paid via {order.paymentMethod === 'cod' ? 'In-Salon' : order.paymentMethod?.toUpperCase()}
                                 </p>
                              </div>
-                             <span className="text-3xl font-black italic tracking-tighter" style={{ color: '#C8956C' }}>₹{totalAmount.toLocaleString()}</span>
+                             <span className="text-3xl font-black italic tracking-tighter pr-2" style={{ color: '#C8956C' }}>₹{totalAmount.toLocaleString()}</span>
                         </div>
                     </div>
                 </div>

@@ -68,6 +68,10 @@ const orderSchema = new mongoose.Schema({
         type: Number,
         default: 0
     },
+    taxAmount: {
+        type: Number,
+        default: 0
+    },
     address: {
         street: String,
         city: String,

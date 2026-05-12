@@ -10,6 +10,8 @@ import api from '../../services/api';
 
 import { getImageUrl } from '../../utils/imageUtils';
 
+import { useFavorites } from '../../contexts/FavoritesContext';
+
 const ServiceSkeleton = ({ colors, isLight }) => (
     <div 
         style={{ 
@@ -34,6 +36,10 @@ const ServiceSkeleton = ({ colors, isLight }) => (
 );
 
 const ServiceCard = ({ service, onBook, colors, isLight, categories, navigate }) => {
+    const { isServiceLiked, toggleServiceLike } = useFavorites();
+    const serviceId = service._id || service.id;
+    const isLiked = isServiceLiked(serviceId);
+
     const categoryName = useMemo(() => {
         if (!categories || categories.length === 0) return service.category;
         const cat = categories.find(c => String(c._id) === String(service.category) || c.name === service.category);
@@ -51,8 +57,30 @@ const ServiceCard = ({ service, onBook, colors, isLight, categories, navigate })
                 border: `1.5px solid ${colors.border}`,
                 boxShadow: isLight ? '0 4px 12px rgba(0,0,0,0.03)' : '0 4px 12px rgba(0,0,0,0.2)'
             }}
-            className="group overflow-hidden flex flex-col h-full"
+            className="group overflow-hidden flex flex-col h-full relative"
         >
+            {/* Like Button */}
+            <div className="absolute top-2 right-2 z-20">
+                <motion.button
+                    whileTap={{ scale: 0.8 }}
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        toggleServiceLike(serviceId);
+                    }}
+                    className="w-8 h-8 rounded-full flex items-center justify-center backdrop-blur-md transition-colors"
+                    style={{ 
+                        background: isLiked ? 'rgba(244,63,94,0.2)' : 'rgba(0,0,0,0.2)',
+                        border: isLiked ? '1px solid rgba(244,63,94,0.3)' : '1px solid rgba(255,255,255,0.1)'
+                    }}
+                >
+                    <Heart 
+                        size={14} 
+                        className={isLiked ? 'text-rose-500' : 'text-white'} 
+                        fill={isLiked ? '#f43f5e' : 'transparent'} 
+                    />
+                </motion.button>
+            </div>
+
             <div 
                 className="relative aspect-square overflow-hidden bg-slate-100 cursor-pointer"
                 onClick={() => navigate(`/app/service/${service._id || service.id}`)}

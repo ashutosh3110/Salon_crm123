@@ -130,6 +130,7 @@ export default function AppCheckoutPage() {
                 membershipDiscount: membershipDiscount,
                 totalAmount: finalTotal,
                 deliveryCharge: deliveryFee,
+                taxAmount: tax,
                 paymentMethod,
                 address: homeDelivery ? address : { type: 'salon_pickup' },
                 deliveryPreference: homeDelivery ? 'home' : 'salon',
@@ -268,7 +269,7 @@ export default function AppCheckoutPage() {
                     </div>
                     <div className="flex justify-between items-center mb-6 pt-4 border-t border-dashed" style={{ borderTopColor: colors.border }}>
                         <span className="text-[11px] font-black uppercase tracking-[0.2em] opacity-100" style={{ color: colors.text }}>Grand Total</span>
-                        <span className="text-3xl font-black italic tracking-tighter" style={{ color: '#C8956C' }}>₹{Math.round(finalTotal)}</span>
+                        <span className="text-2xl font-black italic px-1" style={{ color: '#C8956C' }}>₹{Math.round(finalTotal).toLocaleString()}</span>
                     </div>
                     {loyaltySettings?.active && (
                         <div className="flex items-center justify-between py-2 px-3 mb-4 rounded-xl bg-[#C8956C]/5 border border-[#C8956C]/10">
@@ -284,7 +285,7 @@ export default function AppCheckoutPage() {
                             <div key={i} className="flex items-center gap-3">
                                 <div className="w-10 h-10 rounded-xl overflow-hidden bg-white/5 border border-white/10 shrink-0">
                                     <img 
-                                        src={getImageUrl(item.productId.appImage || (item.productId.images && item.productId.images[0]))} 
+                                        src={getImageUrl(item.productId.appImage || (item.productId.images && item.productId.images[0]) || item.productId.image)} 
                                         alt={item.productId.name}
                                         className="w-full h-full object-cover"
                                     />

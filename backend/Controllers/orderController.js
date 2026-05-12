@@ -21,7 +21,8 @@ exports.createOrder = async (req, res) => {
             deliveryPreference,
             deliveryCharge,
             subtotal,
-            membershipDiscount
+            membershipDiscount,
+            taxAmount
         } = req.body;
         const customerId = req.user._id;
 
@@ -77,6 +78,7 @@ exports.createOrder = async (req, res) => {
             deliveryCharge: deliveryCharge || 0,
             subtotal: subtotal || totalAmount,
             membershipDiscount: membershipDiscount || 0,
+            taxAmount: taxAmount || 0,
             paymentStatus: paymentMethod === 'wallet' ? 'paid' : 'pending',
             timeline: [{
                 status: 'pending',

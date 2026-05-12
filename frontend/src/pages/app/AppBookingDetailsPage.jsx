@@ -157,8 +157,9 @@ export default function AppBookingDetailsPage() {
     // Derived values for robust breakdown display
     const itemsTotal = booking?.subtotal ?? booking?.service?.price ?? 0;
     const totalAmount = booking?.totalPrice ?? booking?.price ?? 0;
+    const taxAmount = booking?.tax ?? 0;
     // Calculate discount if it's explicitly stored OR infer it from the difference
-    const membershipDiscount = booking?.membershipDiscount ?? Math.max(0, itemsTotal - totalAmount);
+    const membershipDiscount = booking?.membershipDiscount ?? Math.max(0, itemsTotal + taxAmount - totalAmount);
 
     return (
         <motion.div 
@@ -221,9 +222,15 @@ export default function AppBookingDetailsPage() {
                                      <span>- ₹{membershipDiscount.toLocaleString()}</span>
                                  </div>
                              )}
+                             {(taxAmount > 0 || !booking.tax) && (
+                                 <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-widest opacity-40">
+                                     <span>GST / Tax</span>
+                                     <span>₹{taxAmount > 0 ? taxAmount.toLocaleString() : Math.round((itemsTotal - membershipDiscount) * 0.18).toLocaleString()}</span>
+                                 </div>
+                             )}
                              <div className="flex justify-between items-center pt-2">
                                  <span className="text-[12px] font-black uppercase tracking-widest" style={{ color: colors.text }}>Total Paid</span>
-                                 <span className="text-2xl font-black text-[#C8956C] tracking-tighter">₹{totalAmount.toLocaleString()}</span>
+                                 <span className="text-2xl font-black text-[#C8956C] tracking-tighter pr-2">₹{totalAmount.toLocaleString()}</span>
                              </div>
                         </div>
                     </div>

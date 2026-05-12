@@ -336,9 +336,16 @@ export default function BookingDetailPage() {
                                         </div>
                                     )}
 
+                                    {booking.promoDiscount > 0 && (
+                                        <div className="flex items-center justify-between text-emerald-500/80">
+                                            <p className="text-[10px] font-black uppercase tracking-widest">Promo Discount</p>
+                                            <p className="text-sm font-black italic font-mono">-₹{(booking.promoDiscount || 0).toFixed(2)}</p>
+                                        </div>
+                                    )}
+
                                     {/* Calculated values for display consistency */}
                                     {(() => {
-                                        const taxable = (booking.subtotal || 0) - (booking.membershipDiscount || 0);
+                                        const taxable = (booking.subtotal || 0) - (booking.membershipDiscount || 0) - (booking.promoDiscount || 0);
                                         const gstPercent = booking.tax > 0 ? 
                                             Math.round((booking.tax / (taxable || 1)) * 100) : 
                                             (platformSettings?.serviceGst || 18);

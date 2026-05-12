@@ -97,32 +97,54 @@ exports.createBooking = async (req, res) => {
         }
 
         // Fetch active membership to apply discount securely in backend
-        let totalPrice = service.price;
         const activeMembership = await CustomerMembership.findOne({
             customerId: targetCustomerId,
             status: 'active',
             expiryDate: { $gt: new Date() }
         }).populate('planId');
 
-        if (activeMembership && activeMembership.planId) {
-            const plan = activeMembership.planId;
-            if (plan.serviceDiscountValue > 0) {
-                if (plan.serviceDiscountType === 'percentage') {
-                    totalPrice -= (totalPrice * plan.serviceDiscountValue) / 100;
-                } else {
-                    totalPrice -= plan.serviceDiscountValue;
+        // Calculate / Resolve Financials
+        const bodySubtotal = Number(req.body.subtotal || 0);
+        const bodyTax = Number(req.body.tax || 0);
+        const bodyMembershipDiscount = Number(req.body.membershipDiscount || 0);
+        const bodyPromoDiscount = Number(req.body.promoDiscount || 0);
+        const bodyTotalPrice = Number(req.body.totalPrice || 0);
+
+        let finalSubtotal, finalTax, finalMembershipDiscount, finalPromoDiscount, finalTotal;
+
+        if (bodySubtotal > 0 || bodyTotalPrice > 0) {
+            // Trust client-side calculation if provided (common for App/POS with complex logic)
+            finalSubtotal = bodySubtotal || service.price;
+            finalMembershipDiscount = bodyMembershipDiscount;
+            finalPromoDiscount = bodyPromoDiscount;
+            finalTax = bodyTax;
+            finalTotal = bodyTotalPrice || (finalSubtotal - finalMembershipDiscount - finalPromoDiscount + finalTax);
+        } else {
+            // Legacy/Backend calculation fallback
+            const settings = await Setting.findOne();
+            const serviceGst = settings?.serviceGst || 18;
+            
+            let basePrice = service.price;
+            let discountedPrice = basePrice;
+
+            if (activeMembership && activeMembership.planId) {
+                const plan = activeMembership.planId;
+                if (plan.serviceDiscountValue > 0) {
+                    if (plan.serviceDiscountType === 'percentage') {
+                        discountedPrice -= (basePrice * plan.serviceDiscountValue) / 100;
+                    } else {
+                        discountedPrice -= plan.serviceDiscountValue;
+                    }
                 }
             }
+            discountedPrice = Math.max(0, Math.floor(discountedPrice));
+            
+            finalSubtotal = basePrice;
+            finalMembershipDiscount = basePrice - discountedPrice;
+            finalPromoDiscount = 0;
+            finalTax = Math.round(discountedPrice * (serviceGst / 100));
+            finalTotal = discountedPrice + finalTax;
         }
-        totalPrice = Math.max(0, Math.floor(totalPrice));
-        
-        // Calculate Tax
-        const settings = await Setting.findOne();
-        const serviceGst = settings?.serviceGst || 18;
-        const taxAmount = Math.round((totalPrice) * (serviceGst / 100));
-        const subtotal = service.price;
-        const membershipDiscount = service.price - totalPrice;
-        const finalPrice = totalPrice + taxAmount;
 
         // Handle Wallet Payment
         if (paymentMethod === 'Wallet' || paymentMethod === 'wallet') {
@@ -130,15 +152,15 @@ exports.createBooking = async (req, res) => {
                 return res.status(404).json({ success: false, message: 'Customer not found' });
             }
 
-            if ((customer.walletBalance || 0) < finalPrice) {
+            if ((customer.walletBalance || 0) < finalTotal) {
                 return res.status(400).json({ success: false, message: 'Insufficient wallet balance' });
             }
 
             // Deduct balance
-            customer.walletBalance -= finalPrice;
+            customer.walletBalance -= finalTotal;
             
             // Increment total spend and visits
-            customer.totalSpend = (customer.totalSpend || 0) + finalPrice;
+            customer.totalSpend = (customer.totalSpend || 0) + finalTotal;
             customer.totalVisits = (customer.totalVisits || 0) + 1;
             
             await customer.save();
@@ -147,7 +169,7 @@ exports.createBooking = async (req, res) => {
             await WalletTransaction.create({
                 customerId: targetCustomerId,
                 salonId: salonId,
-                amount: finalPrice,
+                amount: finalTotal,
                 type: 'DEBIT',
                 description: `Payment for service: ${service.name}`,
                 status: 'COMPLETED'
@@ -157,10 +179,11 @@ exports.createBooking = async (req, res) => {
         const booking = await Booking.create({
             ...req.body,
             salonId,
-            subtotal,
-            membershipDiscount,
-            tax: taxAmount,
-            totalPrice: finalPrice,
+            subtotal: finalSubtotal,
+            membershipDiscount: finalMembershipDiscount,
+            promoDiscount: finalPromoDiscount,
+            tax: finalTax,
+            totalPrice: finalTotal,
             paymentStatus: (paymentMethod === 'Wallet' || paymentMethod === 'wallet') ? 'paid' : 'unpaid'
         });
 

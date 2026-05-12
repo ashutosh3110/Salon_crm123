@@ -5,6 +5,7 @@ import { ArrowLeft, Loader2, MapPin, Navigation, Star, Search, ChevronRight, Glo
 import api from '../../services/mock/mockApi';
 import { useCustomerTheme } from '../../contexts/CustomerThemeContext';
 import { useBusiness } from '../../contexts/BusinessContext';
+import { getImageUrl } from '../../utils/imageUtils';
 
 const getAddressString = (addr) => {
     if (!addr) return '';
@@ -361,7 +362,7 @@ export default function NearbyOutletsPage() {
                                         <div className="flex gap-5">
                                             <div className="w-28 h-28 rounded-2xl overflow-hidden shrink-0">
                                                 <img
-                                                    src={(o.image || "").replace('wapixo.com/uploads', 'api.wapixo.com/uploads') || "https://images.unsplash.com/photo-1560066984-138dadb4c035?q=80&w=800"}
+                                                    src={getImageUrl(o.image)}
                                                     alt={o.name}
                                                     className="w-full h-full object-cover grayscale-[30%] group-hover:grayscale-0 group-hover:scale-105 transition-all duration-700"
                                                     onError={(e) => { 

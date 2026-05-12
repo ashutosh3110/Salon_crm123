@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion';
 import { Package, Calendar, CreditCard } from 'lucide-react';
 import { useCustomerTheme } from '../../contexts/CustomerThemeContext';
+import { getImageUrl } from '../../utils/imageUtils';
 
 export default function OrderCard({ order, onTap, index = 0 }) {
     const { theme } = useCustomerTheme();
@@ -91,7 +92,7 @@ export default function OrderCard({ order, onTap, index = 0 }) {
                 {order.items?.map((item, i) => (
                     <div key={i} className="shrink-0 w-10 h-10 rounded-lg bg-black/5 dark:bg-white/5 border border-black/5 dark:border-white/5 overflow-hidden">
                         <img 
-                            src={item.productId?.image || 'https://via.placeholder.com/150'} 
+                            src={getImageUrl(item.productId?.appImage || (item.productId?.images && item.productId?.images[0]) || item.productId?.image)} 
                             alt={item.productId?.name}
                             className="w-full h-full object-cover"
                         />

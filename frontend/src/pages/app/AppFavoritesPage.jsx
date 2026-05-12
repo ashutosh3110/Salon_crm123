@@ -9,6 +9,7 @@ import { useCart } from '../../contexts/CartContext';
 import { useCustomerTheme } from '../../contexts/CustomerThemeContext';
 import { useInventory } from '../../contexts/InventoryContext';
 import { mapInventoryProductToShopProduct } from '../../utils/shopProductMapper';
+import { getImageUrl } from '../../utils/imageUtils';
 
 export default function AppFavoritesPage() {
     const navigate = useNavigate();
@@ -144,17 +145,66 @@ export default function AppFavoritesPage() {
                             exit="hidden"
                             variants={containerVariants}
                             transition={{ duration: 0.2 }}
-                            className="space-y-4 pb-12"
                         >
                             {favoriteServices.length > 0 ? (
-                                favoriteServices.map((service, i) => (
-                                    <ServiceCard
-                                        key={service._id}
-                                        service={service}
-                                        index={i}
-                                        onBook={handleBookService}
-                                    />
-                                ))
+                                <div className="grid grid-cols-2 gap-4 pb-12">
+                                    {favoriteServices.map((service, i) => (
+                                        <motion.div
+                                            key={service._id}
+                                            initial={{ opacity: 0, y: 20 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            transition={{ delay: i * 0.05 }}
+                                            style={{ 
+                                                background: colors.card, 
+                                                border: `1px solid ${colors.border}`,
+                                                backdropFilter: 'blur(10px)',
+                                                boxShadow: '0 10px 30px rgba(0,0,0,0.02)'
+                                            }}
+                                            className="group rounded-[28px] overflow-hidden flex flex-col h-full relative"
+                                        >
+                                            <div className="relative aspect-square overflow-hidden bg-black/5 dark:bg-white/5">
+                                                <img
+                                                    onClick={() => navigate(`/app/service/${service._id}`)}
+                                                    src={getImageUrl(service.image) || "https://images.unsplash.com/photo-1560066984-138dadb4c035?q=80&w=1000&auto=format&fit=crop"}
+                                                    alt={service.name}
+                                                    className="w-full h-full object-cover cursor-pointer transition-transform duration-700 group-hover:scale-110"
+                                                />
+                                                <button
+                                                    onClick={(e) => { e.stopPropagation(); toggleServiceLike(service._id); }}
+                                                    className="absolute top-3 right-3 w-8 h-8 rounded-full bg-black/20 backdrop-blur-md flex items-center justify-center shadow-sm"
+                                                    style={{ color: '#ff4b4b' }}
+                                                >
+                                                    <Heart className="w-4 h-4 fill-current" />
+                                                </button>
+                                                <div className="absolute bottom-3 left-3 px-2 py-1 rounded-lg bg-[#C8956C] text-white text-[7px] font-black tracking-[0.2em] uppercase">
+                                                    {service.duration} MIN
+                                                </div>
+                                            </div>
+                                            <div className="p-4 flex flex-col flex-1">
+                                                <div className="flex justify-between items-start gap-2 mb-2">
+                                                    <h3
+                                                        onClick={() => navigate(`/app/service/${service._id}`)}
+                                                        style={{ color: colors.text }}
+                                                        className="font-black text-[12px] italic leading-tight line-clamp-2 cursor-pointer flex-1 tracking-tight"
+                                                    >
+                                                        {service.name}
+                                                    </h3>
+                                                </div>
+                                                <div className="mt-auto pt-3 flex items-center justify-between border-t border-black/5 dark:border-white/5">
+                                                    <div>
+                                                        <span className="text-sm font-black text-[#C8956C] tracking-tighter">₹{service.price?.toLocaleString()}</span>
+                                                    </div>
+                                                    <button
+                                                        onClick={(e) => { e.stopPropagation(); navigate(`/app/service/${service._id}`); }}
+                                                        className="w-9 h-9 rounded-xl bg-[#C8956C]/10 text-[#C8956C] flex items-center justify-center hover:bg-[#C8956C] hover:text-white transition-all active:scale-90"
+                                                    >
+                                                        <Plus className="w-5 h-5" />
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </motion.div>
+                                    ))}
+                                </div>
                             ) : (
                                 <EmptyState icon={Scissors} title="No Liked Services" subtitle="Services you heart will appear here." />
                             )}
