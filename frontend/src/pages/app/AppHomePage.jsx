@@ -756,6 +756,7 @@ export default function AppHomePage() {
                                     key={outlet._id}
                                     onClick={() => {
                                         setActiveOutletId(outlet._id);
+                                        navigate(`/app/salon/${outlet._id}`);
                                     }}
                                     style={{
                                         flexShrink: 0,

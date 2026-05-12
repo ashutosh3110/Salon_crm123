@@ -213,7 +213,7 @@ export default function AppOrderDetailsPage() {
                         <div className="flex justify-between items-center text-sm">
                             <span className="opacity-60 font-bold uppercase text-[10px] tracking-widest">GST / Tax</span>
                             <span className="font-black italic tracking-tighter" style={{ color: colors.text }}>
-                                ₹{taxAmount > 0 ? taxAmount.toLocaleString() : Math.round((itemsTotal - membershipDiscount) * 0.12).toLocaleString()}
+                                ₹{taxAmount > 0 ? taxAmount.toLocaleString() : Math.round((itemsTotal - membershipDiscount) * 0.18).toLocaleString()}
                             </span>
                         </div>
                     )}
@@ -226,7 +226,7 @@ export default function AppOrderDetailsPage() {
                                     Paid via {order.paymentMethod === 'cod' ? 'In-Salon' : order.paymentMethod?.toUpperCase()}
                                 </p>
                              </div>
-                             <span className="text-3xl font-black italic tracking-tighter pr-2" style={{ color: '#C8956C' }}>₹{totalAmount.toLocaleString()}</span>
+                             <span className="text-2xl font-black italic tracking-tighter pr-2" style={{ color: '#C8956C' }}>₹{totalAmount.toLocaleString()}</span>
                         </div>
                     </div>
                 </div>

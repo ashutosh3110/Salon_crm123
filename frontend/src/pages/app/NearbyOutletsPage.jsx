@@ -5,6 +5,7 @@ import { ArrowLeft, Loader2, MapPin, Navigation, Star, Search, ChevronRight, Glo
 import api from '../../services/mock/mockApi';
 import { useCustomerTheme } from '../../contexts/CustomerThemeContext';
 import { useBusiness } from '../../contexts/BusinessContext';
+import { useCustomerAuth } from '../../contexts/CustomerAuthContext';
 import { getImageUrl } from '../../utils/imageUtils';
 
 const getAddressString = (addr) => {
@@ -25,6 +26,8 @@ export default function NearbyOutletsPage() {
 
     const navigate = useNavigate();
     const { theme } = useCustomerTheme();
+    const { setActiveOutletId } = useBusiness();
+    const { isAuthenticated } = useCustomerAuth();
     const isLight = theme === 'light';
 
     const [userCoords, setUserCoords] = useState(() => {
@@ -353,8 +356,13 @@ export default function NearbyOutletsPage() {
                                         animate={{ opacity: 1, y: 0 }}
                                         transition={{ delay: idx * 0.1 }}
                                         onClick={() => {
-                                            localStorage.setItem('wapixo_selected_outlet', JSON.stringify(o));
-                                            navigate(`/app/login?outletSelected=1&tenantId=${encodeURIComponent(o.tenantId)}&outletId=${o._id || o.id}`);
+                                            setActiveOutletId(o._id || o.id);
+                                            if (isAuthenticated) {
+                                                navigate(`/app/salon/${o._id || o.id}`);
+                                            } else {
+                                                localStorage.setItem('wapixo_selected_outlet', JSON.stringify(o));
+                                                navigate(`/app/login?outletSelected=1&tenantId=${encodeURIComponent(o.tenantId)}&outletId=${o._id || o.id}`);
+                                            }
                                         }}
                                         style={{ background: colors.card, border: `1px solid ${colors.border}` }}
                                         className="group relative p-4 rounded-[28px] overflow-hidden cursor-pointer shadow-xl transition-all hover:border-accent hover:shadow-accent/5"
