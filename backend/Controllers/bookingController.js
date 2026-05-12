@@ -11,6 +11,7 @@ const Razorpay = require('razorpay');
 const crypto = require('crypto');
 const Break = require('../Models/Break');
 const Staff = require('../Models/Staff');
+const Setting = require('../Models/Setting');
 
 // Initialize Razorpay
 let razorpay;
@@ -114,6 +115,14 @@ exports.createBooking = async (req, res) => {
             }
         }
         totalPrice = Math.max(0, Math.floor(totalPrice));
+        
+        // Calculate Tax
+        const settings = await Setting.findOne();
+        const serviceGst = settings?.serviceGst || 18;
+        const taxAmount = Math.round((totalPrice) * (serviceGst / 100));
+        const subtotal = service.price;
+        const membershipDiscount = service.price - totalPrice;
+        const finalPrice = totalPrice + taxAmount;
 
         // Handle Wallet Payment
         if (paymentMethod === 'Wallet' || paymentMethod === 'wallet') {
@@ -121,15 +130,15 @@ exports.createBooking = async (req, res) => {
                 return res.status(404).json({ success: false, message: 'Customer not found' });
             }
 
-            if ((customer.walletBalance || 0) < totalPrice) {
+            if ((customer.walletBalance || 0) < finalPrice) {
                 return res.status(400).json({ success: false, message: 'Insufficient wallet balance' });
             }
 
             // Deduct balance
-            customer.walletBalance -= totalPrice;
+            customer.walletBalance -= finalPrice;
             
             // Increment total spend and visits
-            customer.totalSpend = (customer.totalSpend || 0) + totalPrice;
+            customer.totalSpend = (customer.totalSpend || 0) + finalPrice;
             customer.totalVisits = (customer.totalVisits || 0) + 1;
             
             await customer.save();
@@ -138,7 +147,7 @@ exports.createBooking = async (req, res) => {
             await WalletTransaction.create({
                 customerId: targetCustomerId,
                 salonId: salonId,
-                amount: totalPrice,
+                amount: finalPrice,
                 type: 'DEBIT',
                 description: `Payment for service: ${service.name}`,
                 status: 'COMPLETED'
@@ -148,10 +157,11 @@ exports.createBooking = async (req, res) => {
         const booking = await Booking.create({
             ...req.body,
             salonId,
-            subtotal: service.price,
-            membershipDiscount: service.price - totalPrice,
-            totalPrice: totalPrice,
-            paymentStatus: (paymentMethod === 'Wallet' || paymentMethod === 'wallet') ? 'paid' : 'pending'
+            subtotal,
+            membershipDiscount,
+            tax: taxAmount,
+            totalPrice: finalPrice,
+            paymentStatus: (paymentMethod === 'Wallet' || paymentMethod === 'wallet') ? 'paid' : 'unpaid'
         });
 
         // If booking is created as completed, update customer stats

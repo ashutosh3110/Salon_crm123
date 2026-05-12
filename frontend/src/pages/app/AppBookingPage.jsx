@@ -690,13 +690,20 @@ export default function AppBookingPage() {
 
     const mergeDateAndTime = (dateObj, timeStr) => {
         if (!dateObj || !timeStr) return dateObj;
+        
+        // Handle both "12:00" (24h) and "12:00 PM" (12h) formats
         const [time, modifier] = timeStr.split(' ');
-        let [hours, minutes] = time.split(':');
-        if (hours === '12') hours = '00';
-        if (modifier === 'PM') hours = parseInt(hours, 10) + 12;
+        let [hours, minutes] = time.split(':').map(Number);
+        
+        if (modifier) {
+            // 12-hour format logic
+            if (hours === 12) hours = 0;
+            if (modifier.toUpperCase() === 'PM') hours += 12;
+        }
+        // If no modifier, assume 24-hour format and keep hours as is
         
         const merged = new Date(dateObj);
-        merged.setHours(parseInt(hours, 10), parseInt(minutes, 10), 0, 0);
+        merged.setHours(hours, minutes, 0, 0);
         return merged;
     };
 
@@ -1101,7 +1108,32 @@ export default function AppBookingPage() {
                             Select <span className="text-[#C8956C]">Timeline</span>
                         </h2>
 
+                        <div className="flex items-center justify-between px-2">
+                            <h3 className="text-[10px] font-black uppercase tracking-[0.2em]" style={{ color: colors.text }}>{currentMonthLabel}</h3>
+                            <div className="flex items-center gap-2">
+                                <button 
+                                    onClick={handlePrevMonth}
+                                    style={{ background: colors.card, border: `1px solid ${colors.border}` }}
+                                    className="p-2 rounded-xl hover:text-[#C8956C] transition-colors"
+                                >
+                                    <ChevronLeft size={14} />
+                                </button>
+                                <button 
+                                    onClick={handleNextMonth}
+                                    style={{ background: colors.card, border: `1px solid ${colors.border}` }}
+                                    className="p-2 rounded-xl hover:text-[#C8956C] transition-colors"
+                                >
+                                    <ChevronRight size={14} />
+                                </button>
+                            </div>
+                        </div>
+
                         <div className="grid grid-cols-7 gap-1 p-4 rounded-3xl border border-black/5 dark:border-white/5 bg-white/50 dark:bg-black/50">
+                            {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((d, idx) => (
+                                <div key={idx} className="h-8 flex items-center justify-center text-[9px] font-black opacity-30 uppercase tracking-widest" style={{ color: colors.text }}>
+                                    {d}
+                                </div>
+                            ))}
                             {calendarDays.map((d, i) => {
                                 const isSelected = selectedDate?.date.toDateString() === d.date.toDateString();
                                 const canSelect = d.isOpen && d.isCurrentMonth;
@@ -1110,10 +1142,24 @@ export default function AppBookingPage() {
                                         key={i}
                                         disabled={!canSelect}
                                         onClick={() => { setSelectedDate(d); setSelectedTime(null); }}
-                                        style={{ background: isSelected ? '#C8956C' : 'transparent', color: isSelected ? '#fff' : (canSelect ? colors.text : colors.textMuted) }}
-                                        className={`h-10 rounded-xl flex items-center justify-center text-xs font-bold ${!canSelect ? 'opacity-10' : ''}`}
+                                        style={{ 
+                                            background: isSelected ? '#C8956C' : 'transparent', 
+                                            color: isSelected ? '#fff' : colors.text,
+                                            position: 'relative'
+                                        }}
+                                        className={`h-10 rounded-xl flex flex-col items-center justify-center text-xs font-bold transition-all ${!canSelect ? 'opacity-20' : 'active:scale-95 hover:bg-[#C8956C]/10'}`}
                                     >
                                         {d.dayNum}
+                                        {d.isToday && !isSelected && (
+                                            <div style={{ 
+                                                position: 'absolute', 
+                                                bottom: '4px', 
+                                                width: '3px', 
+                                                height: '3px', 
+                                                borderRadius: '50%', 
+                                                background: '#C8956C' 
+                                            }} />
+                                        )}
                                     </button>
                                 );
                             })}

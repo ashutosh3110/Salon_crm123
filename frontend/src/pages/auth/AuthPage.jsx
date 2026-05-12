@@ -433,7 +433,7 @@ export default function AuthPage() {
                                                     </button>
                                                     <p className="text-[8px] text-center uppercase tracking-widest font-black leading-relaxed" style={{ color: 'var(--wapixo-text-muted)', opacity: 0.5 }}>
                                                         By registering, you accept our <br />
-                                                        <span className="hover:text-[#B4912B] transition-colors cursor-pointer underline">Protocols</span> & <span className="hover:text-[#B4912B] transition-colors cursor-pointer underline">Privacy Sandbox</span>.
+                                                        <Link to="/terms" className="hover:text-[#B4912B] transition-colors cursor-pointer underline">Terms of Service</Link> & <Link to="/privacy" className="hover:text-[#B4912B] transition-colors cursor-pointer underline">Privacy Policy</Link>.
                                                     </p>
                                                 </div>
                                             </form>

@@ -213,7 +213,9 @@ const NearbyOutletsPage = lazy(() => import('./pages/app/NearbyOutletsPage'));
 const AppOrderDetailsPage = lazy(() => import('./pages/app/AppOrderDetailsPage'));
 const AppTransactionHistoryPage = lazy(() => import('./pages/app/AppTransactionHistoryPage'));
 const AppReviewsPage = lazy(() => import('./pages/app/AppReviewsPage'));
+const AppTermsPage = lazy(() => import('./pages/app/AppTermsPage'));
 const CustomerAppWrapper = lazy(() => import('./layouts/CustomerAppWrapper'));
+
 
 // Role-Specific Layouts - Lazy Loaded
 const ReceptionistLayout = lazy(() => import('./layouts/ReceptionistLayout'));
@@ -605,11 +607,13 @@ function App() {
                             <Route path="/app/membership/checkout" element={<AppMembershipCheckoutPage />} />
                             <Route path="/app/membership/success" element={<AppMembershipSuccessPage />} />
                             <Route path="/app/help" element={<AppHelpSupportPage />} />
-                            <Route path="/app/privacy" element={<AppPrivacyPolicyPage />} />
                           </Route>
+                          
+                          <Route path="/app/privacy" element={<AppPrivacyPolicyPage />} />
+                          <Route path="/app/terms" element={<AppTermsPage />} />
                         </Route>
 
-                        {/* ═══════════════════════════════════════════════════════════
+                        {/* 
                  ERROR PAGES
                  ═══════════════════════════════════════════════════════════ */}
                         <Route path="/unauthorized" element={

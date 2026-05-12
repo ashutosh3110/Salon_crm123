@@ -88,6 +88,21 @@ export default function BookingsPage() {
     const [outletFilter, setOutletFilter] = useState('all');
     const [staffFilter, setStaffFilter] = useState('all');
     const [statusFilter, setStatusFilter] = useState('all');
+    
+    // Prevent background scroll when any modal is open
+    useEffect(() => {
+        if (selectedBooking || isBookingModalOpen) {
+            document.body.style.overflow = 'hidden';
+            document.body.style.height = '100vh';
+        } else {
+            document.body.style.overflow = 'unset';
+            document.body.style.height = 'auto';
+        }
+        return () => { 
+            document.body.style.overflow = 'unset';
+            document.body.style.height = 'auto';
+        };
+    }, [selectedBooking, isBookingModalOpen]);
 
     const bookings = useMemo(() => {
         return Array.isArray(contextBookings) ? contextBookings : [];
@@ -105,8 +120,10 @@ export default function BookingsPage() {
         let result = bookings.filter(b => {
             const clientName = b.client?.name || '';
             const clientPhone = b.client?.phone || '';
-            const matchesSearch = clientName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                clientPhone.includes(searchTerm);
+            const st = searchTerm.toLowerCase().replace(/\s+/g, '');
+            const matchesSearch = !st || 
+                (b.client?.name || '').toLowerCase().replace(/\s+/g, '').includes(st) ||
+                (b.client?.phone || '').replace(/\D/g, '').includes(st.replace(/\D/g, ''));
             const matchesStatus = statusFilter === 'all' || b.status === statusFilter;
             const matchesStaff = staffFilter === 'all' || b.staff?._id === staffFilter;
             const matchesOutlet = outletFilter === 'all' ||

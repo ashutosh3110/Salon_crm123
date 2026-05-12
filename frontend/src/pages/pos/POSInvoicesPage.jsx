@@ -20,100 +20,185 @@ Font.register({
 });
 
 const pdfStyles = StyleSheet.create({
-    page: { padding: 40, fontSize: 10, fontFamily: 'Roboto', backgroundColor: '#FFFFFF' },
-    header: { marginBottom: 20, borderBottomWidth: 1, borderBottomColor: '#000', paddingBottom: 10 },
-    salonName: { fontSize: 24, fontWeight: 'bold', marginBottom: 4 },
-    salonMeta: { fontSize: 9, color: '#666' },
-    invoiceTitle: { fontSize: 32, color: '#EEE', position: 'absolute', right: 0, top: 0, fontWeight: 'bold' },
-    metaRow: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 20, marginBottom: 20 },
-    metaBox: { width: '45%', backgroundColor: '#F8F8F8', padding: 10 },
-    label: { fontSize: 8, color: '#999', textTransform: 'uppercase', marginBottom: 2 },
-    value: { fontSize: 12, fontWeight: 'bold' },
-    tableHeader: { flexDirection: 'row', borderBottomWidth: 1, borderBottomColor: '#000', paddingBottom: 5, marginBottom: 5 },
-    tableRow: { flexDirection: 'row', borderBottomWidth: 1, borderBottomColor: '#EEE', paddingTop: 8, paddingBottom: 8 },
-    colDesc: { flex: 3 },
-    colPrice: { flex: 1, textAlign: 'center' },
-    colQty: { flex: 0.5, textAlign: 'center' },
-    colTotal: { flex: 1, textAlign: 'right' },
-    summarySection: { flexDirection: 'row', justifyContent: 'flex-end', marginTop: 20 },
-    summaryBox: { width: 180 },
-    summaryRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 4 },
-    grandTotal: { fontSize: 18, fontWeight: 'bold', borderTopWidth: 2, borderTopColor: '#000', paddingTop: 10, marginTop: 10 },
-    footer: { marginTop: 40, textAlign: 'center', borderTopWidth: 1, borderTopColor: '#EEE', paddingTop: 20 },
-    thanks: { fontSize: 16, marginBottom: 5 }
+    page: { 
+        padding: 15, 
+        fontSize: 9, 
+        fontFamily: 'Roboto', 
+        backgroundColor: '#FFFFFF',
+        flexDirection: 'column'
+    },
+    centered: {
+        textAlign: 'center',
+        alignItems: 'center',
+        display: 'flex',
+        flexDirection: 'column'
+    },
+    salonName: { 
+        fontSize: 16, 
+        fontWeight: 700, 
+        marginBottom: 2,
+        textTransform: 'uppercase'
+    },
+    salonMeta: { 
+        fontSize: 7, 
+        color: '#444',
+        marginBottom: 1
+    },
+    divider: {
+        borderBottomWidth: 1,
+        borderBottomColor: '#000',
+        borderBottomStyle: 'dashed',
+        marginVertical: 8,
+        width: '100%'
+    },
+    metaRow: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        marginBottom: 2,
+        fontSize: 7
+    },
+    label: { 
+        fontWeight: 700,
+        textTransform: 'uppercase',
+        width: 60
+    },
+    value: { 
+        flex: 1,
+        textAlign: 'right'
+    },
+    tableHeader: { 
+        flexDirection: 'row', 
+        borderBottomWidth: 1, 
+        borderBottomColor: '#000', 
+        paddingBottom: 3, 
+        marginBottom: 5,
+        fontWeight: 700,
+        fontSize: 7
+    },
+    tableRow: { 
+        flexDirection: 'column',
+        marginBottom: 6
+    },
+    itemMainRow: {
+        flexDirection: 'row',
+        justifyContent: 'space-between'
+    },
+    itemSubRow: {
+        fontSize: 6,
+        color: '#666',
+        marginTop: 1,
+        flexDirection: 'row',
+        justifyContent: 'space-between'
+    },
+    colDesc: { flex: 2 },
+    colPrice: { flex: 1, textAlign: 'right' },
+    summaryRow: { 
+        flexDirection: 'row', 
+        justifyContent: 'space-between', 
+        marginBottom: 2,
+        fontSize: 8
+    },
+    grandTotal: { 
+        fontSize: 12, 
+        fontWeight: 700, 
+        borderTopWidth: 1, 
+        borderTopColor: '#000', 
+        borderTopStyle: 'dashed',
+        paddingTop: 8, 
+        marginTop: 5,
+        flexDirection: 'row',
+        justifyContent: 'space-between'
+    },
+    footer: { 
+        marginTop: 20, 
+        textAlign: 'center', 
+        fontSize: 7,
+        color: '#666'
+    },
+    thanks: { 
+        fontSize: 10, 
+        fontWeight: 700,
+        marginBottom: 4,
+        color: '#000'
+    }
 });
 
 const InvoicePDF = ({ invoice, salon }) => (
     <Document>
-        <Page size="A4" style={pdfStyles.page}>
-            <View style={pdfStyles.header}>
-                <Text style={pdfStyles.salonName}>{salon?.name || salon?.businessName || 'OUR SALON'}</Text>
-                <Text style={pdfStyles.salonMeta}>{salon?.address?.street || salon?.address || ''}</Text>
-                <Text style={pdfStyles.salonMeta}>{salon?.address?.city || ''} | {salon?.phone || ''}</Text>
+        <Page size={[226, 800]} style={pdfStyles.page}>
+            <View style={pdfStyles.centered}>
+                <Text style={pdfStyles.salonName}>{salon?.name || salon?.businessName || 'SALON'}</Text>
+                <Text style={pdfStyles.salonMeta}>{invoice.outletId?.name || ''}</Text>
+                <Text style={pdfStyles.salonMeta}>Ph: {salon?.phone || ''}</Text>
                 <Text style={pdfStyles.salonMeta}>GSTIN: {salon?.gstin || 'N/A'}</Text>
-                <Text style={pdfStyles.invoiceTitle}>INVOICE</Text>
             </View>
+
+            <View style={pdfStyles.divider} />
 
             <View style={pdfStyles.metaRow}>
-                <View style={pdfStyles.metaBox}>
-                    <Text style={pdfStyles.label}>Billed To</Text>
-                    <Text style={pdfStyles.value}>{invoice.customerId?.name || 'Walk-in Client'}</Text>
-                    <Text style={pdfStyles.salonMeta}>{invoice.customerId?.phone}</Text>
-                    <Text style={pdfStyles.salonMeta}>{invoice.customerId?.email || ''}</Text>
-                </View>
-                <View style={pdfStyles.metaBox}>
-                    <Text style={pdfStyles.label}>Invoice Details</Text>
-                    <Text style={pdfStyles.value}>#{invoice.invoiceNumber}</Text>
-                    <Text style={pdfStyles.salonMeta}>Date: {new Date(invoice.createdAt).toLocaleDateString('en-IN')}</Text>
-                    <Text style={pdfStyles.salonMeta}>Payment: {invoice.paymentMethod.toUpperCase()}</Text>
-                </View>
+                <Text style={pdfStyles.label}>Invoice:</Text>
+                <Text style={pdfStyles.value}>#{invoice.invoiceNumber}</Text>
+            </View>
+            <View style={pdfStyles.metaRow}>
+                <Text style={pdfStyles.label}>Date:</Text>
+                <Text style={pdfStyles.value}>{new Date(invoice.createdAt).toLocaleDateString('en-IN')}</Text>
+            </View>
+            <View style={pdfStyles.metaRow}>
+                <Text style={pdfStyles.label}>Customer:</Text>
+                <Text style={pdfStyles.value}>{invoice.customerId?.name?.toUpperCase() || 'WALK-IN'}</Text>
+            </View>
+            <View style={pdfStyles.metaRow}>
+                <Text style={pdfStyles.label}>Payment:</Text>
+                <Text style={pdfStyles.value}>{invoice.paymentMethod?.toUpperCase() || 'CASH'}</Text>
             </View>
 
+            <View style={pdfStyles.divider} />
+
             <View style={pdfStyles.tableHeader}>
-                <Text style={[pdfStyles.colDesc, { fontSize: 8, fontWeight: 'bold' }]}>DESCRIPTION</Text>
-                <Text style={[pdfStyles.colPrice, { fontSize: 8, fontWeight: 'bold' }]}>PRICE</Text>
-                <Text style={[pdfStyles.colQty, { fontSize: 8, fontWeight: 'bold' }]}>QTY</Text>
-                <Text style={[pdfStyles.colTotal, { fontSize: 8, fontWeight: 'bold' }]}>TOTAL</Text>
+                <Text style={pdfStyles.colDesc}>DESCRIPTION</Text>
+                <Text style={pdfStyles.colPrice}>AMOUNT</Text>
             </View>
 
             {invoice.items?.map((item, i) => (
                 <View key={i} style={pdfStyles.tableRow}>
-                    <View style={pdfStyles.colDesc}>
-                        <Text style={{ fontWeight: 'bold' }}>{item.name}</Text>
-                        <Text style={{ fontSize: 8, color: '#666' }}>Category: {item.type}</Text>
+                    <View style={pdfStyles.itemMainRow}>
+                        <Text style={pdfStyles.colDesc}>{item.name.toUpperCase()}</Text>
+                        <Text style={pdfStyles.colPrice}>Rs. {(item.total || 0).toFixed(0)}</Text>
                     </View>
-                    <Text style={pdfStyles.colPrice}>₹ {item.price || (item.total / item.quantity).toFixed(0)}</Text>
-                    <Text style={pdfStyles.colQty}>{item.quantity}</Text>
-                    <Text style={pdfStyles.colTotal}>₹ {item.total?.toFixed(0)}</Text>
+                    <View style={pdfStyles.itemSubRow}>
+                        <Text>Qty: {item.quantity} x {item.price || (item.total / item.quantity).toFixed(0)}</Text>
+                        <Text>{item.type?.toUpperCase()}</Text>
+                    </View>
                 </View>
             ))}
 
-            <View style={pdfStyles.summarySection}>
-                <View style={pdfStyles.summaryBox}>
-                    <View style={pdfStyles.summaryRow}>
-                        <Text>Subtotal</Text>
-                        <Text>₹ {invoice.subTotal?.toFixed(0)}</Text>
-                    </View>
-                    {invoice.discount > 0 && (
-                        <View style={pdfStyles.summaryRow}>
-                            <Text style={{ color: '#E53E3E' }}>Discount Applied</Text>
-                            <Text style={{ color: '#E53E3E' }}>-₹ {invoice.discount?.toFixed(0)}</Text>
-                        </View>
-                    )}
-                    <View style={pdfStyles.summaryRow}>
-                        <Text>Tax Amount</Text>
-                        <Text>₹ {invoice.tax?.toFixed(2)}</Text>
-                    </View>
-                    <View style={[pdfStyles.summaryRow, pdfStyles.grandTotal]}>
-                        <Text>GRAND TOTAL</Text>
-                        <Text>₹ {invoice.total?.toFixed(0)}</Text>
-                    </View>
+            <View style={pdfStyles.divider} />
+
+            <View style={pdfStyles.summaryRow}>
+                <Text>Subtotal</Text>
+                <Text>Rs. {(invoice.subtotal || 0).toFixed(0)}</Text>
+            </View>
+            {invoice.discount > 0 && (
+                <View style={pdfStyles.summaryRow}>
+                    <Text>Total Discount</Text>
+                    <Text>-Rs. {(invoice.discount || 0).toFixed(0)}</Text>
                 </View>
+            )}
+            
+            <View style={pdfStyles.summaryRow}>
+                <Text>Tax Amount</Text>
+                <Text>Rs. {(invoice.tax || 0).toFixed(2)}</Text>
+            </View>
+
+            <View style={pdfStyles.grandTotal}>
+                <Text>GRAND TOTAL</Text>
+                <Text>Rs. {(invoice.total || 0).toFixed(0)}</Text>
             </View>
 
             <View style={pdfStyles.footer}>
-                <Text style={pdfStyles.thanks}>Thank you for visiting {salon?.name || 'our salon'}!</Text>
-                <Text style={{ fontSize: 8, color: '#999' }}>Computer generated invoice. No signature required.</Text>
+                <Text style={pdfStyles.thanks}>THANK YOU! VISIT AGAIN :)</Text>
+                <Text>This is a computer generated receipt.</Text>
+                <Text>Generated by Wapixo POS</Text>
             </View>
         </Page>
     </Document>
@@ -129,14 +214,14 @@ export default function POSInvoicesPage() {
     const [selectedInvoice, setSelectedInvoice] = useState(null);
     const [page, setPage] = useState(1);
     const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
-    const perPage = 10;
+    const perPage = 5;
 
     useEffect(() => {
         const loadInvoices = async () => {
             try {
                 setLoading(true);
                 const response = await api.get('/pos/invoices');
-                const rows = response?.data?.results || response?.data || [];
+                const rows = response?.data?.data || response?.data?.results || response?.data || [];
                 setInvoices(Array.isArray(rows) ? rows : []);
             } catch (error) {
                 console.error('[POSInvoices] Failed to load invoices:', error);
@@ -245,6 +330,59 @@ export default function POSInvoicesPage() {
                     >
                         <FileText className="w-4 h-4" /> All
                     </button>
+                </div>
+            </div>
+
+            {/* Earning Stats */}
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                <div className="bg-surface border border-border p-6 shadow-sm group hover:border-primary transition-all">
+                    <div className="flex justify-between items-start mb-4">
+                        <div className="p-2 bg-primary/10 text-primary">
+                            <Banknote className="w-5 h-5" />
+                        </div>
+                        <span className="text-[9px] font-black text-emerald-500 uppercase tracking-widest bg-emerald-500/10 px-2 py-1">Overall</span>
+                    </div>
+                    <p className="text-[10px] font-black text-text-muted uppercase tracking-widest">Total Revenue</p>
+                    <h3 className="text-2xl font-black text-text mt-1 tracking-tighter">₹{invoices.reduce((s, i) => s + (i.total || 0), 0).toLocaleString()}</h3>
+                </div>
+
+                <div className="bg-surface border border-border p-6 shadow-sm group hover:border-emerald-500 transition-all">
+                    <div className="flex justify-between items-start mb-4">
+                        <div className="p-2 bg-emerald-500/10 text-emerald-500">
+                            <Calendar className="w-5 h-5" />
+                        </div>
+                        <span className="text-[9px] font-black text-emerald-500 uppercase tracking-widest bg-emerald-500/10 px-2 py-1">Today</span>
+                    </div>
+                    <p className="text-[10px] font-black text-text-muted uppercase tracking-widest">Today's Earnings</p>
+                    <h3 className="text-2xl font-black text-text mt-1 tracking-tighter">
+                        ₹{invoices.filter(i => new Date(i.createdAt).toDateString() === new Date().toDateString()).reduce((s, i) => s + (i.total || 0), 0).toLocaleString()}
+                    </h3>
+                </div>
+
+                <div className="bg-surface border border-border p-6 shadow-sm group hover:border-blue-500 transition-all">
+                    <div className="flex justify-between items-start mb-4">
+                        <div className="p-2 bg-blue-500/10 text-blue-500">
+                            <CreditCard className="w-5 h-5" />
+                        </div>
+                        <span className="text-[9px] font-black text-blue-500 uppercase tracking-widest bg-blue-500/10 px-2 py-1">Digital</span>
+                    </div>
+                    <p className="text-[10px] font-black text-text-muted uppercase tracking-widest">Online / Card</p>
+                    <h3 className="text-2xl font-black text-text mt-1 tracking-tighter">
+                        ₹{invoices.filter(i => ['online', 'card'].includes(i.paymentMethod)).reduce((s, i) => s + (i.total || 0), 0).toLocaleString()}
+                    </h3>
+                </div>
+
+                <div className="bg-surface border border-border p-6 shadow-sm group hover:border-amber-500 transition-all">
+                    <div className="flex justify-between items-start mb-4">
+                        <div className="p-2 bg-amber-500/10 text-amber-500">
+                            <Smartphone className="w-5 h-5" />
+                        </div>
+                        <span className="text-[9px] font-black text-amber-500 uppercase tracking-widest bg-amber-500/10 px-2 py-1">Cash</span>
+                    </div>
+                    <p className="text-[10px] font-black text-text-muted uppercase tracking-widest">Cash Collected</p>
+                    <h3 className="text-2xl font-black text-text mt-1 tracking-tighter">
+                        ₹{invoices.filter(i => i.paymentMethod === 'cash' || !i.paymentMethod).reduce((s, i) => s + (i.total || 0), 0).toLocaleString()}
+                    </h3>
                 </div>
             </div>
 
@@ -358,22 +496,22 @@ export default function POSInvoicesPage() {
             {/* Invoice Detail Modal */}
             {selectedInvoice && (
                 <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-                    <div className="bg-surface rounded-none w-full max-w-2xl p-0 shadow-[0_0_50px_rgba(0,0,0,0.5)] animate-in zoom-in-95 duration-300 border border-border overflow-hidden">
-                        <div className="flex items-center justify-between p-8 bg-surface-alt border-b border-border relative overflow-hidden">
-                            <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 -mr-12 -mt-12 rotate-45 pointer-events-none" />
+                    <div className="bg-surface rounded-none w-full max-w-lg p-0 shadow-[0_0_50px_rgba(0,0,0,0.5)] animate-in zoom-in-95 duration-300 border border-border overflow-hidden">
+                        <div className="flex items-center justify-between p-5 bg-surface-alt border-b border-border relative overflow-hidden">
+                            <div className="absolute top-0 right-0 w-24 h-24 bg-primary/5 -mr-10 -mt-10 rotate-45 pointer-events-none" />
                             <div className="relative z-10">
-                                <p className="text-[10px] font-black text-primary uppercase tracking-[0.3em] mb-2">Invoice Details</p>
-                                <h2 className="text-3xl font-black text-text uppercase tracking-tighter">{selectedInvoice.invoiceNumber}</h2>
-                                <p className="text-[10px] font-black text-text-muted mt-2 uppercase tracking-[0.2em] opacity-60 flex items-center gap-2">
-                                    <Clock className="w-3.5 h-3.5" /> Created: {formatDate(selectedInvoice.createdAt)}
+                                <p className="text-[9px] font-black text-primary uppercase tracking-[0.3em] mb-1">Invoice Protocol</p>
+                                <h2 className="text-xl font-black text-text uppercase tracking-tighter">{selectedInvoice.invoiceNumber}</h2>
+                                <p className="text-[9px] font-black text-text-muted mt-1 uppercase tracking-[0.2em] opacity-60 flex items-center gap-2">
+                                    <Clock className="w-3 h-3" /> {formatDate(selectedInvoice.createdAt)}
                                 </p>
                             </div>
-                            <button onClick={() => setSelectedInvoice(null)} className="p-3 bg-surface border border-border hover:bg-background transition-all group active:scale-90 relative z-10 shadow-sm">
-                                <X className="w-6 h-6 text-text-muted group-hover:text-text" />
+                            <button onClick={() => setSelectedInvoice(null)} className="p-2.5 bg-surface border border-border hover:bg-background transition-all group active:scale-90 relative z-10 shadow-sm">
+                                <X className="w-5 h-5 text-text-muted group-hover:text-text" />
                             </button>
                         </div>
 
-                        <div className="p-8 space-y-8 max-h-[70vh] overflow-y-auto scrollbar-thin bg-background">
+                        <div className="p-6 space-y-6 max-h-[60vh] overflow-y-auto scrollbar-thin bg-background">
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                 <div className="bg-surface-alt/50 border border-border p-4">
                                     <p className="text-[9px] font-black text-text-muted uppercase tracking-widest mb-1">Customer</p>
@@ -389,70 +527,70 @@ export default function POSInvoicesPage() {
                                 </div>
                             </div>
 
-                            <div className="space-y-4">
-                                <div className="flex items-center gap-4">
-                                    <div className="h-px bg-border flex-1" />
-                                    <p className="text-[10px] font-black text-text-muted uppercase tracking-[0.3em]">Items</p>
-                                    <div className="h-px bg-border flex-1" />
-                                </div>
                                 <div className="space-y-3">
-                                    {selectedInvoice.items?.map((item, i) => (
-                                        <div key={i} className="flex justify-between items-center p-4 bg-surface border border-border/50 group hover:border-primary/30 transition-all cursor-default">
-                                            <div>
-                                                <p className="font-black text-text uppercase text-xs tracking-tight group-hover:text-primary transition-colors">{item.name}</p>
-                                                <p className="text-[10px] text-text-muted font-black uppercase tracking-[0.1em] mt-1 italic">Type: {item.type} • Qty: {item.quantity}</p>
+                                    <div className="flex items-center gap-4">
+                                        <div className="h-px bg-border flex-1" />
+                                        <p className="text-[9px] font-black text-text-muted uppercase tracking-[0.3em]">Session Ledger</p>
+                                        <div className="h-px bg-border flex-1" />
+                                    </div>
+                                    <div className="space-y-2">
+                                        {selectedInvoice.items?.map((item, i) => (
+                                            <div key={i} className="flex justify-between items-center p-3 bg-surface border border-border/50 group hover:border-primary/30 transition-all cursor-default">
+                                                <div>
+                                                    <p className="font-black text-text uppercase text-[11px] tracking-tight group-hover:text-primary transition-colors">{item.name}</p>
+                                                    <p className="text-[9px] text-text-muted font-black uppercase tracking-[0.1em] mt-0.5 italic">Qty: {item.quantity} • {item.type}</p>
+                                                </div>
+                                                <div className="text-right">
+                                                    <span className="font-black text-text text-sm tracking-tighter">Rs.{(item.total ?? (item.price * item.quantity) ?? 0).toLocaleString()}</span>
+                                                </div>
                                             </div>
-                                            <div className="text-right">
-                                                <span className="font-black text-text text-lg tracking-tighter">₹{item.total?.toLocaleString()}</span>
-                                            </div>
-                                        </div>
-                                    ))}
+                                        ))}
+                                    </div>
                                 </div>
-                            </div>
 
-                            <div className="bg-surface-alt/30 border border-border p-6 space-y-4">
-                                <div className="flex justify-between text-xs font-black text-text-muted uppercase tracking-widest">
+                            <div className="bg-surface-alt/30 border border-border p-4 space-y-3">
+                                <div className="flex justify-between text-[10px] font-black text-text-muted uppercase tracking-widest">
                                     <span>Subtotal</span>
-                                    <span>₹{selectedInvoice.subTotal?.toLocaleString()}</span>
+                                    <span>Rs.{(selectedInvoice.subtotal || 0).toLocaleString()}</span>
                                 </div>
-                                <div className="flex justify-between text-xs font-black text-text-muted uppercase tracking-widest">
+                                <div className="flex justify-between text-[10px] font-black text-text-muted uppercase tracking-widest">
                                     <span>Tax (GST)</span>
-                                    <span>+₹{selectedInvoice.tax?.toLocaleString()}</span>
+                                    <span>+Rs.{selectedInvoice.tax?.toLocaleString()}</span>
                                 </div>
                                 {selectedInvoice.discount > 0 && (
-                                    <div className="flex justify-between text-xs font-black text-emerald-600 uppercase tracking-widest">
+                                    <div className="flex justify-between text-[10px] font-black text-emerald-600 uppercase tracking-widest">
                                         <span>Discount</span>
-                                        <span>-₹{selectedInvoice.discount?.toLocaleString()}</span>
+                                        <span>-Rs.{selectedInvoice.discount?.toLocaleString()}</span>
                                     </div>
                                 )}
-                                <div className="border-t border-border pt-4 mt-2 flex justify-between items-end">
+                                <div className="border-t border-border pt-3 mt-1 flex justify-between items-center">
                                     <div>
-                                        <p className="text-[10px] font-black text-primary uppercase tracking-[0.3em]">Grand Total</p>
-                                        <p className="text-3xl font-black text-text tracking-tighter uppercase whitespace-nowrap">Amount: <span className="text-primary tracking-tighter">₹{selectedInvoice.total?.toLocaleString()}</span></p>
+                                        <p className="text-[9px] font-black text-primary uppercase tracking-[0.3em]">Final Amount</p>
+                                        <p className="text-xl font-black text-text tracking-tighter uppercase whitespace-nowrap">Rs.{selectedInvoice.total?.toLocaleString()}</p>
                                     </div>
-                                    <div className="flex items-center gap-4 bg-background border border-border p-4 shadow-sm group/sig">
-                                        <div className={`p-2 border border-border group-hover/sig:border-primary/40 transition-colors ${selectedInvoice.paymentStatus === 'paid' ? 'text-emerald-500 bg-emerald-500/5' : 'text-orange-500 bg-orange-500/5'}`}>
+                                    <div className="flex items-center gap-3 bg-background border border-border p-2.5 shadow-sm group/sig">
+                                        <div className={`p-1.5 border border-border group-hover/sig:border-primary/40 transition-colors ${selectedInvoice.paymentStatus === 'paid' ? 'text-emerald-500 bg-emerald-500/5' : 'text-orange-500 bg-orange-500/5'}`}>
                                             {getMethodIcon(selectedInvoice.paymentMethod)}
                                         </div>
                                         <div className="text-right">
-                                            <p className={`text-[9px] font-black uppercase tracking-widest ${selectedInvoice.paymentStatus === 'paid' ? 'text-emerald-500' : 'text-orange-500'}`}>{selectedInvoice.paymentStatus === 'paid' ? 'Paid' : 'Pending'}</p>
-                                            <p className="text-[11px] font-black text-text uppercase tracking-tight">{selectedInvoice.paymentMethod === 'online' ? 'UPI' : selectedInvoice.paymentMethod?.toUpperCase()}</p>
+                                            <p className={`text-[8px] font-black uppercase tracking-widest ${selectedInvoice.paymentStatus === 'paid' ? 'text-emerald-500' : 'text-orange-500'}`}>{selectedInvoice.paymentStatus === 'paid' ? 'Paid' : 'Pending'}</p>
+                                            <p className="text-[10px] font-black text-text uppercase tracking-tight">{selectedInvoice.paymentMethod === 'online' ? 'UPI' : selectedInvoice.paymentMethod?.toUpperCase()}</p>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
 
-                        <div className="p-8 bg-surface-alt border-t border-border flex gap-4">
+                        <div className="p-6 bg-surface-alt border-t border-border flex gap-3">
                             <button
                                 disabled={isGeneratingPDF}
                                 onClick={handleDownloadPDF}
-                                className="flex-1 py-4 bg-primary text-white font-black text-[11px] uppercase tracking-[0.2em] hover:bg-primary-dark transition-all flex items-center justify-center gap-4 disabled:opacity-50 shadow-xl shadow-primary/20 active:scale-95"
+                                className="flex-1 py-3 bg-primary text-white font-black text-[10px] uppercase tracking-[0.2em] hover:bg-primary-dark transition-all flex items-center justify-center gap-3 disabled:opacity-50 shadow-lg shadow-primary/20 active:scale-95"
                             >
-                                {isGeneratingPDF ? <Loader2 className="w-5 h-5 animate-spin" /> : <FileText className="w-5 h-5" />}
-                                {isGeneratingPDF ? 'Generating PDF...' : 'Download Invoice PDF'}
+                                {isGeneratingPDF ? <Loader2 className="w-4 h-4 animate-spin" /> : <FileText className="w-4 h-4" />}
+                                {isGeneratingPDF ? 'Generating...' : 'Download PDF'}
                             </button>
-                            <button onClick={() => setSelectedInvoice(null)} className="px-8 py-4 border border-border bg-surface text-text-muted font-black text-[11px] uppercase tracking-[0.2em] hover:text-text hover:bg-surface-alt transition-all active:scale-95">
+                            <button onClick={() => setSelectedInvoice(null)} className="px-6 py-3 border border-border bg-surface text-text-muted font-black text-[10px] uppercase tracking-[0.2em] hover:text-text hover:bg-surface-alt transition-all active:scale-95">
                                 Close
                             </button>
                         </div>

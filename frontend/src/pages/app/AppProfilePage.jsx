@@ -220,6 +220,8 @@ export default function AppProfilePage() {
         { icon: History, label: 'Transaction History', path: '/app/transactions' },
         { icon: Star, label: 'My Reviews', path: '/app/reviews' },
         { icon: Users, label: 'Refer & Earn', path: '/app/referrals' },
+        { icon: Shield, label: 'Privacy Policy', path: '/app/privacy' },
+        { icon: Info, label: 'Terms of Service', path: '/app/terms' },
     ];
 
     return (

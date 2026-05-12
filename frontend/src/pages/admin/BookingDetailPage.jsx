@@ -18,7 +18,8 @@ import {
     History,
     ShieldCheck,
     Store,
-    Smartphone
+    Smartphone,
+    Loader2
 } from 'lucide-react';
 import { useBusiness } from '../../contexts/BusinessContext';
 import { toast } from 'react-hot-toast';
@@ -42,13 +43,24 @@ const paymentStatusColors = {
 export default function BookingDetailPage() {
     const { id } = useParams();
     const navigate = useNavigate();
-    const { bookings, fetchBookings, updateBookingStatus } = useBusiness();
+    const { 
+        bookings, 
+        fetchBookings, 
+        updateBookingStatus, 
+        invoices, 
+        fetchInvoices,
+        platformSettings,
+        fetchPlatformSettings,
+        staff,
+        fetchStaff 
+    } = useBusiness();
     const [booking, setBooking] = useState(null);
+    const [invoice, setInvoice] = useState(null);
     const [loading, setLoading] = useState(true);
     const [isEditingNotes, setIsEditingNotes] = useState(false);
     const [notes, setNotes] = useState('');
     const [isReassignModalOpen, setIsReassignModalOpen] = useState(false);
-    const { staff, fetchStaff } = useBusiness();
+    const [isUpdating, setIsUpdating] = useState(false);
 
     useEffect(() => {
         if (staff.length === 0) fetchStaff?.();
@@ -56,45 +68,63 @@ export default function BookingDetailPage() {
 
     useEffect(() => {
         const fetchDetail = async () => {
-            if (bookings.length === 0) {
-                await fetchBookings();
-            }
+            setLoading(true);
+            if (bookings.length === 0) await fetchBookings();
+            if (invoices?.length === 0) await fetchInvoices?.();
+            if (!platformSettings) await fetchPlatformSettings?.();
             setLoading(false);
         };
         fetchDetail();
-    }, [id, bookings, fetchBookings]);
+    }, [id, bookings, fetchBookings, invoices, fetchInvoices, platformSettings, fetchPlatformSettings]);
 
     useEffect(() => {
         const b = bookings.find(x => x._id === id || x.id === id);
         if (b) {
             setBooking(b);
             setNotes(b.notes || '');
+            
+            // Find associated invoice
+            const inv = invoices?.find(i => String(i.bookingId?._id || i.bookingId) === String(b._id));
+            if (inv) setInvoice(inv);
         }
-    }, [id, bookings]);
+    }, [id, bookings, invoices]);
 
     const handleUpdateStatus = async (status) => {
         try {
+            setIsUpdating(true);
             await updateBookingStatus(id, status);
+            toast.success(`Booking status updated to ${status}`);
         } catch (error) {
             console.error(error);
+            toast.error('Failed to update status');
+        } finally {
+            setIsUpdating(false);
         }
     };
 
     const handleUpdatePaymentStatus = async (paymentStatus) => {
         try {
+            setIsUpdating(true);
             await updateBookingStatus(id, { paymentStatus });
+            toast.success(`Payment status updated to ${paymentStatus}`);
         } catch (error) {
             console.error(error);
+            toast.error('Failed to update payment status');
+        } finally {
+            setIsUpdating(false);
         }
     };
 
     const handleReassignStaff = async (staffId) => {
         try {
+            setIsUpdating(true);
             await updateBookingStatus(id, { staffId });
             setIsReassignModalOpen(false);
             toast.success('Staff reassigned successfully');
         } catch (error) {
             toast.error('Reassignment failed');
+        } finally {
+            setIsUpdating(false);
         }
     };
 
@@ -155,25 +185,31 @@ export default function BookingDetailPage() {
                     {booking.status === 'pending' && (
                         <>
                             <button 
+                                disabled={isUpdating}
                                 onClick={() => handleUpdateStatus('confirmed')}
-                                className="px-6 py-3 bg-indigo-600 text-white text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-600/20 flex items-center gap-2"
+                                className="px-6 py-3 bg-indigo-600 text-white text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-600/20 flex items-center gap-2 disabled:opacity-50"
                             >
-                                <CheckCircle2 className="w-4 h-4" /> Accept Booking
+                                {isUpdating ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle2 className="w-4 h-4" />} 
+                                Accept Booking
                             </button>
                             <button 
+                                disabled={isUpdating}
                                 onClick={() => handleUpdateStatus('cancelled')}
-                                className="px-6 py-3 bg-rose-50 text-rose-600 text-[10px] font-black uppercase tracking-widest rounded-xl border border-rose-100 hover:bg-rose-100 transition-all flex items-center gap-2"
+                                className="px-6 py-3 bg-rose-50 text-rose-600 text-[10px] font-black uppercase tracking-widest rounded-xl border border-rose-100 hover:bg-rose-100 transition-all flex items-center gap-2 disabled:opacity-50"
                             >
-                                <XCircle className="w-4 h-4" /> Reject
+                                {isUpdating ? <Loader2 className="w-4 h-4 animate-spin" /> : <XCircle className="w-4 h-4" />} 
+                                Reject
                             </button>
                         </>
                     )}
                     {booking.status === 'confirmed' && (
                         <button 
+                            disabled={isUpdating}
                             onClick={() => handleUpdateStatus('completed')}
-                            className="px-8 py-3 bg-emerald-500 text-white text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-emerald-600 transition-all shadow-lg shadow-emerald-500/20 flex items-center gap-2"
+                            className="px-8 py-3 bg-emerald-500 text-white text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-emerald-600 transition-all shadow-lg shadow-emerald-500/20 flex items-center gap-2 disabled:opacity-50"
                         >
-                            <Zap className="w-4 h-4" /> Complete Session
+                            {isUpdating ? <Loader2 className="w-4 h-4 animate-spin" /> : <Zap className="w-4 h-4" />} 
+                            Complete Session
                         </button>
                     )}
                 </div>
@@ -267,27 +303,69 @@ export default function BookingDetailPage() {
                                         </span>
                                         {booking.paymentStatus !== 'paid' ? (
                                             <button 
+                                                disabled={isUpdating}
                                                 onClick={() => handleUpdatePaymentStatus('paid')}
-                                                className="p-1.5 rounded-lg bg-emerald-500/10 text-emerald-600 hover:bg-emerald-500 hover:text-white transition-all shadow-sm"
+                                                className="p-1.5 rounded-lg bg-emerald-500/10 text-emerald-600 hover:bg-emerald-500 hover:text-white transition-all shadow-sm disabled:opacity-50"
                                                 title="Mark as Paid"
                                             >
-                                                <CheckCircle2 className="w-4 h-4" />
+                                                {isUpdating ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle2 className="w-4 h-4" />}
                                             </button>
                                         ) : (
                                             <button 
+                                                disabled={isUpdating}
                                                 onClick={() => handleUpdatePaymentStatus('unpaid')}
-                                                className="p-1.5 rounded-lg bg-rose-500/10 text-rose-600 hover:bg-rose-500 hover:text-white transition-all shadow-sm"
+                                                className="p-1.5 rounded-lg bg-rose-500/10 text-rose-600 hover:bg-rose-500 hover:text-white transition-all shadow-sm disabled:opacity-50"
                                                 title="Mark as Unpaid"
                                             >
-                                                <RotateCcw className="w-4 h-4" />
+                                                {isUpdating ? <Loader2 className="w-4 h-4 animate-spin" /> : <RotateCcw className="w-4 h-4" />}
                                             </button>
                                         )}
                                     </div>
                                 </div>
 
-                                <div className="pt-4 mt-2 border-t border-border flex items-center justify-between">
-                                    <p className="text-[11px] font-black text-text uppercase tracking-widest">Total Payable</p>
-                                    <p className="text-2xl font-black text-primary italic font-mono tracking-tighter">₹{booking.totalPrice || 0}</p>
+                                <div className="space-y-3 pt-2">
+                                    <div className="flex items-center justify-between opacity-60">
+                                        <p className="text-[10px] font-black text-text uppercase tracking-widest">Gross Amount</p>
+                                        <p className="text-sm font-black italic font-mono">₹{(booking.subtotal || 0).toFixed(2)}</p>
+                                    </div>
+                                    
+                                    {booking.membershipDiscount > 0 && (
+                                        <div className="flex items-center justify-between text-rose-500/80">
+                                            <p className="text-[10px] font-black uppercase tracking-widest">Membership Discount</p>
+                                            <p className="text-sm font-black italic font-mono">-₹{(booking.membershipDiscount || 0).toFixed(2)}</p>
+                                        </div>
+                                    )}
+
+                                    {/* Calculated values for display consistency */}
+                                    {(() => {
+                                        const taxable = (booking.subtotal || 0) - (booking.membershipDiscount || 0);
+                                        const gstPercent = booking.tax > 0 ? 
+                                            Math.round((booking.tax / (taxable || 1)) * 100) : 
+                                            (platformSettings?.serviceGst || 18);
+                                        const tax = booking.tax > 0 ? booking.tax : (taxable * (gstPercent / 100));
+                                        const total = booking.tax > 0 ? booking.totalPrice : (taxable + tax);
+
+                                        return (
+                                            <>
+                                                <div className="flex items-center justify-between opacity-80 border-t border-border/50 pt-2">
+                                                    <p className="text-[10px] font-black text-text uppercase tracking-widest">Taxable Amount</p>
+                                                    <p className="text-sm font-black italic font-mono">₹{taxable.toFixed(2)}</p>
+                                                </div>
+
+                                                <div className="flex items-center justify-between text-primary/80">
+                                                    <p className="text-[10px] font-black uppercase tracking-widest">
+                                                        GST ({gstPercent}%)
+                                                    </p>
+                                                    <p className="text-sm font-black italic font-mono">+₹{tax.toFixed(2)}</p>
+                                                </div>
+
+                                                <div className="pt-4 border-t border-border flex items-center justify-between">
+                                                    <p className="text-[11px] font-black text-text uppercase tracking-widest">Total Payable</p>
+                                                    <p className="text-2xl font-black text-primary italic font-mono tracking-tighter">₹{total.toFixed(2)}</p>
+                                                </div>
+                                            </>
+                                        );
+                                    })()}
                                 </div>
                             </div>
                         </div>
