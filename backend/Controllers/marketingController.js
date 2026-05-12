@@ -20,24 +20,48 @@ exports.getDashboard = async (req, res) => {
         
         const convRate = totalSent > 0 ? ((totalRead / totalSent) * 100).toFixed(1) : 0;
 
+        // Calculate dynamic chart data for the last 7 days
+        const chartData = [];
+        const today = new Date();
+        const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+        
+        for (let i = 6; i >= 0; i--) {
+            const d = new Date(today);
+            d.setDate(d.getDate() - i);
+            d.setHours(0, 0, 0, 0);
+            
+            const nextDay = new Date(d);
+            nextDay.setDate(nextDay.getDate() + 1);
+
+            const dayCampaigns = campaigns.filter(c => 
+                c.createdAt >= d && c.createdAt < nextDay
+            );
+
+            const whatsappSent = dayCampaigns
+                .filter(c => c.channel === 'whatsapp' || !c.channel)
+                .reduce((sum, c) => sum + (c.sentCount || 0), 0);
+
+            const pushSent = dayCampaigns
+                .filter(c => c.channel === 'push' || c.channel === 'notification')
+                .reduce((sum, c) => sum + (c.sentCount || 0), 0);
+
+            chartData.push({
+                name: dayNames[d.getDay()],
+                whatsapp: whatsappSent,
+                email: pushSent // repurposing email for push/notifications in the chart
+            });
+        }
+
         res.status(200).json({
             success: true,
             data: {
                 stats: [
-                    { label: 'Campaign Reach', value: customerCount.toLocaleString(), trend: '+12%' },
-                    { label: 'Conv. Rate', value: `${convRate}%`, trend: '+2%' },
+                    { label: 'Campaign Reach', value: customerCount.toLocaleString(), trend: null },
+                    { label: 'Conv. Rate', value: `${convRate}%`, trend: null },
                     { label: 'Total Sent', value: totalSent.toLocaleString(), icon: 'Zap' },
                     { label: 'Campaigns', value: campaigns.length.toString(), trend: null }
                 ],
-                chartData: [
-                    { name: 'Mon', whatsapp: 120, email: 40 },
-                    { name: 'Tue', whatsapp: 80, email: 30 },
-                    { name: 'Wed', whatsapp: 200, email: 60 },
-                    { name: 'Thu', whatsapp: 150, email: 45 },
-                    { name: 'Fri', whatsapp: 280, email: 90 },
-                    { name: 'Sat', whatsapp: 350, email: 120 },
-                    { name: 'Sun', whatsapp: 400, email: 150 }
-                ]
+                chartData: chartData
             }
         });
     } catch (err) {
@@ -161,8 +185,18 @@ exports.createCampaign = async (req, res) => {
             recipients = await Customer.find({ _id: { $in: selectedCustomers } }).select('_id phone email name');
             targetCount = recipients.length;
         } else {
-            // Segmented (mock logic)
-            recipients = await Customer.find({ salonId }).limit(10).select('_id phone email name');
+            // Segmented dynamic logic
+            let query = { salonId };
+            if (segment === 'loyal') {
+                query.totalVisits = { $gte: 5 };
+            } else if (segment === 'at_risk') {
+                const d = new Date(); d.setDate(d.getDate() - 30);
+                query.$or = [{ lastVisit: { $lt: d } }, { lastVisit: { $exists: false }, createdAt: { $lt: d } }];
+            } else if (segment === 'new_month') {
+                const d = new Date(); d.setDate(1); d.setHours(0, 0, 0, 0);
+                query.createdAt = { $gte: d };
+            }
+            recipients = await Customer.find(query).select('_id phone email name');
             targetCount = recipients.length;
         }
 

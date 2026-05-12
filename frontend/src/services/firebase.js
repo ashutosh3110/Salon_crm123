@@ -63,7 +63,7 @@ export const registerToken = async () => {
       let platform = 'web';
       const ua = navigator.userAgent.toLowerCase();
       if (/android/.test(ua)) {
-        platform = 'android';
+        platform = 'app';
       } else if (/ipad|iphone|ipod/.test(ua)) {
         platform = 'ios';
       }

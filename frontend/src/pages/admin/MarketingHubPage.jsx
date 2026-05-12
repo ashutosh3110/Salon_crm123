@@ -472,6 +472,64 @@ function DashboardContent({ dashboardData, segments, loading, onRefresh }) {
                 <StatCard label={stats[2]?.label || 'Total Sent'} value={stats[2]?.value || '0'} icon={Zap} color="bg-amber-50 text-amber-600" />
                 <StatCard label={stats[3]?.label || 'Campaigns'} value={stats[3]?.value || '0'} trend={stats[3]?.trend} icon={Smartphone} color="bg-primary/10 text-primary" />
             </div>
+
+            {/* Performance Chart & Audience Segments */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div className="lg:col-span-2 bg-white rounded-[2rem] border border-border p-8 shadow-sm flex flex-col min-h-[350px]">
+                    <div className="flex items-center justify-between mb-8">
+                        <div>
+                            <h3 className="text-xl font-black text-text uppercase tracking-tight">Campaign Performance</h3>
+                            <p className="text-[10px] text-text-muted font-bold uppercase tracking-widest mt-1">Messages sent in last 7 days</p>
+                        </div>
+                    </div>
+                    <div className="flex-1 min-h-[250px] w-full">
+                        <ResponsiveContainer width="100%" height="100%">
+                            <AreaChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                                <defs>
+                                    <linearGradient id="colorWhatsapp" x1="0" y1="0" x2="0" y2="1">
+                                        <stop offset="5%" stopColor="#C8956C" stopOpacity={0.3} />
+                                        <stop offset="95%" stopColor="#C8956C" stopOpacity={0} />
+                                    </linearGradient>
+                                    <linearGradient id="colorEmail" x1="0" y1="0" x2="0" y2="1">
+                                        <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3} />
+                                        <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
+                                    </linearGradient>
+                                </defs>
+                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
+                                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#94a3b8', fontWeight: 800 }} dy={10} />
+                                <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#94a3b8', fontWeight: 800 }} dx={-10} />
+                                <Tooltip
+                                    contentStyle={{ borderRadius: '1rem', border: 'none', boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.1)', padding: '12px 20px', fontWeight: 800, fontSize: '12px', textTransform: 'uppercase' }}
+                                    itemStyle={{ fontWeight: 800 }}
+                                />
+                                <Area type="monotone" dataKey="whatsapp" name="WhatsApp" stroke="#C8956C" strokeWidth={3} fillOpacity={1} fill="url(#colorWhatsapp)" />
+                                <Area type="monotone" dataKey="email" name="Push" stroke="#3b82f6" strokeWidth={3} fillOpacity={1} fill="url(#colorEmail)" />
+                            </AreaChart>
+                        </ResponsiveContainer>
+                    </div>
+                </div>
+
+                {/* Segments Overview */}
+                <div className="bg-white rounded-[2rem] border border-border p-8 shadow-sm">
+                    <div className="flex items-center justify-between mb-6">
+                        <h3 className="text-sm font-black text-text uppercase tracking-tight">Active Segments</h3>
+                        <div className="w-8 h-8 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
+                            <Users className="w-4 h-4" />
+                        </div>
+                    </div>
+                    <div className="space-y-4">
+                        {displaySegments.map((segment, idx) => (
+                            <div key={idx} className="flex items-center justify-between p-4 rounded-2xl border border-border/50 hover:bg-surface/50 transition-colors">
+                                <div>
+                                    <div className="text-xs font-black text-text uppercase tracking-tight">{segment.label}</div>
+                                    <div className="text-[10px] text-text-muted font-bold mt-0.5 tracking-wider">Targetable users</div>
+                                </div>
+                                <div className="text-sm font-black text-text bg-surface px-3 py-1.5 rounded-xl border border-border">{segment.count}</div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            </div>
         </div>
     );
 }
