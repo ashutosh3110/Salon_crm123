@@ -151,7 +151,7 @@ export default function StaffManager() {
     const filtered = useMemo(
         () =>
             staffRows.filter((s) => {
-                const q = searchTerm.toLowerCase();
+                const q = searchTerm.trim().toLowerCase();
                 const matchSearch =
                     s.name.toLowerCase().includes(q) ||
                     s.role.toLowerCase().includes(q) ||

@@ -1,11 +1,12 @@
 import { useState, useMemo, useEffect, useRef } from 'react';
+import { toast } from 'react-hot-toast';
 import { useLocation, useNavigate } from 'react-router-dom';
 import {
     Search, ShoppingCart, Plus, Minus, X, Trash2,
     Scissors, Package, Check, Loader2, Scan,
     Sparkles, User, UserPlus, ArrowRight, Percent, Info,
     Tag, Star, Wallet, Printer, Banknote, Smartphone, FileText, Download,
-    ShoppingBag, CreditCard, Ticket, Gift, History, Calendar, Globe, Building2
+    ShoppingBag, CreditCard, Ticket, Gift, History, Calendar, Globe, Building2, ChevronDown
 } from 'lucide-react';
 import api from '../../services/api';
 import {
@@ -149,19 +150,19 @@ const InvoicePDF = ({ invoice, role, salon, taxRate = 18 }) => (
 
             <View style={pdfStyles.metaRow}>
                 <Text style={pdfStyles.label}>Invoice:</Text>
-                <Text style={pdfStyles.value}>#{invoice.number}</Text>
+                <Text style={pdfStyles.value}>#{invoice?.number || 'N/A'}</Text>
             </View>
             <View style={pdfStyles.metaRow}>
                 <Text style={pdfStyles.label}>Date:</Text>
-                <Text style={pdfStyles.value}>{invoice.date}</Text>
+                <Text style={pdfStyles.value}>{invoice?.date || 'N/A'}</Text>
             </View>
             <View style={pdfStyles.metaRow}>
                 <Text style={pdfStyles.label}>Customer:</Text>
-                <Text style={pdfStyles.value}>{invoice.client?.name?.toUpperCase()}</Text>
+                <Text style={pdfStyles.value}>{invoice?.client?.name?.toUpperCase() || 'WALK-IN CLIENT'}</Text>
             </View>
             <View style={pdfStyles.metaRow}>
                 <Text style={pdfStyles.label}>Payment:</Text>
-                <Text style={pdfStyles.value}>{invoice.payments?.[0]?.method?.toUpperCase() || 'CASH'}</Text>
+                <Text style={pdfStyles.value}>{invoice?.payments?.[0]?.method?.toUpperCase() || 'CASH'}</Text>
             </View>
 
             <View style={pdfStyles.divider} />
@@ -171,15 +172,15 @@ const InvoicePDF = ({ invoice, role, salon, taxRate = 18 }) => (
                 <Text style={pdfStyles.colPrice}>AMOUNT</Text>
             </View>
 
-            {invoice.items.map((item, i) => (
+            {invoice?.items?.map((item, i) => (
                 <View key={i} style={pdfStyles.tableRow}>
                     <View style={pdfStyles.itemMainRow}>
-                        <Text style={pdfStyles.colDesc}>{item.name.toUpperCase()}</Text>
-                        <Text style={pdfStyles.colPrice}>Rs. {(item.price * item.quantity).toFixed(0)}</Text>
+                        <Text style={pdfStyles.colDesc}>{item?.name?.toUpperCase() || 'SERVICE'}</Text>
+                        <Text style={pdfStyles.colPrice}>Rs. {(item?.price * item?.quantity || 0).toFixed(0)}</Text>
                     </View>
                     <View style={pdfStyles.itemSubRow}>
-                        <Text>Qty: {item.quantity} x {item.price}</Text>
-                        <Text>Stylist: {item.staffName}</Text>
+                        <Text>Qty: {item?.quantity || 1} x {item?.price || 0}</Text>
+                        <Text>Stylist: {item?.staffName || 'N/A'}</Text>
                     </View>
                 </View>
             ))}
@@ -188,7 +189,7 @@ const InvoicePDF = ({ invoice, role, salon, taxRate = 18 }) => (
 
             <View style={pdfStyles.summaryRow}>
                 <Text>Subtotal</Text>
-                <Text>Rs. {invoice.totals.subtotal.toFixed(0)}</Text>
+                <Text>Rs. {invoice?.totals?.subtotal?.toFixed(0) || '0'}</Text>
             </View>
             {(invoice.discounts?.manual?.value > 0 || invoice.discounts?.points > 0 || invoice.discounts?.wallet > 0) && (
                 <View style={pdfStyles.summaryRow}>
@@ -199,30 +200,30 @@ const InvoicePDF = ({ invoice, role, salon, taxRate = 18 }) => (
 
             <View style={pdfStyles.summaryRow}>
                 <Text>Taxable Value</Text>
-                <Text>Rs. {invoice.totals.taxable.toFixed(2)}</Text>
+                <Text>Rs. {invoice?.totals?.taxable?.toFixed(2) || '0.00'}</Text>
             </View>
 
-            {invoice.totals.isSameState ? (
+            {invoice?.totals?.isSameState ? (
                 <>
                     <View style={pdfStyles.summaryRow}>
                         <Text>CGST ({taxRate / 2}%)</Text>
-                        <Text>Rs. {invoice.totals.cgst.toFixed(2)}</Text>
+                        <Text>Rs. {invoice?.totals?.cgst?.toFixed(2) || '0.00'}</Text>
                     </View>
                     <View style={pdfStyles.summaryRow}>
                         <Text>SGST ({taxRate / 2}%)</Text>
-                        <Text>Rs. {invoice.totals.sgst.toFixed(2)}</Text>
+                        <Text>Rs. {invoice?.totals?.sgst?.toFixed(2) || '0.00'}</Text>
                     </View>
                 </>
             ) : (
                 <View style={pdfStyles.summaryRow}>
                     <Text>IGST ({taxRate}%)</Text>
-                    <Text>Rs. {invoice.totals.igst.toFixed(2)}</Text>
+                    <Text>Rs. {invoice?.totals?.igst?.toFixed(2) || '0.00'}</Text>
                 </View>
             )}
 
             <View style={pdfStyles.grandTotal}>
                 <Text>GRAND TOTAL</Text>
-                <Text>Rs. {invoice.totals.total.toFixed(0)}</Text>
+                <Text>Rs. {invoice?.totals?.total?.toFixed(0) || '0'}</Text>
             </View>
 
             <View style={pdfStyles.footer}>
@@ -257,7 +258,9 @@ export default function POSBillingPage() {
         fetchOrders,
         fetchBookings,
         fetchServices,
-        fetchCustomers
+        fetchCustomers,
+        fetchProducts,
+        fetchStaff
     } = useBusiness();
     const { addRevenue } = useFinance();
     const { allWallets, adminAdjustBalance, initializeWallet } = useWallet();
@@ -275,7 +278,9 @@ export default function POSBillingPage() {
         if (!platformSettings) {
             fetchPlatformSettings();
         }
-    }, [platformSettings, fetchPlatformSettings]);
+        // Fetch staff to ensure stylists are available for billing
+        fetchStaff?.();
+    }, [platformSettings, fetchPlatformSettings, fetchStaff]);
 
     // Fiscal Settings (from localStorage)
     const fiscal = useMemo(() => {
@@ -312,13 +317,15 @@ export default function POSBillingPage() {
         fetchOrders?.();
         fetchBookings?.();
         fetchCustomers?.(1, 1000); // Fetch a larger batch for POS search
-        if (activeOutletId) {
-            fetchServices?.(salon?._id, activeOutletId);
+        if (salon?._id) {
+            fetchServices?.(salon._id, null); // Fetch all services for the salon
+            fetchProducts?.(salon._id, null); // Fetch all products for the salon
         }
     }, [fiscal, activeOutletId, salon?._id]); // Removed function dependencies to prevent potential re-run loops
 
     // UI State
     const [activeTab, setActiveTab] = useState('services');
+    const [isSubmittingClient, setIsSubmittingClient] = useState(false);
     const [serviceMode, setServiceMode] = useState('bookings'); // 'catalog' | 'bookings' | 'orders'    
     const [searchItem, setSearchItem] = useState('');
     const [searchClient, setSearchClient] = useState('');
@@ -334,6 +341,7 @@ export default function POSBillingPage() {
     const [showCameraScanner, setShowCameraScanner] = useState(false);
     const [isBarcodeMode, setIsBarcodeMode] = useState(false);
     const [lastScannedItem, setLastScannedItem] = useState(null);
+    const [showQuickInvoice, setShowQuickInvoice] = useState(false);
 
     // Prevent background scroll when any modal is open
     const isAnyModalOpen = showDiscountModal || showCameraScanner || !!successInvoice || showNewClient;
@@ -691,8 +699,17 @@ export default function POSBillingPage() {
 
         return itemsList.filter(item => {
             const itemOutletIds = item.outletIds || [];
-            return itemOutletIds.length === 0 ||
-                itemOutletIds.some(id => String(id?._id || id) === String(activeOutletId));
+            const itemOutletId = item.outletId?._id || item.outletId;
+
+            // If no outlet restriction, show everywhere
+            if (itemOutletIds.length === 0 && !itemOutletId) return true;
+
+            // Check plural outletIds
+            const matchPlural = itemOutletIds.some(id => String(id?._id || id) === String(activeOutletId));
+            // Check singular outletId
+            const matchSingular = itemOutletId && String(itemOutletId) === String(activeOutletId);
+
+            return matchPlural || matchSingular;
         });
     }, [activeTab, services, products, activeOutletId]);
 
@@ -1028,7 +1045,7 @@ export default function POSBillingPage() {
                         return baseItem;
                     }),
                     tax: totals.tax,
-                    paymentMethod: payments[0]?.method || 'cash',
+                    payments: payments.map(p => ({ method: p.method, amount: p.amount })),
                     useLoyaltyPoints: redeemPoints,
                     useWalletAmount: redeemWallet,
                     discount: totals.discount,
@@ -1121,39 +1138,39 @@ export default function POSBillingPage() {
         setIsWhatsAppSending(false);
     };
 
-    const handleQuickCreate = (e) => {
+    const handleQuickCreate = async (e) => {
         e.preventDefault();
-        if (!newClientForm.name || !newClientForm.phone) return alert('Name and phone are required');
+        if (!newClientForm.name || !newClientForm.phone) return toast.error('Name and phone are required');
+        if (isSubmittingClient) return;
 
-        const newClient = {
-            _id: `nc-${Date.now()}`,
-            name: newClientForm.name,
-            phone: newClientForm.phone,
-            email: newClientForm.email || '',
-            gender: 'other',
-            loyaltyPoints: 0,
-            walletBalance: 0,
-            packages: [],
-            history: []
-        };
-
-        addBusinessCustomer(newClient);
-        setSelectedClient(newClient);
-        setShowClientInfo(true);
-        setShowNewClient(false);
-        setNewClientForm({ name: '', phone: '', email: '' });
-        setSearchClient('');
-        setShowClientDropdown(false);
+        setIsSubmittingClient(true);
+        try {
+            const res = await addBusinessCustomer(newClientForm);
+            setSelectedClient(res);
+            setShowClientInfo(true);
+            setShowNewClient(false);
+            setNewClientForm({ name: '', phone: '', email: '' });
+            setSearchClient('');
+            setShowClientDropdown(false);
+        } catch (err) {
+            // Error handled by BusinessContext
+        } finally {
+            setIsSubmittingClient(false);
+        }
     };
 
-    const handleDownloadPDF = async () => {
+    const handleDownloadPDF = async (invToUse = null) => {
+        const inv = invToUse || successInvoice;
+        if (!inv) return;
+
         setIsGeneratingPDF(true);
         try {
-            const blob = await pdf(<InvoicePDF invoice={successInvoice} role={user?.role} salon={salon} taxRate={taxPercent} />).toBlob();
+            const blob = await pdf(<InvoicePDF invoice={inv} role={user?.role} salon={salon} taxRate={taxPercent} />).toBlob();
             const url = URL.createObjectURL(blob);
             const link = document.createElement('a');
             link.href = url;
-            link.download = `${successInvoice.number}_${successInvoice.client?.name || 'Invoice'}.pdf`;
+            const fileName = `${inv?.number || 'INV'}_${(inv?.client?.name || 'Invoice').replace(/\s+/g, '_')}.pdf`;
+            link.download = fileName;
             link.click();
             URL.revokeObjectURL(url);
         } catch (error) {
@@ -1216,15 +1233,15 @@ export default function POSBillingPage() {
                     </div>
 
                     <div className="border-t border-dashed border-black pt-2 mb-2 space-y-0.5">
-                        <div className="flex justify-between"><span>Inv No:</span><span className="font-bold">{successInvoice.number}</span></div>
-                        <div className="flex justify-between"><span>Date:</span><span>{successInvoice.date}</span></div>
-                        <div className="flex justify-between"><span>Outlet:</span><span>{successInvoice.outlet}</span></div>
-                        <div className="flex justify-between"><span>Cashier:</span><span>{successInvoice.cashier}</span></div>
+                        <div className="flex justify-between"><span>Inv No:</span><span className="font-bold">{successInvoice?.number || 'N/A'}</span></div>
+                        <div className="flex justify-between"><span>Date:</span><span>{successInvoice?.date || 'N/A'}</span></div>
+                        <div className="flex justify-between"><span>Outlet:</span><span>{successInvoice?.outlet || 'N/A'}</span></div>
+                        <div className="flex justify-between"><span>Cashier:</span><span>{successInvoice?.cashier || 'N/A'}</span></div>
                     </div>
 
                     <div className="border-t border-dashed border-black pt-2 mb-2">
-                        <div className="flex justify-between"><span>Customer:</span><span className="font-bold uppercase">{successInvoice.client.name}</span></div>
-                        <div className="flex justify-between"><span>Mobile:</span><span>{maskPhone(successInvoice.client.phone, user?.role)}</span></div>
+                        <div className="flex justify-between"><span>Customer:</span><span className="font-bold uppercase">{successInvoice?.client?.name || 'Walk-in Client'}</span></div>
+                        <div className="flex justify-between"><span>Mobile:</span><span>{maskPhone(successInvoice?.client?.phone || '', user?.role)}</span></div>
                     </div>
 
                     <div className="border-t border-black pt-2 mb-1 font-bold">
@@ -1250,54 +1267,54 @@ export default function POSBillingPage() {
                     </div>
 
                     <div className="border-t border-dashed border-black pt-2 space-y-1">
-                        <div className="flex justify-between"><span>Subtotal:</span><span>{successInvoice.totals.subtotal.toFixed(0)}</span></div>
+                        <div className="flex justify-between"><span>Subtotal:</span><span>{successInvoice?.totals?.subtotal?.toFixed(0) || '0'}</span></div>
 
-                        {successInvoice.totals.serviceDiscount > 0 && <div className="flex justify-between text-[10px] italic"><span>Service Discount:</span><span>-₹{successInvoice.totals.serviceDiscount.toFixed(0)}</span></div>}
-                        {successInvoice.totals.productDiscount > 0 && <div className="flex justify-between text-[10px] italic"><span>Product Discount:</span><span>-₹{successInvoice.totals.productDiscount.toFixed(0)}</span></div>}
-                        {successInvoice.discounts.promotion && <div className="flex justify-between text-[10px] italic"><span>Promo ({successInvoice.discounts.promotion.name}):</span><span>Applied</span></div>}
-                        {successInvoice.discounts.voucher && <div className="flex justify-between text-[10px] italic"><span>Voucher ({successInvoice.discounts.voucher.code}):</span><span>Applied</span></div>}
+                        {successInvoice?.totals?.serviceDiscount > 0 && <div className="flex justify-between text-[10px] italic"><span>Service Discount:</span><span>-₹{successInvoice.totals.serviceDiscount.toFixed(0)}</span></div>}
+                        {successInvoice?.totals?.productDiscount > 0 && <div className="flex justify-between text-[10px] italic"><span>Product Discount:</span><span>-₹{successInvoice.totals.productDiscount.toFixed(0)}</span></div>}
+                        {successInvoice?.discounts?.promotion && <div className="flex justify-between text-[10px] italic"><span>Promo ({successInvoice.discounts.promotion.name}):</span><span>Applied</span></div>}
+                        {successInvoice?.discounts?.voucher && <div className="flex justify-between text-[10px] italic"><span>Voucher ({successInvoice.discounts.voucher.code}):</span><span>Applied</span></div>}
 
-                        {successInvoice.discounts.points > 0 && <div className="flex justify-between text-[10px] italic font-bold text-blue-800"><span>Loyalty Points Used:</span><span>-₹{successInvoice.discounts.points}</span></div>}
-                        {successInvoice.discounts.wallet > 0 && <div className="flex justify-between text-[10px] italic font-bold text-emerald-800"><span>Wallet Balance Used:</span><span>-₹{successInvoice.discounts.wallet}</span></div>}
+                        {successInvoice?.discounts?.points > 0 && <div className="flex justify-between text-[10px] italic font-bold text-blue-800"><span>Loyalty Points Used:</span><span>-₹{successInvoice.discounts.points}</span></div>}
+                        {successInvoice?.discounts?.wallet > 0 && <div className="flex justify-between text-[10px] italic font-bold text-emerald-800"><span>Wallet Balance Used:</span><span>-₹{successInvoice.discounts.wallet}</span></div>}
 
-                        <div className="flex justify-between font-bold"><span>Taxable Value:</span><span>{successInvoice.totals.taxable.toFixed(2)}</span></div>
-                        {successInvoice.totals.isSameState ? (
+                        <div className="flex justify-between font-bold"><span>Taxable Value:</span><span>{successInvoice?.totals?.taxable?.toFixed(2) || '0.00'}</span></div>
+                        {successInvoice?.totals?.isSameState ? (
                             <>
-                                <div className="flex justify-between"><span>CGST ({taxPercent / 2}%):</span><span>{successInvoice.totals.cgst.toFixed(2)}</span></div>
-                                <div className="flex justify-between"><span>SGST ({taxPercent / 2}%):</span><span>{successInvoice.totals.sgst.toFixed(2)}</span></div>
+                                <div className="flex justify-between"><span>CGST ({taxPercent / 2}%):</span><span>{successInvoice?.totals?.cgst?.toFixed(2) || '0.00'}</span></div>
+                                <div className="flex justify-between"><span>SGST ({taxPercent / 2}%):</span><span>{successInvoice?.totals?.sgst?.toFixed(2) || '0.00'}</span></div>
                             </>
                         ) : (
-                            <div className="flex justify-between"><span>IGST ({taxPercent}%):</span><span>{successInvoice.totals.igst.toFixed(2)}</span></div>
+                            <div className="flex justify-between"><span>IGST ({taxPercent}%):</span><span>{successInvoice?.totals?.igst?.toFixed(2) || '0.00'}</span></div>
                         )}
                         <div className="flex justify-between text-base font-black border-t border-black pt-1 mt-1">
                             <span>TOTAL:</span>
-                            <span>₹{successInvoice.totals.total.toFixed(0)}</span>
+                            <span>₹{successInvoice?.totals?.total?.toFixed(0) || '0'}</span>
                         </div>
                     </div>
 
                     <div className="border-t border-dashed border-black pt-2 mt-2 space-y-0.5">
                         <p className="font-bold uppercase text-[10px] mb-1">Payment Details</p>
-                        {successInvoice.payments.map((p, idx) => (
+                        {successInvoice?.payments?.map((p, idx) => (
                             <div key={idx} className="flex justify-between uppercase text-[10px]">
-                                <span>{p.method}:</span>
+                                <span>{p?.method || 'N/A'}:</span>
                                 <span>₹{p.amount.toFixed(0)}</span>
                             </div>
                         ))}
                         <div className="flex justify-between border-t border-dashed border-black mt-1 pt-1 font-bold">
                             <span>PAID:</span>
-                            <span>₹{successInvoice.totals.paidAmount.toFixed(0)}</span>
+                            <span>₹{successInvoice?.totals?.paidAmount?.toFixed(0) || '0'}</span>
                         </div>
-                        {successInvoice.totals.balanceDue > 0 && (
+                        {successInvoice?.totals?.balanceDue > 0 && (
                             <div className="flex justify-between text-red-600 font-bold">
                                 <span>BALANCE DUE:</span>
-                                <span>₹{successInvoice.totals.balanceDue.toFixed(0)}</span>
+                                <span>₹{successInvoice?.totals?.balanceDue?.toFixed(0) || '0'}</span>
                             </div>
                         )}
                     </div>
 
                     <div className="border-t border-dashed border-black pt-2 mt-2 text-center">
                         <p className="font-bold uppercase tracking-wider">
-                            {successInvoice.totals.balanceDue > 0 ? '* PENDING PAYMENT *' : 'LOYALTY EARNED: ' + successInvoice.loyaltyEarned + ' PTS'}
+                            {(successInvoice?.totals?.balanceDue || 0) > 0 ? '* PENDING PAYMENT *' : 'LOYALTY EARNED: ' + (successInvoice?.loyaltyEarned || 0) + ' PTS'}
                         </p>
                         <p className="mt-4 font-bold uppercase tracking-widest">Thank You! Visit Again 🙂</p>
                     </div>
@@ -1388,7 +1405,12 @@ export default function POSBillingPage() {
                     <CreditCard className="w-4 h-4" /> POS Terminal
                 </h1>
                 <div className="flex gap-2">
-
+                    <button
+                        onClick={() => setShowQuickInvoice(true)}
+                        className="px-4 py-1.5 bg-emerald-600 text-white text-[10px] font-black uppercase tracking-widest flex items-center gap-2 hover:bg-emerald-700 active:scale-95 transition-all shadow-lg shadow-emerald-500/20"
+                    >
+                        <Plus className="w-3.5 h-3.5" /> Quick Invoice
+                    </button>
                 </div>
             </div>
 
@@ -1559,7 +1581,7 @@ export default function POSBillingPage() {
                             <div className="flex items-center justify-between bg-background border border-border p-3">
                                 <div className="flex items-center gap-3">
                                     <div className="w-9 h-9 bg-primary/10 text-primary flex items-center justify-center font-black">
-                                        {selectedClient.name.charAt(0)}
+                                        {selectedClient?.name?.charAt(0) || 'U'}
                                     </div>
                                     <div>
                                         <div className="flex items-center gap-2">
@@ -2008,13 +2030,533 @@ export default function POSBillingPage() {
                         </div>
 
                         <div className="p-6 bg-surface-alt border-t border-border">
-                            <button type="submit" className="w-full py-4 bg-primary text-white font-black text-xs uppercase tracking-widest hover:bg-primary-dark transition-all shadow-lg shadow-primary/20">
-                                Register & Select Client
+                            <button 
+                                type="submit" 
+                                disabled={isSubmittingClient}
+                                className="w-full py-4 bg-primary text-white font-black text-xs uppercase tracking-widest hover:bg-primary-dark transition-all shadow-lg shadow-primary/20 disabled:opacity-50"
+                            >
+                                {isSubmittingClient ? 'Creating...' : 'Register & Select Client'}
                             </button>
                         </div>
                     </form>
                 </div>
             )}
+
+            {/* Quick Invoice Modal */}
+            {showQuickInvoice && (
+                <QuickInvoiceModal
+                    onClose={() => setShowQuickInvoice(false)}
+                    onSuccess={(inv) => {
+                        setShowQuickInvoice(false);
+                        // Trigger download and navigate immediately, skipping the success modal
+                        handleDownloadPDF(inv);
+                        navigate('/pos/invoices');
+                    }}
+                    outlets={outlets}
+                    services={services}
+                    staff={businessStaff}
+                    customers={businessCustomers}
+                    addCustomer={addBusinessCustomer}
+                    activeOutletId={activeOutletId}
+                    fiscal={fiscal}
+                    platformSettings={platformSettings}
+                />
+            )}
+        </div>
+    );
+}
+
+// ─── Quick Invoice Modal Component ───
+function QuickInvoiceModal({ onClose, onSuccess, outlets, services, staff, customers, addCustomer, activeOutletId, fiscal, platformSettings }) {
+    const [qOutletId, setQOutletId] = useState(activeOutletId || (outlets?.[0]?._id || ''));
+    const [qClient, setQClient] = useState(null);
+    const [qSearchClient, setQSearchClient] = useState('');
+    const [qCart, setQCart] = useState([]);
+    const [qPayments, setQPayments] = useState({ cash: 0, online: 0 });
+    const [qManualDiscount, setQManualDiscount] = useState(0);
+    const [isProcessing, setIsProcessing] = useState(false);
+    const [isSubmittingClient, setIsSubmittingClient] = useState(false);
+    const [showNewClient, setShowNewClient] = useState(false);
+    const [newClientForm, setNewClientForm] = useState({ name: '', phone: '' });
+    const [showClientDropdown, setShowClientDropdown] = useState(false);
+
+    const qFilteredServices = useMemo(() => {
+        if (!qOutletId) return (services || []);
+        return (services || []).filter(s => {
+            const sOutletIds = s.outletIds || [];
+            const sOutletId = s.outletId?._id || s.outletId;
+            if (sOutletIds.length === 0 && !sOutletId) return true;
+            const matchPlural = sOutletIds.some(id => String(id?._id || id) === String(qOutletId));
+            const matchSingular = sOutletId && String(sOutletId) === String(qOutletId);
+            return matchPlural || matchSingular;
+        });
+    }, [services, qOutletId]);
+
+    const qFilteredStaff = useMemo(() => {
+        if (!staff || staff.length === 0) return [];
+        if (!qOutletId) return staff;
+        
+        const filtered = staff.filter(s => {
+            // Check singular outletId
+            const sOutletId = s.outletId?._id || s.outletId;
+            // Check multiple outletIds (if exists in schema)
+            const sOutletIds = Array.isArray(s.outletIds) ? s.outletIds.map(id => id?._id || id) : [];
+            
+            // If staff is not assigned to ANY outlet, show them everywhere
+            if (!sOutletId && sOutletIds.length === 0) return true;
+            
+            const matchSingular = sOutletId && String(sOutletId) === String(qOutletId);
+            const matchPlural = sOutletIds.some(id => String(id) === String(qOutletId));
+            
+            return matchSingular || matchPlural;
+        });
+
+        // FALLBACK: If no staff assigned specifically to this outlet, show ALL staff to avoid blocking the POS
+        return filtered.length > 0 ? filtered : staff;
+    }, [staff, qOutletId]);
+
+    const qFilteredClients = useMemo(() => {
+        const st = qSearchClient.toLowerCase().trim();
+        if (!st) return [];
+        return (customers || []).filter(c => c.name.toLowerCase().includes(st) || c.phone.includes(st)).slice(0, 10);
+    }, [customers, qSearchClient]);
+
+    const totals = useMemo(() => {
+        const subtotal = qCart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+        const discountFactor = subtotal > 0 ? (subtotal - qManualDiscount) / subtotal : 1;
+        
+        const serviceGst = Number(platformSettings?.serviceGst || fiscal?.serviceGst || 18);
+        const taxRate = serviceGst / 100;
+
+        let totalTax = 0;
+        let taxableValue = 0;
+
+        qCart.forEach(item => {
+            const netItemTotal = (item.price * item.quantity) * discountFactor;
+            if (fiscal?.inclusiveTax) {
+                const taxable = netItemTotal / (1 + taxRate);
+                taxableValue += taxable;
+                totalTax += (netItemTotal - taxable);
+            } else {
+                taxableValue += netItemTotal;
+                totalTax += (netItemTotal * taxRate);
+            }
+        });
+
+        const total = fiscal?.inclusiveTax 
+            ? Math.max(0, subtotal - qManualDiscount) 
+            : Math.max(0, subtotal - qManualDiscount) + totalTax;
+
+        return {
+            subtotal,
+            discount: qManualDiscount,
+            tax: totalTax,
+            taxable: taxableValue,
+            total: total
+        };
+    }, [qCart, qManualDiscount, fiscal, platformSettings]);
+
+    const paidAmount = Number(qPayments.cash || 0) + Number(qPayments.online || 0);
+    const dueAmount = Math.max(0, totals.total - paidAmount);
+
+    const addToQCart = (service) => {
+        setQCart([...qCart, {
+            ...service,
+            itemId: service._id,
+            type: 'service',
+            quantity: 1,
+            staffId: qFilteredStaff.length === 1 ? qFilteredStaff[0]._id : '' 
+        }]);
+    };
+
+    const handleQuickCreateClient = async (e) => {
+        e.preventDefault();
+        if (isSubmittingClient) return;
+        setIsSubmittingClient(true);
+        try {
+            const res = await addCustomer(newClientForm);
+            setQClient(res);
+            setShowNewClient(false);
+            setQSearchClient('');
+            setShowClientDropdown(false);
+        } catch (err) {
+            // Error handled by BusinessContext
+        } finally {
+            setIsSubmittingClient(false);
+        }
+    };
+
+    const handleConfirm = async () => {
+        if (!qClient) return toast.error('Please select a client');
+        if (qCart.length === 0) return toast.error('Cart is empty');
+        if (qCart.some(item => !item.staffId)) return toast.error('Please assign stylists for all items');
+
+        setIsProcessing(true);
+        try {
+            const paymentArray = [];
+            if (qPayments.cash > 0) paymentArray.push({ method: 'cash', amount: qPayments.cash });
+            if (qPayments.online > 0) paymentArray.push({ method: 'online', amount: qPayments.online });
+
+            const payload = {
+                clientId: qClient._id,
+                outletId: qOutletId,
+                items: qCart.map(i => ({ ...i, stylistId: i.staffId })),
+                tax: totals.tax, 
+                payments: paymentArray,
+                discount: totals.discount
+            };
+
+            const res = await api.post('/pos/checkout', payload);
+            toast.success('Invoice Generated!');
+            onSuccess(res.data.data);
+        } catch (err) {
+            toast.error(err.response?.data?.message || 'Checkout failed');
+        } finally {
+            setIsProcessing(false);
+        }
+    };
+
+    return (
+        <div className="fixed inset-0 bg-slate-900/90 backdrop-blur-md z-[100] flex items-center justify-center p-0 sm:p-2 overflow-hidden">
+            <motion.div 
+                initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                className="bg-white w-full max-w-6xl h-full sm:h-[95vh] shadow-2xl flex flex-col sm:rounded-2xl border border-slate-200 overflow-hidden"
+            >
+                {/* Header */}
+                <div className="p-4 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
+                    <div className="flex items-center gap-4">
+                        <div className="bg-emerald-600 p-2 rounded-xl text-white">
+                            <Sparkles className="w-5 h-5" />
+                        </div>
+                        <div>
+                            <h2 className="text-xl font-black text-slate-900 uppercase tracking-tighter">Instant POS Billing</h2>
+                            <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-0.5">Quick Invoice Without Appointments</p>
+                        </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <button 
+                            onClick={() => { setQCart([]); setQClient(null); setQPayments({ cash: 0, online: 0 }); setQManualDiscount(0); }}
+                            className="px-4 py-2 text-[10px] font-black text-slate-400 hover:text-rose-500 uppercase tracking-widest transition-colors"
+                        >
+                            Reset Form
+                        </button>
+                        <button onClick={onClose} className="p-2 hover:bg-slate-200 rounded-full transition-colors group">
+                            <X className="w-6 h-6 text-slate-400 group-hover:text-slate-900" />
+                        </button>
+                    </div>
+                </div>
+
+                <div className="flex-1 flex flex-col lg:flex-row overflow-hidden bg-white">
+                    {/* Left Panel: Configuration & Services */}
+                    <div className="flex-1 flex flex-col bg-white overflow-hidden border-r border-slate-100">
+                        {/* Top Bar: Compact Outlet & Client */}
+                        <div className="p-4 bg-slate-50/50 border-b border-slate-100 grid grid-cols-1 md:grid-cols-2 gap-4 shrink-0">
+                            <div className="space-y-1">
+                                <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-1">
+                                    <Building2 className="w-2.5 h-2.5" /> Outlet
+                                </label>
+                                <select 
+                                    className="w-full bg-white border border-slate-200 py-1.5 px-3 text-[11px] font-black uppercase text-slate-900 outline-none focus:border-primary rounded-lg"
+                                    value={qOutletId}
+                                    onChange={(e) => { setQOutletId(e.target.value); setQCart([]); }}
+                                >
+                                    {outlets.map(o => <option key={o._id} value={o._id}>{o.name}</option>)}
+                                </select>
+                            </div>
+
+                            <div className="space-y-1 relative">
+                                <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-1">
+                                    <User className="w-2.5 h-2.5" /> Client
+                                </label>
+                                {qClient ? (
+                                    <div className="flex items-center justify-between bg-emerald-50 border border-emerald-200 py-1 px-2 rounded-lg">
+                                        <div className="flex items-center gap-2">
+                                            <div className="w-6 h-6 bg-emerald-600 text-white flex items-center justify-center font-black rounded text-[9px]">
+                                                {qClient?.name?.charAt(0).toUpperCase() || 'U'}
+                                            </div>
+                                            <p className="text-[10px] font-black text-slate-900 truncate max-w-[120px]">{qClient.name}</p>
+                                        </div>
+                                        <button onClick={() => setQClient(null)} className="text-emerald-400 hover:text-rose-500 p-1"><X className="w-3 h-3" /></button>
+                                    </div>
+                                ) : (
+                                    <div className="relative">
+                                        <div className="relative group">
+                                            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3 h-3 text-slate-400" />
+                                            <input 
+                                                type="text"
+                                                placeholder="Search client..."
+                                                className="w-full bg-white border border-slate-200 pl-8 pr-2 py-1.5 text-[11px] font-black text-slate-900 outline-none focus:border-primary rounded-lg"
+                                                value={qSearchClient}
+                                                onFocus={() => setShowClientDropdown(true)}
+                                                onChange={(e) => { setQSearchClient(e.target.value); setShowClientDropdown(true); }}
+                                            />
+                                        </div>
+                                        <AnimatePresence>
+                                            {showClientDropdown && (qSearchClient || qFilteredClients.length === 0) && (
+                                                <motion.div 
+                                                    initial={{ opacity: 0, y: 5 }}
+                                                    animate={{ opacity: 1, y: 0 }}
+                                                    exit={{ opacity: 0, y: 5 }}
+                                                    className="absolute top-full left-0 right-0 bg-white border border-slate-200 shadow-2xl z-50 mt-1 rounded-xl overflow-hidden max-h-[200px] overflow-y-auto"
+                                                >
+                                                    {qFilteredClients.length > 0 ? qFilteredClients.map(c => (
+                                                        <button 
+                                                            key={c._id}
+                                                            onClick={() => { setQClient(c); setQSearchClient(''); setShowClientDropdown(false); }}
+                                                            className="w-full p-2.5 text-left hover:bg-slate-50 border-b border-slate-100 flex items-center gap-2 group"
+                                                        >
+                                                            <div className="w-6 h-6 bg-slate-100 text-slate-600 flex items-center justify-center font-black rounded text-[8px]">{c.name.charAt(0).toUpperCase()}</div>
+                                                            <div className="flex-1 min-w-0">
+                                                                <p className="text-[10px] font-black text-slate-900 truncate">{c.name}</p>
+                                                                <p className="text-[8px] font-bold text-slate-400">{c.phone}</p>
+                                                            </div>
+                                                        </button>
+                                                    )) : (
+                                                        <div className="p-3 text-center">
+                                                            <button 
+                                                                onClick={() => { setShowNewClient(true); setShowClientDropdown(false); }}
+                                                                className="w-full py-2 bg-primary text-white text-[9px] font-black uppercase rounded-lg"
+                                                            >
+                                                                + Quick Add
+                                                            </button>
+                                                        </div>
+                                                    )}
+                                                </motion.div>
+                                            )}
+                                        </AnimatePresence>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+
+                        {/* Service Selection Section */}
+                        <div className="flex-1 overflow-hidden flex flex-col p-4 space-y-3">
+                            <div className="flex items-center justify-between shrink-0">
+                                <h3 className="text-[9px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
+                                    <Scissors className="w-3 h-3" /> Services
+                                </h3>
+                                <div className="text-[8px] font-bold text-slate-400 bg-slate-100 px-2 py-0.5 rounded uppercase">{qFilteredServices.length} Items</div>
+                            </div>
+                            <div className="flex-1 overflow-y-auto grid grid-cols-2 sm:grid-cols-3 gap-3 pr-1 scrollbar-thin">
+                                {qFilteredServices.map(s => (
+                                    <button 
+                                        key={s._id}
+                                        onClick={() => addToQCart(s)}
+                                        className="p-3 bg-white border border-slate-200 hover:border-primary hover:shadow-md transition-all rounded-xl shadow-sm relative overflow-hidden flex flex-col justify-between group h-24"
+                                    >
+                                        <div className="absolute top-0 left-0 w-0.5 h-full bg-slate-100 group-hover:bg-primary transition-all" />
+                                        <p className="text-[10px] font-black text-slate-800 group-hover:text-primary transition-colors line-clamp-2 leading-tight">{s.name}</p>
+                                        <div className="flex items-center justify-between">
+                                            <p className="text-[11px] font-black text-emerald-600">₹{s.price}</p>
+                                            <div className="bg-slate-50 p-1 rounded group-hover:bg-primary group-hover:text-white transition-all">
+                                                <Plus className="w-3 h-3" />
+                                            </div>
+                                        </div>
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Right Panel: Invoice Summary */}
+                    <div className="w-full lg:w-[420px] bg-slate-50 flex flex-col border-t lg:border-t-0 lg:border-l border-slate-200 overflow-hidden h-full">
+                        <div className="p-4 border-b border-slate-200 bg-white flex items-center justify-between shrink-0">
+                            <div className="flex items-center gap-2">
+                                <ShoppingCart className="w-4 h-4 text-primary" />
+                                <h3 className="text-[10px] font-black text-slate-900 uppercase tracking-widest">Cart Items ({qCart.length})</h3>
+                            </div>
+                            <button 
+                                onClick={() => setQCart([])}
+                                className="text-[9px] font-black text-rose-500 uppercase tracking-widest hover:underline"
+                            >
+                                Clear All
+                            </button>
+                        </div>
+                        
+                        <div className="flex-1 overflow-y-auto p-4 space-y-3 scrollbar-thin">
+                            {qCart.length === 0 ? (
+                                <div className="h-full flex flex-col items-center justify-center opacity-30 italic text-slate-400 text-center space-y-3">
+                                    <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center border-2 border-dashed border-slate-200">
+                                        <ShoppingBag className="w-8 h-8" />
+                                    </div>
+                                    <p className="text-[10px] font-black uppercase tracking-widest">Select services to begin</p>
+                                </div>
+                            ) : qCart.map((item, idx) => (
+                                <div key={idx} className="bg-white border border-slate-200 p-3 rounded-xl shadow-sm space-y-3 relative">
+                                    <div className="flex justify-between items-start">
+                                        <div className="flex-1 pr-2">
+                                            <p className="text-[10px] font-black text-slate-900 uppercase leading-tight line-clamp-1">{item.name}</p>
+                                            <p className="text-[10px] font-black text-emerald-600 mt-0.5">₹{item.price}</p>
+                                        </div>
+                                        <button onClick={() => setQCart(qCart.filter((_, i) => i !== idx))} className="p-1 hover:bg-rose-50 rounded text-slate-400 hover:text-rose-500 transition-colors">
+                                            <X className="w-3 h-3" />
+                                        </button>
+                                    </div>
+
+                                    <div className={`p-2.5 rounded-lg border ${!item.staffId ? 'bg-amber-50 border-amber-200' : 'bg-slate-50 border-slate-100'}`}>
+                                        <label className={`text-[8px] font-black uppercase tracking-widest flex items-center gap-1.5 mb-1.5 ${!item.staffId ? 'text-amber-600' : 'text-slate-400'}`}>
+                                            <Sparkles className="w-2.5 h-2.5" /> Staff
+                                        </label>
+                                        {qFilteredStaff.length > 0 ? (
+                                            <select 
+                                                className="w-full bg-white text-[10px] font-bold text-slate-800 outline-none border border-slate-200 py-1.5 px-2 rounded focus:ring-1 focus:ring-primary/20"
+                                                value={item.staffId}
+                                                onChange={(e) => {
+                                                    const newCart = [...qCart];
+                                                    newCart[idx].staffId = e.target.value;
+                                                    setQCart(newCart);
+                                                }}
+                                            >
+                                                <option value="">Assign...</option>
+                                                {qFilteredStaff.map(st => (
+                                                    <option key={st._id} value={st._id}>{st.name}</option>
+                                                ))}
+                                            </select>
+                                        ) : (
+                                            <p className="text-[8px] font-bold text-rose-500 italic">No staff at this outlet</p>
+                                        )}
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+
+                        {/* Calculation Block - Ultra Compact */}
+                        <div className="flex-shrink-0 p-3 bg-white border-t border-slate-200 shadow-[0_-4px_20px_rgba(0,0,0,0.05)]">
+                            <div className="space-y-2">
+                                <div className="flex items-center justify-between px-1">
+                                    <div className="flex flex-col">
+                                        <span className="text-[8px] font-black text-slate-400 uppercase">Subtotal</span>
+                                        <span className="text-[10px] font-black text-slate-900">₹{totals.subtotal.toFixed(0)}</span>
+                                    </div>
+                                    <div className="flex flex-col items-center">
+                                        <span className="text-[8px] font-black text-slate-400 uppercase">GST ({platformSettings?.serviceGst || fiscal?.serviceGst || 18}%)</span>
+                                        <span className="text-[10px] font-black text-slate-900">₹{totals.tax.toFixed(0)}</span>
+                                    </div>
+                                    <div className="flex flex-col items-end">
+                                        <span className="text-[8px] font-black text-rose-400 uppercase">Discount</span>
+                                        <div className="relative w-16">
+                                            <input 
+                                                type="number"
+                                                className="w-full bg-slate-50 border border-slate-200 py-0.5 px-1 text-[10px] font-black text-rose-600 outline-none rounded"
+                                                value={qManualDiscount || ''}
+                                                onChange={(e) => setQManualDiscount(Number(e.target.value))}
+                                                placeholder="0"
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="flex justify-between items-center bg-slate-900 text-white p-2 rounded-lg">
+                                    <span className="text-[10px] font-black uppercase tracking-widest">Payable</span>
+                                    <span className="text-lg font-black">₹{totals.total.toFixed(0)}</span>
+                                </div>
+
+                                <div className="grid grid-cols-2 gap-2">
+                                    <div className="bg-slate-50 border border-slate-200 p-1.5 rounded-lg">
+                                        <label className="text-[7px] font-black text-slate-400 uppercase block mb-0.5">Cash</label>
+                                        <input 
+                                            type="number"
+                                            className="w-full bg-transparent text-[11px] font-black text-slate-900 outline-none"
+                                            value={qPayments.cash || ''}
+                                            onChange={(e) => setQPayments({...qPayments, cash: Number(e.target.value)})}
+                                            placeholder="0"
+                                        />
+                                    </div>
+                                    <div className="bg-slate-50 border border-slate-200 p-1.5 rounded-lg">
+                                        <label className="text-[7px] font-black text-slate-400 uppercase block mb-0.5">Online</label>
+                                        <input 
+                                            type="number"
+                                            className="w-full bg-transparent text-[11px] font-black text-slate-900 outline-none"
+                                            value={qPayments.online || ''}
+                                            onChange={(e) => setQPayments({...qPayments, online: Number(e.target.value)})}
+                                            placeholder="0"
+                                        />
+                                    </div>
+                                </div>
+
+                                {dueAmount > 1 && (
+                                    <div className="bg-amber-50 px-2 py-1 rounded border border-amber-100 flex items-center gap-1.5">
+                                        <Info className="w-3 h-3 text-amber-500" />
+                                        <p className="text-[8px] font-bold text-amber-700 italic">₹{dueAmount.toFixed(0)} pending to debt</p>
+                                    </div>
+                                )}
+
+                                <button 
+                                    onClick={handleConfirm}
+                                    disabled={isProcessing || qCart.length === 0}
+                                    className="w-full py-2 bg-emerald-600 text-white font-black text-[10px] uppercase tracking-widest hover:bg-emerald-700 transition-all rounded-lg shadow-lg shadow-emerald-600/20 disabled:opacity-50 flex items-center justify-center gap-2"
+                                >
+                                    {isProcessing ? <Loader2 className="w-4 h-4 animate-spin" /> : (
+                                        <>
+                                            <Check className="w-4 h-4" /> Finalize Invoice
+                                        </>
+                                    )}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </motion.div>
+
+            {/* Quick Create Client Modal */}
+            <AnimatePresence>
+                {showNewClient && (
+                    <motion.div 
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-[110] flex items-center justify-center p-4"
+                    >
+                        <motion.form 
+                            initial={{ scale: 0.9, y: 10 }}
+                            animate={{ scale: 1, y: 0 }}
+                            onSubmit={handleQuickCreateClient} 
+                            className="bg-white w-full max-w-sm rounded-2xl shadow-2xl border border-slate-200 overflow-hidden"
+                        >
+                            <div className="p-5 bg-slate-50 border-b border-slate-200 flex justify-between items-center">
+                                <h4 className="text-[11px] font-black text-slate-900 uppercase flex items-center gap-2">
+                                    <UserPlus className="w-4 h-4 text-primary" /> New Quick Client
+                                </h4>
+                                <button type="button" onClick={() => setShowNewClient(false)} className="text-slate-400 hover:text-rose-500"><X className="w-5 h-5" /></button>
+                            </div>
+                            <div className="p-6 space-y-4">
+                                <div className="space-y-1.5">
+                                    <label className="text-[10px] font-black text-slate-400 uppercase">Customer Name</label>
+                                    <input 
+                                        required
+                                        type="text"
+                                        placeholder="e.g. John Doe"
+                                        className="w-full bg-slate-50 border border-slate-200 p-3 text-xs font-black text-slate-900 outline-none rounded-xl"
+                                        value={newClientForm.name}
+                                        onChange={(e) => setNewClientForm({...newClientForm, name: e.target.value})}
+                                    />
+                                </div>
+                                <div className="space-y-1.5">
+                                    <label className="text-[10px] font-black text-slate-400 uppercase">Contact Number</label>
+                                    <input 
+                                        required
+                                        type="tel"
+                                        placeholder="10-digit mobile"
+                                        className="w-full bg-slate-50 border border-slate-200 p-3 text-xs font-black text-slate-900 outline-none rounded-xl"
+                                        value={newClientForm.phone}
+                                        onChange={(e) => setNewClientForm({...newClientForm, phone: e.target.value.replace(/\D/g, '').slice(0, 10)})}
+                                    />
+                                </div>
+                            </div>
+                            <div className="p-6 bg-slate-50 border-t border-slate-200">
+                                <button 
+                                    type="submit" 
+                                    disabled={isSubmittingClient}
+                                    className="w-full py-3 bg-primary text-white font-black text-[11px] uppercase rounded-xl shadow-lg shadow-primary/20 hover:opacity-90 disabled:opacity-50"
+                                >
+                                    {isSubmittingClient ? 'Creating...' : 'Create & Select'}
+                                </button>
+                            </div>
+                        </motion.form>
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </div>
     );
 }

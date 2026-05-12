@@ -1,6 +1,6 @@
 import { getApp, getApps, initializeApp } from 'firebase/app';
 import { getMessaging, getToken, onMessage, isSupported } from 'firebase/messaging';
-import mockApi from './mock/mockApi';
+import api from './api';
 
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
@@ -59,8 +59,17 @@ export const registerToken = async () => {
     });
     
     if (token) {
+      // Basic device detection
+      let platform = 'web';
+      const ua = navigator.userAgent.toLowerCase();
+      if (/android/.test(ua)) {
+        platform = 'android';
+      } else if (/ipad|iphone|ipod/.test(ua)) {
+        platform = 'ios';
+      }
+
       // Register token with backend
-      await mockApi.post('/notifications/register-token', { fcmToken: token });
+      await api.post('/notifications/register-token', { fcmToken: token, platform });
       localStorage.setItem('fcm_token', token);
       return token;
     } else {

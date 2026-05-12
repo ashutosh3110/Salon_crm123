@@ -20,10 +20,6 @@ export default function StockOverview() {
     const [outletFilter, setOutletFilter] = useState('All Outlets');
     const [categoryFilter, setCategoryFilter] = useState('All Categories');
 
-    const categories = useMemo(() => {
-        return [...new Set(products.map(p => p.categoryId?.name || p.category).filter(Boolean))].sort();
-    }, [products]);
-
     const lines = useMemo(() => {
         const result = [];
         products.forEach(product => {
@@ -63,9 +59,29 @@ export default function StockOverview() {
         return result;
     }, [products, businessOutlets]);
 
+    const availableCategories = useMemo(() => {
+        let pool = lines;
+        if (outletFilter !== 'All Outlets') {
+            pool = pool.filter(l => String(l.outletId) === outletFilter || l.outletName === outletFilter);
+        }
+        return [...new Set(pool.map(p => p.category).filter(Boolean))].sort();
+    }, [lines, outletFilter]);
+
+    const availableOutlets = useMemo(() => {
+        let pool = lines;
+        if (categoryFilter !== 'All Categories') {
+            pool = pool.filter(l => l.category === categoryFilter);
+        }
+        const map = new Map();
+        pool.forEach(l => {
+            if (!map.has(String(l.outletId))) map.set(String(l.outletId), l.outletName);
+        });
+        return Array.from(map.entries()).map(([id, name]) => ({ id, name })).sort((a,b) => a.name.localeCompare(b.name));
+    }, [lines, categoryFilter]);
+
     const filteredStock = useMemo(() => {
+        const q = search.trim().toLowerCase();
         return lines.filter((item) => {
-            const q = search.toLowerCase();
             const matchesSearch =
                 !q ||
                 item.name?.toLowerCase().includes(q) ||
@@ -79,6 +95,10 @@ export default function StockOverview() {
             return matchesSearch && matchesOutlet && matchesCategory;
         });
     }, [lines, search, outletFilter, categoryFilter]);
+
+    // Dynamic stats based on filter
+    const activeSKUs = useMemo(() => new Set(filteredStock.map(s => s.productId)).size, [filteredStock]);
+    const activeNodes = useMemo(() => new Set(filteredStock.map(s => s.outletId)).size, [filteredStock]);
 
     if (!products.length) {
         return (
@@ -96,8 +116,8 @@ export default function StockOverview() {
                     <h2 className="text-lg font-black text-foreground uppercase tracking-tight italic">Global Density Matrix</h2>
                     <p className="text-[10px] font-black text-text-muted mt-1 uppercase tracking-[0.2em] italic">
                         Real-time Asset Distribution :: SKU x Outlet Vector
-                        <span className="ml-2 border-l border-border/60 pl-2">
-                            {stats.skuCount} REGISTERED SKUs · {stats.outletCount} DEPLOYED NODES
+                        <span className="ml-2 border-l border-border/60 pl-2 text-primary">
+                            {activeSKUs} MATCHING SKUs · {activeNodes} ACTIVE NODES
                         </span>
                     </p>
                 </div>
@@ -134,8 +154,8 @@ export default function StockOverview() {
                             className="w-full pl-10 pr-4 py-2.5 bg-surface-alt border border-border rounded-xl text-sm font-semibold text-text-secondary appearance-none focus:outline-none focus:ring-2 focus:ring-primary/10 transition-all cursor-pointer"
                         >
                             <option value="All Outlets">All outlets</option>
-                            {businessOutlets.map((o) => (
-                                <option key={String(o._id || o.id)} value={o.name}>
+                            {availableOutlets.map((o) => (
+                                <option key={o.id} value={o.id}>
                                     {o.name}
                                 </option>
                             ))}
@@ -149,7 +169,7 @@ export default function StockOverview() {
                             className="w-full pl-10 pr-4 py-2.5 bg-surface-alt border border-border rounded-xl text-sm font-semibold text-text-secondary appearance-none focus:outline-none focus:ring-2 focus:ring-primary/10 transition-all cursor-pointer font-bold"
                         >
                             <option value="All Categories">All categories</option>
-                            {categories.map((c) => (
+                            {availableCategories.map((c) => (
                                 <option key={c} value={c}>
                                     {c}
                                 </option>

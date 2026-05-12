@@ -3,13 +3,12 @@ importScripts('https://www.gstatic.com/firebasejs/10.7.1/firebase-messaging-comp
 
 if (!firebase.apps.length) {
   firebase.initializeApp({
-    apiKey: "AIzaSyBCuITeN78JfjIJSZ2Gnz2-93bDMZRaKYU",
-    authDomain: "salon-crm-d6c9e.firebaseapp.com",
-    projectId: "salon-crm-d6c9e",
-    storageBucket: "salon-crm-d6c9e.firebasestorage.app",
-    messagingSenderId: "813696718753",
-    appId: "1:813696718753:web:1f642f3d3efb36b7375de0",
-    measurementId: "G-45PTVVHT5X"
+    apiKey: "AIzaSyD6SHK44FTvxRUiRFUiutVO6EVuw2HIzd0",
+    authDomain: "saloon-crm-baff4.firebaseapp.com",
+    projectId: "saloon-crm-baff4",
+    storageBucket: "saloon-crm-baff4.firebasestorage.app",
+    messagingSenderId: "606405940224",
+    appId: "1:606405940224:web:c6146f937bd707c46c34e5"
   });
 }
 

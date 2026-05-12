@@ -82,7 +82,7 @@ exports.getAdminTickets = async (req, res) => {
     try {
         const tenantId = req.user.salonId || req.user.tenantId;
         const { outletId } = req.query;
-        
+
         let query = { tenantId };
         if (outletId) query.outletId = outletId;
 

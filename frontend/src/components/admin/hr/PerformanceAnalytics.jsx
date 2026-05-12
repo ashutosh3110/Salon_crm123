@@ -89,9 +89,10 @@ export default function PerformanceAnalytics() {
     }, [loadPerformance]);
 
     const sortedStaff = useMemo(() => {
+        const q = searchTerm.trim().toLowerCase();
         let list = perf.filter(p => 
-            p.staff.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            String(p.role || '').toLowerCase().includes(searchTerm.toLowerCase())
+            p.staff.toLowerCase().includes(q) ||
+            String(p.role || '').toLowerCase().includes(q)
         );
         return list.sort((a, b) => (Number(b[sortBy]) || 0) - (Number(a[sortBy]) || 0));
     }, [perf, searchTerm, sortBy]);
@@ -106,6 +107,41 @@ export default function PerformanceAnalytics() {
     const openGoalModal = (row) => {
         setGoalModal(row);
         setGoalInput(String(row.goal ?? ''));
+    };
+
+    const downloadPerformanceData = () => {
+        if (!perf.length) return;
+        try {
+            const headers = ['Expert', 'Role', 'Revenue Generated', 'Bookings', 'Rating', 'Loyalty Rate', 'Cancellation Rate'];
+            const rows = sortedStaff.map(p => [
+                p.staff,
+                p.role,
+                p.revenue,
+                p.services,
+                p.rating,
+                `${p.repeatRate || 0}%`,
+                `${p.cancellationRate || 0}%`
+            ]);
+
+            const csvContent = [
+                headers.join(','),
+                ...rows.map(r => r.map(v => typeof v === 'string' ? `"${v}"` : v).join(','))
+            ].join('\n');
+
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.setAttribute('href', url);
+            link.setAttribute('download', `Performance_Report_${period.replace(' ', '_')}.csv`);
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            showToast('CSV Exported');
+        } catch (err) {
+            console.error('Export failed', err);
+            showToast('Failed to export CSV');
+        }
     };
 
     const saveGoal = async (e) => {
@@ -161,7 +197,12 @@ export default function PerformanceAnalytics() {
                             className="w-full pl-12 pr-4 py-3.5 bg-surface border border-border rounded-none text-[10px] font-black uppercase tracking-widest focus:border-primary outline-none"
                             value={searchTerm} onChange={e => setSearchTerm(e.target.value)} />
                     </div>
-                    <button className="p-3.5 bg-surface border border-border text-text-muted hover:text-primary transition-all"><Download className="w-5 h-5" /></button>
+                    <button 
+                        onClick={downloadPerformanceData}
+                        className="p-3.5 bg-surface border border-border text-text-muted hover:border-primary hover:text-primary hover:bg-primary/5 transition-all shadow-sm"
+                    >
+                        <Download className="w-5 h-5" />
+                    </button>
                 </div>
             </div>
 

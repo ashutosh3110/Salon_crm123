@@ -296,8 +296,12 @@ export const InventoryProvider = ({ children }) => {
         } 
     };
 
+    const effectiveOutlets = useMemo(() => {
+        return (outletsSnapshot && outletsSnapshot.length > 0) ? outletsSnapshot : outlets;
+    }, [outletsSnapshot, outlets]);
+
     const value = {
-        products, movements, purchases, transfers, outlets, saleRecords, stockHistory, shopCategories, productCategories, supplierInvoices, loading, summary,
+        products, movements, purchases, transfers, outlets: effectiveOutlets, saleRecords, stockHistory, shopCategories, productCategories, supplierInvoices, loading, summary,
         fetchProducts, addProduct, updateProduct, deleteProduct, fetchShopCategories, updateStock, fetchStockHistory, fetchInventorySummary,
         fetchProductCategories, addProductCategory, updateProductCategory, deleteProductCategory,
         toggleProductLike,
@@ -305,7 +309,7 @@ export const InventoryProvider = ({ children }) => {
         stats: { 
             totalProducts: summary.totalProducts || products.length, 
             skuCount: products.length,
-            outletCount: outlets.length,
+            outletCount: effectiveOutlets.length,
             lowStockCount: products.filter(p => p.stock <= p.minStock).length, 
             totalValue: summary.totalStockValue || products.reduce((acc, p) => acc + (p.stock * (p.costPrice || 0)), 0),
             outOfStock: summary.outOfStock

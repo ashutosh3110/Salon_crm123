@@ -209,9 +209,10 @@ export default function AttendanceTracker() {
 
     // Filtered
     const filtered = useMemo(() => records.filter(r => {
-        const matchSearch = r.staff.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            r.role.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            (r.mobile && r.mobile.includes(searchTerm));
+        const q = searchTerm.trim().toLowerCase();
+        const matchSearch = r.staff.toLowerCase().includes(q) ||
+            r.role.toLowerCase().includes(q) ||
+            (r.mobile && r.mobile.includes(q));
         const matchStatus = activeStatusFilter === 'All' || r.status === activeStatusFilter;
         return matchSearch && matchStatus;
     }), [records, searchTerm, activeStatusFilter]);

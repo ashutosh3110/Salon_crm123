@@ -16,12 +16,13 @@ exports.checkout = async (req, res) => {
             outletId,
             items,
             tax,
-            paymentMethod,
+            payments = [], // Array of { method, amount, transactionId }
             useLoyaltyPoints = 0,
             useWalletAmount = 0,
             promotionId,
             discount = 0,
-            bookingId
+            bookingId,
+            orderId
         } = req.body;
 
         const salonId = req.user.salonId;
@@ -39,19 +40,41 @@ exports.checkout = async (req, res) => {
         // 2. Calculate totals and verify items
         let subtotal = 0;
         for (const item of items) {
-            subtotal += item.price * item.quantity;
+            subtotal += (item.price || 0) * (item.quantity || 1);
 
             // If product, update stock
-            if (item.type === 'product') {
-                await Product.findByIdAndUpdate(item.itemId, {
-                    $inc: { stock: -item.quantity }
-                });
+            if (item.type === 'product' && item.itemId) {
+                try {
+                    const product = await Product.findById(item.itemId);
+                    if (product) {
+                        const qty = Number(item.quantity) || 1;
+                        product.stock = (product.stock || 0) - qty;
+                        
+                        if (outletId) {
+                            const outletKey = outletId.toString();
+                            const currentOutletStock = product.stockByOutlet.get(outletKey) || 0;
+                            product.stockByOutlet.set(outletKey, Math.max(0, currentOutletStock - qty));
+                        }
+                        await product.save();
+                    }
+                } catch (invErr) {
+                    console.error('[POS-Inventory] Sync Error:', invErr.message);
+                }
             }
         }
 
         const total = Math.max(0, subtotal - discount - useLoyaltyPoints - useWalletAmount + tax);
+        
+        // Calculate paid amount from split payments
+        const paidAmount = payments.reduce((acc, p) => acc + (Number(p.amount) || 0), 0);
+        const dueAmount = Math.max(0, total - paidAmount);
 
-        // 3. Create Invoice
+        // 3. Calculate loyalty points (Rule from settings)
+        const settings = await Setting.findOne();
+        const pointsRate = settings?.loyaltySettings?.pointsRate || 100;
+        const earnedPoints = Math.floor(total / pointsRate);
+
+        // 4. Create Invoice
         const invoice = await Invoice.create({
             invoiceNumber,
             salonId,
@@ -62,29 +85,28 @@ exports.checkout = async (req, res) => {
             discount,
             tax,
             total,
-            paymentMethod,
+            payments,
+            dueAmount,
+            paymentStatus: dueAmount > 0 ? (paidAmount > 0 ? 'partially_paid' : 'pending') : 'paid',
             loyaltyPointsRedeemed: useLoyaltyPoints,
+            loyaltyPointsEarned: earnedPoints,
             walletRedeemed: useWalletAmount,
-            bookingId
+            bookingId,
+            orderId
         });
 
-        // 4. Update Customer Loyalty Points
+        // 5. Update Customer Profile
         const customer = await Customer.findById(clientId);
         if (customer) {
-            // Deduct redeemed points
-            if (useLoyaltyPoints > 0) {
-                customer.loyaltyPoints -= useLoyaltyPoints;
-            }
-
-            // Earn new points (Rule from settings)
-            const settings = await Setting.findOne();
-            const pointsRate = settings?.loyaltySettings?.pointsRate || 100; // 1 point per 100 Rs
-            const earnedPoints = Math.floor(total / pointsRate);
+            // Deduct redeemed
+            customer.loyaltyPoints = (customer.loyaltyPoints || 0) - useLoyaltyPoints;
+            customer.walletBalance = (customer.walletBalance || 0) - useWalletAmount;
             
+            // Add earned and update debt
             customer.loyaltyPoints += earnedPoints;
-            customer.walletBalance -= useWalletAmount;
+            customer.dueAmount = (customer.dueAmount || 0) + dueAmount;
             
-            // Increment total visits and spend for loyalty eligibility
+            // Stats
             customer.totalVisits = (customer.totalVisits || 0) + 1;
             customer.totalSpend = (customer.totalSpend || 0) + total;
             customer.lastVisit = new Date();

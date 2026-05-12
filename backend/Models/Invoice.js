@@ -59,6 +59,16 @@ const invoiceSchema = new mongoose.Schema({
     loyaltyPointsEarned: Number,
     loyaltyPointsRedeemed: Number,
     walletRedeemed: Number,
+    payments: [{
+        method: String,
+        amount: Number,
+        transactionId: String,
+        date: { type: Date, default: Date.now }
+    }],
+    dueAmount: {
+        type: Number,
+        default: 0
+    },
     bookingId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Booking'

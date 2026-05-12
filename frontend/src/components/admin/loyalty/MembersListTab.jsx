@@ -122,7 +122,7 @@ export default function MembersListTab() {
                             ))}
                         </select>
                     </div>
-                    <button onClick={downloadCsv} className="p-3.5 border border-border/40 text-text-muted hover:text-white hover:bg-surface-alt transition-all">
+                    <button onClick={downloadCsv} className="p-3.5 border border-border/40 text-text-muted hover:text-primary hover:bg-primary/5 hover:border-primary/40 transition-all shadow-sm">
                         <Download size={18} />
                     </button>
                 </div>
@@ -186,7 +186,7 @@ export default function MembersListTab() {
                                                 >
                                                     <Eye size={16} />
                                                 </button>
-                                                <button className="p-2 text-text-muted hover:text-white hover:bg-white/5 border border-transparent hover:border-white/10 transition-all">
+                                                <button className="p-2 text-text-muted hover:text-primary hover:bg-primary/5 border border-transparent hover:border-primary/20 transition-all">
                                                     <Settings size={16} />
                                                 </button>
                                             </div>

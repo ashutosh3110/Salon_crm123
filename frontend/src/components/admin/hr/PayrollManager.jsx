@@ -271,7 +271,8 @@ export default function PayrollManager() {
     }, [records]);
 
     const filtered = useMemo(() => {
-        return records.filter(r => r.staffId?.name?.toLowerCase().includes(searchTerm.toLowerCase()));
+        const q = searchTerm.trim().toLowerCase();
+        return records.filter(r => r.staffId?.name?.toLowerCase().includes(q));
     }, [records, searchTerm]);
 
     return (

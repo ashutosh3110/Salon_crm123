@@ -270,12 +270,41 @@ exports.updateOrderStatus = async (req, res) => {
             return res.status(400).json({ success: false, message: 'Invalid status' });
         }
 
+        const previousStatus = order.status;
         order.status = status;
         if (estimatedDeliveryDate) order.estimatedDeliveryDate = estimatedDeliveryDate;
         if (deliveryPartner) order.deliveryPartner = deliveryPartner;
 
         if (status === 'delivered') {
             order.paymentStatus = 'paid';
+            
+            // Deduct stock if not already deducted (checking previousStatus)
+            if (previousStatus !== 'delivered') {
+                const Product = require('../Models/Product');
+                for (const item of order.items) {
+                    try {
+                        const product = await Product.findById(item.productId);
+                        if (product) {
+                            const qty = Number(item.quantity) || 1;
+                            
+                            // 1. Update total stock
+                            product.stock = (product.stock || 0) - qty;
+                            
+                            // 2. Update outlet stock
+                            if (order.outletId) {
+                                const outletKey = order.outletId.toString();
+                                const currentStock = product.stockByOutlet.get(outletKey) || 0;
+                                product.stockByOutlet.set(outletKey, Math.max(0, currentStock - qty));
+                            }
+                            
+                            await product.save();
+                            console.log(`[Inventory] Deducted ${qty} of ${product.name} for Order #${order._id}`);
+                        }
+                    } catch (invErr) {
+                        console.error(`[Inventory-Error] Failed for product ${item.productId}:`, invErr.message);
+                    }
+                }
+            }
         }
 
         order.timeline.push({
