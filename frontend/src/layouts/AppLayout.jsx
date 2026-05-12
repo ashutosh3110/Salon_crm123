@@ -94,7 +94,7 @@ export default function AppLayout() {
         handleNotificationToken();
     }, [customer, authLoading]);
 
-    const hideNavPaths = ['/app/product', '/app/notifications', '/app/bookings/', '/app/orders/'];
+    const hideNavPaths = ['/app/product', '/app/notifications', '/app/bookings/', '/app/orders/', '/app/checkout', '/app/membership/checkout', '/app/favorites'];
     const hideHeaderPaths = [
         '/app/product', 
         '/app/bookings', 
@@ -106,7 +106,9 @@ export default function AppLayout() {
         '/app/referral',
         '/app/loyalty',
         '/app/help',
-        '/app/reviews'
+        '/app/reviews',
+        '/app/checkout',
+        '/app/membership/checkout'
     ];
     const searchParams = new URLSearchParams(location.search);
     const hasProductModal = searchParams.get('product');

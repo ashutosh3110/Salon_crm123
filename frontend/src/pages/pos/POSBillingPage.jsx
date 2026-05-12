@@ -32,10 +32,10 @@ Font.register({
 });
 
 const pdfStyles = StyleSheet.create({
-    page: { 
-        padding: 15, 
-        fontSize: 9, 
-        fontFamily: 'Roboto', 
+    page: {
+        padding: 15,
+        fontSize: 9,
+        fontFamily: 'Roboto',
         backgroundColor: '#FFFFFF',
         flexDirection: 'column'
     },
@@ -45,14 +45,14 @@ const pdfStyles = StyleSheet.create({
         display: 'flex',
         flexDirection: 'column'
     },
-    salonName: { 
-        fontSize: 16, 
-        fontWeight: 700, 
+    salonName: {
+        fontSize: 16,
+        fontWeight: 700,
         marginBottom: 2,
         textTransform: 'uppercase'
     },
-    salonMeta: { 
-        fontSize: 7, 
+    salonMeta: {
+        fontSize: 7,
         color: '#444',
         marginBottom: 1
     },
@@ -69,25 +69,25 @@ const pdfStyles = StyleSheet.create({
         marginBottom: 2,
         fontSize: 7
     },
-    label: { 
+    label: {
         fontWeight: 700,
         textTransform: 'uppercase',
         width: 60
     },
-    value: { 
+    value: {
         flex: 1,
         textAlign: 'right'
     },
-    tableHeader: { 
-        flexDirection: 'row', 
-        borderBottomWidth: 1, 
-        borderBottomColor: '#000', 
-        paddingBottom: 3, 
+    tableHeader: {
+        flexDirection: 'row',
+        borderBottomWidth: 1,
+        borderBottomColor: '#000',
+        paddingBottom: 3,
         marginBottom: 5,
         fontWeight: 700,
         fontSize: 7
     },
-    tableRow: { 
+    tableRow: {
         flexDirection: 'column',
         marginBottom: 6
     },
@@ -104,31 +104,31 @@ const pdfStyles = StyleSheet.create({
     },
     colDesc: { flex: 2 },
     colPrice: { flex: 1, textAlign: 'right' },
-    summaryRow: { 
-        flexDirection: 'row', 
-        justifyContent: 'space-between', 
+    summaryRow: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
         marginBottom: 2,
         fontSize: 8
     },
-    grandTotal: { 
-        fontSize: 12, 
-        fontWeight: 700, 
-        borderTopWidth: 1, 
-        borderTopColor: '#000', 
+    grandTotal: {
+        fontSize: 12,
+        fontWeight: 700,
+        borderTopWidth: 1,
+        borderTopColor: '#000',
         borderTopStyle: 'dashed',
-        paddingTop: 8, 
+        paddingTop: 8,
         marginTop: 5,
         flexDirection: 'row',
         justifyContent: 'space-between'
     },
-    footer: { 
-        marginTop: 20, 
-        textAlign: 'center', 
+    footer: {
+        marginTop: 20,
+        textAlign: 'center',
         fontSize: 7,
         color: '#666'
     },
-    thanks: { 
-        fontSize: 10, 
+    thanks: {
+        fontSize: 10,
         fontWeight: 700,
         marginBottom: 4,
         color: '#000'
@@ -196,7 +196,7 @@ const InvoicePDF = ({ invoice, role, salon, taxRate = 18 }) => (
                     <Text>-Rs. {(Number(invoice.discounts?.manual?.value || 0) + Number(invoice.discounts?.points || 0) + Number(invoice.discounts?.wallet || 0)).toFixed(0)}</Text>
                 </View>
             )}
-            
+
             <View style={pdfStyles.summaryRow}>
                 <Text>Taxable Value</Text>
                 <Text>Rs. {invoice.totals.taxable.toFixed(2)}</Text>
@@ -238,10 +238,10 @@ export default function POSBillingPage() {
     const navigate = useNavigate();
     const { user } = useAuth();
     const { addSaleRecord, products } = useInventory();
-    const { 
+    const {
         salon,
-        services, 
-        customers: businessCustomers, 
+        services,
+        customers: businessCustomers,
         addCustomer: addBusinessCustomer,
         outlets,
         activeOutlet,
@@ -306,7 +306,7 @@ export default function POSBillingPage() {
         if (fiscal.state) setCustomerState(fiscal.state);
         // Fallback tax percent for general display
         if (fiscal.serviceGst) setTaxPercent(fiscal.serviceGst);
-        
+
         // Refresh data to accurately filter billed items
         fetchInvoices?.();
         fetchOrders?.();
@@ -346,7 +346,7 @@ export default function POSBillingPage() {
             document.body.style.overflow = 'unset';
             document.body.style.height = 'auto';
         }
-        return () => { 
+        return () => {
             document.body.style.overflow = 'unset';
             document.body.style.height = 'auto';
         };
@@ -530,12 +530,12 @@ export default function POSBillingPage() {
 
         cart.forEach(item => {
             if (item.isPackageRedemption) return;
-            
+
             const netItemTotal = (item.price * item.quantity) * discountFactor;
             const sGst = Number(platformSettings?.serviceGst || fiscal.serviceGst || 18);
             const pGst = Number(platformSettings?.productGst || fiscal.productGst || 12);
             const itemTaxRate = (item.type === 'service' ? sGst : pGst) / 100;
-            
+
             if (fiscal.inclusiveTax) {
                 const taxableVal = netItemTotal / (1 + itemTaxRate);
                 totalTaxableValue += taxableVal;
@@ -551,8 +551,8 @@ export default function POSBillingPage() {
         const sgst = isSameState ? totalTax / 2 : 0;
         const igst = !isSameState ? totalTax : 0;
 
-        const currentBillTotal = fiscal.inclusiveTax 
-            ? Math.max(0, subtotal - totalDeductions) 
+        const currentBillTotal = fiscal.inclusiveTax
+            ? Math.max(0, subtotal - totalDeductions)
             : Math.max(0, subtotal - totalDeductions) + totalTax;
 
         const previousDue = (selectedClient?.dueAmount || 0);
@@ -574,24 +574,24 @@ export default function POSBillingPage() {
             }
         });
 
-        return { 
-            subtotal, 
+        return {
+            subtotal,
             serviceSubtotal,
             productSubtotal,
             grossAmount: totalGrossAmount,
             membershipDiscount: totalMembershipDiscount,
-            discount, 
+            discount,
             serviceDiscount,
             productDiscount,
-            tax: totalTax, 
-            cgst, 
-            sgst, 
-            igst, 
+            tax: totalTax,
+            cgst,
+            sgst,
+            igst,
             isSameState,
             discountFactor,
-            total: grandTotal, 
-            taxable: totalTaxableValue, 
-            currentBillTotal, 
+            total: grandTotal,
+            taxable: totalTaxableValue,
+            currentBillTotal,
             previousDue,
             redeemPoints: (redeemPoints || 0),
             redeemWallet: (redeemWallet || 0)
@@ -709,7 +709,7 @@ export default function POSBillingPage() {
             return list.filter(b => {
                 const isPaid = b.paymentStatus?.toLowerCase() === 'paid';
                 if (!isPaid) return false;
-                
+
                 // Filter by outlet
                 const matchOutlet = !activeOutletId || String(b.outletId?._id || b.outletId) === String(activeOutletId);
                 if (!matchOutlet) return false;
@@ -719,7 +719,7 @@ export default function POSBillingPage() {
                 const clientName = b.clientId?.name || b.clientName || 'Walk-in';
                 const serviceName = b.serviceId?.name || b.serviceName || 'Service';
                 const st = searchItem.toLowerCase().replace(/\s+/g, '');
-                return !st || 
+                return !st ||
                     clientName.toLowerCase().replace(/\s+/g, '').includes(st) ||
                     serviceName.toLowerCase().replace(/\s+/g, '').includes(st);
             }).map(b => ({
@@ -749,7 +749,7 @@ export default function POSBillingPage() {
                 const clientName = o.customerId?.name || 'Walk-in';
                 const orderLabel = `Order #${o._id.toString().slice(-6).toUpperCase()}`;
                 const st = searchItem.toLowerCase().replace(/\s+/g, '');
-                return !st || 
+                return !st ||
                     clientName.toLowerCase().replace(/\s+/g, '').includes(st) ||
                     orderLabel.toLowerCase().replace(/\s+/g, '').includes(st);
             }).map(o => ({
@@ -766,7 +766,7 @@ export default function POSBillingPage() {
 
         return allOutletItems.filter(item => {
             const st = searchItem.toLowerCase().replace(/\s+/g, '');
-            const matchSearch = !st || 
+            const matchSearch = !st ||
                 item.name?.toLowerCase().replace(/\s+/g, '').includes(st) ||
                 (item.sku && item.sku.toLowerCase().replace(/\s+/g, '').includes(st));
             const matchCat = selectedCategory === 'All' || item.category === selectedCategory;
@@ -778,7 +778,7 @@ export default function POSBillingPage() {
     const filteredClients = useMemo(() => {
         const clientsList = Array.isArray(businessCustomers) ? businessCustomers : [];
         const bookingsList = Array.isArray(businessBookings) ? businessBookings : [];
-        
+
         // Match clients who have a confirmed or completed booking
         const servicedClientIds = new Set();
         bookingsList.forEach(b => {
@@ -789,13 +789,13 @@ export default function POSBillingPage() {
             }
         });
 
-        const servicedClients = clientsList.filter(c => 
+        const servicedClients = clientsList.filter(c =>
             servicedClientIds.has(String(c._id || c.id))
         );
-        
+
         const st = searchClient?.trim().toLowerCase().replace(/\s+/g, '');
         if (!st) return servicedClients.slice(0, 5);
-        
+
         return servicedClients.filter(c => {
             const nameMatch = c.name?.toLowerCase().replace(/\s+/g, '').includes(st);
             const phoneMatch = c.phone?.replace(/\D/g, '').includes(st.replace(/\D/g, ''));
@@ -1071,14 +1071,14 @@ export default function POSBillingPage() {
                 };
 
                 setSuccessInvoice(invoiceData);
-                
+
                 // Show success message or thermal receipt first, then navigate
                 // If you want immediate navigation, uncomment below and comment out success state logic
                 // navigate('/pos/invoices');
 
                 // For now, let's keep the success view but make navigation faster or triggerable
                 setSuccessInvoice(invoiceData);
-                
+
                 // Show success message or thermal receipt first, then navigate
                 // If you want immediate navigation, uncomment below and comment out success state logic
                 // navigate('/pos/invoices');
@@ -1263,8 +1263,8 @@ export default function POSBillingPage() {
                         <div className="flex justify-between font-bold"><span>Taxable Value:</span><span>{successInvoice.totals.taxable.toFixed(2)}</span></div>
                         {successInvoice.totals.isSameState ? (
                             <>
-                                <div className="flex justify-between"><span>CGST ({taxPercent/2}%):</span><span>{successInvoice.totals.cgst.toFixed(2)}</span></div>
-                                <div className="flex justify-between"><span>SGST ({taxPercent/2}%):</span><span>{successInvoice.totals.sgst.toFixed(2)}</span></div>
+                                <div className="flex justify-between"><span>CGST ({taxPercent / 2}%):</span><span>{successInvoice.totals.cgst.toFixed(2)}</span></div>
+                                <div className="flex justify-between"><span>SGST ({taxPercent / 2}%):</span><span>{successInvoice.totals.sgst.toFixed(2)}</span></div>
                             </>
                         ) : (
                             <div className="flex justify-between"><span>IGST ({taxPercent}%):</span><span>{successInvoice.totals.igst.toFixed(2)}</span></div>
@@ -1351,7 +1351,7 @@ export default function POSBillingPage() {
                             <Plus className="w-4 h-4" /> New Billing
                         </button>
                     </div>
-                </div>  
+                </div>
             </div>
         );
     }
@@ -1388,7 +1388,7 @@ export default function POSBillingPage() {
                     <CreditCard className="w-4 h-4" /> POS Terminal
                 </h1>
                 <div className="flex gap-2">
-                   
+
                 </div>
             </div>
 
@@ -1412,7 +1412,7 @@ export default function POSBillingPage() {
                                 onChange={(e) => setSearchItem(e.target.value)}
                                 onKeyDown={handleSearchKeyDown}
                             />
-                          
+
                         </div>
 
                         {/* Scan Status Overlays */}
@@ -1466,7 +1466,7 @@ export default function POSBillingPage() {
                         </div>
                     </div>
 
-               
+
 
                     <div className="flex-1 overflow-y-auto grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3 pr-2 scrollbar-thin">
                         {filteredItems.map(item => {
@@ -1475,9 +1475,8 @@ export default function POSBillingPage() {
                                 <button
                                     key={item.id || item._id}
                                     onClick={() => addToCart(item)}
-                                    className={`relative bg-background border p-4 text-left hover:border-primary transition-all group flex flex-col justify-between h-[120px] shadow-sm hover:shadow-md active:scale-95 ${
-                                        isSelected ? 'border-primary bg-primary/5 ring-1 ring-primary' : 'border-border'
-                                    }`}
+                                    className={`relative bg-background border p-4 text-left hover:border-primary transition-all group flex flex-col justify-between h-[120px] shadow-sm hover:shadow-md active:scale-95 ${isSelected ? 'border-primary bg-primary/5 ring-1 ring-primary' : 'border-border'
+                                        }`}
                                 >
                                     {isSelected && (
                                         <div className="absolute top-0 right-0 bg-primary text-white text-[8px] font-black px-2 py-0.5 uppercase tracking-tighter">
@@ -1585,7 +1584,7 @@ export default function POSBillingPage() {
                                 <div className="flex items-center gap-2">
                                     <Building2 className="w-3 h-3 text-text-muted" />
                                     <span className="text-[9px] font-black text-text-muted uppercase tracking-widest leading-none">Selected Outlet:</span>
-                                    <select 
+                                    <select
                                         value={activeOutletId || ''}
                                         onChange={(e) => setActiveOutletId(e.target.value)}
                                         className="bg-surface-alt text-[10px] font-black uppercase text-primary border border-border/50 rounded px-2 py-0.5 outline-none cursor-pointer hover:border-primary transition-colors"
@@ -1600,7 +1599,7 @@ export default function POSBillingPage() {
                                 <div className="flex items-center gap-2">
                                     <Globe className="w-3 h-3 text-text-muted" />
                                     <span className="text-[9px] font-black text-text-muted uppercase tracking-widest leading-none">Billing State / Location:</span>
-                                    <select 
+                                    <select
                                         value={customerState}
                                         onChange={(e) => setCustomerState(e.target.value)}
                                         className="bg-transparent text-[10px] font-black uppercase text-primary border-none outline-none cursor-pointer hover:underline"
@@ -1656,7 +1655,7 @@ export default function POSBillingPage() {
                                                     <span className="px-1.5 py-0.5 bg-amber-500 text-[8px] font-black text-white uppercase tracking-widest">Package</span>
                                                 )}
                                             </div>
-                                             <div className="flex items-center gap-2 mt-0.5">
+                                            <div className="flex items-center gap-2 mt-0.5">
                                                 <p className="text-[11px] font-bold text-primary">
                                                     {item.isPackageRedemption ? '₹0 (Redeemed)' : `₹${Math.round((item.price * item.quantity) * totals.discountFactor)}`}
                                                 </p>
@@ -1670,7 +1669,7 @@ export default function POSBillingPage() {
                                                         -₹{Math.round((item.price * item.quantity) * (1 - totals.discountFactor))} OFF
                                                     </span>
                                                 )}
-                                             </div>
+                                            </div>
                                         </div>
                                         <div className="flex items-center bg-surface-alt">
                                             <button onClick={() => updateQty(idx, -1)} className="p-1 px-2 hover:bg-border text-text-muted"><Minus className="w-3 h-3" /></button>
@@ -1777,7 +1776,7 @@ export default function POSBillingPage() {
                                     <span>₹{totals.tax.toFixed(0)}</span>
                                 </div>
                             </div>
-                            
+
                             {includePreviousDue && (
                                 <div className="flex justify-between text-xs font-bold text-rose-500">
                                     <span>PREVIOUS DUE</span>
@@ -1795,7 +1794,7 @@ export default function POSBillingPage() {
                             <div className="space-y-2">
                                 <div className="flex items-center justify-between">
                                     <label className="text-[9px] font-black text-text-muted uppercase tracking-widest">Payment Split</label>
-                                    </div>
+                                </div>
                                 <div className="space-y-2 max-h-[150px] overflow-y-auto pr-1">
                                     {payments.map((p, i) => (
                                         <div key={i} className="flex gap-2 items-center bg-background border border-border p-1">
@@ -1842,12 +1841,12 @@ export default function POSBillingPage() {
                             </div>
 
                             <div className="grid grid-cols-2 gap-2 mt-4">
-                                <button 
-                                    onClick={() => setShowDiscountModal(true)} 
+                                <button
+                                    onClick={() => setShowDiscountModal(true)}
                                     className="py-2.5 bg-background border border-border font-black text-[10px] text-text-secondary uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-surface-alt active:scale-95 transition-all relative"
                                 >
-                                    <Percent className="w-3.5 h-3.5" /> 
-                                    OFFERS 
+                                    <Percent className="w-3.5 h-3.5" />
+                                    OFFERS
                                     {(appliedPromotion || appliedVoucher || manualDiscount.value > 0 || redeemPoints > 0 || redeemWallet > 0) && (
                                         <div className="absolute -top-1 -right-1 w-2 h-2 bg-primary rounded-full animate-pulse shadow-sm shadow-primary/40" />
                                     )}
@@ -1894,8 +1893,8 @@ export default function POSBillingPage() {
                                             className="flex-1 p-3 text-sm font-black bg-background text-text border-l border-border outline-none focus:ring-2 focus:ring-primary/10 transition-all"
                                             value={manualDiscount.value || ''}
                                             onChange={(e) => setManualDiscount({ ...manualDiscount, value: Number(e.target.value) })}
-                                            onFocus={(e) => { if(manualDiscount.value === 0) setManualDiscount({...manualDiscount, value: ''}) }}
-                                            onBlur={(e) => { if(manualDiscount.value === '') setManualDiscount({...manualDiscount, value: 0}) }}
+                                            onFocus={(e) => { if (manualDiscount.value === 0) setManualDiscount({ ...manualDiscount, value: '' }) }}
+                                            onBlur={(e) => { if (manualDiscount.value === '') setManualDiscount({ ...manualDiscount, value: 0 }) }}
                                         />
                                     </div>
                                 </div>

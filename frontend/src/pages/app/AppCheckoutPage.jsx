@@ -88,6 +88,15 @@ export default function AppCheckoutPage() {
 
     const finalTotal = Math.max(0, cartTotal - membershipDiscount + deliveryFee + tax);
 
+    useEffect(() => {
+        if (activeOutlet) {
+            const deliveryEnabled = activeOutlet?.config?.enableDelivery === true;
+            if (!deliveryEnabled) {
+                setHomeDelivery(false);
+            }
+        }
+    }, [activeOutlet]);
+
     const [address, setAddress] = useState({
         street: '',
         city: '',
@@ -313,11 +322,13 @@ export default function AppCheckoutPage() {
                                     </div>
                                 </div>
                                 <button 
+                                    type="button"
                                     onClick={() => setHomeDelivery(!homeDelivery)}
-                                    className={`w-14 h-8 rounded-full relative transition-all ${homeDelivery ? 'bg-[#C8956C]' : 'bg-black/10'}`}
+                                    className={`w-14 h-8 rounded-full relative transition-all duration-300 ${homeDelivery ? 'bg-[#C8956C]' : 'bg-black/10'}`}
                                 >
                                     <motion.div 
-                                        animate={{ x: homeDelivery ? 26 : 4 }}
+                                        initial={false}
+                                        animate={{ x: homeDelivery ? 22 : 4 }}
                                         className="absolute top-1 left-0 w-6 h-6 rounded-full bg-white shadow-md cursor-pointer"
                                     />
                                 </button>
@@ -389,14 +400,15 @@ export default function AppCheckoutPage() {
                             <div className="p-6 rounded-3xl flex items-start gap-4" style={{ background: '#C8956C08', border: `1.5px dashed #C8956C33` }}>
                                 <Info size={18} className="text-[#C8956C] mt-1 shrink-0" />
                                 <p className="text-[11px] font-bold uppercase tracking-widest leading-relaxed opacity-60" style={{ color: colors.text }}>
-                                    Note: Since Home Delivery is opted out, you will need to collect your items directly from the salon.
+                                    Note: {isDeliveryAvailable ? 'Since Home Delivery is opted out,' : 'Since Home Delivery is unavailable for this outlet,'} you will need to collect your items directly from the salon.
                                 </p>
                             </div>
                         )}
                         <button
+                            type="button"
                             onClick={() => {
-                                if (homeDelivery) {
-                                    if (!address.street.trim() || !address.city.trim() || !address.zip.trim()) {
+                                if (isDeliveryAvailable === true && homeDelivery === true) {
+                                    if (!address.street?.trim() || !address.city?.trim() || !address.zip?.trim()) {
                                         alert('Please fill all address fields for Home Delivery');
                                         return;
                                     }

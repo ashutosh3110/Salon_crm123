@@ -1,4 +1,5 @@
 import { useLocation, useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
 import { Home, Scissors, CalendarPlus, ShoppingBag, User, Wallet } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useCustomerTheme } from '../../contexts/CustomerThemeContext';
@@ -16,6 +17,24 @@ export default function AppBottomNav() {
     const navigate = useNavigate();
     const { theme } = useCustomerTheme();
     const isLight = theme === 'light';
+    const [isKeyboardVisible, setIsKeyboardVisible] = useState(false);
+
+    useEffect(() => {
+        const initialHeight = window.innerHeight;
+        const handleResize = () => {
+            // If the current height is significantly less than the initial height,
+            // the keyboard is likely visible (common on Android/Chrome)
+            if (window.innerHeight < initialHeight * 0.8) {
+                setIsKeyboardVisible(true);
+            } else {
+                setIsKeyboardVisible(false);
+            }
+        };
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
+
+    if (isKeyboardVisible) return null;
 
     const isActive = (path) => {
         if (path === '/app') return location.pathname === '/app';
