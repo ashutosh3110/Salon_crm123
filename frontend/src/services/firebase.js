@@ -59,18 +59,27 @@ export const registerToken = async () => {
     });
     
     if (token) {
-      // Basic device detection
+      // Advanced device detection
       let platform = 'web';
       const ua = navigator.userAgent.toLowerCase();
+      
+      const isTouch = (('ontouchstart' in window) || (navigator.maxTouchPoints > 0));
+      const isMobileSize = window.innerWidth <= 768;
+
       if (/android/.test(ua)) {
         platform = 'app';
-      } else if (/ipad|iphone|ipod/.test(ua)) {
-        platform = 'ios';
+      } else if (/ipad|iphone|ipod/.test(ua) || (isTouch && /macintosh/.test(ua))) {
+        platform = 'ios'; // iPadOS 13+ reports as Macintosh
+      } else if (isTouch && isMobileSize) {
+        platform = 'mobile'; // Generic mobile fallback
       }
+
+      console.log(`[Firebase] Detected platform: ${platform} (UA: ${ua})`);
 
       // Register token with backend
       await api.post('/notifications/register-token', { fcmToken: token, platform });
       localStorage.setItem('fcm_token', token);
+      localStorage.setItem('fcm_platform', platform);
       return token;
     } else {
       console.warn('[Firebase] No registration token available.');

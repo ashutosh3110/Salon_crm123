@@ -343,6 +343,20 @@ export default function AppLayout() {
 
                 {/* Modal Root for Portals */}
                 <div id="app-portal-root" />
+
+                {/* DEBUG FCM OVERLAY */}
+                <div 
+                    className="fixed bottom-24 right-4 z-[9999] bg-black/80 backdrop-blur-md border border-white/20 p-3 rounded-2xl pointer-events-none"
+                    style={{ maxWidth: '200px' }}
+                >
+                    <p className="text-[9px] font-black text-[#C8956C] uppercase tracking-widest mb-1">Device Debug</p>
+                    <p className="text-[10px] text-white font-mono break-all leading-tight">
+                        Platform: <span className="text-[#3b82f6]">{localStorage.getItem('fcm_platform') || 'Not detected'}</span>
+                    </p>
+                    <p className="text-[10px] text-white/60 font-mono break-all leading-tight mt-1 truncate">
+                        Token: {localStorage.getItem('fcm_token') ? localStorage.getItem('fcm_token').substring(0, 15) + '...' : 'None'}
+                    </p>
+                </div>
             </div>
         </div>
     );

@@ -138,6 +138,8 @@ exports.registerToken = async (req, res) => {
         const updateField = isMobile ? { fcmTokenMobile: actualToken } : { fcmTokenWeb: actualToken };
         const updateQuery = { $addToSet: updateField };
 
+        console.log(`[Notification-Token] User: ${phone}, Platform Received: ${platform}, isMobile: ${isMobile}, Saving to: ${isMobile ? 'fcmTokenMobile' : 'fcmTokenWeb'}`);
+
         let updatedRecord = null;
 
         // 1. Try updating the record based on current role
