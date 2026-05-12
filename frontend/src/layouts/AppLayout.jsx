@@ -347,15 +347,26 @@ export default function AppLayout() {
                 {/* DEBUG FCM OVERLAY */}
                 <div 
                     className="fixed bottom-24 right-4 z-[9999] bg-black/80 backdrop-blur-md border border-white/20 p-3 rounded-2xl pointer-events-none"
-                    style={{ maxWidth: '200px' }}
+                    style={{ maxWidth: '250px' }}
                 >
                     <p className="text-[9px] font-black text-[#C8956C] uppercase tracking-widest mb-1">Device Debug</p>
-                    <p className="text-[10px] text-white font-mono break-all leading-tight">
+                    <p className="text-[10px] text-white font-mono leading-tight">
                         Platform: <span className="text-[#3b82f6]">{localStorage.getItem('fcm_platform') || 'Not detected'}</span>
                     </p>
-                    <p className="text-[10px] text-white/60 font-mono break-all leading-tight mt-1 truncate">
+                    <p className="text-[10px] text-white/60 font-mono leading-tight mt-1 truncate">
                         Token: {localStorage.getItem('fcm_token') ? localStorage.getItem('fcm_token').substring(0, 15) + '...' : 'None'}
                     </p>
+                    <div className="mt-2 border-t border-white/10 pt-2 space-y-1">
+                        <p className="text-[8px] text-white/80 font-mono">
+                            Notif API: {typeof window !== 'undefined' && 'Notification' in window ? 'Yes' : 'No'}
+                        </p>
+                        <p className="text-[8px] text-white/80 font-mono">
+                            Permission: {typeof window !== 'undefined' && 'Notification' in window ? Notification.permission : 'N/A'}
+                        </p>
+                        <p className="text-[8px] text-white/80 font-mono">
+                            SW Support: {typeof navigator !== 'undefined' && 'serviceWorker' in navigator ? 'Yes' : 'No'}
+                        </p>
+                    </div>
                 </div>
             </div>
         </div>
