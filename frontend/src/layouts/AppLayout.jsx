@@ -9,7 +9,6 @@ import { useCustomerTheme } from '../contexts/CustomerThemeContext';
 import { useBusiness } from '../contexts/BusinessContext';
 import { useCart } from '../contexts/CartContext';
 import CartDrawer from '../components/app/CartDrawer';
-import { requestForToken } from '../firebase';
 import api from '../services/api';
 import { Loader2 } from 'lucide-react';
 
@@ -67,33 +66,6 @@ export default function AppLayout() {
 
     }, [authLoading, isInitializing, customer, gender, activeOutletId, navigate, location.pathname]);
     
-    const hasRegisteredToken = useRef(false);
-
-    // Register Notification Token
-    useEffect(() => {
-        const handleNotificationToken = async () => {
-            if (customer && !authLoading && !hasRegisteredToken.current) {
-                // Pre-check for support to avoid unnecessary logs
-                if (!('Notification' in window)) return;
-                
-                hasRegisteredToken.current = true;
-                const token = await requestForToken();
-                if (token) {
-                    try {
-                        await api.post('/notifications/register-token', { 
-                            token, 
-                            platform: window.ReactNativeWebView || /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) ? 'app' : 'web'
-                        });
-                    } catch (err) {
-                        console.error('Failed to register FCM Token', err);
-                        hasRegisteredToken.current = false;
-                    }
-                }
-            }
-        };
-        handleNotificationToken();
-    }, [customer, authLoading]);
-
     const hideNavPaths = ['/app/product', '/app/notifications', '/app/bookings/', '/app/orders/', '/app/checkout', '/app/membership/checkout', '/app/favorites'];
     const hideHeaderPaths = [
         '/app/product', 
