@@ -28,6 +28,8 @@ export default function AppCheckoutPage() {
 
     useEffect(() => {
         window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+        const main = document.querySelector('main');
+        if (main) main.scrollTo({ top: 0, left: 0, behavior: 'instant' });
     }, [step]);
 
     const [loading, setLoading] = useState(false);

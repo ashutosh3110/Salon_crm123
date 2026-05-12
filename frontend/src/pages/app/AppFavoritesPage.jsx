@@ -165,9 +165,6 @@ export default function AppFavoritesPage() {
         </div>
     );
 }
-        </div>
-    );
-}
 
 function EmptyState({ icon: Icon, title, subtitle }) {
     const { colors } = useCustomerTheme();

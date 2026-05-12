@@ -32,6 +32,13 @@ export default function AppLoginPage() {
         }
     })();
     const [step, setStep] = useState(1); // Start with Phone step
+
+    useEffect(() => {
+        window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+        const main = document.querySelector('main');
+        if (main) main.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+    }, [step]);
+
     const [direction, setDir] = useState(1);
     const [userCoords, setUserCoords] = useState(null);
     const [selectedOutlet, setSelectedOutlet] = useState(storedSelectedOutlet);
