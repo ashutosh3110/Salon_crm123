@@ -154,6 +154,7 @@ const ProductCategoriesPage = lazy(() => import('./pages/admin/ProductCategories
 const StockOverviewPage = lazy(() => import('./pages/admin/StockOverviewPage'));
 const AddProductPage = lazy(() => import('./pages/admin/AddProductPage'));
 const ProductDetailsPage = lazy(() => import('./pages/admin/ProductDetailsPage'));
+const ShopOrdersPage = lazy(() => import('./pages/admin/ShopOrdersPage'));
 
 // POS App - Lazy Loaded
 const POSLayout = lazy(() => import('./layouts/POSLayout'));
@@ -406,6 +407,7 @@ function App() {
                                 <Route path="/admin/inventory/products/view/:id" element={<ProductDetailsPage />} />
                                 <Route path="/admin/inventory/shop-categories" element={<InventoryPage tab="shop-categories" />} />
                                 <Route path="/admin/inventory/product-categories" element={<ProductCategoriesPage />} />
+                                <Route path="/admin/shop-orders" element={<ShopOrdersPage />} />
                             </Route>
 
                             {/* Finance Routes */}

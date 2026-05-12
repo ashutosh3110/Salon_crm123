@@ -14,31 +14,80 @@ const generateReferralCode = () => {
     return 'WAP-' + crypto.randomBytes(3).toString('hex').toUpperCase();
 };
 
-// @desc    Get customer favorites (products & salons)
+// @desc    Get customer favorites (products & services)
 // @route   GET /api/auth/favorites
 // @access  Private (Customer)
 exports.getFavorites = async (req, res) => {
     try {
         const customerId = req.user._id;
-        console.log(`[Favorites] Fetching for customer: ${customerId}`);
+        const Service = require('../Models/Service');
 
-        const [products, outlets] = await Promise.all([
+        const [products, services] = await Promise.all([
             Product.find({ likedBy: customerId }).populate('categoryId', 'name'),
-            Outlet.find({ likedBy: customerId })
+            Service.find({ likedBy: customerId })
         ]);
-
-        console.log(`[Favorites] Found ${products.length} products, ${outlets.length} outlets`);
 
         res.json({
             success: true,
             data: {
                 products,
-                outlets
+                services
             }
+        });
+    } catch (err) {
+        console.error('Get favorites error:', err);
+        res.status(500).json({ success: false, message: 'Server error' });
+    }
+};
+
+// @desc    Toggle favorite (like/unlike) for product or service
+// @route   POST /api/auth/toggle-favorite
+// @access  Private (Customer)
+exports.toggleFavorite = async (req, res) => {
+    try {
+        const { type, id } = req.body; // type: 'product' or 'service'
+        const customerId = req.user._id;
+
+        if (!['product', 'service'].includes(type)) {
+            return res.status(400).json({ success: false, message: 'Invalid type' });
+        }
+
+        const Model = type === 'product' ? Product : require('../Models/Service');
+        const item = await Model.findById(id);
+
+        if (!item) {
+            return res.status(404).json({ success: false, message: `${type} not found` });
+        }
+
+        const customer = await Customer.findById(customerId);
+        const listField = type === 'product' ? 'likedProducts' : 'likedServices';
+        
+        const isLiked = item.likedBy.includes(customerId);
+
+        if (isLiked) {
+            // Unlike
+            item.likedBy = item.likedBy.filter(id => id.toString() !== customerId.toString());
+            item.likes = Math.max(0, (item.likes || 1) - 1);
+            
+            customer[listField] = customer[listField].filter(itemId => itemId.toString() !== id.toString());
+        } else {
+            // Like
+            item.likedBy.push(customerId);
+            item.likes = (item.likes || 0) + 1;
+            
+            customer[listField].push(id);
+        }
+
+        await Promise.all([item.save(), customer.save()]);
+
+        res.json({
+            success: true,
+            isLiked: !isLiked,
+            message: !isLiked ? 'Added to favorites' : 'Removed from favorites'
         });
 
     } catch (err) {
-        console.error('Get favorites error:', err);
+        console.error('Toggle favorite error:', err);
         res.status(500).json({ success: false, message: 'Server error' });
     }
 };

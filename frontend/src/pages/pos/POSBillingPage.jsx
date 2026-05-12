@@ -311,11 +311,11 @@ export default function POSBillingPage() {
         fetchInvoices?.();
         fetchOrders?.();
         fetchBookings?.();
-        fetchCustomers?.();
+        fetchCustomers?.(1, 1000); // Fetch a larger batch for POS search
         if (activeOutletId) {
             fetchServices?.(salon?._id, activeOutletId);
         }
-    }, [fiscal, fetchInvoices, fetchOrders, fetchBookings, fetchCustomers, fetchServices, activeOutletId, salon?._id]);
+    }, [fiscal, activeOutletId, salon?._id]); // Removed function dependencies to prevent potential re-run loops
 
     // UI State
     const [activeTab, setActiveTab] = useState('services');
@@ -1405,7 +1405,7 @@ export default function POSBillingPage() {
                                 ref={searchInputRef}
                                 type="text"
                                 placeholder={isBarcodeMode ? "Scan Barcode Now..." : "Search Items or Barcode..."}
-                                className={`w-full pl-10 pr-12 py-3 border bg-background text-text outline-none text-sm font-bold shadow-sm transition-all placeholder:text-text-muted/50 ${isBarcodeMode ? 'border-primary ring-2 ring-primary/20' : 'border-border focus:border-primary'
+                                className={`w-full pl-10 pr-12 py-3 border bg-background text-text outline-none text-sm font-black shadow-sm transition-all placeholder:text-text-muted/50 rounded-lg ${isBarcodeMode ? 'border-primary ring-2 ring-primary/20' : 'border-border focus:border-primary focus:ring-2 focus:ring-primary/10'
                                     }`}
                                 value={searchItem}
                                 autoFocus
@@ -1523,7 +1523,7 @@ export default function POSBillingPage() {
                                 <input
                                     type="text"
                                     placeholder="Search by Phone or Name..."
-                                    className="w-full px-4 py-2 text-sm bg-background text-text border border-border outline-none focus:border-primary"
+                                    className="w-full px-4 py-3 text-sm bg-background text-text border border-border outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 rounded-lg transition-all"
                                     value={searchClient}
                                     onChange={(e) => {
                                         const val = e.target.value;
@@ -1588,7 +1588,7 @@ export default function POSBillingPage() {
                                     <select 
                                         value={activeOutletId || ''}
                                         onChange={(e) => setActiveOutletId(e.target.value)}
-                                        className="bg-transparent text-[10px] font-black uppercase text-primary border-none outline-none cursor-pointer hover:underline"
+                                        className="bg-surface-alt text-[10px] font-black uppercase text-primary border border-border/50 rounded px-2 py-0.5 outline-none cursor-pointer hover:border-primary transition-colors"
                                     >
                                         <option value="" disabled>-- Select Outlet --</option>
                                         {outlets.map(o => (
@@ -1802,7 +1802,7 @@ export default function POSBillingPage() {
                                             <select
                                                 value={p.method}
                                                 onChange={(e) => updatePayment(i, 'method', e.target.value)}
-                                                className="flex-1 bg-transparent border-none text-[10px] font-black p-1 text-text outline-none"
+                                                className="flex-1 bg-surface-alt border border-border text-[10px] font-black p-1.5 text-text outline-none focus:border-primary rounded transition-all"
                                             >
                                                 <option value="cash">CASH</option>
                                                 <option value="online">ONLINE</option>
@@ -1813,7 +1813,7 @@ export default function POSBillingPage() {
                                                 type="number"
                                                 value={Number(p.amount).toFixed(2)}
                                                 onChange={(e) => updatePayment(i, 'amount', Number(e.target.value))}
-                                                className="w-24 text-right bg-transparent border-none text-xs font-black p-1 text-text outline-none focus:ring-0"
+                                                className="w-24 text-right bg-surface-alt border border-border text-xs font-black p-1.5 text-text outline-none focus:border-primary focus:ring-1 focus:ring-primary/20 rounded transition-all"
                                             />
                                             {payments.length > 1 && (
                                                 <button onClick={() => removePayment(i)} className="p-1 text-rose-500 hover:bg-rose-50"><X className="w-3 h-3" /></button>
@@ -1835,7 +1835,7 @@ export default function POSBillingPage() {
                                 </div>
                                 <input
                                     type="date"
-                                    className="bg-transparent text-[11px] font-black text-text outline-none focus:text-primary"
+                                    className="bg-surface-alt border border-border px-3 py-1.5 rounded text-[11px] font-black text-text outline-none focus:border-primary focus:ring-1 focus:ring-primary/20 transition-all"
                                     value={paymentDate}
                                     onChange={(e) => setPaymentDate(e.target.value)}
                                 />
@@ -1891,7 +1891,7 @@ export default function POSBillingPage() {
                                         </select>
                                         <input
                                             type="number"
-                                            className="flex-1 p-3 text-sm font-bold bg-background text-text border-none focus:ring-0"
+                                            className="flex-1 p-3 text-sm font-black bg-background text-text border-l border-border outline-none focus:ring-2 focus:ring-primary/10 transition-all"
                                             value={manualDiscount.value || ''}
                                             onChange={(e) => setManualDiscount({ ...manualDiscount, value: Number(e.target.value) })}
                                             onFocus={(e) => { if(manualDiscount.value === 0) setManualDiscount({...manualDiscount, value: ''}) }}
@@ -1979,7 +1979,7 @@ export default function POSBillingPage() {
                                     autoFocus
                                     required
                                     type="text"
-                                    className="w-full p-3 bg-background border border-border text-sm font-bold text-text outline-none focus:border-primary uppercase tracking-tighter"
+                                    className="w-full p-3 bg-background border border-border text-sm font-black text-text outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 rounded-lg uppercase tracking-tighter transition-all"
                                     value={newClientForm.name}
                                     onChange={(e) => setNewClientForm({ ...newClientForm, name: e.target.value.replace(/[^a-zA-Z\s]/g, '') })}
                                 />
@@ -1989,7 +1989,7 @@ export default function POSBillingPage() {
                                 <input
                                     required
                                     type="tel"
-                                    className="w-full p-3 bg-background border border-border text-sm font-bold text-text outline-none focus:border-primary"
+                                    className="w-full p-3 bg-background border border-border text-sm font-black text-text outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 rounded-lg transition-all"
                                     value={newClientForm.phone}
                                     onChange={(e) => {
                                         const val = e.target.value.replace(/\D/g, '');
@@ -2001,7 +2001,7 @@ export default function POSBillingPage() {
                                 <label className="text-[10px] font-black text-text-muted uppercase tracking-widest">Email (Optional)</label>
                                 <input
                                     type="email"
-                                    className="w-full p-3 bg-background border border-border text-sm font-bold text-text outline-none focus:border-primary"
+                                    className="w-full p-3 bg-background border border-border text-sm font-black text-text outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 rounded-lg transition-all"
                                     value={newClientForm.email}
                                     onChange={(e) => setNewClientForm({ ...newClientForm, email: e.target.value })}
                                 />

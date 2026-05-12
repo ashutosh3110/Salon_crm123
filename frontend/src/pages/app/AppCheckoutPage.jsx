@@ -8,6 +8,7 @@ import { useCustomerAuth } from '../../contexts/CustomerAuthContext';
 import { useWallet } from '../../contexts/WalletContext';
 import api from '../../services/api';
 import { useBusiness } from '../../contexts/BusinessContext';
+import { getImageUrl } from '../../utils/imageUtils';
 
 export default function AppCheckoutPage() {
     const navigate = useNavigate();
@@ -24,6 +25,11 @@ export default function AppCheckoutPage() {
     }, [platformSettings, fetchPlatformSettings]);
     
     const [step, setStep] = useState(1); // 1: Address, 2: Payment, 3: Success
+
+    useEffect(() => {
+        window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+    }, [step]);
+
     const [loading, setLoading] = useState(false);
     const [paymentMethod, setPaymentMethod] = useState('cod');
     const [homeDelivery, setHomeDelivery] = useState(true);
@@ -262,11 +268,20 @@ export default function AppCheckoutPage() {
                             <span className="text-[12px] font-black text-[#C8956C]">{Math.floor((cartTotal - membershipDiscount) / (loyaltySettings.pointsRate || 100))} Points</span>
                         </div>
                     )}
-                    <div className="space-y-2">
+                    <div className="space-y-3">
                         {cart.items.map((item, i) => (
-                            <div key={i} className="flex justify-between text-[11px] font-bold opacity-60 uppercase tracking-widest">
-                                <span>{item.productId.name} x {item.quantity}</span>
-                                <span>₹{(item.productId.sellingPrice || item.productId.price) * item.quantity}</span>
+                            <div key={i} className="flex items-center gap-3">
+                                <div className="w-10 h-10 rounded-xl overflow-hidden bg-white/5 border border-white/10 shrink-0">
+                                    <img 
+                                        src={getImageUrl(item.productId.appImage || (item.productId.images && item.productId.images[0]))} 
+                                        alt={item.productId.name}
+                                        className="w-full h-full object-cover"
+                                    />
+                                </div>
+                                <div className="flex-1 flex justify-between items-center text-[10px] font-bold uppercase tracking-widest">
+                                    <span style={{ color: colors.text }}>{item.productId.name} <span className="opacity-40 ml-1">x{item.quantity}</span></span>
+                                    <span style={{ color: colors.text }}>₹{(item.productId.sellingPrice || item.productId.price) * item.quantity}</span>
+                                </div>
                             </div>
                         ))}
                     </div>
@@ -315,7 +330,7 @@ export default function AppCheckoutPage() {
                             </div>
                         )}
 
-                        {homeDelivery ? (
+                        {isDeliveryAvailable && homeDelivery ? (
                             <div className="p-6 rounded-3xl space-y-4" style={{ background: colors.card, border: `1.5px solid ${colors.border}` }}>
                                 <div className="space-y-1">
                                     <label className="text-[9px] font-black uppercase tracking-[0.2em] opacity-40">Street Address</label>
@@ -324,8 +339,12 @@ export default function AppCheckoutPage() {
                                         placeholder="Enter your street address"
                                         value={address.street} 
                                         onChange={(e) => setAddress({...address, street: e.target.value})}
-                                        className="w-full bg-transparent border-b border-white/10 py-2 font-bold text-sm focus:border-[#C8956C] outline-none transition-colors placeholder:text-white/10"
-                                        style={{ color: colors.text }}
+                                        className="w-full h-14 px-4 rounded-2xl font-bold text-sm outline-none transition-all placeholder:opacity-30"
+                                        style={{ 
+                                            background: isLight ? 'rgba(0,0,0,0.03)' : 'rgba(255,255,255,0.03)',
+                                            border: `1px solid ${colors.border}`,
+                                            color: colors.text 
+                                        }}
                                         required
                                     />
                                 </div>
@@ -337,8 +356,12 @@ export default function AppCheckoutPage() {
                                             placeholder="City"
                                             value={address.city} 
                                             onChange={(e) => setAddress({...address, city: e.target.value})}
-                                            className="w-full bg-transparent border-b border-white/10 py-2 font-bold text-sm focus:border-[#C8956C] outline-none transition-colors placeholder:text-white/10"
-                                            style={{ color: colors.text }}
+                                            className="w-full h-14 px-4 rounded-2xl font-bold text-sm outline-none transition-all placeholder:opacity-30"
+                                            style={{ 
+                                                background: isLight ? 'rgba(0,0,0,0.03)' : 'rgba(255,255,255,0.03)',
+                                                border: `1px solid ${colors.border}`,
+                                                color: colors.text 
+                                            }}
                                             required
                                         />
                                     </div>
@@ -349,8 +372,12 @@ export default function AppCheckoutPage() {
                                             placeholder="Pincode"
                                             value={address.zip} 
                                             onChange={(e) => setAddress({...address, zip: e.target.value})}
-                                            className="w-full bg-transparent border-b border-white/10 py-2 font-bold text-sm focus:border-[#C8956C] outline-none transition-colors placeholder:text-white/10"
-                                            style={{ color: colors.text }}
+                                            className="w-full h-14 px-4 rounded-2xl font-bold text-sm outline-none transition-all placeholder:opacity-30"
+                                            style={{ 
+                                                background: isLight ? 'rgba(0,0,0,0.03)' : 'rgba(255,255,255,0.03)',
+                                                border: `1px solid ${colors.border}`,
+                                                color: colors.text 
+                                            }}
                                             required
                                         />
                                     </div>

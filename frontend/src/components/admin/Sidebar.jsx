@@ -49,7 +49,8 @@ import {
     ArrowRight,
     LifeBuoy,
     CheckCircle2,
-    Zap
+    Zap,
+    ShoppingBag
 } from 'lucide-react';
 
 import { useCMS } from '../../contexts/CMSContext';
@@ -171,6 +172,7 @@ export default function Sidebar({ collapsed, setCollapsed, isHovered, setIsHover
                 feature: 'inventory',
                 subItems: [
                     { label: 'Products Management', icon: Box, path: '/admin/inventory/products' },
+                    { label: 'Shop Orders', icon: ShoppingBag, path: '/admin/shop-orders' },
                     { label: 'Product Categories', icon: Tag, path: '/admin/inventory/product-categories' },
                     { label: 'Stock overview', icon: LayoutDashboard, path: '/admin/inventory/stock-overview' },
                 ]

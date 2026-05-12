@@ -56,7 +56,7 @@ const orderSchema = new mongoose.Schema({
     },
     status: {
         type: String,
-        enum: ['pending', 'processing', 'shipped', 'delivered', 'cancelled'],
+        enum: ['pending', 'accepted', 'rejected', 'dispatched', 'out_for_delivery', 'delivered', 'cancelled'],
         default: 'pending'
     },
     subtotal: {
@@ -73,6 +73,21 @@ const orderSchema = new mongoose.Schema({
         city: String,
         state: String,
         zip: String
+    },
+    timeline: [{
+        status: String,
+        timestamp: {
+            type: Date,
+            default: Date.now
+        },
+        note: String
+    }],
+    cancellationReason: String,
+    estimatedDeliveryDate: Date,
+    deliveryPartner: {
+        name: String,
+        phone: String,
+        trackingId: String
     }
 }, {
     timestamps: true

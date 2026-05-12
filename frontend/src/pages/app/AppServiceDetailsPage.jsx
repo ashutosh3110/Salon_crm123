@@ -58,6 +58,7 @@ export default function AppServiceDetailsPage() {
     const navigate = useNavigate();
     const { colors, isLight } = useCustomerTheme();
     const { services, categories: businessCategories, fetchServices, isInitializing } = useBusiness();
+    const { isServiceLiked, toggleServiceLike } = useFavorites();
     
     const [reviews, setReviews] = useState([]);
     const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
@@ -176,13 +177,40 @@ export default function AppServiceDetailsPage() {
     return (
         <div style={{ background: colors.bg, color: colors.text }} className="min-h-screen relative flex flex-col overflow-hidden">
             {/* Header Actions */}
-            <button
-                type="button"
-                onClick={() => navigate(-1)}
-                className="fixed top-6 left-6 w-11 h-11 rounded-2xl bg-black/40 text-white backdrop-blur-xl z-[70] flex items-center justify-center active:scale-90 shadow-2xl border border-white/10"
-            >
-                <ChevronLeft size={22} />
-            </button>
+            <div className="fixed top-6 left-6 right-6 z-[70] flex justify-between items-center">
+                <button
+                    type="button"
+                    onClick={() => navigate(-1)}
+                    className="w-11 h-11 rounded-2xl bg-black/40 text-white backdrop-blur-xl flex items-center justify-center active:scale-90 shadow-2xl border border-white/10"
+                >
+                    <ChevronLeft size={22} />
+                </button>
+
+                <div className="flex gap-3">
+                    <button
+                        type="button"
+                        onClick={() => {
+                            if (navigator.share) {
+                                navigator.share({
+                                    title: service.name,
+                                    text: service.description,
+                                    url: window.location.href,
+                                });
+                            }
+                        }}
+                        className="w-11 h-11 rounded-2xl bg-black/40 text-white backdrop-blur-xl flex items-center justify-center active:scale-90 shadow-2xl border border-white/10"
+                    >
+                        <Share2 size={20} />
+                    </button>
+                    <button
+                        type="button"
+                        onClick={() => toggleServiceLike(service._id || service.id)}
+                        className={`w-11 h-11 rounded-2xl bg-black/40 backdrop-blur-xl flex items-center justify-center active:scale-90 shadow-2xl border border-white/10 transition-colors ${isServiceLiked(service._id || service.id) ? 'text-rose-500' : 'text-white'}`}
+                    >
+                        <Heart size={20} className={isServiceLiked(service._id || service.id) ? 'fill-current' : ''} />
+                    </button>
+                </div>
+            </div>
 
 
 

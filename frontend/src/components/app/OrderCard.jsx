@@ -19,15 +19,25 @@ export default function OrderCard({ order, onTap, index = 0 }) {
             text: isLight ? 'text-amber-700' : 'text-amber-400',
             label: 'Pending'
         },
-        processing: {
+        accepted: {
             bg: isLight ? 'bg-blue-100' : 'bg-blue-500/10',
             text: isLight ? 'text-blue-700' : 'text-blue-400',
-            label: 'Processing'
+            label: 'Accepted'
         },
-        shipped: {
+        rejected: {
+            bg: isLight ? 'bg-rose-100' : 'bg-rose-500/10',
+            text: isLight ? 'text-rose-700' : 'text-rose-400',
+            label: 'Rejected'
+        },
+        dispatched: {
             bg: isLight ? 'bg-indigo-100' : 'bg-indigo-500/10',
             text: isLight ? 'text-indigo-700' : 'text-indigo-400',
-            label: 'Shipped'
+            label: 'Dispatched'
+        },
+        out_for_delivery: {
+            bg: isLight ? 'bg-purple-100' : 'bg-purple-500/10',
+            text: isLight ? 'text-purple-700' : 'text-purple-400',
+            label: 'Out for Delivery'
         },
         delivered: {
             bg: isLight ? 'bg-emerald-100' : 'bg-emerald-500/10',

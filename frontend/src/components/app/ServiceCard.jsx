@@ -1,11 +1,14 @@
 import { memo } from 'react';
 import { motion } from 'framer-motion';
-import { Clock, ChevronRight, Armchair, DoorClosed } from 'lucide-react';
+import { Clock, ChevronRight, Armchair, DoorClosed, Heart } from 'lucide-react';
 import { useCustomerTheme } from '../../contexts/CustomerThemeContext';
+import { useFavorites } from '../../contexts/FavoritesContext';
 
 const ServiceCard = memo(({ service, onBook, index = 0 }) => {
     const { theme } = useCustomerTheme();
     const isLight = theme === 'light';
+    const { isServiceLiked, toggleServiceLike } = useFavorites();
+    const isLiked = isServiceLiked(service._id || service.id);
 
     const colors = {
         card: isLight ? '#FFFFFF' : '#1A1A1A',
@@ -35,7 +38,7 @@ const ServiceCard = memo(({ service, onBook, index = 0 }) => {
                 background: colors.card,
                 border: `1px solid ${colors.border}`,
             }}
-            className="rounded-2xl p-5 shadow-sm active:bg-opacity-80 transition-all cursor-pointer group"
+            className="rounded-2xl p-5 shadow-sm active:bg-opacity-80 transition-all cursor-pointer group relative"
         >
             <div className="flex items-start justify-between gap-4">
                 <div className="flex-1 min-w-0">
@@ -66,8 +69,19 @@ const ServiceCard = memo(({ service, onBook, index = 0 }) => {
                     </div>
                 </div>
 
-                <div className="shrink-0 w-10 h-10 rounded-2xl bg-[#C8956C]/5 flex items-center justify-center group-hover:bg-[#C8956C]/10 transition-colors">
-                    <ChevronRight className="w-5 h-5 text-[#C8956C] group-hover:translate-x-0.5 transition-transform" />
+                <div className="flex flex-col items-center gap-2">
+                    <button 
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            toggleServiceLike(service._id || service.id);
+                        }}
+                        className={`w-10 h-10 rounded-2xl flex items-center justify-center transition-all ${isLiked ? 'bg-rose-500/10 text-rose-500' : 'bg-black/5 dark:bg-white/5 text-black/20 dark:text-white/20 hover:text-rose-500 hover:bg-rose-500/5'}`}
+                    >
+                        <Heart className={`w-5 h-5 ${isLiked ? 'fill-current' : ''}`} />
+                    </button>
+                    <div className="shrink-0 w-10 h-10 rounded-2xl bg-[#C8956C]/5 flex items-center justify-center group-hover:bg-[#C8956C]/10 transition-colors">
+                        <ChevronRight className="w-5 h-5 text-[#C8956C] group-hover:translate-x-0.5 transition-transform" />
+                    </div>
                 </div>
             </div>
         </motion.div>

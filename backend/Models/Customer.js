@@ -84,6 +84,14 @@ const customerSchema = new mongoose.Schema({
     },
     fcmTokenWeb: [String],
     fcmTokenMobile: [String],
+    likedProducts: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Product'
+    }],
+    likedServices: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Service'
+    }],
 }, {
     timestamps: true
 });

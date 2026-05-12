@@ -43,7 +43,7 @@ const TIME_SLOTS = Array.from({ length: 48 }, (_, i) => {
 export default function OutletForm() {
     const navigate = useNavigate();
     const { id } = useParams();
-    const { outlets, addOutlet, updateOutlet, platformSettings } = useBusiness();
+    const { outlets, addOutlet, updateOutlet, platformSettings, fetchOutlets } = useBusiness();
     const isEdit = !!id;
 
     const [loading, setLoading] = useState(false);
@@ -161,8 +161,14 @@ export default function OutletForm() {
     const [imageFiles, setImageFiles] = useState([]); // Store actual File objects
 
     useEffect(() => {
-        if (isEdit) {
-            const found = outlets.find(o => o._id === id);
+        if (!outlets || outlets.length === 0) {
+            fetchOutlets?.();
+        }
+    }, []);
+
+    useEffect(() => {
+        if (isEdit && outlets && outlets.length > 0) {
+            const found = outlets.find(o => String(o._id) === String(id));
             if (found) {
                 setForm({
                     ...found,

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ChevronLeft, Package, Calendar, CreditCard, Truck, MapPin, CheckCircle, Clock, Hash, ShoppingBag, Zap } from 'lucide-react';
+import { ChevronLeft, Package, Calendar, CreditCard, Truck, MapPin, CheckCircle, Clock, Hash, ShoppingBag, Zap, XCircle } from 'lucide-react';
 import { useCustomerTheme } from '../../contexts/CustomerThemeContext';
 import api from '../../services/api';
 
@@ -38,10 +38,12 @@ export default function AppOrderDetailsPage() {
 
     const statusConfig = {
         pending: { color: '#F59E0B', label: 'Order Pending', icon: Clock, bg: 'rgba(245,158,11,0.1)' },
-        processing: { color: '#3B82F6', label: 'Processing', icon: ShoppingBag, bg: 'rgba(59,130,246,0.1)' },
-        shipped: { color: '#6366F1', label: 'Out for Delivery', icon: Truck, bg: 'rgba(99,102,241,0.1)' },
+        accepted: { color: '#3B82F6', label: 'Accepted', icon: CheckCircle, bg: 'rgba(59,130,246,0.1)' },
+        rejected: { color: '#EF4444', label: 'Rejected', icon: XCircle, bg: 'rgba(239,68,68,0.1)' },
+        dispatched: { color: '#6366F1', label: 'Dispatched', icon: Truck, bg: 'rgba(99,102,241,0.1)' },
+        out_for_delivery: { color: '#8B5CF6', label: 'Out for Delivery', icon: Truck, bg: 'rgba(139,92,246,0.1)' },
         delivered: { color: '#10B981', label: 'Delivered', icon: CheckCircle, bg: 'rgba(16,185,129,0.1)' },
-        cancelled: { color: '#EF4444', label: 'Cancelled', icon: Hash, bg: 'rgba(239,68,68,0.1)' },
+        cancelled: { color: '#64748B', label: 'Cancelled', icon: Hash, bg: 'rgba(100,116,139,0.1)' },
     };
 
     const status = statusConfig[order?.status] || statusConfig.pending;
@@ -113,6 +115,47 @@ export default function AppOrderDetailsPage() {
                                 {order.paymentStatus === 'paid' ? 'Paid Online' : 'Payment Pending'}
                             </span>
                         </div>
+                    </div>
+                </div>
+
+                {/* Tracking Timeline */}
+                <div className="p-8 rounded-[40px] space-y-6" style={{ background: colors.card, border: `1px solid ${colors.border}` }}>
+                    <div className="flex items-center gap-3">
+                        <Truck size={18} className="text-[#C8956C]" />
+                        <h3 className="text-xs font-black uppercase tracking-[0.2em]" style={{ color: colors.text }}>Order Tracking</h3>
+                    </div>
+                    
+                    <div className="relative pl-6 space-y-8 before:absolute before:left-[11px] before:top-2 before:bottom-2 before:w-[2px] before:bg-black/5 dark:before:bg-white/5">
+                        {(order.timeline || [{ status: 'pending', note: 'Order placed', timestamp: order.createdAt }]).slice().reverse().map((step, i) => {
+                            const config = statusConfig[step.status] || statusConfig.pending;
+                            const StepIcon = config.icon;
+                            return (
+                                <div key={i} className="relative">
+                                    <div 
+                                        className="absolute -left-[23px] top-0.5 w-4 h-4 rounded-full border-2 flex items-center justify-center z-10 shadow-sm"
+                                        style={{ 
+                                            background: i === 0 ? config.color : colors.card,
+                                            borderColor: i === 0 ? config.color : colors.border
+                                        }}
+                                    >
+                                        <div className={`w-1 h-1 rounded-full ${i === 0 ? 'bg-white' : 'bg-black/20 dark:bg-white/20'}`} />
+                                    </div>
+                                    <div className="flex flex-col">
+                                        <div className="flex items-center justify-between">
+                                            <span className="text-[10px] font-black uppercase tracking-widest" style={{ color: i === 0 ? config.color : colors.text }}>
+                                                {config.label}
+                                            </span>
+                                            <span className="text-[8px] font-bold opacity-30 uppercase">
+                                                {new Date(step.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                            </span>
+                                        </div>
+                                        <p className="text-[9px] font-bold opacity-40 uppercase tracking-tight mt-0.5">
+                                            {step.note}
+                                        </p>
+                                    </div>
+                                </div>
+                            );
+                        })}
                     </div>
                 </div>
 
@@ -203,6 +246,31 @@ export default function AppOrderDetailsPage() {
                     <p className="text-[9px] font-black uppercase tracking-[0.3em] opacity-20">Order ID: {order._id}</p>
                     <p className="text-[9px] font-black uppercase tracking-[0.3em] opacity-20">Ordered on {new Date(order.createdAt).toLocaleString()}</p>
                 </div>
+
+                {/* Cancel Action */}
+                {!['out_for_delivery', 'delivered', 'cancelled', 'rejected'].includes(order.status) && (
+                    <motion.button
+                        whileTap={{ scale: 0.95 }}
+                        onClick={async () => {
+                            if (window.confirm('Are you sure you want to cancel this order? If you paid via wallet, the amount will be refunded instantly.')) {
+                                try {
+                                    setLoading(true);
+                                    const res = await api.post(`/orders/${id}/cancel`, { reason: 'Cancelled by user' });
+                                    if (res.data?.success) {
+                                        setOrder(res.data.data);
+                                    }
+                                } catch (err) {
+                                    alert(err.response?.data?.message || 'Cancellation failed');
+                                } finally {
+                                    setLoading(false);
+                                }
+                            }
+                        }}
+                        className="w-full py-4 text-[10px] font-black uppercase tracking-[0.2em] text-rose-500 border border-rose-500/20 bg-rose-500/5 rounded-2xl mt-4"
+                    >
+                        Cancel Order
+                    </motion.button>
+                )}
             </main>
         </div>
     );

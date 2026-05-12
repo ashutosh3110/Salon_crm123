@@ -13,5 +13,6 @@ router.get('/profile', protect, getProfile);
 router.patch('/profile', protect, updateProfile);
 router.delete('/profile', protect, deleteAccount);
 router.get('/favorites', protect, getFavorites);
+router.post('/toggle-favorite', protect, require('../Controllers/customerAuthController').toggleFavorite);
 
 module.exports = router;

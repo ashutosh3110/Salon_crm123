@@ -62,7 +62,15 @@ const serviceSchema = new mongoose.Schema({
         type: String,
         enum: ['chair', 'room', 'cabin', 'none'],
         default: 'chair'
-    }
+    },
+    likes: {
+        type: Number,
+        default: 0
+    },
+    likedBy: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Customer'
+    }]
 }, {
     timestamps: true
 });

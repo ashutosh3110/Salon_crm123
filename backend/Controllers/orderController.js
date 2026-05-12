@@ -77,7 +77,11 @@ exports.createOrder = async (req, res) => {
             deliveryCharge: deliveryCharge || 0,
             subtotal: subtotal || totalAmount,
             membershipDiscount: membershipDiscount || 0,
-            paymentStatus: paymentMethod === 'wallet' ? 'paid' : 'pending'
+            paymentStatus: paymentMethod === 'wallet' ? 'paid' : 'pending',
+            timeline: [{
+                status: 'pending',
+                note: 'Order placed successfully'
+            }]
         });
 
         // Award Loyalty Points if payment is paid (wallet) or otherwise based on business logic
@@ -249,22 +253,34 @@ exports.getCustomerOrders = async (req, res) => {
 
 // @desc    Update order status
 // @route   PATCH /api/orders/:id/status
-// @access  Private (Admin)
+// @access  Private (Admin/Staff)
 exports.updateOrderStatus = async (req, res) => {
     try {
-        const { status } = req.body;
+        const { status, note, estimatedDeliveryDate, deliveryPartner } = req.body;
         const order = await Order.findById(req.params.id);
 
         if (!order) {
             return res.status(404).json({ success: false, message: 'Order not found' });
         }
 
-        const oldStatus = order.status;
+        const validStatuses = ['accepted', 'rejected', 'dispatched', 'out_for_delivery', 'delivered', 'cancelled'];
+        if (!validStatuses.includes(status)) {
+            return res.status(400).json({ success: false, message: 'Invalid status' });
+        }
+
         order.status = status;
+        if (estimatedDeliveryDate) order.estimatedDeliveryDate = estimatedDeliveryDate;
+        if (deliveryPartner) order.deliveryPartner = deliveryPartner;
 
         if (status === 'delivered') {
             order.paymentStatus = 'paid';
         }
+
+        order.timeline.push({
+            status,
+            note: note || `Order marked as ${status}`,
+            timestamp: new Date()
+        });
 
         await order.save();
 
@@ -272,8 +288,10 @@ exports.updateOrderStatus = async (req, res) => {
         try {
             const { sendNotification } = require('../Utils/notification');
             const statusMsgs = {
-                'processing': 'Your order is being processed. 📦',
-                'shipped': 'Your order has been shipped! 🚚',
+                'accepted': 'Your order has been accepted and is being prepared. ✅',
+                'rejected': 'Sorry, your order has been rejected. ❌',
+                'dispatched': 'Your order has been shipped! 🚚',
+                'out_for_delivery': 'Your order is out for delivery! 🛵',
                 'delivered': 'Your order has been delivered. Enjoy! 🎁',
                 'cancelled': 'Your order has been cancelled.'
             };
@@ -295,6 +313,70 @@ exports.updateOrderStatus = async (req, res) => {
 
         res.json({
             success: true,
+            data: order
+        });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+};
+
+// @desc    Cancel order (Customer)
+// @route   POST /api/orders/:id/cancel
+// @access  Private
+exports.cancelOrder = async (req, res) => {
+    try {
+        const { reason } = req.body;
+        const order = await Order.findById(req.params.id);
+
+        if (!order) {
+            return res.status(404).json({ success: false, message: 'Order not found' });
+        }
+
+        // Security check
+        if (order.customerId.toString() !== req.user._id.toString()) {
+            return res.status(401).json({ success: false, message: 'Not authorized' });
+        }
+
+        // Condition check: Only allow if not out_for_delivery or delivered
+        const restrictedStatuses = ['out_for_delivery', 'delivered', 'cancelled', 'rejected'];
+        if (restrictedStatuses.includes(order.status)) {
+            return res.status(400).json({ 
+                success: false, 
+                message: `Order cannot be cancelled when status is ${order.status}` 
+            });
+        }
+
+        // If prepaid (wallet), refund to wallet
+        if (order.paymentStatus === 'paid' && order.paymentMethod === 'wallet') {
+            const customer = await Customer.findById(order.customerId);
+            if (customer) {
+                customer.walletBalance = (customer.walletBalance || 0) + order.totalAmount;
+                await customer.save();
+
+                await WalletTransaction.create({
+                    customerId: order.customerId,
+                    salonId: order.salonId,
+                    amount: order.totalAmount,
+                    type: 'CREDIT',
+                    description: `Refund for cancelled order #${order._id.toString().slice(-6)}`,
+                    status: 'COMPLETED'
+                });
+            }
+        }
+
+        order.status = 'cancelled';
+        order.cancellationReason = reason;
+        order.timeline.push({
+            status: 'cancelled',
+            note: reason || 'Cancelled by customer',
+            timestamp: new Date()
+        });
+
+        await order.save();
+
+        res.json({
+            success: true,
+            message: 'Order cancelled successfully',
             data: order
         });
     } catch (err) {
