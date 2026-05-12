@@ -304,6 +304,7 @@ export default function AppHomePage() {
         loyaltyPlans: contextPlans,
         categories: contextCategories,
         loyaltySettings: loyaltyRule,
+        fetchLoyaltySettings,
         isInitializing: isContextInitializing
     } = useBusiness();
     const servicesScrollRef = useRef(null);
@@ -335,7 +336,12 @@ export default function AppHomePage() {
         }));
     }, [contextServices]);
 
-    const { } = useBusiness();
+    // Fetch loyalty settings if missing from initial data
+    useEffect(() => {
+        if (!loyaltyRule && activeSalonId) {
+            fetchLoyaltySettings(activeSalonId);
+        }
+    }, [loyaltyRule, activeSalonId, fetchLoyaltySettings]);
 
     // No more lazy loading here, BusinessContext handles it all in one call!
 
@@ -756,7 +762,7 @@ export default function AppHomePage() {
                                     key={outlet._id}
                                     onClick={() => {
                                         setActiveOutletId(outlet._id);
-                                        navigate(`/app/salon/${outlet._id}`);
+                                        window.scrollTo({ top: 0, behavior: 'smooth' });
                                     }}
                                     style={{
                                         flexShrink: 0,

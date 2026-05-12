@@ -3,10 +3,10 @@ import { motion } from 'framer-motion';
 import { Star, Sparkles, Coins, Gift, Zap } from 'lucide-react';
 import { useCustomerTheme } from '../../contexts/CustomerThemeContext';
 
-export default function LoyaltyCard({ points = 0, pointsRate = 100, onRedeem, minRedeem = 100 }) {
+export default function LoyaltyCard({ points = 0, pointsRate = 100, redeemValue = 1, onRedeem, minRedeem = 100 }) {
     const { theme } = useCustomerTheme();
     const isLight = theme === 'light';
-    const cashValue = (points / (pointsRate || 1)).toFixed(0);
+    const cashValue = (points / (pointsRate || 1)) * (redeemValue || 1);
 
     const isRedeemable = points >= minRedeem;
 
@@ -56,7 +56,7 @@ export default function LoyaltyCard({ points = 0, pointsRate = 100, onRedeem, mi
                         <p className="text-[10px] font-black opacity-30 uppercase tracking-widest mb-1">Cash Value</p>
                         <div className="flex items-baseline justify-end gap-1">
                             <span className="text-[10px] font-black opacity-40">₹</span>
-                            <p className="text-3xl font-black text-white">{cashValue}</p>
+                            <p className="text-3xl font-black text-white">{cashValue.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 })}</p>
                         </div>
                     </div>
                 </div>

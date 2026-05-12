@@ -358,7 +358,7 @@ export default function NearbyOutletsPage() {
                                         onClick={() => {
                                             setActiveOutletId(o._id || o.id);
                                             if (isAuthenticated) {
-                                                navigate(`/app/salon/${o._id || o.id}`);
+                                                navigate('/app');
                                             } else {
                                                 localStorage.setItem('wapixo_selected_outlet', JSON.stringify(o));
                                                 navigate(`/app/login?outletSelected=1&tenantId=${encodeURIComponent(o.tenantId)}&outletId=${o._id || o.id}`);

@@ -119,6 +119,7 @@ export default function AppProfilePage() {
 
     const [rules, setRules] = useState({
         pointsRate: 100,
+        redeemValue: 1,
         minRedeemPoints: 100,
     });
 
@@ -137,6 +138,7 @@ export default function AppProfilePage() {
                     ...prev,
                     ...data,
                     pointsRate: Number(data?.pointsRate ?? prev.pointsRate ?? 100),
+                    redeemValue: Number(data?.redeemValue ?? prev.redeemValue ?? 1),
                     minRedeemPoints: Number(data?.minRedeemPoints ?? prev.minRedeemPoints ?? 100),
                 }));
             } catch (err) {
@@ -441,6 +443,7 @@ export default function AppProfilePage() {
                 <LoyaltyCard 
                     points={Number(customer?.loyaltyPoints || 0)} 
                     pointsRate={rules.pointsRate} 
+                    redeemValue={rules.redeemValue}
                     onRedeem={handleRedeem}
                     minRedeem={rules.minRedeemPoints}
                 />

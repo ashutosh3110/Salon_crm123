@@ -32,9 +32,10 @@ function mapLoyaltyTx(tx) {
 
 export function WalletProvider({ children }) {
     const { customer } = useCustomerAuth();
-    const { userSession, isInitializing, customers } = useBusiness();
+    const { userSession, isInitializing, customers, loyaltySettings } = useBusiness();
     const [balance, setBalance] = useState(0);
     const [transactions, setTransactions] = useState([]);
+    const [customerWallets, setCustomerWallets] = useState({});
     const [loading, setLoading] = useState(true);
     const location = useLocation();
 
@@ -159,6 +160,9 @@ export function WalletProvider({ children }) {
                 amount: type === 'DEBIT' ? -amount : amount, 
                 note 
             });
+            if (res.data?.success) {
+                await initializeWallet(customerId);
+            }
             return res.data;
         } catch (err) {
             console.error('Adjust balance failed:', err);
@@ -166,30 +170,52 @@ export function WalletProvider({ children }) {
         }
     };
 
-    const initializeWallet = async (customerId) => {
-        // In this system, wallets are implicitly initialized with Customer records.
-        // We just need to fetch the current state if needed.
+    const initializeWallet = useCallback(async (customerId) => {
+        if (!customerId) return;
         try {
             const res = await api.get(`/wallet/customer/${customerId}`);
-            return res.data;
+            if (res.data?.success) {
+                const data = res.data.data;
+                setCustomerWallets(prev => ({
+                    ...prev,
+                    [customerId]: {
+                        balance: data.balance || 0,
+                        transactions: (data.transactions || []).map(tx => ({
+                            ...tx,
+                            id: tx._id || tx.id,
+                            date: tx.createdAt || tx.date
+                        })),
+                        loyaltyPoints: data.loyaltyPoints || 0
+                    }
+                }));
+                return res.data;
+            }
         } catch (err) {
             console.error('Initialize wallet failed:', err);
             return { success: false, message: err.message };
         }
-    };
+    }, []);
+
+    const getWallet = useCallback((customerId) => {
+        if (!customerId) return { balance: 0, transactions: [], loyaltyPoints: 0 };
+        return customerWallets[customerId] || { balance: 0, transactions: [], loyaltyPoints: 0 };
+    }, [customerWallets]);
 
     const value = useMemo(() => ({
         balance,
         transactions,
         loading,
         allWallets,
+        customerWallets,
+        getWallet,
         refreshWallet,
         createWalletOrder,
         verifyWalletTopup,
         bulkRecharge,
         adminAdjustBalance,
-        initializeWallet
-    }), [balance, transactions, loading, allWallets, refreshWallet]);
+        initializeWallet,
+        walletSettings: loyaltySettings
+    }), [balance, transactions, loading, allWallets, customerWallets, getWallet, refreshWallet, loyaltySettings]);
 
     return (
         <WalletContext.Provider value={value}>

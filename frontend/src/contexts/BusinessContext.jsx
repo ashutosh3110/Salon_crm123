@@ -307,18 +307,23 @@ export function BusinessProvider({ children }) {
         } catch { setOrders([]); }
     }, []);
 
-    const fetchProducts = useCallback(async (sId) => {
+    const fetchProducts = useCallback(async (sId, oId) => {
         try {
             const sid = sId || activeSalonId || salon?._id;
+            const oid = oId === undefined ? activeOutletId : oId;
+
             if (!sid) return;
-            const r = await api.get(`/products?salonId=${sid}`);
+            let url = `/products?salonId=${sid}`;
+            if (oid) url += `&outletId=${oid}`;
+
+            const r = await api.get(url);
             const raw = r.data?.data || r.data?.results || r.data || [];
             setProducts(Array.isArray(raw) ? raw.map(normalizeProduct) : []);
         } catch (error) {
             console.error("Fetch products failed:", error);
             setProducts([]);
         }
-    }, [activeSalonId, salon?._id]);
+    }, [activeSalonId, salon?._id, activeOutletId]);
 
     const fetchProductCategories = useCallback(async (sId) => {
         try {
@@ -1052,7 +1057,7 @@ export function BusinessProvider({ children }) {
         } else {
             setIsInitializing(false);
         }
-    }, [isAuthenticated, isCustomerAuthenticated, activeSalonId, fetchCustomerInitialData]);
+    }, [isAuthenticated, isCustomerAuthenticated, activeSalonId, activeOutletId, fetchCustomerInitialData]);
 
     return <BusinessContext.Provider value={value}>{children}</BusinessContext.Provider>;
 }
