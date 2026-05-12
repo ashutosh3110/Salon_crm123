@@ -12,14 +12,14 @@ import api from '../../services/api';
 /* ─── Constants ───────────────────────────────────────────────────────── */
 
 const CATEGORIES = ['Billing', 'Technical Issue', 'Feature Request', 'General Inquiry', 'Account Access'];
-const STATUSES = ['open', 'in-progress', 'resolved', 'closed'];
+const STATUSES = ['pending', 'in-progress', 'resolved', 'closed'];
 
 const STATUS_STYLES = {
-    'open': { bg: 'bg-sky-50', text: 'text-sky-700', border: 'border-sky-200', label: 'Open' },
-    'in-progress': { bg: 'bg-amber-50', text: 'text-amber-700', border: 'border-amber-200', label: 'In Progress' },
+    'pending': { bg: 'bg-amber-50', text: 'text-amber-700', border: 'border-amber-200', label: 'Pending' },
+    'in-progress': { bg: 'bg-sky-50', text: 'text-sky-700', border: 'border-sky-200', label: 'In Progress' },
     'resolved': { bg: 'bg-emerald-50', text: 'text-emerald-700', border: 'border-emerald-200', label: 'Resolved' },
     'closed': { bg: 'bg-slate-50', text: 'text-slate-500', border: 'border-slate-200', label: 'Closed' },
-    'escalated': { bg: 'bg-rose-50', text: 'text-rose-700', border: 'border-rose-200', label: 'Pending Admin' },
+    'escalated': { bg: 'bg-rose-50', text: 'text-rose-700', border: 'border-rose-200', label: 'Escalated' },
 };
 
 const CATEGORY_STYLES = {
@@ -38,6 +38,7 @@ export default function SupportPage() {
     const isOwner = userRole === 'admin';
     const canEscalate = userRole === 'manager';
 
+    const [activeTab, setActiveTab] = useState('customer'); // 'customer' or 'platform'
     const [faqs, setFaqs] = useState([]);
     const [tickets, setTickets] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -60,7 +61,7 @@ export default function SupportPage() {
     useEffect(() => {
         fetchTickets();
         fetchFAQs();
-    }, []);
+    }, [activeTab]);
 
     const fetchFAQs = async () => {
         try {
@@ -87,7 +88,8 @@ export default function SupportPage() {
     const fetchTickets = async () => {
         try {
             setLoading(true);
-            const response = await api.get('/tickets');
+            const endpoint = activeTab === 'customer' ? '/support/admin/tickets' : '/tickets';
+            const response = await api.get(endpoint);
             if (response.data.success) {
                 setTickets(response.data.data);
             }
@@ -172,7 +174,7 @@ export default function SupportPage() {
 
     const handleUpdateStatus = async (id, status) => {
         try {
-            const response = await api.patch(`/tickets/${id}`, { status });
+            const response = await api.patch(`/support/tickets/${id}/status`, { status });
             if (response.data.success) {
                 setTickets(tickets.map(t => t._id === id ? response.data.data : t));
                 if (selectedTicket?._id === id) {
@@ -187,7 +189,15 @@ export default function SupportPage() {
     };
 
     const handleEscalate = async (id) => {
-        handleUpdateStatus(id, 'escalated');
+        try {
+            const response = await api.patch(`/support/tickets/${id}/escalate`);
+            if (response.data.success) {
+                setTickets(tickets.map(t => t._id === id ? response.data.data : t));
+                showToast('Ticket escalated to Super Admin');
+            }
+        } catch (err) {
+            showToast('Escalation failed');
+        }
     };
 
     return (
@@ -197,15 +207,33 @@ export default function SupportPage() {
                 <div className="text-left">
                     <h1 className="text-2xl font-bold text-text tracking-tight leading-none">Support & Help</h1>
                     <p className="text-[11px] font-medium text-text-muted mt-1 uppercase tracking-wider">
-                        {user?.role?.toUpperCase()} SUPPORT DASHBOARD
+                        Manage your customer issues and platform requests
                     </p>
                 </div>
-                    <button
-                        onClick={() => setShowModal(true)}
-                        className="flex items-center gap-2 bg-text text-background px-5 py-2.5 text-[11px] font-bold uppercase tracking-wider shadow-lg hover:bg-primary hover:text-white transition-all"
-                    >
-                        <Plus className="w-4 h-4" /> New Support Request
-                    </button>
+                <div className="flex items-center gap-3">
+                    <div className="flex bg-surface p-1 rounded-xl border border-border mr-2">
+                        <button 
+                            onClick={() => setActiveTab('customer')}
+                            className={`px-4 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'customer' ? 'bg-primary text-white shadow-md' : 'text-text-muted hover:text-text'}`}
+                        >
+                            Customer Issues
+                        </button>
+                        <button 
+                            onClick={() => setActiveTab('platform')}
+                            className={`px-4 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'platform' ? 'bg-primary text-white shadow-md' : 'text-text-muted hover:text-text'}`}
+                        >
+                            Platform Help
+                        </button>
+                    </div>
+                    {activeTab === 'platform' && (
+                        <button
+                            onClick={() => setShowModal(true)}
+                            className="flex items-center gap-2 bg-text text-background px-5 py-2.5 text-[11px] font-bold uppercase tracking-wider shadow-lg hover:bg-primary hover:text-white transition-all rounded-xl"
+                        >
+                            <Plus className="w-4 h-4" /> New Support Request
+                        </button>
+                    )}
+                </div>
             </div>
 
             {/* Stats */}
@@ -243,7 +271,10 @@ export default function SupportPage() {
                             className="text-[11px] font-bold uppercase tracking-wider bg-surface border border-border pl-4 pr-10 py-2 outline-none focus:border-primary cursor-pointer appearance-none min-w-[140px] rounded-lg"
                         >
                             <option value="All">All Status</option>
-                            {STATUSES.map(s => <option key={s} value={s}>{s.toUpperCase()}</option>)}
+                            <option value="pending">PENDING</option>
+                            <option value="in-progress">IN PROGRESS</option>
+                            <option value="resolved">RESOLVED</option>
+                            <option value="closed">CLOSED</option>
                             <option value="escalated">ESCALATED</option>
                         </select>
                     </div>
@@ -271,7 +302,7 @@ export default function SupportPage() {
                                         </tr>
                                     ) : (
                                         filtered.map((t) => {
-                                            const stStyle = STATUS_STYLES[t.status] || STATUS_STYLES.open;
+                                            const stStyle = STATUS_STYLES[t.status] || STATUS_STYLES.pending;
                                             return (
                                                 <tr 
                                                     key={t._id} 
@@ -301,7 +332,10 @@ export default function SupportPage() {
                                                                 onChange={(e) => handleUpdateStatus(t._id, e.target.value)}
                                                                 className={`inline-flex items-center px-2 py-0.5 text-[9px] font-bold border uppercase tracking-wider rounded-full outline-none cursor-pointer appearance-none text-center ${stStyle.bg} ${stStyle.text} ${stStyle.border}`}
                                                             >
-                                                                {STATUSES.map(s => <option key={s} value={s}>{s.toUpperCase()}</option>)}
+                                                                <option value="pending">PENDING</option>
+                                                                <option value="in-progress">IN PROGRESS</option>
+                                                                <option value="resolved">RESOLVED</option>
+                                                                <option value="closed">CLOSED</option>
                                                                 <option value="escalated">ESCALATED</option>
                                                             </select>
                                                         ) : (
@@ -312,12 +346,12 @@ export default function SupportPage() {
                                                     </td>
                                                     <td className="px-5 py-4 text-right">
                                                         <div className="flex items-center justify-end gap-2">
-                                                            {canEscalate && t.status !== 'escalated' && t.status !== 'resolved' && (
+                                                            {activeTab === 'customer' && t.status !== 'escalated' && t.status !== 'resolved' && t.status !== 'closed' && (
                                                                 <button 
                                                                     onClick={(e) => { e.stopPropagation(); handleEscalate(t._id); }}
                                                                     className="flex items-center gap-1.5 px-3 py-1 bg-rose-50 text-rose-600 border border-rose-200 text-[10px] font-bold uppercase tracking-wider rounded-lg hover:bg-rose-100 transition-all shadow-sm"
                                                                 >
-                                                                    <ArrowUpCircle className="w-3.5 h-3.5" /> High Priority (Send to Admin)
+                                                                    <ArrowUpCircle className="w-3.5 h-3.5" /> Escalate to SuperAdmin
                                                                 </button>
                                                             )}
                                                             <span className="text-[11px] font-medium text-text-muted">{t.lastUpdate || 'Just now'}</span>
@@ -388,8 +422,8 @@ export default function SupportPage() {
                                     <h2 className="text-[14px] font-bold text-text leading-tight">{selectedTicket.subject}</h2>
                                     <div className="flex items-center gap-2 mt-1">
                                         <div className="text-[10px] font-bold text-primary uppercase">#{selectedTicket._id?.slice(-6)}</div>
-                                        <div className={`px-1.5 py-0.5 text-[8px] font-black border uppercase rounded-full ${STATUS_STYLES[selectedTicket.status]?.bg} ${STATUS_STYLES[selectedTicket.status]?.text} ${STATUS_STYLES[selectedTicket.status]?.border}`}>
-                                            {selectedTicket.status}
+                                        <div className={`px-1.5 py-0.5 text-[8px] font-black border uppercase rounded-full ${(STATUS_STYLES[selectedTicket.status] || STATUS_STYLES.pending).bg} ${(STATUS_STYLES[selectedTicket.status] || STATUS_STYLES.pending).text} ${(STATUS_STYLES[selectedTicket.status] || STATUS_STYLES.pending).border}`}>
+                                            {(STATUS_STYLES[selectedTicket.status] || STATUS_STYLES.pending).label}
                                         </div>
                                     </div>
                                 </div>

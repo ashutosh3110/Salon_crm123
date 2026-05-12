@@ -248,37 +248,7 @@ export default function AppHelpSupportPage() {
                             </div>
 
                             {/* Contact Section */}
-                            <div style={{ marginBottom: '40px' }}>
-                                <h3 style={{ fontSize: '12px', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.15em', color: colors.textMuted, marginBottom: '16px' }}>Still need help?</h3>
-                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-                                    {[
-                                        { icon: MessageCircle, label: 'Chat Support', sub: 'Instant help', color: '#C8956C' },
-                                        { icon: Mail, label: 'Email Us', sub: '24hr response', color: colors.textMuted }
-                                    ].map((item, i) => (
-                                        <motion.button
-                                            key={i}
-                                            whileTap={{ scale: 0.97 }}
-                                            style={{
-                                                background: colors.card,
-                                                border: `1px solid ${colors.border}`,
-                                                borderRadius: '20px 6px 20px 6px',
-                                                padding: '16px',
-                                                display: 'flex',
-                                                flexDirection: 'column',
-                                                alignItems: 'center',
-                                                textAlign: 'center',
-                                                gap: '8px'
-                                            }}
-                                        >
-                                            <item.icon size={20} color={item.color} />
-                                            <div>
-                                                <p style={{ fontSize: '13px', fontWeight: 800, margin: 0, color: colors.text }}>{item.label}</p>
-                                                <p style={{ fontSize: '10px', color: colors.textMuted, margin: 0 }}>{item.sub}</p>
-                                            </div>
-                                        </motion.button>
-                                    ))}
-                                </div>
-                            </div>
+                        
                         </motion.div>
                     ) : (
                         <motion.div

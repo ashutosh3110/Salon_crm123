@@ -434,7 +434,7 @@ export default function AppHomePage() {
         let result = (services || []);
         
         if (searchQuery.trim()) {
-            const q = searchQuery.toLowerCase();
+            const q = searchQuery.trim().toLowerCase();
             result = result.filter(s => 
                 s.name.toLowerCase().includes(q) || 
                 (s.category && s.category.toLowerCase().includes(q))

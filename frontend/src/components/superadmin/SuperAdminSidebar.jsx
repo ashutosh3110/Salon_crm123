@@ -50,7 +50,7 @@ const menuItems = [
         badgeColor: 'bg-primary/10 text-primary',
     },
     {
-        label: 'Customer Messages',
+        label: 'Salon Enquiries',
         icon: MessageSquare,
         path: '/superadmin/inquiries',
         badge: null,

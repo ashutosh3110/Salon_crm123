@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
     CreditCard, FileText, BarChart2, DollarSign, TrendingUp,
     TrendingDown, RefreshCw, Download, Plus, Search, Filter,
@@ -194,6 +195,7 @@ function isInPeriod(dateStr, period, customFrom, customTo) {
 }
 
 export default function SABillingPage() {
+    const navigate = useNavigate();
     const [tab, setTab] = useState('payments');
     const [search, setSearch] = useState('');
     const [statusFilter, setSF] = useState('');
@@ -246,7 +248,7 @@ export default function SABillingPage() {
 
     /* filtered payments */
     const filteredPayments = payments.filter(p => {
-        const q = search.toLowerCase();
+        const q = search.trim().toLowerCase();
         const salonName = p.tenantId?.name || p.salonName || '';
         const matchQ = !q || 
                       salonName.toLowerCase().includes(q) || 
@@ -441,8 +443,19 @@ export default function SABillingPage() {
                     { label: 'Collected Amount', value: `₹${(stats.collectedAmount || 0).toLocaleString('en-IN')}`, icon: CheckCircle, gradient: 'from-emerald-500 to-teal-600', shadow: 'shadow-emerald-500/20', change: 0 },
                     { label: 'Pending Amount', value: `₹${(stats.pendingAmount || 0).toLocaleString('en-IN')}`, icon: Clock, gradient: 'from-amber-500 to-orange-600', shadow: 'shadow-amber-500/20', change: 0 },
                     { label: 'Subscribed Salons', value: stats.totalSubscribedSalons || 0, icon: Building2, gradient: 'from-violet-500 to-purple-600', shadow: 'shadow-violet-500/20', change: 0 },
-                ].map(k => (
-                    <div key={k.label} className="bg-white rounded-2xl border border-border shadow-sm p-5 hover:shadow-md transition-all">
+                ].map(k => {
+                    const isSalonsCard = k.label === 'Subscribed Salons';
+                    return (
+                        <div 
+                            key={k.label} 
+                            onClick={() => {
+                                if (isSalonsCard) navigate('/superadmin/tenants');
+                                else if (k.label === 'Total Revenue') setTab('reports');
+                                else if (k.label === 'Collected Amount') { setTab('payments'); setSF('captured'); }
+                                else if (k.label === 'Pending Amount') { setTab('payments'); setSF('pending'); }
+                            }}
+                            className="bg-white rounded-2xl border border-border shadow-sm p-5 hover:shadow-md transition-all cursor-pointer hover:border-primary/20"
+                        >
                         <div className="flex items-center justify-between mb-3">
                             <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${k.gradient} flex items-center justify-center shadow-lg ${k.shadow}`}>
                                 <k.icon className="w-5 h-5 text-white" />
@@ -455,9 +468,10 @@ export default function SABillingPage() {
                         </div>
                         <div className="text-xl font-black text-text">{k.value}</div>
                         <div className="text-xs text-text-muted mt-0.5">{k.label}</div>
-                    </div>
-                ))}
-            </div>
+                        </div>
+                        );
+                    })}
+                </div>
             {/* ════ TAB: PAYMENTS ════ */}
             {tab === 'payments' && (
                 <div className="space-y-3">

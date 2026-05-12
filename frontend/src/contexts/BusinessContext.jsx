@@ -26,6 +26,33 @@ const BusinessContext = createContext({
     isPageLoading: false, setIsPageLoading: () => { }
 });
 
+
+
+// Normalization helpers for data consistency
+const normalizeProduct = (p) => {
+    if (!p) return null;
+    const id = String(p._id ?? p.id ?? '');
+    return {
+        ...p,
+        id,
+        _id: id,
+        category: p.categoryId?.name || p.category || 'General',
+        categoryId: p.categoryId?._id || p.categoryId || '',
+        images: Array.isArray(p.images) ? p.images : (p.appImage ? [p.appImage] : [])
+    };
+};
+
+const normalizeShopCat = (c) => {
+    const id = String(c?._id ?? c?.id ?? '');
+    return { 
+        ...c, 
+        id, 
+        _id: id, 
+        name: c?.name ?? '', 
+        image: c?.image || 'https://images.unsplash.com/photo-1596462502278-27bfdc4033c8?q=80&w=1000' 
+    };
+};
+
 export function BusinessProvider({ children }) {
     const { isAuthenticated, user, loading: authLoading } = useAuth();
     const { isCustomerAuthenticated, customer, setCustomer, loading: customerLoading } = useCustomerAuth();
@@ -46,31 +73,6 @@ export function BusinessProvider({ children }) {
     const [segments, setSegments] = useState([]);
     const [shifts, setShifts] = useState([]);
     const [catalogue, setCatalogue] = useState(null);
-    
-    // Normalization helpers for data consistency
-    const normalizeProduct = (p) => {
-        if (!p) return null;
-        const id = String(p._id ?? p.id ?? '');
-        return {
-            ...p,
-            id,
-            _id: id,
-            category: p.categoryId?.name || p.category || 'General',
-            categoryId: p.categoryId?._id || p.categoryId || '',
-            images: Array.isArray(p.images) ? p.images : (p.appImage ? [p.appImage] : [])
-        };
-    };
-
-    const normalizeShopCat = (c) => {
-        const id = String(c?._id ?? c?.id ?? '');
-        return { 
-            ...c, 
-            id, 
-            _id: id, 
-            name: c?.name ?? '', 
-            image: c?.image || 'https://images.unsplash.com/photo-1596462502278-27bfdc4033c8?q=80&w=1000' 
-        };
-    };
     const [customersLoading, setCustomersLoading] = useState(false);
     const [segmentsLoading, setSegmentsLoading] = useState(false);
     const [feedbacksLoading, setFeedbacksLoading] = useState(false);
@@ -92,6 +94,8 @@ export function BusinessProvider({ children }) {
     const [nearbyOutlets, setNearbyOutlets] = useState([]);
     const [userSession, setUserSession] = useState(null);
     const [isPageLoading, setIsPageLoading] = useState(false);
+    
+
 
 
     const [activeSalonId, setActiveSalonId] = useState(() => localStorage.getItem('active_salon_id') || null);
@@ -107,15 +111,13 @@ export function BusinessProvider({ children }) {
     }, []);
 
     const [activeOutletId, setActiveOutletId] = useState(() => localStorage.getItem('active_outlet_id') || null);
+    
+    // Ref to prevent infinite loops in toast/refetch
+    const lastNotifiedOutletIdRef = useRef(activeOutletId);
 
     const activeOutlet = useMemo(() => (outlets || []).find((o) => String(o._id || o.id) === String(activeOutletId || '')) || null, [outlets, activeOutletId]);
 
-    // Sync activeOutletId to localStorage
-    useEffect(() => {
-        if (activeOutletId) {
-            localStorage.setItem('active_outlet_id', activeOutletId);
-        }
-    }, [activeOutletId]);
+
 
     // Sync activeSalonId to localStorage and update from activeOutlet
     useEffect(() => {
@@ -261,7 +263,7 @@ export function BusinessProvider({ children }) {
             console.error("Fetch services failed:", error);
             setServices([]);
         }
-    }, [activeSalonId, salon?._id, activeOutletId]);
+    }, [activeSalonId, activeOutletId]);
 
     const fetchGroupedServices = useCallback(async (sId) => {
         try {
@@ -273,7 +275,7 @@ export function BusinessProvider({ children }) {
             console.error("Fetch grouped services failed:", error);
             setGroupedServices([]);
         }
-    }, [activeSalonId, salon?._id]);
+    }, [activeSalonId]);
 
     const fetchCategories = useCallback(async (sId) => {
         try {
@@ -282,7 +284,7 @@ export function BusinessProvider({ children }) {
             const r = await api.get(`/categories?salonId=${sid}`);
             setCategories(r.data?.data || []);
         } catch { setCategories([]); }
-    }, [activeSalonId, salon?._id]);
+    }, [activeSalonId]);
 
 
 
@@ -323,7 +325,7 @@ export function BusinessProvider({ children }) {
             console.error("Fetch products failed:", error);
             setProducts([]);
         }
-    }, [activeSalonId, salon?._id, activeOutletId]);
+    }, [activeSalonId, activeOutletId]);
 
     const fetchProductCategories = useCallback(async (sId) => {
         try {
@@ -336,7 +338,7 @@ export function BusinessProvider({ children }) {
             console.error("Fetch product categories failed:", error);
             setProductCategories([]);
         }
-    }, [activeSalonId, salon?._id]);
+    }, [activeSalonId]);
 
     const fetchSuppliers = useCallback(async () => {
         try {
@@ -379,7 +381,7 @@ export function BusinessProvider({ children }) {
             console.error("Fetch staff failed:", error);
             setStaff([]);
         }
-    }, [activeSalonId, salon?._id]);
+    }, [activeSalonId]);
 
     const fetchShifts = useCallback(async () => { const r = await api.get('/shifts'); setShifts(r.data?.data || r.data || []); }, []);
 
@@ -399,7 +401,7 @@ export function BusinessProvider({ children }) {
         } catch (err) {
             console.error('Failed to fetch loyalty settings:', err);
         }
-    }, [activeSalonId, salon?._id]);
+    }, [activeSalonId]);
 
     const fetchLoyaltyPlans = useCallback(async (sId) => {
         try {
@@ -410,7 +412,7 @@ export function BusinessProvider({ children }) {
         } catch (err) {
             console.error('Failed to fetch loyalty plans:', err);
         }
-    }, [activeSalonId, salon?._id]);
+    }, [activeSalonId]);
 
     const fetchCustomerInitialData = useCallback(async () => {
         if (initializationRef.current) return;
@@ -471,6 +473,33 @@ export function BusinessProvider({ children }) {
             setIsInitializing(false);
         }
     }, [activeSalonId, fetchProductCategories, fetchProducts, fetchLoyaltySettings, fetchLoyaltyPlans]);
+
+    // Sync activeOutletId to localStorage and show message
+    useEffect(() => {
+        if (activeOutletId && activeOutletId !== lastNotifiedOutletIdRef.current) {
+            localStorage.setItem('active_outlet_id', activeOutletId);
+            lastNotifiedOutletIdRef.current = activeOutletId;
+            
+            // Show a premium selection message
+            if (activeOutlet) {
+                toast.success(`Active Hub: ${activeOutlet.name}`, {
+                    icon: '📍',
+                    duration: 3000,
+                    style: {
+                        background: '#1A1A1A',
+                        color: '#C8956C',
+                        fontSize: '11px',
+                        fontWeight: 'bold',
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.1em',
+                        border: '1px solid rgba(200,149,108,0.2)',
+                        padding: '12px 20px',
+                        borderRadius: '16px'
+                    }
+                });
+            }
+        }
+    }, [activeOutletId, activeOutlet]);
     const fetchSalon = useCallback(async () => {
         try {
             const sid = activeSalonId || localStorage.getItem('active_salon_id');
@@ -1001,8 +1030,8 @@ export function BusinessProvider({ children }) {
         const urlId = searchParams.get('tenantId');
         const urlOutletId = searchParams.get('outletId');
 
-        const effectiveTid = urlId || activeSalonId || localStorage.getItem('active_salon_id');
-        const effectiveOid = urlOutletId || activeOutletId || localStorage.getItem('active_outlet_id');
+        const effectiveTid = String(urlId || activeSalonId || localStorage.getItem('active_salon_id') || '');
+        const effectiveOid = String(urlOutletId || activeOutletId || localStorage.getItem('active_outlet_id') || '');
 
         if (urlId && urlId !== activeSalonId) {
             localStorage.setItem('active_salon_id', urlId);
@@ -1034,8 +1063,14 @@ export function BusinessProvider({ children }) {
         }
 
         if ((isAuthenticated || isCustomerAuthenticated) && user?.role !== 'superadmin') {
-            // Prevent double initialization if already has data for this salon or already fetching
-            if (initializationRef.current || (salon && String(salon._id) === String(effectiveTid))) return;
+            // Prevent double initialization if already has data for this salon AND outlet, or already fetching
+            const currentSalonId = String(salon?._id || '');
+            const currentOutletId = String(localStorage.getItem('last_initialized_outlet_id') || '');
+
+            if (initializationRef.current) return;
+            if (salon && currentSalonId === effectiveTid && currentOutletId === effectiveOid) return;
+
+            localStorage.setItem('last_initialized_outlet_id', effectiveOid);
             fetchCustomerInitialData();
         } else if (effectiveTid) {
             if (lastInitializedId.current === effectiveTid) return;

@@ -477,11 +477,7 @@ export default function AppProfilePage() {
                         <span className="flex-1 text-left text-sm font-black italic tracking-tight" style={{ color: colors.text }}>Help & Support</span>
                         <ChevronRight size={16} className="opacity-20" />
                     </button>
-                    <button onClick={() => setShowReviewModal(true)} className="w-full flex items-center gap-4 p-5 border-b border-black/5 dark:border-white/5 hover:bg-black/5 transition-colors">
-                        <MessageSquare size={18} className="opacity-40" />
-                        <span className="flex-1 text-left text-sm font-black italic tracking-tight" style={{ color: colors.text }}>Share Feedback</span>
-                        <Star size={16} className="text-[#C8956C]" fill="#C8956C" />
-                    </button>
+
                 </div>
             </div>
 

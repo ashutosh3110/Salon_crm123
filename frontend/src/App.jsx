@@ -194,6 +194,7 @@ const AppMyOrdersPage = lazy(() => import('./pages/app/AppMyOrdersPage'));
 const AppBookingDetailsPage = lazy(() => import('./pages/app/AppBookingDetailsPage'));
 const AppServicesPage = lazy(() => import('./pages/app/AppServicesPage'));
 const AppReferralPage = lazy(() => import('./pages/app/AppReferralPage'));
+const AppHelpPage = lazy(() => import('./pages/app/AppHelpPage'));
 const AppProfilePage = lazy(() => import('./pages/app/AppProfilePage'));
 const AppShopPage = lazy(() => import('./pages/app/AppShopPage'));
 const AppProductCategoriesPage = lazy(() => import('./pages/app/AppProductCategoriesPage'));
@@ -587,6 +588,7 @@ function App() {
                             <Route path="/app/wallet" element={<AppWalletPage />} />
                             <Route path="/app/transactions" element={<AppTransactionHistoryPage />} />
                             <Route path="/app/reviews" element={<AppReviewsPage />} />
+                            <Route path="/app/help" element={<AppHelpPage />} />
                             <Route path="/app/likes" element={<AppFavoritesPage />} />
 
                             <Route path="/app/booking" element={<AppBookingPage />} />
@@ -608,7 +610,6 @@ function App() {
                             <Route path="/app/membership" element={<AppMembershipPage />} />
                             <Route path="/app/membership/checkout" element={<AppMembershipCheckoutPage />} />
                             <Route path="/app/membership/success" element={<AppMembershipSuccessPage />} />
-                            <Route path="/app/help" element={<AppHelpSupportPage />} />
                           </Route>
                           
                           <Route path="/app/privacy" element={<AppPrivacyPolicyPage />} />

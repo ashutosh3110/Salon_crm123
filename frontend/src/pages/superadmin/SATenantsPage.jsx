@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import api from '../../services/api';
 import {
     Building2, Search, Plus, Edit3, Ban, MoreVertical, X,
@@ -581,6 +581,7 @@ function SalonModal({ mode, tenant, onClose, onSave, saving }) {
 /* ══════════════════════════════════════════════════════════════════════════ */
 export default function SATenantsPage() {
     const navigate = useNavigate();
+    const [searchParams] = useSearchParams();
     const [tenants, setTenants] = useState([]);
     const [loading, setLoading] = useState(false);
     const [search, setSearch] = useState('');
@@ -609,6 +610,13 @@ export default function SATenantsPage() {
     useEffect(() => {
         fetchStats();
     }, []);
+
+    useEffect(() => {
+        const status = searchParams.get('status');
+        const plan = searchParams.get('plan');
+        if (status) setStatus(status);
+        if (plan) setPlan(plan);
+    }, [searchParams]);
 
     const fetchStats = async () => {
         try {
@@ -952,10 +960,10 @@ export default function SATenantsPage() {
                 </div>
             </div>
 
- 
-            {/* ── Search only ── */}
-            <div className="flex flex-col sm:flex-row gap-3">
-                <div className="relative flex-1">
+
+            {/* ── Search and Filters ── */}
+            <div className="flex flex-col md:flex-row items-center gap-3 mb-6">
+                <div className="relative flex-1 w-full">
                     <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
                     <input 
                         type="text" 
@@ -965,7 +973,53 @@ export default function SATenantsPage() {
                         className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-surface border border-border text-text placeholder-text-muted text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm" 
                     />
                 </div>
+                
+                <div className="flex flex-wrap items-center gap-2 w-full md:w-auto">
+                    {/* Status Dropdown */}
+                    <div className="w-40">
+                        <CustomDropdown
+                            value={statusFilter}
+                            onChange={setStatus}
+                            placeholder="All Status"
+                            options={[
+                                { value: '', label: 'All Status', icon: Layers },
+                                { value: 'active', label: 'Active', icon: CheckCircle },
+                                { value: 'pending', label: 'Pending', icon: Clock },
+                                { value: 'trial', label: 'Trial', icon: Package },
+                                { value: 'expired', label: 'Expired', icon: AlertTriangle },
+                                { value: 'suspended', label: 'Suspended', icon: XCircle },
+                            ]}
+                        />
+                    </div>
+
+                    {/* Plan Dropdown */}
+                    <div className="w-44">
+                        <CustomDropdown
+                            value={planFilter}
+                            onChange={setPlan}
+                            placeholder="All Plans"
+                            options={[
+                                { value: '', label: 'All Plans', icon: Crown },
+                                { value: 'subscribed', label: 'Subscribed', icon: Crown },
+                                { value: 'none', label: 'No Plan', icon: Package },
+                                { value: 'basic', label: 'Basic', icon: Package },
+                                { value: 'pro', label: 'Pro', icon: Package },
+                            ]}
+                        />
+                    </div>
+
+                    {(statusFilter || planFilter || search) && (
+                        <button 
+                            onClick={() => { setStatus(''); setPlan(''); setSearch(''); }}
+                            className="p-2.5 rounded-xl bg-surface border border-border text-text-muted hover:text-primary transition-all shadow-sm"
+                            title="Clear all filters"
+                        >
+                            <X className="w-4 h-4" />
+                        </button>
+                    )}
+                </div>
             </div>
+
 
             {/* ── Table ── */}
             <div className="bg-surface rounded-2xl border border-border shadow-sm overflow-hidden">
@@ -991,18 +1045,22 @@ export default function SATenantsPage() {
                                 {filtered.map(t => {
                                     const sc = STATUS_CFG[t.status] || STATUS_CFG.inactive;
                                     return (
-                                        <tr key={t._id} className="hover:bg-surface/40 transition-colors group">
+                                <tr 
+                                    key={t._id} 
+                                    onClick={() => navigate(`/superadmin/tenants/${t._id}`)}
+                                    className="hover:bg-surface/40 transition-colors group cursor-pointer"
+                                >
                                             {/* Salon */}
                                             <td className="px-4 py-3.5">
-                                                <Link to={`/superadmin/tenants/${t._id}`} className="flex items-center gap-3 group/link">
-                                                    <div className="w-9 h-9 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center text-sm font-black text-primary shrink-0 group-hover/link:bg-primary group-hover/link:text-primary-foreground transition-all">
+                                                <div className="flex items-center gap-3 group/link">
+                                                    <div className="w-9 h-9 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center text-sm font-black text-primary shrink-0 group-hover:bg-primary group-hover:text-primary-foreground transition-all">
                                                         {t.name[0].toUpperCase()}
                                                     </div>
                                                     <div>
-                                                        <div className="text-sm font-semibold text-text group-hover/link:text-primary transition-colors">{t.name}</div>
+                                                        <div className="text-sm font-semibold text-text group-hover:text-primary transition-colors">{t.name}</div>
                                                         <div className="text-[10px] text-text-muted font-mono">{t.slug}</div>
                                                     </div>
-                                                </Link>
+                                                </div>
                                             </td>
                                             {/* Owner / Email */}
                                             <td className="px-4 py-3.5">

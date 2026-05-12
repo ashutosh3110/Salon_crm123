@@ -13,8 +13,8 @@ import api from '../../services/api';
 /* ─── Constants ────────────────────────────────────────────────────── */
 
 const STATUS_STYLES = {
-    'open': { bg: 'bg-sky-50', text: 'text-sky-700', border: 'border-sky-200', label: 'Open' },
-    'in-progress': { bg: 'bg-amber-50', text: 'text-amber-700', border: 'border-amber-200', label: 'In Progress' },
+    'pending': { bg: 'bg-amber-50', text: 'text-amber-700', border: 'border-amber-200', label: 'Pending' },
+    'in-progress': { bg: 'bg-sky-50', text: 'text-sky-700', border: 'border-sky-200', label: 'In Progress' },
     'resolved': { bg: 'bg-emerald-50', text: 'text-emerald-700', border: 'border-emerald-200', label: 'Resolved' },
     'closed': { bg: 'bg-slate-50', text: 'text-slate-500', border: 'border-slate-200', label: 'Closed' },
     'escalated': { bg: 'bg-rose-50', text: 'text-rose-700', border: 'border-rose-200', label: 'Escalated' },
@@ -73,13 +73,9 @@ export default function SASupportPage() {
     const fetchFAQs = async () => {
         try {
             setLoadingFaqs(true);
-            const response = await api.get('/settings');
-            const data = response.data?.data;
-            if (data && data.supportFaqs) {
-                setFaqs(data.supportFaqs);
-            } else {
-                // Initial empty state if nothing exists in DB yet
-                setFaqs([]);
+            const response = await api.get('/support/faqs');
+            if (response.data.success) {
+                setFaqs(response.data.data);
             }
         } catch (error) {
             console.error('Failed to fetch FAQs:', error);
@@ -88,30 +84,52 @@ export default function SASupportPage() {
         }
     };
 
-    const handleSaveFAQs = async () => {
+    const handleSaveFaq = async (faq) => {
         try {
             setSavingFaqs(true);
-            const response = await api.patch('/settings', { supportFaqs: faqs });
-            if (response.data?.success) {
-                showToast('FAQs updated successfully!');
+            let res;
+            if (faq._id) {
+                res = await api.patch(`/support/faqs/${faq._id}`, faq);
+            } else {
+                res = await api.post('/support/faqs', faq);
+            }
+            if (res.data.success) {
+                showToast('FAQ saved successfully!');
+                fetchFAQs();
             }
         } catch (error) {
-            console.error('Failed to save FAQs:', error);
-            showToast('Failed to save FAQs', 'error');
+            console.error('Failed to save FAQ:', error);
+            showToast('Failed to save FAQ', 'error');
         } finally {
             setSavingFaqs(false);
         }
     };
 
     const addFaq = () => {
-        setFaqs([...faqs, { q: 'New Question?', a: 'Answer goes here...' }]);
+        setFaqs([{ question: 'New Question?', answer: 'Answer goes here...', category: 'General', isNew: true }, ...faqs]);
     };
 
-    const removeFaq = (index) => {
-        setFaqs(faqs.filter((_, i) => i !== index));
+    const removeFaq = async (faq, index) => {
+        if (!faq._id) {
+            setFaqs(faqs.filter((_, i) => i !== index));
+            return;
+        }
+        if (!confirm('Delete this FAQ permanently?')) return;
+        try {
+            setSavingFaqs(true);
+            const res = await api.delete(`/support/faqs/${faq._id}`);
+            if (res.data.success) {
+                showToast('FAQ deleted');
+                fetchFAQs();
+            }
+        } catch (err) {
+            showToast('Delete failed', 'error');
+        } finally {
+            setSavingFaqs(false);
+        }
     };
 
-    const updateFaq = (index, field, value) => {
+    const updateFaqLocal = (index, field, value) => {
         const newFaqs = [...faqs];
         newFaqs[index][field] = value;
         setFaqs(newFaqs);
@@ -120,7 +138,7 @@ export default function SASupportPage() {
     const fetchTickets = async () => {
         try {
             setLoadingTickets(true);
-            const response = await api.get('/tickets');
+            const response = await api.get('/support/superadmin/tickets');
             if (response.data.success) {
                 setTickets(response.data.data);
             }
@@ -133,7 +151,7 @@ export default function SASupportPage() {
 
     const updateStatus = async (id, status) => {
         try {
-            const response = await api.patch(`/tickets/${id}`, { status });
+            const response = await api.patch(`/support/tickets/${id}/status`, { status });
             if (response.data.success) {
                 setTickets(tickets.map(t => t._id === id ? { ...t, status: response.data.data.status } : t));
                 showToast(`Ticket status: ${status.toUpperCase()}`);
@@ -221,10 +239,7 @@ export default function SASupportPage() {
                     >
                         Manage FAQs
                     </button>
-                    <button onClick={handleForceLogout} disabled={clearing}
-                        className="ml-2 flex items-center gap-2 px-3 py-2 rounded-lg bg-red-50 text-red-600 hover:bg-red-100 text-[10px] font-black uppercase tracking-widest transition-all disabled:opacity-60">
-                        {clearing ? <RefreshCw className="w-4 h-4 animate-spin" /> : <LogOut className="w-4 h-4" />}
-                    </button>
+                   
                 </div>
             </div>
 
@@ -268,7 +283,7 @@ export default function SASupportPage() {
                             </div>
                         ) : (
                             tickets.map(t => {
-                                const stStyle = STATUS_STYLES[t.status] || STATUS_STYLES.open;
+                                const stStyle = STATUS_STYLES[t.status] || STATUS_STYLES.pending;
                                 return (
                                     <div key={t._id} className="group relative bg-white border border-border rounded-2xl p-5 hover:shadow-2xl hover:border-primary/30 transition-all duration-300">
                                         <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
@@ -360,14 +375,6 @@ export default function SASupportPage() {
                             >
                                 <Plus className="w-4 h-4" /> Add Question
                             </button>
-                            <button 
-                                onClick={handleSaveFAQs}
-                                disabled={savingFaqs}
-                                className="flex items-center gap-2 px-4 py-2 bg-emerald-500 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-emerald-600 transition-all shadow-lg active:scale-95 disabled:opacity-50"
-                            >
-                                {savingFaqs ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-                                Save Changes
-                            </button>
                         </div>
                     </div>
 
@@ -390,31 +397,51 @@ export default function SASupportPage() {
                                             <span className="text-[10px] font-black">Q{i+1}</span>
                                         </div>
                                         <div className="flex-1 space-y-4">
-                                            <div className="space-y-1.5">
-                                                <label className="text-[9px] font-black text-text-muted uppercase tracking-widest ml-1">Question</label>
-                                                <input 
-                                                    type="text" 
-                                                    value={faq.q}
-                                                    onChange={(e) => updateFaq(i, 'q', e.target.value)}
-                                                    className="w-full px-4 py-2.5 bg-surface border border-border rounded-xl text-sm font-bold text-text focus:border-primary outline-none transition-all"
-                                                />
+                                            <div className="flex items-center gap-4">
+                                                <div className="flex-1 space-y-1.5">
+                                                    <label className="text-[9px] font-black text-text-muted uppercase tracking-widest ml-1">Question</label>
+                                                    <input 
+                                                        type="text" 
+                                                        value={faq.question}
+                                                        onChange={(e) => updateFaqLocal(i, 'question', e.target.value)}
+                                                        className="w-full px-4 py-2.5 bg-surface border border-border rounded-xl text-sm font-bold text-text focus:border-primary outline-none transition-all"
+                                                    />
+                                                </div>
+                                                <div className="w-40 space-y-1.5">
+                                                    <label className="text-[9px] font-black text-text-muted uppercase tracking-widest ml-1">Category</label>
+                                                    <input 
+                                                        type="text" 
+                                                        value={faq.category}
+                                                        onChange={(e) => updateFaqLocal(i, 'category', e.target.value)}
+                                                        className="w-full px-4 py-2.5 bg-surface border border-border rounded-xl text-xs font-bold text-text focus:border-primary outline-none transition-all"
+                                                    />
+                                                </div>
                                             </div>
                                             <div className="space-y-1.5">
                                                 <label className="text-[9px] font-black text-text-muted uppercase tracking-widest ml-1">Answer</label>
                                                 <textarea 
-                                                    value={faq.a}
-                                                    onChange={(e) => updateFaq(i, 'a', e.target.value)}
+                                                    value={faq.answer}
+                                                    onChange={(e) => updateFaqLocal(i, 'answer', e.target.value)}
                                                     rows="2"
                                                     className="w-full px-4 py-2.5 bg-surface border border-border rounded-xl text-sm font-medium text-text-secondary focus:border-primary outline-none transition-all resize-none"
                                                 />
                                             </div>
+                                            <div className="flex justify-end gap-2 pt-2">
+                                                <button 
+                                                    onClick={() => handleSaveFaq(faq)}
+                                                    disabled={savingFaqs}
+                                                    className="flex items-center gap-2 px-4 py-2 bg-emerald-500 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-emerald-600 transition-all disabled:opacity-50"
+                                                >
+                                                    <Save className="w-3 h-3" /> {faq._id ? 'Update' : 'Save New'}
+                                                </button>
+                                                <button 
+                                                    onClick={() => removeFaq(faq, i)}
+                                                    className="flex items-center gap-2 px-4 py-2 bg-rose-50 text-rose-500 border border-rose-100 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-rose-100 transition-all"
+                                                >
+                                                    <Trash2 className="w-3 h-3" /> Delete
+                                                </button>
+                                            </div>
                                         </div>
-                                        <button 
-                                            onClick={() => removeFaq(i)}
-                                            className="p-2 text-text-muted hover:text-red-500 transition-colors rounded-lg hover:bg-red-50"
-                                        >
-                                            <Trash2 className="w-4 h-4" />
-                                        </button>
                                     </div>
                                 </div>
                             ))

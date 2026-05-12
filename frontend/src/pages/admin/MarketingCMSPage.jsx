@@ -265,28 +265,7 @@ export default function MarketingCMSPage() {
                     </div>
                 </div>
                 <div className="flex flex-wrap gap-3">
-                    <button 
-                        onClick={() => {
-                            fetchAppCMS();
-                            setShowPreviewInfo(true);
-                            setTimeout(() => setShowPreviewInfo(false), 3000);
-                        }}
-                        className="flex items-center gap-2 px-6 py-3 bg-surface border border-border/40 rounded-none text-[10px] font-black uppercase tracking-widest text-text-secondary hover:bg-surface-alt transition-all relative"
-                    >
-                        <Smartphone className="w-4 h-4" /> Preview App
-                        <AnimatePresence>
-                            {showPreviewInfo && (
-                                <motion.div 
-                                    initial={{ opacity: 0, scale: 0.8 }}
-                                    animate={{ opacity: 1, scale: 1 }}
-                                    exit={{ opacity: 0, scale: 0.8 }}
-                                    className="absolute -bottom-12 left-0 right-0 py-2 bg-primary text-white text-[8px] font-black text-center uppercase tracking-widest z-50 shadow-xl"
-                                >
-                                    App Sync Active
-                                </motion.div>
-                            )}
-                        </AnimatePresence>
-                    </button>
+                
                     <button
                         onClick={() => {
                             let type = 'banner';

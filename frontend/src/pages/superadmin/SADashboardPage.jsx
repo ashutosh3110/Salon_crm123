@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
 import mockApi from '../../services/mock/mockApi';
 import api from '../../services/api';
@@ -9,7 +9,7 @@ import { registerToken } from '../../services/firebase';
 import {
     Building2, Users, TrendingUp, AlertTriangle, ArrowUpRight,
     CreditCard, Activity, DollarSign, Clock, CheckCircle2,
-    XCircle, Wifi, ArrowRight, RefreshCw, Zap,
+    XCircle, Wifi, ArrowRight, RefreshCw, Zap, Crown, MessageSquare,
 } from 'lucide-react';
 import {
     AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell,
@@ -115,6 +115,7 @@ function SectionHeader({ title, subtitle, action }) {
 
 /* ══════════════════════════════════════════════════════════════════════════ */
 export default function SADashboardPage() {
+    const navigate = useNavigate();
     const [stats, setStats] = useState(null);
     const [analytics, setAnalytics] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -141,10 +142,24 @@ export default function SADashboardPage() {
         }
     };
 
+    const [pendingEnquiries, setPendingEnquiries] = useState(0);
+    const fetchEnquiries = async () => {
+        try {
+            const res = await api.get('/inquiries');
+            const list = res.data.data || [];
+            setPendingEnquiries(list.filter(i => i.status === 'new').length);
+        } catch (error) {
+            console.error('Error fetching enquiries:', error);
+        }
+    };
+
     const { isAuthenticated } = useAuth();
     useFirebaseNotifications(isAuthenticated);
 
-    useEffect(() => { fetchStats(); }, []);
+    useEffect(() => { 
+        fetchStats(); 
+        fetchEnquiries();
+    }, []);
 
     /* ── KPI values: Live ── */
     const kpi = {
@@ -172,14 +187,18 @@ export default function SADashboardPage() {
         color: p.color
     }));
 
+    const salonsWithPlan = currentPlanDist.filter(p => p.name !== 'Free').reduce((acc, curr) => acc + curr.value, 0);
+    const salonsWithoutPlan = currentPlanDist.find(p => p.name === 'Free')?.value || 0;
+
     const metricCards = [
-        { label: 'Total Registered', value: kpi.totalSalons, icon: Building2, gradient: 'from-primary to-[#8B1A2D]', shadow: 'shadow-primary/20', to: '/superadmin/salons' },
-        { label: 'Active Salons', value: kpi.activeSubs, icon: CheckCircle2, gradient: 'from-emerald-500 to-teal-600', shadow: 'shadow-emerald-500/20', to: '/superadmin/salons?status=active' },
-        { label: 'Pending Approval', value: kpi.pendingSalons, icon: Clock, gradient: 'from-blue-500 to-indigo-600', shadow: 'shadow-blue-500/20', to: '/superadmin/salons?status=pending' },
-        { label: 'Inactive / Suspended', value: kpi.suspendedSalons, icon: AlertTriangle, gradient: 'from-slate-600 to-slate-800', shadow: 'shadow-slate-500/20', to: '/superadmin/salons?status=suspended' },
-        { label: "Today's Earnings", value: kpi.revenueToday, icon: DollarSign, gradient: 'from-violet-500 to-purple-600', shadow: 'shadow-violet-500/20', prefix: '₹', to: '/superadmin/billing' },
-        { label: "Total Revenue", value: kpi.revenueMonth, icon: TrendingUp, gradient: 'from-amber-500 to-orange-600', shadow: 'shadow-amber-500/20', prefix: '₹', to: '/superadmin/billing' },
-        { label: 'Expired Licenses', value: kpi.expiredPlans, icon: XCircle, gradient: 'from-red-500 to-rose-600', shadow: 'shadow-red-500/20', to: '/superadmin/salons?status=expired' },
+        { label: 'Total Registered', value: kpi.totalSalons, icon: Building2, gradient: 'from-primary to-[#8B1A2D]', shadow: 'shadow-primary/20', to: '/superadmin/tenants' },
+        { label: 'Active Salons', value: kpi.activeSubs, icon: CheckCircle2, gradient: 'from-emerald-500 to-teal-600', shadow: 'shadow-emerald-500/20', to: '/superadmin/tenants?status=active' },
+        { label: 'Pending Approval', value: kpi.pendingSalons, icon: Clock, gradient: 'from-blue-500 to-indigo-600', shadow: 'shadow-blue-500/20', to: '/superadmin/tenants?status=pending' },
+        { label: 'Salons With Plan', value: salonsWithPlan, icon: Crown, gradient: 'from-amber-500 to-orange-600', shadow: 'shadow-amber-500/20', to: '/superadmin/tenants?plan=subscribed' },
+        { label: 'Salons Without Plan', value: salonsWithoutPlan, icon: XCircle, gradient: 'from-slate-600 to-slate-800', shadow: 'shadow-slate-500/20', to: '/superadmin/tenants?plan=none' },
+        { label: "Total Revenue", value: kpi.revenueMonth, icon: TrendingUp, gradient: 'from-violet-500 to-purple-600', shadow: 'shadow-violet-500/20', prefix: '₹', to: '/superadmin/billing' },
+        { label: "Today's Earnings", value: kpi.revenueToday, icon: DollarSign, gradient: 'from-emerald-500 to-teal-600', shadow: 'shadow-emerald-500/20', prefix: '₹', to: '/superadmin/billing' },
+        { label: 'Pending Enquiry', value: pendingEnquiries, icon: MessageSquare, gradient: 'from-red-500 to-rose-600', shadow: 'shadow-red-500/20', to: '/superadmin/inquiries' },
     ];
 
     return (
@@ -248,7 +267,7 @@ export default function SADashboardPage() {
             </div>
 
             {/* ── KPI Grid ── */}
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7 gap-4">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                 {metricCards.map(c => (
                     <MetricCard key={c.label} {...c} loading={loading} />
                 ))}
@@ -258,7 +277,10 @@ export default function SADashboardPage() {
             <div className="grid lg:grid-cols-3 gap-6">
 
                 {/* Monthly Revenue — AreaChart (spans 2 cols) */}
-                <div className="lg:col-span-2 bg-surface rounded-2xl border border-border shadow-sm p-5 group hover:shadow-md transition-all">
+                <div 
+                    onClick={() => navigate('/superadmin/billing')}
+                    className="lg:col-span-2 bg-surface rounded-2xl border border-border shadow-sm p-5 group hover:shadow-md transition-all cursor-pointer hover:border-primary/20"
+                >
                     <SectionHeader
                         title="Income Trends"
                         subtitle="Earnings performance over the last 6 months"
@@ -293,12 +315,15 @@ export default function SADashboardPage() {
                 </div>
 
                 {/* Plan Distribution — PieChart */}
-                <div className="bg-surface rounded-2xl border border-border shadow-sm p-5 group hover:shadow-md transition-all">
+                <div 
+                    onClick={() => navigate('/superadmin/tenants')}
+                    className="bg-surface rounded-2xl border border-border shadow-sm p-5 group hover:shadow-md transition-all cursor-pointer hover:border-primary/20"
+                >
                     <SectionHeader 
                         title="Most Popular Plans" 
                         subtitle="Subscription breakdown" 
                         action={
-                            <Link to="/superadmin/salons" className="p-1.5 rounded-lg bg-primary/5 text-primary opacity-0 group-hover:opacity-100 transition-all hover:bg-primary hover:text-white">
+                            <Link to="/superadmin/tenants" className="p-1.5 rounded-lg bg-primary/5 text-primary opacity-0 group-hover:opacity-100 transition-all hover:bg-primary hover:text-white">
                                 <ArrowUpRight className="w-3.5 h-3.5" />
                             </Link>
                         }
@@ -331,7 +356,10 @@ export default function SADashboardPage() {
             <div className="grid lg:grid-cols-2 gap-6">
 
                 {/* New Registrations — BarChart */}
-                <div className="bg-surface rounded-2xl border border-border shadow-sm p-5 group hover:shadow-md transition-all">
+                <div 
+                    onClick={() => navigate('/superadmin/tenants')}
+                    className="bg-surface rounded-2xl border border-border shadow-sm p-5 group hover:shadow-md transition-all cursor-pointer hover:border-primary/20"
+                >
                     <SectionHeader
                         title="Salons Joined Recently"
                         subtitle="New monthly registrations"
@@ -340,7 +368,7 @@ export default function SADashboardPage() {
                                 <span className="text-[11px] font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/30 px-2 py-1 rounded-full">
                                     34 this month
                                 </span>
-                                <Link to="/superadmin/salons" className="p-1.5 rounded-lg bg-primary/5 text-primary opacity-0 group-hover:opacity-100 transition-all hover:bg-primary hover:text-white">
+                                <Link to="/superadmin/tenants" className="p-1.5 rounded-lg bg-primary/5 text-primary opacity-0 group-hover:opacity-100 transition-all hover:bg-primary hover:text-white">
                                     <ArrowUpRight className="w-3.5 h-3.5" />
                                 </Link>
                             </div>
@@ -364,7 +392,10 @@ export default function SADashboardPage() {
                 </div>
 
                 {/* Churn Rate — LineChart */}
-                <div className="bg-surface rounded-2xl border border-border shadow-sm p-5 group hover:shadow-md transition-all">
+                <div 
+                    onClick={() => navigate('/superadmin/tenants?status=expired')}
+                    className="bg-surface rounded-2xl border border-border shadow-sm p-5 group hover:shadow-md transition-all cursor-pointer hover:border-primary/20"
+                >
                     <SectionHeader
                         title="Cancellations Rate"
                         subtitle="Tracing salons who left our platform"
@@ -373,7 +404,7 @@ export default function SADashboardPage() {
                                 <span className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/30 px-2 py-1 rounded-full">
                                     ↓ Improving
                                 </span>
-                                <Link to="/superadmin/salons?status=expired" className="p-1.5 rounded-lg bg-primary/5 text-primary opacity-0 group-hover:opacity-100 transition-all hover:bg-primary hover:text-white">
+                                <Link to="/superadmin/tenants?status=expired" className="p-1.5 rounded-lg bg-primary/5 text-primary opacity-0 group-hover:opacity-100 transition-all hover:bg-primary hover:text-white">
                                     <ArrowUpRight className="w-3.5 h-3.5" />
                                 </Link>
                             </div>
@@ -425,10 +456,14 @@ export default function SADashboardPage() {
                         </thead>
                         <tbody className="divide-y divide-border">
                             {recentTenants.map(t => (
-                                <tr key={t._id} className="hover:bg-surface/40 transition-colors group">
+                                <tr 
+                                    key={t._id} 
+                                    onClick={() => navigate(`/superadmin/tenants/${t._id}`)}
+                                    className="hover:bg-surface/40 transition-colors group cursor-pointer"
+                                >
                                     <td className="px-5 py-3.5">
                                         <div className="flex items-center gap-3">
-                                            <div className="w-8 h-8 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center text-xs font-black text-primary shrink-0">
+                                            <div className="w-8 h-8 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center text-xs font-black text-primary shrink-0 group-hover:bg-primary group-hover:text-primary-foreground transition-all">
                                                 {t.name[0]?.toUpperCase() || 'S'}
                                             </div>
                                             <div>
@@ -461,10 +496,9 @@ export default function SADashboardPage() {
                                         </span>
                                     </td>
                                     <td className="px-5 py-3.5 text-right">
-                                        <Link to={`/superadmin/tenants/${t._id}`}
-                                            className="inline-flex items-center gap-1 text-[11px] font-semibold text-primary border border-primary/20 bg-primary/5 hover:bg-primary hover:text-primary-foreground px-3 py-1.5 rounded-lg transition-all">
+                                        <div className="inline-flex items-center gap-1 text-[11px] font-semibold text-primary border border-primary/20 bg-primary/5 group-hover:bg-primary group-hover:text-primary-foreground px-3 py-1.5 rounded-lg transition-all">
                                             View <ArrowRight className="w-3 h-3" />
-                                        </Link>
+                                        </div>
                                     </td>
                                 </tr>
                             ))}

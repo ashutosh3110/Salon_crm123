@@ -165,14 +165,19 @@ exports.getSalons = async (req, res) => {
         if (status) {
             if (status === 'trial') {
                 query.$or = [{ status: 'trial' }, { subscriptionPlan: freePlanRegex }];
-            } else if (status === 'active') {
-                query.status = 'active';
-                query.subscriptionPlan = { $not: freePlanRegex }; 
             } else {
                 query.status = status;
             }
         }
-        if (subscriptionPlan) query.subscriptionPlan = subscriptionPlan;
+        if (subscriptionPlan) {
+            if (subscriptionPlan === 'subscribed') {
+                query.subscriptionPlan = { $nin: [null, 'none', '', freePlanRegex] };
+            } else if (subscriptionPlan === 'none' || subscriptionPlan === 'free') {
+                query.subscriptionPlan = freePlanRegex;
+            } else {
+                query.subscriptionPlan = subscriptionPlan;
+            }
+        }
         
         // Date Range
         if (startDate || endDate) {

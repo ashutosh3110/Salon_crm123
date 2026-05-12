@@ -11,17 +11,27 @@ const ticketSchema = new mongoose.Schema({
     },
     status: {
         type: String,
-        enum: ['open', 'in-progress', 'resolved', 'closed', 'escalated'],
-        default: 'open'
+        enum: ['pending', 'in-progress', 'resolved', 'closed', 'escalated'],
+        default: 'pending'
     },
     tenantId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Salon',
         required: false
     },
+    outletId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Outlet',
+        required: false
+    },
     userId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
+        required: false
+    },
+    customerId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Customer',
         required: false
     },
     category: {
