@@ -6,7 +6,8 @@ import {
     Scissors, Package, Check, Loader2, Scan,
     Sparkles, User, UserPlus, ArrowRight, Percent, Info,
     Tag, Star, Wallet, Printer, Banknote, Smartphone, FileText, Download,
-    ShoppingBag, CreditCard, Ticket, Gift, History, Calendar, Globe, Building2, ChevronDown
+    ShoppingBag, CreditCard, Ticket, Gift, History, Calendar, Globe, Building2, ChevronDown,
+    AlertTriangle, CheckCircle2, UserMinus
 } from 'lucide-react';
 import api from '../../services/api';
 import {
@@ -22,6 +23,7 @@ import {
     Document, Page, Text, View, StyleSheet, PDFDownloadLink, pdf, Font
 } from '@react-pdf/renderer';
 import { useWallet } from '../../contexts/WalletContext';
+import { getImageUrl } from '../../utils/imageUtils';
 
 // Thermal receipts often use standard characters to ensure maximum compatibility across all printers
 Font.register({
@@ -273,14 +275,18 @@ export default function POSBillingPage() {
     const [customerGstin, setCustomerGstin] = useState('');
     const [customerState, setCustomerState] = useState('Uttar Pradesh'); // Default to Salon State
     const [pendingAppOrder, setPendingAppOrder] = useState(null);
+    const [showOutletPickerMain, setShowOutletPickerMain] = useState(false);
 
     useEffect(() => {
         if (!platformSettings) {
             fetchPlatformSettings();
         }
-        // Fetch staff to ensure stylists are available for billing
+        // Fetch staff and customers to ensure POS is ready
         fetchStaff?.();
-    }, [platformSettings, fetchPlatformSettings, fetchStaff]);
+        if (!businessCustomers || businessCustomers.length === 0) {
+            fetchCustomers?.();
+        }
+    }, [platformSettings, fetchPlatformSettings, fetchStaff, businessCustomers, fetchCustomers]);
 
     // Fiscal Settings (from localStorage)
     const fiscal = useMemo(() => {
@@ -1609,18 +1615,65 @@ export default function POSBillingPage() {
                         {selectedClient && (
                             <div className="mt-2 space-y-2 px-1">
                                 <div className="flex items-center gap-2">
-                                    <Building2 className="w-3 h-3 text-text-muted" />
+                                    <Building2 className="w-3 h-3 text-text-muted flex-shrink-0" />
                                     <span className="text-[9px] font-black text-text-muted uppercase tracking-widest leading-none">Selected Outlet:</span>
-                                    <select
-                                        value={activeOutletId || ''}
-                                        onChange={(e) => setActiveOutletId(e.target.value)}
-                                        className="bg-surface-alt text-[10px] font-black uppercase text-primary border border-border/50 rounded px-2 py-0.5 outline-none cursor-pointer hover:border-primary transition-colors"
-                                    >
-                                        <option value="" disabled>-- Select Outlet --</option>
-                                        {outlets.map(o => (
-                                            <option key={o._id} value={o._id}>{o.name}</option>
-                                        ))}
-                                    </select>
+                                    <div className="relative flex-1">
+                                        <button
+                                            onClick={() => setShowOutletPickerMain(prev => !prev)}
+                                            className="flex items-center gap-1.5 bg-surface-alt border border-border/50 rounded-lg px-2 py-1 hover:border-primary transition-all cursor-pointer w-full"
+                                        >
+                                            {(() => {
+                                                const sel = outlets.find(o => String(o._id) === String(activeOutletId));
+                                                const img = sel?.image || sel?.images?.[0];
+                                                return sel ? (
+                                                    <>
+                                                        <div className="w-5 h-5 rounded overflow-hidden border border-border flex-shrink-0">
+                                                            {img
+                                                                ? <img src={getImageUrl(img)} className="w-full h-full object-cover" alt={sel.name} onError={e => { e.target.style.display='none'; e.target.nextSibling.style.display='flex'; }} />
+                                                                : null
+                                                            }
+                                                            <div className={`w-full h-full bg-primary/10 items-center justify-center ${img ? 'hidden' : 'flex'}`}><Building2 className="w-3 h-3 text-primary" /></div>
+                                                        </div>
+                                                        <span className="text-[10px] font-black uppercase text-primary truncate">{sel.name}</span>
+                                                    </>
+                                                ) : <span className="text-[10px] font-bold text-text-muted italic">-- Select Outlet --</span>;
+                                            })()}
+                                            <ChevronDown className={`w-3 h-3 text-text-muted ml-auto transition-transform ${showOutletPickerMain ? 'rotate-180' : ''}`} />
+                                        </button>
+                                        <AnimatePresence>
+                                            {showOutletPickerMain && (
+                                                <motion.div
+                                                    initial={{ opacity: 0, y: 6 }}
+                                                    animate={{ opacity: 1, y: 0 }}
+                                                    exit={{ opacity: 0, y: 6 }}
+                                                    className="absolute top-full left-0 right-0 mt-1 bg-white border border-border shadow-2xl rounded-xl overflow-hidden z-[80]"
+                                                >
+                                                    {outlets.map(o => (
+                                                        <button
+                                                            key={o._id}
+                                                            onClick={() => { setActiveOutletId(o._id); setShowOutletPickerMain(false); }}
+                                                            className={`w-full flex items-center gap-2.5 px-3 py-2.5 hover:bg-slate-50 border-b border-slate-50 last:border-0 transition-colors ${String(o._id) === String(activeOutletId) ? 'bg-primary/5' : ''}`}
+                                                        >
+                                                            <div className="w-8 h-8 rounded-lg overflow-hidden border border-border flex-shrink-0 bg-slate-50">
+                                                                {(() => {
+                                                                    const img = o.image || o.images?.[0];
+                                                                    return img ? (
+                                                                        <img src={getImageUrl(img)} className="w-full h-full object-cover" alt={o.name} onError={e => { e.target.style.display='none'; e.target.nextSibling.style.display='flex'; }} />
+                                                                    ) : null;
+                                                                })()}
+                                                                <div className={`w-full h-full items-center justify-center bg-primary/10 ${o.image || o.images?.[0] ? 'hidden' : 'flex'}`}><Building2 className="w-4 h-4 text-primary" /></div>
+                                                            </div>
+                                                            <div className="flex-1 text-left min-w-0">
+                                                                <p className={`text-[10px] font-black uppercase truncate ${String(o._id) === String(activeOutletId) ? 'text-primary' : 'text-slate-800'}`}>{o.name}</p>
+                                                                {(() => { const a = typeof o.address==='string'?o.address:typeof o.address==='object'&&o.address?[o.address.street,o.address.city].filter(Boolean).join(', '):(typeof o.location?.city==='string'?o.location.city:''); return a?<p className="text-[8px] text-slate-400 font-bold truncate">{a}</p>:null; })()}
+                                                            </div>
+                                                            {String(o._id) === String(activeOutletId) && <Check className="w-3.5 h-3.5 text-primary flex-shrink-0" />}
+                                                        </button>
+                                                    ))}
+                                                </motion.div>
+                                            )}
+                                        </AnimatePresence>
+                                    </div>
                                 </div>
 
                                 <div className="flex items-center gap-2">
@@ -2082,8 +2135,14 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, staff, custo
     const [isProcessing, setIsProcessing] = useState(false);
     const [isSubmittingClient, setIsSubmittingClient] = useState(false);
     const [showNewClient, setShowNewClient] = useState(false);
-    const [newClientForm, setNewClientForm] = useState({ name: '', phone: '' });
+    const [newClientForm, setNewClientForm] = useState({ name: '', phone: '', email: '', gender: 'both' });
     const [showClientDropdown, setShowClientDropdown] = useState(false);
+    const [openStaffIdx, setOpenStaffIdx] = useState(null);
+    const [staffSearch, setStaffSearch] = useState('');
+    const [showDueWarning, setShowDueWarning] = useState(false);
+    const [clientPrevDue, setClientPrevDue] = useState(0);
+    const [pendingClientSelect, setPendingClientSelect] = useState(null);
+    const [showQOutletPicker, setShowQOutletPicker] = useState(false);
 
     const qFilteredServices = useMemo(() => {
         if (!qOutletId) return (services || []);
@@ -2122,8 +2181,11 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, staff, custo
 
     const qFilteredClients = useMemo(() => {
         const st = qSearchClient.toLowerCase().trim();
-        if (!st) return [];
-        return (customers || []).filter(c => c.name.toLowerCase().includes(st) || c.phone.includes(st)).slice(0, 10);
+        if (!st) return (customers || []).slice(0, 10);
+        return (customers || []).filter(c => 
+            (c.name || '').toLowerCase().includes(st) || 
+            (c.phone || '').includes(st)
+        ).slice(0, 10);
     }, [customers, qSearchClient]);
 
     const totals = useMemo(() => {
@@ -2170,29 +2232,32 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, staff, custo
             itemId: service._id,
             type: 'service',
             quantity: 1,
-            staffIds: qFilteredStaff.length === 1 ? [typeof qFilteredStaff[0]._id === 'object' ? qFilteredStaff[0]._id?._id : String(qFilteredStaff[0]._id)] : [''] 
+            staffIds: qFilteredStaff.length === 1 ? [typeof qFilteredStaff[0]._id === 'object' ? qFilteredStaff[0]._id?._id : String(qFilteredStaff[0]._id)] : [] 
         }]);
     };
 
-    const updateQStaff = (itemIdx, staffIdx, staffId) => {
+    const toggleStaffInItem = (itemIdx, sId) => {
         const newCart = [...qCart];
-        const itemStaff = [...(newCart[itemIdx].staffIds || [''])];
-        itemStaff[staffIdx] = staffId;
-        newCart[itemIdx].staffIds = itemStaff;
+        const currentIds = newCart[itemIdx].staffIds || [];
+        if (currentIds.includes(String(sId))) {
+            newCart[itemIdx].staffIds = currentIds.filter(id => id !== String(sId));
+        } else {
+            newCart[itemIdx].staffIds = [...currentIds, String(sId)];
+        }
         setQCart(newCart);
     };
 
-    const addQStaff = (itemIdx) => {
-        const newCart = [...qCart];
-        newCart[itemIdx].staffIds = [...(newCart[itemIdx].staffIds || ['']), ''];
-        setQCart(newCart);
-    };
 
-    const removeQStaff = (itemIdx, staffIdx) => {
-        const newCart = [...qCart];
-        if (newCart[itemIdx].staffIds?.length > 1) {
-            newCart[itemIdx].staffIds = newCart[itemIdx].staffIds.filter((_, i) => i !== staffIdx);
-            setQCart(newCart);
+    const handleSelectClient = (c) => {
+        const prevDue = Number(c.dueAmount || 0);
+        setQSearchClient('');
+        setShowClientDropdown(false);
+        if (prevDue > 0) {
+            setPendingClientSelect(c);
+            setClientPrevDue(prevDue);
+            setShowDueWarning(true);
+        } else {
+            setQClient(c);
         }
     };
 
@@ -2308,17 +2373,67 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, staff, custo
                     <div className="flex-1 flex flex-col bg-white overflow-hidden border-r border-slate-100">
                         {/* Top Bar: Compact Outlet & Client */}
                         <div className="p-4 bg-slate-50/50 border-b border-slate-100 grid grid-cols-1 md:grid-cols-2 gap-4 shrink-0">
-                            <div className="space-y-1">
+                            <div className="space-y-1 relative">
                                 <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-1">
                                     <Building2 className="w-2.5 h-2.5" /> Outlet
                                 </label>
-                                <select 
-                                    className="w-full bg-white border border-slate-200 py-1.5 px-3 text-[11px] font-black uppercase text-slate-900 outline-none focus:border-primary rounded-lg"
-                                    value={qOutletId}
-                                    onChange={(e) => { setQOutletId(e.target.value); setQCart([]); }}
-                                >
-                                    {outlets.map(o => <option key={o._id} value={o._id}>{o.name}</option>)}
-                                </select>
+                                <div className="relative">
+                                    <button
+                                        onClick={() => setShowQOutletPicker(prev => !prev)}
+                                        className="w-full bg-white border border-slate-200 py-1.5 px-3 rounded-lg flex items-center gap-2.5 hover:border-primary/50 transition-all"
+                                    >
+                                        {(() => {
+                                            const sel = outlets.find(o => String(o._id) === String(qOutletId));
+                                            const img = sel?.image || sel?.images?.[0];
+                                            return sel ? (
+                                                <>
+                                                    <div className="w-6 h-6 rounded-lg overflow-hidden border border-slate-100 flex-shrink-0 bg-slate-50 shadow-sm">
+                                                        {img
+                                                            ? <img src={getImageUrl(img)} className="w-full h-full object-cover" alt={sel.name} onError={e => { e.target.style.display='none'; e.target.nextSibling.style.display='flex'; }} />
+                                                            : null
+                                                        }
+                                                        <div className={`w-full h-full items-center justify-center bg-primary/10 ${img ? 'hidden' : 'flex'}`}><Building2 className="w-3 h-3 text-primary" /></div>
+                                                    </div>
+                                                    <span className="text-[11px] font-black uppercase text-slate-900 truncate tracking-tighter">{sel.name}</span>
+                                                </>
+                                            ) : <span className="text-[10px] italic text-slate-400">Select outlet...</span>;
+                                        })()}
+                                        <ChevronDown className={`w-3.5 h-3.5 text-slate-400 ml-auto transition-transform ${showQOutletPicker ? 'rotate-180 text-primary' : ''}`} />
+                                    </button>
+                                    <AnimatePresence>
+                                        {showQOutletPicker && (
+                                            <motion.div
+                                                initial={{ opacity: 0, y: 6, scale: 0.98 }}
+                                                animate={{ opacity: 1, y: 0, scale: 1 }}
+                                                exit={{ opacity: 0, y: 6, scale: 0.98 }}
+                                                className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-200 shadow-2xl rounded-2xl overflow-hidden z-[60]"
+                                            >
+                                                {outlets.map(o => (
+                                                    <button
+                                                        key={o._id}
+                                                        onClick={() => { setQOutletId(o._id); setQCart([]); setShowQOutletPicker(false); }}
+                                                        className={`w-full flex items-center gap-3 px-3 py-3 hover:bg-slate-50 border-b border-slate-50 last:border-0 transition-colors ${String(o._id) === String(qOutletId) ? 'bg-primary/5' : ''}`}
+                                                    >
+                                                        <div className="w-10 h-10 rounded-xl overflow-hidden border border-slate-100 flex-shrink-0 bg-slate-50 shadow-sm transition-transform group-hover:scale-105">
+                                                            {(() => {
+                                                                const img = o.image || o.images?.[0];
+                                                                return img ? (
+                                                                    <img src={getImageUrl(img)} className="w-full h-full object-cover" alt={o.name} onError={e => { e.target.style.display='none'; e.target.nextSibling.style.display='flex'; }} />
+                                                                ) : null;
+                                                            })()}
+                                                            <div className={`w-full h-full items-center justify-center bg-primary/10 ${o.image || o.images?.[0] ? 'hidden' : 'flex'}`}><Building2 className="w-5 h-5 text-primary" /></div>
+                                                        </div>
+                                                        <div className="flex-1 text-left min-w-0">
+                                                            <p className={`text-[11px] font-black uppercase tracking-tighter truncate ${String(o._id) === String(qOutletId) ? 'text-primary' : 'text-slate-800'}`}>{o.name}</p>
+                                                            {(() => { const a = typeof o.address==='string'?o.address:typeof o.address==='object'&&o.address?[o.address.street,o.address.city].filter(Boolean).join(', '):[o.location?.street,o.location?.city].filter(s=>typeof s==='string'&&s).join(', '); return a?<p className="text-[8px] font-bold text-slate-400 truncate">{a}</p>:null; })()}
+                                                        </div>
+                                                        {String(o._id) === String(qOutletId) && <Check className="w-4 h-4 text-primary flex-shrink-0" />}
+                                                    </button>
+                                                ))}
+                                            </motion.div>
+                                        )}
+                                    </AnimatePresence>
+                                </div>
                             </div>
 
                             <div className="space-y-1 relative">
@@ -2326,55 +2441,79 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, staff, custo
                                     <User className="w-2.5 h-2.5" /> Client
                                 </label>
                                 {qClient ? (
-                                    <div className="flex items-center justify-between bg-emerald-50 border border-emerald-200 py-1 px-2 rounded-lg">
-                                        <div className="flex items-center gap-2">
-                                            <div className="w-6 h-6 bg-emerald-600 text-white flex items-center justify-center font-black rounded text-[9px]">
+                                    <div className={`flex items-center justify-between py-1 px-2 rounded-lg border ${Number(qClient.dueAmount||0) > 0 ? 'bg-amber-50 border-amber-300' : 'bg-emerald-50 border-emerald-200'}`}>
+                                        <div className="flex items-center gap-2 min-w-0 flex-1">
+                                            <div className={`w-6 h-6 flex-shrink-0 text-white flex items-center justify-center font-black rounded text-[9px] ${Number(qClient.dueAmount||0) > 0 ? 'bg-amber-500' : 'bg-emerald-600'}`}>
                                                 {qClient?.name?.charAt(0).toUpperCase() || 'U'}
                                             </div>
-                                            <p className="text-[10px] font-black text-slate-900 truncate max-w-[120px]">{qClient.name}</p>
+                                            <div className="min-w-0">
+                                                <p className="text-[10px] font-black text-slate-900 truncate">{qClient.name}</p>
+                                                {Number(qClient.dueAmount||0) > 0 && (
+                                                    <p className="text-[8px] font-black text-amber-600 flex items-center gap-0.5">
+                                                        <AlertTriangle className="w-2.5 h-2.5" /> ₹{Number(qClient.dueAmount).toFixed(0)} pending
+                                                    </p>
+                                                )}
+                                            </div>
                                         </div>
-                                        <button onClick={() => setQClient(null)} className="text-emerald-400 hover:text-rose-500 p-1"><X className="w-3 h-3" /></button>
+                                        <button onClick={() => setQClient(null)} className="text-slate-400 hover:text-rose-500 p-1 flex-shrink-0"><X className="w-3 h-3" /></button>
                                     </div>
                                 ) : (
                                     <div className="relative">
-                                        <div className="relative group">
-                                            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3 h-3 text-slate-400" />
-                                            <input 
-                                                type="text"
-                                                placeholder="Search client..."
-                                                className="w-full bg-white border border-slate-200 pl-8 pr-2 py-1.5 text-[11px] font-black text-slate-900 outline-none focus:border-primary rounded-lg"
-                                                value={qSearchClient}
-                                                onFocus={() => setShowClientDropdown(true)}
-                                                onChange={(e) => { setQSearchClient(e.target.value); setShowClientDropdown(true); }}
-                                            />
+                                        <div className="flex items-center gap-2">
+                                            <div className="relative group flex-1">
+                                                <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3 h-3 text-slate-400" />
+                                                <input 
+                                                    type="text"
+                                                    placeholder="Search client..."
+                                                    className="w-full bg-white border border-slate-200 pl-8 pr-2 py-1.5 text-[11px] font-black text-slate-900 outline-none focus:border-primary rounded-lg"
+                                                    value={qSearchClient}
+                                                    onFocus={() => setShowClientDropdown(true)}
+                                                    onChange={(e) => { setQSearchClient(e.target.value); setShowClientDropdown(true); }}
+                                                />
+                                            </div>
+                                            <button 
+                                                onClick={() => { setShowNewClient(true); setShowClientDropdown(false); }}
+                                                className="bg-primary/10 text-primary p-1.5 rounded-lg hover:bg-primary hover:text-white transition-all shadow-sm"
+                                                title="Quick Add New Client"
+                                            >
+                                                <UserPlus className="w-3.5 h-3.5" />
+                                            </button>
                                         </div>
                                         <AnimatePresence>
-                                            {showClientDropdown && (qSearchClient || qFilteredClients.length === 0) && (
+                                            {showClientDropdown && (
                                                 <motion.div 
-                                                    initial={{ opacity: 0, y: 5 }}
-                                                    animate={{ opacity: 1, y: 0 }}
+                                                    initial={{ opacity: 0, y: 5, scale: 0.98 }}
+                                                    animate={{ opacity: 1, y: 0, scale: 1 }}
                                                     exit={{ opacity: 0, y: 5 }}
-                                                    className="absolute top-full left-0 right-0 bg-white border border-slate-200 shadow-2xl z-50 mt-1 rounded-xl overflow-hidden max-h-[200px] overflow-y-auto"
+                                                    className="absolute top-full left-0 right-0 bg-white border border-slate-200 shadow-2xl z-[80] mt-1.5 rounded-2xl overflow-hidden"
                                                 >
-                                                    {qFilteredClients.length > 0 ? qFilteredClients.map(c => (
-                                                        <button 
-                                                            key={c._id}
-                                                            onClick={() => { setQClient(c); setQSearchClient(''); setShowClientDropdown(false); }}
-                                                            className="w-full p-2.5 text-left hover:bg-slate-50 border-b border-slate-100 flex items-center gap-2 group"
-                                                        >
-                                                            <div className="w-6 h-6 bg-slate-100 text-slate-600 flex items-center justify-center font-black rounded text-[8px]">{c.name.charAt(0).toUpperCase()}</div>
-                                                            <div className="flex-1 min-w-0">
-                                                                <p className="text-[10px] font-black text-slate-900 truncate">{c.name}</p>
-                                                                <p className="text-[8px] font-bold text-slate-400">{c.phone}</p>
-                                                            </div>
-                                                        </button>
-                                                    )) : (
-                                                        <div className="p-3 text-center">
+                                                    {qFilteredClients.length > 0 ? (
+                                                        <div className="max-h-[220px] overflow-y-auto scrollbar-thin">
+                                                            {qFilteredClients.map(c => (
+                                                                <button 
+                                                                    key={c._id}
+                                                                    onClick={() => handleSelectClient(c)}
+                                                                    className="w-full p-2.5 text-left hover:bg-slate-50 border-b border-slate-100 last:border-0 flex items-center gap-2.5 group transition-colors"
+                                                                >
+                                                                    <div className={`w-8 h-8 flex-shrink-0 flex items-center justify-center font-black rounded-xl text-[10px] ${Number(c.dueAmount||0)>0 ? 'bg-amber-100 text-amber-700' : 'bg-primary/10 text-primary'}`}>{c.name.charAt(0).toUpperCase()}</div>
+                                                                    <div className="flex-1 min-w-0">
+                                                                        <p className="text-[10px] font-black text-slate-900 truncate">{c.name}</p>
+                                                                        <div className="flex items-center gap-2">
+                                                                            <p className="text-[8px] font-bold text-slate-400">{c.phone}</p>
+                                                                            {Number(c.dueAmount||0) > 0 && <span className="text-[7px] font-black text-amber-600 bg-amber-50 px-1.5 py-0.5 rounded-lg border border-amber-100">Due ₹{Number(c.dueAmount).toFixed(0)}</span>}
+                                                                        </div>
+                                                                    </div>
+                                                                </button>
+                                                            ))}
+                                                        </div>
+                                                    ) : (
+                                                        <div className="p-4 text-center space-y-2">
+                                                            <p className="text-[9px] font-bold text-slate-400 italic">{qSearchClient ? `No client found for "${qSearchClient}"` : 'Start typing to search...'}</p>
                                                             <button 
                                                                 onClick={() => { setShowNewClient(true); setShowClientDropdown(false); }}
-                                                                className="w-full py-2 bg-primary text-white text-[9px] font-black uppercase rounded-lg"
+                                                                className="w-full py-2 bg-primary text-white text-[9px] font-black uppercase rounded-xl flex items-center justify-center gap-1.5"
                                                             >
-                                                                + Quick Add
+                                                                <UserPlus className="w-3 h-3" /> Quick Add New Client
                                                             </button>
                                                         </div>
                                                     )}
@@ -2399,15 +2538,27 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, staff, custo
                                     <button 
                                         key={s._id}
                                         onClick={() => addToQCart(s)}
-                                        className="p-3 bg-white border border-slate-200 hover:border-primary hover:shadow-md transition-all rounded-xl shadow-sm relative overflow-hidden flex flex-col justify-between group h-24"
+                                        className="bg-white border border-slate-200 hover:border-primary hover:shadow-md transition-all rounded-xl shadow-sm relative overflow-hidden flex flex-col group h-32"
                                     >
-                                        <div className="absolute top-0 left-0 w-0.5 h-full bg-slate-100 group-hover:bg-primary transition-all" />
-                                        <p className="text-[10px] font-black text-slate-800 group-hover:text-primary transition-colors line-clamp-2 leading-tight">{s.name}</p>
-                                        <div className="flex items-center justify-between">
-                                            <p className="text-[11px] font-black text-emerald-600">₹{s.price}</p>
-                                            <div className="bg-slate-50 p-1 rounded group-hover:bg-primary group-hover:text-white transition-all">
-                                                <Plus className="w-3 h-3" />
+                                        {/* Image or gradient header */}
+                                        <div className="h-16 w-full overflow-hidden bg-gradient-to-br from-primary/5 to-primary/10 flex-shrink-0 relative">
+                                            {(() => {
+                                                const img = s.image || s.images?.[0];
+                                                return img ? (
+                                                    <img src={getImageUrl(img)} className="w-full h-full object-cover" alt={s.name} onError={e => { e.target.style.display='none'; e.target.nextSibling.style.display='flex'; }} />
+                                                ) : null;
+                                            })()}
+                                            <div className={`w-full h-full items-center justify-center ${s.image || s.images?.[0] ? 'hidden' : 'flex'}`}>
+                                                <Scissors className="w-6 h-6 text-primary/30 group-hover:text-primary/60 transition-colors" />
                                             </div>
+                                            <div className="absolute top-1.5 right-1.5 bg-white/90 backdrop-blur-sm rounded-lg p-1 opacity-0 group-hover:opacity-100 transition-opacity shadow-sm">
+                                                <Plus className="w-3 h-3 text-primary" />
+                                            </div>
+                                        </div>
+                                        {/* Info */}
+                                        <div className="flex-1 px-2.5 py-2 flex flex-col justify-between">
+                                            <p className="text-[9px] font-black text-slate-800 group-hover:text-primary transition-colors line-clamp-2 leading-tight">{s.name}</p>
+                                            <p className="text-[11px] font-black text-emerald-600">₹{s.price}</p>
                                         </div>
                                     </button>
                                 ))}
@@ -2450,126 +2601,277 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, staff, custo
                                         </button>
                                     </div>
 
-                                    <div className={`p-2.5 rounded-lg border ${(!item.staffIds || item.staffIds.some(sid => !sid)) ? 'bg-amber-50 border-amber-200' : 'bg-slate-50 border-slate-100'}`}>
-                                        <label className={`text-[8px] font-black uppercase tracking-widest flex items-center gap-1.5 mb-1.5 ${(!item.staffIds || item.staffIds.some(sid => !sid)) ? 'text-amber-600' : 'text-slate-400'}`}>
-                                            <Sparkles className="w-2.5 h-2.5" /> Staff
+                                    <div className={`p-2.5 rounded-2xl border ${(!item.staffIds || item.staffIds.length === 0) ? 'bg-amber-50 border-amber-200' : 'bg-white border-slate-100 shadow-sm'}`}>
+                                        <label className={`text-[8px] font-black uppercase tracking-widest flex items-center gap-1.5 mb-2 ${(!item.staffIds || item.staffIds.length === 0) ? 'text-amber-600' : 'text-slate-400'}`}>
+                                            <Sparkles className="w-2.5 h-2.5" /> Assign Stylists
                                         </label>
-                                        <div className="space-y-2">
-                                            {(item.staffIds || ['']).map((sid, sIdx) => (
-                                                <div key={sIdx} className="flex items-center gap-1.5">
-                                                    {qFilteredStaff.length > 0 ? (
-                                                        <select 
-                                                            className="flex-1 bg-white text-[10px] font-bold text-slate-800 outline-none border border-slate-200 py-1.5 px-2 rounded focus:ring-1 focus:ring-primary/20"
-                                                            value={sid || ''}
-                                                            onChange={(e) => updateQStaff(idx, sIdx, e.target.value)}
-                                                        >
-                                                            <option value="">Assign...</option>
-                                                            {qFilteredStaff.map(st => (
-                                                                <option key={st._id} value={st._id}>{st.name}</option>
-                                                            ))}
-                                                        </select>
-                                                    ) : (
-                                                        <p className="text-[8px] font-bold text-rose-500 italic">No staff at this outlet</p>
-                                                    )}
-                                                    {(item.staffIds || []).length > 1 && (
-                                                        <button 
-                                                            onClick={() => removeQStaff(idx, sIdx)}
-                                                            className="p-1.5 text-rose-400 hover:text-rose-600 hover:bg-rose-50 rounded transition-all"
-                                                        >
-                                                            <X className="w-3.5 h-3.5" />
-                                                        </button>
-                                                    )}
-                                                </div>
-                                            ))}
-                                            <button
-                                                onClick={() => addQStaff(idx)}
-                                                className="flex items-center gap-1.5 text-[9px] font-black text-primary border border-primary/20 bg-primary/5 hover:bg-primary hover:text-white px-3 py-1.5 rounded-lg transition-all w-full justify-center"
+                                        
+                                        <div className="relative">
+                                            <div 
+                                                className="min-h-[42px] bg-slate-50/50 border border-slate-200 rounded-xl p-1.5 flex flex-wrap gap-1.5 cursor-pointer hover:border-primary/50 transition-all"
+                                                onClick={() => setOpenStaffIdx(openStaffIdx === idx ? null : idx)}
                                             >
-                                                <Plus className="w-3 h-3" /> Add Another Staff
-                                            </button>
+                                                {(item.staffIds || []).length > 0 ? (
+                                                    item.staffIds.map(sId => {
+                                                        const s = staff.find(st => String(st._id) === String(sId));
+                                                        return (
+                                                            <div key={sId} className="bg-primary text-white text-[9px] font-black pl-2 pr-1 py-1 rounded-lg flex items-center gap-1.5 shadow-sm shadow-primary/20 animate-in zoom-in-95">
+                                                                <span className="uppercase italic">{s?.name || 'Stylist'}</span>
+                                                                <button 
+                                                                    onClick={(e) => { e.stopPropagation(); toggleStaffInItem(idx, sId); }}
+                                                                    className="w-4 h-4 hover:bg-white/20 rounded flex items-center justify-center transition-colors"
+                                                                >
+                                                                    <X className="w-2.5 h-2.5" />
+                                                                </button>
+                                                            </div>
+                                                        );
+                                                    })
+                                                ) : (
+                                                    <span className="text-[10px] font-bold text-slate-400 italic flex items-center px-2 py-1">Select stylists...</span>
+                                                )}
+                                                <div className="ml-auto px-1 flex items-center text-slate-300">
+                                                    <ChevronDown className={`w-4 h-4 transition-transform ${openStaffIdx === idx ? 'rotate-180 text-primary' : ''}`} />
+                                                </div>
+                                            </div>
+
+                                            <AnimatePresence>
+                                                {openStaffIdx === idx && (
+                                                    <motion.div 
+                                                        initial={{ opacity: 0, y: 5, scale: 0.98 }} 
+                                                        animate={{ opacity: 1, y: 0, scale: 1 }} 
+                                                        exit={{ opacity: 0, y: 5, scale: 0.98 }} 
+                                                        className="absolute top-full left-0 right-0 z-[100] mt-2 bg-white border border-slate-200 shadow-2xl rounded-2xl overflow-hidden flex flex-col"
+                                                    >
+                                                        <div className="p-2 border-b border-slate-50 bg-slate-50/30">
+                                                            <div className="relative">
+                                                                <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3 h-3 text-slate-400" />
+                                                                <input 
+                                                                    autoFocus
+                                                                    type="text" 
+                                                                    placeholder="Search stylist..." 
+                                                                    className="w-full bg-white border border-slate-200 pl-8 pr-3 py-1.5 text-[10px] font-black text-slate-900 outline-none rounded-lg focus:border-primary transition-all shadow-sm"
+                                                                    value={staffSearch}
+                                                                    onChange={(e) => setStaffSearch(e.target.value)}
+                                                                    onClick={(e) => e.stopPropagation()}
+                                                                />
+                                                            </div>
+                                                        </div>
+                                                        <div className="max-h-[180px] overflow-y-auto scrollbar-thin">
+                                                            {qFilteredStaff.filter(s => s.name.toLowerCase().includes(staffSearch.toLowerCase())).length > 0 ? (
+                                                                qFilteredStaff.filter(s => s.name.toLowerCase().includes(staffSearch.toLowerCase())).map(s => {
+                                                                    const isSelected = (item.staffIds || []).includes(String(s._id));
+                                                                    return (
+                                                                        <button 
+                                                                            key={s._id} 
+                                                                            onClick={(e) => { e.stopPropagation(); toggleStaffInItem(idx, s._id); }}
+                                                                            className={`w-full p-2.5 text-left flex items-center gap-3 hover:bg-slate-50 border-b border-slate-50 last:border-0 transition-colors ${isSelected ? 'bg-primary/5' : ''}`}
+                                                                        >
+                                                                            <div className={`w-7 h-7 rounded-lg flex items-center justify-center font-black text-[9px] transition-all ${isSelected ? 'bg-primary text-white' : 'bg-slate-100 text-slate-500'}`}>
+                                                                                {isSelected ? <Check className="w-4 h-4" /> : s.name.charAt(0).toUpperCase()}
+                                                                            </div>
+                                                                            <div className="flex-1">
+                                                                                <p className={`text-[10px] font-black uppercase tracking-tighter ${isSelected ? 'text-primary' : 'text-slate-700'}`}>{s.name}</p>
+                                                                                <p className="text-[8px] font-bold text-slate-400 uppercase tracking-widest italic">{s.role || 'Staff'}</p>
+                                                                            </div>
+                                                                        </button>
+                                                                    );
+                                                                })
+                                                            ) : (
+                                                                <div className="p-6 text-center text-slate-400 italic text-[9px] font-black uppercase tracking-widest">No staff found</div>
+                                                            )}
+                                                        </div>
+                                                    </motion.div>
+                                                )}
+                                            </AnimatePresence>
                                         </div>
                                     </div>
                                 </div>
                             ))}
                         </div>
 
-                        {/* Calculation Block - Ultra Compact */}
-                        <div className="flex-shrink-0 p-3 bg-white border-t border-slate-200 shadow-[0_-4px_20px_rgba(0,0,0,0.05)]">
-                            <div className="space-y-2">
-                                <div className="flex items-center justify-between px-1">
-                                    <div className="flex flex-col">
-                                        <span className="text-[8px] font-black text-slate-400 uppercase">Subtotal</span>
-                                        <span className="text-[10px] font-black text-slate-900">₹{totals.subtotal.toFixed(0)}</span>
-                                    </div>
-                                    <div className="flex flex-col items-center">
-                                        <span className="text-[8px] font-black text-slate-400 uppercase">GST ({platformSettings?.serviceGst || fiscal?.serviceGst || 18}%)</span>
-                                        <span className="text-[10px] font-black text-slate-900">₹{totals.tax.toFixed(0)}</span>
-                                    </div>
-                                    <div className="flex flex-col items-end">
-                                        <span className="text-[8px] font-black text-rose-400 uppercase">Discount</span>
-                                        <div className="relative w-16">
-                                            <input 
-                                                type="number"
-                                                className="w-full bg-slate-50 border border-slate-200 py-0.5 px-1 text-[10px] font-black text-rose-600 outline-none rounded"
-                                                value={qManualDiscount || ''}
-                                                onChange={(e) => setQManualDiscount(Number(e.target.value))}
-                                                placeholder="0"
-                                            />
+                    </div>{/* End Right Panel */}
+                </div>{/* End flex body */}
+
+                {/* Bottom Billing Row */}
+                <div className="flex-shrink-0 bg-white border-t border-slate-200 shadow-[0_-8px_30px_rgba(0,0,0,0.08)] z-20">
+                    <div className="max-w-7xl mx-auto px-6 py-4 flex flex-col lg:flex-row items-center gap-6">
+                        {/* Totals Breakdown */}
+                        <div className="flex items-center gap-8 px-4 border-r border-slate-100 py-2">
+                            <div className="flex flex-col">
+                                <span className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em]">Subtotal</span>
+                                <span className="text-[14px] font-black text-slate-900 font-mono italic">₹{totals.subtotal.toFixed(0)}</span>
+                            </div>
+                            <div className="flex flex-col">
+                                <span className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em]">GST</span>
+                                <span className="text-[14px] font-black text-slate-900 font-mono italic">₹{totals.tax.toFixed(0)}</span>
+                            </div>
+                            <div className="flex flex-col">
+                                <span className="text-[9px] font-black text-rose-400 uppercase tracking-[0.2em]">Discount</span>
+                                <div className="flex items-center gap-1.5 bg-rose-50 px-2 py-1 rounded-lg border border-rose-100">
+                                    <span className="text-rose-500 font-black font-mono">₹</span>
+                                    <input 
+                                        type="number" 
+                                        className="w-16 bg-transparent text-[13px] font-black text-rose-600 outline-none font-mono text-center" 
+                                        value={qManualDiscount || ''} 
+                                        onChange={(e) => setQManualDiscount(Number(e.target.value))} 
+                                        placeholder="0" 
+                                    />
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Payment Inputs Row */}
+                        <div className="flex-1 flex flex-col sm:flex-row items-center gap-3">
+                            <div className="flex-1 min-w-[140px] bg-slate-50 border border-slate-200 p-2.5 rounded-2xl focus-within:border-primary/50 focus-within:bg-white transition-all shadow-sm group">
+                                <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest block mb-1 group-focus-within:text-primary">Cash Payment</label>
+                                <div className="flex items-center gap-2">
+                                    <Banknote className="w-4 h-4 text-emerald-500" />
+                                    <input type="number" className="w-full bg-transparent text-[15px] font-black text-slate-900 outline-none font-mono" value={qPayments.cash || ''} onChange={(e) => setQPayments({ ...qPayments, cash: Number(e.target.value) })} placeholder="0" />
+                                </div>
+                            </div>
+                            <div className="flex-1 min-w-[140px] bg-slate-50 border border-slate-200 p-2.5 rounded-2xl focus-within:border-primary/50 focus-within:bg-white transition-all shadow-sm group">
+                                <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest block mb-1 group-focus-within:text-blue-500">Online/UPI</label>
+                                <div className="flex items-center gap-2">
+                                    <Smartphone className="w-4 h-4 text-blue-500" />
+                                    <input type="number" className="w-full bg-transparent text-[15px] font-black text-slate-900 outline-none font-mono" value={qPayments.online || ''} onChange={(e) => setQPayments({ ...qPayments, online: Number(e.target.value) })} placeholder="0" />
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Grand Total & Finalize */}
+                        <div className="flex items-center gap-4 shrink-0">
+                            <div className="flex flex-col items-end gap-1.5 mr-2">
+                                {/* Current bill due badge */}
+                                {dueAmount > 1 && (
+                                    <div className="flex items-center gap-1.5 bg-rose-50 border border-rose-200 px-3 py-1.5 rounded-xl">
+                                        <AlertTriangle className="w-3.5 h-3.5 text-rose-500" />
+                                        <div className="flex flex-col">
+                                            <span className="text-[7px] font-black text-rose-400 uppercase tracking-widest leading-none">This bill due</span>
+                                            <span className="text-[13px] font-black text-rose-600 font-mono leading-none">₹{dueAmount.toFixed(0)}</span>
                                         </div>
                                     </div>
-                                </div>
-
-                                <div className="flex justify-between items-center bg-slate-900 text-white p-2 rounded-lg">
-                                    <span className="text-[10px] font-black uppercase tracking-widest">Payable</span>
-                                    <span className="text-lg font-black">₹{totals.total.toFixed(0)}</span>
-                                </div>
-
-                                <div className="grid grid-cols-2 gap-2">
-                                    <div className="bg-slate-50 border border-slate-200 p-1.5 rounded-lg">
-                                        <label className="text-[7px] font-black text-slate-400 uppercase block mb-0.5">Cash</label>
-                                        <input 
-                                            type="number"
-                                            className="w-full bg-transparent text-[11px] font-black text-slate-900 outline-none"
-                                            value={qPayments.cash || ''}
-                                            onChange={(e) => setQPayments({...qPayments, cash: Number(e.target.value)})}
-                                            placeholder="0"
-                                        />
-                                    </div>
-                                    <div className="bg-slate-50 border border-slate-200 p-1.5 rounded-lg">
-                                        <label className="text-[7px] font-black text-slate-400 uppercase block mb-0.5">Online</label>
-                                        <input 
-                                            type="number"
-                                            className="w-full bg-transparent text-[11px] font-black text-slate-900 outline-none"
-                                            value={qPayments.online || ''}
-                                            onChange={(e) => setQPayments({...qPayments, online: Number(e.target.value)})}
-                                            placeholder="0"
-                                        />
-                                    </div>
-                                </div>
-
-                                {dueAmount > 1 && (
-                                    <div className="bg-amber-50 px-2 py-1 rounded border border-amber-100 flex items-center gap-1.5">
-                                        <Info className="w-3 h-3 text-amber-500" />
-                                        <p className="text-[8px] font-bold text-amber-700 italic">₹{dueAmount.toFixed(0)} pending to debt</p>
+                                )}
+                                {/* Historical outstanding badge */}
+                                {qClient && Number(qClient.dueAmount||0) > 0 && (
+                                    <div className="flex items-center gap-1.5 bg-amber-50 border border-amber-200 px-3 py-1.5 rounded-xl">
+                                        <AlertTriangle className="w-3.5 h-3.5 text-amber-500" />
+                                        <div className="flex flex-col">
+                                            <span className="text-[7px] font-black text-amber-500 uppercase tracking-widest leading-none">Prev. outstanding</span>
+                                            <span className="text-[13px] font-black text-amber-600 font-mono leading-none">₹{Number(qClient.dueAmount).toFixed(0)}</span>
+                                        </div>
                                     </div>
                                 )}
-
-                                <button 
-                                    onClick={handleConfirm}
-                                    disabled={isProcessing || qCart.length === 0}
-                                    className="w-full py-2 bg-emerald-600 text-white font-black text-[10px] uppercase tracking-widest hover:bg-emerald-700 transition-all rounded-lg shadow-lg shadow-emerald-600/20 disabled:opacity-50 flex items-center justify-center gap-2"
-                                >
-                                    {isProcessing ? <Loader2 className="w-4 h-4 animate-spin" /> : (
-                                        <>
-                                            <Check className="w-4 h-4" /> Finalize Invoice
-                                        </>
-                                    )}
-                                </button>
+                                <div className="flex items-center gap-3 bg-slate-900 text-white px-6 py-3 rounded-2xl shadow-xl shadow-slate-900/20">
+                                    <span className="text-[9px] font-black uppercase tracking-[0.2em] text-white/50 italic">Total</span>
+                                    <span className="text-2xl font-black italic font-mono">₹{totals.total.toFixed(0)}</span>
+                                </div>
                             </div>
+                            
+                            <button
+                                onClick={handleConfirm}
+                                disabled={isProcessing || qCart.length === 0}
+                                className="h-[60px] px-10 bg-emerald-600 text-white font-black text-[12px] uppercase tracking-[0.3em] hover:bg-emerald-700 hover:shadow-2xl hover:shadow-emerald-600/30 transition-all rounded-2xl disabled:opacity-50 flex items-center justify-center gap-3 relative overflow-hidden group shadow-lg min-w-[220px]"
+                            >
+                                <div className="absolute top-0 left-0 w-full h-full bg-white/10 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700" />
+                                {isProcessing ? <Loader2 className="w-5 h-5 animate-spin" /> : (
+                                    <>
+                                        <CheckCircle2 className="w-5 h-5" />
+                                        <span>Finalize Bill</span>
+                                    </>
+                                )}
+                            </button>
                         </div>
                     </div>
                 </div>
             </motion.div>
+
+            {/* Outstanding Due Warning Popup */}
+            <AnimatePresence>
+                {showDueWarning && pendingClientSelect && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-[120] flex items-center justify-center p-4"
+                    >
+                        <motion.div
+                            initial={{ scale: 0.9, y: 20 }}
+                            animate={{ scale: 1, y: 0 }}
+                            exit={{ scale: 0.9, y: 20 }}
+                            className="bg-white w-full max-w-md rounded-2xl shadow-2xl border border-amber-200 overflow-hidden"
+                        >
+                            {/* Warning Header */}
+                            <div className="bg-gradient-to-r from-amber-500 to-orange-500 p-5 flex items-center gap-4">
+                                <div className="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center flex-shrink-0">
+                                    <AlertTriangle className="w-7 h-7 text-white" />
+                                </div>
+                                <div>
+                                    <h4 className="text-white font-black text-[14px] uppercase tracking-tight">Outstanding Due Alert</h4>
+                                    <p className="text-amber-100 text-[10px] font-bold uppercase tracking-widest mt-0.5">Previous balance detected</p>
+                                </div>
+                            </div>
+
+                            {/* Content */}
+                            <div className="p-6 space-y-4">
+                                <div className="flex items-center gap-4 bg-amber-50 border border-amber-100 p-4 rounded-2xl">
+                                    <div className="w-12 h-12 bg-amber-500 text-white font-black rounded-xl flex items-center justify-center text-lg flex-shrink-0">
+                                        {pendingClientSelect.name.charAt(0).toUpperCase()}
+                                    </div>
+                                    <div>
+                                        <p className="text-[13px] font-black text-slate-900 uppercase tracking-tight">{pendingClientSelect.name}</p>
+                                        <p className="text-[10px] font-bold text-slate-500 font-mono">{pendingClientSelect.phone}</p>
+                                    </div>
+                                    <div className="ml-auto text-right">
+                                        <p className="text-[8px] font-black text-amber-500 uppercase tracking-widest">Owes</p>
+                                        <p className="text-[22px] font-black text-amber-600 font-mono italic">₹{clientPrevDue.toFixed(0)}</p>
+                                    </div>
+                                </div>
+
+                                <p className="text-[11px] font-bold text-slate-500 text-center leading-relaxed">
+                                    This client has a pending outstanding balance from a previous visit. You may collect it now along with this bill or proceed and add to their running dues.
+                                </p>
+
+                                {/* Quick Collect Option */}
+                                <div className="bg-emerald-50 border border-emerald-200 p-3 rounded-xl">
+                                    <p className="text-[8px] font-black text-emerald-600 uppercase tracking-widest mb-2 flex items-center gap-1">
+                                        <CheckCircle2 className="w-3 h-3" /> Quick collect previous due now
+                                    </p>
+                                    <div className="flex items-center gap-2">
+                                        <Banknote className="w-4 h-4 text-emerald-500 flex-shrink-0" />
+                                        <input
+                                            type="number"
+                                            id="due-collect-input"
+                                            placeholder={`Up to ₹${clientPrevDue.toFixed(0)}`}
+                                            className="flex-1 bg-white border border-emerald-200 px-3 py-2 text-[13px] font-black text-slate-900 outline-none rounded-lg focus:border-emerald-500 transition-all font-mono"
+                                            max={clientPrevDue}
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Actions */}
+                            <div className="p-5 bg-slate-50 border-t border-slate-100 flex gap-3">
+                                <button
+                                    onClick={() => { setShowDueWarning(false); setPendingClientSelect(null); }}
+                                    className="flex-1 py-3 text-[11px] font-black text-slate-500 uppercase tracking-widest border border-slate-200 rounded-xl hover:bg-slate-100 transition-all"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    onClick={() => {
+                                        setQClient(pendingClientSelect);
+                                        setShowDueWarning(false);
+                                        setPendingClientSelect(null);
+                                    }}
+                                    className="flex-1 py-3 text-[11px] font-black text-white uppercase tracking-widest bg-amber-500 hover:bg-amber-600 rounded-xl transition-all shadow-lg shadow-amber-500/20"
+                                >
+                                    Proceed Anyway
+                                </button>
+                            </div>
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
 
             {/* Quick Create Client Modal */}
             <AnimatePresence>
@@ -2614,6 +2916,31 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, staff, custo
                                         value={newClientForm.phone}
                                         onChange={(e) => setNewClientForm({...newClientForm, phone: e.target.value.replace(/\D/g, '').slice(0, 10)})}
                                     />
+                                </div>
+                                <div className="space-y-1.5">
+                                    <label className="text-[10px] font-black text-slate-400 uppercase">Email (Optional)</label>
+                                    <input 
+                                        type="email"
+                                        placeholder="e.g. john@example.com"
+                                        className="w-full bg-slate-50 border border-slate-200 p-3 text-xs font-black text-slate-900 outline-none rounded-xl"
+                                        value={newClientForm.email}
+                                        onChange={(e) => setNewClientForm({...newClientForm, email: e.target.value})}
+                                    />
+                                </div>
+                                <div className="space-y-1.5">
+                                    <label className="text-[10px] font-black text-slate-400 uppercase">Gender</label>
+                                    <div className="flex gap-2">
+                                        {['men', 'women', 'both'].map(g => (
+                                            <button
+                                                key={g}
+                                                type="button"
+                                                onClick={() => setNewClientForm({...newClientForm, gender: g})}
+                                                className={`flex-1 py-2 text-[9px] font-black uppercase rounded-lg border transition-all ${newClientForm.gender === g ? 'bg-primary text-white border-primary' : 'bg-white text-slate-500 border-slate-200 hover:border-primary/30'}`}
+                                            >
+                                                {g}
+                                            </button>
+                                        ))}
+                                    </div>
                                 </div>
                             </div>
                             <div className="p-6 bg-slate-50 border-t border-slate-200">

@@ -272,14 +272,7 @@ export default function SATenantDetailPage() {
                             disabled={statusLoading}
                             variant={selectedTenant.status === 'suspended' ? 'primary' : 'danger'}
                         />
-                        <a 
-                            href={`https://${selectedTenant.slug}.wapixo.com`} 
-                            target="_blank" 
-                            rel="noreferrer"
-                            className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border border-border bg-white text-text-secondary text-[11px] font-black uppercase tracking-wider hover:bg-surface hover:text-text transition-all"
-                        >
-                            <ExternalLink className="w-3.5 h-3.5" /> View Public App
-                        </a>
+                      
                     </div>
                 </div>
             </motion.div>
