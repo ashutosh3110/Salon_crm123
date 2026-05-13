@@ -79,26 +79,40 @@ export default function AppProductDetailsPage() {
         return { rawRow: row, product: mapInventoryProductToShopProduct(row, shopCategories) };
     }, [inventoryProducts, shopCategories, id, fetchedProduct]);
 
+    const activeOutletId = localStorage.getItem('active_outlet_id');
+
     useEffect(() => {
         const loadProduct = async () => {
-            const row = inventoryProducts.find((p) => String(p.id ?? p._id) === String(id));
-            if (row) {
-                setIsLoadingProduct(false);
-                return;
-            }
+            setIsLoadingProduct(true);
             try {
+                // Fetch directly to get latest stock and details
                 const res = await api.get(`/products/${id}`);
                 if (res.data?.success) {
                     setFetchedProduct(res.data.data);
+                } else {
+                    // Fallback to local if API fails or returns success: false
+                    const row = inventoryProducts.find((p) => String(p.id ?? p._id) === String(id));
+                    if (row) setFetchedProduct(row);
                 }
             } catch (err) {
                 console.error("Failed to fetch product details:", err);
+                const row = inventoryProducts.find((p) => String(p.id ?? p._id) === String(id));
+                if (row) setFetchedProduct(row);
             } finally {
                 setIsLoadingProduct(false);
             }
         };
-        loadProduct();
+        if (id) loadProduct();
     }, [id, inventoryProducts]);
+
+    const currentStock = useMemo(() => {
+        if (!rawRow) return 0;
+        if (activeOutletId && rawRow.stockByOutlet?.[activeOutletId] !== undefined) {
+            return rawRow.stockByOutlet[activeOutletId];
+        }
+        return rawRow.stock || 0;
+    }, [rawRow, activeOutletId]);
+
     useEffect(() => {
         const fetchReviews = async () => {
             if (!id) return;
@@ -108,6 +122,7 @@ export default function AppProductDetailsPage() {
                 if (oid) url += `&outletId=${oid}`;
                 
                 const res = await api.get(url);
+                console.log(`Feedbacks for ${id}:`, res.data);
                 if (res.data?.success) {
                     setReviews(res.data.data);
                 }
@@ -182,12 +197,14 @@ export default function AppProductDetailsPage() {
         );
     }
 
-    const care = product.appCare || 'Store in a cool, dry place away from direct sunlight.';
-    const usage = product.appUsage || 'Follow directions on the label or as advised by your stylist.';
-    const origin = product.appOrigin || 'Responsibly sourced.';
-    const consistency = product.appConsistency || '—';
-    const ritual = product.appRitualStatus || '—';
-    const returnText = product.appReturnPolicy || 'Unopened products may be returned within 7 days of delivery where applicable.';
+    const care = product.appCare || '';
+    const usage = product.appUsage || '';
+    const origin = product.appOrigin || '';
+    const consistency = product.appConsistency || '';
+    const ritual = product.appRitualStatus || '';
+    const returnText = product.appReturnPolicy || 'No return policy specified.';
+    const formulaType = product.appFormulaType || '';
+    const vendorDetails = product.appVendorDetails || '';
 
     return (
         <div style={{ background: colors.bg, color: colors.text }} className="min-h-screen relative flex flex-col overflow-hidden">
@@ -211,17 +228,36 @@ export default function AppProductDetailsPage() {
             </div>
 
             <div className="flex-1 overflow-y-auto custom-scrollbar h-[100dvh]" style={{ overflowX: 'hidden' }}>
-                {/* Product Image */}
+                {/* Product Images Carousel */}
                 <div className="relative aspect-[4/5] overflow-hidden bg-black">
-                    <motion.img 
-                        initial={{ scale: 1.1 }}
-                        animate={{ scale: 1 }}
-                        transition={{ duration: 1.5 }}
-                        src={getImageUrl(product.image)} 
-                        alt={product.name} 
-                        className="w-full h-full object-cover opacity-90" 
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent" />
+                    {product.images && product.images.length > 0 ? (
+                        <div className="w-full h-full flex overflow-x-auto snap-x snap-mandatory hide-scrollbar">
+                            {product.images.map((img, idx) => (
+                                <div key={idx} className="w-full h-full shrink-0 snap-center relative">
+                                    <img 
+                                        src={getImageUrl(img)} 
+                                        alt={`${product.name} ${idx + 1}`} 
+                                        className="w-full h-full object-cover opacity-90" 
+                                    />
+                                    {product.images.length > 1 && (
+                                        <div className="absolute bottom-4 right-4 px-3 py-1 bg-black/40 backdrop-blur-md rounded-full text-[8px] font-black text-white uppercase tracking-widest border border-white/10">
+                                            {idx + 1} / {product.images.length}
+                                        </div>
+                                    )}
+                                </div>
+                            ))}
+                        </div>
+                    ) : (
+                        <motion.img 
+                            initial={{ scale: 1.1 }}
+                            animate={{ scale: 1 }}
+                            transition={{ duration: 1.5 }}
+                            src={getImageUrl(product.image)} 
+                            alt={product.name} 
+                            className="w-full h-full object-cover opacity-90" 
+                        />
+                    )}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent pointer-events-none" />
 
                     <div className="absolute bottom-10 left-8 right-8">
                         <motion.div 
@@ -236,6 +272,15 @@ export default function AppProductDetailsPage() {
                             <div className="flex items-center gap-1.5 px-3 py-1 bg-white/10 backdrop-blur-md rounded-md border border-white/10 text-white">
                                 <Star className="w-3 h-3 text-amber-400 fill-amber-400" />
                                 <span className="text-[10px] font-black">{product.rating}</span>
+                            </div>
+                            <div className={`px-3 py-1 rounded-md border text-[9px] font-black uppercase tracking-widest backdrop-blur-md ${
+                                currentStock <= 0 
+                                ? 'bg-red-500/10 border-red-500/20 text-red-500' 
+                                : currentStock < 5 
+                                ? 'bg-amber-500/10 border-amber-500/20 text-amber-500' 
+                                : 'bg-emerald-500/10 border-emerald-500/20 text-emerald-500'
+                            }`}>
+                                {currentStock <= 0 ? 'Out of Stock' : currentStock < 5 ? `Only ${currentStock} Left` : 'In Stock'}
                             </div>
                         </motion.div>
                         <motion.h2 
@@ -288,29 +333,62 @@ export default function AppProductDetailsPage() {
                     <div className="space-y-1">
                         <Accordion title="Product Overview" isInitialOpen colors={colors}>
                             <p className="mb-6 leading-relaxed font-medium">
-                                {product.description || "A premium formulation designed to elevate your daily grooming routine. Expertly crafted for professional results at home."}
+                                {product.description || product.shopDescription}
                             </p>
+                            
                             <div className="grid grid-cols-2 gap-3 mt-4">
-                                <div className="p-4 rounded-2xl bg-black/3 dark:bg-white/3 border border-black/5 flex flex-col gap-1 text-center">
-                                    <span className="text-[8px] font-black opacity-30 uppercase tracking-widest">Consistency</span>
-                                    <span className="text-[11px] font-black uppercase italic">{consistency}</span>
-                                </div>
-                                <div className="p-4 rounded-2xl bg-black/3 dark:bg-white/3 border border-black/5 flex flex-col gap-1 text-center">
-                                    <span className="text-[8px] font-black opacity-30 uppercase tracking-widest">Product status</span>
-                                    <span className="text-[11px] font-black uppercase italic text-emerald-500">{ritual}</span>
-                                </div>
+                                {product.sku && (
+                                    <div className="p-4 rounded-2xl bg-black/3 dark:bg-white/3 border border-black/5 flex flex-col gap-1 text-center">
+                                        <span className="text-[8px] font-black opacity-30 uppercase tracking-widest">SKU Code</span>
+                                        <span className="text-[11px] font-black uppercase italic">{product.sku}</span>
+                                    </div>
+                                )}
+                                {product.hsnCode && (
+                                    <div className="p-4 rounded-2xl bg-black/3 dark:bg-white/3 border border-black/5 flex flex-col gap-1 text-center">
+                                        <span className="text-[8px] font-black opacity-30 uppercase tracking-widest">HSN Code</span>
+                                        <span className="text-[11px] font-black uppercase italic">{product.hsnCode}</span>
+                                    </div>
+                                )}
+                                {product.unit && (
+                                    <div className="p-4 rounded-2xl bg-black/3 dark:bg-white/3 border border-black/5 flex flex-col gap-1 text-center">
+                                        <span className="text-[8px] font-black opacity-30 uppercase tracking-widest">Unit Type</span>
+                                        <span className="text-[11px] font-black uppercase italic">{product.unit}</span>
+                                    </div>
+                                )}
+                                {formulaType && (
+                                    <div className="p-4 rounded-2xl bg-black/3 dark:bg-white/3 border border-black/5 flex flex-col gap-1 text-center">
+                                        <span className="text-[8px] font-black opacity-30 uppercase tracking-widest">Formula</span>
+                                        <span className="text-[11px] font-black uppercase italic">{formulaType}</span>
+                                    </div>
+                                )}
+                                {consistency && (
+                                    <div className="p-4 rounded-2xl bg-black/3 dark:bg-white/3 border border-black/5 flex flex-col gap-1 text-center">
+                                        <span className="text-[8px] font-black opacity-30 uppercase tracking-widest">Consistency</span>
+                                        <span className="text-[11px] font-black uppercase italic">{consistency}</span>
+                                    </div>
+                                )}
+                                {ritual && (
+                                    <div className="p-4 rounded-2xl bg-black/3 dark:bg-white/3 border border-black/5 flex flex-col gap-1 text-center">
+                                        <span className="text-[8px] font-black opacity-30 uppercase tracking-widest">Ritual status</span>
+                                        <span className="text-[11px] font-black uppercase italic text-emerald-500">{ritual}</span>
+                                    </div>
+                                )}
                             </div>
                         </Accordion>
 
-                        <Accordion title="Application Guide" colors={colors}>
-                            <p className="leading-relaxed font-medium">{usage}</p>
-                            <div className="mt-4 p-4 rounded-2xl bg-amber-500/5 border border-amber-500/10">
-                                <h5 className="text-[10px] font-black uppercase tracking-widest text-[#C8956C] mb-2 flex items-center gap-2">
-                                    <Sparkles size={12}/> Pro Tip
-                                </h5>
-                                <p className="text-[11px] font-medium opacity-80">{care}</p>
-                            </div>
-                        </Accordion>
+                        {(usage || care) && (
+                            <Accordion title="Application Guide" colors={colors}>
+                                {usage && <p className="leading-relaxed font-medium">{usage}</p>}
+                                {care && (
+                                    <div className="mt-4 p-4 rounded-2xl bg-amber-500/5 border border-amber-500/10">
+                                        <h5 className="text-[10px] font-black uppercase tracking-widest text-[#C8956C] mb-2 flex items-center gap-2">
+                                            <Sparkles size={12}/> Pro Tip
+                                        </h5>
+                                        <p className="text-[11px] font-medium opacity-80">{care}</p>
+                                    </div>
+                                )}
+                            </Accordion>
+                        )}
 
                         <Accordion title="Customer Voices" subtext={`${reviews.length} reviews`} colors={colors}>
                             <div className="space-y-4">
@@ -366,31 +444,43 @@ export default function AppProductDetailsPage() {
                                         <p className="text-[10px] opacity-60">{returnText}</p>
                                     </div>
                                 </div>
+                                {vendorDetails && (
+                                    <div className="flex gap-4 pt-4 border-t" style={{ borderColor: colors.border }}>
+                                        <div className="w-8 h-8 rounded-full bg-blue-500/10 flex items-center justify-center shrink-0">
+                                            <Package size={16} className="text-blue-500" />
+                                        </div>
+                                        <div>
+                                            <h5 className="text-[11px] font-black uppercase mb-1">Manufacturer Details</h5>
+                                            <p className="text-[10px] opacity-60 leading-relaxed">{vendorDetails}</p>
+                                            {origin && <p className="text-[9px] font-bold text-[#C8956C] mt-1 uppercase tracking-widest">Origin: {origin}</p>}
+                                        </div>
+                                    </div>
+                                )}
                             </div>
                         </Accordion>
                     </div>
 
                     <div className="pt-6">
                         <motion.button
-                            whileTap={rawRow.stock > 0 ? { scale: 0.96 } : {}}
+                            whileTap={currentStock > 0 ? { scale: 0.96 } : {}}
                             type="button"
                             onClick={() => {
-                                if (rawRow.stock > 0) {
+                                if (currentStock > 0) {
                                     addToCart(product);
                                     setIsCartOpen(true);
                                 }
                             }}
-                            disabled={rawRow.stock <= 0}
+                            disabled={currentStock <= 0}
                             style={{
-                                background: rawRow.stock <= 0 ? 'rgba(255,255,255,0.05)' : 'linear-gradient(135deg, #C8956C 0%, #A06844 100%)',
-                                color: rawRow.stock <= 0 ? 'rgba(255,255,255,0.2)' : '#FFFFFF',
-                                boxShadow: rawRow.stock > 0 ? '0 20px 40px rgba(200,149,108,0.3)' : 'none'
+                                background: currentStock <= 0 ? (isLight ? 'rgba(0,0,0,0.05)' : 'rgba(255,255,255,0.05)') : 'linear-gradient(135deg, #C8956C 0%, #A06844 100%)',
+                                color: currentStock <= 0 ? (isLight ? 'rgba(0,0,0,0.2)' : 'rgba(255,255,255,0.2)') : '#FFFFFF',
+                                boxShadow: currentStock > 0 ? '0 20px 40px rgba(200,149,108,0.3)' : 'none'
                             }}
                             className="w-full h-16 rounded-2xl flex items-center justify-center gap-4 shadow-2xl transition-all"
                         >
                             <ShoppingBag className="w-5 h-5" />
                             <span className="text-[11px] font-black uppercase tracking-[0.3em]">
-                                {rawRow.stock <= 0 ? 'OUT OF STOCK' : (inCart ? 'ADD TO CART' : 'ORDER NOW')}
+                                {currentStock <= 0 ? 'OUT OF STOCK' : (inCart ? 'ADD TO CART' : 'ORDER NOW')}
                             </span>
                         </motion.button>
                     </div>

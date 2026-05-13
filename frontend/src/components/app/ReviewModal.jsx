@@ -4,10 +4,14 @@ import { Star, X, Send, CheckCircle2 } from 'lucide-react';
 import api from '../../services/api';
 import { useBusiness } from '../../contexts/BusinessContext';
 import { useCustomerAuth } from '../../contexts/CustomerAuthContext';
+import { useCustomerTheme } from '../../contexts/CustomerThemeContext';
 
 export default function ReviewModal({ isOpen, onClose, booking, onSuccess, targetType = 'service', targetId = null, targetName = null }) {
     const { salon, activeSalonId } = useBusiness();
     const { customer } = useCustomerAuth();
+    const { theme } = useCustomerTheme();
+    const isLight = theme === 'light';
+
     const [revName, setRevName] = useState(customer?.name || '');
     const [rating, setRating] = useState(0);
     const [hoveredRating, setHoveredRating] = useState(0);
@@ -19,6 +23,7 @@ export default function ReviewModal({ isOpen, onClose, booking, onSuccess, targe
         if (isOpen) {
             document.body.style.overflow = 'hidden';
             document.documentElement.style.overflow = 'hidden';
+            if (customer?.name) setRevName(customer.name);
         } else {
             document.body.style.overflow = 'auto';
             document.documentElement.style.overflow = 'auto';
@@ -27,7 +32,7 @@ export default function ReviewModal({ isOpen, onClose, booking, onSuccess, targe
             document.body.style.overflow = 'auto';
             document.documentElement.style.overflow = 'auto';
         };
-    }, [isOpen]);
+    }, [isOpen, customer]);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -58,6 +63,10 @@ export default function ReviewModal({ isOpen, onClose, booking, onSuccess, targe
             setTimeout(() => {
                 onSuccess?.();
                 onClose();
+                // Reset state for next time
+                setRating(0);
+                setComment('');
+                setIsSuccess(false);
             }, 2000);
         } catch (error) {
             console.error('Failed to submit review:', error);
@@ -68,6 +77,14 @@ export default function ReviewModal({ isOpen, onClose, booking, onSuccess, targe
     };
 
     if (!isOpen) return null;
+
+    const colors = {
+        bg: isLight ? '#FFFFFF' : '#1A1A1A',
+        text: isLight ? '#1A1A1A' : '#FFFFFF',
+        textMuted: isLight ? '#666' : 'rgba(255,255,255,0.4)',
+        border: isLight ? 'rgba(0,0,0,0.06)' : 'rgba(255,255,255,0.05)',
+        input: isLight ? 'rgba(0,0,0,0.03)' : 'rgba(255,255,255,0.04)',
+    };
 
     return (
         <AnimatePresence>
@@ -84,7 +101,11 @@ export default function ReviewModal({ isOpen, onClose, booking, onSuccess, targe
                     initial={{ opacity: 0, scale: 0.9, y: 20 }}
                     animate={{ opacity: 1, scale: 1, y: 0 }}
                     exit={{ opacity: 0, scale: 0.9, y: 20 }}
-                    className="relative w-full max-w-sm bg-[#1A1A1A] border border-white/10 rounded-3xl overflow-hidden shadow-2xl"
+                    className="relative w-full max-w-sm border rounded-3xl overflow-hidden shadow-2xl"
+                    style={{ 
+                        background: colors.bg,
+                        borderColor: colors.border
+                    }}
                     onClick={(e) => e.stopPropagation()}
                 >
                     {isSuccess ? (
@@ -97,19 +118,19 @@ export default function ReviewModal({ isOpen, onClose, booking, onSuccess, targe
                             >
                                 <CheckCircle2 size={40} />
                             </motion.div>
-                            <h3 className="text-xl font-black text-white uppercase tracking-tight">Thank You!</h3>
-                            <p className="text-sm text-white/60 font-medium">Your feedback helps us create better services for you.</p>
+                            <h3 className="text-xl font-black uppercase tracking-tight" style={{ color: colors.text }}>Thank You!</h3>
+                            <p className="text-sm font-medium" style={{ color: colors.textMuted }}>Your feedback helps us create better services for you.</p>
                         </div>
                     ) : (
                         <>
-                            <div className="p-6 border-b border-white/5 flex items-center justify-between">
+                            <div className="p-6 flex items-center justify-between border-b" style={{ borderColor: colors.border }}>
                                 <div>
-                                    <h3 className="text-lg font-black text-white uppercase tracking-tight">Post a Review</h3>
+                                    <h3 className="text-lg font-black uppercase tracking-tight" style={{ color: colors.text }}>Post a Review</h3>
                                     <p className="text-[10px] text-[#C8956C] font-bold uppercase tracking-widest mt-1">
                                         {salon?.name || 'Signature Salon'}
                                     </p>
                                 </div>
-                                <button onClick={onClose} className="p-2 text-white/40 hover:text-white transition-all">
+                                <button onClick={onClose} className="p-2 transition-all" style={{ color: colors.textMuted }}>
                                     <X size={20} />
                                 </button>
                             </div>
@@ -132,7 +153,7 @@ export default function ReviewModal({ isOpen, onClose, booking, onSuccess, targe
                                                 size={32}
                                                 strokeWidth={2}
                                                 fill={star <= (hoveredRating || rating) ? '#C8956C' : 'none'}
-                                                color={star <= (hoveredRating || rating) ? '#C8956C' : 'rgba(255,255,255,0.2)'}
+                                                color={star <= (hoveredRating || rating) ? '#C8956C' : (isLight ? 'rgba(0,0,0,0.1)' : 'rgba(255,255,255,0.2)')}
                                                 className="transition-colors duration-200"
                                             />
                                         </motion.button>
@@ -148,19 +169,29 @@ export default function ReviewModal({ isOpen, onClose, booking, onSuccess, targe
                                             value={revName}
                                             onChange={(e) => setRevName(e.target.value)}
                                             placeholder="Enter your public name..."
-                                            className="w-full h-14 bg-white/[0.06] border border-white/10 rounded-2xl px-5 text-sm text-white placeholder:text-white/30 focus:outline-none focus:bg-white/[0.1] focus:border-[#C8956C]/50 transition-all font-medium"
+                                            style={{ 
+                                                background: colors.input,
+                                                borderColor: colors.border,
+                                                color: colors.text
+                                            }}
+                                            className="w-full h-14 border rounded-2xl px-5 text-sm placeholder:opacity-30 focus:outline-none focus:border-[#C8956C]/50 transition-all font-medium"
                                         />
                                     </div>
                                 </div>
 
                                 {/* Comment Area */}
                                 <div className="space-y-2">
-                                    <label className="text-[10px] font-black text-white/40 uppercase tracking-[0.2em] ml-2">Your Experience</label>
+                                    <label className="text-[10px] font-black uppercase tracking-[0.2em] ml-2" style={{ color: colors.textMuted }}>Your Experience</label>
                                     <textarea
                                         value={comment}
                                         onChange={(e) => setComment(e.target.value)}
                                         placeholder="Sharing your experience helps others..."
-                                        className="w-full bg-white/[0.04] border border-white/5 rounded-3xl p-5 text-sm text-white placeholder:text-white/20 focus:outline-none focus:bg-white/[0.08] focus:border-[#C8956C]/30 transition-all min-h-[120px] resize-none font-medium leading-relaxed"
+                                        style={{ 
+                                            background: colors.input,
+                                            borderColor: colors.border,
+                                            color: colors.text
+                                        }}
+                                        className="w-full border rounded-3xl p-5 text-sm placeholder:opacity-20 focus:outline-none focus:border-[#C8956C]/30 transition-all min-h-[120px] resize-none font-medium leading-relaxed"
                                     />
                                 </div>
 
@@ -168,7 +199,7 @@ export default function ReviewModal({ isOpen, onClose, booking, onSuccess, targe
                                 <button
                                     type="submit"
                                     disabled={rating === 0 || !revName.trim() || isSubmitting}
-                                    className="w-full h-16 bg-[#C8956C] disabled:bg-white/5 disabled:text-white/20 text-white rounded-2xl font-black uppercase tracking-[0.3em] text-[11px] flex items-center justify-center gap-3 hover:brightness-110 active:scale-[0.98] transition-all shadow-2xl shadow-[#C8956C]/20 mt-2"
+                                    className="w-full h-16 bg-[#C8956C] disabled:opacity-20 text-white rounded-2xl font-black uppercase tracking-[0.3em] text-[11px] flex items-center justify-center gap-3 hover:brightness-110 active:scale-[0.98] transition-all shadow-2xl shadow-[#C8956C]/20 mt-2"
                                 >
                                     {isSubmitting ? (
                                         <motion.div

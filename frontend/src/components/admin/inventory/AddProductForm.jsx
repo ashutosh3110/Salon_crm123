@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
     Plus,
     Search,
@@ -465,6 +466,116 @@ export default function AddProductForm({ onSave, initialData, onCancel }) {
                         )}
                     </div>
                 </div>
+
+                {/* 5. Shop Experience (Visible only if isShopProduct is true) */}
+                <AnimatePresence>
+                    {formData.isShopProduct && (
+                        <motion.div 
+                            initial={{ opacity: 0, height: 0 }}
+                            animate={{ opacity: 1, height: 'auto' }}
+                            exit={{ opacity: 0, height: 0 }}
+                            className="bg-surface p-8 border border-border shadow-sm space-y-6 lg:col-span-2 overflow-hidden"
+                        >
+                            <div className="flex items-center gap-3 border-b border-border pb-4">
+                                <div className="w-10 h-10 bg-indigo-500/10 flex items-center justify-center text-indigo-600">
+                                    <Smartphone className="w-5 h-5" />
+                                </div>
+                                <div>
+                                    <h3 className="text-xs font-black uppercase tracking-[0.2em] italic">Shop Experience Assets</h3>
+                                    <p className="text-[8px] font-black text-text-muted uppercase tracking-widest mt-0.5">Customer App Visualization</p>
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div className="space-y-1.5 md:col-span-2">
+                                    <label className="text-[9px] font-black text-text-muted uppercase tracking-[0.2em]">Shop Description (Detailed)</label>
+                                    <textarea
+                                        className="w-full px-4 py-3 bg-background border border-border text-sm font-medium focus:border-primary outline-none transition-all min-h-[100px] resize-none"
+                                        placeholder="Detailed description for the customer app..."
+                                        value={formData.shopDescription}
+                                        onChange={(e) => setFormData({ ...formData, shopDescription: e.target.value })}
+                                    />
+                                </div>
+
+                                <div className="space-y-1.5">
+                                    <label className="text-[9px] font-black text-text-muted uppercase tracking-[0.2em]">Care Instructions (Pro Tip)</label>
+                                    <input
+                                        type="text"
+                                        className="w-full px-4 py-3 bg-background border border-border text-sm font-medium focus:border-primary outline-none transition-all"
+                                        placeholder="e.g. Keep in a cool place"
+                                        value={formData.appCare}
+                                        onChange={(e) => setFormData({ ...formData, appCare: e.target.value })}
+                                    />
+                                </div>
+
+                                <div className="space-y-1.5">
+                                    <label className="text-[9px] font-black text-text-muted uppercase tracking-[0.2em]">Usage Guide (Application)</label>
+                                    <input
+                                        type="text"
+                                        className="w-full px-4 py-3 bg-background border border-border text-sm font-medium focus:border-primary outline-none transition-all"
+                                        placeholder="e.g. Apply twice daily"
+                                        value={formData.appUsage}
+                                        onChange={(e) => setFormData({ ...formData, appUsage: e.target.value })}
+                                    />
+                                </div>
+
+                                <div className="space-y-1.5">
+                                    <label className="text-[9px] font-black text-text-muted uppercase tracking-[0.2em]">Formula Type</label>
+                                    <input
+                                        type="text"
+                                        className="w-full px-4 py-3 bg-background border border-border text-sm font-medium focus:border-primary outline-none transition-all"
+                                        placeholder="e.g. Premium Ritual"
+                                        value={formData.appFormulaType}
+                                        onChange={(e) => setFormData({ ...formData, appFormulaType: e.target.value })}
+                                    />
+                                </div>
+
+                                <div className="space-y-1.5">
+                                    <label className="text-[9px] font-black text-text-muted uppercase tracking-[0.2em]">Consistency</label>
+                                    <input
+                                        type="text"
+                                        className="w-full px-4 py-3 bg-background border border-border text-sm font-medium focus:border-primary outline-none transition-all"
+                                        placeholder="e.g. Creamy / Lightweight"
+                                        value={formData.appConsistency}
+                                        onChange={(e) => setFormData({ ...formData, appConsistency: e.target.value })}
+                                    />
+                                </div>
+
+                                <div className="space-y-1.5">
+                                    <label className="text-[9px] font-black text-text-muted uppercase tracking-[0.2em]">Ritual Status</label>
+                                    <input
+                                        type="text"
+                                        className="w-full px-4 py-3 bg-background border border-border text-sm font-medium focus:border-primary outline-none transition-all"
+                                        placeholder="e.g. Dermatologically Tested"
+                                        value={formData.appRitualStatus}
+                                        onChange={(e) => setFormData({ ...formData, appRitualStatus: e.target.value })}
+                                    />
+                                </div>
+
+                                <div className="space-y-1.5">
+                                    <label className="text-[9px] font-black text-text-muted uppercase tracking-[0.2em]">Return Policy</label>
+                                    <input
+                                        type="text"
+                                        className="w-full px-4 py-3 bg-background border border-border text-sm font-medium focus:border-primary outline-none transition-all"
+                                        placeholder="Specific return policy for this product"
+                                        value={formData.appReturnPolicy}
+                                        onChange={(e) => setFormData({ ...formData, appReturnPolicy: e.target.value })}
+                                    />
+                                </div>
+
+                                <div className="space-y-1.5 md:col-span-2">
+                                    <label className="text-[9px] font-black text-text-muted uppercase tracking-[0.2em]">Vendor / Manufacturing Details</label>
+                                    <textarea
+                                        className="w-full px-4 py-3 bg-background border border-border text-sm font-medium focus:border-primary outline-none transition-all min-h-[60px] resize-none"
+                                        placeholder="Produced by..."
+                                        value={formData.appVendorDetails}
+                                        onChange={(e) => setFormData({ ...formData, appVendorDetails: e.target.value })}
+                                    />
+                                </div>
+                            </div>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
 
                 {/* 4. Product Assets & Gallery */}
                 <div className="bg-surface p-8 border border-border shadow-sm space-y-6 lg:col-span-2">

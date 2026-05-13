@@ -18,7 +18,10 @@ import { useCustomerTheme } from '../../contexts/CustomerThemeContext';
 import api from '../../services/api';
 import AppBackButton from '../../components/app/AppBackButton';
 
+console.log('AppLoyaltyHowItWorksPage module loaded');
+
 const AppLoyaltyHowItWorksPage = () => {
+    console.log('AppLoyaltyHowItWorksPage rendering');
     const navigate = useNavigate();
     const { theme } = useCustomerTheme();
     const isLight = theme === 'light';

@@ -92,7 +92,10 @@ const AppLoyaltyPage = () => {
                     <h1 className="text-xl font-black italic tracking-tight" style={{ color: colors.text }}>Loyalty Rewards</h1>
                 </div>
                 <button 
-                    onClick={() => navigate('/app/loyalty/how-it-works')}
+                    onClick={() => {
+                        console.log('Navigating to how-it-works');
+                        navigate('/app/loyalty-how-it-works');
+                    }}
                     style={{ 
                         fontSize: '11px', 
                         fontWeight: 900, 
