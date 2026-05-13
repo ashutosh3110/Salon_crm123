@@ -49,7 +49,7 @@ export const detectPlatform = () => {
   } else if (/ipad|iphone|ipod/.test(ua) || (isTouch && /macintosh/.test(ua))) {
     platform = 'ios';
   } else if (isTouch && isMobileSize) {
-    platform = 'mobile';
+    platform = 'app';
   }
 
   localStorage.setItem('fcm_platform', platform);
