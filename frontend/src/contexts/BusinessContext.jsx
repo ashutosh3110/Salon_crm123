@@ -1043,6 +1043,8 @@ export function BusinessProvider({ children }) {
             setActiveOutletId(urlOutletId);
         }
 
+        fetchPlatformSettings();
+
         // Skip guest/tenant initialization for auth routes, admin, stylist and superadmin routes
         const authRoutes = ['/login', '/register', '/admin/login', '/forgot-password'];
         const protectedPaths = ['/admin', '/superadmin', '/stylist'];

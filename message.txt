@@ -1,0 +1,58 @@
+Searched for "superadmin|ticket|support|new salon"
+
+Project mein **Firebase Notifications** aur **WhatsApp Messages** ki poori list neeche di gayi hai, jisme **Customer**, **Admin**, aur **Superadmin** teenon side ke events cover kiye gaye hain:
+
+---
+
+### **1. Customer Side Notifications**
+Ye notifications customers ko unke mobile app ya phone par milte hain:
+
+| Event (Kaam) | Firebase Push | WhatsApp Message |
+| :--- | :---: | :---: |
+| **New Booking** (Appointment book hone par) | ✅ | ✅ (Template) |
+| **Booking Status Update** (Confirm/Cancel/Complete) | ✅ | ✅ (Text/Template) |
+| **New Order** (Product kharidne par) | ✅ | ✅ (Template) |
+| **Order Status Update** (Dispatch/Deliver hone par) | ✅ | ✅ (Text) |
+| **Wallet Update** (Paisa add/bulk credit hone par) | ✅ | ✅ (Template) |
+| **Membership Buy** (Plan lene par) | ✅ | ✅ (Template) |
+| **Review Approved** (Jab admin review ok kare) | ✅ | ✅ (Text) |
+| **Manual Message** (Admin jab dashboard se bhejta hai) | ✅ | ✅ (Text) |
+| **Service Reminders** (Appointment se pehle) | ❌ | ✅ (Cron Job) |
+| **Special Occasions** (Birthday/Anniversary) | ❌ | ✅ (Cron Job) |
+
+---
+
+### **2. Admin (Salon Owner/Staff) Side Notifications**
+Ye notifications Salon Admin ya staff ko unke dashboard ya app par milte hain:
+
+| Event (Kaam) | Firebase Push | WhatsApp Message |
+| :--- | :---: | :---: |
+| **New Booking Alert** (Jab koi customer book kare) | ✅ | ✅ (Text) |
+| **Booking Status Change** (Koi bhi update hone par) | ✅ | ❌ (Spam rokne ke liye) |
+| **New Order Alert** (Shop se order aane par) | ✅ | ❌ (Aapki request par) |
+| **Order Status Change** | ✅ | ❌ (Aapki request par) |
+| **Membership Purchase** (Naya member banne par) | ✅ | ✅ (Text) |
+| **New Review Received** (Naya feedback milne par) | ✅ | ❌ (Sirf Dashboard alert) |
+| **Low Stock Alert** (Product khatam hone par) | ✅ | ✅ (Optional) |
+
+---
+
+### **3. Superadmin Side Notifications**
+Superadmin (Jo poore system ko manage karta hai) ke liye alerts:
+
+| Event (Kaam) | Firebase Push | WhatsApp Message |
+| :--- | :---: | :---: |
+| **New Salon Registration** (Naya salon sign-up par) | ✅ (System Alert) | ❌ |
+| **New Support Ticket** (Koi admin help maange) | ✅ | ❌ |
+| **System Maintenance** (Updates ke liye) | ❌ | ✅ (Only to specific owners) |
+
+---
+
+### **Main Control Files (Zaroori Files):**
+1.  **WhatsApp Logic:** `backend/Utils/whatsapp.js`
+2.  **Firebase Logic:** `backend/Utils/notification.js`
+3.  **Booking Triggers:** `backend/Controllers/bookingController.js`
+4.  **Order Triggers:** `backend/Controllers/orderController.js`
+5.  **Wallet/Membership:** `walletController.js` & `membershipPlanController.js`
+
+Yeh poori list ab aapke project ke latest code ke mutabiq update kar di gayi hai.

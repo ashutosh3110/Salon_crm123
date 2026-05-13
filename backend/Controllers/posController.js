@@ -135,26 +135,31 @@ exports.checkout = async (req, res) => {
         try {
             const hasProducts = items.some(item => item.type === 'product');
             if (hasProducts && customer) {
-                const salon = await Salon.findById(salonId);
-                const brandName = salon?.businessName || salon?.name || 'Our Salon';
-                const firstProduct = items.find(item => item.type === 'product');
-                const productNames = items.filter(item => item.type === 'product').map(i => i.name).join(', ');
-                const totalQty = items.filter(item => item.type === 'product').reduce((acc, i) => acc + i.quantity, 0);
+                const { checkAndDeductWhatsAppCredit } = require('../Utils/whatsapp');
+                const canSend = await checkAndDeductWhatsAppCredit(outletId || salonId);
+                
+                if (canSend) {
+                    const salon = await Salon.findById(salonId);
+                    const brandName = salon?.businessName || salon?.name || 'Our Salon';
+                    const firstProduct = items.find(item => item.type === 'product');
+                    const productNames = items.filter(item => item.type === 'product').map(i => i.name).join(', ');
+                    const totalQty = items.filter(item => item.type === 'product').reduce((acc, i) => acc + i.quantity, 0);
 
-                await sendWapixoTemplate(
-                    customer.phone,
-                    process.env.WHATSAPP_TEMPLATE_PRODUCT_BUY,
-                    [
-                        customer.name,
-                        brandName,
-                        productNames.length > 30 ? productNames.substring(0, 27) + '...' : productNames,
-                        String(totalQty),
-                        `₹${firstProduct.price}`,
-                        `₹${discount || 0}`,
-                        paymentMethod,
-                        `₹${total}`
-                    ]
-                );
+                    await sendWapixoTemplate(
+                        customer.phone,
+                        process.env.WHATSAPP_TEMPLATE_PRODUCT_BUY || 'product_buy',
+                        [
+                            customer.name,
+                            brandName,
+                            productNames.length > 30 ? productNames.substring(0, 27) + '...' : productNames,
+                            String(totalQty),
+                            `₹${firstProduct.price}`,
+                            `₹${discount || 0}`,
+                            payments[0]?.method?.toUpperCase() || 'CASH',
+                            `₹${total}`
+                        ]
+                    );
+                }
             }
         } catch (wsErr) {
             console.error('Product Purchase WhatsApp failed:', wsErr.message);

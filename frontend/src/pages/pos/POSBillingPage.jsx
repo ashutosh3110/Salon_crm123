@@ -1043,9 +1043,9 @@ export default function POSBillingPage() {
                             price: item.price,
                             quantity: item.quantity
                         };
-                        const sId = (item.staffIds || [])[0];
-                        if (sId) {
-                            baseItem.stylistId = typeof sId === 'object' ? sId?._id : String(sId);
+                        const sIds = (item.staffIds || []).filter(Boolean).map(id => typeof id === 'object' ? id?._id : String(id));
+                        if (sIds.length > 0) {
+                            baseItem.stylistIds = sIds;
                         }
                         return baseItem;
                     }),
@@ -2170,8 +2170,30 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, staff, custo
             itemId: service._id,
             type: 'service',
             quantity: 1,
-            staffId: qFilteredStaff.length === 1 ? (typeof qFilteredStaff[0]._id === 'object' ? qFilteredStaff[0]._id?._id : String(qFilteredStaff[0]._id)) : '' 
+            staffIds: qFilteredStaff.length === 1 ? [typeof qFilteredStaff[0]._id === 'object' ? qFilteredStaff[0]._id?._id : String(qFilteredStaff[0]._id)] : [''] 
         }]);
+    };
+
+    const updateQStaff = (itemIdx, staffIdx, staffId) => {
+        const newCart = [...qCart];
+        const itemStaff = [...(newCart[itemIdx].staffIds || [''])];
+        itemStaff[staffIdx] = staffId;
+        newCart[itemIdx].staffIds = itemStaff;
+        setQCart(newCart);
+    };
+
+    const addQStaff = (itemIdx) => {
+        const newCart = [...qCart];
+        newCart[itemIdx].staffIds = [...(newCart[itemIdx].staffIds || ['']), ''];
+        setQCart(newCart);
+    };
+
+    const removeQStaff = (itemIdx, staffIdx) => {
+        const newCart = [...qCart];
+        if (newCart[itemIdx].staffIds?.length > 1) {
+            newCart[itemIdx].staffIds = newCart[itemIdx].staffIds.filter((_, i) => i !== staffIdx);
+            setQCart(newCart);
+        }
     };
 
     const handleQuickCreateClient = async (e) => {
@@ -2194,7 +2216,7 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, staff, custo
     const handleConfirm = async () => {
         if (!qClient) return toast.error('Please select a client');
         if (qCart.length === 0) return toast.error('Cart is empty');
-        if (qCart.some(item => !item.staffId)) return toast.error('Please assign stylists for all items');
+        if (qCart.some(item => !item.staffIds || item.staffIds.some(sid => !sid))) return toast.error('Please assign stylists for all items');
 
         setIsProcessing(true);
         try {
@@ -2206,10 +2228,8 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, staff, custo
                 clientId: qClient._id,
                 outletId: qOutletId,
                 items: qCart.map(i => {
-                    const { staffId, ...rest } = i;
-                    // Ensure stylistId is a single string ID
-                    const finalStaffId = typeof staffId === 'object' ? staffId?._id : String(staffId || '');
-                    return { ...rest, stylistId: finalStaffId };
+                    const { staffIds, ...rest } = i;
+                    return { ...rest, stylistIds: (staffIds || []).filter(Boolean).map(sid => typeof sid === 'object' ? sid?._id : String(sid)) };
                 }),
                 tax: totals.tax, 
                 payments: paymentArray,
@@ -2218,7 +2238,33 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, staff, custo
 
             const res = await api.post('/pos/checkout', payload);
             toast.success('Invoice Generated!');
-            onSuccess(res.data.data);
+            
+            const dbInvoice = res.data.data;
+            const invoiceData = {
+                ...dbInvoice,
+                number: dbInvoice.invoiceNumber || `INV-${Date.now().toString().slice(-4)}`,
+                date: new Date().toLocaleString('en-IN', {
+                    day: '2-digit', month: '2-digit', year: 'numeric',
+                    hour: '2-digit', minute: '2-digit', hour12: true
+                }),
+                outlet: outlets.find(o => String(o._id) === String(qOutletId))?.name || 'Salon',
+                client: qClient,
+                items: qCart.map(item => ({
+                    ...item,
+                    staffName: (item.staffIds || []).filter(Boolean).map(id => staff.find(s => String(s._id) === String(id))?.name).filter(Boolean).join(', ') || 'Unassigned'
+                })),
+                totals: { 
+                    ...totals, 
+                    paidAmount: (Number(qPayments.cash || 0) + Number(qPayments.online || 0)),
+                    balanceDue: Math.max(0, totals.total - (Number(qPayments.cash || 0) + Number(qPayments.online || 0)))
+                },
+                payments: [
+                    ...(qPayments.cash > 0 ? [{ method: 'cash', amount: qPayments.cash }] : []),
+                    ...(qPayments.online > 0 ? [{ method: 'online', amount: qPayments.online }] : [])
+                ]
+            };
+            
+            onSuccess(invoiceData);
         } catch (err) {
             toast.error(err.response?.data?.message || 'Checkout failed');
         } finally {
@@ -2404,28 +2450,44 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, staff, custo
                                         </button>
                                     </div>
 
-                                    <div className={`p-2.5 rounded-lg border ${!item.staffId ? 'bg-amber-50 border-amber-200' : 'bg-slate-50 border-slate-100'}`}>
-                                        <label className={`text-[8px] font-black uppercase tracking-widest flex items-center gap-1.5 mb-1.5 ${!item.staffId ? 'text-amber-600' : 'text-slate-400'}`}>
+                                    <div className={`p-2.5 rounded-lg border ${(!item.staffIds || item.staffIds.some(sid => !sid)) ? 'bg-amber-50 border-amber-200' : 'bg-slate-50 border-slate-100'}`}>
+                                        <label className={`text-[8px] font-black uppercase tracking-widest flex items-center gap-1.5 mb-1.5 ${(!item.staffIds || item.staffIds.some(sid => !sid)) ? 'text-amber-600' : 'text-slate-400'}`}>
                                             <Sparkles className="w-2.5 h-2.5" /> Staff
                                         </label>
-                                        {qFilteredStaff.length > 0 ? (
-                                            <select 
-                                                className="w-full bg-white text-[10px] font-bold text-slate-800 outline-none border border-slate-200 py-1.5 px-2 rounded focus:ring-1 focus:ring-primary/20"
-                                                value={item.staffId}
-                                                onChange={(e) => {
-                                                    const newCart = [...qCart];
-                                                    newCart[idx].staffId = e.target.value;
-                                                    setQCart(newCart);
-                                                }}
+                                        <div className="space-y-2">
+                                            {(item.staffIds || ['']).map((sid, sIdx) => (
+                                                <div key={sIdx} className="flex items-center gap-1.5">
+                                                    {qFilteredStaff.length > 0 ? (
+                                                        <select 
+                                                            className="flex-1 bg-white text-[10px] font-bold text-slate-800 outline-none border border-slate-200 py-1.5 px-2 rounded focus:ring-1 focus:ring-primary/20"
+                                                            value={sid || ''}
+                                                            onChange={(e) => updateQStaff(idx, sIdx, e.target.value)}
+                                                        >
+                                                            <option value="">Assign...</option>
+                                                            {qFilteredStaff.map(st => (
+                                                                <option key={st._id} value={st._id}>{st.name}</option>
+                                                            ))}
+                                                        </select>
+                                                    ) : (
+                                                        <p className="text-[8px] font-bold text-rose-500 italic">No staff at this outlet</p>
+                                                    )}
+                                                    {(item.staffIds || []).length > 1 && (
+                                                        <button 
+                                                            onClick={() => removeQStaff(idx, sIdx)}
+                                                            className="p-1.5 text-rose-400 hover:text-rose-600 hover:bg-rose-50 rounded transition-all"
+                                                        >
+                                                            <X className="w-3.5 h-3.5" />
+                                                        </button>
+                                                    )}
+                                                </div>
+                                            ))}
+                                            <button
+                                                onClick={() => addQStaff(idx)}
+                                                className="flex items-center gap-1.5 text-[9px] font-black text-primary border border-primary/20 bg-primary/5 hover:bg-primary hover:text-white px-3 py-1.5 rounded-lg transition-all w-full justify-center"
                                             >
-                                                <option value="">Assign...</option>
-                                                {qFilteredStaff.map(st => (
-                                                    <option key={st._id} value={st._id}>{st.name}</option>
-                                                ))}
-                                            </select>
-                                        ) : (
-                                            <p className="text-[8px] font-bold text-rose-500 italic">No staff at this outlet</p>
-                                        )}
+                                                <Plus className="w-3 h-3" /> Add Another Staff
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
                             ))}

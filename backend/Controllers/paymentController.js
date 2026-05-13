@@ -178,23 +178,29 @@ exports.verifyPayment = async (req, res) => {
 
                 // Send Plan Purchase WhatsApp Message
                 try {
+                    const User = require('../Models/User');
                     const adminUser = await User.findById(salon.ownerId || payment.salonId);
                     const adminName = adminUser?.name || salon.ownerName || 'Admin';
                     
-                    await sendWapixoTemplate(
-                        salon.phone,
-                        process.env.WHATSAPP_TEMPLATE_PLAN_PURCHASE,
-                        [
-                            adminName,
-                            salon.name || salon.businessName,
-                            plan.name,
-                            `₹${payment.amount}`,
-                            'Razorpay',
-                            new Date().toLocaleDateString(),
-                            expiryDate.toLocaleDateString(),
-                            process.env.EMAIL_FROM_NAME || 'Salon CRM'
-                        ]
-                    );
+                    const { checkAndDeductWhatsAppCredit } = require('../Utils/whatsapp');
+                    const canSendPlan = await checkAndDeductWhatsAppCredit(salon._id);
+
+                    if (canSendPlan) {
+                        await sendWapixoTemplate(
+                            salon.phone,
+                            process.env.WHATSAPP_TEMPLATE_PLAN_PURCHASE || 'plan_purchase',
+                            [
+                                adminName,
+                                salon.name || salon.businessName,
+                                plan.name,
+                                `₹${payment.amount}`,
+                                'Razorpay',
+                                new Date().toLocaleDateString(),
+                                expiryDate.toLocaleDateString(),
+                                process.env.EMAIL_FROM_NAME || 'Salon CRM'
+                            ]
+                        );
+                    }
                 } catch (wsErr) {
                     console.error('Plan Purchase WhatsApp failed:', wsErr.message);
                 }

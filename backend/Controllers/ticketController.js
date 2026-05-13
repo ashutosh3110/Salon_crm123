@@ -61,6 +61,23 @@ exports.createTicket = async (req, res) => {
         }
 
         const ticket = await Ticket.create(newTicket);
+
+        // Notify Superadmins (WhatsApp)
+        try {
+            const { sendWhatsAppMessage } = require('../Utils/whatsapp');
+            const User = require('../Models/User');
+            const superadmins = await User.find({ role: 'superadmin', status: 'active' });
+            const msg = `Superadmin Alert: New Support Ticket #${ticket._id.toString().slice(-6).toUpperCase()} created by ${req.user ? req.user.name : 'Customer'}. Subject: ${ticket.subject}`;
+            
+            for (const sa of superadmins) {
+                if (sa.phone) {
+                    await sendWhatsAppMessage(sa.phone, msg);
+                }
+            }
+        } catch (err) {
+            console.error('Superadmin Ticket Notification failed:', err.message);
+        }
+
         res.status(201).json({
             success: true,
             data: ticket
@@ -114,6 +131,22 @@ exports.updateTicketStatus = async (req, res) => {
             success: true,
             data: ticket
         });
+
+        // Notify Superadmins (WhatsApp)
+        try {
+            const { sendWhatsAppMessage } = require('../Utils/whatsapp');
+            const User = require('../Models/User');
+            const superadmins = await User.find({ role: 'superadmin', status: 'active' });
+            const msg = `Superadmin Alert: Support Ticket #${ticket._id.toString().slice(-6).toUpperCase()} status updated to ${req.body.status.toUpperCase()}.`;
+            
+            for (const sa of superadmins) {
+                if (sa.phone) {
+                    await sendWhatsAppMessage(sa.phone, msg);
+                }
+            }
+        } catch (err) {
+            console.error('Superadmin Ticket Update Notification failed:', err.message);
+        }
     } catch (err) {
         res.status(400).json({ success: false, message: err.message });
     }

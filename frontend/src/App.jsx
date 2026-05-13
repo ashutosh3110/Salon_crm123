@@ -155,6 +155,7 @@ const StockOverviewPage = lazy(() => import('./pages/admin/StockOverviewPage'));
 const AddProductPage = lazy(() => import('./pages/admin/AddProductPage'));
 const ProductDetailsPage = lazy(() => import('./pages/admin/ProductDetailsPage'));
 const ShopOrdersPage = lazy(() => import('./pages/admin/ShopOrdersPage'));
+const WhatsAppCreditsPage = lazy(() => import('./pages/admin/WhatsAppCreditsPage'));
 
 // POS App - Lazy Loaded
 const POSLayout = lazy(() => import('./layouts/POSLayout'));
@@ -452,6 +453,7 @@ function App() {
                             <Route path="/admin/settings" element={<Navigate to="/admin/settings/profile" replace />} />
                             <Route path="/admin/settings/:section" element={<SettingsPage />} />
                             <Route path="/admin/subscription" element={<SubscriptionPage />} />
+                            <Route path="/admin/whatsapp-credits" element={<WhatsAppCreditsPage />} />
                             <Route path="/admin/support" element={<SupportPage />} />
                             <Route path="/admin/feature-locked" element={<FeatureLockedPage />} />
                           </Route>

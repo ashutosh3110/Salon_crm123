@@ -78,7 +78,11 @@ const salonSchema = new mongoose.Schema({
         active: { type: Boolean, default: true }
     },
     fcmTokenWeb: [String],
-    fcmTokenMobile: [String]
+    fcmTokenMobile: [String],
+    whatsappSettings: {
+        whatsappNotifications: { type: Boolean, default: true },
+        whatsappCredits: { type: Number, default: 0 }
+    }
 }, {
     timestamps: true,
     toJSON: { virtuals: true },

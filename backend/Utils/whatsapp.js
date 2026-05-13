@@ -244,3 +244,57 @@ exports.sendWapixoMessage = async (to, message) => {
         };
     }
 };
+
+/**
+ * Check if an outlet has active WhatsApp credits and deduct 1 if so.
+ * @param {string} outletId - The ID of the outlet
+ * @returns {Promise<boolean>} - Returns true if credit was deducted and message can be sent
+ */
+exports.checkAndDeductWhatsAppCredit = async (id) => {
+    try {
+        if (!id) return false;
+        
+        const Outlet = require('../Models/Outlet');
+        const Salon = require('../Models/Salon');
+        
+        let salon;
+        
+        // 1. Try finding by Outlet ID first
+        const outlet = await Outlet.findById(id);
+        if (outlet) {
+            salon = await Salon.findById(outlet.salonId);
+        } else {
+            // 2. If not an outlet, check if it's a Salon ID
+            salon = await Salon.findById(id);
+        }
+
+        if (!salon || !salon.whatsappSettings) {
+            console.log(`[WhatsApp-Credit] Failed: Salon not found for ID ${id}`);
+            return false;
+        }
+        
+        const { whatsappNotifications, whatsappCredits } = salon.whatsappSettings;
+        
+        // 1. Check if feature is enabled for this salon
+        if (whatsappNotifications === false) {
+            console.log(`[WhatsApp-Credit] Failed: WhatsApp disabled for salon ${salon._id}`);
+            return false;
+        }
+        
+        // 2. Check credits
+        if (!whatsappCredits || whatsappCredits <= 0) {
+            console.log(`[WhatsApp-Credit] Failed: No credits remaining for salon ${salon._id}`);
+            return false;
+        }
+        
+        // 3. Deduct 1 credit
+        salon.whatsappSettings.whatsappCredits = Math.max(0, (salon.whatsappSettings.whatsappCredits || 0) - 1);
+        await salon.save();
+        
+        console.log(`[WhatsApp-Credit] Success: 1 credit deducted. Remaining: ${salon.whatsappSettings.whatsappCredits} for salon ${salon._id}`);
+        return true;
+    } catch (err) {
+        console.error('[WhatsApp-Credit] Error:', err.message);
+        return false;
+    }
+};

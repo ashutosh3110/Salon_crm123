@@ -115,24 +115,29 @@ exports.createOrder = async (req, res) => {
                 .populate('outletId', 'name city');
 
             if (populatedOrder && populatedOrder.customerId && populatedOrder.customerId.phone) {
-                const brandName = populatedOrder.salonId?.businessName || populatedOrder.salonId?.name || 'Our Salon';
-                const orderId = populatedOrder._id.toString().slice(-6).toUpperCase();
+                const { checkAndDeductWhatsAppCredit } = require('../Utils/whatsapp');
+                const canSend = await checkAndDeductWhatsAppCredit(populatedOrder.outletId?._id || order.outletId);
 
-                await sendWapixoTemplate(
-                    populatedOrder.customerId.phone,
-                    process.env.WHATSAPP_TEMPLATE_PRODUCT_BUY || 'product_buy',
-                    [
-                        populatedOrder.customerId.name || 'Customer',
-                        brandName,
-                        orderId,
-                        `${populatedOrder.items.length} Items`,
-                        `₹${populatedOrder.totalAmount}`,
-                        populatedOrder.paymentMethod.toUpperCase(),
-                        populatedOrder.outletId?.name || 'Our Outlet',
-                        new Date().toLocaleDateString()
-                    ]
-                );
-                console.log(`[Order-WhatsApp] Sent to ${populatedOrder.customerId.phone} for Order #${orderId}`);
+                if (canSend) {
+                    const brandName = populatedOrder.salonId?.businessName || populatedOrder.salonId?.name || 'Our Salon';
+                    const orderId = populatedOrder._id.toString().slice(-6).toUpperCase();
+
+                    await sendWapixoTemplate(
+                        populatedOrder.customerId.phone,
+                        process.env.WHATSAPP_TEMPLATE_PRODUCT_BUY || 'product_buy',
+                        [
+                            populatedOrder.customerId.name || 'Customer',
+                            brandName,
+                            orderId,
+                            `${populatedOrder.items.length} Items`,
+                            `₹${populatedOrder.totalAmount}`,
+                            populatedOrder.paymentMethod.toUpperCase(),
+                            populatedOrder.outletId?.name || 'Our Outlet',
+                            new Date().toLocaleDateString()
+                        ]
+                    );
+                    console.log(`[Order-WhatsApp] Sent to ${populatedOrder.customerId.phone} for Order #${orderId}`);
+                }
             }
         } catch (wsErr) {
             console.error('[Order-WhatsApp] Failed:', wsErr.message);
@@ -167,15 +172,18 @@ exports.createOrder = async (req, res) => {
                 actionUrl: `/admin/shop-orders` // or specific order link if available
             });
 
-            /* 
-            // Removed WhatsApp to Admins as per request (Firebase Only)
-            const admins = await User.find({ salonId, role: 'admin', status: 'active' });
-            for (const ad of admins) {
-                if (ad.phone) {
-                    await sendWhatsAppMessage(ad.phone, adminMsg);
+            // WhatsApp to Admins
+            const { checkAndDeductWhatsAppCredit } = require('../Utils/whatsapp');
+            const canSendAdmin = await checkAndDeductWhatsAppCredit(order.outletId);
+            
+            if (canSendAdmin) {
+                const admins = await User.find({ salonId, role: 'admin', status: 'active' });
+                for (const ad of admins) {
+                    if (ad.phone) {
+                        await sendWhatsAppMessage(ad.phone, adminMsg);
+                    }
                 }
             }
-            */
         } catch (pushErr) {
             console.error('Order Notification failed:', pushErr.message);
         }
@@ -393,7 +401,10 @@ exports.updateOrderStatus = async (req, res) => {
                 const brandName = populatedOrder.salonId?.businessName || populatedOrder.salonId?.name || 'Our Salon';
                 
                 // WhatsApp to Customer
-                if (populatedOrder.customerId?.phone) {
+                const { checkAndDeductWhatsAppCredit } = require('../Utils/whatsapp');
+                const canSendCust = await checkAndDeductWhatsAppCredit(order.outletId);
+
+                if (canSendCust && populatedOrder.customerId?.phone) {
                     if (status === 'accepted' && process.env.WHATSAPP_TEMPLATE_PRODUCT_BUY) {
                         const orderIdDisplay = populatedOrder._id.toString().slice(-6).toUpperCase();
                         await sendWapixoTemplate(populatedOrder.customerId.phone, process.env.WHATSAPP_TEMPLATE_PRODUCT_BUY, [
@@ -406,15 +417,16 @@ exports.updateOrderStatus = async (req, res) => {
                     }
                 }
 
-                /* 
-                // Removed WhatsApp to Admins as per request (Firebase Only)
-                const admins = await User.find({ salonId: order.salonId, role: 'admin', status: 'active' });
-                for (const ad of admins) {
-                    if (ad.phone) {
-                        await sendWhatsAppMessage(ad.phone, `Admin Alert: ${adminMsg}`);
+                // WhatsApp to Admins
+                const canSendAdmStatus = await checkAndDeductWhatsAppCredit(order.outletId);
+                if (canSendAdmStatus) {
+                    const admins = await User.find({ salonId: order.salonId, role: 'admin', status: 'active' });
+                    for (const ad of admins) {
+                        if (ad.phone) {
+                            await sendWhatsAppMessage(ad.phone, `Admin Alert: ${adminMsg}`);
+                        }
                     }
                 }
-                */
             }
         } catch (notifErr) {
             console.error('Unified Order Notification failed:', notifErr.message);

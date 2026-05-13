@@ -3,7 +3,7 @@ import {
     User, Mail, Phone, Lock, Eye, EyeOff, Save,
     CheckCircle, Shield, Edit3, KeyRound, Globe,
     BadgeCheck, AlertCircle, Loader2, DollarSign,
-    Info, MapPin, Share2, Gift, Star
+    Info, MapPin, Share2, Gift, Star, MessageSquare
 } from 'lucide-react';
 import api from '../../services/api';
 
@@ -88,9 +88,14 @@ export default function SASettingsPage() {
         maxImageSizeUnit: 'MB',
         defaultTrialDays: 14,
         serviceGst: 18,
-        productGst: 12
+        productGst: 12,
+        whatsappPricing: {
+            pricePerMessage: 0.50,
+            minPurchaseQty: 1000
+        }
     });
     const setPlat = (k, v) => setPlatform(p => ({ ...p, [k]: v }));
+    const setWhatsapp = (k, v) => setPlatform(p => ({ ...p, whatsappPricing: { ...p.whatsappPricing, [k]: v } }));
     const setSocial = (k, v) => setPlatform(p => ({ ...p, socialLinks: { ...p.socialLinks, [k]: v } }));
 
     /* Profile form */
@@ -524,6 +529,35 @@ export default function SASettingsPage() {
                                     <div className="flex items-end pb-1.5">
                                         <p className="text-[10px] text-text-muted italic leading-relaxed">
                                             Default GST percentages applied to services and retail products across the platform.
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="pt-6 border-t border-border">
+                                <h4 className="text-[10px] font-black text-text-muted uppercase tracking-widest mb-3 flex items-center gap-2">
+                                    <MessageSquare className="w-3 h-3 text-emerald-600" /> WhatsApp API Pricing
+                                </h4>
+                                <div className="grid sm:grid-cols-3 gap-6">
+                                    <Field 
+                                        label="Price Per Message" 
+                                        value={platform.whatsappPricing?.pricePerMessage} 
+                                        onChange={e => setWhatsapp('pricePerMessage', e.target.value)} 
+                                        type="number"
+                                        placeholder="0.50"
+                                        suffix={<span className="text-[10px] font-bold text-text-muted mr-3">₹</span>}
+                                    />
+                                    <Field 
+                                        label="Minimum Buy Quantity" 
+                                        value={platform.whatsappPricing?.minPurchaseQty} 
+                                        onChange={e => setWhatsapp('minPurchaseQty', e.target.value)} 
+                                        type="number"
+                                        placeholder="1000"
+                                        suffix={<span className="text-[10px] font-bold text-text-muted mr-3">Msgs</span>}
+                                    />
+                                    <div className="flex items-end pb-1.5">
+                                        <p className="text-[10px] text-text-muted italic leading-relaxed">
+                                            Controls the base price for WhatsApp message credits and the minimum quantity salons can purchase.
                                         </p>
                                     </div>
                                 </div>

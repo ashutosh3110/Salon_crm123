@@ -109,10 +109,16 @@ exports.sendManualNotification = async (req, res) => {
 
             // Also send WhatsApp manually if targeted to single customer
             try {
-                const { sendWhatsAppMessage } = require('../Utils/whatsapp');
+                const { sendWhatsAppMessage, checkAndDeductWhatsAppCredit } = require('../Utils/whatsapp');
                 const customer = await Customer.findById(targetId);
+                
                 if (customer && customer.phone) {
-                    await sendWhatsAppMessage(customer.phone, `${title}\n\n${message}`);
+                    const canSendManual = await checkAndDeductWhatsAppCredit(customer.lastOutletId || salonId);
+                    if (canSendManual) {
+                        await sendWhatsAppMessage(customer.phone, `${title}\n\n${message}`);
+                    } else {
+                        console.log(`[Manual-WhatsApp] Skipped: No credits for salon ${salonId}`);
+                    }
                 }
             } catch (wsErr) {
                 console.error('Manual WhatsApp failed:', wsErr.message);

@@ -50,7 +50,8 @@ import {
     LifeBuoy,
     CheckCircle2,
     Zap,
-    ShoppingBag
+    ShoppingBag,
+    MessageSquare
 } from 'lucide-react';
 
 import { useCMS } from '../../contexts/CMSContext';
@@ -130,6 +131,7 @@ export default function Sidebar({ collapsed, setCollapsed, isHovered, setIsHover
                 permission: 'marketing',
                 subItems: [
                     { label: 'Marketing Hub', icon: Layout, path: '/admin/marketing' },
+                    { label: 'WhatsApp Credits', icon: MessageSquare, path: '/admin/whatsapp-credits' },
                 ]
             },
 

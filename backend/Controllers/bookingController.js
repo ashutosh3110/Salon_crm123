@@ -213,20 +213,25 @@ exports.createBooking = async (req, res) => {
             const dateStr = new Date(populated.appointmentDate).toLocaleDateString();
             const timeStr = populated.time || new Date(populated.appointmentDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
             
-            await sendWapixoTemplate(
-                populated.clientId.phone,
-                process.env.WHATSAPP_TEMPLATE_BOOKING_LINK,
-                [
-                    populated.clientId.name,
-                    populated.salonId.businessName || populated.salonId.name || 'Our Salon',
-                    populated.outletId.name,
-                    populated.outletId.city || populated.outletId.address?.city || 'Our Location',
-                    populated.staffId?.name || 'Assigned Stylist',
-                    populated.serviceId.name,
-                    dateStr,
-                    timeStr
-                ]
-            );
+            const { checkAndDeductWhatsAppCredit } = require('../Utils/whatsapp');
+            const canSend = await checkAndDeductWhatsAppCredit(populated.outletId?._id || booking.outletId);
+
+            if (canSend) {
+                await sendWapixoTemplate(
+                    populated.clientId.phone,
+                    process.env.WHATSAPP_TEMPLATE_BOOKING_LINK,
+                    [
+                        populated.clientId.name,
+                        populated.salonId.businessName || populated.salonId.name || 'Our Salon',
+                        populated.outletId.name,
+                        populated.outletId.city || populated.outletId.address?.city || 'Our Location',
+                        populated.staffId?.name || 'Assigned Stylist',
+                        populated.serviceId.name,
+                        dateStr,
+                        timeStr
+                    ]
+                );
+            }
         } catch (wsErr) {
             console.error('Booking WhatsApp failed:', wsErr.message);
         }
@@ -264,10 +269,15 @@ exports.createBooking = async (req, res) => {
                 });
 
                 // WhatsApp to Admins
-                const admins = await User.find({ salonId, role: 'admin', status: 'active' });
-                for (const ad of admins) {
-                    if (ad.phone) {
-                        await sendWhatsAppMessage(ad.phone, adminMsg);
+                const { checkAndDeductWhatsAppCredit } = require('../Utils/whatsapp');
+                const canSendAdmin = await checkAndDeductWhatsAppCredit(populated.outletId?._id || booking.outletId);
+
+                if (canSendAdmin) {
+                    const admins = await User.find({ salonId, role: 'admin', status: 'active' });
+                    for (const ad of admins) {
+                        if (ad.phone) {
+                            await sendWhatsAppMessage(ad.phone, adminMsg);
+                        }
                     }
                 }
             }
@@ -430,9 +440,11 @@ exports.updateStatus = async (req, res) => {
 
                 // 3. WhatsApp Notifications
                 const salonName = populated.salonId?.businessName || populated.salonId?.name || 'Our Salon';
+                const { checkAndDeductWhatsAppCredit } = require('../Utils/whatsapp');
                 
                 // WhatsApp to Customer
-                if (populated.clientId?.phone) {
+                const canSendCustStatus = await checkAndDeductWhatsAppCredit(populated.outletId?._id || booking.outletId);
+                if (canSendCustStatus && populated.clientId?.phone) {
                     if (booking.status === 'confirmed' && process.env.WHATSAPP_TEMPLATE_BOOKING_LINK) {
                         const dateStr = new Date(populated.appointmentDate).toLocaleDateString();
                         const timeStr = populated.time || new Date(populated.appointmentDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
@@ -449,10 +461,13 @@ exports.updateStatus = async (req, res) => {
                 }
 
                 // WhatsApp to Admins
-                const admins = await User.find({ salonId: booking.salonId, role: 'admin', status: 'active' });
-                for (const ad of admins) {
-                    if (ad.phone) {
-                        await sendWhatsAppMessage(ad.phone, `Admin Alert: ${adminMsg}`);
+                const canSendAdmStatus = await checkAndDeductWhatsAppCredit(populated.outletId?._id || booking.outletId);
+                if (canSendAdmStatus) {
+                    const admins = await User.find({ salonId: booking.salonId, role: 'admin', status: 'active' });
+                    for (const ad of admins) {
+                        if (ad.phone) {
+                            await sendWhatsAppMessage(ad.phone, `Admin Alert: ${adminMsg}`);
+                        }
                     }
                 }
             }

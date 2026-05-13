@@ -3,8 +3,9 @@ const Salon = require('../Models/Salon');
 const User = require('../Models/User');
 const Booking = require('../Models/Booking');
 const Customer = require('../Models/Customer');
-const { sendWapixoTemplate } = require('./whatsapp');
+const { sendWapixoTemplate, checkAndDeductWhatsAppCredit } = require('./whatsapp');
 const { addLoyaltyPoints } = require('./loyalty');
+const { sendNotification } = require('./notification');
 
 const initCronJobs = () => {
     // 1. Subscription Expiration Check (Daily at 00:00)
@@ -59,16 +60,29 @@ const initCronJobs = () => {
                     const contact = b.outletId?.phone || b.salonId?.contactPhone || 'Contact Us';
                     const dateStr = b.appointmentDate.toLocaleDateString();
 
-                    await sendWapixoTemplate(b.clientId.phone, reminderTemplate, [
-                        b.clientId.name,
-                        "Your service is scheduled for tomorrow. We look forward to seeing you!",
-                        serviceName,
-                        outletName,
-                        dateStr,
-                        b.time || "Scheduled Time",
-                        contact,
-                        salonName
-                    ]);
+                    const canSendTomorrow = await checkAndDeductWhatsAppCredit(b.outletId?._id);
+                    if (canSendTomorrow) {
+                        await sendWapixoTemplate(b.clientId.phone, reminderTemplate, [
+                            b.clientId.name,
+                            "Your service is scheduled for tomorrow. We look forward to seeing you!",
+                            serviceName,
+                            outletName,
+                            dateStr,
+                            b.time || "Scheduled Time",
+                            contact,
+                            salonName
+                        ]);
+                    }
+
+                    // Send Push Notification
+                    await sendNotification({
+                        customerId: b.clientId._id,
+                        salonId: b.salonId._id,
+                        title: 'Service Reminder! 📅',
+                        message: `Hi ${b.clientId.name}, your service for ${serviceName} at ${salonName} is scheduled for tomorrow (${dateStr}) at ${b.time || 'Scheduled Time'}.`,
+                        type: 'booking',
+                        actionUrl: `/app/bookings/${b._id}`
+                    });
                 }
             }
 
@@ -86,16 +100,29 @@ const initCronJobs = () => {
                     const contact = b.outletId?.phone || b.salonId?.contactPhone || 'Contact Us';
                     const dateStr = b.appointmentDate.toLocaleDateString();
 
-                    await sendWapixoTemplate(b.clientId.phone, reminderTemplate, [
-                        b.clientId.name,
-                        "Your service is today! We are excited to serve you.",
-                        serviceName,
-                        outletName,
-                        dateStr,
-                        b.time || "Scheduled Time",
-                        contact,
-                        salonName
-                    ]);
+                    const canSendToday = await checkAndDeductWhatsAppCredit(b.outletId?._id);
+                    if (canSendToday) {
+                        await sendWapixoTemplate(b.clientId.phone, reminderTemplate, [
+                            b.clientId.name,
+                            "Your service is today! We are excited to serve you.",
+                            serviceName,
+                            outletName,
+                            dateStr,
+                            b.time || "Scheduled Time",
+                            contact,
+                            salonName
+                        ]);
+                    }
+
+                    // Send Push Notification
+                    await sendNotification({
+                        customerId: b.clientId._id,
+                        salonId: b.salonId._id,
+                        title: 'Service Today! ✨',
+                        message: `Hi ${b.clientId.name}, your service for ${serviceName} at ${salonName} is scheduled for today at ${b.time || 'Scheduled Time'}. We look forward to seeing you!`,
+                        type: 'booking',
+                        actionUrl: `/app/bookings/${b._id}`
+                    });
                 }
             }
         } catch (err) {
@@ -121,12 +148,25 @@ const initCronJobs = () => {
                 const salonName = salon?.businessName || salon?.name || 'Wapixo';
                 const points = salon?.loyaltySetting?.birthdayPoints || 50;
 
-                await sendWapixoTemplate(c.phone, celebrationTemplate, [
-                    c.name,
-                    "Happy Birthday! We wish you a fantastic year ahead filled with joy and beauty.",
-                    String(points),
-                    salonName
-                ]);
+                const canSendBday = await checkAndDeductWhatsAppCredit(c.lastOutletId);
+                if (canSendBday) {
+                    await sendWapixoTemplate(c.phone, celebrationTemplate, [
+                        c.name,
+                        "Happy Birthday! We wish you a fantastic year ahead filled with joy and beauty.",
+                        String(points),
+                        salonName
+                    ]);
+                }
+
+                // Send Push Notification
+                await sendNotification({
+                    customerId: c._id,
+                    salonId: c.salonId,
+                    title: 'Happy Birthday! 🎂',
+                    message: `Hi ${c.name}, Happy Birthday! We've added ${points} loyalty points to your account. Have a beautiful day!`,
+                    type: 'system'
+                });
+
                 await addLoyaltyPoints(c._id, c.salonId, 'BIRTHDAY', 'Birthday Celebration Award');
             }
 
@@ -137,12 +177,25 @@ const initCronJobs = () => {
                 const salonName = salon?.businessName || salon?.name || 'Wapixo';
                 const points = salon?.loyaltySetting?.anniversaryPoints || 100;
 
-                await sendWapixoTemplate(c.phone, celebrationTemplate, [
-                    c.name,
-                    "Happy Anniversary! Celebrating your beautiful journey together.",
-                    String(points),
-                    salonName
-                ]);
+                const canSendAniv = await checkAndDeductWhatsAppCredit(c.lastOutletId);
+                if (canSendAniv) {
+                    await sendWapixoTemplate(c.phone, celebrationTemplate, [
+                        c.name,
+                        "Happy Anniversary! Celebrating your beautiful journey together.",
+                        String(points),
+                        salonName
+                    ]);
+                }
+
+                // Send Push Notification
+                await sendNotification({
+                    customerId: c._id,
+                    salonId: c.salonId,
+                    title: 'Happy Anniversary! 🎉',
+                    message: `Hi ${c.name}, Happy Anniversary! We've added ${points} loyalty points to your account to celebrate your special day.`,
+                    type: 'system'
+                });
+
                 await addLoyaltyPoints(c._id, c.salonId, 'ANNIVERSARY', 'Anniversary Celebration Award');
             }
         } catch (err) {

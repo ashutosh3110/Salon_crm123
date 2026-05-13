@@ -1,5 +1,5 @@
 const Customer = require('../Models/Customer');
-const { sendWapixoTemplate } = require('../Utils/whatsapp');
+const { sendWapixoTemplate, checkAndDeductWhatsAppCredit } = require('../Utils/whatsapp');
 const WalletTransaction = require('../Models/WalletTransaction');
 const Razorpay = require('razorpay');
 const crypto = require('crypto');
@@ -119,22 +119,26 @@ exports.verifyTopup = async (req, res) => {
                 status: 'COMPLETED'
             });
 
-            // Send Wallet Update WhatsApp Message
+            // Send WhatsApp Message with credit check
             try {
                 const salon = await Salon.findById(customer.salonId);
                 const brandName = salon?.businessName || salon?.name || 'Our Salon';
+
+                const canSendWhatsApp = await checkAndDeductWhatsAppCredit(customer.lastOutletId || customer.salonId);
                 
-                await sendWapixoTemplate(
-                    customer.phone,
-                    process.env.WHATSAPP_TEMPLATE_WALLET,
-                    [
-                        customer.name,
-                        'Deposit (Credit)',
-                        `₹${amount}`,
-                        `₹${customer.walletBalance}`,
-                        brandName
-                    ]
-                );
+                if (canSendWhatsApp) {
+                    await sendWapixoTemplate(
+                        customer.phone,
+                        process.env.WHATSAPP_TEMPLATE_WALLET,
+                        [
+                            customer.name,
+                            'Deposit (Credit)',
+                            `₹${amount}`,
+                            `₹${customer.walletBalance}`,
+                            brandName
+                        ]
+                    );
+                }
             } catch (wsErr) {
                 console.error('Wallet WhatsApp failed:', wsErr.message);
             }
@@ -224,22 +228,26 @@ exports.bulkRecharge = async (req, res) => {
                         status: 'COMPLETED'
                     });
 
-                    // Send Wallet Update WhatsApp Message
+                    // Send WhatsApp Message with credit check
                     try {
                         const salon = await Salon.findById(salonId);
                         const brandName = salon?.businessName || salon?.name || 'Our Salon';
-                        
-                        await sendWapixoTemplate(
-                            customer.phone,
-                            process.env.WHATSAPP_TEMPLATE_WALLET,
-                            [
-                                customer.name,
-                                'Promotional Credit',
-                                `₹${numericAmount}`,
-                                `₹${customer.walletBalance}`,
-                                brandName
-                            ]
-                        );
+
+                        const canSendWhatsApp = await checkAndDeductWhatsAppCredit(customer.lastOutletId || salonId);
+
+                        if (canSendWhatsApp) {
+                            await sendWapixoTemplate(
+                                customer.phone,
+                                process.env.WHATSAPP_TEMPLATE_WALLET,
+                                [
+                                    customer.name,
+                                    'Promotional Credit',
+                                    `₹${numericAmount}`,
+                                    `₹${customer.walletBalance}`,
+                                    brandName
+                                ]
+                            );
+                        }
                     } catch (wsErr) {
                         console.error('Wallet WhatsApp failed:', wsErr.message);
                     }

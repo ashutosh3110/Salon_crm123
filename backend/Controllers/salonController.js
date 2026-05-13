@@ -143,6 +143,22 @@ exports.createSalon = async (req, res) => {
             }
         });
 
+        // Notify Superadmins (WhatsApp)
+        try {
+            const { sendWhatsAppMessage } = require('../Utils/whatsapp');
+            const User = require('../Models/User');
+            const superadmins = await User.find({ role: 'superadmin', status: 'active' });
+            const msg = `Superadmin Alert: New Salon Created - "${name}" by Superadmin/Manager. Owner: ${ownerName}`;
+            
+            for (const sa of superadmins) {
+                if (sa.phone) {
+                    await sendWhatsAppMessage(sa.phone, msg);
+                }
+            }
+        } catch (err) {
+            console.error('Superadmin Salon Creation Notification failed:', err.message);
+        }
+
     } catch (err) {
         console.error('Error creating salon:', err);
         res.status(500).json({ 
@@ -820,18 +836,23 @@ exports.getCustomerInitialData = async (req, res) => {
             try {
                 const customer = await Customer.findById(customerId);
                 if (customer && !customer.welcomeSent) {
-                    const brandName = salon.businessName || salon.name || 'Our Salon';
-                    console.log(`[Consolidated-Welcome] Sending to ${customer.phone} for ${brandName}`);
-                    
-                    await sendWapixoTemplate(
-                        customer.phone,
-                        process.env.WHATSAPP_TEMPLATE_WELCOME,
-                        [customer.name || 'Guest', brandName]
-                    );
+                    const { checkAndDeductWhatsAppCredit } = require('../Utils/whatsapp');
+                    const canSendWelcome = await checkAndDeductWhatsAppCredit(salon._id);
 
-                    customer.welcomeSent = true;
-                    await customer.save();
-                    console.log(`[Consolidated-Welcome] Flag updated for ${customer.phone}`);
+                    if (canSendWelcome) {
+                        const brandName = salon.businessName || salon.name || 'Our Salon';
+                        console.log(`[Consolidated-Welcome] Sending to ${customer.phone} for ${brandName}`);
+                        
+                        await sendWapixoTemplate(
+                            customer.phone,
+                            process.env.WHATSAPP_TEMPLATE_WELCOME,
+                            [customer.name || 'Guest', brandName]
+                        );
+
+                        customer.welcomeSent = true;
+                        await customer.save();
+                        console.log(`[Consolidated-Welcome] Flag updated for ${customer.phone}`);
+                    }
                 }
             } catch (wsErr) {
                 console.error('[Consolidated-Welcome] WhatsApp error:', wsErr.message);

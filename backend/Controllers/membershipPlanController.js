@@ -268,19 +268,24 @@ exports.verifyMembershipPayment = async (req, res) => {
             const salon = await Salon.findById(plan.salonId);
             const brandName = salon?.businessName || salon?.name || 'Our Salon';
             
-            await sendWapixoTemplate(
-                customer.phone,
-                process.env.WHATSAPP_TEMPLATE_MEMBERSHIP_PLAN,
-                [
-                    customer.name,
-                    brandName,
-                    plan.name,
-                    `${plan.serviceDiscountValue}${plan.serviceDiscountType === 'percentage' ? '%' : ' Rs'}`,
-                    `${plan.productDiscountValue}${plan.productDiscountType === 'percentage' ? '%' : ' Rs'}`,
-                    new Date().toLocaleDateString(),
-                    expiryDate.toLocaleDateString()
-                ]
-            );
+            const { checkAndDeductWhatsAppCredit } = require('../Utils/whatsapp');
+            const canSendMem = await checkAndDeductWhatsAppCredit(customer.lastOutletId || plan.salonId);
+
+            if (canSendMem) {
+                await sendWapixoTemplate(
+                    customer.phone,
+                    process.env.WHATSAPP_TEMPLATE_MEMBERSHIP_PLAN,
+                    [
+                        customer.name,
+                        brandName,
+                        plan.name,
+                        `${plan.serviceDiscountValue}${plan.serviceDiscountType === 'percentage' ? '%' : ' Rs'}`,
+                        `${plan.productDiscountValue}${plan.productDiscountType === 'percentage' ? '%' : ' Rs'}`,
+                        new Date().toLocaleDateString(),
+                        expiryDate.toLocaleDateString()
+                    ]
+                );
+            }
         } catch (wsErr) {
             console.error('Membership WhatsApp failed:', wsErr.message);
         }
@@ -315,10 +320,13 @@ exports.verifyMembershipPayment = async (req, res) => {
             });
 
             // WhatsApp to Admins
-            const admins = await User.find({ salonId: plan.salonId, role: 'admin', status: 'active' });
-            for (const ad of admins) {
-                if (ad.phone) {
-                    await sendWhatsAppMessage(ad.phone, `Admin Alert: ${adminMsg}`);
+            const canSendMemAdm = await checkAndDeductWhatsAppCredit(customer.lastOutletId);
+            if (canSendMemAdm) {
+                const admins = await User.find({ salonId: plan.salonId, role: 'admin', status: 'active' });
+                for (const ad of admins) {
+                    if (ad.phone) {
+                        await sendWhatsAppMessage(ad.phone, `Admin Alert: ${adminMsg}`);
+                    }
                 }
             }
         } catch (pushErr) {
@@ -416,19 +424,24 @@ exports.buyMembershipWithWallet = async (req, res) => {
             const salon = await Salon.findById(plan.salonId);
             const brandName = salon?.businessName || salon?.name || 'Our Salon';
             
-            await sendWapixoTemplate(
-                customer.phone,
-                process.env.WHATSAPP_TEMPLATE_MEMBERSHIP_PLAN,
-                [
-                    customer.name,
-                    brandName,
-                    plan.name,
-                    `${plan.serviceDiscountValue}${plan.serviceDiscountType === 'percentage' ? '%' : ' Rs'}`,
-                    `${plan.productDiscountValue}${plan.productDiscountType === 'percentage' ? '%' : ' Rs'}`,
-                    new Date().toLocaleDateString(),
-                    expiryDate.toLocaleDateString()
-                ]
-            );
+            const { checkAndDeductWhatsAppCredit } = require('../Utils/whatsapp');
+            const canSendMemWallet = await checkAndDeductWhatsAppCredit(customer.lastOutletId || plan.salonId);
+
+            if (canSendMemWallet) {
+                await sendWapixoTemplate(
+                    customer.phone,
+                    process.env.WHATSAPP_TEMPLATE_MEMBERSHIP_PLAN,
+                    [
+                        customer.name,
+                        brandName,
+                        plan.name,
+                        `${plan.serviceDiscountValue}${plan.serviceDiscountType === 'percentage' ? '%' : ' Rs'}`,
+                        `${plan.productDiscountValue}${plan.productDiscountType === 'percentage' ? '%' : ' Rs'}`,
+                        new Date().toLocaleDateString(),
+                        expiryDate.toLocaleDateString()
+                    ]
+                );
+            }
         } catch (wsErr) {
             console.error('Membership WhatsApp failed:', wsErr.message);
         }
@@ -463,10 +476,13 @@ exports.buyMembershipWithWallet = async (req, res) => {
             });
 
             // WhatsApp to Admins
-            const admins = await User.find({ salonId: plan.salonId, role: 'admin', status: 'active' });
-            for (const ad of admins) {
-                if (ad.phone) {
-                    await sendWhatsAppMessage(ad.phone, `Admin Alert: ${adminMsg}`);
+            const canSendMemWalletAdm = await checkAndDeductWhatsAppCredit(customer.lastOutletId);
+            if (canSendMemWalletAdm) {
+                const admins = await User.find({ salonId: plan.salonId, role: 'admin', status: 'active' });
+                for (const ad of admins) {
+                    if (ad.phone) {
+                        await sendWhatsAppMessage(ad.phone, `Admin Alert: ${adminMsg}`);
+                    }
                 }
             }
         } catch (pushErr) {

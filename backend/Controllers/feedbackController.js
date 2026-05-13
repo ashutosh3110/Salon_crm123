@@ -128,7 +128,11 @@ exports.updateFeedbackStatus = async (req, res) => {
 
                     // 2. WhatsApp
                     if (customer.phone) {
-                        await sendWhatsAppMessage(customer.phone, msg);
+                        const { checkAndDeductWhatsAppCredit } = require('../Utils/whatsapp');
+                        const canSendFeed = await checkAndDeductWhatsAppCredit(feedback.outletId || customer.lastOutletId);
+                        if (canSendFeed) {
+                            await sendWhatsAppMessage(customer.phone, msg);
+                        }
                     }
                 }
             } catch (notifErr) {

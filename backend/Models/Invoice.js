@@ -37,10 +37,10 @@ const invoiceSchema = new mongoose.Schema({
             type: Number,
             default: 1
         },
-        stylistId: {
+        stylistIds: [{
             type: mongoose.Schema.Types.ObjectId,
             ref: 'Staff'
-        }
+        }]
     }],
     subtotal: Number,
     discount: Number,

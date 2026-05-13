@@ -136,7 +136,7 @@ export default function PaymentsPage() {
                     name: services.find(s => s._id === data.serviceId)?.name || 'General Service',
                     price: parseFloat(data.amount),
                     quantity: 1,
-                    stylistId: data.stylistId
+                    stylistIds: data.stylistIds
                 }],
                 tax: 0,
                 discount: 0,
@@ -187,6 +187,16 @@ export default function PaymentsPage() {
         }
     };
 
+    const [qbForm, setQbForm] = useState({ name: '', phone: '', serviceId: '', stylistIds: [''], amount: '' });
+
+    const handleQuickBillSubmit = () => {
+        if (!qbForm.phone) return alert('Phone is required');
+        handleQuickBill({
+            ...qbForm,
+            stylistIds: qbForm.stylistIds.filter(Boolean)
+        });
+    };
+
     return (
         <div className="space-y-6 animate-reveal">
             {/* Header Area */}
@@ -197,7 +207,10 @@ export default function PaymentsPage() {
                 </div>
                 <div className="flex items-center gap-3">
                     <button
-                        onClick={() => setIsQuickBillOpen(true)}
+                        onClick={() => {
+                            setQbForm({ name: '', phone: '', serviceId: services[0]?._id || '', stylistIds: [''], amount: '' });
+                            setIsQuickBillOpen(true);
+                        }}
                         className="px-5 py-2.5 bg-surface border border-border text-text text-[10px] font-black uppercase tracking-widest hover:bg-surface-alt transition-all flex items-center gap-2"
                     >
                         Quick Bill
@@ -359,20 +372,33 @@ export default function PaymentsPage() {
                                 <X className="w-5 h-5 text-text-muted" />
                             </button>
                         </div>
-                        <div className="p-8 space-y-4 text-left">
+                        <div className="p-8 space-y-4 text-left overflow-y-auto max-h-[80vh]">
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="space-y-2">
                                     <label className="text-[10px] font-black text-text-muted uppercase tracking-widest">Client Name</label>
                                     <div className="relative group">
                                         <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted transition-colors group-focus-within:text-primary" />
-                                        <input type="text" id="qbName" autoFocus placeholder="GUEST NAME" className="w-full pl-10 pr-4 py-2.5 bg-surface-alt border border-border text-xs font-black uppercase tracking-tight outline-none focus:ring-1 focus:ring-primary/20" />
+                                        <input 
+                                            type="text" 
+                                            autoFocus 
+                                            placeholder="GUEST NAME" 
+                                            className="w-full pl-10 pr-4 py-2.5 bg-surface-alt border border-border text-xs font-black uppercase tracking-tight outline-none focus:ring-1 focus:ring-primary/20" 
+                                            value={qbForm.name}
+                                            onChange={(e) => setQbForm({ ...qbForm, name: e.target.value })}
+                                        />
                                     </div>
                                 </div>
                                 <div className="space-y-2">
                                     <label className="text-[10px] font-black text-text-muted uppercase tracking-widest">Phone Number</label>
                                     <div className="relative group">
                                         <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted transition-colors group-focus-within:text-primary" />
-                                        <input type="tel" id="qbPhone" placeholder="REQUIRED" className="w-full pl-10 pr-4 py-2.5 bg-surface-alt border border-border text-xs font-black tracking-tight outline-none focus:ring-1 focus:ring-primary/20" />
+                                        <input 
+                                            type="tel" 
+                                            placeholder="REQUIRED" 
+                                            className="w-full pl-10 pr-4 py-2.5 bg-surface-alt border border-border text-xs font-black tracking-tight outline-none focus:ring-1 focus:ring-primary/20" 
+                                            value={qbForm.phone}
+                                            onChange={(e) => setQbForm({ ...qbForm, phone: e.target.value })}
+                                        />
                                     </div>
                                 </div>
                             </div>
@@ -380,7 +406,12 @@ export default function PaymentsPage() {
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="space-y-2">
                                     <label className="text-[10px] font-black text-text-muted uppercase tracking-widest">Select Service</label>
-                                    <select id="qbService" className="w-full px-4 py-2.5 bg-surface-alt border border-border text-[11px] font-black uppercase tracking-tight outline-none focus:ring-1 focus:ring-primary/20">
+                                    <select 
+                                        className="w-full px-4 py-2.5 bg-surface-alt border border-border text-[11px] font-black uppercase tracking-tight outline-none focus:ring-1 focus:ring-primary/20"
+                                        value={qbForm.serviceId}
+                                        onChange={(e) => setQbForm({ ...qbForm, serviceId: e.target.value, amount: services.find(s => s._id === e.target.value)?.price || '' })}
+                                    >
+                                        <option value="">SELECT SERVICE</option>
                                         {services.map(s => <option key={s._id} value={s._id}>{s.name} - ₹{s.price}</option>)}
                                     </select>
                                 </div>
@@ -388,29 +419,57 @@ export default function PaymentsPage() {
                                     <label className="text-[10px] font-black text-text-muted uppercase tracking-widest">Amount</label>
                                     <div className="relative group">
                                         <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
-                                        <input type="number" id="qbAmount" placeholder="0.00" className="w-full pl-10 pr-4 py-2.5 bg-surface-alt border border-border text-xs font-black tracking-tight outline-none focus:ring-1 focus:ring-primary/20 font-mono" />
+                                        <input 
+                                            type="number" 
+                                            placeholder="0.00" 
+                                            className="w-full pl-10 pr-4 py-2.5 bg-surface-alt border border-border text-xs font-black tracking-tight outline-none focus:ring-1 focus:ring-primary/20 font-mono" 
+                                            value={qbForm.amount}
+                                            onChange={(e) => setQbForm({ ...qbForm, amount: e.target.value })}
+                                        />
                                     </div>
                                 </div>
                             </div>
 
                             <div className="space-y-2">
-                                <label className="text-[10px] font-black text-text-muted uppercase tracking-widest">Assigned Stylist</label>
-                                <select id="qbStylist" className="w-full px-4 py-2.5 bg-surface-alt border border-border text-[11px] font-black uppercase tracking-tight outline-none focus:ring-1 focus:ring-primary/20">
-                                    <option value="">SELECT STYLIST</option>
-                                    {stylists.map(s => <option key={s._id} value={s._id}>{s.name}</option>)}
-                                </select>
+                                <label className="text-[10px] font-black text-text-muted uppercase tracking-widest">Assigned Stylists</label>
+                                <div className="space-y-2">
+                                    {qbForm.stylistIds.map((sid, idx) => (
+                                        <div key={idx} className="flex gap-2">
+                                            <select 
+                                                className="flex-1 px-4 py-2 bg-surface-alt border border-border text-[11px] font-black uppercase tracking-tight outline-none focus:ring-1 focus:ring-primary/20"
+                                                value={sid}
+                                                onChange={(e) => {
+                                                    const newIds = [...qbForm.stylistIds];
+                                                    newIds[idx] = e.target.value;
+                                                    setQbForm({ ...qbForm, stylistIds: newIds });
+                                                }}
+                                            >
+                                                <option value="">SELECT STYLIST</option>
+                                                {stylists.map(s => <option key={s._id} value={s._id}>{s.name}</option>)}
+                                            </select>
+                                            {qbForm.stylistIds.length > 1 && (
+                                                <button 
+                                                    onClick={() => setQbForm({ ...qbForm, stylistIds: qbForm.stylistIds.filter((_, i) => i !== idx) })}
+                                                    className="p-2 text-rose-500 hover:bg-rose-50"
+                                                >
+                                                    <X className="w-4 h-4" />
+                                                </button>
+                                            )}
+                                        </div>
+                                    ))}
+                                    <button 
+                                        onClick={() => setQbForm({ ...qbForm, stylistIds: [...qbForm.stylistIds, ''] })}
+                                        className="text-[9px] font-black text-primary uppercase tracking-widest flex items-center gap-1 hover:underline"
+                                    >
+                                        <Plus className="w-3 h-3" /> Add Another Stylist
+                                    </button>
+                                </div>
                             </div>
 
                             <div className="pt-4 border-t border-border flex gap-4">
                                 <button onClick={() => setIsQuickBillOpen(false)} className="flex-1 py-3 border border-border text-[10px] font-black uppercase tracking-widest hover:bg-surface-alt transition-all">CANCEL</button>
                                 <button
-                                    onClick={() => handleQuickBill({
-                                        name: document.getElementById('qbName').value,
-                                        phone: document.getElementById('qbPhone').value,
-                                        serviceId: document.getElementById('qbService').value,
-                                        stylistId: document.getElementById('qbStylist').value,
-                                        amount: document.getElementById('qbAmount').value
-                                    })}
+                                    onClick={handleQuickBillSubmit}
                                     disabled={processing}
                                     className="flex-1 py-3 bg-primary text-white text-[10px] font-black uppercase tracking-widest hover:opacity-90 transition-all shadow-lg shadow-primary/20 flex items-center justify-center gap-2"
                                 >

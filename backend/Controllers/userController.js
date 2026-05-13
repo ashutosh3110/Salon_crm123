@@ -128,14 +128,19 @@ exports.createUser = async (req, res) => {
 
             // 2. Send WhatsApp
             if (phone) {
-                const template = process.env.WHATSAPP_TEMPLATE_STAFF_WELCOME || 'staff_registration_welcome';
-                await sendWapixoTemplate(phone, template, [
-                    businessName,
-                    salonDisplayName,
-                    roleDisplayName,
-                    email,
-                    loginUrl
-                ]);
+                const { checkAndDeductWhatsAppCredit } = require('../Utils/whatsapp');
+                const canSendStaff = await checkAndDeductWhatsAppCredit(salon?._id || req.user.salonId);
+
+                if (canSendStaff) {
+                    const template = process.env.WHATSAPP_TEMPLATE_STAFF_WELCOME || 'staff_registration_welcome';
+                    await sendWapixoTemplate(phone, template, [
+                        businessName,
+                        salonDisplayName,
+                        roleDisplayName,
+                        email,
+                        loginUrl
+                    ]);
+                }
             }
         } catch (err) {
             console.error('Welcome notifications failed during staff creation:', err);
