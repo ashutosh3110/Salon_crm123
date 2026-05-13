@@ -379,85 +379,84 @@ exports.updateStatus = async (req, res) => {
             }
         }
 
-        // Send Status Update Notification
+        // Send Unified Notifications (Firebase & WhatsApp)
         try {
-            const { sendNotification } = require('../Utils/notification');
+            const { sendNotification, sendAdminNotification } = require('../Utils/notification');
+            const { sendWhatsAppMessage, sendWapixoTemplate } = require('../Utils/whatsapp');
+            const User = require('../Models/User');
+
             const statusMsgs = {
                 'completed': 'Your service is completed. We hope you enjoyed your ritual! ✨',
                 'cancelled': 'Your booking has been cancelled.',
                 'confirmed': 'Your booking has been confirmed by the salon. We look forward to seeing you! ✅',
-                'no-show': 'We missed you! Your booking was marked as a no-show.'
+                'no-show': 'We missed you! Your booking was marked as a no-show.',
+                'rejected': 'Sorry, your booking has been rejected by the salon.'
             };
 
-            if (statusMsgs[booking.status]) {
-                await sendNotification({
-                    customerId: booking.clientId,
-                    salonId: booking.salonId,
-                    title: booking.status === 'confirmed' ? 'Booking Confirmed! 📅' : `Booking ${booking.status.toUpperCase()}!`,
-                    message: statusMsgs[booking.status],
-                    type: 'booking',
-                    actionUrl: `/app/bookings/${booking._id}`,
-                    data: { bookingId: booking._id.toString(), status: booking.status }
-                });
+            const msg = statusMsgs[booking.status] || `Your booking status has been updated to ${booking.status}.`;
+            const title = booking.status === 'confirmed' ? 'Booking Confirmed! 📅' : `Booking ${booking.status.toUpperCase()}!`;
 
-                // If accepted/confirmed, also send WhatsApp
-                if (booking.status === 'confirmed') {
-                    try {
-                        const populated = await Booking.findById(booking._id)
-                            .populate('clientId', 'name phone email')
-                            .populate('serviceId', 'name price duration')
-                            .populate('staffId', 'name profileImage')
-                            .populate('outletId', 'name address city')
-                            .populate('salonId', 'name logo businessName');
+            // 1. Notify Customer (Firebase)
+            await sendNotification({
+                customerId: booking.clientId,
+                salonId: booking.salonId,
+                title,
+                message: msg,
+                type: 'booking',
+                actionUrl: `/app/bookings/${booking._id}`,
+                data: { bookingId: booking._id.toString(), status: booking.status }
+            });
 
+            // 2. Notify Admins (Firebase)
+            const adminMsg = `Booking #${booking._id.toString().slice(-6).toUpperCase()} for ${customer?.name || 'Customer'} is now ${booking.status.toUpperCase()}.`;
+            await sendAdminNotification({
+                salonId: booking.salonId,
+                title: `Booking Update: ${booking.status.toUpperCase()}`,
+                message: adminMsg,
+                type: 'booking',
+                actionUrl: `/admin/bookings`,
+                data: { bookingId: booking._id.toString(), status: booking.status }
+            });
+
+            // 3. WhatsApp Notifications
+            const populated = await Booking.findById(booking._id)
+                .populate('clientId', 'name phone email')
+                .populate('serviceId', 'name price duration')
+                .populate('staffId', 'name')
+                .populate('outletId', 'name address city')
+                .populate('salonId', 'name logo businessName');
+
+            if (populated) {
+                const salonName = populated.salonId?.businessName || populated.salonId?.name || 'Our Salon';
+                const clientName = populated.clientId?.name || 'Customer';
+                
+                // WhatsApp to Customer
+                if (populated.clientId?.phone) {
+                    if (booking.status === 'confirmed' && process.env.WHATSAPP_TEMPLATE_BOOKING_LINK) {
                         const dateStr = new Date(populated.appointmentDate).toLocaleDateString();
                         const timeStr = populated.time || new Date(populated.appointmentDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                        const staffNames = Array.isArray(populated.staffId) ? populated.staffId.map(s => s.name).join(', ') : (populated.staffId?.name || 'Assigned Stylist');
                         
-                        // Extract names from staff array
-                        const staffNames = Array.isArray(populated.staffId) 
-                            ? populated.staffId.map(s => s.name).join(', ') 
-                            : (populated.staffId?.name || 'Assigned Stylist');
-
-                        await sendWapixoTemplate(
-                            populated.clientId.phone,
-                            process.env.WHATSAPP_TEMPLATE_BOOKING_LINK,
-                            [
-                                populated.clientId.name,
-                                populated.salonId.businessName || populated.salonId.name || 'Our Salon',
-                                populated.outletId.name,
-                                populated.outletId.city || populated.outletId.address?.city || 'Our Location',
-                                staffNames,
-                                populated.serviceId.name,
-                                dateStr,
-                                timeStr
-                            ]
-                        );
-                    } catch (wsErr) {
-                        console.error('Acceptance WhatsApp failed:', wsErr.message);
+                        await sendWapixoTemplate(populated.clientId.phone, process.env.WHATSAPP_TEMPLATE_BOOKING_LINK, [
+                            clientName, salonName, populated.outletId?.name || 'Our Salon',
+                            populated.outletId?.city || 'Our Location', staffNames, populated.serviceId?.name || 'Service',
+                            dateStr, timeStr
+                        ]);
+                    } else {
+                        await sendWhatsAppMessage(populated.clientId.phone, `Hi ${clientName}, your booking at ${salonName} is now ${booking.status.toUpperCase()}. ${statusMsgs[booking.status] || ''}`);
                     }
                 }
 
-                // If completed, send completion WhatsApp
-                if (booking.status === 'completed') {
-                    try {
-                        const { sendWhatsAppMessage } = require('../Utils/whatsapp');
-                        const populated = await Booking.findById(booking._id)
-                            .populate('clientId', 'name phone')
-                            .populate('serviceId', 'name')
-                            .populate('salonId', 'businessName name');
-
-                        if (populated.clientId?.phone) {
-                            const salonName = populated.salonId?.businessName || populated.salonId?.name || 'Our Salon';
-                            const msg = `Hi ${populated.clientId.name}, your booking for ${populated.serviceId?.name || 'service'} at ${salonName} is now complete. We hope you enjoyed your service! ✨`;
-                            await sendWhatsAppMessage(populated.clientId.phone, msg);
-                        }
-                    } catch (wsErr) {
-                        console.error('Completion WhatsApp failed:', wsErr.message);
+                // WhatsApp to Admins
+                const admins = await User.find({ salonId: booking.salonId, role: 'admin', status: 'active' });
+                for (const ad of admins) {
+                    if (ad.phone) {
+                        await sendWhatsAppMessage(ad.phone, `Admin Alert: ${adminMsg}`);
                     }
                 }
             }
-        } catch (pushErr) {
-            console.error('Status Update Push failed:', pushErr.message);
+        } catch (notifErr) {
+            console.error('Unified Booking Notification failed:', notifErr.message);
         }
 
         res.json({

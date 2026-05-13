@@ -339,9 +339,12 @@ exports.updateOrderStatus = async (req, res) => {
 
         await order.save();
 
-        // Send Notification
+        // Send Unified Notifications (Firebase & WhatsApp)
         try {
-            const { sendNotification } = require('../Utils/notification');
+            const { sendNotification, sendAdminNotification } = require('../Utils/notification');
+            const { sendWhatsAppMessage, sendWapixoTemplate } = require('../Utils/whatsapp');
+            const User = require('../Models/User');
+
             const statusMsgs = {
                 'accepted': 'Your order has been accepted and is being prepared. ✅',
                 'rejected': 'Sorry, your order has been rejected. ❌',
@@ -351,51 +354,66 @@ exports.updateOrderStatus = async (req, res) => {
                 'cancelled': 'Your order has been cancelled.'
             };
 
-            if (statusMsgs[status]) {
-                await sendNotification({
-                    customerId: order.customerId,
-                    salonId: order.salonId,
-                    title: status === 'accepted' ? 'Order Confirmed! 🛍️' : `Order ${status.toUpperCase()}!`,
-                    message: statusMsgs[status],
-                    type: 'order',
-                    actionUrl: `/app/orders/${order._id}`,
-                    data: { orderId: order._id.toString(), status }
-                });
+            const msg = statusMsgs[status] || `Your order status has been updated to ${status}.`;
+            const title = status === 'accepted' ? 'Order Confirmed! 🛍️' : `Order ${status.toUpperCase()}!`;
 
-                // Send WhatsApp if accepted
-                if (status === 'accepted') {
-                    try {
-                        const populatedOrder = await Order.findById(order._id)
-                            .populate('customerId', 'name phone')
-                            .populate('salonId', 'businessName name')
-                            .populate('outletId', 'name city');
+            // 1. Notify Customer (Firebase)
+            await sendNotification({
+                customerId: order.customerId,
+                salonId: order.salonId,
+                title,
+                message: msg,
+                type: 'order',
+                actionUrl: `/app/orders/${order._id}`,
+                data: { orderId: order._id.toString(), status }
+            });
 
-                        if (populatedOrder && populatedOrder.customerId && populatedOrder.customerId.phone) {
-                            const brandName = populatedOrder.salonId?.businessName || populatedOrder.salonId?.name || 'Our Salon';
-                            const orderIdDisplay = populatedOrder._id.toString().slice(-6).toUpperCase();
+            // 2. Notify Admins (Firebase)
+            const populatedOrder = await Order.findById(order._id)
+                .populate('customerId', 'name phone')
+                .populate('salonId', 'businessName name')
+                .populate('outletId', 'name city');
 
-                            await sendWapixoTemplate(
-                                populatedOrder.customerId.phone,
-                                process.env.WHATSAPP_TEMPLATE_PRODUCT_BUY || 'product_buy',
-                                [
-                                    populatedOrder.customerId.name || 'Customer',
-                                    brandName,
-                                    orderIdDisplay,
-                                    `${populatedOrder.items.length} Items`,
-                                    `₹${populatedOrder.totalAmount}`,
-                                    populatedOrder.paymentMethod.toUpperCase(),
-                                    populatedOrder.outletId?.name || 'Our Outlet',
-                                    new Date().toLocaleDateString()
-                                ]
-                            );
-                        }
-                    } catch (wsErr) {
-                        console.error('Order Acceptance WhatsApp failed:', wsErr.message);
+            const clientName = populatedOrder?.customerId?.name || 'Customer';
+            const adminMsg = `Order #${order._id.toString().slice(-6).toUpperCase()} for ${clientName} is now ${status.toUpperCase()}.`;
+            
+            await sendAdminNotification({
+                salonId: order.salonId,
+                title: `Order Update: ${status.toUpperCase()}`,
+                message: adminMsg,
+                type: 'order',
+                actionUrl: `/admin/shop-orders`,
+                data: { orderId: order._id.toString(), status }
+            });
+
+            // 3. WhatsApp Notifications
+            if (populatedOrder) {
+                const brandName = populatedOrder.salonId?.businessName || populatedOrder.salonId?.name || 'Our Salon';
+                
+                // WhatsApp to Customer
+                if (populatedOrder.customerId?.phone) {
+                    if (status === 'accepted' && process.env.WHATSAPP_TEMPLATE_PRODUCT_BUY) {
+                        const orderIdDisplay = populatedOrder._id.toString().slice(-6).toUpperCase();
+                        await sendWapixoTemplate(populatedOrder.customerId.phone, process.env.WHATSAPP_TEMPLATE_PRODUCT_BUY, [
+                            clientName, brandName, orderIdDisplay, `${populatedOrder.items.length} Items`,
+                            `₹${populatedOrder.totalAmount}`, populatedOrder.paymentMethod.toUpperCase(),
+                            populatedOrder.outletId?.name || 'Our Outlet', new Date().toLocaleDateString()
+                        ]);
+                    } else {
+                        await sendWhatsAppMessage(populatedOrder.customerId.phone, `Hi ${clientName}, your order from ${brandName} is now ${status.toUpperCase()}. ${statusMsgs[status] || ''}`);
+                    }
+                }
+
+                // WhatsApp to Admins
+                const admins = await User.find({ salonId: order.salonId, role: 'admin', status: 'active' });
+                for (const ad of admins) {
+                    if (ad.phone) {
+                        await sendWhatsAppMessage(ad.phone, `Admin Alert: ${adminMsg}`);
                     }
                 }
             }
-        } catch (pushErr) {
-            console.error('Order Update Push failed:', pushErr.message);
+        } catch (notifErr) {
+            console.error('Unified Order Notification failed:', notifErr.message);
         }
 
         res.json({

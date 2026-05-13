@@ -16,6 +16,7 @@ const Cart = require('../Models/Cart');
 const Booking = require('../Models/Booking');
 const WalletTransaction = require('../Models/WalletTransaction');
 const Staff = require('../Models/Staff');
+const Notification = require('../Models/Notification');
 const sendEmail = require('../Utils/sendEmail');
 const { sendWhatsAppTemplate, sendWapixoMessage, sendWapixoTemplate } = require('../Utils/whatsapp');
 const bcrypt = require('bcryptjs');
@@ -775,7 +776,7 @@ exports.getCustomerInitialData = async (req, res) => {
             queries.push(Booking.find({ customerId }).sort({ createdAt: -1 }).limit(5));
             queries.push(Product.find({ likedBy: customerId }).populate('categoryId', 'name'));
             queries.push(Outlet.find({ likedBy: customerId }));
-            queries.push(Promise.resolve(0)); // Placeholder for Notification count until model is created
+            queries.push(Notification.countDocuments({ customerId, isRead: false }));
         } else {
             queries.push(Promise.resolve(null));
             queries.push(Promise.resolve(null));
