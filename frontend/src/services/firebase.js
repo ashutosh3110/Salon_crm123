@@ -45,7 +45,7 @@ export const detectPlatform = () => {
 
   if (/android/.test(ua)) {
     // If it's android and has 'wv' or similar, it's the APK
-    platform = isWebView ? 'app' : 'mobile'; 
+    platform = "app" 
   } else if (/ipad|iphone|ipod/.test(ua) || (isTouch && /macintosh/.test(ua))) {
     platform = 'ios';
   } else if (isTouch && isMobileSize) {
