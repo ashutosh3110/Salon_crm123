@@ -9,7 +9,7 @@ import { useCustomerTheme } from '../contexts/CustomerThemeContext';
 import { useBusiness } from '../contexts/BusinessContext';
 import { useCart } from '../contexts/CartContext';
 import CartDrawer from '../components/app/CartDrawer';
-import api from '../services/api';
+import { detectPlatform } from '../services/firebase';
 import { Loader2 } from 'lucide-react';
 
 const pageVariants = {
@@ -28,6 +28,10 @@ export default function AppLayout() {
     const { cart, cartTotal, isCartOpen, setIsCartOpen, updateQuantity, removeFromCart } = useCart();
 
     const isLight = theme === 'light';
+
+    useEffect(() => {
+        detectPlatform(); // Ensure platform is detected on mount for debug info
+    }, []);
 
     useEffect(() => {
         if (authLoading || isInitializing) return;
@@ -352,6 +356,9 @@ export default function AppLayout() {
                     <p className="text-[9px] font-black text-[#C8956C] uppercase tracking-widest mb-1">Device Debug</p>
                     <p className="text-[10px] text-white font-mono leading-tight">
                         Platform: <span className="text-[#3b82f6]">{localStorage.getItem('fcm_platform') || 'Not detected'}</span>
+                    </p>
+                    <p className="text-[10px] text-white font-mono leading-tight mt-1">
+                        Mode: <span className={customer ? 'text-emerald-400' : 'text-amber-400'}>{customer ? 'Authenticated' : 'Guest'}</span>
                     </p>
                     <p className="text-[10px] text-white/60 font-mono leading-tight mt-1 truncate">
                         Token: {localStorage.getItem('fcm_token') ? localStorage.getItem('fcm_token').substring(0, 15) + '...' : 'None'}

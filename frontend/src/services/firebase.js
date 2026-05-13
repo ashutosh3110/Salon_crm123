@@ -31,13 +31,45 @@ const getMessagingInstance = async () => {
 };
 
 /**
+ * Standalone Platform Detection
+ * Identifies if the user is on a standard mobile browser or a WebView (APK)
+ */
+export const detectPlatform = () => {
+  if (typeof window === 'undefined') return 'web';
+  
+  let platform = 'web';
+  const ua = navigator.userAgent.toLowerCase();
+  const isTouch = (('ontouchstart' in window) || (navigator.maxTouchPoints > 0));
+  const isMobileSize = window.innerWidth <= 768;
+  const isWebView = /wv|webview|version\/.*chrome/.test(ua); // 'wv' is standard for Android WebViews
+
+  if (/android/.test(ua)) {
+    // If it's android and has 'wv' or similar, it's the APK
+    platform = isWebView ? 'app' : 'mobile'; 
+  } else if (/ipad|iphone|ipod/.test(ua) || (isTouch && /macintosh/.test(ua))) {
+    platform = 'ios';
+  } else if (isTouch && isMobileSize) {
+    platform = 'mobile';
+  }
+
+  localStorage.setItem('fcm_platform', platform);
+  return platform;
+};
+
+// Initial detection
+detectPlatform();
+
+/**
  * Register FCM token with backend
  */
 export const registerToken = async () => {
   try {
+    const platform = detectPlatform();
     const msg = await getMessagingInstance();
+    
     if (!msg) {
-      console.warn('[Firebase] Messaging is not supported in this environment (e.g. Mobile WebView)');
+      console.warn('[Firebase] Messaging not supported (isSupported=false). Likely a Mobile WebView without Push support.');
+      // Even if token fails, we've set the platform above
       return null;
     }
 
@@ -59,27 +91,11 @@ export const registerToken = async () => {
     });
     
     if (token) {
-      // Advanced device detection
-      let platform = 'web';
-      const ua = navigator.userAgent.toLowerCase();
-      
-      const isTouch = (('ontouchstart' in window) || (navigator.maxTouchPoints > 0));
-      const isMobileSize = window.innerWidth <= 768;
-
-      if (/android/.test(ua)) {
-        platform = 'app';
-      } else if (/ipad|iphone|ipod/.test(ua) || (isTouch && /macintosh/.test(ua))) {
-        platform = 'ios'; // iPadOS 13+ reports as Macintosh
-      } else if (isTouch && isMobileSize) {
-        platform = 'mobile'; // Generic mobile fallback
-      }
-
-      console.log(`[Firebase] Detected platform: ${platform} (UA: ${ua})`);
+      console.log(`[Firebase] Token generated for platform: ${platform}`);
 
       // Register token with backend
       await api.post('/notifications/register-token', { fcmToken: token, platform });
       localStorage.setItem('fcm_token', token);
-      localStorage.setItem('fcm_platform', platform);
       return token;
     } else {
       console.warn('[Firebase] No registration token available.');

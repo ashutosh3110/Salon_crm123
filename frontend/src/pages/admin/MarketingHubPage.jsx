@@ -6,37 +6,10 @@ import {
     Zap, Calendar, Layout, Trash2, Edit3, ArrowRight,Bell,
     QrCode, Globe, Percent, XCircle, Save, Star, Download, CheckCircle2, Tag, Gift, ChevronRight, SmartphoneIcon, Target, Megaphone
 } from 'lucide-react';
-import { Link } from 'react-router-dom';
-import {
-    AreaChart, Area, XAxis, YAxis, CartesianGrid,
-    Tooltip, ResponsiveContainer, BarChart, Bar
-} from 'recharts';
 import { motion, AnimatePresence } from 'framer-motion';
 import api from '../../services/api';
 
 /* ─── Components ───────────────────────────────────────────────────────── */
-
-function StatCard({ label, value, trend, icon: Icon, color }) {
-    return (
-        <motion.div 
-            whileHover={{ y: -4 }}
-            className="bg-white rounded-3xl border border-border/60 p-6 shadow-sm hover:shadow-md transition-all duration-300"
-        >
-            <div className="flex items-center justify-between mb-4">
-                <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${color} shadow-inner`}>
-                    <Icon className="w-6 h-6" />
-                </div>
-                {trend && (
-                    <div className="flex items-center gap-1.5 text-[10px] font-black text-emerald-600 bg-emerald-50 px-3 py-1 rounded-full uppercase tracking-tight border border-emerald-100">
-                        <TrendingUp className="w-3.5 h-3.5" /> {trend}
-                    </div>
-                )}
-            </div>
-            <div className="text-3xl font-black text-text tracking-tighter">{value}</div>
-            <div className="text-[10px] text-text-muted font-black uppercase tracking-[0.2em] mt-1.5 opacity-60">{label}</div>
-        </motion.div>
-    );
-}
 
 function SectionHeader({ title, desc, icon: Icon, badge }) {
     return (
@@ -60,118 +33,124 @@ function SectionHeader({ title, desc, icon: Icon, badge }) {
 /* ─── Main Page ────────────────────────────────────────────────────────── */
 
 export default function MarketingHub() {
-    const [activeTab, setActiveTab] = useState('whatsapp');
+    const [activeTab, setActiveTab] = useState('whatsapp'); // 'whatsapp' or 'notification'
     const [isCampaignModalOpen, setIsCampaignModalOpen] = useState(false);
-    const [campaignStep, setCampaignStep] = useState(1); // 1: Audience, 2: Message, 3: Sending
     const [campaignForm, setCampaignForm] = useState({
         name: '',
-        type: 'bulk', // bulk, segmented, or selective
-        segment: 'all',
+        type: 'bulk', // bulk, or selective
         selectedCustomers: [], // array of IDs
         message: '',
-        schedule: 'now'
+        channel: 'whatsapp'
     });
-    const [sendingProgress, setSendingProgress] = useState(0);
     const [isSending, setIsSending] = useState(false);
-    const [isContactListOpen, setIsContactListOpen] = useState(false);
+    const [sendingProgress, setSendingProgress] = useState(0);
     const [campaignError, setCampaignError] = useState('');
-    const [dashboardData, setDashboardData] = useState(null);
-    const [segments, setSegments] = useState([]);
+    const [isContactListOpen, setIsContactListOpen] = useState(false);
     const [campaigns, setCampaigns] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [campaignsLoading, setCampaignsLoading] = useState(false);
 
-    const loadDashboard = async () => {
-        try {
-            const res = await api.get('/marketing/dashboard');
-            if (res.data?.success) setDashboardData(res.data.data);
-        } catch (e) {
-            setDashboardData(null);
-        }
-    };
-
-    const loadSegments = async () => {
-        try {
-            const res = await api.get('/marketing/segments');
-            if (res.data?.success) setSegments(res.data.data || []);
-        } catch (e) {
-            setSegments([]);
-        }
-    };
+    const [selectedCampaignIds, setSelectedCampaignIds] = useState([]);
 
     const loadCampaigns = async () => {
-        setCampaignsLoading(true);
+        setLoading(true);
         try {
             const res = await api.get('/marketing/campaigns?limit=100');
             if (res.data?.success) setCampaigns(res.data.data?.results || []);
         } catch (e) {
             setCampaigns([]);
         } finally {
-            setCampaignsLoading(false);
+            setLoading(false);
+            setSelectedCampaignIds([]);
         }
     };
 
+    const handleDelete = async (id) => {
+        if (!window.confirm('Are you sure you want to delete this campaign?')) return;
+        try {
+            await api.delete(`/marketing/campaigns/${id}`);
+            loadCampaigns();
+        } catch (err) {
+            alert('Failed to delete campaign');
+        }
+    };
+
+    const handleBulkDelete = async () => {
+        if (!window.confirm(`Are you sure you want to delete ${selectedCampaignIds.length} campaigns?`)) return;
+        try {
+            await api.delete('/marketing/campaigns/bulk', { data: { ids: selectedCampaignIds } });
+            loadCampaigns();
+        } catch (err) {
+            alert('Failed to delete campaigns');
+        }
+    };
+
+    const toggleSelectAll = () => {
+        if (selectedCampaignIds.length === filteredCampaigns.length) {
+            setSelectedCampaignIds([]);
+        } else {
+            setSelectedCampaignIds(filteredCampaigns.map(c => c._id));
+        }
+    };
+
+    const toggleSelect = (id) => {
+        setSelectedCampaignIds(prev => 
+            prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]
+        );
+    };
+
     useEffect(() => {
-        const load = async () => {
-            setLoading(true);
-            await Promise.allSettled([loadDashboard(), loadSegments(), loadCampaigns()]);
-            setLoading(false);
-        };
-        load();
+        loadCampaigns();
     }, []);
 
     const startCampaign = () => {
-        setIsCampaignModalOpen(true);
-        setCampaignStep(1);
-        setIsSending(false);
-        setSendingProgress(0);
+        setCampaignForm({
+            name: '',
+            type: 'bulk',
+            selectedCustomers: [],
+            message: '',
+            channel: activeTab
+        });
         setCampaignError('');
-        loadSegments();
+        setSendingProgress(0);
+        setIsSending(false);
+        setIsCampaignModalOpen(true);
     };
 
     const handleSendCampaign = async () => {
         setCampaignError('');
-        setCampaignStep(3);
         setIsSending(true);
         let progress = 0;
         const interval = setInterval(() => setSendingProgress((p) => Math.min(p + 5, 90)), 150);
 
         try {
             const payload = {
-                name: campaignForm.name,
-                type: campaignForm.type,
-                segment: campaignForm.type === 'segmented' ? campaignForm.segment : 'all',
-                selectedCustomers: campaignForm.type === 'selective' ? campaignForm.selectedCustomers : [],
-                message: campaignForm.message,
-                channel: 'whatsapp',
+                ...campaignForm,
+                channel: activeTab
             };
-            console.log('🚀 Initiating WhatsApp campaign...', payload);
             const res = await api.post('/marketing/campaigns', payload);
-            console.log('✅ Campaign response received:', res.data);
             
             clearInterval(interval);
             setSendingProgress(100);
             await loadCampaigns();
-            await loadDashboard();
-            await loadSegments();
+            setTimeout(() => {
+                setIsCampaignModalOpen(false);
+                setIsSending(false);
+            }, 1000);
         } catch (err) {
-            console.error('❌ Campaign sending FAILED:', err.response?.data || err.message);
             clearInterval(interval);
             setCampaignError(err?.response?.data?.message || err?.message || 'Failed to create campaign');
             setIsSending(false);
-            return;
         }
-        setIsSending(false);
-        setTimeout(() => {
-            setIsCampaignModalOpen(false);
-            setCampaignForm({ name: '', type: 'bulk', segment: 'all', message: '', schedule: 'now' });
-        }, 600);
     };
 
     const tabs = [
         { id: 'whatsapp', label: 'WhatsApp', icon: MessageSquare },
-        { id: 'notifications', label: 'App Notifications', icon: Bell },
+        { id: 'notification', label: 'App Notifications', icon: Bell },
     ];
+
+    const filteredCampaigns = campaigns.filter(c => 
+        activeTab === 'whatsapp' ? (c.channel === 'whatsapp' || !c.channel) : (c.channel === 'notification')
+    );
 
     return (
         <div className="space-y-6 pb-12">
@@ -182,11 +161,19 @@ export default function MarketingHub() {
                     <p className="text-[10px] sm:text-xs text-text-muted mt-3 uppercase tracking-[0.3em] opacity-50 leading-tight">Unified Audience Engagement & Retention Control</p>
                 </div>
                 <div className="flex flex-wrap items-center gap-4">
+                    {selectedCampaignIds.length > 0 && (
+                        <button
+                            onClick={handleBulkDelete}
+                            className="flex items-center justify-center gap-3 px-8 py-5 rounded-[1.25rem] bg-rose-500 text-white text-[10px] font-black uppercase tracking-[0.3em] hover:bg-rose-600 shadow-lg active:scale-[0.98] transition-all leading-none"
+                        >
+                            <Trash2 className="w-4 h-4" /> Delete Selected ({selectedCampaignIds.length})
+                        </button>
+                    )}
                     <button
                         onClick={startCampaign}
                         className="flex-1 lg:flex-none flex items-center justify-center gap-3 px-10 py-5 rounded-[1.25rem] bg-primary text-white text-[10px] font-black uppercase tracking-[0.3em] hover:brightness-110 shadow-[0_12px_24px_-8px_rgba(200,149,108,0.4)] active:scale-[0.98] transition-all leading-none"
                     >
-                        <Plus className="w-4 h-4" /> New Campaign
+                        <Plus className="w-4 h-4" /> New {activeTab === 'whatsapp' ? 'WhatsApp' : 'Notification'}
                     </button>
                 </div>
             </div>
@@ -210,23 +197,78 @@ export default function MarketingHub() {
                 ))}
             </div>
 
-            {/* Tab Content */}
-            <div className="space-y-10">
-                {/* 1. KPI Cards & Performance Chart */}
-                <DashboardContent dashboardData={dashboardData} segments={segments} loading={loading} onRefresh={() => { loadDashboard(); loadSegments(); }} />
-                
-                {/* 2. Campaign List */}
-                {activeTab === 'whatsapp' && (
-                    <WhatsAppContent campaigns={campaigns} campaignsLoading={campaignsLoading} onNew={() => startCampaign()} onRefresh={loadCampaigns} />
-                )}
+            {/* Tab Content: Campaign List */}
+            <div className="space-y-6">
+                <SectionHeader
+                    title={activeTab === 'whatsapp' ? 'WhatsApp Campaigns' : 'App Notifications'}
+                    desc={activeTab === 'whatsapp' ? 'Direct messages to customer WhatsApp' : 'Push notifications to customer mobile app'}
+                    icon={activeTab === 'whatsapp' ? MessageSquare : Bell}
+                    badge="Marketing"
+                />
 
-                {/* 3. Push Notifications */}
-                {activeTab === 'notifications' && (
-                    <NotificationsContent segments={segments} onRefresh={() => { loadCampaigns(); loadSegments(); }} />
-                )}
+                <div className="bg-white rounded-3xl border border-border shadow-sm overflow-hidden">
+                    <div className="px-6 py-4 border-b border-border flex items-center justify-between bg-surface/30">
+                        <h3 className="text-xs font-black text-text uppercase tracking-widest leading-none">Sent History</h3>
+                        <button onClick={loadCampaigns} className="text-[10px] font-black text-primary hover:underline uppercase tracking-widest">Refresh</button>
+                    </div>
+                    <div className="overflow-x-auto">
+                        <table className="w-full min-w-[800px]">
+                            <thead>
+                                <tr className="bg-surface/50 border-b border-border/60">
+                                    <th className="px-6 py-5 text-left w-10">
+                                        <button onClick={toggleSelectAll} className={`w-4 h-4 border-2 rounded transition-all ${selectedCampaignIds.length === filteredCampaigns.length && filteredCampaigns.length > 0 ? 'bg-primary border-primary' : 'border-border'}`}>
+                                            {selectedCampaignIds.length === filteredCampaigns.length && filteredCampaigns.length > 0 && <CheckCircle size={10} className="text-white mx-auto" />}
+                                        </button>
+                                    </th>
+                                    <th className="px-8 py-5 text-left text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Campaign Name</th>
+                                    <th className="px-8 py-5 text-center text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Status</th>
+                                    <th className="px-8 py-5 text-center text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Date</th>
+                                    <th className="px-8 py-5 text-right text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {loading ? (
+                                    <tr><td colSpan={5} className="px-6 py-12 text-center text-text-muted font-bold uppercase tracking-widest text-[10px]">Loading history...</td></tr>
+                                ) : filteredCampaigns.length === 0 ? (
+                                    <tr><td colSpan={5} className="px-6 py-12 text-center text-text-muted font-bold uppercase tracking-widest text-[10px]">No campaigns found</td></tr>
+                                ) : (
+                                    filteredCampaigns.map(c => (
+                                        <tr key={c._id} className={`border-b border-border/50 hover:bg-surface/10 transition-colors ${selectedCampaignIds.includes(c._id) ? 'bg-primary/5' : ''}`}>
+                                            <td className="px-6 py-5">
+                                                <button onClick={() => toggleSelect(c._id)} className={`w-4 h-4 border-2 rounded transition-all ${selectedCampaignIds.includes(c._id) ? 'bg-primary border-primary' : 'border-border'}`}>
+                                                    {selectedCampaignIds.includes(c._id) && <CheckCircle size={10} className="text-white mx-auto" />}
+                                                </button>
+                                            </td>
+                                            <td className="px-8 py-5">
+                                                <div className="text-xs font-black text-text uppercase tracking-tight">{c.name}</div>
+                                                <div className="text-[9px] text-text-muted font-bold truncate max-w-[300px] mt-1">{c.message}</div>
+                                            </td>
+                                            <td className="px-8 py-5 text-center">
+                                                <span className={`text-[9px] font-black px-3 py-1 rounded-full uppercase tracking-widest ${c.status === 'completed' ? 'bg-emerald-50 text-emerald-600' : 'bg-amber-50 text-amber-600'}`}>
+                                                    {c.status}
+                                                </span>
+                                            </td>
+                                            <td className="px-8 py-5 text-center font-bold text-xs text-text-muted">
+                                                {new Date(c.createdAt).toLocaleDateString()}
+                                            </td>
+                                            <td className="px-8 py-5 text-right">
+                                                <button 
+                                                    onClick={() => handleDelete(c._id)}
+                                                    className="p-2 hover:bg-rose-50 text-text-muted hover:text-rose-500 rounded-lg transition-colors"
+                                                >
+                                                    <Trash2 className="w-4 h-4" />
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    ))
+                                )}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
             </div>
 
-            {/* ── Campaign Wizard Modal ── */}
+            {/* Campaign Modal */}
             <AnimatePresence>
                 {isCampaignModalOpen && (
                     <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
@@ -235,27 +277,25 @@ export default function MarketingHub() {
                             initial={{ opacity: 0, scale: 0.95, y: 20 }}
                             animate={{ opacity: 1, scale: 1, y: 0 }}
                             exit={{ opacity: 0, scale: 0.95, y: 20 }}
-                            className="bg-white rounded-[2rem] border border-border w-full max-w-xl shadow-2xl relative overflow-hidden flex flex-col max-h-[90vh]"
+                            className="bg-white rounded-[2rem] border border-border w-full max-w-4xl shadow-2xl relative overflow-hidden flex flex-col md:flex-row max-h-[90vh]"
                         >
-                            {/* Header */}
-                            <div className="px-8 py-6 border-b border-border flex items-center justify-between shrink-0">
-                                <div>
-                                    <h3 className="text-xl font-black text-text uppercase tracking-tight">Create WhatsApp Campaign</h3>
-                                    <p className="text-[10px] text-text-muted font-bold uppercase tracking-widest mt-1">Fill details and send instantly</p>
+                            {/* Form Side */}
+                            <div className="flex-1 flex flex-col min-h-0">
+                                <div className="px-8 py-6 border-b border-border flex items-center justify-between shrink-0">
+                                    <div>
+                                        <h3 className="text-xl font-black text-text uppercase tracking-tight">Create {activeTab === 'whatsapp' ? 'WhatsApp' : 'Push'} Campaign</h3>
+                                        <p className="text-[10px] text-text-muted font-bold uppercase tracking-widest mt-1">Fill details and send instantly</p>
+                                    </div>
+                                    {!isSending && (
+                                        <button onClick={() => setIsCampaignModalOpen(false)} className="p-2 hover:bg-surface rounded-full transition-colors">
+                                            <XCircle className="w-6 h-6 text-text-muted" />
+                                        </button>
+                                    )}
                                 </div>
-                                {!isSending && (
-                                    <button onClick={() => setIsCampaignModalOpen(false)} className="p-2 hover:bg-surface rounded-full transition-colors">
-                                        <XCircle className="w-6 h-6 text-text-muted" />
-                                    </button>
-                                )}
-                            </div>
 
-                            {/* Single Step Body */}
-                            <div className="overflow-y-auto p-8 space-y-8 flex-1 no-scrollbar">
-                                {campaignStep === 3 ? (
-                                    /* Sending State Overlay-like content */
-                                    <div className="py-12 flex flex-col items-center text-center space-y-8">
-                                        {!campaignError && (
+                                <div className="overflow-y-auto p-8 space-y-6 flex-1 no-scrollbar">
+                                    {isSending ? (
+                                        <div className="py-12 flex flex-col items-center text-center space-y-8">
                                             <div className="relative w-32 h-32 flex items-center justify-center">
                                                 <svg className="w-full h-full -rotate-90">
                                                     <circle cx="64" cy="64" r="60" stroke="currentColor" strokeWidth="8" fill="transparent" className="text-slate-100" />
@@ -270,155 +310,140 @@ export default function MarketingHub() {
                                                     {Math.round(sendingProgress)}%
                                                 </div>
                                             </div>
-                                        )}
-
-                                        <div>
-                                            <h3 className="text-xl font-black text-text uppercase tracking-tight">{isSending ? 'Sending Messages...' : campaignError ? 'Error' : 'Campaign Sent!'}</h3>
-                                            <p className="text-sm text-text-muted mt-2 font-medium">
-                                                {campaignError
-                                                    ? campaignError
-                                                    : isSending
-                                                        ? `Processing campaign for your selected audience...`
-                                                        : 'Campaign finished successfully! Check your list for details.'
-                                                }
-                                            </p>
+                                            <div>
+                                                <h3 className="text-xl font-black text-text uppercase tracking-tight">Sending Messages...</h3>
+                                                <p className="text-sm text-text-muted mt-2 font-medium">Processing campaign for your selected audience...</p>
+                                            </div>
                                         </div>
-
-                                        {!isSending && !campaignError && (
-                                            <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} className="w-16 h-16 bg-emerald-500 rounded-full flex items-center justify-center text-white shadow-xl shadow-emerald-200">
-                                                <CheckCircle className="w-8 h-8" />
-                                            </motion.div>
-                                        )}
-                                        {campaignError && (
-                                            <button onClick={() => { setCampaignStep(1); setCampaignError(''); }} className="px-6 py-3 bg-primary text-white text-xs font-black uppercase tracking-widest rounded-xl hover:brightness-110">
-                                                Try Again
-                                            </button>
-                                        )}
-                                        {!isSending && !campaignError && (
-                                            <button onClick={() => setIsCampaignModalOpen(false)} className="px-8 py-3 bg-slate-900 text-white text-xs font-black uppercase tracking-widest rounded-xl hover:bg-black">
-                                                Close
-                                            </button>
-                                        )}
-                                    </div>
-                                ) : (
-                                    /* Campaign Form */
-                                    <>
-                                        {/* 1. Campaign Name */}
-                                        <div className="space-y-3">
-                                            <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] block">Campaign Name</label>
-                                            <input
-                                                type="text"
-                                                placeholder="e.g. Summer Special 2026"
-                                                className="w-full bg-surface border-2 border-border/60 rounded-2xl px-5 py-4 text-sm font-black uppercase tracking-tight focus:outline-none focus:border-primary transition-all"
-                                                value={campaignForm.name}
-                                                onChange={(e) => setCampaignForm({ ...campaignForm, name: e.target.value })}
-                                            />
-                                        </div>
-
-                                        {/* 2. Audience Selection */}
-                                        <div className="space-y-4">
-                                            <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] block">Choose Audience</label>
-                                            <div className="grid grid-cols-2 gap-3">
-                                                {[
-                                                    { id: 'bulk', label: 'Everyone', desc: 'All Customers', icon: Users },
-                                                    { id: 'selective', label: 'Selected', desc: 'Specific List', icon: Target },
-                                                ].map(t => (
-                                                    <button
-                                                        key={t.id}
-                                                        onClick={() => setCampaignForm({ ...campaignForm, type: t.id })}
-                                                        className={`p-4 rounded-2xl border-2 transition-all text-left flex items-start gap-4 ${campaignForm.type === t.id ? 'border-primary bg-primary/[0.02]' : 'border-border hover:border-slate-300'}`}
-                                                    >
-                                                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${campaignForm.type === t.id ? 'bg-primary text-white' : 'bg-surface text-text-muted'}`}>
-                                                            <t.icon className="w-5 h-5" />
-                                                        </div>
-                                                        <div>
-                                                            <div className="text-xs font-black text-text uppercase tracking-tight">{t.label}</div>
-                                                            <div className="text-[9px] text-text-muted font-bold mt-0.5 uppercase tracking-wider">{t.desc}</div>
-                                                        </div>
-                                                    </button>
-                                                ))}
+                                    ) : (
+                                        <>
+                                            {/* Name */}
+                                            <div className="space-y-3">
+                                                <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] block">Campaign Name / Title</label>
+                                                <input
+                                                    type="text"
+                                                    placeholder={activeTab === 'whatsapp' ? 'e.g. Summer Offer' : 'Notification Title...'}
+                                                    className="w-full bg-surface border-2 border-border/60 rounded-2xl px-5 py-4 text-sm font-black uppercase tracking-tight focus:outline-none focus:border-primary transition-all"
+                                                    value={campaignForm.name}
+                                                    onChange={(e) => setCampaignForm({ ...campaignForm, name: e.target.value })}
+                                                />
                                             </div>
 
-                                            {/* Selective Picker UI */}
-                                            {campaignForm.type === 'selective' && (
-                                                <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} className="pt-2">
+                                            {/* Audience */}
+                                            <div className="space-y-4">
+                                                <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] block">Choose Audience</label>
+                                                <div className="grid grid-cols-2 gap-3">
+                                                    {[
+                                                        { id: 'bulk', label: 'Everyone', desc: 'All Customers', icon: Users },
+                                                        { id: 'selective', label: 'Selected', desc: 'Specific List', icon: Target },
+                                                    ].map(t => (
+                                                        <button
+                                                            key={t.id}
+                                                            onClick={() => setCampaignForm({ ...campaignForm, type: t.id })}
+                                                            className={`p-4 rounded-2xl border-2 transition-all text-left flex items-start gap-4 ${campaignForm.type === t.id ? 'border-primary bg-primary/[0.02]' : 'border-border hover:border-slate-300'}`}
+                                                        >
+                                                            <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${campaignForm.type === t.id ? 'bg-primary text-white' : 'bg-surface text-text-muted'}`}>
+                                                                <t.icon className="w-5 h-5" />
+                                                            </div>
+                                                            <div>
+                                                                <div className="text-xs font-black text-text uppercase tracking-tight">{t.label}</div>
+                                                                <div className="text-[9px] text-text-muted font-bold mt-0.5 uppercase tracking-wider">{t.desc}</div>
+                                                            </div>
+                                                        </button>
+                                                    ))}
+                                                </div>
+
+                                                {campaignForm.type === 'selective' && (
                                                     <div className="p-4 rounded-2xl bg-surface border border-border flex items-center justify-between">
                                                         <div>
-                                                            <div className="text-[10px] font-black text-text-muted uppercase tracking-widest">Recipients</div>
                                                             <div className="text-sm font-black text-text">{campaignForm.selectedCustomers.length} selected</div>
                                                         </div>
                                                         <button 
                                                             onClick={() => setIsContactListOpen(true)}
                                                             className="px-4 py-2 bg-white border border-border rounded-xl text-[10px] font-black text-primary uppercase tracking-widest hover:border-primary/30"
                                                         >
-                                                            {campaignForm.selectedCustomers.length > 0 ? 'Edit Selection' : 'Select Customers'}
+                                                            Select Customers
                                                         </button>
                                                     </div>
-                                                </motion.div>
-                                            )}
-                                        </div>
+                                                )}
+                                            </div>
 
-                                        {/* 3. Message Composition */}
-                                        <div className="space-y-3">
-                                            <div className="flex items-center justify-between">
+                                            {/* Message */}
+                                            <div className="space-y-3">
                                                 <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Message Content</label>
-                                                <span className="text-[9px] font-bold text-text-muted uppercase tracking-widest">{campaignForm.message.length} characters</span>
+                                                <textarea
+                                                    rows={4}
+                                                    placeholder="Type your message here... (Use {{name}} for customer name)"
+                                                    className="w-full bg-surface border border-border rounded-2xl px-4 py-4 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary/20 resize-none transition-all"
+                                                    value={campaignForm.message}
+                                                    onChange={(e) => setCampaignForm({ ...campaignForm, message: e.target.value })}
+                                                />
                                             </div>
-                                            <textarea
-                                                rows={4}
-                                                placeholder="Type your WhatsApp message here... (Use {{name}} for customer name)"
-                                                className="w-full bg-surface border border-border rounded-2xl px-4 py-4 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary/20 resize-none transition-all"
-                                                value={campaignForm.message}
-                                                onChange={(e) => setCampaignForm({ ...campaignForm, message: e.target.value })}
-                                            />
-                                        </div>
 
-                                        {/* Estimated Reach Info */}
-                                        <div className="bg-emerald-50 rounded-2xl p-4 border border-emerald-100 flex items-center gap-4">
-                                            <div className="w-10 h-10 rounded-xl bg-emerald-500 flex items-center justify-center text-white shadow-lg shadow-emerald-200">
-                                                <Zap className="w-5 h-5" />
-                                            </div>
-                                            <div>
-                                                <div className="text-[9px] font-black text-emerald-700 uppercase tracking-widest">Estimated Reach</div>
-                                                <div className="text-sm font-black text-emerald-900">
-                                                    {campaignForm.type === 'bulk'
-                                                        ? (segments.find(s => s.id === 'all')?.count ?? 0).toLocaleString()
-                                                        : campaignForm.selectedCustomers.length.toLocaleString()
-                                                    } <span className="text-[10px] font-bold opacity-60 uppercase">Real Customers</span>
-                                                </div>
-                                            </div>
-                                        </div>
+                                            {campaignError && (
+                                                <div className="rounded-xl bg-rose-50 border border-rose-200 p-3 text-rose-700 text-xs font-bold">{campaignError}</div>
+                                            )}
+                                        </>
+                                    )}
+                                </div>
 
-                                        {campaignError && (
-                                            <div className="rounded-xl bg-rose-50 border border-rose-200 p-3 text-rose-700 text-xs font-bold">{campaignError}</div>
-                                        )}
-                                    </>
-                                )}
-                            </div>
-
-                            {/* Footer Action */}
-                            {campaignStep !== 3 && (
                                 <div className="p-8 border-t border-border bg-surface/30 shrink-0">
                                     <button
                                         onClick={handleSendCampaign}
                                         disabled={!campaignForm.name || !campaignForm.message || (campaignForm.type === 'selective' && campaignForm.selectedCustomers.length === 0) || isSending}
                                         className="w-full py-5 bg-primary text-white text-xs font-black uppercase tracking-[0.3em] rounded-[1.5rem] hover:brightness-110 shadow-xl shadow-primary/25 transition-all disabled:opacity-50 active:scale-[0.98]"
                                     >
-                                        {isSending ? 'Initiating Campaign...' : 'Send WhatsApp Campaign Now'}
+                                        {isSending ? 'Sending...' : `Send ${activeTab === 'whatsapp' ? 'WhatsApp' : 'Notification'} Now`}
                                     </button>
                                 </div>
-                            )}
+                            </div>
+
+                            {/* Preview Side (Only for Notification) */}
+                            <div className="hidden md:flex w-80 bg-slate-900 flex-col items-center justify-center p-8 relative overflow-hidden border-l border-border">
+                                <div className="absolute top-0 left-0 w-full h-full opacity-10 pointer-events-none">
+                                    <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-primary rounded-full blur-[100px]" />
+                                    <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-primary rounded-full blur-[100px]" />
+                                </div>
+                                
+                                <div className="w-full aspect-[9/16] bg-black rounded-[2.5rem] border-4 border-slate-800 shadow-2xl relative p-4 flex flex-col overflow-hidden">
+                                    <div className="w-12 h-1 bg-slate-800 rounded-full mx-auto mb-6 shrink-0" />
+                                    
+                                    <motion.div 
+                                        initial={{ y: 20, opacity: 0 }}
+                                        animate={{ y: 0, opacity: 1 }}
+                                        key={campaignForm.name + campaignForm.message}
+                                        className="bg-white/10 backdrop-blur-md rounded-2xl p-3 text-left border border-white/10"
+                                    >
+                                        <div className="flex items-center gap-2 mb-1">
+                                            <div className={`w-4 h-4 rounded flex items-center justify-center ${activeTab === 'whatsapp' ? 'bg-emerald-500' : 'bg-primary'}`}>
+                                                {activeTab === 'whatsapp' ? <MessageSquare size={8} className="text-white" /> : <Bell size={8} className="text-white" />}
+                                            </div>
+                                            <span className="text-[6px] font-black text-white uppercase tracking-widest">{activeTab === 'whatsapp' ? 'WhatsApp' : 'Salon App'}</span>
+                                        </div>
+                                        <h4 className="text-[8px] font-black text-white truncate">{campaignForm.name || 'Title...'}</h4>
+                                        <p className="text-[7px] text-white/60 line-clamp-3 mt-0.5 leading-tight">{campaignForm.message || 'Message preview will appear here...'}</p>
+                                    </motion.div>
+                                    
+                                    <div className="mt-auto flex justify-center pb-2">
+                                        <div className="w-20 h-1 bg-white/20 rounded-full" />
+                                    </div>
+                                </div>
+                                
+                                <div className="mt-6 text-center">
+                                    <h3 className="text-white text-xs font-black uppercase tracking-tight">Live Preview</h3>
+                                    <p className="text-white/40 text-[8px] font-bold uppercase tracking-widest mt-1">Mobile View</p>
+                                </div>
+                            </div>
                         </motion.div>
                     </div>
                 )}
             </AnimatePresence>
 
             <AnimatePresence>
-                {/* ── Contact List Modal ── */}
                 <ContactListModal 
                     isOpen={isContactListOpen} 
                     onClose={() => setIsContactListOpen(false)} 
-                    selectionMode={campaignForm.type === 'selective'}
+                    selectionMode={true}
                     selectedIds={campaignForm.selectedCustomers}
                     onToggleSelect={(id) => {
                         setCampaignForm(prev => {
@@ -436,439 +461,6 @@ export default function MarketingHub() {
     );
 }
 
-/* ─── Dashboard Tab ─────────────────────────────────────────────────────── */
-function DashboardContent({ dashboardData, segments, loading, onRefresh }) {
-    const stats = dashboardData?.stats || [
-        { label: 'Campaign Reach', value: '0', trend: null },
-        { label: 'Conv. Rate', value: '0%', trend: null },
-        { label: 'Total Spent', value: '₹0', trend: null },
-        { label: 'Campaigns', value: '0', trend: null },
-    ];
-    const chartData = dashboardData?.chartData || [
-        { name: 'Mon', whatsapp: 0, email: 0, social: 0 },
-        { name: 'Tue', whatsapp: 0, email: 0, social: 0 },
-        { name: 'Wed', whatsapp: 0, email: 0, social: 0 },
-        { name: 'Thu', whatsapp: 0, email: 0, social: 0 },
-        { name: 'Fri', whatsapp: 0, email: 0, social: 0 },
-        { name: 'Sat', whatsapp: 0, email: 0, social: 0 },
-        { name: 'Sun', whatsapp: 0, email: 0, social: 0 },
-    ];
-    const displaySegments = segments.length > 0 ? segments.filter(s => ['all', 'loyal', 'at_risk', 'new_month'].includes(s.id)) : [];
-
-    if (loading) {
-        return (
-            <div className="flex items-center justify-center py-24">
-                <p className="text-text-muted font-bold uppercase tracking-widest">Loading...</p>
-            </div>
-        );
-    }
-
-    return (
-        <div className="space-y-6">
-            {/* Quick KPIs */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                <StatCard label={stats[0]?.label || 'Campaign Reach'} value={stats[0]?.value || '0'} trend={stats[0]?.trend} icon={Users} color="bg-blue-50 text-blue-600" />
-                <StatCard label={stats[1]?.label || 'Conv. Rate'} value={stats[1]?.value || '0%'} trend={stats[1]?.trend} icon={TrendingUp} color="bg-emerald-50 text-emerald-600" />
-                <StatCard label={stats[2]?.label || 'Total Sent'} value={stats[2]?.value || '0'} icon={Zap} color="bg-amber-50 text-amber-600" />
-                <StatCard label={stats[3]?.label || 'Campaigns'} value={stats[3]?.value || '0'} trend={stats[3]?.trend} icon={Smartphone} color="bg-primary/10 text-primary" />
-            </div>
-
-            {/* Performance Chart & Audience Segments */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <div className="lg:col-span-2 bg-white rounded-[2rem] border border-border p-8 shadow-sm flex flex-col min-h-[350px]">
-                    <div className="flex items-center justify-between mb-8">
-                        <div>
-                            <h3 className="text-xl font-black text-text uppercase tracking-tight">Campaign Performance</h3>
-                            <p className="text-[10px] text-text-muted font-bold uppercase tracking-widest mt-1">Messages sent in last 7 days</p>
-                        </div>
-                    </div>
-                    <div className="flex-1 min-h-[250px] w-full">
-                        <ResponsiveContainer width="100%" height="100%">
-                            <AreaChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                                <defs>
-                                    <linearGradient id="colorWhatsapp" x1="0" y1="0" x2="0" y2="1">
-                                        <stop offset="5%" stopColor="#C8956C" stopOpacity={0.3} />
-                                        <stop offset="95%" stopColor="#C8956C" stopOpacity={0} />
-                                    </linearGradient>
-                                    <linearGradient id="colorEmail" x1="0" y1="0" x2="0" y2="1">
-                                        <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3} />
-                                        <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
-                                    </linearGradient>
-                                </defs>
-                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
-                                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#94a3b8', fontWeight: 800 }} dy={10} />
-                                <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#94a3b8', fontWeight: 800 }} dx={-10} />
-                                <Tooltip
-                                    contentStyle={{ borderRadius: '1rem', border: 'none', boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.1)', padding: '12px 20px', fontWeight: 800, fontSize: '12px', textTransform: 'uppercase' }}
-                                    itemStyle={{ fontWeight: 800 }}
-                                />
-                                <Area type="monotone" dataKey="whatsapp" name="WhatsApp" stroke="#C8956C" strokeWidth={3} fillOpacity={1} fill="url(#colorWhatsapp)" />
-                                <Area type="monotone" dataKey="email" name="Push" stroke="#3b82f6" strokeWidth={3} fillOpacity={1} fill="url(#colorEmail)" />
-                            </AreaChart>
-                        </ResponsiveContainer>
-                    </div>
-                </div>
-
-                {/* Segments Overview */}
-                <div className="bg-white rounded-[2rem] border border-border p-8 shadow-sm">
-                    <div className="flex items-center justify-between mb-6">
-                        <h3 className="text-sm font-black text-text uppercase tracking-tight">Active Segments</h3>
-                        <div className="w-8 h-8 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
-                            <Users className="w-4 h-4" />
-                        </div>
-                    </div>
-                    <div className="space-y-4">
-                        {displaySegments.map((segment, idx) => (
-                            <div key={idx} className="flex items-center justify-between p-4 rounded-2xl border border-border/50 hover:bg-surface/50 transition-colors">
-                                <div>
-                                    <div className="text-xs font-black text-text uppercase tracking-tight">{segment.label}</div>
-                                    <div className="text-[10px] text-text-muted font-bold mt-0.5 tracking-wider">Targetable users</div>
-                                </div>
-                                <div className="text-sm font-black text-text bg-surface px-3 py-1.5 rounded-xl border border-border">{segment.count}</div>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-            </div>
-        </div>
-    );
-}
-
-/* ─── WhatsApp Tab ─────────────────────────────────────────────────────── */
-function WhatsAppContent({ campaigns, campaignsLoading, onNew, onRefresh }) {
-    const mapCampaign = (c) => ({
-        id: c._id || c.id,
-        name: c.name || 'Untitled',
-        status: (c.status || 'draft').toLowerCase(),
-        sent: c.sentCount ?? c.sent ?? 0,
-        read: c.readCount ?? c.read ?? 0,
-        date: c.sentAt ? new Date(c.sentAt).toISOString().slice(0, 10) : (c.createdAt ? new Date(c.createdAt).toISOString().slice(0, 10) : '--'),
-    });
-
-    return (
-        <div className="space-y-6">
-            <div className="flex items-center justify-between mb-6">
-                <SectionHeader
-                    title="WhatsApp Campaigns"
-                    desc="Send messages to customers and track delivery and reads."
-                    icon={MessageSquare}
-                    badge="Live"
-                />
-                <div className="flex items-center gap-2">
-                    <button onClick={onRefresh} className="flex items-center gap-2 px-4 py-2.5 border border-border rounded-xl text-xs font-black uppercase tracking-widest hover:border-primary/30 transition-all">
-                        Refresh
-                    </button>
-                </div>
-            </div>
-
-            <div className="grid grid-cols-1 gap-6">
-                {/* Recent Campaigns - Full Width */}
-                <div className="bg-white rounded-3xl border border-border shadow-sm overflow-hidden text-center justify-center">
-                        <div className="px-6 py-4 border-b border-border flex items-center justify-between bg-surface/30">
-                            <h3 className="text-xs font-black text-text uppercase tracking-widest leading-none">Recent Campaigns</h3>
-                            <button onClick={onRefresh} className="text-[10px] font-black text-primary hover:underline uppercase tracking-widest">Refresh</button>
-                        </div>
-                        <div className="table-responsive">
-                            <table className="w-full min-w-[800px]">
-                                <thead>
-                                    <tr className="bg-surface/50 border-b border-border/60">
-                                        <th className="px-8 py-5 text-left text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Campaign Name</th>
-                                        <th className="px-8 py-5 text-center text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Status</th>
-                                        <th className="px-8 py-5 text-center text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Reach / Reads</th>
-                                        <th className="px-8 py-5 text-center text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Date</th>
-                                        <th className="px-8 py-5 text-right text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Action</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {campaignsLoading ? (
-                                        <tr><td colSpan={5} className="px-6 py-12 text-center text-text-muted font-bold">Loading campaigns...</td></tr>
-                                    ) : campaigns.length === 0 ? (
-                                        <tr><td colSpan={5} className="px-6 py-12 text-center text-text-muted font-bold">No campaigns yet. Create one to get started.</td></tr>
-                                    ) : (
-                                        campaigns.map(c => {
-                                            const row = mapCampaign(c);
-                                            return (
-                                                <tr key={row.id} className="border-b border-border/50 hover:bg-surface/10 transition-colors">
-                                                    <td className="px-8 py-5">
-                                                        <div className="text-xs font-black text-text uppercase tracking-tight">{row.name}</div>
-                                                    </td>
-                                                    <td className="px-8 py-5 text-center">
-                                                        <span className={`text-[10px] font-black px-2 py-0.5 rounded-full uppercase tracking-widest ${row.status === 'completed' ? 'bg-emerald-50 text-emerald-600' : 'bg-slate-100 text-slate-500'}`}>
-                                                            {row.status}
-                                                        </span>
-                                                    </td>
-                                                    <td className="px-8 py-5 text-center font-black text-xs text-text-secondary">
-                                                        {row.sent} <span className="text-text-muted font-bold mx-1">/</span> <span className="text-primary">{row.read}</span>
-                                                     </td>
-                                                    <td className="px-8 py-5 text-center font-bold text-xs text-text-muted italic">{row.date}</td>
-                                                    <td className="px-8 py-5 text-right">
-                                                        <button className="p-2 hover:bg-surface rounded-lg transition-colors"><MoreVertical className="w-4 h-4 text-text-muted" /></button>
-                                                    </td>
-                                                </tr>
-                                            );
-                                        })
-                                    )}
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-            </div>
-        </div>
-    );
-}
-
-/* ─── Automations Tab ──────────────────────────────────────────────────── */
-function AutomationsContent() {
-    const [flows, setFlows] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [selectedId, setSelectedId] = useState(null);
-    const [actionLoading, setActionLoading] = useState(false);
-    const [editModal, setEditModal] = useState(null);
-
-    const loadAutomations = async () => {
-        setLoading(true);
-        try {
-            const res = await api.get('/marketing/automations');
-            const data = res.data?.data || [];
-            setFlows(Array.isArray(data) ? data : []);
-            if (data.length > 0 && !selectedId) setSelectedId(data[0].id);
-        } catch {
-            setFlows([]);
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    useEffect(() => {
-        loadAutomations();
-    }, []);
-
-    useEffect(() => {
-        if (flows.length > 0 && !selectedId) setSelectedId(flows[0].id);
-    }, [flows]);
-
-    const selected = flows.find((f) => f.id === selectedId) ?? flows[0];
-
-    const handleToggle = async (flowId, enabled) => {
-        setActionLoading(true);
-        try {
-            await api.patch(`/marketing/automations/${flowId}`, { enabled });
-            setFlows((prev) => prev.map((f) => (f.id === flowId ? { ...f, enabled } : f)));
-        } catch (e) {
-            console.error(e);
-        } finally {
-            setActionLoading(false);
-        }
-    };
-
-    const handleSaveMessage = async (flowId, messageTemplate) => {
-        setActionLoading(true);
-        try {
-            const res = await api.patch(`/marketing/automations/${flowId}`, { messageTemplate });
-            setFlows((prev) => prev.map((f) => (f.id === flowId ? { ...f, preview: res.data?.data?.preview ?? messageTemplate } : f)));
-            setEditModal(null);
-        } catch (e) {
-            console.error(e);
-        } finally {
-            setActionLoading(false);
-        }
-    };
-
-    if (loading) {
-        return (
-            <div className="flex items-center justify-center py-24">
-                <p className="text-text-muted font-bold uppercase tracking-widest">Loading automations...</p>
-            </div>
-        );
-    }
-
-    return (
-        <div className="space-y-6">
-            <SectionHeader
-                title="Automatic Messages"
-                desc="Set once and messages will be sent automatically."
-                icon={Zap}
-                badge="Live"
-            />
-
-            <div className="grid lg:grid-cols-3 gap-6">
-                {/* Left: templates list */}
-                <div className="lg:col-span-1 space-y-4">
-                    <p className="text-[11px] text-text-muted font-bold uppercase tracking-[0.2em]">
-                        Ready-made automations
-                    </p>
-                    <div className="space-y-3">
-                        {flows.map((flow) => {
-                            const isActive = selected?.id === flow.id;
-                            return (
-                                <button
-                                    key={flow.id}
-                                    type="button"
-                                    onClick={() => setSelectedId(flow.id)}
-                                    className={`w-full text-left rounded-2xl border-2 p-4 transition-all group ${isActive
-                                        ? 'border-primary bg-primary/[0.02] shadow-sm'
-                                        : 'border-border bg-white hover:border-primary/30'
-                                        }`}
-                                >
-                                    <div className="flex items-center justify-between gap-2 mb-1.5">
-                                        <div className="flex items-center gap-2">
-                                            <div className="w-7 h-7 rounded-xl flex items-center justify-center text-primary bg-primary/10">
-                                                <Zap className="w-4 h-4" />
-                                            </div>
-                                            <span className="text-xs font-black text-text uppercase tracking-tight">
-                                                {flow.name}
-                                            </span>
-                                        </div>
-                                        {flow.badge && (
-                                            <span className="text-[9px] font-black uppercase tracking-[0.18em] px-2 py-0.5 rounded-full bg-surface text-text-muted">
-                                                {flow.badge}
-                                            </span>
-                                        )}
-                                    </div>
-                                    <p className="text-[11px] text-text-muted font-medium leading-snug">
-                                        {flow.short}
-                                    </p>
-                                </button>
-                            );
-                        })}
-                    </div>
-                    <div className="mt-4 rounded-2xl border border-dashed border-border px-4 py-3 bg-surface/60 text-[11px] text-text-muted font-medium">
-                        Messages will start only after you enable a flow. Connect WhatsApp API to send.
-                    </div>
-                </div>
-
-                {/* Right: selected flow details */}
-                <div className="lg:col-span-2 space-y-4">
-                    {selected && (
-                        <div className="bg-white rounded-3xl border border-border p-6 shadow-sm">
-                            <div className="flex items-center justify-between gap-3 mb-4">
-                                <div>
-                                    <h3 className="text-sm font-black text-text uppercase tracking-wider">
-                                        {selected.name}
-                                    </h3>
-                                    <p className="text-xs text-text-muted font-medium mt-1">
-                                        {selected.short}
-                                    </p>
-                                </div>
-                                <div className="flex flex-col items-end gap-2">
-                                    <span className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[10px] font-black uppercase tracking-[0.18em] ${selected.enabled ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-100 text-slate-700'}`}>
-                                        <Clock className="w-3.5 h-3.5" />
-                                        {selected.enabled ? 'Enabled' : 'Not Active'}
-                                    </span>
-                                </div>
-                            </div>
-
-                            <div className="grid md:grid-cols-2 gap-4 mb-6">
-                                <div className="rounded-2xl bg-surface p-4 border border-border/60">
-                                    <div className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] mb-1.5">When it runs</div>
-                                    <p className="text-xs text-text font-medium leading-relaxed">{selected.triggerLabel}</p>
-                                </div>
-                                <div className="rounded-2xl bg-surface p-4 border border-border/60">
-                                    <div className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] mb-1.5">Where it sends</div>
-                                    <p className="text-xs text-text font-medium leading-relaxed">{selected.channelLabel}</p>
-                                </div>
-                            </div>
-
-                            <div className="grid lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)] gap-4 items-start">
-                                <div className="rounded-2xl border border-border bg-surface p-4">
-                                    <div className="flex items-center justify-between mb-3">
-                                        <div className="flex items-center gap-2">
-                                            <div className="w-8 h-8 rounded-full bg-emerald-500 text-white flex items-center justify-center text-xs font-black">WA</div>
-                                            <div>
-                                                <p className="text-[11px] font-black text-text uppercase tracking-[0.18em]">Message preview</p>
-                                                <p className="text-[10px] text-text-muted font-medium">Use tags like &#123;&#123;name&#125;&#125;, &#123;&#123;offer&#125;&#125;, &#123;&#123;salon_name&#125;&#125;</p>
-                                            </div>
-                                        </div>
-                                        <button
-                                            type="button"
-                                            onClick={() => setEditModal({ flowId: selected.id, preview: selected.preview })}
-                                            className="text-[10px] font-black uppercase tracking-[0.18em] text-text-muted hover:text-primary"
-                                        >
-                                            Edit text
-                                        </button>
-                                    </div>
-                                    <div className="rounded-2xl bg-white border border-border/60 px-4 py-3 text-[11px] text-text leading-relaxed whitespace-pre-line">
-                                        {selected.preview}
-                                    </div>
-                                </div>
-
-                                <div className="rounded-2xl border border-border bg-surface p-4 space-y-3">
-                                    <p className="text-[11px] font-black text-text-muted uppercase tracking-[0.2em]">Who will get this</p>
-                                    <ul className="space-y-2 text-xs text-text font-medium">
-                                        <li className="flex items-start gap-2">
-                                            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 mt-[2px]" />
-                                            <span>Only active customers in your client list.</span>
-                                        </li>
-                                        <li className="flex items-start gap-2">
-                                            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 mt-[2px]" />
-                                            <span>Messages respect opt-out / DND flags.</span>
-                                        </li>
-                                        <li className="flex items-start gap-2">
-                                            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 mt-[2px]" />
-                                            <span>Timing windows are spread out to avoid spamming.</span>
-                                        </li>
-                                    </ul>
-                                    <div className="pt-2 border-t border-border/60 mt-2">
-                                        <p className="text-[10px] text-text-muted font-bold uppercase tracking-[0.2em] mb-2">Status</p>
-                                        <div className="flex items-center justify-between gap-2">
-                                            <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.18em] ${selected.enabled ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-100 text-slate-700'}`}>
-                                                <Clock className="w-3.5 h-3.5" />
-                                                {selected.enabled ? 'Enabled' : 'Not Active'}
-                                            </span>
-                                            <button
-                                                type="button"
-                                                disabled={actionLoading}
-                                                onClick={() => handleToggle(selected.id, !selected.enabled)}
-                                                className={`px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-[0.18em] transition-colors disabled:opacity-50 ${selected.enabled ? 'bg-rose-100 text-rose-700 hover:bg-rose-200' : 'bg-slate-900 text-white hover:bg-black'}`}
-                                            >
-                                                {selected.enabled ? 'Disable' : 'Enable'}
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    )}
-                </div>
-            </div>
-
-            {/* Edit Message Modal */}
-            <AnimatePresence>
-                {editModal && (
-                    <div className="fixed inset-0 z-[250] flex items-center justify-center p-4">
-                        <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setEditModal(null)} />
-                        <motion.div
-                            initial={{ opacity: 0, scale: 0.95 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            className="bg-white rounded-2xl w-full max-w-lg shadow-2xl p-6 relative"
-                        >
-                            <h4 className="text-lg font-black text-text uppercase tracking-tight mb-4">Edit Message</h4>
-                            <textarea
-                                rows={6}
-                                value={editModal.preview}
-                                onChange={(e) => setEditModal((p) => ({ ...p, preview: e.target.value }))}
-                                className="w-full border border-border rounded-xl px-4 py-3 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary/20 resize-none"
-                                placeholder="Message template..."
-                            />
-                            <div className="flex justify-end gap-3 mt-4">
-                                <button onClick={() => setEditModal(null)} className="px-4 py-2 border border-border rounded-xl text-xs font-black uppercase">Cancel</button>
-                                <button
-                                    onClick={() => handleSaveMessage(editModal.flowId, editModal.preview)}
-                                    disabled={actionLoading}
-                                    className="px-6 py-2 bg-primary text-white rounded-xl text-xs font-black uppercase disabled:opacity-50"
-                                >
-                                    {actionLoading ? 'Saving...' : 'Save'}
-                                </button>
-                            </div>
-                        </motion.div>
-                    </div>
-                )}
-            </AnimatePresence>
-        </div>
-    );
-}
-
-/* ─── Contact List Modal ───────────────────────────────────────────────── */
 function ContactListModal({ isOpen, onClose, selectionMode = false, selectedIds = [], onToggleSelect }) {
     const [contacts, setContacts] = useState([]);
     const [loading, setLoading] = useState(false);
@@ -878,309 +470,53 @@ function ContactListModal({ isOpen, onClose, selectionMode = false, selectedIds 
         if (isOpen) {
             setLoading(true);
             api.get('/clients?limit=500')
-                .then((res) => {
-                    const rows = res.data?.data || [];
-                    setContacts(Array.isArray(rows) ? rows : []);
-                })
+                .then((res) => setContacts(Array.isArray(res.data?.data) ? res.data.data : []))
                 .catch(() => setContacts([]))
                 .finally(() => setLoading(false));
         }
     }, [isOpen]);
 
     const filtered = useMemo(() => {
-        if (!search.trim()) return contacts;
         const q = search.trim().toLowerCase();
-        return contacts.filter((c) =>
-            (c.name || '').toLowerCase().includes(q) ||
-            (c.email || '').toLowerCase().includes(q) ||
-            (c.phone || '').includes(search)
-        );
+        return contacts.filter(c => (c.name || '').toLowerCase().includes(q) || (c.phone || '').includes(search));
     }, [contacts, search]);
 
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-[300] flex items-center justify-center p-4">
             <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
-            <motion.div
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                className="bg-white rounded-[2rem] w-full max-w-4xl max-h-[85vh] shadow-2xl relative overflow-hidden flex flex-col"
-            >
-                <div className="px-8 py-6 border-b border-border flex items-center justify-between flex-wrap gap-4">
-                    <h3 className="text-xl font-black text-text uppercase tracking-tight">Contact List</h3>
-                    <div className="flex items-center gap-3">
-                        <input
-                            type="text"
-                            placeholder="Search by name, email, phone..."
-                            value={search}
-                            onChange={(e) => setSearch(e.target.value)}
-                            className="px-4 py-2 border border-border rounded-xl text-sm font-medium w-64 focus:outline-none focus:ring-2 focus:ring-primary/20"
-                        />
-                        <button onClick={onClose} className="p-2 hover:bg-surface rounded-full">
-                            <XCircle className="w-6 h-6 text-text-muted" />
-                        </button>
-                    </div>
+            <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="bg-white rounded-[2rem] w-full max-w-2xl max-h-[80vh] shadow-2xl relative overflow-hidden flex flex-col">
+                <div className="px-8 py-6 border-b border-border flex items-center justify-between">
+                    <h3 className="text-xl font-black text-text uppercase tracking-tight">Select Contacts</h3>
+                    <input type="text" placeholder="Search..." value={search} onChange={e => setSearch(e.target.value)} className="px-4 py-2 border border-border rounded-xl text-sm w-48" />
                 </div>
                 <div className="flex-1 overflow-auto p-6">
-                    {loading ? (
-                        <div className="py-16 text-center text-text-muted font-bold">Loading contacts...</div>
-                    ) : filtered.length === 0 ? (
-                        <div className="py-16 text-center text-text-muted font-bold">No customers found.</div>
-                    ) : (
-                        <div className="overflow-x-auto">
-                            <table className="w-full min-w-[500px]">
-                                <thead>
-                                    <tr className="border-b border-border">
-                                        {selectionMode && (
-                                            <th className="px-4 py-3 text-left text-[10px] font-black text-text-muted uppercase tracking-widest w-10">
-                                                Select
-                                            </th>
-                                        )}
-                                        <th className="px-4 py-3 text-left text-[10px] font-black text-text-muted uppercase tracking-widest">Name</th>
-                                        <th className="px-4 py-3 text-left text-[10px] font-black text-text-muted uppercase tracking-widest">Phone Number</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {filtered.map((c) => {
-                                        const isSelected = selectedIds.includes(c._id || c.id);
-                                        return (
-                                            <tr 
-                                                key={c._id || c.id} 
-                                                className={`border-b border-border/50 transition-colors ${isSelected ? 'bg-primary/5' : 'hover:bg-surface/30'} ${selectionMode ? 'cursor-pointer' : ''}`}
-                                                onClick={() => selectionMode && onToggleSelect(c._id || c.id)}
-                                            >
-                                                {selectionMode && (
-                                                    <td className="px-4 py-3">
-                                                        <div className={`w-4 h-4 border-2 rounded flex items-center justify-center transition-all ${isSelected ? 'bg-primary border-primary' : 'border-border'}`}>
-                                                            {isSelected && <CheckCircle size={10} className="text-white" />}
-                                                        </div>
-                                                    </td>
-                                                )}
-                                            <td className="px-4 py-3 text-sm font-black text-text uppercase tracking-tight">{c.name || '—'}</td>
-                                            <td className="px-4 py-3 text-sm text-text-secondary font-mono">{c.phone || '—'}</td>
-                                        </tr>
-                                    );
-                                })}
-                                </tbody>
-                            </table>
-                        </div>
-                    )}
+                    <table className="w-full">
+                        <thead>
+                            <tr className="text-left text-[10px] font-black text-text-muted uppercase tracking-widest border-b border-border">
+                                <th className="p-2 w-10">Select</th>
+                                <th className="p-2">Name</th>
+                                <th className="p-2">Phone</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {filtered.map(c => (
+                                <tr key={c._id} className="border-b border-border/50 hover:bg-surface/50 cursor-pointer" onClick={() => onToggleSelect(c._id)}>
+                                    <td className="p-2">
+                                        <div className={`w-4 h-4 border-2 rounded ${selectedIds.includes(c._id) ? 'bg-primary border-primary' : 'border-border'}`} />
+                                    </td>
+                                    <td className="p-2 text-sm font-bold uppercase">{c.name}</td>
+                                    <td className="p-2 text-sm text-text-muted">{c.phone}</td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
                 </div>
-                <div className="px-8 py-4 border-t border-border bg-surface/30 text-[10px] font-black text-text-muted uppercase tracking-widest">
-                    {filtered.length} contact{filtered.length !== 1 ? 's' : ''} shown
+                <div className="p-4 border-t border-border bg-surface text-center">
+                    <button onClick={onClose} className="px-8 py-3 bg-slate-900 text-white rounded-xl text-[10px] font-black uppercase tracking-widest">Done ({selectedIds.length})</button>
                 </div>
             </motion.div>
         </div>
     );
 }
-
-function NotificationsContent({ segments, onRefresh }) {
-    const [form, setForm] = useState({
-        title: '',
-        message: '',
-        image: '',
-        type: 'marketing',
-        customerId: 'all'
-    });
-    const [loading, setLoading] = useState(false);
-    const [success, setSuccess] = useState(false);
-    const [isPickerOpen, setIsPickerOpen] = useState(false);
-    const [selectedCustomerName, setSelectedCustomerName] = useState('');
-
-    const handleSend = async () => {
-        setLoading(true);
-        try {
-            const res = await api.post('/notifications/send', form);
-            if (res.data?.success) {
-                setSuccess(true);
-                setForm({ title: '', message: '', image: '', type: 'marketing', customerId: 'all' });
-                setSelectedCustomerName('');
-                setTimeout(() => setSuccess(false), 3000);
-                onRefresh();
-            }
-        } catch (err) {
-            console.error('Failed to send notification', err);
-            alert(err.response?.data?.message || 'Failed to send notification');
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    return (
-        <div className="grid lg:grid-cols-2 gap-8">
-            <div className="bg-white rounded-[2rem] border border-border p-8 shadow-sm space-y-6">
-                <SectionHeader 
-                    title="Push Notifications" 
-                    desc="Send instant mobile & web notifications." 
-                    icon={Bell} 
-                />
-                
-                <div className="space-y-4">
-                    <div className="space-y-2">
-                        <label className="text-[10px] font-black text-text-muted uppercase tracking-widest">Audience</label>
-                        <div className="flex gap-2">
-                            <select 
-                                className="flex-1 bg-surface border border-border rounded-xl px-4 py-3 text-sm font-bold focus:outline-none"
-                                value={form.customerId === 'all' ? 'all' : (form.customerId === 'self' ? 'self' : 'specific')}
-                                onChange={(e) => {
-                                    if (e.target.value === 'all') {
-                                        setForm({...form, customerId: 'all'});
-                                        setSelectedCustomerName('');
-                                    } else if (e.target.value === 'self') {
-                                        setForm({...form, customerId: 'self'});
-                                        setSelectedCustomerName('Me (Test)');
-                                    } else {
-                                        setIsPickerOpen(true);
-                                    }
-                                }}
-                            >
-                                <option value="all">All Active Customers</option>
-                                <option value="self">Test to Me (Self)</option>
-                                <option value="specific">Specific Customer {selectedCustomerName ? `(${selectedCustomerName})` : ''}</option>
-                            </select>
-                            {form.customerId !== 'all' && form.customerId !== 'self' && (
-                                <button 
-                                    onClick={() => setIsPickerOpen(true)}
-                                    className="p-3 bg-surface border border-border rounded-xl hover:border-primary/30 text-primary transition-all"
-                                >
-                                    <Search className="w-5 h-5" />
-                                </button>
-                            )}
-                        </div>
-                    </div>
-
-                    <div className="space-y-2">
-                        <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] block">Notification Title</label>
-                        <input 
-                            type="text" 
-                            className="w-full bg-surface border-2 border-border/60 rounded-2xl px-5 py-4 text-sm font-black uppercase tracking-tight focus:outline-none focus:border-primary transition-all"
-                            placeholder="e.g. Special Offer Just for You! 🎉"
-                            value={form.title}
-                            onChange={(e) => setForm({...form, title: e.target.value})}
-                        />
-                    </div>
-
-                    <div className="space-y-2">
-                        <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] block">Message</label>
-                        <textarea 
-                            rows={3}
-                            className="w-full bg-surface border-2 border-border/60 rounded-2xl px-5 py-4 text-sm font-medium focus:outline-none focus:border-primary resize-none transition-all"
-                            placeholder="Type your push message here..."
-                            value={form.message}
-                            onChange={(e) => setForm({...form, message: e.target.value})}
-                        />
-                    </div>
-
-                    <div className="space-y-2">
-                        <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] block">Image URL (Optional)</label>
-                        <div className="flex gap-3">
-                            <input 
-                                type="text" 
-                                className="flex-1 bg-surface border-2 border-border/60 rounded-2xl px-5 py-4 text-sm font-black uppercase tracking-tight focus:outline-none focus:border-primary transition-all"
-                                placeholder="https://example.com/banner.jpg"
-                                value={form.image}
-                                onChange={(e) => setForm({...form, image: e.target.value})}
-                            />
-                            <button
-                                type="button"
-                                onClick={() => document.getElementById('notif-image-upload').click()}
-                                className="px-6 bg-white border-2 border-border/60 rounded-2xl hover:border-primary/40 hover:text-primary transition-all flex items-center justify-center gap-2 text-[10px] font-black uppercase tracking-widest shadow-sm"
-                            >
-                                <Download className="w-4 h-4" /> Upload
-                            </button>
-                            <input 
-                                id="notif-image-upload"
-                                type="file" 
-                                className="hidden" 
-                                accept="image/*"
-                                onChange={async (e) => {
-                                    const file = e.target.files[0];
-                                    if (!file) return;
-                                    
-                                    const formData = new FormData();
-                                    formData.append('image', file);
-                                    
-                                    try {
-                                        setLoading(true);
-                                        const res = await api.post('/uploads', formData, {
-                                            headers: { 'Content-Type': 'multipart/form-data' }
-                                        });
-                                        if (res.data?.url) {
-                                            setForm(prev => ({ ...prev, image: res.data.url }));
-                                        }
-                                    } catch (err) {
-                                        console.error('Upload failed', err);
-                                        alert('Image upload failed. Please try again.');
-                                    } finally {
-                                        setLoading(false);
-                                    }
-                                }}
-                            />
-                        </div>
-                    </div>
-
-                    <div className="flex gap-3">
-                        <button 
-                            onClick={handleSend}
-                            disabled={loading || !form.title || !form.message}
-                            className="flex-1 py-4 bg-primary text-white text-xs font-black uppercase tracking-[0.2em] rounded-xl hover:brightness-110 shadow-lg shadow-primary/20 disabled:opacity-50 transition-all"
-                        >
-                            {loading ? 'Sending...' : success ? 'Sent Successfully!' : (form.customerId === 'all' ? 'Broadcast Notification' : 'Send Notification')}
-                        </button>
-                    </div>
-
-                    <ContactListModal 
-                        isOpen={isPickerOpen}
-                        onClose={() => setIsPickerOpen(false)}
-                        selectionMode={true}
-                        selectedIds={form.customerId === 'all' || form.customerId === 'self' ? [] : [form.customerId]}
-                        onToggleSelect={(id) => {
-                            setForm({...form, customerId: id});
-                            setIsPickerOpen(false);
-                        }}
-                    />
-                </div>
-            </div>
-
-            <div className="bg-slate-900 rounded-[2rem] p-8 flex flex-col items-center justify-center text-center relative overflow-hidden">
-                <div className="absolute top-0 left-0 w-full h-full opacity-10 pointer-events-none">
-                    <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-primary rounded-full blur-[100px]" />
-                    <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-primary rounded-full blur-[100px]" />
-                </div>
-                
-                <div className="w-48 h-80 bg-black rounded-[2.5rem] border-4 border-slate-800 shadow-2xl relative p-4 flex flex-col">
-                    <div className="w-12 h-1 bg-slate-800 rounded-full mx-auto mb-6" />
-                    
-                    <motion.div 
-                        initial={{ y: 20, opacity: 0 }}
-                        animate={{ y: 0, opacity: 1 }}
-                        key={form.title}
-                        className="bg-white/10 backdrop-blur-md rounded-2xl p-3 text-left border border-white/10"
-                    >
-                        <div className="flex items-center gap-2 mb-1">
-                            <div className="w-4 h-4 bg-primary rounded flex items-center justify-center">
-                                <Bell size={8} className="text-white" />
-                            </div>
-                            <span className="text-[6px] font-black text-white uppercase tracking-widest">Salon App</span>
-                        </div>
-                        <h4 className="text-[8px] font-black text-white truncate">{form.title || 'Notification Title'}</h4>
-                        <p className="text-[7px] text-white/60 line-clamp-2 mt-0.5 leading-tight">{form.message || 'The notification message body will appear here on the user\'s lock screen.'}</p>
-                        {form.image && (
-                            <div className="mt-2 rounded-lg overflow-hidden border border-white/5 bg-black/20 aspect-[16/9] flex items-center justify-center">
-                                <img src={form.image} alt="Preview" className="w-full h-full object-cover" />
-                            </div>
-                        )}
-                    </motion.div>
-                </div>
-                
-                <div className="mt-8">
-                    <h3 className="text-white text-lg font-black uppercase tracking-tight">Live Preview</h3>
-                    <p className="text-white/40 text-[10px] font-bold uppercase tracking-widest mt-1">This is how it looks on mobile</p>
-                </div>
-            </div>
-        </div>
-    );
-}
-
-

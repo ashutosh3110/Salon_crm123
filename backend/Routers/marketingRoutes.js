@@ -8,6 +8,8 @@ const {
     getSegmentCustomers,
     getCampaigns,
     createCampaign,
+    deleteCampaign,
+    bulkDeleteCampaigns,
     getAutomations
 } = require('../Controllers/marketingController');
 const { protect, authorize } = require('../Middleware/auth');
@@ -23,6 +25,8 @@ router.delete('/segments/:id', deleteSegment);
 router.get('/segments/:id/customers', getSegmentCustomers);
 router.get('/campaigns', getCampaigns);
 router.post('/campaigns', createCampaign);
+router.delete('/campaigns/bulk', bulkDeleteCampaigns);
+router.delete('/campaigns/:id', deleteCampaign);
 router.get('/automations', getAutomations);
 
 module.exports = router;

@@ -200,7 +200,7 @@ exports.createCampaign = async (req, res) => {
             targetCount = recipients.length;
         }
 
-        console.log(`Starting WhatsApp campaign "${name}" for ${recipients.length} recipients...`);
+        console.log(`Starting ${channel || 'whatsapp'} campaign "${name}" for ${recipients.length} recipients...`);
 
         const campaign = await Campaign.create({
             salonId,
@@ -214,37 +214,57 @@ exports.createCampaign = async (req, res) => {
             status: 'sending'
         });
 
-        // Use the centralized utilities
-        const { sendWhatsAppMessage, sendWhatsAppTemplate } = require('../Utils/whatsapp');
-        
         let successfulSends = 0;
-        
-        // Sending messages
-        const sendPromises = recipients.map(async (rcpt) => {
-            if (!rcpt.phone) return;
+
+        if (channel === 'notification') {
+            const { broadcastNotification, sendNotification } = require('../Utils/notification');
             
-            try {
-                // Use approved 'new_campaign' template: {{1}}=Name, {{2}}=Subject, {{3}}=Message
-                const result = await sendWhatsAppTemplate(rcpt.phone, 'new_campaign', [
-                    rcpt.name || 'Customer', 
-                    name, 
-                    message
-                ]);
-
-                if (result.success) {
-                    successfulSends++;
-                } else {
-                    // Fallback to plain text if template fails
-                    const personalizedMessage = message.replace(/{{name}}/g, rcpt.name || 'Customer');
-                    await sendWhatsAppMessage(rcpt.phone, personalizedMessage);
-                    successfulSends++;
+            const sendPromises = recipients.map(async (rcpt) => {
+                try {
+                    const res = await sendNotification({
+                        customerId: rcpt._id,
+                        salonId,
+                        title: name,
+                        message: message.replace(/{{name}}/g, rcpt.name || 'Customer'),
+                        type: 'marketing'
+                    });
+                    if (res.success) successfulSends++;
+                } catch (err) {
+                    console.error(`Error sending notification to ${rcpt._id}:`, err.message);
                 }
-            } catch (err) {
-                console.error(`Error sending to ${rcpt.phone}:`, err.message);
-            }
-        });
+            });
+            await Promise.allSettled(sendPromises);
+        } else {
+            // Use the centralized utilities
+            const { sendWhatsAppMessage, sendWhatsAppTemplate } = require('../Utils/whatsapp');
+            
+            // Sending messages
+            const sendPromises = recipients.map(async (rcpt) => {
+                if (!rcpt.phone) return;
+                
+                try {
+                    // Use approved 'new_campaign' template: {{1}}=Name, {{2}}=Subject, {{3}}=Message
+                    const result = await sendWhatsAppTemplate(rcpt.phone, 'new_campaign', [
+                        rcpt.name || 'Customer', 
+                        name, 
+                        message
+                    ]);
 
-        await Promise.all(sendPromises);
+                    if (result.success) {
+                        successfulSends++;
+                    } else {
+                        // Fallback to plain text if template fails
+                        const personalizedMessage = message.replace(/{{name}}/g, rcpt.name || 'Customer');
+                        await sendWhatsAppMessage(rcpt.phone, personalizedMessage);
+                        successfulSends++;
+                    }
+                } catch (err) {
+                    console.error(`Error sending to ${rcpt.phone}:`, err.message);
+                }
+            });
+
+            await Promise.all(sendPromises);
+        }
 
         campaign.sentCount = successfulSends;
         campaign.status = 'completed';
@@ -256,6 +276,37 @@ exports.createCampaign = async (req, res) => {
             data: campaign,
             message: `Campaign "${name}" sent to ${successfulSends} customers.`
         });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+};
+
+// @desc    Delete a campaign
+// @route   DELETE /marketing/campaigns/:id
+// @access  Private
+exports.deleteCampaign = async (req, res) => {
+    try {
+        const campaign = await Campaign.findOneAndDelete({ _id: req.params.id, salonId: req.user.salonId });
+        if (!campaign) {
+            return res.status(404).json({ success: false, message: 'Campaign not found' });
+        }
+        res.status(200).json({ success: true, message: 'Campaign deleted' });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+};
+
+// @desc    Bulk delete campaigns
+// @route   DELETE /marketing/campaigns/bulk
+// @access  Private
+exports.bulkDeleteCampaigns = async (req, res) => {
+    try {
+        const { ids } = req.body;
+        if (!ids || !Array.isArray(ids)) {
+            return res.status(400).json({ success: false, message: 'Invalid IDs' });
+        }
+        await Campaign.deleteMany({ _id: { $in: ids }, salonId: req.user.salonId });
+        res.status(200).json({ success: true, message: 'Campaigns deleted' });
     } catch (err) {
         res.status(500).json({ success: false, message: err.message });
     }
