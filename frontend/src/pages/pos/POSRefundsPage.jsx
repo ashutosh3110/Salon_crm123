@@ -33,6 +33,20 @@ export default function POSRefundsPage() {
         loadRefunds();
     }, []);
 
+    useEffect(() => {
+        if (selectedRefund) {
+            document.body.style.overflow = 'hidden';
+            document.documentElement.style.overflow = 'hidden';
+        } else {
+            document.body.style.overflow = '';
+            document.documentElement.style.overflow = '';
+        }
+        return () => {
+            document.body.style.overflow = '';
+            document.documentElement.style.overflow = '';
+        };
+    }, [selectedRefund]);
+
     const mapRefund = (invoice) => {
         const status = String(invoice?.refund?.status || 'pending').toLowerCase();
         return {

@@ -193,13 +193,23 @@ export const InventoryProvider = ({ children }) => {
         }
     };
 
+    const lastFetchedRef = useRef({ salonId: null, timestamp: 0 });
+
     useEffect(() => {
         const isCustomerPath = window.location.pathname.startsWith('/app');
-        const canFetchPublic = isCustomerPath && (salon?._id || activeSalonId || localStorage.getItem('active_salon_id'));
-        const canFetchPrivate = (dashboardUser && isPlanActive);
-
-        // Optimization: In customer app, data is handled by BusinessContext's initial fetch
         if (isCustomerPath) return;
+
+        const canFetchPrivate = (dashboardUser && isPlanActive);
+        const canFetchPublic = (salon?._id || activeSalonId || localStorage.getItem('active_salon_id'));
+        const currentSalonId = dashboardUser?.salonId || salon?._id || activeSalonId || localStorage.getItem('active_salon_id');
+
+        if (!currentSalonId) return;
+
+        // Prevent redundant fetches within a short timeframe (2 seconds)
+        const now = Date.now();
+        if (lastFetchedRef.current.salonId === currentSalonId && (now - lastFetchedRef.current.timestamp < 2000)) {
+            return;
+        }
 
         if (canFetchPrivate || canFetchPublic || isCustomerAuthenticated) {
             fetchProducts();
@@ -210,8 +220,9 @@ export const InventoryProvider = ({ children }) => {
                 fetchStockHistory();
                 fetchInventorySummary();
             }
+            lastFetchedRef.current = { salonId: currentSalonId, timestamp: now };
         }
-    }, [dashboardUser, isPlanActive, isCustomerAuthenticated, salon, activeSalonId, fetchProducts, fetchShopCategories, fetchProductCategories, fetchStockHistory, fetchInventorySummary]);
+    }, [dashboardUser, isPlanActive, isCustomerAuthenticated, salon?._id, activeSalonId, fetchProducts, fetchShopCategories, fetchProductCategories, fetchStockHistory, fetchInventorySummary]);
 
     const toggleProductLike = async (productId) => {
         if (!isCustomerAuthenticated) return;

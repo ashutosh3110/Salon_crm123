@@ -135,7 +135,7 @@ exports.requestOtp = async (req, res) => {
         );
 
         // Send SMS via SMS India Hub
-        const brand = "VAHANCAB";
+        const brand = process.env.SMS_INDIA_HUB_BRAND_NAME || "Wapixo";
         const message = `Welcome to the ${brand} powered by SMSINDIAHUB. Your OTP for registration is ${otp}`;
 
         try {

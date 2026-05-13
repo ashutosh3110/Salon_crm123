@@ -222,7 +222,7 @@ export default function ServiceList({ services = [], onDelete, onToggleStatus, o
                                 <th className="px-6 py-4 text-[10px] font-bold text-text-muted uppercase tracking-widest">Category</th>
                                 <th className="px-6 py-4 text-[10px] font-bold text-text-muted uppercase tracking-widest text-center">Duration</th>
                                 <th className="px-6 py-4 text-[10px] font-bold text-text-muted uppercase tracking-widest text-center">Price</th>
-                                <th className="px-6 py-4 text-[10px] font-bold text-text-muted uppercase tracking-widest text-center text-rose-400">GST %</th>
+                                <th className="px-6 py-4 text-[10px] font-bold text-text-muted uppercase tracking-widest text-center">GST %</th>
                                 <th className="px-6 py-4 text-[10px] font-bold text-text-muted uppercase tracking-widest text-center">Outlets</th>
                                 <th className="px-6 py-4 text-[10px] font-bold text-text-muted uppercase tracking-widest text-center">Status</th>
                                 <th className="px-6 py-4 text-[10px] font-bold text-text-muted uppercase tracking-widest text-right">Actions</th>
@@ -314,7 +314,7 @@ export default function ServiceList({ services = [], onDelete, onToggleStatus, o
                                         <td className="px-6 py-4 text-center">
                                             <span className="text-sm font-bold text-text">₹{service.price}</span>
                                         </td>
-                                        <td className="px-6 py-4 text-center text-xs font-bold text-rose-500/60">
+                                        <td className="px-6 py-4 text-center text-xs font-bold text-text">
                                             {service.gst}%
                                         </td>
                                         <td className="px-6 py-4 text-center">
@@ -458,7 +458,7 @@ export default function ServiceList({ services = [], onDelete, onToggleStatus, o
                                         <div className="flex items-center gap-1 text-sm font-bold text-text">
                                             <IndianRupee className="w-3 h-3 text-text-muted" />
                                             {service.price}
-                                            <span className="text-[9px] text-rose-400">({service.gst}%)</span>
+                                            <span className="text-[9px] text-text-muted">({service.gst}%)</span>
                                         </div>
                                     </div>
                                     <div className="space-y-1">

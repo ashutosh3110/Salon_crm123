@@ -34,6 +34,16 @@ export default function POSInvoicesPage() {
     };
 
     useEffect(() => { fetchInvoices(); }, [page, dateFilter]);
+    
+    // Prevent background scroll when invoice details are open
+    useEffect(() => {
+        if (selectedInvoice) {
+            document.body.style.overflow = 'hidden';
+        } else {
+            document.body.style.overflow = 'unset';
+        }
+        return () => { document.body.style.overflow = 'unset'; };
+    }, [selectedInvoice]);
 
     const filteredInvoices = invoices.filter(inv => {
         if (!searchTerm) return true;

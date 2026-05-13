@@ -21,44 +21,44 @@ import {
     Star,
     Layout
 } from 'lucide-react';
-import { useBusiness } from '../../contexts/BusinessContext';
-import { useInventory } from '../../contexts/InventoryContext';
 import { Scissors, Tag, IndianRupee, Package } from 'lucide-react';
 import { getImageUrl } from '../../utils/imageUtils';
+import api from '../../services/api';
 
 export default function OutletDetailPage() {
     const navigate = useNavigate();
     const { id } = useParams();
-    const { outlets, services, staff, bookings } = useBusiness();
-    const { products } = useInventory();
     const [outlet, setOutlet] = useState(null);
     const [loading, setLoading] = useState(true);
     const [activeTab, setActiveTab] = useState('overview');
 
     useEffect(() => {
-        if (!outlets || outlets.length === 0) return;
-        const found = outlets.find(o => o._id === id);
-        if (found) {
-            setOutlet(found);
-            setLoading(false);
-        } else {
-            console.error('Failed to find outlet with ID:', id);
-            setLoading(false);
-        }
-    }, [id, outlets]);
+        const fetchOutletData = async () => {
+            try {
+                setLoading(true);
+                const response = await api.get(`/outlets/${id}`);
+                if (response.data?.success) {
+                    setOutlet(response.data.data);
+                }
+            } catch (err) {
+                console.error('Failed to load outlet details:', err);
+            } finally {
+                setLoading(false);
+            }
+        };
 
-    if (loading || (outlets.length === 0 && !outlet)) return <div className="flex justify-center py-20"><div className="w-10 h-10 border-2 border-primary/20 border-t-primary rounded-none animate-spin" /></div>;
+        if (id) {
+            fetchOutletData();
+        }
+    }, [id]);
+
+    if (loading) return <div className="flex justify-center py-20"><div className="w-10 h-10 border-2 border-primary/20 border-t-primary rounded-none animate-spin" /></div>;
     if (!outlet) return <div className="text-center py-20 text-text-muted font-black uppercase tracking-widest text-[10px]">Salon details not found</div>;
 
-    const outletStaff = staff.filter(s => s.outletId === outlet._id || (s.assignedSalon === outlet.name));
-    const outletBookings = bookings.filter(b => b.outletId === outlet._id);
-    const todayStr = new Date().toISOString().split('T')[0];
-    const todaysBookings = outletBookings.filter(b => b.date === todayStr);
-
     const stats = [
-        { label: 'Total Staff', value: outletStaff.length.toString(), icon: Users, color: 'text-blue-600 bg-blue-50' },
-        { label: "Today's Bookings", value: todaysBookings.length.toString(), icon: CalendarCheck, color: 'text-purple-600 bg-purple-50' },
-        { label: "Today's Sales", value: '₹0', icon: CreditCard, color: 'text-green-600 bg-green-50' },
+        { label: 'Total Staff', value: (outlet.stats?.totalStaff || 0).toString(), icon: Users, color: 'text-blue-600 bg-blue-50' },
+        { label: "Today's Bookings", value: (outlet.stats?.todaysBookings || 0).toString(), icon: CalendarCheck, color: 'text-purple-600 bg-purple-50' },
+        { label: "Today's Sales", value: `₹${(outlet.stats?.todaysSales || 0).toLocaleString()}`, icon: CreditCard, color: 'text-green-600 bg-green-50' },
     ];
 
     const handleViewOnMap = () => {
@@ -192,10 +192,10 @@ export default function OutletDetailPage() {
                         <div className="bg-surface rounded-none border border-border shadow-sm">
                             <div className="px-8 py-5 border-b border-border flex items-center justify-between bg-surface-alt/50">
                                 <h3 className="text-sm font-black text-text uppercase tracking-widest">Salon Staff</h3>
-                                <span className="text-[10px] font-black text-primary px-3 py-1 bg-primary/10 border border-primary/20">{outletStaff.length} STAFF MEMBERS</span>
+                                <span className="text-[10px] font-black text-primary px-3 py-1 bg-primary/10 border border-primary/20">{(outlet.staff || []).length} STAFF MEMBERS</span>
                             </div>
                             <div className="divide-y divide-border">
-                                {outletStaff.map((member, i) => (
+                                {(outlet.staff || []).map((member, i) => (
                                     <div key={member._id || member.id} className="px-8 py-5 flex items-center justify-between hover:bg-surface-alt transition-all cursor-pointer group">
                                         <div className="flex items-center gap-5">
                                             <div className="w-11 h-11 overflow-hidden border border-border flex items-center justify-center group-hover:scale-105 transition-transform bg-surface-alt">
@@ -220,7 +220,7 @@ export default function OutletDetailPage() {
                                         <ChevronRight className="w-4 h-4 text-text-muted group-hover:text-primary transition-all group-hover:translate-x-1" />
                                     </div>
                                 ))}
-                                {outletStaff.length === 0 && (
+                                {(outlet.staff || []).length === 0 && (
                                     <div className="px-8 py-20 text-center opacity-40">
                                         <Users className="w-8 h-8 mx-auto mb-3" />
                                         <p className="text-[10px] font-black uppercase tracking-widest">No expert personnel assigned to this unit</p>
@@ -292,17 +292,11 @@ export default function OutletDetailPage() {
                             <div className="px-8 py-5 border-b border-border flex items-center justify-between bg-surface-alt/50">
                                 <h3 className="text-sm font-black text-text uppercase tracking-widest">Available Services</h3>
                                 <span className="text-[10px] font-black text-primary px-3 py-1 bg-primary/10 border border-primary/20">
-                                    {services.filter(s => (!s.outletIds || s.outletIds.length === 0) ? (s.outlet === 'All Outlets' || !s.outletId) : s.outletIds.includes(outlet._id)).length} SERVICES
+                                    {(outlet.services || []).length} SERVICES
                                 </span>
                             </div>
                             <div className="divide-y divide-border">
-                                {services.filter(s => {
-                                    // Match if outletIds contains this ID, or if it's a legacy "All Outlets" service
-                                    if (s.outletIds && s.outletIds.length > 0) {
-                                        return s.outletIds.includes(outlet._id);
-                                    }
-                                    return !s.outletId || s.outlet === 'All Outlets';
-                                }).map(service => (
+                                {(outlet.services || []).map(service => (
                                     <div key={service.id} className="px-8 py-5 flex items-center justify-between hover:bg-surface-alt transition-all cursor-pointer group">
                                         <div className="flex items-center gap-5">
                                             <div className="w-11 h-11 rounded-none bg-primary/5 border border-primary/20 flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
@@ -331,10 +325,7 @@ export default function OutletDetailPage() {
                                         </button>
                                     </div>
                                 ))}
-                                {services.filter(s => {
-                                    if (s.outletIds && s.outletIds.length > 0) return s.outletIds.includes(outlet._id);
-                                    return !s.outletId || s.outlet === 'All Outlets';
-                                }).length === 0 && (
+                                {(outlet.services || []).length === 0 && (
                                     <div className="px-8 py-20 text-center opacity-40">
                                         <Scissors className="w-8 h-8 mx-auto mb-3" />
                                         <p className="text-[10px] font-black uppercase tracking-widest">No services mapped to this unit</p>
@@ -349,14 +340,11 @@ export default function OutletDetailPage() {
                             <div className="px-8 py-5 border-b border-border flex items-center justify-between bg-surface-alt/50">
                                 <h3 className="text-sm font-black text-text uppercase tracking-widest">Inventory / Products</h3>
                                 <span className="text-[10px] font-black text-primary px-3 py-1 bg-primary/10 border border-primary/20">
-                                    {products.filter(p => !p.outletIds || p.outletIds.length === 0 || p.outletIds.includes(outlet._id)).length} PRODUCTS
+                                    {(outlet.products || []).length} PRODUCTS
                                 </span>
                             </div>
                             <div className="divide-y divide-border">
-                                {products.filter(p => {
-                                    if (!p.outletIds || p.outletIds.length === 0) return true;
-                                    return p.outletIds.includes(outlet._id);
-                                }).map(product => (
+                                {(outlet.products || []).map(product => (
                                     <div key={product.id} className="px-8 py-5 flex items-center justify-between hover:bg-surface-alt transition-all cursor-pointer group">
                                         <div className="flex items-center gap-5">
                                             <div className="w-11 h-11 rounded-none bg-primary/5 border border-primary/20 flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
@@ -385,10 +373,7 @@ export default function OutletDetailPage() {
                                         </button>
                                     </div>
                                 ))}
-                                {products.filter(p => {
-                                    if (!p.outletIds || p.outletIds.length === 0) return true;
-                                    return p.outletIds.includes(outlet._id);
-                                }).length === 0 && (
+                                {(outlet.products || []).length === 0 && (
                                     <div className="px-8 py-20 text-center opacity-40">
                                         <Package className="w-8 h-8 mx-auto mb-3" />
                                         <p className="text-[10px] font-black uppercase tracking-widest">No products mapped to this unit</p>

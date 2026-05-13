@@ -172,7 +172,12 @@ exports.checkout = async (req, res) => {
 exports.getInvoices = async (req, res) => {
     try {
         const salonId = req.user.salonId;
-        const invoices = await Invoice.find({ salonId })
+        const { outletId } = req.query;
+        
+        const query = { salonId };
+        if (outletId) query.outletId = outletId;
+
+        const invoices = await Invoice.find(query)
             .populate('customerId', 'name phone email')
             .populate('outletId', 'name')
             .sort({ createdAt: -1 });
@@ -183,6 +188,94 @@ exports.getInvoices = async (req, res) => {
             data: invoices
         });
     } catch (err) {
+        res.status(500).json({ success: false, message: 'Server Error' });
+    }
+};
+
+// @desc    Get dashboard stats for POS
+// @route   GET /api/pos/dashboard
+// @access  Private
+exports.getDashboard = async (req, res) => {
+    try {
+        const salonId = req.user.salonId;
+        const { outletId } = req.query;
+        
+        // Define Today's range in IST (+5:30)
+        const now = new Date();
+        const istOffset = 5.5 * 60 * 60 * 1000;
+        const todayStart = new Date(now.getTime() + istOffset);
+        todayStart.setUTCHours(0, 0, 0, 0);
+        const startOfDay = new Date(todayStart.getTime() - istOffset);
+        
+        const todayEnd = new Date(now.getTime() + istOffset);
+        todayEnd.setUTCHours(23, 59, 59, 999);
+        const endOfDay = new Date(todayEnd.getTime() - istOffset);
+
+        const statsQuery = { 
+            salonId, 
+            createdAt: { $gte: startOfDay, $lte: endOfDay } 
+        };
+        if (outletId) statsQuery.outletId = outletId;
+
+        const recentQuery = { salonId };
+        if (outletId) recentQuery.outletId = outletId;
+
+        const [todayInvoices, allRecentInvoices] = await Promise.all([
+            Invoice.find(statsQuery),
+            Invoice.find(recentQuery)
+                .populate('customerId', 'name phone')
+                .populate('outletId', 'name')
+                .sort({ createdAt: -1 })
+                .limit(10)
+        ]);
+
+        const revenue = todayInvoices.reduce((sum, inv) => sum + (inv.total || 0), 0);
+        const count = todayInvoices.length;
+        const avgBill = count > 0 ? Math.round(revenue / count) : 0;
+        const unpaidCount = todayInvoices.filter(i => (i.paymentStatus || '').toLowerCase() !== 'paid').length;
+
+        const breakdown = { cash: 0, card: 0, upi: 0, unpaid: 0 };
+        todayInvoices.forEach(inv => {
+            const amount = inv.total || 0;
+            if ((inv.paymentStatus || '').toLowerCase() !== 'paid') {
+                breakdown.unpaid += amount;
+                return;
+            }
+            
+            const method = (inv.paymentMethod || inv.payments?.[0]?.method || 'cash').toLowerCase();
+            if (method === 'cash') breakdown.cash += amount;
+            else if (method === 'card') breakdown.card += amount;
+            else if (method === 'upi' || method === 'online') breakdown.upi += amount;
+            else breakdown.cash += amount;
+        });
+
+        const recentInvoices = allRecentInvoices.map(inv => ({
+            ...inv.toObject(),
+            clientId: inv.customerId, // Map for frontend compatibility
+            clientName: inv.customerId?.name || 'Guest'
+        }));
+
+        res.json({
+            success: true,
+            data: {
+                stats: {
+                    revenue,
+                    count,
+                    avgBill,
+                    unpaidCount
+                },
+                breakdown: [
+                    { name: 'Cash', value: breakdown.cash, color: '#10b981' },
+                    { name: 'Card', value: breakdown.card, color: '#3b82f6' },
+                    { name: 'UPI', value: breakdown.upi, color: '#8b5cf6' },
+                    { name: 'Unpaid', value: breakdown.unpaid, color: '#f59e0b' },
+                ],
+                recentInvoices
+            }
+        });
+
+    } catch (err) {
+        console.error('POS Dashboard Error:', err);
         res.status(500).json({ success: false, message: 'Server Error' });
     }
 };

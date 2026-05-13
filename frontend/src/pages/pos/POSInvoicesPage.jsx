@@ -2,7 +2,7 @@ import { useState, useMemo, useEffect } from 'react';
 import {
     Search, Calendar, Eye, X, Download,
     Clock, CreditCard, Banknote, Smartphone, Ban,
-    ChevronLeft, ChevronRight, FileText, Loader2
+    ChevronLeft, ChevronRight, FileText, Loader2, Store, ChevronDown
 } from 'lucide-react';
 import api from '../../services/api';
 import { useBusiness } from '../../contexts/BusinessContext';
@@ -205,7 +205,7 @@ const InvoicePDF = ({ invoice, salon }) => (
 );
 
 export default function POSInvoicesPage() {
-    const { salon } = useBusiness();
+    const { salon, outlets, activeOutletId, setActiveOutletId } = useBusiness();
     const [invoices, setInvoices] = useState([]);
     const [loading, setLoading] = useState(true);
 
@@ -217,10 +217,25 @@ export default function POSInvoicesPage() {
     const perPage = 5;
 
     useEffect(() => {
+        if (selectedInvoice) {
+            document.body.style.overflow = 'hidden';
+            document.documentElement.style.overflow = 'hidden';
+        } else {
+            document.body.style.overflow = '';
+            document.documentElement.style.overflow = '';
+        }
+        return () => {
+            document.body.style.overflow = '';
+            document.documentElement.style.overflow = '';
+        };
+    }, [selectedInvoice]);
+
+
+    useEffect(() => {
         const loadInvoices = async () => {
             try {
                 setLoading(true);
-                const response = await api.get('/pos/invoices');
+                const response = await api.get(`/pos/invoices?outletId=${activeOutletId || ''}`);
                 const rows = response?.data?.data || response?.data?.results || response?.data || [];
                 setInvoices(Array.isArray(rows) ? rows : []);
             } catch (error) {
@@ -231,7 +246,7 @@ export default function POSInvoicesPage() {
             }
         };
         loadInvoices();
-    }, []);
+    }, [activeOutletId]);
 
     const handleDownloadPDF = async () => {
         if (!selectedInvoice) return;
@@ -317,19 +332,40 @@ export default function POSInvoicesPage() {
                         View and manage invoice history
                     </p>
                 </div>
-                <div className="flex bg-surface p-1 border border-border shadow-sm">
-                    <button
-                        onClick={() => { setDateFilter('today'); setPage(1); }}
-                        className={`inline-flex items-center gap-3 px-6 py-2 rounded-none text-[10px] font-black uppercase tracking-[0.2em] transition-all ${dateFilter === 'today' ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'text-text-secondary hover:text-text hover:bg-surface-alt'}`}
-                    >
-                        <Calendar className="w-4 h-4" /> Today
-                    </button>
-                    <button
-                        onClick={() => { setDateFilter('all'); setPage(1); }}
-                        className={`inline-flex items-center gap-3 px-6 py-2 rounded-none text-[10px] font-black uppercase tracking-[0.2em] transition-all ${dateFilter === 'all' ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'text-text-secondary hover:text-text hover:bg-surface-alt'}`}
-                    >
-                        <FileText className="w-4 h-4" /> All
-                    </button>
+                <div className="flex flex-wrap items-center gap-3">
+                    <div className="relative group">
+                        <div className="absolute left-3 top-1/2 -translate-y-1/2">
+                            <Store className="w-3.5 h-3.5 text-primary" />
+                        </div>
+                        <select
+                            value={activeOutletId || ''}
+                            onChange={(e) => setActiveOutletId(e.target.value)}
+                            className="pl-9 pr-8 py-3 bg-surface border border-border text-[10px] font-black uppercase tracking-widest outline-none focus:border-primary transition-all cursor-pointer appearance-none min-w-[180px]"
+                        >
+                            <option value="">All Outlets</option>
+                            {(outlets || []).map(o => (
+                                <option key={o._id} value={o._id}>{o.name.toUpperCase()}</option>
+                            ))}
+                        </select>
+                        <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
+                            <ChevronDown className="w-3.5 h-3.5 text-text-muted group-hover:text-primary transition-colors" />
+                        </div>
+                    </div>
+
+                    <div className="flex bg-surface p-1 border border-border shadow-sm">
+                        <button
+                            onClick={() => { setDateFilter('today'); setPage(1); }}
+                            className={`inline-flex items-center gap-3 px-6 py-2 rounded-none text-[10px] font-black uppercase tracking-[0.2em] transition-all ${dateFilter === 'today' ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'text-text-secondary hover:text-text hover:bg-surface-alt'}`}
+                        >
+                            <Calendar className="w-4 h-4" /> Today
+                        </button>
+                        <button
+                            onClick={() => { setDateFilter('all'); setPage(1); }}
+                            className={`inline-flex items-center gap-3 px-6 py-2 rounded-none text-[10px] font-black uppercase tracking-[0.2em] transition-all ${dateFilter === 'all' ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'text-text-secondary hover:text-text hover:bg-surface-alt'}`}
+                        >
+                            <FileText className="w-4 h-4" /> All
+                        </button>
+                    </div>
                 </div>
             </div>
 
@@ -553,7 +589,7 @@ export default function POSInvoicesPage() {
                                     <span>Subtotal</span>
                                     <span>Rs.{(selectedInvoice.subtotal || 0).toLocaleString()}</span>
                                 </div>
-                                <div className="flex justify-between text-[10px] font-black text-text-muted uppercase tracking-widest">
+                                <div className="flex justify-between text-[10px] font-black text-text uppercase tracking-widest">
                                     <span>Tax (GST)</span>
                                     <span>+Rs.{selectedInvoice.tax?.toLocaleString()}</span>
                                 </div>

@@ -99,7 +99,7 @@ exports.createOrder = async (req, res) => {
                             customerId,
                             salonId,
                             amount: points,
-                            type: 'EARNED',
+                            type: 'EARN',
                             description: `Points earned on Order #${order._id.toString().slice(-6)}`
                         });
                     }
@@ -167,13 +167,15 @@ exports.createOrder = async (req, res) => {
                 actionUrl: `/admin/shop-orders` // or specific order link if available
             });
 
-            // WhatsApp to Admins
+            /* 
+            // Removed WhatsApp to Admins as per request (Firebase Only)
             const admins = await User.find({ salonId, role: 'admin', status: 'active' });
             for (const ad of admins) {
                 if (ad.phone) {
                     await sendWhatsAppMessage(ad.phone, adminMsg);
                 }
             }
+            */
         } catch (pushErr) {
             console.error('Order Notification failed:', pushErr.message);
         }
@@ -404,13 +406,15 @@ exports.updateOrderStatus = async (req, res) => {
                     }
                 }
 
-                // WhatsApp to Admins
+                /* 
+                // Removed WhatsApp to Admins as per request (Firebase Only)
                 const admins = await User.find({ salonId: order.salonId, role: 'admin', status: 'active' });
                 for (const ad of admins) {
                     if (ad.phone) {
                         await sendWhatsAppMessage(ad.phone, `Admin Alert: ${adminMsg}`);
                     }
                 }
+                */
             }
         } catch (notifErr) {
             console.error('Unified Order Notification failed:', notifErr.message);

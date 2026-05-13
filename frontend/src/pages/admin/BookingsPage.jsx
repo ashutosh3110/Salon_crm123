@@ -120,10 +120,15 @@ export default function BookingsPage() {
         let result = bookings.filter(b => {
             const clientName = b.client?.name || '';
             const clientPhone = b.client?.phone || '';
-            const st = searchTerm.toLowerCase().replace(/\s+/g, '');
+            const st = searchTerm.trim().toLowerCase().replace(/\s+/g, '');
             const matchesSearch = !st || 
+                (b._id || '').toLowerCase().includes(st) ||
                 (b.client?.name || '').toLowerCase().replace(/\s+/g, '').includes(st) ||
-                (b.client?.phone || '').replace(/\D/g, '').includes(st.replace(/\D/g, ''));
+                (b.client?.phone || '').replace(/\D/g, '').includes(st.replace(/\D/g, '')) ||
+                (b.service?.name || '').toLowerCase().replace(/\s+/g, '').includes(st) ||
+                (b.staff?.name || '').toLowerCase().replace(/\s+/g, '').includes(st) ||
+                (b.outlet?.name || '').toLowerCase().replace(/\s+/g, '').includes(st);
+
             const matchesStatus = statusFilter === 'all' || b.status === statusFilter;
             const matchesStaff = staffFilter === 'all' || b.staff?._id === staffFilter;
             const matchesOutlet = outletFilter === 'all' ||
@@ -325,7 +330,7 @@ export default function BookingsPage() {
                     <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted transition-colors" />
                     <input
                         type="text"
-                        placeholder="Search by name or phone..."
+                        placeholder="Search by ID, Customer, Service, or Staff..."
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                         className="w-full pl-12 pr-4 py-3.5 rounded-none border border-border bg-surface text-[11px] font-black uppercase tracking-widest focus:outline-none focus:border-primary transition-all"

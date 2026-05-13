@@ -1,10 +1,11 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
     DollarSign, Receipt, TrendingUp, Wallet,
     Banknote, CreditCard, Smartphone, Ban,
     Clock, ArrowRight, Zap, ShoppingCart, Users,
-    AlertTriangle, Calendar, Printer, Package, RefreshCcw, X
+    AlertTriangle, Calendar, Printer, Package, RefreshCcw, X,
+    Store, ChevronDown
 } from 'lucide-react';
 import {
     BarChart,
@@ -19,27 +20,49 @@ import {
     Cell
 } from 'recharts';
 import { useBusiness } from '../../contexts/BusinessContext';
-import api from '../../services/mock/mockApi';
+import api from '../../services/api';
 
 export default function POSDashboardPage() {
     const navigate = useNavigate();
     const [showAppointments, setShowAppointments] = useState(false);
     const [invoices, setInvoices] = useState([]);
-    const { products, bookings } = useBusiness();
+    const [dashboardData, setDashboardData] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const { products, bookings, activeOutletId, setActiveOutletId, outlets, fetchProducts, fetchBookings, salon } = useBusiness();
+    const [refreshing, setRefreshing] = useState(false);
+    const lastLoadedRef = useRef({ outletId: null, salonId: null });
+    const loadDashboard = async () => {
+        try {
+            setLoading(true);
+            const response = await api.get('/pos/dashboard', {
+                params: { outletId: activeOutletId }
+            });
+            if (response.data?.success) {
+                setDashboardData(response.data.data);
+                setInvoices(response.data.data.recentInvoices || []);
+            }
+        } catch (error) {
+            console.error('[POSDashboard] Failed to load dashboard:', error);
+        } finally {
+            setLoading(false);
+            setRefreshing(false);
+        }
+    };
 
     useEffect(() => {
-        const loadInvoices = async () => {
-            try {
-                const response = await api.get('/invoices?limit=100');
-                const rows = response?.data?.results || response?.data || [];
-                setInvoices(Array.isArray(rows) ? rows : []);
-            } catch (error) {
-                console.error('[POSDashboard] Failed to load invoices:', error);
-                setInvoices([]);
-            }
-        };
-        loadInvoices();
-    }, []);
+        // Prevent redundant loads if IDs haven't changed
+        if (lastLoadedRef.current.outletId === activeOutletId && lastLoadedRef.current.salonId === salon?._id) {
+            return;
+        }
+
+        loadDashboard();
+        // Also ensure bookings for this outlet are fresh
+        if (salon?._id) {
+            fetchBookings?.();
+        }
+        
+        lastLoadedRef.current = { outletId: activeOutletId, salonId: salon?._id };
+    }, [activeOutletId, salon?._id]);
 
     const lowStockItems = useMemo(() => {
         return (products || []).filter((p) => {
@@ -61,41 +84,20 @@ export default function POSDashboardPage() {
         }));
     }, [bookings]);
 
-    const todayInvoices = useMemo(() => {
-        const now = new Date();
-        return invoices.filter((inv) => {
-            if (!inv?.createdAt) return false;
-            const d = new Date(inv.createdAt);
-            return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth() && d.getDate() === now.getDate();
-        });
-    }, [invoices]);
-
     const stats = useMemo(() => {
-        const revenue = todayInvoices.reduce((sum, inv) => sum + (inv.total || inv.totalAmount || 0), 0);
-        const count = todayInvoices.length;
-        const avgBill = count > 0 ? Math.round(revenue / count) : 0;
-        const unpaidCount = todayInvoices.filter(i => (i.paymentStatus || '').toLowerCase() !== 'paid').length;
-        return { revenue, count, avgBill, unpaidCount };
-    }, [todayInvoices]);
+        if (dashboardData?.stats) return dashboardData.stats;
+        return { revenue: 0, count: 0, avgBill: 0, unpaidCount: 0 };
+    }, [dashboardData]);
 
     const paymentBreakdown = useMemo(() => {
-        const breakdown = { cash: 0, card: 0, online: 0, unpaid: 0 };
-        todayInvoices.forEach(inv => {
-            const m = inv.paymentMethod || 'cash';
-            const amount = inv.total || inv.totalAmount || 0;
-            if ((inv.paymentStatus || '').toLowerCase() !== 'paid') {
-                breakdown.unpaid += amount;
-                return;
-            }
-            if (breakdown[m] !== undefined) breakdown[m] += amount;
-        });
+        if (dashboardData?.breakdown) return dashboardData.breakdown;
         return [
-            { name: 'Cash', value: breakdown.cash, icon: Banknote, color: '#10b981' },
-            { name: 'Card', value: breakdown.card, icon: CreditCard, color: '#3b82f6' },
-            { name: 'UPI', value: breakdown.online, icon: Smartphone, color: '#8b5cf6' },
-            { name: 'Unpaid', value: breakdown.unpaid, icon: Ban, color: '#f59e0b' },
+            { name: 'Cash', value: 0, icon: Banknote, color: '#10b981' },
+            { name: 'Card', value: 0, icon: CreditCard, color: '#3b82f6' },
+            { name: 'UPI', value: 0, icon: Smartphone, color: '#8b5cf6' },
+            { name: 'Unpaid', value: 0, icon: Ban, color: '#f59e0b' },
         ];
-    }, [todayInvoices]);
+    }, [dashboardData]);
 
     const formatTime = (d) => {
         if (!d) return '-';
@@ -103,10 +105,10 @@ export default function POSDashboardPage() {
     };
 
     const statCards = [
-        { label: "TODAY'S REVENUE", value: `₹${stats.revenue.toLocaleString()}`, icon: DollarSign, trend: '↑ 12.5%', positive: true },
-        { label: 'TOTAL INVOICES', value: stats.count, icon: Receipt, trend: '↑ 3.8%', positive: true },
-        { label: 'UNPAID BILLS', value: stats.unpaidCount, icon: Clock, trend: '↓ 5.2%', positive: false },
-        { label: 'AVG. TICKET', value: `₹${stats.avgBill.toLocaleString()}`, icon: TrendingUp, trend: '↑ 5.2%', positive: true },
+        { label: "TODAY'S REVENUE", value: `₹${stats.revenue.toLocaleString()}`, icon: DollarSign, trend: 'LIVE', positive: true },
+        { label: 'TOTAL INVOICES', value: stats.count, icon: Receipt, trend: 'REAL-TIME', positive: true },
+        { label: 'UNPAID BILLS', value: stats.unpaidCount, icon: Clock, trend: 'ACTION REQ', positive: false },
+        { label: 'AVG. TICKET', value: `₹${stats.avgBill.toLocaleString()}`, icon: TrendingUp, trend: 'CALCULATED', positive: true },
     ];
 
     const quickActions = [
@@ -131,7 +133,30 @@ export default function POSDashboardPage() {
                     </p>
                 </div>
                 <div className="flex items-center gap-3">
-                   
+                    <div className="relative group">
+                        <div className="absolute left-3 top-1/2 -translate-y-1/2">
+                            <Store className="w-3.5 h-3.5 text-primary" />
+                        </div>
+                        <select
+                            value={activeOutletId || ''}
+                            onChange={(e) => setActiveOutletId(e.target.value)}
+                            className="pl-9 pr-8 py-3 bg-surface border border-border text-[10px] font-black uppercase tracking-widest outline-none focus:border-primary transition-all cursor-pointer appearance-none min-w-[180px]"
+                        >
+                            <option value="">All Outlets</option>
+                            {(outlets || []).map(o => (
+                                <option key={o._id} value={o._id}>{o.name.toUpperCase()}</option>
+                            ))}
+                        </select>
+                        <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
+                            <ChevronDown className="w-3.5 h-3.5 text-text-muted" />
+                        </div>
+                    </div>
+                    <button 
+                        onClick={() => { setRefreshing(true); loadDashboard(); }} 
+                        className={`p-3 border border-border hover:bg-surface-alt transition-all ${refreshing ? 'animate-spin text-primary' : 'text-text-muted'}`}
+                    >
+                        <RefreshCcw className="w-4 h-4" />
+                    </button>
                     <button onClick={() => navigate('/pos/billing')} className="px-8 py-3 bg-primary text-white font-black text-[10px] uppercase tracking-[0.2em] hover:bg-primary-dark transition-all shadow-xl shadow-primary/20 flex items-center gap-3 active:scale-95">
                         <Zap className="w-4 h-4" /> Create Bill
                     </button>

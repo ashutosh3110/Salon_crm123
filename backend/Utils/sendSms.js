@@ -7,15 +7,15 @@ const axios = require('axios');
  * @param {string} templateId - DLT Template ID
  * @returns {Promise<any>}
  */
-const sendSms = async (phone, message, templateId) => {
+const sendSms = async (phone, message, dltTemplateId) => {
     try {
-        const username = "VAHANCAB";
-        const apiKey = "Vahancab!@#123";
-        const senderId = "SMSHUB";
-        const templateId = "1007801291964877107";
+        const username = (process.env.SMS_INDIA_HUB_USERNAME || '').trim();
+        const apiKey = (process.env.SMS_INDIA_HUB_API_KEY || '').trim();
+        const senderId = (process.env.SMS_INDIA_HUB_SENDER_ID || '').trim();
+        const finalTemplateId = (dltTemplateId || process.env.SMS_INDIA_HUB_DLT_TEMPLATE_ID || '').trim();
         
         // Ensure phone starts with 91 for India if not already present
-        let formattedPhone = phone;
+        let formattedPhone = phone.trim();
         if (formattedPhone.length === 10) {
             formattedPhone = '91' + formattedPhone;
         }
@@ -29,17 +29,13 @@ const sendSms = async (phone, message, templateId) => {
             sid: senderId,
             msg: message,
             fl: 0,
-            gwid: 2, // Transactional
-            TemplateId: templateId
+            gwid: 2,
+            TemplateId: finalTemplateId
         };
 
         console.log(`[SMS] Sending to ${formattedPhone} using User: ${username}, SID: ${senderId}, Template: ${params.TemplateId}`);
-        console.log(`[SMS] Message: ${message}`);
         
-        const response = await axios.post(url, null, { 
-            params: params,
-            headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
-        });
+        const response = await axios.get(url, { params });
         
         console.log('[SMS] Response:', response.data);
         return response.data;

@@ -81,7 +81,7 @@ const NotificationCard = ({ notification, onRead, onDelete, colors, isLight, onN
                         </span>
                     </div>
                     <p className="text-[9px] font-medium leading-tight opacity-70" style={{ color: colors.text }}>
-                        {notification.body}
+                        {notification.message || notification.body}
                     </p>
 
                     <div className="flex items-center justify-between mt-2">

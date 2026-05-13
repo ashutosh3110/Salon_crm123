@@ -145,6 +145,20 @@ export default function ReceptionistDashboard() {
         return () => clearInterval(interval);
     }, []);
 
+    useEffect(() => {
+        if (isRegistrationOpen || isBookingOpen || isWalkinOpen) {
+            document.body.style.overflow = 'hidden';
+            document.documentElement.style.overflow = 'hidden';
+        } else {
+            document.body.style.overflow = '';
+            document.documentElement.style.overflow = '';
+        }
+        return () => {
+            document.body.style.overflow = '';
+            document.documentElement.style.overflow = '';
+        };
+    }, [isRegistrationOpen, isBookingOpen, isWalkinOpen]);
+
     const handleAction = (protocol) => {
         if (protocol === 'Client Registration') setIsRegistrationOpen(true);
         if (protocol === 'Booking') setIsBookingOpen(true);

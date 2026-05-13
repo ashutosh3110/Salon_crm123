@@ -139,6 +139,21 @@ exports.verifyTopup = async (req, res) => {
                 console.error('Wallet WhatsApp failed:', wsErr.message);
             }
             
+            // Send Push Notification
+            try {
+                const { sendNotification } = require('../Utils/notification');
+                await sendNotification({
+                    customerId: req.user._id,
+                    salonId: customer.salonId,
+                    title: 'Wallet Updated! 💰',
+                    message: `Hi ${customer.name}, ₹${amount} has been added to your wallet. New balance: ₹${customer.walletBalance}`,
+                    type: 'wallet',
+                    actionUrl: '/app/wallet'
+                });
+            } catch (pushErr) {
+                console.error('Wallet Push failed:', pushErr.message);
+            }
+
             // Award Loyalty Points
             try {
                 const salon = await Salon.findById(customer.salonId);
@@ -227,6 +242,21 @@ exports.bulkRecharge = async (req, res) => {
                         );
                     } catch (wsErr) {
                         console.error('Wallet WhatsApp failed:', wsErr.message);
+                    }
+
+                    // Send Push Notification
+                    try {
+                        const { sendNotification } = require('../Utils/notification');
+                        await sendNotification({
+                            customerId: cid,
+                            salonId: salonId,
+                            title: 'Wallet Updated! 💰',
+                            message: `Hi ${customer.name}, ₹${numericAmount} has been credited to your wallet. New balance: ₹${customer.walletBalance}`,
+                            type: 'wallet',
+                            actionUrl: '/app/wallet'
+                        });
+                    } catch (pushErr) {
+                        console.error('Wallet Push failed:', pushErr.message);
                     }
 
                     return { id: cid, success: true };

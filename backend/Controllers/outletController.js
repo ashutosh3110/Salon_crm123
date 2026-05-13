@@ -1,5 +1,10 @@
 const Outlet = require('../Models/Outlet');
 const Salon = require('../Models/Salon');
+const Staff = require('../Models/Staff');
+const Service = require('../Models/Service');
+const Product = require('../Models/Product');
+const Booking = require('../Models/Booking');
+const Invoice = require('../Models/Invoice');
 const mongoose = require('mongoose');
 const { getIO } = require('../Utils/socket');
 
@@ -70,8 +75,65 @@ exports.getOutlet = async (req, res) => {
     try {
         const outlet = await Outlet.findOne({ _id: req.params.id, salonId: req.user.salonId });
         if (!outlet) return res.status(404).json({ success: false, message: 'Outlet not found' });
-        res.json({ success: true, data: outlet });
+
+        // Get related data
+        const staff = await Staff.find({ outletId: outlet._id, role: { $ne: 'customer' } });
+        
+        // Services either mapped to this outlet or global (no specific outletIds or includes this one)
+        const services = await Service.find({
+            salonId: req.user.salonId,
+            $or: [
+                { outletIds: { $in: [outlet._id] } },
+                { outletIds: { $size: 0 } },
+                { outletIds: { $exists: false } }
+            ]
+        });
+
+        // Products mapped to this outlet or global
+        const products = await Product.find({
+            salonId: req.user.salonId,
+            $or: [
+                { outletIds: { $in: [outlet._id] } },
+                { outletIds: { $size: 0 } },
+                { outletIds: { $exists: false } }
+            ]
+        });
+
+        // Stats for today
+        const todayStart = new Date();
+        todayStart.setHours(0, 0, 0, 0);
+        const todayEnd = new Date();
+        todayEnd.setHours(23, 59, 59, 999);
+
+        const todaysBookingsCount = await Booking.countDocuments({
+            outletId: outlet._id,
+            appointmentDate: { $gte: todayStart, $lte: todayEnd }
+        });
+
+        const todaysInvoices = await Invoice.find({
+            outletId: outlet._id,
+            createdAt: { $gte: todayStart, $lte: todayEnd },
+            paymentStatus: 'paid'
+        });
+
+        const todaysSales = todaysInvoices.reduce((sum, inv) => sum + (inv.totalAmount || inv.total || 0), 0);
+
+        res.json({
+            success: true,
+            data: {
+                ...outlet._doc,
+                staff,
+                services,
+                products,
+                stats: {
+                    totalStaff: staff.length,
+                    todaysBookings: todaysBookingsCount,
+                    todaysSales: todaysSales
+                }
+            }
+        });
     } catch (err) {
+        console.error('Get outlet error:', err);
         res.status(500).json({ success: false, message: 'Server Error' });
     }
 };

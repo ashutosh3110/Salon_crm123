@@ -13,7 +13,6 @@ import {
     Trash2,
     TrendingUp,
     PieChart as PieIcon,
-    BarChart3,
     Network
 } from 'lucide-react';
 import {
@@ -21,9 +20,7 @@ import {
     Pie,
     Cell,
     ResponsiveContainer,
-    Tooltip,
-    BarChart,
-    Bar
+    Tooltip
 } from 'recharts';
 import { useBusiness } from '../../contexts/BusinessContext';
 import AnimatedCounter from '../../components/common/AnimatedCounter';
@@ -43,10 +40,11 @@ export default function OutletsPage() {
 
     useEffect(() => {
         let result = outlets;
-        if (search) {
+        if (search && search.trim()) {
+            const term = search.trim().toLowerCase();
             result = result.filter(o =>
-                o.name?.toLowerCase().includes(search.toLowerCase()) ||
-                (o.address?.city || o.city)?.toLowerCase().includes(search.toLowerCase())
+                o.name?.toLowerCase().includes(term) ||
+                (o.address?.city || o.city)?.toLowerCase().includes(term)
             );
         }
         if (cityFilter !== 'all') {
@@ -68,17 +66,10 @@ export default function OutletsPage() {
         }));
     }, [outlets]);
 
-    const staffingData = useMemo(() => {
-        return outlets.slice(0, 6).map((o, i) => ({
-            name: (o.name || 'UNNAMED').split(' ')[0],
-            staff: o.staffCount,
-            color: CHART_COLORS[i % CHART_COLORS.length]
-        }));
-    }, [outlets]);
+
 
     const stats = useMemo(() => ([
         { label: 'Total Salons', value: outlets.length, icon: Store, color: 'blue', trend: 'Active' },
-        { label: 'Total Staff', value: outlets.reduce((s, o) => s + (o.staffCount || 0), 0), icon: Users, color: 'emerald', trend: 'Working' },
         { label: 'Cities Covered', value: cities.length - 1, icon: Network, color: 'orange', trend: 'Locations' },
         { label: 'Business Health', value: 'Excellent', icon: TrendingUp, color: 'violet', trend: 'Online' }
     ]), [outlets, cities]);
@@ -125,7 +116,7 @@ export default function OutletsPage() {
                 </div>
 
                 {/* Regional Distribution Chart */}
-                <div className="bg-surface p-6 rounded-none border border-border shadow-sm text-left font-black flex flex-col justify-between">
+                <div className="lg:col-span-2 bg-surface p-6 rounded-none border border-border shadow-sm text-left font-black flex flex-col justify-between">
                     <div className="flex items-center justify-between mb-4 text-left">
                         <span className="text-[9px] font-black text-text-muted uppercase tracking-[0.2em]">Branches by City</span>
                         <PieIcon className="w-4 h-4 text-primary" />
@@ -145,27 +136,6 @@ export default function OutletsPage() {
                     <div className="absolute bottom-1 right-1 opacity-10 group-hover:opacity-20 transition-opacity">
                         <Network className="w-12 h-12" />
                     </div>
-                </div>
-
-                {/* Personnel Density Chart */}
-                <div className="bg-surface p-6 rounded-none border border-border shadow-sm text-left font-black flex flex-col justify-between">
-                    <div className="flex items-center justify-between mb-4 text-left">
-                        <span className="text-[9px] font-black text-text-muted uppercase tracking-[0.2em]">Staffing Details</span>
-                        <BarChart3 className="w-4 h-4 text-primary" />
-                    </div>
-                    <div className="h-[80px] w-full z-10 min-h-[80px]">
-                        <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={80}>
-                            <BarChart data={staffingData}>
-                                <Bar dataKey="staff" radius={0}>
-                                    {staffingData.map((entry, index) => (
-                                        <Cell key={`cell-${index}`} fill={entry.color} />
-                                    ))}
-                                </Bar>
-                                <Tooltip contentStyle={{ backgroundColor: 'var(--white)', border: '1px solid var(--border)', fontSize: '8px', fontWeight: '900', textTransform: 'uppercase' }} cursor={{ fill: 'transparent' }} />
-                            </BarChart>
-                        </ResponsiveContainer>
-                    </div>
-                    <div className="mt-4 text-[7px] font-black uppercase text-text-muted tracking-[0.1em] text-center italic opacity-40">Staff count per salon</div>
                 </div>
             </div>
 
@@ -279,14 +249,7 @@ export default function OutletsPage() {
                                         <div className="h-0.5 w-8 bg-primary mt-2 transition-all duration-300 group-hover:w-16" />
                                     </div>
 
-                                    <div className="grid grid-cols-1 gap-2">
-                                        <div className="flex items-center gap-3 py-2 border-b border-slate-50">
-                                            <Users className="w-4 h-4 text-text-muted" />
-                                            <div>
-                                                <p className="text-[7px] font-black text-text-muted uppercase tracking-widest leading-none mb-1 opacity-50">Total Personnel</p>
-                                                <p className="text-[10px] font-black text-text uppercase font-mono">{outlet.staffCount || 0} Professional Staff</p>
-                                            </div>
-                                        </div>
+                                    <div className="grid grid-cols-1 gap-2 pt-2">
                                         <div className="flex items-center gap-3 py-2">
                                             <TrendingUp className="w-4 h-4 text-text-muted" />
                                             <div>

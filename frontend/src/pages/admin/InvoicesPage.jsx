@@ -21,7 +21,10 @@ export default function InvoicesPage() {
 
     useEffect(() => { fetchInvoices(); }, []);
 
-    const filtered = invoices.filter((inv) => inv.invoiceNumber?.toLowerCase().includes(search.toLowerCase()) || inv.client?.name?.toLowerCase().includes(search.toLowerCase()));
+    const filtered = invoices.filter((inv) => {
+        const term = search.trim().toLowerCase();
+        return (inv.invoiceNumber || '').toLowerCase().includes(term) || (inv.client?.name || '').toLowerCase().includes(term);
+    });
 
     return (
         <div className="space-y-6">

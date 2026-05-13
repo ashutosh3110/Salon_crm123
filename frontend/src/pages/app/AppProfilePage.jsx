@@ -392,16 +392,23 @@ export default function AppProfilePage() {
                 <div
                     onClick={() => navigate('/app/membership')}
                     style={{
-                        background: activeMembership.planId?.gradient || 'linear-gradient(135deg, #1a1a1a 0%, #333 100%)',
+                        background: isLight 
+                            ? 'linear-gradient(135deg, #FFFFFF 0%, #F5F5F5 100%)' 
+                            : (activeMembership.planId?.gradient || 'linear-gradient(135deg, #1a1a1a 0%, #333 100%)'),
                         borderRadius: '28px', padding: '24px', position: 'relative', overflow: 'hidden',
-                        color: activeMembership.planId?.id === 'gold' ? '#000' : '#FFF',
-                        boxShadow: '0 15px 35px rgba(0,0,0,0.15)'
+                        color: activeMembership.planId?.id === 'gold' 
+                            ? '#000' 
+                            : (isLight ? '#1A1A1A' : '#FFF'),
+                        boxShadow: isLight 
+                            ? '0 15px 35px rgba(0,0,0,0.05)' 
+                            : '0 15px 35px rgba(0,0,0,0.15)',
+                        border: isLight ? '1px solid rgba(0,0,0,0.05)' : 'none'
                     }}
                     className="mb-10 cursor-pointer"
                 >
                     <div className="flex justify-between items-start mb-8 relative z-10">
-                        <div className="w-12 h-10 bg-white/20 rounded-xl backdrop-blur-md border border-white/20 flex items-center justify-center">
-                            <Crown size={22} className={activeMembership.planId?.id === 'gold' ? 'text-black' : 'text-white'} />
+                        <div className={`w-12 h-10 rounded-xl backdrop-blur-md border flex items-center justify-center ${isLight ? 'bg-black/5 border-black/10' : 'bg-white/20 border-white/20'}`}>
+                            <Crown size={22} className={activeMembership.planId?.id === 'gold' || isLight ? 'text-black' : 'text-white'} />
                         </div>
                         <div className="text-right">
                             <p className="text-[8px] font-black uppercase tracking-[0.3em] opacity-50">Private</p>
@@ -438,7 +445,7 @@ export default function AppProfilePage() {
             <div className="mb-10">
                 <div className="flex items-center justify-between mb-4 px-1">
                     <h3 className="text-[10px] font-black uppercase tracking-widest opacity-40">Loyalty Rewards</h3>
-                    <button onClick={() => setShowHowItWorks(!showHowItWorks)} className="text-[10px] font-black text-[#C8956C] uppercase tracking-widest">How it works</button>
+                    <button onClick={() => navigate('/app/loyalty-how-it-works')} className="text-[10px] font-black text-[#C8956C] uppercase tracking-widest">How it works</button>
                 </div>
                 <LoyaltyCard 
                     points={Number(customer?.loyaltyPoints || 0)} 

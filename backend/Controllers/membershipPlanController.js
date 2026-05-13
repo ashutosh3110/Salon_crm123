@@ -285,6 +285,46 @@ exports.verifyMembershipPayment = async (req, res) => {
             console.error('Membership WhatsApp failed:', wsErr.message);
         }
 
+        // Send Push Notification
+        try {
+            const { sendNotification, sendAdminNotification } = require('../Utils/notification');
+            const { sendWhatsAppMessage } = require('../Utils/whatsapp');
+            const User = require('../Models/User');
+            const customer = await Customer.findById(req.user._id);
+            const salon = await Salon.findById(plan.salonId);
+
+            await sendNotification({
+                customerId: req.user._id,
+                salonId: plan.salonId,
+                title: 'Membership Activated! 🎖️',
+                message: `Hi ${customer.name}, your ${plan.name} membership is now active until ${expiryDate.toLocaleDateString()}. Enjoy your benefits!`,
+                type: 'membership',
+                actionUrl: '/app/membership'
+            });
+
+            // Admin Notifications
+            const adminTitle = 'New Membership Purchased! 🎖️';
+            const adminMsg = `New ${plan.name} membership purchased by ${customer.name} for ₹${plan.price}.`;
+
+            await sendAdminNotification({
+                salonId: plan.salonId,
+                title: adminTitle,
+                message: adminMsg,
+                type: 'membership',
+                actionUrl: '/admin/memberships'
+            });
+
+            // WhatsApp to Admins
+            const admins = await User.find({ salonId: plan.salonId, role: 'admin', status: 'active' });
+            for (const ad of admins) {
+                if (ad.phone) {
+                    await sendWhatsAppMessage(ad.phone, `Admin Alert: ${adminMsg}`);
+                }
+            }
+        } catch (pushErr) {
+            console.error('Membership Notification failed:', pushErr.message);
+        }
+
         res.json({ success: true, data: membership });
     } catch (err) {
         console.error('Membership Verify Error:', err);
@@ -391,6 +431,46 @@ exports.buyMembershipWithWallet = async (req, res) => {
             );
         } catch (wsErr) {
             console.error('Membership WhatsApp failed:', wsErr.message);
+        }
+
+        // Send Push Notification
+        try {
+            const { sendNotification, sendAdminNotification } = require('../Utils/notification');
+            const { sendWhatsAppMessage } = require('../Utils/whatsapp');
+            const User = require('../Models/User');
+            const salon = await Salon.findById(plan.salonId);
+            const brandName = salon?.businessName || salon?.name || 'Our Salon';
+
+            await sendNotification({
+                customerId: req.user._id,
+                salonId: plan.salonId,
+                title: 'Membership Activated! 🎖️',
+                message: `Hi ${customer.name}, your ${plan.name} membership is now active until ${expiryDate.toLocaleDateString()}. Enjoy your benefits!`,
+                type: 'membership',
+                actionUrl: '/app/membership'
+            });
+
+            // Admin Notifications
+            const adminTitle = 'New Membership Purchased! 🎖️';
+            const adminMsg = `New ${plan.name} membership purchased by ${customer.name} using wallet balance.`;
+
+            await sendAdminNotification({
+                salonId: plan.salonId,
+                title: adminTitle,
+                message: adminMsg,
+                type: 'membership',
+                actionUrl: '/admin/memberships'
+            });
+
+            // WhatsApp to Admins
+            const admins = await User.find({ salonId: plan.salonId, role: 'admin', status: 'active' });
+            for (const ad of admins) {
+                if (ad.phone) {
+                    await sendWhatsAppMessage(ad.phone, `Admin Alert: ${adminMsg}`);
+                }
+            }
+        } catch (pushErr) {
+            console.error('Membership Notification failed:', pushErr.message);
         }
 
         res.json({ success: true, data: membership });

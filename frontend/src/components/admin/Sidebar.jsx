@@ -133,12 +133,12 @@ export default function Sidebar({ collapsed, setCollapsed, isHovered, setIsHover
                 ]
             },
 
-            {
-                label: 'Reminders & Links',
-                icon: Bell,
-                path: '/admin/reminders',
-                permission: 'reminders'
-            },
+            // {
+            //     label: 'Reminders & Links',
+            //     icon: Bell,
+            //     path: '/admin/reminders',
+            //     permission: 'reminders'
+            // },
             {
                 label: 'Customers',
                 icon: Users,

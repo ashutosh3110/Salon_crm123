@@ -106,6 +106,17 @@ exports.sendManualNotification = async (req, res) => {
                 type,
                 actionUrl
             });
+
+            // Also send WhatsApp manually if targeted to single customer
+            try {
+                const { sendWhatsAppMessage } = require('../Utils/whatsapp');
+                const customer = await Customer.findById(targetId);
+                if (customer && customer.phone) {
+                    await sendWhatsAppMessage(customer.phone, `${title}\n\n${message}`);
+                }
+            } catch (wsErr) {
+                console.error('Manual WhatsApp failed:', wsErr.message);
+            }
         }
 
         res.json({

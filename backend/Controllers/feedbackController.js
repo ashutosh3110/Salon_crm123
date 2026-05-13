@@ -73,6 +73,20 @@ exports.createFeedback = async (req, res) => {
             success: true,
             data: feedback
         });
+
+        // Notify Admin (Firebase Only)
+        try {
+            const { sendAdminNotification } = require('../Utils/notification');
+            await sendAdminNotification({
+                salonId: salonId || feedback.salonId,
+                title: 'New Review Received! ⭐',
+                message: `New ${rating} star review from ${customerName || 'Customer'} for ${targetName || 'your outlet'}.`,
+                type: 'system',
+                actionUrl: '/admin/feedbacks'
+            });
+        } catch (adminErr) {
+            console.error('Admin Review Notification failed:', adminErr.message);
+        }
     } catch (err) {
         res.status(400).json({ success: false, message: err.message });
     }
@@ -90,6 +104,36 @@ exports.updateFeedbackStatus = async (req, res) => {
 
         if (!feedback) {
             return res.status(404).json({ success: false, message: 'Feedback not found' });
+        }
+
+        // Send Notifications if approved
+        if (req.body.status === 'Approved' && feedback) {
+            try {
+                const { sendNotification } = require('../Utils/notification');
+                const { sendWhatsAppMessage } = require('../Utils/whatsapp');
+                const Customer = require('../Models/Customer');
+                const customer = await Customer.findById(feedback.customerId);
+
+                if (customer) {
+                    const msg = `Hi ${customer.name}, your review for ${feedback.targetName || 'our service'} has been approved and is now live! Thank you for your feedback. ✨`;
+                    
+                    // 1. Firebase
+                    await sendNotification({
+                        customerId: customer._id,
+                        salonId: feedback.salonId,
+                        title: 'Review Approved! ⭐',
+                        message: msg,
+                        type: 'system'
+                    });
+
+                    // 2. WhatsApp
+                    if (customer.phone) {
+                        await sendWhatsAppMessage(customer.phone, msg);
+                    }
+                }
+            } catch (notifErr) {
+                console.error('Feedback Notification failed:', notifErr.message);
+            }
         }
 
         res.status(200).json({

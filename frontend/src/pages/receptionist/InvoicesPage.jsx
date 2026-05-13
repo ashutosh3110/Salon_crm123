@@ -20,8 +20,8 @@ import {
     RefreshCw,
     FileSpreadsheet
 } from 'lucide-react';
-import { 
-    Document, Page, Text, View, StyleSheet, pdf, Font 
+import {
+    Document, Page, Text, View, StyleSheet, pdf, Font
 } from '@react-pdf/renderer';
 import AnimatedCounter from '../../components/common/AnimatedCounter';
 import mockApi from '../../services/mock/mockApi';
@@ -207,6 +207,20 @@ export default function InvoicesPage() {
         const interval = setInterval(() => fetchData(true), 60000);
         return () => clearInterval(interval);
     }, [fetchData]);
+
+    useEffect(() => {
+        if (isPreviewOpen) {
+            document.body.style.overflow = 'hidden';
+            document.documentElement.style.overflow = 'hidden';
+        } else {
+            document.body.style.overflow = '';
+            document.documentElement.style.overflow = '';
+        }
+        return () => {
+            document.body.style.overflow = '';
+            document.documentElement.style.overflow = '';
+        };
+    }, [isPreviewOpen]);
 
     // Map backend stats to UI card format
     const statsCards = [
@@ -456,8 +470,8 @@ export default function InvoicesPage() {
                                     <p className="text-sm font-black text-primary uppercase">₹{Math.round(inv.total)}</p>
                                 </td>
                                 <td className="px-6 py-4">
-                                    <p 
-                                        className="text-[11px] font-black text-text-secondary uppercase tracking-tight truncate max-w-[100px]" 
+                                    <p
+                                        className="text-[11px] font-black text-text-secondary uppercase tracking-tight truncate max-w-[100px]"
                                         title={inv.staffId?.name || (typeof inv.staffId === 'string' ? `ID: ${inv.staffId}` : 'SYSTEM')}
                                     >
                                         {inv.staffId?.name || (typeof inv.staffId === 'string' ? 'ID:ERR' : 'SYSTEM')}
@@ -518,9 +532,9 @@ export default function InvoicesPage() {
             <div className="flex items-center justify-between">
                 <p className="text-[10px] font-black text-text-muted uppercase tracking-widest italic opacity-60">Showing {invoices.length} of {totalResults} invoices</p>
                 <div className="flex border border-border">
-                    <button 
-                        onClick={() => setCurrentPage(p => Math.max(1, p - 1))} 
-                        className="px-4 py-2 text-[10px] font-black uppercase tracking-widest hover:bg-surface-alt border-r border-border disabled:opacity-30" 
+                    <button
+                        onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                        className="px-4 py-2 text-[10px] font-black uppercase tracking-widest hover:bg-surface-alt border-r border-border disabled:opacity-30"
                         disabled={currentPage === 1}
                     >
                         Prev
@@ -528,8 +542,8 @@ export default function InvoicesPage() {
                     <div className="px-5 py-2 text-[10px] font-black uppercase tracking-widest bg-primary text-white">
                         {currentPage} / {totalPages}
                     </div>
-                    <button 
-                        onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} 
+                    <button
+                        onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
                         className="px-4 py-2 text-[10px] font-black uppercase tracking-widest hover:bg-surface-alt"
                         disabled={currentPage === totalPages}
                     >
@@ -578,7 +592,7 @@ export default function InvoicesPage() {
                             </div>
 
                             {/* Items breakdown could potentially be added here if backend supported it */}
-                            
+
                             <div className="border-t border-black pt-4">
                                 <div className="flex justify-between text-xl font-black">
                                     <span>GRAND TOTAL:</span>

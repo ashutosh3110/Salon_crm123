@@ -344,19 +344,22 @@ export default function POSBillingPage() {
     const [showQuickInvoice, setShowQuickInvoice] = useState(false);
 
     // Prevent background scroll when any modal is open
-    const isAnyModalOpen = showDiscountModal || showCameraScanner || !!successInvoice || showNewClient;
+    const isAnyModalOpen = showDiscountModal || showCameraScanner || !!successInvoice || showNewClient || showQuickInvoice;
 
     useEffect(() => {
         if (isAnyModalOpen) {
             document.body.style.overflow = 'hidden';
+            document.documentElement.style.overflow = 'hidden';
             document.body.style.height = '100vh'; // Extra safety for mobile
         } else {
-            document.body.style.overflow = 'unset';
-            document.body.style.height = 'auto';
+            document.body.style.overflow = '';
+            document.documentElement.style.overflow = '';
+            document.body.style.height = '';
         }
         return () => {
-            document.body.style.overflow = 'unset';
-            document.body.style.height = 'auto';
+            document.body.style.overflow = '';
+            document.documentElement.style.overflow = '';
+            document.body.style.height = '';
         };
     }, [isAnyModalOpen]);
     const [scanError, setScanError] = useState(null);
@@ -1041,7 +1044,9 @@ export default function POSBillingPage() {
                             quantity: item.quantity
                         };
                         const sId = (item.staffIds || [])[0];
-                        if (sId) baseItem.stylistId = sId;
+                        if (sId) {
+                            baseItem.stylistId = typeof sId === 'object' ? sId?._id : String(sId);
+                        }
                         return baseItem;
                     }),
                     tax: totals.tax,
@@ -1793,7 +1798,7 @@ export default function POSBillingPage() {
                                     <span>₹{totals.taxable.toFixed(0)}</span>
                                 </div>
 
-                                <div className="flex justify-between text-xs font-bold text-text-secondary">
+                                <div className="flex justify-between text-xs font-bold text-text">
                                     <span>GST ({taxPercent}%)</span>
                                     <span>₹{totals.tax.toFixed(0)}</span>
                                 </div>
@@ -2165,7 +2170,7 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, staff, custo
             itemId: service._id,
             type: 'service',
             quantity: 1,
-            staffId: qFilteredStaff.length === 1 ? qFilteredStaff[0]._id : '' 
+            staffId: qFilteredStaff.length === 1 ? (typeof qFilteredStaff[0]._id === 'object' ? qFilteredStaff[0]._id?._id : String(qFilteredStaff[0]._id)) : '' 
         }]);
     };
 
@@ -2200,7 +2205,12 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, staff, custo
             const payload = {
                 clientId: qClient._id,
                 outletId: qOutletId,
-                items: qCart.map(i => ({ ...i, stylistId: i.staffId })),
+                items: qCart.map(i => {
+                    const { staffId, ...rest } = i;
+                    // Ensure stylistId is a single string ID
+                    const finalStaffId = typeof staffId === 'object' ? staffId?._id : String(staffId || '');
+                    return { ...rest, stylistId: finalStaffId };
+                }),
                 tax: totals.tax, 
                 payments: paymentArray,
                 discount: totals.discount

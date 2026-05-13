@@ -385,40 +385,7 @@ exports.updateStatus = async (req, res) => {
             const { sendWhatsAppMessage, sendWapixoTemplate } = require('../Utils/whatsapp');
             const User = require('../Models/User');
 
-            const statusMsgs = {
-                'completed': 'Your service is completed. We hope you enjoyed your ritual! ✨',
-                'cancelled': 'Your booking has been cancelled.',
-                'confirmed': 'Your booking has been confirmed by the salon. We look forward to seeing you! ✅',
-                'no-show': 'We missed you! Your booking was marked as a no-show.',
-                'rejected': 'Sorry, your booking has been rejected by the salon.'
-            };
-
-            const msg = statusMsgs[booking.status] || `Your booking status has been updated to ${booking.status}.`;
-            const title = booking.status === 'confirmed' ? 'Booking Confirmed! 📅' : `Booking ${booking.status.toUpperCase()}!`;
-
-            // 1. Notify Customer (Firebase)
-            await sendNotification({
-                customerId: booking.clientId,
-                salonId: booking.salonId,
-                title,
-                message: msg,
-                type: 'booking',
-                actionUrl: `/app/bookings/${booking._id}`,
-                data: { bookingId: booking._id.toString(), status: booking.status }
-            });
-
-            // 2. Notify Admins (Firebase)
-            const adminMsg = `Booking #${booking._id.toString().slice(-6).toUpperCase()} for ${customer?.name || 'Customer'} is now ${booking.status.toUpperCase()}.`;
-            await sendAdminNotification({
-                salonId: booking.salonId,
-                title: `Booking Update: ${booking.status.toUpperCase()}`,
-                message: adminMsg,
-                type: 'booking',
-                actionUrl: `/admin/bookings`,
-                data: { bookingId: booking._id.toString(), status: booking.status }
-            });
-
-            // 3. WhatsApp Notifications
+            // Fetch fully populated booking for notifications
             const populated = await Booking.findById(booking._id)
                 .populate('clientId', 'name phone email')
                 .populate('serviceId', 'name price duration')
@@ -427,8 +394,42 @@ exports.updateStatus = async (req, res) => {
                 .populate('salonId', 'name logo businessName');
 
             if (populated) {
-                const salonName = populated.salonId?.businessName || populated.salonId?.name || 'Our Salon';
+                const statusMsgs = {
+                    'completed': 'Your service is completed. We hope you enjoyed your ritual! ✨',
+                    'cancelled': 'Your booking has been cancelled.',
+                    'confirmed': 'Your booking has been confirmed by the salon. We look forward to seeing you! ✅',
+                    'no-show': 'We missed you! Your booking was marked as a no-show.',
+                    'rejected': 'Sorry, your booking has been rejected by the salon.'
+                };
+
+                const msg = statusMsgs[booking.status] || `Your booking status has been updated to ${booking.status}.`;
+                const title = booking.status === 'confirmed' ? 'Booking Confirmed! 📅' : `Booking ${booking.status.toUpperCase()}!`;
                 const clientName = populated.clientId?.name || 'Customer';
+
+                // 1. Notify Customer (Firebase)
+                await sendNotification({
+                    customerId: booking.clientId,
+                    salonId: booking.salonId,
+                    title,
+                    message: msg,
+                    type: 'booking',
+                    actionUrl: `/app/bookings/${booking._id}`,
+                    data: { bookingId: booking._id.toString(), status: booking.status }
+                });
+
+                // 2. Notify Admins (Firebase)
+                const adminMsg = `Booking #${booking._id.toString().slice(-6).toUpperCase()} for ${clientName} is now ${booking.status.toUpperCase()}.`;
+                await sendAdminNotification({
+                    salonId: booking.salonId,
+                    title: `Booking Update: ${booking.status.toUpperCase()}`,
+                    message: adminMsg,
+                    type: 'booking',
+                    actionUrl: `/admin/bookings`,
+                    data: { bookingId: booking._id.toString(), status: booking.status }
+                });
+
+                // 3. WhatsApp Notifications
+                const salonName = populated.salonId?.businessName || populated.salonId?.name || 'Our Salon';
                 
                 // WhatsApp to Customer
                 if (populated.clientId?.phone) {

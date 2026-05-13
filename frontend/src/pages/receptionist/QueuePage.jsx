@@ -110,6 +110,20 @@ export default function QueuePage() {
         return () => clearInterval(interval);
     }, []);
 
+    useEffect(() => {
+        if (isWelcomeOpen || isAddGuestOpen) {
+            document.body.style.overflow = 'hidden';
+            document.documentElement.style.overflow = 'hidden';
+        } else {
+            document.body.style.overflow = '';
+            document.documentElement.style.overflow = '';
+        }
+        return () => {
+            document.body.style.overflow = '';
+            document.documentElement.style.overflow = '';
+        };
+    }, [isWelcomeOpen, isAddGuestOpen]);
+
     const filteredQueue = queueData.filter(guest =>
         guest.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         guest.service.toLowerCase().includes(searchQuery.toLowerCase())

@@ -16,12 +16,16 @@ export default function LoyaltyCard({ points = 0, pointsRate = 100, redeemValue 
             animate={{ opacity: 1, y: 0 }}
             className="relative overflow-hidden group"
             style={{ 
-                background: 'linear-gradient(135deg, #1A1A1A 0%, #0A0A0A 100%)',
+                background: isLight 
+                    ? 'linear-gradient(135deg, #FFFFFF 0%, #F5F5F5 100%)' 
+                    : 'linear-gradient(135deg, #1A1A1A 0%, #0A0A0A 100%)',
                 borderRadius: '32px',
                 padding: '32px',
-                color: '#FFF',
-                boxShadow: '0 30px 60px rgba(0,0,0,0.4), inset 0 1px 1px rgba(255,255,255,0.1)',
-                border: '1px solid rgba(255,255,255,0.05)'
+                color: isLight ? '#1A1A1A' : '#FFF',
+                boxShadow: isLight 
+                    ? '0 30px 60px rgba(0,0,0,0.05), inset 0 1px 1px rgba(255,255,255,0.8)' 
+                    : '0 30px 60px rgba(0,0,0,0.4), inset 0 1px 1px rgba(255,255,255,0.1)',
+                border: isLight ? '1px solid rgba(0,0,0,0.05)' : '1px solid rgba(255,255,255,0.05)'
             }}
         >
             {/* Animated Glow Effects */}
@@ -56,7 +60,7 @@ export default function LoyaltyCard({ points = 0, pointsRate = 100, redeemValue 
                         <p className="text-[10px] font-black opacity-30 uppercase tracking-widest mb-1">Cash Value</p>
                         <div className="flex items-baseline justify-end gap-1">
                             <span className="text-[10px] font-black opacity-40">₹</span>
-                            <p className="text-3xl font-black text-white">{cashValue.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 })}</p>
+                            <p className={`text-3xl font-black ${isLight ? 'text-black' : 'text-white'}`}>{cashValue.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 })}</p>
                         </div>
                     </div>
                 </div>
@@ -71,8 +75,12 @@ export default function LoyaltyCard({ points = 0, pointsRate = 100, redeemValue 
                         style={{
                             width: '100%',
                             padding: '18px',
-                            background: isRedeemable ? 'white' : 'rgba(255,255,255,0.03)',
-                            color: isRedeemable ? '#000' : 'rgba(255,255,255,0.2)',
+                            background: isRedeemable 
+                                ? (isLight ? '#1A1A1A' : 'white') 
+                                : (isLight ? 'rgba(0,0,0,0.03)' : 'rgba(255,255,255,0.03)'),
+                            color: isRedeemable 
+                                ? (isLight ? 'white' : '#000') 
+                                : (isLight ? 'rgba(0,0,0,0.2)' : 'rgba(255,255,255,0.2)'),
                             borderRadius: '24px 8px 24px 8px',
                             fontSize: '12px',
                             fontWeight: 900,
@@ -83,9 +91,9 @@ export default function LoyaltyCard({ points = 0, pointsRate = 100, redeemValue 
                             justifyContent: 'center',
                             gap: '12px',
                             cursor: isRedeemable ? 'pointer' : 'not-allowed',
-                            border: isRedeemable ? 'none' : '1px solid rgba(255,255,255,0.05)',
+                            border: isRedeemable ? 'none' : (isLight ? '1px solid rgba(0,0,0,0.05)' : '1px solid rgba(255,255,255,0.05)'),
                             transition: 'all 0.4s cubic-bezier(0.16, 1, 0.3, 1)',
-                            boxShadow: isRedeemable ? '0 15px 30px rgba(255,255,255,0.1)' : 'none'
+                            boxShadow: isRedeemable ? (isLight ? '0 15px 30px rgba(0,0,0,0.1)' : '0 15px 30px rgba(255,255,255,0.1)') : 'none'
                         }}
                     >
                         {isRedeemable ? (

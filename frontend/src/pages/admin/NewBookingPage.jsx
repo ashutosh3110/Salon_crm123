@@ -178,28 +178,29 @@ export default function NewBookingPage() {
     const selectedCustomer = useMemo(() => customers.find(c => c._id === selection.customerId), [customers, selection.customerId]);
 
     const filteredServices = useMemo(() => {
-        if (!selection.outletId) return [];
+        const term = searchTerms.service.trim().toLowerCase();
         return services.filter(s => {
             const matchesOutlet = !s.outletIds || s.outletIds.length === 0 || s.outletIds.includes(selection.outletId);
-            const matchesSearch = s.name.toLowerCase().includes(searchTerms.service.toLowerCase());
+            const matchesSearch = s.name.toLowerCase().includes(term);
             return matchesOutlet && matchesSearch;
         });
     }, [services, selection.outletId, searchTerms.service]);
 
     const filteredStaff = useMemo(() => {
-        if (!selection.outletId) return [];
+        const term = searchTerms.staff.trim().toLowerCase();
         return staff.filter(s => {
             const isStylist = (s.role || '').toLowerCase().includes('styl');
             const matchesOutlet = !s.outletId || s.outletId === selection.outletId;
-            const matchesSearch = s.name.toLowerCase().includes(searchTerms.staff.toLowerCase());
+            const matchesSearch = s.name.toLowerCase().includes(term);
             return isStylist && matchesOutlet && matchesSearch;
         });
     }, [staff, selection.outletId, searchTerms.staff]);
 
     const filteredCustomers = useMemo(() => {
+        const term = searchTerms.customer.trim().toLowerCase();
         return customers.filter(c => 
-            (c.name || '').toLowerCase().includes(searchTerms.customer.toLowerCase()) || 
-            (c.phone || '').includes(searchTerms.customer)
+            (c.name || '').toLowerCase().includes(term) || 
+            (c.phone || '').includes(term)
         );
     }, [customers, searchTerms.customer]);
 
@@ -343,7 +344,7 @@ export default function NewBookingPage() {
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                            {outlets.filter(o => o.name.toLowerCase().includes(searchTerms.outlet.toLowerCase())).map(o => (
+                            {outlets.filter(o => o.name.toLowerCase().includes(searchTerms.outlet.trim().toLowerCase())).map(o => (
                                 <div 
                                     key={o._id}
                                     onClick={() => {
