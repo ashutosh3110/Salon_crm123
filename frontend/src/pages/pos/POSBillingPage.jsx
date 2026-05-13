@@ -1235,99 +1235,78 @@ export default function POSBillingPage() {
         return (
             <div className="flex flex-col lg:flex-row items-start justify-center min-h-[85vh] gap-8 p-6 animate-in fade-in duration-500 overflow-y-auto">
                 {/* ─── Thermal Receipt (80mm) ─── */}
-                <div id="thermal-receipt" className="bg-white text-black p-6 w-[320px] shadow-2xl border border-slate-200 font-mono text-[12px] leading-tight print:shadow-none print:border-0 print:m-0">
-                    <div className="text-center space-y-1 mb-4">
+                <div id="thermal-receipt" className="bg-white text-black p-6 w-[320px] shadow-2xl border border-slate-200 font-mono text-[11px] leading-tight print:shadow-none print:border-0 print:m-0">
+                    <div className="text-center space-y-1 mb-3">
                         <h2 className="text-lg font-black uppercase tracking-tighter">{salon?.name || fiscal.businessName}</h2>
-                        <p className="text-[10px]">{typeof salon?.address === 'object' ? `${salon.address.street || ''}, ${salon.address.city || ''}` : (salon?.address || fiscal.address || 'Address Placeholder')}</p>
-                        <p className="text-[10px]">Ph: {salon?.phone || 'Phone Placeholder'}</p>
-                        <p className="text-[10px] font-bold">GSTIN: {salon?.gstin || fiscal.gstin}</p>
+                        <p className="text-[10px]">{activeOutlet?.name || 'Main Outlet'}</p>
+                        <p className="text-[10px]">Contact : {salon?.phone || 'N/A'}</p>
                     </div>
 
-                    <div className="border-t border-dashed border-black pt-2 mb-2 space-y-0.5">
-                        <div className="flex justify-between"><span>Inv No:</span><span className="font-bold">{successInvoice?.number || 'N/A'}</span></div>
-                        <div className="flex justify-between"><span>Date:</span><span>{successInvoice?.date || 'N/A'}</span></div>
-                        <div className="flex justify-between"><span>Outlet:</span><span>{successInvoice?.outlet || 'N/A'}</span></div>
-                        <div className="flex justify-between"><span>Cashier:</span><span>{successInvoice?.cashier || 'N/A'}</span></div>
+                    <div className="border-y border-dashed border-black py-2 mb-2 space-y-0.5">
+                        <div className="flex justify-between"><span>Invoice No :</span><span className="font-bold">{successInvoice?.number || '-'}</span></div>
+                        <div className="flex justify-between"><span>Date :</span><span>{successInvoice?.date?.split(',')[0] || '-'}</span></div>
+                        <div className="flex justify-between"><span>Time :</span><span>{successInvoice?.date?.split(',')[1] || '-'}</span></div>
                     </div>
 
-                    <div className="border-t border-dashed border-black pt-2 mb-2">
-                        <div className="flex justify-between"><span>Customer:</span><span className="font-bold uppercase">{successInvoice?.client?.name || 'Walk-in Client'}</span></div>
-                        <div className="flex justify-between"><span>Mobile:</span><span>{maskPhone(successInvoice?.client?.phone || '', user?.role)}</span></div>
+                    <div className="mb-2">
+                        <p>Customer : <span className="font-bold uppercase">{successInvoice?.client?.name || 'Walk-in'}</span></p>
                     </div>
 
-                    <div className="border-t border-black pt-2 mb-1 font-bold">
-                        <div className="grid grid-cols-[1fr_50px_60px_60px]">
-                            <span>Items</span>
-                            <span className="text-center">HSN</span>
-                            <span className="text-center">Rate</span>
-                            <span className="text-right">Amt</span>
-                        </div>
+                    <div className="border-t border-dashed border-black pt-2 text-center font-bold mb-1 uppercase tracking-widest">
+                        SERVICES
                     </div>
-                    <div className="border-t border-dashed border-black pt-2 mb-2 space-y-1">
+                    <div className="border-t border-dashed border-black pt-2 mb-2 space-y-2">
                         {successInvoice.items.map((item, i) => (
                             <div key={i}>
-                                <div className="grid grid-cols-[1fr_50px_60px_60px]">
-                                    <span className="uppercase text-[10px] truncate pr-1">{item.name} {item.isPackageRedemption && '(Pkg)'}</span>
-                                    <span className="text-[10px] text-center opacity-70">{item.hsnCode || '-'}</span>
-                                    <span className="text-[10px] text-center">{item.isPackageRedemption ? 0 : item.price}</span>
-                                    <span className="text-[10px] text-right">{(item.isPackageRedemption ? 0 : (item.price * item.quantity)).toFixed(0)}</span>
+                                <div className="flex justify-between font-bold">
+                                    <span className="uppercase">{i + 1}. {item.name}</span>
+                                    <span>₹{(item.total ?? (item.price * item.quantity)).toFixed(0)}</span>
                                 </div>
-                                <p className="text-[8px] italic opacity-60">Qty: {item.quantity} | Stylist: {item.staffName}</p>
+                                <p className="text-[9px] ml-4">Staff : {item.staffName || '-'}</p>
                             </div>
                         ))}
                     </div>
 
                     <div className="border-t border-dashed border-black pt-2 space-y-1">
-                        <div className="flex justify-between"><span>Subtotal:</span><span>{successInvoice?.totals?.subtotal?.toFixed(0) || '0'}</span></div>
-
-                        {successInvoice?.totals?.serviceDiscount > 0 && <div className="flex justify-between text-[10px] italic"><span>Service Discount:</span><span>-₹{successInvoice.totals.serviceDiscount.toFixed(0)}</span></div>}
-                        {successInvoice?.totals?.productDiscount > 0 && <div className="flex justify-between text-[10px] italic"><span>Product Discount:</span><span>-₹{successInvoice.totals.productDiscount.toFixed(0)}</span></div>}
-                        {successInvoice?.discounts?.promotion && <div className="flex justify-between text-[10px] italic"><span>Promo ({successInvoice.discounts.promotion.name}):</span><span>Applied</span></div>}
-                        {successInvoice?.discounts?.voucher && <div className="flex justify-between text-[10px] italic"><span>Voucher ({successInvoice.discounts.voucher.code}):</span><span>Applied</span></div>}
-
-                        {successInvoice?.discounts?.points > 0 && <div className="flex justify-between text-[10px] italic font-bold text-blue-800"><span>Loyalty Points Used:</span><span>-₹{successInvoice.discounts.points}</span></div>}
-                        {successInvoice?.discounts?.wallet > 0 && <div className="flex justify-between text-[10px] italic font-bold text-emerald-800"><span>Wallet Balance Used:</span><span>-₹{successInvoice.discounts.wallet}</span></div>}
-
-                        <div className="flex justify-between font-bold"><span>Taxable Value:</span><span>{successInvoice?.totals?.taxable?.toFixed(2) || '0.00'}</span></div>
-                        {successInvoice?.totals?.isSameState ? (
-                            <>
-                                <div className="flex justify-between"><span>CGST ({taxPercent / 2}%):</span><span>{successInvoice?.totals?.cgst?.toFixed(2) || '0.00'}</span></div>
-                                <div className="flex justify-between"><span>SGST ({taxPercent / 2}%):</span><span>{successInvoice?.totals?.sgst?.toFixed(2) || '0.00'}</span></div>
-                            </>
-                        ) : (
-                            <div className="flex justify-between"><span>IGST ({taxPercent}%):</span><span>{successInvoice?.totals?.igst?.toFixed(2) || '0.00'}</span></div>
+                        <div className="flex justify-between"><span>Subtotal</span><span>₹{successInvoice?.totals?.subtotal?.toFixed(0) || '0'}</span></div>
+                        <div className="flex justify-between"><span>GST (18%)</span><span>₹{successInvoice?.totals?.tax?.toFixed(0) || '0'}</span></div>
+                        
+                        {(successInvoice?.discounts?.points > 0) && (
+                            <div className="flex justify-between"><span>Membership Discount</span><span>-₹{successInvoice.discounts.points}</span></div>
                         )}
-                        <div className="flex justify-between text-base font-black border-t border-black pt-1 mt-1">
-                            <span>TOTAL:</span>
+                        {(successInvoice?.discounts?.manual?.value > 0 || successInvoice?.discounts?.promotion || successInvoice?.discounts?.wallet > 0) && (
+                            <div className="flex justify-between"><span>Extra Discount</span><span>-₹{(successInvoice.totals.discount - (successInvoice.discounts.points || 0)).toFixed(0)}</span></div>
+                        )}
+
+                        <div className="flex justify-between text-base font-black border-y border-black py-1 my-1">
+                            <span>TOTAL</span>
                             <span>₹{successInvoice?.totals?.total?.toFixed(0) || '0'}</span>
                         </div>
                     </div>
 
-                    <div className="border-t border-dashed border-black pt-2 mt-2 space-y-0.5">
-                        <p className="font-bold uppercase text-[10px] mb-1">Payment Details</p>
-                        {successInvoice?.payments?.map((p, idx) => (
-                            <div key={idx} className="flex justify-between uppercase text-[10px]">
-                                <span>{p?.method || 'N/A'}:</span>
-                                <span>₹{p.amount.toFixed(0)}</span>
+                    <div className="mt-3">
+                        <div className="text-center font-bold mb-1 uppercase tracking-widest">PAYMENT DETAILS</div>
+                        <div className="border-t border-dashed border-black pt-2 space-y-0.5">
+                            <div className="flex justify-between">
+                                <span>Cash Paid</span>
+                                <span>₹{(successInvoice.payments?.filter(p => p.method === 'cash').reduce((s, p) => s + p.amount, 0) || 0).toFixed(0)}</span>
                             </div>
-                        ))}
-                        <div className="flex justify-between border-t border-dashed border-black mt-1 pt-1 font-bold">
-                            <span>PAID:</span>
-                            <span>₹{successInvoice?.totals?.paidAmount?.toFixed(0) || '0'}</span>
-                        </div>
-                        {successInvoice?.totals?.balanceDue > 0 && (
+                            <div className="flex justify-between">
+                                <span>Online Paid</span>
+                                <span>₹{(successInvoice.payments?.filter(p => ['online', 'card', 'upi'].includes(p.method)).reduce((s, p) => s + p.amount, 0) || 0).toFixed(0)}</span>
+                            </div>
                             <div className="flex justify-between text-red-600 font-bold">
-                                <span>BALANCE DUE:</span>
-                                <span>₹{successInvoice?.totals?.balanceDue?.toFixed(0) || '0'}</span>
+                                <span>Due Amount</span>
+                                <span>₹{(successInvoice?.totals?.balanceDue || 0).toFixed(0)}</span>
                             </div>
-                        )}
+                            <div className="mt-2">
+                                <p>Payment Mode : <span className="uppercase">{successInvoice.payments?.length > 1 ? 'Split Payment' : (successInvoice.payments?.[0]?.method || 'Cash')}</span></p>
+                            </div>
+                        </div>
                     </div>
 
-                    <div className="border-t border-dashed border-black pt-2 mt-2 text-center">
-                        <p className="font-bold uppercase tracking-wider">
-                            {(successInvoice?.totals?.balanceDue || 0) > 0 ? '* PENDING PAYMENT *' : 'LOYALTY EARNED: ' + (successInvoice?.loyaltyEarned || 0) + ' PTS'}
-                        </p>
-                        <p className="mt-4 font-bold uppercase tracking-widest">Thank You! Visit Again 🙂</p>
+                    <div className="border-t border-dashed border-black pt-3 mt-4 text-center">
+                        <p className="font-bold uppercase tracking-widest text-[12px]">Thank You Visit Again 🙂</p>
                     </div>
                 </div>
 

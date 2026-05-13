@@ -86,16 +86,8 @@ export function CustomerAuthProvider({ children }) {
     }, []);
 
     const customerLogout = async () => {
-        const fcmToken = localStorage.getItem('fcm_token');
-        if (fcmToken) {
-            // Cleanup FCM token from storage
-            localStorage.removeItem('fcm_token');
-        }
-        localStorage.removeItem('customer_token');
-        localStorage.removeItem('customer_user');
-        localStorage.removeItem('active_outlet_id');
-        localStorage.removeItem('active_salon_id');
-        localStorage.removeItem('wapixo_selected_outlet');
+        // Clear ALL data from localStorage for security
+        localStorage.clear();
 
         setCustomer(null);
         navigate('/app/login');

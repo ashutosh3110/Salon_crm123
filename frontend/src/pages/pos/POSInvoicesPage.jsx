@@ -2,7 +2,7 @@ import { useState, useMemo, useEffect } from 'react';
 import {
     Search, Calendar, Eye, X, Download,
     Clock, CreditCard, Banknote, Smartphone, Ban,
-    ChevronLeft, ChevronRight, FileText, Loader2, Store, ChevronDown
+    ChevronLeft, ChevronRight, FileText, Loader2, Store, ChevronDown, Printer
 } from 'lucide-react';
 import api from '../../services/api';
 import { useBusiness } from '../../contexts/BusinessContext';
@@ -21,7 +21,7 @@ Font.register({
 
 const pdfStyles = StyleSheet.create({
     page: { 
-        padding: 15, 
+        padding: 12, 
         fontSize: 9, 
         fontFamily: 'Roboto', 
         backgroundColor: '#FFFFFF',
@@ -34,61 +34,69 @@ const pdfStyles = StyleSheet.create({
         flexDirection: 'column'
     },
     salonName: { 
-        fontSize: 16, 
+        fontSize: 14, 
         fontWeight: 700, 
         marginBottom: 2,
         textTransform: 'uppercase'
     },
     salonMeta: { 
-        fontSize: 7, 
-        color: '#444',
-        marginBottom: 1
+        fontSize: 8, 
+        color: '#000',
+        marginBottom: 1,
+        fontWeight: 400
     },
     divider: {
         borderBottomWidth: 1,
         borderBottomColor: '#000',
         borderBottomStyle: 'dashed',
-        marginVertical: 8,
+        marginVertical: 6,
         width: '100%'
     },
     metaRow: {
         flexDirection: 'row',
         justifyContent: 'space-between',
         marginBottom: 2,
-        fontSize: 7
+        fontSize: 8
     },
     label: { 
-        fontWeight: 700,
-        textTransform: 'uppercase',
-        width: 60
+        fontWeight: 400,
+        textTransform: 'none',
+        width: 80
     },
     value: { 
         flex: 1,
-        textAlign: 'right'
+        textAlign: 'right',
+        fontWeight: 700
+    },
+    sectionTitle: {
+        fontSize: 8,
+        fontWeight: 700,
+        textTransform: 'uppercase',
+        textAlign: 'center',
+        marginVertical: 2
     },
     tableHeader: { 
         flexDirection: 'row', 
         borderBottomWidth: 1, 
         borderBottomColor: '#000', 
-        paddingBottom: 3, 
-        marginBottom: 5,
+        paddingBottom: 2, 
+        marginBottom: 4,
         fontWeight: 700,
-        fontSize: 7
+        fontSize: 8
     },
     tableRow: { 
         flexDirection: 'column',
-        marginBottom: 6
+        marginBottom: 5
     },
     itemMainRow: {
         flexDirection: 'row',
         justifyContent: 'space-between'
     },
     itemSubRow: {
-        fontSize: 6,
-        color: '#666',
+        fontSize: 7,
+        color: '#444',
         marginTop: 1,
-        flexDirection: 'row',
-        justifyContent: 'space-between'
+        marginLeft: 12
     },
     colDesc: { flex: 2 },
     colPrice: { flex: 1, textAlign: 'right' },
@@ -96,113 +104,322 @@ const pdfStyles = StyleSheet.create({
         flexDirection: 'row', 
         justifyContent: 'space-between', 
         marginBottom: 2,
-        fontSize: 8
+        fontSize: 9
     },
     grandTotal: { 
-        fontSize: 12, 
+        fontSize: 11, 
         fontWeight: 700, 
         borderTopWidth: 1, 
         borderTopColor: '#000', 
-        borderTopStyle: 'dashed',
-        paddingTop: 8, 
-        marginTop: 5,
+        borderTopStyle: 'solid',
+        borderBottomWidth: 1,
+        borderBottomColor: '#000',
+        borderBottomStyle: 'solid',
+        paddingVertical: 4, 
+        marginVertical: 4,
         flexDirection: 'row',
         justifyContent: 'space-between'
     },
     footer: { 
-        marginTop: 20, 
+        marginTop: 10, 
         textAlign: 'center', 
-        fontSize: 7,
-        color: '#666'
+        fontSize: 8,
+        color: '#000',
+        fontWeight: 700
     },
-    thanks: { 
-        fontSize: 10, 
-        fontWeight: 700,
-        marginBottom: 4,
-        color: '#000'
+    paymentRow: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        fontSize: 8,
+        marginBottom: 1
     }
 });
 
-const InvoicePDF = ({ invoice, salon }) => (
-    <Document>
-        <Page size={[226, 800]} style={pdfStyles.page}>
-            <View style={pdfStyles.centered}>
-                <Text style={pdfStyles.salonName}>{salon?.name || salon?.businessName || 'SALON'}</Text>
-                <Text style={pdfStyles.salonMeta}>{invoice.outletId?.name || ''}</Text>
-                <Text style={pdfStyles.salonMeta}>Ph: {salon?.phone || ''}</Text>
-                <Text style={pdfStyles.salonMeta}>GSTIN: {salon?.gstin || 'N/A'}</Text>
-            </View>
 
-            <View style={pdfStyles.divider} />
+const POSReceiptPDF = ({ invoice, salon }) => {
+    const createdAt = new Date(invoice.createdAt);
+    const dateStr = createdAt.toLocaleDateString('en-IN', { day: '2-digit', month: '2-digit', year: 'numeric' }).replace(/\//g, '-');
+    const timeStr = createdAt.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true });
 
-            <View style={pdfStyles.metaRow}>
-                <Text style={pdfStyles.label}>Invoice:</Text>
-                <Text style={pdfStyles.value}>#{invoice.invoiceNumber}</Text>
-            </View>
-            <View style={pdfStyles.metaRow}>
-                <Text style={pdfStyles.label}>Date:</Text>
-                <Text style={pdfStyles.value}>{new Date(invoice.createdAt).toLocaleDateString('en-IN')}</Text>
-            </View>
-            <View style={pdfStyles.metaRow}>
-                <Text style={pdfStyles.label}>Customer:</Text>
-                <Text style={pdfStyles.value}>{invoice.customerId?.name?.toUpperCase() || 'WALK-IN'}</Text>
-            </View>
-            <View style={pdfStyles.metaRow}>
-                <Text style={pdfStyles.label}>Payment:</Text>
-                <Text style={pdfStyles.value}>{invoice.paymentMethod?.toUpperCase() || 'CASH'}</Text>
-            </View>
+    // Payment breakdown
+    const cashPaid = invoice.payments?.filter(p => p.method === 'cash').reduce((sum, p) => sum + p.amount, 0) || 0;
+    const onlinePaid = invoice.payments?.filter(p => ['online', 'card', 'upi'].includes(p.method)).reduce((sum, p) => sum + p.amount, 0) || 0;
 
-            <View style={pdfStyles.divider} />
-
-            <View style={pdfStyles.tableHeader}>
-                <Text style={pdfStyles.colDesc}>DESCRIPTION</Text>
-                <Text style={pdfStyles.colPrice}>AMOUNT</Text>
-            </View>
-
-            {invoice.items?.map((item, i) => (
-                <View key={i} style={pdfStyles.tableRow}>
-                    <View style={pdfStyles.itemMainRow}>
-                        <Text style={pdfStyles.colDesc}>{item.name.toUpperCase()}</Text>
-                        <Text style={pdfStyles.colPrice}>Rs. {(item.total || 0).toFixed(0)}</Text>
-                    </View>
-                    <View style={pdfStyles.itemSubRow}>
-                        <Text>Qty: {item.quantity} x {item.price || (item.total / item.quantity).toFixed(0)}</Text>
-                        <Text>{item.type?.toUpperCase()}</Text>
-                    </View>
+    return (
+        <Document>
+            <Page size={[226, 800]} style={pdfStyles.page}>
+                <View style={pdfStyles.centered}>
+                    <Text style={pdfStyles.salonName}>{salon?.name || salon?.businessName || '-'}</Text>
+                    <Text style={pdfStyles.salonMeta}>{invoice.outletId?.name || '-'}</Text>
+                    <Text style={pdfStyles.salonMeta}>Contact : {salon?.phone || '-'}</Text>
                 </View>
-            ))}
 
-            <View style={pdfStyles.divider} />
+                <View style={pdfStyles.divider} />
 
-            <View style={pdfStyles.summaryRow}>
-                <Text>Subtotal</Text>
-                <Text>Rs. {(invoice.subtotal || 0).toFixed(0)}</Text>
-            </View>
-            {invoice.discount > 0 && (
+                <View style={pdfStyles.metaRow}>
+                    <Text style={pdfStyles.label}>Invoice No :</Text>
+                    <Text style={pdfStyles.value}>{invoice.invoiceNumber || '-'}</Text>
+                </View>
+                <View style={pdfStyles.metaRow}>
+                    <Text style={pdfStyles.label}>Date :</Text>
+                    <Text style={pdfStyles.value}>{dateStr}</Text>
+                </View>
+                <View style={pdfStyles.metaRow}>
+                    <Text style={pdfStyles.label}>Time :</Text>
+                    <Text style={pdfStyles.value}>{timeStr}</Text>
+                </View>
+
+                <View style={{ marginTop: 6, marginBottom: 2 }}>
+                    <Text style={{ fontSize: 8 }}>Customer : {invoice.customerId?.name || 'Walk-in'}</Text>
+                </View>
+
+                <View style={pdfStyles.divider} />
+                <Text style={pdfStyles.sectionTitle}>SERVICES</Text>
+                <View style={pdfStyles.divider} />
+
+                {invoice.items?.map((item, i) => (
+                    <View key={i} style={pdfStyles.tableRow}>
+                        <View style={pdfStyles.itemMainRow}>
+                            <Text style={pdfStyles.colDesc}>{i + 1}. {item.name || '-'}</Text>
+                            <Text style={pdfStyles.colPrice}>₹{(item.total || 0).toFixed(0)}</Text>
+                        </View>
+                        {item.stylistIds?.length > 0 && (
+                            <View style={pdfStyles.itemSubRow}>
+                                <Text>Staff : {item.stylistIds.map(s => s.name || '-').join(', ')}</Text>
+                            </View>
+                        )}
+                        {!item.stylistIds?.length && (
+                            <View style={pdfStyles.itemSubRow}>
+                                <Text>Staff : -</Text>
+                            </View>
+                        )}
+                    </View>
+                ))}
+
+                <View style={pdfStyles.divider} />
+
                 <View style={pdfStyles.summaryRow}>
-                    <Text>Total Discount</Text>
-                    <Text>-Rs. {(invoice.discount || 0).toFixed(0)}</Text>
+                    <Text>Subtotal</Text>
+                    <Text>₹{(invoice.subtotal || 0).toFixed(0)}</Text>
                 </View>
-            )}
-            
-            <View style={pdfStyles.summaryRow}>
-                <Text>Tax Amount</Text>
-                <Text>Rs. {(invoice.tax || 0).toFixed(2)}</Text>
-            </View>
+                
+                {invoice.tax > 0 && (
+                    <View style={pdfStyles.summaryRow}>
+                        <Text>GST (18%)</Text>
+                        <Text>₹{(invoice.tax || 0).toFixed(0)}</Text>
+                    </View>
+                )}
 
-            <View style={pdfStyles.grandTotal}>
-                <Text>GRAND TOTAL</Text>
-                <Text>Rs. {(invoice.total || 0).toFixed(0)}</Text>
-            </View>
+                {invoice.loyaltyPointsRedeemed > 0 && (
+                    <View style={pdfStyles.summaryRow}>
+                        <Text>Membership Discount</Text>
+                        <Text>-₹{(invoice.loyaltyPointsRedeemed || 0).toFixed(0)}</Text>
+                    </View>
+                )}
 
-            <View style={pdfStyles.footer}>
-                <Text style={pdfStyles.thanks}>THANK YOU! VISIT AGAIN :)</Text>
-                <Text>This is a computer generated receipt.</Text>
-                <Text>Generated by Wapixo POS</Text>
-            </View>
-        </Page>
-    </Document>
-);
+                {(invoice.discount - (invoice.loyaltyPointsRedeemed || 0)) > 0 && (
+                    <View style={pdfStyles.summaryRow}>
+                        <Text>Extra Discount</Text>
+                        <Text>-₹{(invoice.discount - (invoice.loyaltyPointsRedeemed || 0)).toFixed(0)}</Text>
+                    </View>
+                )}
+
+                <View style={pdfStyles.divider} />
+                <View style={pdfStyles.grandTotal}>
+                    <Text>TOTAL</Text>
+                    <Text>₹{(invoice.total || 0).toFixed(0)}</Text>
+                </View>
+                <View style={pdfStyles.divider} />
+
+                <View style={{ marginTop: 4 }}>
+                    <Text style={pdfStyles.sectionTitle}>PAYMENT DETAILS</Text>
+                    <View style={pdfStyles.divider} />
+                    
+                    <View style={pdfStyles.paymentRow}>
+                        <Text>Cash Paid</Text>
+                        <Text>₹{cashPaid.toFixed(0)}</Text>
+                    </View>
+                    <View style={pdfStyles.paymentRow}>
+                        <Text>Online Paid</Text>
+                        <Text>₹{onlinePaid.toFixed(0)}</Text>
+                    </View>
+                    <View style={pdfStyles.paymentRow}>
+                        <Text>Due Amount</Text>
+                        <Text>₹{(invoice.dueAmount || 0).toFixed(0)}</Text>
+                    </View>
+
+                    <View style={{ marginTop: 4 }}>
+                        <Text style={{ fontSize: 8 }}>Payment Mode : {invoice.paymentMethod?.toUpperCase() || '-'}</Text>
+                    </View>
+                </View>
+
+                <View style={pdfStyles.divider} />
+                <View style={pdfStyles.footer}>
+                    <Text>Thank You Visit Again 🙂</Text>
+                </View>
+                <View style={pdfStyles.divider} />
+            </Page>
+        </Document>
+    );
+};
+
+
+const StandardInvoicePDF = ({ invoice, salon }) => {
+    const createdAt = new Date(invoice.createdAt);
+    const dateStr = createdAt.toLocaleDateString('en-IN', { day: '2-digit', month: 'long', year: 'numeric' });
+    
+    // Payment breakdown
+    const cashPaid = invoice.payments?.filter(p => p.method === 'cash').reduce((sum, p) => sum + p.amount, 0) || 0;
+    const onlinePaid = invoice.payments?.filter(p => ['online', 'card', 'upi'].includes(p.method)).reduce((sum, p) => sum + p.amount, 0) || 0;
+
+    const maskPhone = (phone) => {
+        if (!phone) return '-';
+        return phone.replace(/(\d{2})(\d{6})(\d{2})/, '$1XXXXXX$3');
+    };
+
+    return (
+        <Document>
+            <Page size="A4" style={{ padding: 40, fontFamily: 'Roboto', fontSize: 10, color: '#1a1a1a' }}>
+                {/* Header */}
+                <View style={{ borderBottom: 2, borderColor: '#C8956C', paddingBottom: 15, marginBottom: 20 }}>
+                    <Text style={{ fontSize: 28, fontWeight: 700, color: '#C8956C', textAlign: 'center', letterSpacing: 2 }}>TAX INVOICE</Text>
+                </View>
+
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 30 }}>
+                    <View style={{ width: '60%' }}>
+                        <Text style={{ fontSize: 14, fontWeight: 700, color: '#C8956C', marginBottom: 5 }}>{salon?.name || salon?.businessName}</Text>
+                        <Text style={{ color: '#666', marginBottom: 2 }}>{invoice.outletId?.name || '-'}</Text>
+                        <Text style={{ color: '#666', marginBottom: 2 }}>{typeof salon?.address === 'object' ? `${salon.address.street || ''}, ${salon.address.city || ''}` : (salon?.address || '-')}</Text>
+                        <Text style={{ color: '#666' }}>Contact Number: {salon?.phone || '-'}</Text>
+                        <Text style={{ color: '#666', marginTop: 2 }}>GSTIN: {salon?.gstin || 'N/A'}</Text>
+                    </View>
+                    <View style={{ width: '35%', textAlign: 'right' }}>
+                        <View style={{ marginBottom: 10 }}>
+                            <Text style={{ fontSize: 8, color: '#999', textTransform: 'uppercase' }}>Invoice Number</Text>
+                            <Text style={{ fontWeight: 700 }}>{invoice.invoiceNumber || '-'}</Text>
+                        </View>
+                        <View style={{ marginBottom: 10 }}>
+                            <Text style={{ fontSize: 8, color: '#999', textTransform: 'uppercase' }}>Invoice Date</Text>
+                            <Text style={{ fontWeight: 700 }}>{dateStr}</Text>
+                        </View>
+                        <View>
+                            <Text style={{ fontSize: 8, color: '#999', textTransform: 'uppercase' }}>Service Date</Text>
+                            <Text style={{ fontWeight: 700 }}>{dateStr}</Text>
+                        </View>
+                    </View>
+                </View>
+
+                {/* Customer Details */}
+                <View style={{ backgroundColor: '#f9f9f9', padding: 15, marginBottom: 30, borderLeft: 4, borderColor: '#C8956C' }}>
+                    <Text style={{ fontSize: 10, fontWeight: 700, color: '#C8956C', marginBottom: 10, textTransform: 'uppercase', letterSpacing: 1 }}>Customer Details</Text>
+                    <View style={{ flexDirection: 'row' }}>
+                        <View style={{ flex: 1 }}>
+                            <Text style={{ fontSize: 8, color: '#999', marginBottom: 2 }}>Customer Name</Text>
+                            <Text style={{ fontWeight: 700 }}>{invoice.customerId?.name || 'Walk-in'}</Text>
+                        </View>
+                        <View style={{ flex: 1 }}>
+                            <Text style={{ fontSize: 8, color: '#999', marginBottom: 2 }}>Mobile Number</Text>
+                            <Text style={{ fontWeight: 700 }}>{maskPhone(invoice.customerId?.phone)}</Text>
+                        </View>
+                    </View>
+                </View>
+
+                {/* Service Table */}
+                <View style={{ marginBottom: 30 }}>
+                    <Text style={{ fontSize: 10, fontWeight: 700, color: '#C8956C', marginBottom: 10, textTransform: 'uppercase', letterSpacing: 1 }}>Service Details</Text>
+                    <View style={{ flexDirection: 'row', backgroundColor: '#C8956C', padding: 10, color: '#fff', fontWeight: 700 }}>
+                        <Text style={{ flex: 2 }}>Service Name</Text>
+                        <Text style={{ flex: 1.5 }}>Staff Name</Text>
+                        <Text style={{ flex: 1, textAlign: 'right' }}>Amount</Text>
+                    </View>
+                    {invoice.items?.map((item, i) => (
+                        <View key={i} style={{ flexDirection: 'row', padding: 10, borderBottom: 1, borderColor: '#eee', alignItems: 'center' }}>
+                            <Text style={{ flex: 2 }}>{item.name}</Text>
+                            <Text style={{ flex: 1.5, fontSize: 9 }}>{item.stylistIds?.map(s => s.name).join(', ') || '-'}</Text>
+                            <Text style={{ flex: 1, textAlign: 'right', fontWeight: 700 }}>₹{(item.total || 0).toFixed(2)}</Text>
+                        </View>
+                    ))}
+                </View>
+
+                {/* Bill Summary & Payment Details */}
+                <View style={{ flexDirection: 'row', gap: 40 }}>
+                    {/* Bill Summary */}
+                    <View style={{ flex: 1 }}>
+                        <Text style={{ fontSize: 10, fontWeight: 700, color: '#C8956C', marginBottom: 10, textTransform: 'uppercase', letterSpacing: 1 }}>Bill Summary</Text>
+                        <View style={{ borderTop: 1, borderColor: '#eee', paddingTop: 10 }}>
+                            <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 5 }}>
+                                <Text style={{ color: '#666' }}>Service Total</Text>
+                                <Text>₹{(invoice.subtotal || 0).toFixed(2)}</Text>
+                            </View>
+                            <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 5 }}>
+                                <Text style={{ color: '#666' }}>GST (18%)</Text>
+                                <Text>₹{(invoice.tax || 0).toFixed(2)}</Text>
+                            </View>
+                            {invoice.loyaltyPointsRedeemed > 0 && (
+                                <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 5 }}>
+                                    <Text style={{ color: '#10b981' }}>Membership Plan Discount</Text>
+                                    <Text style={{ color: '#10b981' }}>-₹{(invoice.loyaltyPointsRedeemed || 0).toFixed(2)}</Text>
+                                </View>
+                            )}
+                            {(invoice.discount - (invoice.loyaltyPointsRedeemed || 0)) > 0 && (
+                                <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 5 }}>
+                                    <Text style={{ color: '#10b981' }}>Additional Discount</Text>
+                                    <Text style={{ color: '#10b981' }}>-₹{(invoice.discount - (invoice.loyaltyPointsRedeemed || 0)).toFixed(2)}</Text>
+                                </View>
+                            )}
+                            <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 10, paddingTop: 10, borderTop: 2, borderColor: '#C8956C' }}>
+                                <Text style={{ fontSize: 14, fontWeight: 700 }}>Grand Total</Text>
+                                <Text style={{ fontSize: 14, fontWeight: 700, color: '#C8956C' }}>₹{(invoice.total || 0).toFixed(2)}</Text>
+                            </View>
+                        </View>
+                    </View>
+
+                    {/* Payment Details */}
+                    <View style={{ flex: 1 }}>
+                        <Text style={{ fontSize: 10, fontWeight: 700, color: '#C8956C', marginBottom: 10, textTransform: 'uppercase', letterSpacing: 1 }}>Payment Details</Text>
+                        <View style={{ borderTop: 1, borderColor: '#eee', paddingTop: 10 }}>
+                            <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 5 }}>
+                                <Text style={{ color: '#666' }}>Payment Method</Text>
+                                <Text style={{ textTransform: 'capitalize' }}>{invoice.paymentMethod || '-'}</Text>
+                            </View>
+                            <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 5 }}>
+                                <Text style={{ color: '#666' }}>Cash Paid</Text>
+                                <Text>₹{cashPaid.toFixed(2)}</Text>
+                            </View>
+                            <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 5 }}>
+                                <Text style={{ color: '#666' }}>Online Paid</Text>
+                                <Text>₹{onlinePaid.toFixed(2)}</Text>
+                            </View>
+                            <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 5 }}>
+                                <Text style={{ color: '#e11d48', fontWeight: 700 }}>Due Amount</Text>
+                                <Text style={{ color: '#e11d48', fontWeight: 700 }}>₹{(invoice.dueAmount || 0).toFixed(2)}</Text>
+                            </View>
+                            <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 5 }}>
+                                <Text style={{ color: '#666' }}>Payment Status</Text>
+                                <Text style={{ color: invoice.paymentStatus === 'paid' ? '#10b981' : '#f59e0b', fontWeight: 700, textTransform: 'uppercase' }}>
+                                    {invoice.paymentStatus?.replace('_', ' ')}
+                                </Text>
+                            </View>
+                        </View>
+                    </View>
+                </View>
+
+                {/* Notes */}
+                <View style={{ marginTop: 50, padding: 15, borderTop: 1, borderColor: '#eee' }}>
+                    <Text style={{ fontSize: 9, fontWeight: 700, color: '#666', marginBottom: 5 }}>NOTES</Text>
+                    <Text style={{ fontSize: 8, color: '#999', marginBottom: 2 }}>• Goods once sold will not be returned.</Text>
+                    <Text style={{ fontSize: 8, color: '#999' }}>• Please keep this invoice for future reference.</Text>
+                </View>
+
+                {/* Footer */}
+                <View style={{ position: 'absolute', bottom: 40, left: 40, right: 40, textAlign: 'center', borderTop: 1, borderColor: '#eee', paddingTop: 20 }}>
+                    <Text style={{ fontSize: 14, fontWeight: 700, color: '#C8956C', letterSpacing: 2 }}>Thank You For Visiting Us</Text>
+                    <Text style={{ fontSize: 8, color: '#999', marginTop: 10 }}>This is a computer-generated tax invoice and does not require a physical signature.</Text>
+                </View>
+            </Page>
+        </Document>
+    );
+};
 
 export default function POSInvoicesPage() {
     const { salon, outlets, activeOutletId, setActiveOutletId } = useBusiness();
@@ -248,40 +465,44 @@ export default function POSInvoicesPage() {
         loadInvoices();
     }, [activeOutletId]);
 
-    const handleDownloadPDF = async () => {
+    const handleDownloadPDF = async (type = 'pos') => {
         if (!selectedInvoice) return;
-        setIsGeneratingPDF(true);
+        setIsGeneratingPDF(type);
         try {
-            const blob = await pdf(<InvoicePDF invoice={selectedInvoice} salon={salon} />).toBlob();
+            const PDFComponent = type === 'pos' ? POSReceiptPDF : StandardInvoicePDF;
+            const blob = await pdf(<PDFComponent invoice={selectedInvoice} salon={salon} />).toBlob();
             const url = URL.createObjectURL(blob);
             const link = document.createElement('a');
             link.href = url;
-            link.download = `${selectedInvoice.invoiceNumber}_${selectedInvoice.customerId?.name || 'Invoice'}.pdf`;
+            const suffix = type === 'pos' ? 'Receipt' : 'Invoice';
+            link.download = `${selectedInvoice.invoiceNumber}_${selectedInvoice.customerId?.name || 'Customer'}_${suffix}.pdf`;
             link.click();
             URL.revokeObjectURL(url);
         } catch (error) {
             console.error('PDF Generation Error:', error);
             alert('Failed to generate PDF. Please try again.');
         } finally {
-            setIsGeneratingPDF(false);
+            setIsGeneratingPDF(null);
         }
     };
 
-    const handleDownloadDirectPDF = async (inv) => {
-        setIsGeneratingPDF(true);
+    const handleDownloadDirectPDF = async (inv, type = 'pos') => {
+        setIsGeneratingPDF(`${inv._id}_${type}`);
         try {
-            const blob = await pdf(<InvoicePDF invoice={inv} salon={salon} />).toBlob();
+            const PDFComponent = type === 'pos' ? POSReceiptPDF : StandardInvoicePDF;
+            const blob = await pdf(<PDFComponent invoice={inv} salon={salon} />).toBlob();
             const url = URL.createObjectURL(blob);
             const link = document.createElement('a');
             link.href = url;
-            link.download = `${inv.invoiceNumber}_${inv.customerId?.name || 'Invoice'}.pdf`;
+            const suffix = type === 'pos' ? 'Receipt' : 'Invoice';
+            link.download = `${inv.invoiceNumber}_${inv.customerId?.name || 'Customer'}_${suffix}.pdf`;
             link.click();
             URL.revokeObjectURL(url);
         } catch (error) {
             console.error('PDF Generation Error:', error);
             alert('Failed to generate PDF. Please try again.');
         } finally {
-            setIsGeneratingPDF(false);
+            setIsGeneratingPDF(null);
         }
     };
 
@@ -493,13 +714,27 @@ export default function POSInvoicesPage() {
                                                 <button onClick={() => setSelectedInvoice(inv)} className="p-2 border border-border bg-surface hover:bg-primary hover:border-primary hover:text-white transition-all group/btn active:scale-95 shadow-sm" title="View Details">
                                                     <Eye className="w-4 h-4" />
                                                 </button>
+                                                
+                                                {/* POS Receipt Button */}
                                                 <button 
-                                                    onClick={() => handleDownloadDirectPDF(inv)} 
+                                                    onClick={() => handleDownloadDirectPDF(inv, 'pos')} 
+                                                    disabled={isGeneratingPDF === `${inv._id}_pos`}
                                                     className="p-2 border border-border bg-surface hover:bg-emerald-500 hover:border-emerald-500 hover:text-white transition-all group/btn active:scale-95 shadow-sm flex items-center gap-2"
-                                                    title="Download PDF"
+                                                    title="Download POS Receipt"
                                                 >
-                                                    <Download className="w-3.5 h-3.5" />
-                                                    <span className="text-[9px] font-black uppercase">PDF</span>
+                                                    {isGeneratingPDF === `${inv._id}_pos` ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Printer className="w-3.5 h-3.5" />}
+                                                    <span className="text-[9px] font-black uppercase">POS</span>
+                                                </button>
+
+                                                {/* Standard Invoice Button */}
+                                                <button 
+                                                    onClick={() => handleDownloadDirectPDF(inv, 'standard')} 
+                                                    disabled={isGeneratingPDF === `${inv._id}_standard`}
+                                                    className="p-2 border border-border bg-surface hover:bg-blue-500 hover:border-blue-500 hover:text-white transition-all group/btn active:scale-95 shadow-sm flex items-center gap-2"
+                                                    title="Download Standard Invoice"
+                                                >
+                                                    {isGeneratingPDF === `${inv._id}_standard` ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <FileText className="w-3.5 h-3.5" />}
+                                                    <span className="text-[9px] font-black uppercase">Bill</span>
                                                 </button>
                                             </div>
                                         </td>
@@ -617,14 +852,22 @@ export default function POSInvoicesPage() {
                             </div>
                         </div>
 
-                        <div className="p-6 bg-surface-alt border-t border-border flex gap-3">
+                        <div className="p-6 bg-surface-alt border-t border-border flex flex-col sm:flex-row gap-3">
                             <button
-                                disabled={isGeneratingPDF}
-                                onClick={handleDownloadPDF}
+                                disabled={!!isGeneratingPDF}
+                                onClick={() => handleDownloadPDF('pos')}
+                                className="flex-1 py-3 bg-emerald-600 text-white font-black text-[10px] uppercase tracking-[0.2em] hover:bg-emerald-700 transition-all flex items-center justify-center gap-3 disabled:opacity-50 shadow-lg shadow-emerald-600/20 active:scale-95"
+                            >
+                                {isGeneratingPDF === 'pos' ? <Loader2 className="w-4 h-4 animate-spin" /> : <Printer className="w-4 h-4" />}
+                                {isGeneratingPDF === 'pos' ? 'Generating...' : 'POS Receipt'}
+                            </button>
+                            <button
+                                disabled={!!isGeneratingPDF}
+                                onClick={() => handleDownloadPDF('standard')}
                                 className="flex-1 py-3 bg-primary text-white font-black text-[10px] uppercase tracking-[0.2em] hover:bg-primary-dark transition-all flex items-center justify-center gap-3 disabled:opacity-50 shadow-lg shadow-primary/20 active:scale-95"
                             >
-                                {isGeneratingPDF ? <Loader2 className="w-4 h-4 animate-spin" /> : <FileText className="w-4 h-4" />}
-                                {isGeneratingPDF ? 'Generating...' : 'Download PDF'}
+                                {isGeneratingPDF === 'standard' ? <Loader2 className="w-4 h-4 animate-spin" /> : <FileText className="w-4 h-4" />}
+                                {isGeneratingPDF === 'standard' ? 'Generating...' : 'A4 Invoice'}
                             </button>
                             <button onClick={() => setSelectedInvoice(null)} className="px-6 py-3 border border-border bg-surface text-text-muted font-black text-[10px] uppercase tracking-[0.2em] hover:text-text hover:bg-surface-alt transition-all active:scale-95">
                                 Close
