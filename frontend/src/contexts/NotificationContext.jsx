@@ -94,6 +94,19 @@ export function NotificationProvider({ children }) {
         }
     }, [activeUserId, userSession, fetchNotifications, isInitializing]);
 
+    useEffect(() => {
+        const handleNewNotification = (event) => {
+            console.log('[NotificationContext] Real-time notification received:', event.detail);
+            // Increment unread count locally for immediate feedback
+            setUnreadCount(prev => prev + 1);
+            // Optionally re-fetch to get the full list
+            fetchNotifications();
+        };
+
+        window.addEventListener('notification_received', handleNewNotification);
+        return () => window.removeEventListener('notification_received', handleNewNotification);
+    }, [fetchNotifications]);
+
     const value = useMemo(() => ({
         notifications,
         unreadCount,

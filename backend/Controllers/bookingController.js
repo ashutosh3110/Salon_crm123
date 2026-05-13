@@ -233,7 +233,7 @@ exports.createBooking = async (req, res) => {
 
         // Send Push Notification
         try {
-            const { sendNotification } = require('../Utils/notification');
+            const { sendNotification, sendAdminNotification } = require('../Utils/notification');
             const dateStr = new Date(populated.appointmentDate).toLocaleDateString();
             const timeStr = populated.time || new Date(populated.appointmentDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
             
@@ -246,8 +246,33 @@ exports.createBooking = async (req, res) => {
                 actionUrl: `/app/bookings/${populated._id}`,
                 data: { bookingId: populated._id.toString() }
             });
+
+            // Notify Admins if created by customer
+            if (req.user?.role === 'customer' || source === 'APP' || source === 'WEB' || source === 'app' || source === 'web') {
+                const { sendWhatsAppMessage } = require('../Utils/whatsapp');
+                const User = require('../Models/User');
+
+                const adminTitle = 'New Booking Alert! 🔔';
+                const adminMsg = `New booking received from ${populated.clientId.name} for ${populated.serviceId.name} on ${dateStr} at ${timeStr}.`;
+
+                await sendAdminNotification({
+                    salonId,
+                    title: adminTitle,
+                    message: adminMsg,
+                    type: 'booking',
+                    actionUrl: `/admin/bookings/${populated._id}`
+                });
+
+                // WhatsApp to Admins
+                const admins = await User.find({ salonId, role: 'admin', status: 'active' });
+                for (const ad of admins) {
+                    if (ad.phone) {
+                        await sendWhatsAppMessage(ad.phone, adminMsg);
+                    }
+                }
+            }
         } catch (pushErr) {
-            console.error('Booking Push Notification failed:', pushErr.message);
+            console.error('Booking Notification failed:', pushErr.message);
         }
 
         res.status(201).json({
@@ -360,7 +385,7 @@ exports.updateStatus = async (req, res) => {
             const statusMsgs = {
                 'completed': 'Your service is completed. We hope you enjoyed your ritual! ✨',
                 'cancelled': 'Your booking has been cancelled.',
-                'confirmed': 'Your booking has been confirmed by the salon.',
+                'confirmed': 'Your booking has been confirmed by the salon. We look forward to seeing you! ✅',
                 'no-show': 'We missed you! Your booking was marked as a no-show.'
             };
 
@@ -368,12 +393,68 @@ exports.updateStatus = async (req, res) => {
                 await sendNotification({
                     customerId: booking.clientId,
                     salonId: booking.salonId,
-                    title: `Booking ${booking.status.toUpperCase()}!`,
+                    title: booking.status === 'confirmed' ? 'Booking Confirmed! 📅' : `Booking ${booking.status.toUpperCase()}!`,
                     message: statusMsgs[booking.status],
                     type: 'booking',
                     actionUrl: `/app/bookings/${booking._id}`,
                     data: { bookingId: booking._id.toString(), status: booking.status }
                 });
+
+                // If accepted/confirmed, also send WhatsApp
+                if (booking.status === 'confirmed') {
+                    try {
+                        const populated = await Booking.findById(booking._id)
+                            .populate('clientId', 'name phone email')
+                            .populate('serviceId', 'name price duration')
+                            .populate('staffId', 'name profileImage')
+                            .populate('outletId', 'name address city')
+                            .populate('salonId', 'name logo businessName');
+
+                        const dateStr = new Date(populated.appointmentDate).toLocaleDateString();
+                        const timeStr = populated.time || new Date(populated.appointmentDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                        
+                        // Extract names from staff array
+                        const staffNames = Array.isArray(populated.staffId) 
+                            ? populated.staffId.map(s => s.name).join(', ') 
+                            : (populated.staffId?.name || 'Assigned Stylist');
+
+                        await sendWapixoTemplate(
+                            populated.clientId.phone,
+                            process.env.WHATSAPP_TEMPLATE_BOOKING_LINK,
+                            [
+                                populated.clientId.name,
+                                populated.salonId.businessName || populated.salonId.name || 'Our Salon',
+                                populated.outletId.name,
+                                populated.outletId.city || populated.outletId.address?.city || 'Our Location',
+                                staffNames,
+                                populated.serviceId.name,
+                                dateStr,
+                                timeStr
+                            ]
+                        );
+                    } catch (wsErr) {
+                        console.error('Acceptance WhatsApp failed:', wsErr.message);
+                    }
+                }
+
+                // If completed, send completion WhatsApp
+                if (booking.status === 'completed') {
+                    try {
+                        const { sendWhatsAppMessage } = require('../Utils/whatsapp');
+                        const populated = await Booking.findById(booking._id)
+                            .populate('clientId', 'name phone')
+                            .populate('serviceId', 'name')
+                            .populate('salonId', 'businessName name');
+
+                        if (populated.clientId?.phone) {
+                            const salonName = populated.salonId?.businessName || populated.salonId?.name || 'Our Salon';
+                            const msg = `Hi ${populated.clientId.name}, your booking for ${populated.serviceId?.name || 'service'} at ${salonName} is now complete. We hope you enjoyed your service! ✨`;
+                            await sendWhatsAppMessage(populated.clientId.phone, msg);
+                        }
+                    } catch (wsErr) {
+                        console.error('Completion WhatsApp failed:', wsErr.message);
+                    }
+                }
             }
         } catch (pushErr) {
             console.error('Status Update Push failed:', pushErr.message);

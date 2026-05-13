@@ -40,22 +40,24 @@ export const useFirebaseNotifications = (isAuthenticated) => {
     let unsubscribe = null;
     if (messaging) {
       unsubscribe = onMessage(messaging, (payload) => {
-        const { title, body } = payload.notification || {};
+        const { title, body, image } = payload.notification || {};
         
         // Rich Toast notification
         toast.success(
-          <div style={{ cursor: 'pointer' }}>
-            <p className="font-bold text-sm tracking-tight">{title || 'New Notification'}</p>
-            <p className="text-xs opacity-75 mt-0.5 line-clamp-2">{body}</p>
-            <div className="mt-2 text-[10px] font-bold text-primary uppercase tracking-widest">Click to View ➔</div>
+          <div style={{ cursor: 'pointer', display: 'flex', gap: '12px', alignItems: 'center' }}>
+            {image && <img src={image} alt="" style={{ width: '40px', height: '40px', borderRadius: '8px', objectCover: 'cover' }} />}
+            <div style={{ flex: 1 }}>
+              <p className="font-bold text-sm tracking-tight">{title || 'New Notification'}</p>
+              <p className="text-xs opacity-75 mt-0.5 line-clamp-2">{body}</p>
+              <div className="mt-1 text-[9px] font-bold text-[#C8956C] uppercase tracking-widest">View Details ➔</div>
+            </div>
           </div>,
           {
             duration: 8000,
             position: 'top-right',
             id: 'foreground-push-' + Date.now(),
             onClick: () => {
-               const url = payload.data?.actionUrl || '/';
-               console.log('[useFirebaseNotifications] Navigating to:', url);
+               const url = payload.data?.url || payload.data?.click_action || '/app/notifications';
                window.location.href = url;
             }
           }

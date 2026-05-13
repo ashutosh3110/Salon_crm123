@@ -65,7 +65,7 @@ export default function NewBookingPage() {
     const [selection, setSelection] = useState({
         outletId: '',
         serviceId: '',
-        staffId: '',
+        staffId: [], // Array for multiple staff
         date: '',
         time: '',
         customerId: '',
@@ -85,7 +85,11 @@ export default function NewBookingPage() {
 
     useEffect(() => {
         const fetchSlots = async () => {
-            if (!selection.staffId || !selection.serviceId || !selection.date || selection.staffId === 'any') {
+            // For now, if multiple staff are selected, we fetch slots for the FIRST one
+            // Ideally, the backend should handle multiple staff IDs and return common slots
+            const primaryStaffId = Array.isArray(selection.staffId) ? selection.staffId[0] : selection.staffId;
+
+            if (!primaryStaffId || !selection.serviceId || !selection.date || primaryStaffId === 'any') {
                 setAvailableSlots([]);
                 return;
             }
@@ -93,7 +97,7 @@ export default function NewBookingPage() {
             try {
                 const res = await api.get('/bookings/available-slots', {
                     params: {
-                        staffId: selection.staffId,
+                        staffId: primaryStaffId,
                         serviceId: selection.serviceId,
                         date: selection.date
                     }
@@ -167,7 +171,10 @@ export default function NewBookingPage() {
     // Derived Data
     const selectedOutlet = useMemo(() => outlets.find(o => o._id === selection.outletId), [outlets, selection.outletId]);
     const selectedService = useMemo(() => services.find(s => s._id === selection.serviceId), [services, selection.serviceId]);
-    const selectedStaff = useMemo(() => staff.find(s => s._id === selection.staffId), [staff, selection.staffId]);
+    const selectedStaffList = useMemo(() => {
+        const ids = Array.isArray(selection.staffId) ? selection.staffId : [selection.staffId];
+        return staff.filter(s => ids.includes(s._id));
+    }, [staff, selection.staffId]);
     const selectedCustomer = useMemo(() => customers.find(c => c._id === selection.customerId), [customers, selection.customerId]);
 
     const filteredServices = useMemo(() => {
@@ -467,47 +474,67 @@ export default function NewBookingPage() {
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                            {filteredStaff.map(s => (
-                                <div 
-                                    key={s._id}
-                                    onClick={() => {
-                                        setSelection({...selection, staffId: s._id});
-                                        nextStep();
-                                    }}
-                                    className={`group p-8 bg-surface border-2 cursor-pointer transition-all text-center relative ${selection.staffId === s._id ? 'border-primary shadow-2xl scale-105 z-10' : 'border-border hover:border-text opacity-70 hover:opacity-100'}`}
-                                >
-                                    <div className="w-24 h-24 mx-auto bg-surface-alt border-4 border-border mb-6 overflow-hidden flex items-center justify-center transition-all group-hover:border-primary">
-                                        {s.avatar ? (
-                                            <img src={getImageUrl(s.avatar)} className="w-full h-full object-cover" />
-                                        ) : (
-                                            <User className="w-10 h-10 text-text-muted" />
-                                        )}
-                                    </div>
-                                    <h3 className="text-lg font-black text-text uppercase italic tracking-tight leading-none mb-2">{s.name}</h3>
-                                    <p className="text-[9px] font-black text-primary uppercase tracking-[0.2em] italic">{s.specialization || 'Specialist'}</p>
-                                    
-                                    <div className="mt-8 pt-4 border-t border-border flex items-center justify-center gap-4 text-text-muted opacity-60">
-                                        <div className="flex items-center gap-1">
-                                            <Clock className="w-3 h-3" />
-                                            <p className="text-[9px] font-black uppercase">Available</p>
+                            {filteredStaff.length > 0 ? (
+                                filteredStaff.map(s => {
+                                    const isSelected = selection.staffId.includes(s._id);
+                                    return (
+                                        <div 
+                                            key={s._id}
+                                            onClick={() => {
+                                                const newStaffIds = isSelected 
+                                                    ? selection.staffId.filter(id => id !== s._id)
+                                                    : [...selection.staffId, s._id];
+                                                setSelection({...selection, staffId: newStaffIds});
+                                            }}
+                                            className={`group p-8 bg-surface border-2 cursor-pointer transition-all text-center relative ${isSelected ? 'border-primary shadow-2xl scale-105 z-10' : 'border-border hover:border-text opacity-70 hover:opacity-100'}`}
+                                        >
+                                            <div className="w-24 h-24 mx-auto bg-surface-alt border-4 border-border mb-6 overflow-hidden flex items-center justify-center transition-all group-hover:border-primary">
+                                                {s.avatar ? (
+                                                    <img src={getImageUrl(s.avatar)} className="w-full h-full object-cover" />
+                                                ) : (
+                                                    <User className="w-10 h-10 text-text-muted" />
+                                                )}
+                                            </div>
+                                            <h3 className="text-lg font-black text-text uppercase italic tracking-tight leading-none mb-2">{s.name}</h3>
+                                            <p className="text-[9px] font-black text-primary uppercase tracking-[0.2em] italic">{s.specialization || 'Specialist'}</p>
+                                            
+                                            <div className="mt-8 pt-4 border-t border-border flex items-center justify-center gap-4 text-text-muted opacity-60">
+                                                <div className="flex items-center gap-1">
+                                                    <Clock className="w-3 h-3" />
+                                                    <p className="text-[9px] font-black uppercase">Available</p>
+                                                </div>
+                                            </div>
+                                            {isSelected && (
+                                                <div className="absolute top-4 right-4 bg-primary text-white p-1">
+                                                    <CheckCircle2 className="w-4 h-4" />
+                                                </div>
+                                            )}
                                         </div>
+                                    );
+                                })
+                            ) : (
+                                <div className="col-span-full py-16 bg-surface border-2 border-dashed border-border flex flex-col items-center justify-center text-center space-y-6">
+                                    <div className="w-16 h-16 bg-primary/5 rounded-none flex items-center justify-center">
+                                        <Users className="w-8 h-8 text-primary opacity-40" />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <h3 className="text-xl font-black text-text uppercase italic tracking-tighter">No staff available in this outlet</h3>
+                                        <p className="text-[10px] font-black text-text-muted uppercase tracking-widest">You need to add staff to this outlet to take bookings</p>
                                     </div>
                                 </div>
-                            ))}
-                            <div 
-                                onClick={() => {
-                                    setSelection({...selection, staffId: 'any'});
-                                    nextStep();
-                                }}
-                                className={`group p-8 bg-surface-alt border-2 border-dashed border-border cursor-pointer transition-all text-center flex flex-col items-center justify-center gap-4 hover:border-primary hover:bg-surface ${selection.staffId === 'any' ? 'border-primary bg-primary/5' : ''}`}
-                            >
-                                <Users className="w-10 h-10 text-text-muted opacity-40" />
-                                <div>
-                                    <h3 className="text-sm font-black text-text uppercase italic">Any Staff</h3>
-                                    <p className="text-[8px] font-black text-text-muted uppercase mt-1">Auto-Assign</p>
-                                </div>
-                            </div>
+                            )}
                         </div>
+
+                        {selection.staffId.length > 0 && (
+                            <div className="flex justify-end pt-10">
+                                <button 
+                                    onClick={nextStep}
+                                    className="px-12 py-5 bg-text text-white text-xs font-black uppercase tracking-[0.4em] hover:bg-primary transition-all shadow-2xl shadow-primary/20 flex items-center gap-4 group italic"
+                                >
+                                    Continue to Schedule <ArrowRight className="w-4 h-4 group-hover:translate-x-2 transition-transform" />
+                                </button>
+                            </div>
+                        )}
                     </div>
                 )}
 
@@ -706,7 +733,11 @@ export default function NewBookingPage() {
                                 </div>
                                 <div className="space-y-1">
                                     <p className="text-[8px] font-black text-primary uppercase tracking-[0.3em] font-mono">Staff</p>
-                                    <h4 className="text-xl font-black text-text uppercase italic tracking-tight">{selectedStaff?.name || 'Any'}</h4>
+                                    <div className="flex flex-wrap gap-2">
+                                        {selectedStaffList.length > 0 ? selectedStaffList.map(s => (
+                                            <h4 key={s._id} className="text-sm font-black text-text uppercase italic tracking-tight bg-surface-alt px-2 py-1 border border-border">{s.name}</h4>
+                                        )) : <h4 className="text-xl font-black text-text uppercase italic tracking-tight">Any</h4>}
+                                    </div>
                                 </div>
                             </div>
 

@@ -252,25 +252,26 @@ export default function AppHeader() {
                 >
                     <Bell size={20} strokeWidth={2.2} className={unreadCount > 0 ? 'animate-bounce-slow' : ''} />
                     {unreadCount > 0 && (
-                        <span style={{
-                            position: 'absolute',
-                            top: '8px',
-                            right: '6px',
-                            minWidth: '14px',
-                            height: '14px',
-                            background: '#ff4757',
-                            color: 'white',
-                            fontSize: '8px',
-                            fontWeight: 900,
-                            borderRadius: '50%',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            border: isLight ? '1.5px solid #fff' : '1.5px solid #141414',
-                            boxShadow: '0 2px 4px rgba(255, 71, 87, 0.3)'
-                        }}>
-                            {unreadCount > 9 ? '9+' : unreadCount}
-                        </span>
+                        <span 
+                            className="animate-pulse-red"
+                            style={{
+                                position: 'absolute',
+                                top: '8px',
+                                right: '6px',
+                                minWidth: '14px',
+                                height: '14px',
+                                background: '#ff4757',
+                                color: 'white',
+                                fontSize: '8px',
+                                fontWeight: 900,
+                                borderRadius: '50%',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                border: isLight ? '1.5px solid #fff' : '1.5px solid #141414',
+                            }}>
+                                {unreadCount > 9 ? '9+' : unreadCount}
+                            </span>
                     )}
                 </motion.button>
                 

@@ -61,10 +61,18 @@ export const CartProvider = ({ children }) => {
         }
     }, [fetchCart, userSession?.cart, customer?._id, location.pathname, isInitializing]);
 
-    const addToCart = async (productId, quantity = 1) => {
+    const debounceTimerRef = useRef(null);
+
+    const addToCart = async (productId, quantity = 1, isUpdate = false) => {
         if (!customer) return;
 
         const pId = typeof productId === 'object' ? (productId._id || productId.id) : productId;
+        
+        // If it's an update, we handle it via syncCartWithServer in debounced way
+        if (isUpdate) {
+            return syncCartWithServer(pId, quantity);
+        }
+
         try {
             const res = await api.post('/cart', {
                 productId: pId,
@@ -73,7 +81,6 @@ export const CartProvider = ({ children }) => {
             });
             if (res.data.success) {
                 setCart(res.data.data);
-                setIsCartOpen(true);
                 return true;
             }
         } catch (error) {
@@ -82,14 +89,53 @@ export const CartProvider = ({ children }) => {
         }
     };
 
-    const updateQuantity = async (productId, quantity) => {
-        if (quantity < 1) return removeFromCart(productId);
-        return addToCart(productId, quantity);
+    const syncCartWithServer = async (productId, quantity) => {
+        try {
+            const res = await api.post('/cart', {
+                productId,
+                quantity,
+                salonId: activeSalonId || localStorage.getItem('active_salon_id')
+            });
+            if (res.data.success) {
+                setCart(res.data.data);
+                return true;
+            }
+        } catch (error) {
+            console.error('Failed to sync cart:', error);
+            fetchCart(); // Re-sync on error
+            return false;
+        }
+    };
+
+    const updateQuantity = (productId, quantity) => {
+        const pId = typeof productId === 'object' ? (productId._id || productId.id) : productId;
+        
+        if (quantity < 1) return removeFromCart(pId);
+
+        // 1. Optimistic UI Update (Immediate)
+        setCart(prev => ({
+            ...prev,
+            items: prev.items.map(item => {
+                const itemId = item.productId?._id || item.productId?.id || item.productId;
+                if (String(itemId) === String(pId)) {
+                    return { ...item, quantity };
+                }
+                return item;
+            })
+        }));
+
+        // 2. Debounced Server Sync (Delay 500ms)
+        if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current);
+        
+        debounceTimerRef.current = setTimeout(() => {
+            syncCartWithServer(pId, quantity);
+        }, 500);
     };
 
     const removeFromCart = async (productId) => {
+        const pId = typeof productId === 'object' ? (productId._id || productId.id) : productId;
         try {
-            const res = await api.delete(`/cart/${productId}`);
+            const res = await api.delete(`/cart/${pId}`);
             if (res.data.success) {
                 setCart(res.data.data);
                 return true;

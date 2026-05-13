@@ -7,6 +7,7 @@ import { useCustomerAuth } from '../../contexts/CustomerAuthContext';
 import { useCustomerTheme } from '../../contexts/CustomerThemeContext';
 import { useBusiness } from '../../contexts/BusinessContext';
 import api from '../../services/api';
+import { toast } from 'react-hot-toast';
 
 export default function AppReferralPage() {
     const navigate = useNavigate();
@@ -83,10 +84,11 @@ export default function AppReferralPage() {
     const pendingCount = referrals.filter(r => r.status === 'PENDING').length;
     const totalEarned = referrals.filter(r => r.status === 'COMPLETED').reduce((sum, r) => sum + r.rewardPoints, 0);
 
-    const handleCopy = async () => {
+    const handleCopyCode = async () => {
         try {
             await navigator.clipboard.writeText(referralCode);
             setCopied(true);
+            toast.success('Referral code copied!');
             setTimeout(() => setCopied(false), 2000);
         } catch {
             const el = document.createElement('textarea');
@@ -96,22 +98,45 @@ export default function AppReferralPage() {
             document.execCommand('copy');
             document.body.removeChild(el);
             setCopied(true);
+            toast.success('Referral code copied!');
             setTimeout(() => setCopied(false), 2000);
+        }
+    };
+
+    const handleCopyLink = async () => {
+        try {
+            await navigator.clipboard.writeText(referralLink);
+            toast.success('Referral link copied!');
+        } catch {
+            const el = document.createElement('textarea');
+            el.value = referralLink;
+            document.body.appendChild(el);
+            el.select();
+            document.execCommand('copy');
+            document.body.removeChild(el);
+            toast.success('Referral link copied!');
         }
     };
 
     const handleShare = async () => {
         const salonName = activeOutlet?.name || 'Wapixo Signature';
-        if (navigator.share) {
+        const shareData = {
+            title: `Join ${salonName}`,
+            text: `Use my referral code ${referralCode} to get ${settings.referredReward} points when you sign up at ${salonName}!`,
+            url: referralLink,
+        };
+
+        if (navigator.share && navigator.canShare && navigator.canShare(shareData)) {
             try {
-                await navigator.share({
-                    title: `Join ${salonName}`,
-                    text: `Use my referral code ${referralCode} to get ${settings.referredReward} points when you sign up at ${salonName}!`,
-                    url: referralLink,
-                });
-            } catch { /* cancelled */ }
+                await navigator.share(shareData);
+                toast.success('Shared successfully!');
+            } catch (err) {
+                if (err.name !== 'AbortError') {
+                    handleCopyLink();
+                }
+            }
         } else {
-            handleCopy();
+            handleCopyLink();
         }
     };
 
@@ -120,7 +145,7 @@ export default function AppReferralPage() {
 
     return (
         <div style={{ background: colors.bg, minHeight: '100svh' }} className="pb-10">
-            <div className="sticky top-0 z-50 px-4 pt-6 pb-4 flex items-center justify-between" style={{ background: colors.bg, backdropFilter: 'blur(20px)' }}>
+            <div className="sticky top-0 z-50 px-4 pt-4 pb-4 flex items-center justify-between" style={{ background: colors.bg, backdropFilter: 'blur(20px)' }}>
                 <div className="flex items-center gap-3">
                     <AppBackButton />
                     <h1 className="text-xl font-black italic tracking-tight" style={{ color: colors.text }}>Refer & Earn</h1>
@@ -202,7 +227,7 @@ export default function AppReferralPage() {
                     </div>
                     <motion.button
                         whileTap={{ scale: 0.9 }}
-                        onClick={handleCopy}
+                        onClick={handleCopyCode}
                         style={{ background: colors.toggle, border: `1px solid ${colors.border}`, borderRadius: '10px' }}
                         className="w-12 h-12 flex items-center justify-center transition-colors shrink-0"
                     >

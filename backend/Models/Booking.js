@@ -21,10 +21,10 @@ const bookingSchema = new mongoose.Schema({
         ref: 'Customer', 
         required: true
     },
-    staffId: {
+    staffId: [{
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Staff'
-    },
+    }],
     appointmentDate: {
         type: Date,
         required: true

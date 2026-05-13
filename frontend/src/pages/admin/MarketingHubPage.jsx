@@ -9,6 +9,13 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 import api from '../../services/api';
 
+const SCROLLBAR_HIDE_STYLE = `
+  .hide-scrollbar::-webkit-scrollbar { display: none !important; }
+  .hide-scrollbar { -ms-overflow-style: none !important; scrollbar-width: none !important; }
+  .no-scrollbar::-webkit-scrollbar { display: none !important; }
+  .no-scrollbar { -ms-overflow-style: none !important; scrollbar-width: none !important; }
+`;
+
 /* ─── Components ───────────────────────────────────────────────────────── */
 
 function SectionHeader({ title, desc, icon: Icon, badge }) {
@@ -33,6 +40,15 @@ function SectionHeader({ title, desc, icon: Icon, badge }) {
 /* ─── Main Page ────────────────────────────────────────────────────────── */
 
 export default function MarketingHub() {
+    return (
+        <>
+            <style>{SCROLLBAR_HIDE_STYLE}</style>
+            <MarketingHubContent />
+        </>
+    );
+}
+
+function MarketingHubContent() {
     const [activeTab, setActiveTab] = useState('whatsapp'); // 'whatsapp' or 'notification'
     const [isCampaignModalOpen, setIsCampaignModalOpen] = useState(false);
     const [campaignForm, setCampaignForm] = useState({
@@ -50,6 +66,23 @@ export default function MarketingHub() {
     const [loading, setLoading] = useState(true);
 
     const [selectedCampaignIds, setSelectedCampaignIds] = useState([]);
+
+    useEffect(() => {
+        if (isCampaignModalOpen || isContactListOpen) {
+            document.documentElement.style.setProperty('overflow', 'hidden', 'important');
+            document.body.style.setProperty('overflow', 'hidden', 'important');
+            document.body.classList.add('hide-scrollbar');
+        } else {
+            document.documentElement.style.removeProperty('overflow');
+            document.body.style.removeProperty('overflow');
+            document.body.classList.remove('hide-scrollbar');
+        }
+        return () => {
+            document.documentElement.style.removeProperty('overflow');
+            document.body.style.removeProperty('overflow');
+            document.body.classList.remove('hide-scrollbar');
+        };
+    }, [isCampaignModalOpen, isContactListOpen]);
 
     const loadCampaigns = async () => {
         setLoading(true);
@@ -277,14 +310,14 @@ export default function MarketingHub() {
                             initial={{ opacity: 0, scale: 0.95, y: 20 }}
                             animate={{ opacity: 1, scale: 1, y: 0 }}
                             exit={{ opacity: 0, scale: 0.95, y: 20 }}
-                            className="bg-white rounded-[2rem] border border-border w-full max-w-4xl shadow-2xl relative overflow-hidden flex flex-col md:flex-row max-h-[90vh]"
+                            className="bg-white rounded-[2rem] border border-border w-full max-w-2xl shadow-2xl relative overflow-hidden flex flex-col md:flex-row max-h-[85vh]"
                         >
                             {/* Form Side */}
                             <div className="flex-1 flex flex-col min-h-0">
-                                <div className="px-8 py-6 border-b border-border flex items-center justify-between shrink-0">
+                                <div className="px-5 py-4 border-b border-border flex items-center justify-between shrink-0">
                                     <div>
-                                        <h3 className="text-xl font-black text-text uppercase tracking-tight">Create {activeTab === 'whatsapp' ? 'WhatsApp' : 'Push'} Campaign</h3>
-                                        <p className="text-[10px] text-text-muted font-bold uppercase tracking-widest mt-1">Fill details and send instantly</p>
+                                        <h3 className="text-base font-black text-text uppercase tracking-tight">Create {activeTab === 'whatsapp' ? 'WhatsApp' : 'Push'} Campaign</h3>
+                                        <p className="text-[8px] text-text-muted font-bold uppercase tracking-widest mt-1">Fill details and send instantly</p>
                                     </div>
                                     {!isSending && (
                                         <button onClick={() => setIsCampaignModalOpen(false)} className="p-2 hover:bg-surface rounded-full transition-colors">
@@ -293,7 +326,7 @@ export default function MarketingHub() {
                                     )}
                                 </div>
 
-                                <div className="overflow-y-auto p-8 space-y-6 flex-1 no-scrollbar">
+                                <div className="p-5 space-y-4 flex-1">
                                     {isSending ? (
                                         <div className="py-12 flex flex-col items-center text-center space-y-8">
                                             <div className="relative w-32 h-32 flex items-center justify-center">
@@ -318,20 +351,20 @@ export default function MarketingHub() {
                                     ) : (
                                         <>
                                             {/* Name */}
-                                            <div className="space-y-3">
-                                                <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] block">Campaign Name / Title</label>
+                                            <div className="space-y-2">
+                                                <label className="text-[9px] font-black text-text-muted uppercase tracking-[0.2em] block">Campaign Name / Title</label>
                                                 <input
                                                     type="text"
                                                     placeholder={activeTab === 'whatsapp' ? 'e.g. Summer Offer' : 'Notification Title...'}
-                                                    className="w-full bg-surface border-2 border-border/60 rounded-2xl px-5 py-4 text-sm font-black uppercase tracking-tight focus:outline-none focus:border-primary transition-all"
+                                                    className="w-full bg-surface border border-border rounded-xl px-4 py-3 text-sm font-black uppercase tracking-tight focus:outline-none focus:border-primary transition-all"
                                                     value={campaignForm.name}
                                                     onChange={(e) => setCampaignForm({ ...campaignForm, name: e.target.value })}
                                                 />
                                             </div>
 
                                             {/* Audience */}
-                                            <div className="space-y-4">
-                                                <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] block">Choose Audience</label>
+                                            <div className="space-y-2">
+                                                <label className="text-[9px] font-black text-text-muted uppercase tracking-[0.2em] block">Choose Audience</label>
                                                 <div className="grid grid-cols-2 gap-3">
                                                     {[
                                                         { id: 'bulk', label: 'Everyone', desc: 'All Customers', icon: Users },
@@ -340,14 +373,14 @@ export default function MarketingHub() {
                                                         <button
                                                             key={t.id}
                                                             onClick={() => setCampaignForm({ ...campaignForm, type: t.id })}
-                                                            className={`p-4 rounded-2xl border-2 transition-all text-left flex items-start gap-4 ${campaignForm.type === t.id ? 'border-primary bg-primary/[0.02]' : 'border-border hover:border-slate-300'}`}
+                                                            className={`p-3 rounded-xl border-2 transition-all text-left flex items-center gap-3 ${campaignForm.type === t.id ? 'border-primary bg-primary/[0.02]' : 'border-border hover:border-slate-300'}`}
                                                         >
-                                                            <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${campaignForm.type === t.id ? 'bg-primary text-white' : 'bg-surface text-text-muted'}`}>
-                                                                <t.icon className="w-5 h-5" />
+                                                            <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${campaignForm.type === t.id ? 'bg-primary text-white' : 'bg-surface text-text-muted'}`}>
+                                                                <t.icon className="w-4 h-4" />
                                                             </div>
                                                             <div>
-                                                                <div className="text-xs font-black text-text uppercase tracking-tight">{t.label}</div>
-                                                                <div className="text-[9px] text-text-muted font-bold mt-0.5 uppercase tracking-wider">{t.desc}</div>
+                                                                <div className="text-[10px] font-black text-text uppercase tracking-tight">{t.label}</div>
+                                                                <div className="text-[8px] text-text-muted font-bold mt-0.5 uppercase tracking-wider">{t.desc}</div>
                                                             </div>
                                                         </button>
                                                     ))}
@@ -369,12 +402,12 @@ export default function MarketingHub() {
                                             </div>
 
                                             {/* Message */}
-                                            <div className="space-y-3">
-                                                <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Message Content</label>
+                                            <div className="space-y-2">
+                                                <label className="text-[9px] font-black text-text-muted uppercase tracking-[0.2em]">Message Content</label>
                                                 <textarea
-                                                    rows={4}
+                                                    rows={2}
                                                     placeholder="Type your message here... (Use {{name}} for customer name)"
-                                                    className="w-full bg-surface border border-border rounded-2xl px-4 py-4 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary/20 resize-none transition-all"
+                                                    className="w-full bg-surface border border-border rounded-xl px-4 py-2 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary/20 resize-none transition-all"
                                                     value={campaignForm.message}
                                                     onChange={(e) => setCampaignForm({ ...campaignForm, message: e.target.value })}
                                                 />
@@ -387,11 +420,11 @@ export default function MarketingHub() {
                                     )}
                                 </div>
 
-                                <div className="p-8 border-t border-border bg-surface/30 shrink-0">
+                                <div className="p-5 border-t border-border bg-surface/30 shrink-0">
                                     <button
                                         onClick={handleSendCampaign}
                                         disabled={!campaignForm.name || !campaignForm.message || (campaignForm.type === 'selective' && campaignForm.selectedCustomers.length === 0) || isSending}
-                                        className="w-full py-5 bg-primary text-white text-xs font-black uppercase tracking-[0.3em] rounded-[1.5rem] hover:brightness-110 shadow-xl shadow-primary/25 transition-all disabled:opacity-50 active:scale-[0.98]"
+                                        className="w-full py-4 bg-primary text-white text-[10px] font-black uppercase tracking-[0.3em] rounded-2xl hover:brightness-110 shadow-xl shadow-primary/25 transition-all disabled:opacity-50 active:scale-[0.98]"
                                     >
                                         {isSending ? 'Sending...' : `Send ${activeTab === 'whatsapp' ? 'WhatsApp' : 'Notification'} Now`}
                                     </button>
@@ -399,7 +432,7 @@ export default function MarketingHub() {
                             </div>
 
                             {/* Preview Side (Only for Notification) */}
-                            <div className="hidden md:flex w-80 bg-slate-900 flex-col items-center justify-center p-8 relative overflow-hidden border-l border-border">
+                            <div className="hidden md:flex w-64 bg-slate-900 flex-col items-center justify-center p-5 relative overflow-hidden border-l border-border">
                                 <div className="absolute top-0 left-0 w-full h-full opacity-10 pointer-events-none">
                                     <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-primary rounded-full blur-[100px]" />
                                     <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-primary rounded-full blur-[100px]" />
@@ -491,7 +524,7 @@ function ContactListModal({ isOpen, onClose, selectionMode = false, selectedIds 
                     <h3 className="text-xl font-black text-text uppercase tracking-tight">Select Contacts</h3>
                     <input type="text" placeholder="Search..." value={search} onChange={e => setSearch(e.target.value)} className="px-4 py-2 border border-border rounded-xl text-sm w-48" />
                 </div>
-                <div className="flex-1 overflow-auto p-6">
+                <div className="flex-1 p-6">
                     <table className="w-full">
                         <thead>
                             <tr className="text-left text-[10px] font-black text-text-muted uppercase tracking-widest border-b border-border">

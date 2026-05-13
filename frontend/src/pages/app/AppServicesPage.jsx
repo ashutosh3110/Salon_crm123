@@ -292,9 +292,10 @@ export default function AppServicesPage() {
         }
 
         if (searchQuery.trim()) {
-            const q = searchQuery.toLowerCase();
-            result = result.filter(s => s.name.toLowerCase().includes(q));
+            const q = searchQuery.trim().toLowerCase().replace(/\s/g, '');
+            result = result.filter(s => s.name.toLowerCase().replace(/\s/g, '').includes(q));
         }
+        
 
         return result;
     }, [flatServices, activeCategory, searchQuery]);

@@ -16,7 +16,7 @@ import { getImageUrl } from '../../utils/imageUtils';
 
 
 
-const ProductCard = React.memo(({ product, index, onOpenProduct, onAddToCart, colors, isLight, hasStock }) => {
+const ProductCard = React.memo(({ product, index, onOpenProduct, onAddToCart, onUpdateQuantity, cartItem, colors, isLight, hasStock }) => {
     const { isProductLiked, toggleProductLike } = useFavorites();
     const isLiked = isProductLiked(product._id || product.id);
 
@@ -92,12 +92,30 @@ const ProductCard = React.memo(({ product, index, onOpenProduct, onAddToCart, co
                         <span className="text-sm font-black tracking-tighter" style={{ color: colors.text }}>₹ {product.price}</span>
                     </div>
                     {hasStock ? (
-                        <button
-                            onClick={(e) => onAddToCart(product, e)}
-                            className="w-8 h-8 rounded-lg bg-[#C8956C] text-white flex items-center justify-center shadow-lg shadow-[#C8956C]/20 active:scale-90"
-                        >
-                            <Plus className="w-4 h-4" />
-                        </button>
+                        cartItem ? (
+                            <div className="flex items-center bg-[#C8956C] rounded-lg text-white h-8 shadow-lg shadow-[#C8956C]/10 overflow-hidden">
+                                <button 
+                                    onClick={() => onUpdateQuantity(product._id, -1)} 
+                                    className="w-8 h-8 flex items-center justify-center hover:bg-black/10 active:scale-90 transition-all"
+                                >
+                                    <Minus size={12} strokeWidth={3} />
+                                </button>
+                                <span className="w-5 text-center text-[11px] font-black tabular-nums">{cartItem.quantity}</span>
+                                <button 
+                                    onClick={() => onUpdateQuantity(product._id, 1)} 
+                                    className="w-8 h-8 flex items-center justify-center hover:bg-black/10 active:scale-90 transition-all"
+                                >
+                                    <Plus size={12} strokeWidth={3} />
+                                </button>
+                            </div>
+                        ) : (
+                            <button
+                                onClick={(e) => onAddToCart(product, e)}
+                                className="w-8 h-8 rounded-lg bg-[#C8956C] text-white flex items-center justify-center shadow-lg shadow-[#C8956C]/20 active:scale-90"
+                            >
+                                <Plus className="w-4 h-4" />
+                            </button>
+                        )
                     ) : (
                         <button
                             disabled
@@ -120,7 +138,7 @@ export default function AppShopPage() {
     const [activeCategory, setActiveCategory] = useState(initialCategory);
     const [flyingItems, setFlyingItems] = useState([]);
     const cartIconRef = useRef(null);
-    const { cart, cartTotal, cartCount, addToCart, setIsCartOpen } = useCart();
+    const { cart, cartTotal, cartCount, addToCart, setIsCartOpen, updateQuantity } = useCart();
     const { 
         products: inventoryProducts, 
         productCategories: shopCategories,
@@ -275,12 +293,12 @@ export default function AppShopPage() {
             result = result.filter((p) => p.category === activeCategory);
         }
         if (searchQuery.trim()) {
-            const q = searchQuery.toLowerCase();
+            const q = searchQuery.trim().toLowerCase().replace(/\s/g, '');
             result = result.filter(
                 (p) =>
-                    p.name.toLowerCase().includes(q) ||
-                    p.brand.toLowerCase().includes(q) ||
-                    p.category.toLowerCase().includes(q)
+                    p.name.toLowerCase().replace(/\s/g, '').includes(q) ||
+                    p.brand.toLowerCase().replace(/\s/g, '').includes(q) ||
+                    p.category.toLowerCase().replace(/\s/g, '').includes(q)
             );
         }
         return result;
@@ -289,20 +307,23 @@ export default function AppShopPage() {
     const handleAddToCart = async (product, event) => {
         const btnRect = event?.currentTarget?.getBoundingClientRect();
         const success = await addToCart(product._id, 1);
-        if (success && btnRect && cartIconRef.current) {
-            const cartRect = cartIconRef.current.getBoundingClientRect();
-            const newItem = {
-                id: Date.now(),
-                image: product.image,
-                startX: btnRect.left + btnRect.width / 2,
-                startY: btnRect.top + btnRect.height / 2,
-                endX: cartRect.left + cartRect.width / 2,
-                endY: cartRect.top + cartRect.height / 2,
-            };
-            setFlyingItems(prev => [...prev, newItem]);
-            setTimeout(() => {
-                setFlyingItems(prev => prev.filter(item => item.id !== newItem.id));
-            }, 800);
+        if (success) {
+            setIsCartOpen(true);
+            if (btnRect && cartIconRef.current) {
+                const cartRect = cartIconRef.current.getBoundingClientRect();
+                const newItem = {
+                    id: Date.now(),
+                    image: product.image,
+                    startX: btnRect.left + btnRect.width / 2,
+                    startY: btnRect.top + btnRect.height / 2,
+                    endX: cartRect.left + cartRect.width / 2,
+                    endY: cartRect.top + cartRect.height / 2,
+                };
+                setFlyingItems(prev => [...prev, newItem]);
+                setTimeout(() => {
+                    setFlyingItems(prev => prev.filter(item => item.id !== newItem.id));
+                }, 800);
+            }
         }
     };
 
@@ -349,29 +370,30 @@ export default function AppShopPage() {
     }
 
     return (
-        <div className="space-y-8 pb-32" style={{ background: colors.bg, minHeight: '100svh', overflowX: 'hidden' }}>
+        <div className="pb-32" style={{ background: colors.bg, minHeight: '100svh', overflowX: 'hidden' }}>
             <style>{`
                 .search-input::placeholder {
                     color: ${isLight ? '#555' : 'rgba(255,255,255,0.6)'};
                     opacity: 0.8;
                 }
             `}</style>
-            {/* Header */}
-            <div className="sticky top-0 z-50 pt-2 pb-2 px-4" style={{ background: colors.bg, backdropFilter: 'blur(20px)' }}>
+            
+            {/* Shop Search Header - Sticky */}
+            <div className="sticky top-0 z-50 pt-3 pb-3 px-4" style={{ background: colors.bg, backdropFilter: 'blur(20px)', borderBottom: `1px solid ${colors.border}` }}>
                 <div className="flex gap-3 items-center">
                     <div className="relative flex-1" style={{
                         display: 'flex',
                         alignItems: 'center',
                         padding: '0 14px',
-                        height: '42px',
+                        height: '44px',
                         background: isLight
                             ? 'linear-gradient(135deg, #FFF9F5 0%, #F3EAE3 100%)'
                             : 'linear-gradient(135deg, #2A211B 0%, #1A1411 100%)',
                         boxShadow: isLight
                             ? 'inset 0 1px 3px rgba(0,0,0,0.03)'
                             : 'inset 0 1px 3px rgba(0,0,0,0.2)',
-                        borderRadius: '20px 6px 20px 6px',
-                        border: isFocused ? `1.5px solid #C8956C` : `1.5px solid ${isLight ? '#E8ECEF' : 'transparent'}`,
+                        borderRadius: '16px',
+                        border: isFocused ? `1.5px solid #C8956C` : `1.5px solid ${isLight ? 'rgba(0,0,0,0.05)' : 'transparent'}`,
                         transition: 'all 0.3s cubic-bezier(0.16, 1, 0.3, 1)'
                     }}>
                         <Search className="w-4 h-4 mr-2" style={{ color: isFocused ? '#C8956C' : colors.textMuted }} />
@@ -392,26 +414,27 @@ export default function AppShopPage() {
                         onClick={() => setIsCartOpen(true)}
                         style={{
                             background: '#C8956C',
-                            borderRadius: '14px 4px 14px 4px',
-                            width: 42,
-                            height: 42,
+                            borderRadius: '14px',
+                            width: 44,
+                            height: 44,
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
                             cursor: 'pointer',
                             flexShrink: 0,
                             position: 'relative',
-                            boxShadow: '0 10px 20px rgba(200,149,108,0.2)'
+                            boxShadow: '0 8px 16px rgba(200,149,108,0.2)'
                         }}
                     >
                         <ShoppingBag size={18} color="#FFF" />
-                        {cartCount > 0 && <span className="absolute top-[-5px] right-[-5px] w-5 h-5 bg-black text-white text-[9px] font-black flex items-center justify-center rounded-full border-2 border-white shadow-lg">{cartCount}</span>}
+                        {cartCount > 0 && <span className="absolute top-[-4px] right-[-4px] min-w-[18px] h-[18px] bg-black text-white text-[9px] font-black flex items-center justify-center rounded-full border-2 border-white shadow-lg px-1">{cartCount}</span>}
                     </motion.div>
                 </div>
             </div>
 
-                {/* Categories - Premium Circular Style */}
-                <div className="app-scroll no-scrollbar flex gap-4 overflow-x-auto px-4 pb-4 -mt-4">
+            {/* Categories Section */}
+            <div className="mt-6 mb-6">
+                <div className="app-scroll no-scrollbar flex gap-4 overflow-x-auto px-4 pb-2">
                     {categories.map(cat => {
                         const isActive = activeCategory === cat.name;
                         return (
@@ -423,16 +446,16 @@ export default function AppShopPage() {
                                     display: 'flex',
                                     flexDirection: 'column',
                                     alignItems: 'center',
-                                    gap: '6px',
+                                    gap: '8px',
                                     flexShrink: 0,
                                     cursor: 'pointer'
                                 }}
                             >
                                 <div style={{
-                                    width: '72px',
-                                    height: '72px',
+                                    width: '64px',
+                                    height: '64px',
                                     borderRadius: '50%',
-                                    padding: '3px',
+                                    padding: '2px',
                                     background: isActive ? '#C8956C' : 'transparent',
                                     border: isActive ? 'none' : `1px solid ${colors.border}`,
                                     transition: 'all 0.3s ease',
@@ -445,7 +468,7 @@ export default function AppShopPage() {
                                         borderRadius: '50%',
                                         overflow: 'hidden',
                                         background: colors.card,
-                                        border: `2px solid ${isLight ? '#fff' : '#000'}`
+                                        border: `2px solid ${isLight ? '#fff' : colors.bg}`
                                     }}>
                                         <img 
                                             src={getImageUrl(cat.img) || 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=200&q=80'} 
@@ -461,19 +484,19 @@ export default function AppShopPage() {
                                     style={{ 
                                         background: isActive ? '#C8956C' : colors.card,
                                         color: isActive ? '#FFFFFF' : colors.text,
-                                        borderRadius: '12px 4px 12px 4px',
-                                        padding: '4px 12px',
-                                        boxShadow: isActive ? '0 4px 12px rgba(200,149,108,0.2)' : 'none',
+                                        borderRadius: '10px',
+                                        padding: '4px 10px',
+                                        boxShadow: isActive ? '0 4px 8px rgba(200,149,108,0.2)' : 'none',
                                         border: isActive ? 'none' : `1px solid ${colors.border}`,
                                         marginTop: '-12px',
                                         zIndex: 3,
-                                        minWidth: '60px',
+                                        minWidth: '50px',
                                         textAlign: 'center'
                                     }}
                                 >
                                     <span 
                                         style={{ 
-                                            fontSize: '9px', 
+                                            fontSize: '8px', 
                                             fontWeight: 800,
                                             letterSpacing: '0.05em',
                                             textTransform: 'uppercase'
@@ -486,19 +509,27 @@ export default function AppShopPage() {
                         );
                     })}
                 </div>
+            </div>
 
-            <div className="space-y-6 px-4">
+            {/* Products Grid */}
+            <div className="px-4">
                 <div className="grid grid-cols-2 gap-3">
                     <AnimatePresence mode="popLayout">
                         {filteredProducts.map((product, i) => {
-                            const hasStock = true; // Always show as available even if stock is 0 for now
+                            const hasStock = true;
+                            const cartItem = (cart?.items || []).find(item => 
+                                (item.productId?._id || item.productId?.id || item.productId) === (product._id || product.id)
+                            );
+                            
                             return (
                                 <ProductCard 
                                     key={product._id} 
                                     product={product} 
                                     index={i} 
                                     onOpenProduct={handleOpenProduct} 
-                                    onAddToCart={handleAddToCart} 
+                                    onAddToCart={handleAddToCart}
+                                    onUpdateQuantity={updateQuantity}
+                                    cartItem={cartItem}
                                     colors={colors} 
                                     isLight={isLight} 
                                     hasStock={hasStock}

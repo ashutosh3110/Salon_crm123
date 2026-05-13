@@ -41,7 +41,10 @@ import { useBusiness } from '../../contexts/BusinessContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { toast } from 'react-hot-toast';
 import api from '../../services/api';
-import { maskPhone } from '../../utils/phoneUtils';
+const hideScrollbarStyle = `
+  .hide-scrollbar::-webkit-scrollbar { display: none; }
+  .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+`;
 
 export default function CustomersPage({ tab = 'directory' }) {
     const navigate = useNavigate();
@@ -62,6 +65,8 @@ export default function CustomersPage({ tab = 'directory' }) {
     useEffect(() => {
         fetchCustomers(currentPage, 5);
     }, [fetchCustomers, currentPage]);
+
+
     
     // Safety Fix: Ensuring customers is always an array for filtering
     const customers = Array.isArray(rawCustomers) ? rawCustomers : (rawCustomers?.results || rawCustomers?.data || []);
@@ -80,6 +85,21 @@ export default function CustomersPage({ tab = 'directory' }) {
     });
 
     const activeTab = tab;
+
+    useEffect(() => {
+        const isAnyModalOpen = showAddModal || !!selectedCustomer || whatsappModal.isOpen;
+        if (isAnyModalOpen) {
+            document.documentElement.style.setProperty('overflow', 'hidden', 'important');
+            document.body.style.setProperty('overflow', 'hidden', 'important');
+        } else {
+            document.documentElement.style.removeProperty('overflow');
+            document.body.style.removeProperty('overflow');
+        }
+        return () => {
+            document.documentElement.style.removeProperty('overflow');
+            document.body.style.removeProperty('overflow');
+        };
+    }, [showAddModal, selectedCustomer, whatsappModal.isOpen]);
 
     const handleAddCustomer = (e) => {
         e.preventDefault();
@@ -163,6 +183,7 @@ export default function CustomersPage({ tab = 'directory' }) {
 
     return (
         <>
+            <style>{hideScrollbarStyle}</style>
             <div className="space-y-6 animate-reveal">
                 {/* Header */}
                 <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6 pb-2">
@@ -305,31 +326,33 @@ export default function CustomersPage({ tab = 'directory' }) {
 
                 {/* Add Customer Modal */}
                 {showAddModal && (
-                    <div className="fixed inset-0 bg-background/80 backdrop-blur-md z-[200] flex items-start justify-center p-4 pt-20 animate-in fade-in duration-300" onClick={() => setShowAddModal(false)}>
-                        <div className="bg-surface rounded-none w-full max-w-lg p-12 shadow-2xl relative overflow-hidden animate-in slide-in-from-top-4 duration-300 border border-border" onClick={(e) => e.stopPropagation()}>
-                            <div className="flex flex-col items-center text-center mb-10">
-                                <div className="w-20 h-20 rounded-none bg-primary/5 text-primary flex items-center justify-center mb-6 border border-primary/20 shadow-inner">
-                                    <UserPlus className="w-10 h-10" />
+                    <div className="fixed inset-0 bg-background/80 backdrop-blur-md z-[200] flex items-start justify-center p-4 pt-10 animate-in fade-in duration-300" onClick={() => setShowAddModal(false)}>
+                        <div className="bg-surface rounded-none w-full max-w-lg p-5 shadow-2xl relative overflow-y-auto max-h-[90vh] animate-in slide-in-from-top-4 duration-300 border border-border hide-scrollbar" onClick={(e) => e.stopPropagation()}>
+                            <div className="flex items-center gap-3 mb-4 pb-3 border-b border-border">
+                                <div className="w-10 h-10 rounded-none bg-primary text-white flex items-center justify-center">
+                                    <UserPlus className="w-5 h-5" />
                                 </div>
-                                <h2 className="text-3xl font-black text-text uppercase tracking-tight">Add Customer</h2>
-                                <p className="text-[10px] font-black text-text-secondary uppercase tracking-[0.3em] opacity-40 mt-2">Add a new customer to your list</p>
+                                <div>
+                                    <h2 className="text-sm font-black text-text uppercase tracking-widest leading-none">Add Customer</h2>
+                                    <p className="text-[7px] font-black text-text-secondary uppercase tracking-[0.2em] mt-1 opacity-50">Quick entry system</p>
+                                </div>
                             </div>
 
                             <form onSubmit={handleAddCustomer} className="space-y-6">
                                 <div className="space-y-5">
-                                    <div className="space-y-2">
-                                        <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Customer Name</label>
+                                    <div className="space-y-1.5">
+                                        <label className="text-[9px] font-black text-text-muted uppercase tracking-widest">Customer Name</label>
                                         <input
                                             type="text"
                                             required
-                                            placeholder="e.g. Aditya Sharma"
+                                            placeholder="E.G. ADITYA SHARMA"
                                             value={newCustomerForm.name}
                                             onChange={(e) => setNewCustomerForm({ ...newCustomerForm, name: e.target.value.replace(/[^a-zA-Z\s]/g, '') })}
-                                            className="w-full px-6 py-4 rounded-none bg-surface-alt border border-border text-sm font-bold outline-none focus:bg-surface focus:border-primary transition-all uppercase"
+                                            className="w-full px-4 py-2.5 rounded-none bg-surface-alt border border-border text-xs font-bold outline-none focus:bg-surface focus:border-primary transition-all uppercase"
                                         />
                                     </div>
-                                    <div className="space-y-2">
-                                        <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Phone Number</label>
+                                    <div className="space-y-1.5">
+                                        <label className="text-[9px] font-black text-text-muted uppercase tracking-widest">Phone Number</label>
                                         <input
                                             type="tel"
                                             required
@@ -339,34 +362,34 @@ export default function CustomersPage({ tab = 'directory' }) {
                                                 const val = e.target.value.replace(/\D/g, '');
                                                 if (val.length <= 10) setNewCustomerForm({ ...newCustomerForm, phone: val });
                                             }}
-                                            className="w-full px-6 py-4 rounded-none bg-surface-alt border border-border text-sm font-bold outline-none focus:bg-surface focus:border-primary transition-all"
+                                            className="w-full px-4 py-2.5 rounded-none bg-surface-alt border border-border text-xs font-bold outline-none focus:bg-surface focus:border-primary transition-all"
                                         />
                                     </div>
-                                    <div className="grid grid-cols-2 gap-5">
-                                        <div className="space-y-2">
-                                            <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Birth Date</label>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div className="space-y-1.5">
+                                            <label className="text-[9px] font-black text-text-muted uppercase tracking-widest">Birth Date</label>
                                             <input
                                                 type="date"
                                                 value={newCustomerForm.dob}
                                                 onChange={(e) => setNewCustomerForm({ ...newCustomerForm, dob: e.target.value })}
-                                                className="w-full px-6 py-4 rounded-none bg-surface-alt border border-border text-sm font-bold outline-none focus:bg-surface focus:border-primary transition-all"
+                                                className="w-full px-4 py-2.5 rounded-none bg-surface-alt border border-border text-xs font-bold outline-none focus:bg-surface focus:border-primary transition-all"
                                             />
                                         </div>
-                                        <div className="space-y-2">
-                                            <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Anniversary</label>
+                                        <div className="space-y-1.5">
+                                            <label className="text-[9px] font-black text-text-muted uppercase tracking-widest">Anniversary</label>
                                             <input
                                                 type="date"
                                                 value={newCustomerForm.anniversary}
                                                 onChange={(e) => setNewCustomerForm({ ...newCustomerForm, anniversary: e.target.value })}
-                                                className="w-full px-6 py-4 rounded-none bg-surface-alt border border-border text-sm font-bold outline-none focus:bg-surface focus:border-primary transition-all"
+                                                className="w-full px-4 py-2.5 rounded-none bg-surface-alt border border-border text-xs font-bold outline-none focus:bg-surface focus:border-primary transition-all"
                                             />
                                         </div>
                                     </div>
                                 </div>
 
-                                <div className="flex gap-4 pt-8">
-                                    <button type="button" onClick={() => setShowAddModal(false)} className="flex-1 py-5 rounded-none border border-border text-[11px] font-black uppercase tracking-[0.2em] text-text-muted hover:bg-surface-alt transition-all">Cancel</button>
-                                    <button type="submit" className="flex-1 bg-primary text-primary-foreground py-5 rounded-none shadow-2xl shadow-primary/20 text-[11px] font-black uppercase tracking-[0.3em] hover:brightness-110 transition-all">Add Customer</button>
+                                <div className="flex gap-3 pt-4">
+                                    <button type="button" onClick={() => setShowAddModal(false)} className="flex-1 py-3 rounded-none border border-border text-[9px] font-black uppercase tracking-widest text-text-muted hover:bg-surface-alt transition-all">Cancel</button>
+                                    <button type="submit" className="flex-1 bg-primary text-primary-foreground py-3 rounded-none shadow-xl shadow-primary/20 text-[9px] font-black uppercase tracking-widest hover:brightness-110 transition-all">Add Customer</button>
                                 </div>
                             </form>
                         </div>

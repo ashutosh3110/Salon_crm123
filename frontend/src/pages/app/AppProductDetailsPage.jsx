@@ -59,7 +59,7 @@ export default function AppProductDetailsPage() {
     const { id: rawId } = useParams();
     const id = rawId ? decodeURIComponent(rawId) : '';
     const navigate = useNavigate();
-    const { addToCart, cart, updateQuantity } = useCart();
+    const { addToCart, cart, updateQuantity, setIsCartOpen, removeFromCart } = useCart();
     const { isProductLiked, toggleProductLike } = useFavorites();
     const { colors, isLight } = useCustomerTheme();
     const { products: inventoryProducts, shopCategories } = useInventory();
@@ -257,9 +257,31 @@ export default function AppProductDetailsPage() {
                             <p className="text-4xl font-black text-[#C8956C] tracking-tighter italic">₹{product.price}</p>
                         </div>
                         <div className="flex items-center bg-black/5 dark:bg-white/5 rounded-2xl p-1.5 border border-black/5 h-12 shadow-inner">
-                            <button type="button" onClick={() => updateQuantity(product._id, -1)} className="w-10 h-10 flex items-center justify-center rounded-xl hover:bg-black/5 active:scale-95 transition-all"><Minus size={16}/></button>
+                            <button 
+                                type="button" 
+                                onClick={() => {
+                                    const currentQty = inCart?.quantity || 1;
+                                    if (currentQty > 1) {
+                                        updateQuantity(product._id, currentQty - 1);
+                                    } else if (inCart) {
+                                        removeFromCart(product._id);
+                                    }
+                                }} 
+                                className="w-10 h-10 flex items-center justify-center rounded-xl hover:bg-black/5 active:scale-95 transition-all"
+                            >
+                                <Minus size={16}/>
+                            </button>
                             <span className="flex-1 text-center text-lg font-black tabular-nums leading-none min-w-[40px]">{inCart?.quantity || 1}</span>
-                            <button type="button" onClick={() => addToCart(product)} className="w-10 h-10 flex items-center justify-center rounded-xl hover:bg-black/5 active:scale-95 transition-all"><Plus size={16}/></button>
+                            <button 
+                                type="button" 
+                                onClick={() => {
+                                    const currentQty = inCart?.quantity || 0;
+                                    updateQuantity(product._id, currentQty + 1);
+                                }} 
+                                className="w-10 h-10 flex items-center justify-center rounded-xl hover:bg-black/5 active:scale-95 transition-all"
+                            >
+                                <Plus size={16}/>
+                            </button>
                         </div>
                     </div>
 
@@ -352,7 +374,12 @@ export default function AppProductDetailsPage() {
                         <motion.button
                             whileTap={rawRow.stock > 0 ? { scale: 0.96 } : {}}
                             type="button"
-                            onClick={() => rawRow.stock > 0 && addToCart(product)}
+                            onClick={() => {
+                                if (rawRow.stock > 0) {
+                                    addToCart(product);
+                                    setIsCartOpen(true);
+                                }
+                            }}
                             disabled={rawRow.stock <= 0}
                             style={{
                                 background: rawRow.stock <= 0 ? 'rgba(255,255,255,0.05)' : 'linear-gradient(135deg, #C8956C 0%, #A06844 100%)',

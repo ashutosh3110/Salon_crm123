@@ -41,14 +41,9 @@ export const detectPlatform = () => {
   const ua = navigator.userAgent.toLowerCase();
   const isTouch = (('ontouchstart' in window) || (navigator.maxTouchPoints > 0));
   const isMobileSize = window.innerWidth <= 768;
-  const isWebView = /wv|webview|version\/.*chrome/.test(ua); // 'wv' is standard for Android WebViews
 
-  if (/android/.test(ua)) {
-    // If it's android and has 'wv' or similar, it's the APK
-    platform = "app" 
-  } else if (/ipad|iphone|ipod/.test(ua) || (isTouch && /macintosh/.test(ua))) {
-    platform = 'ios';
-  } else if (isTouch && isMobileSize) {
+  // If it's a touch device or has a mobile user agent, treat it as 'app' platform
+  if (/android|iphone|ipad|ipod/.test(ua) || (isTouch && isMobileSize)) {
     platform = 'app';
   }
 

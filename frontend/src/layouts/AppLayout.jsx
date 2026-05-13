@@ -84,7 +84,8 @@ export default function AppLayout() {
         '/app/help',
         '/app/reviews',
         '/app/checkout',
-        '/app/membership/checkout'
+        '/app/membership/checkout',
+        '/app/shop'
     ];
     const searchParams = new URLSearchParams(location.search);
     const hasProductModal = searchParams.get('product');
@@ -270,7 +271,7 @@ export default function AppLayout() {
                 </div>
 
                 {!shouldHideHeader && <AppHeader />}
-                <AnimatePresence mode="popLayout" initial={false}>
+                <AnimatePresence mode="wait" initial={false}>
                     {(() => {
                         const isFromModal = location.state?.fromModal;
                         const customVariants = isFromModal ? {
@@ -349,7 +350,7 @@ export default function AppLayout() {
                 <div id="app-portal-root" />
 
                 {/* DEBUG FCM OVERLAY */}
-                <div 
+                {/* <div 
                     className="fixed bottom-24 right-4 z-[9999] bg-black/80 backdrop-blur-md border border-white/20 p-3 rounded-2xl pointer-events-none"
                     style={{ maxWidth: '250px' }}
                 >
@@ -374,7 +375,7 @@ export default function AppLayout() {
                             SW Support: {typeof navigator !== 'undefined' && 'serviceWorker' in navigator ? 'Yes' : 'No'}
                         </p>
                     </div>
-                </div>
+                </div> */}
             </div>
         </div>
     );

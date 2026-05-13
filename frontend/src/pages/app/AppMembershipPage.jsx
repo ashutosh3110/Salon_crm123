@@ -161,7 +161,7 @@ const AppMembershipPage = () => {
                 animate="animate"
                 style={{ 
                     position: 'sticky', top: 0, zIndex: 100,
-                    padding: '60px 20px 20px',
+                    padding: '20px 20px 20px',
                     background: colors.glass,
                     backdropFilter: 'blur(15px)',
                     display: 'flex', alignItems: 'center', gap: '16px',
@@ -191,7 +191,7 @@ const AppMembershipPage = () => {
             </motion.div>
 
             {/* ── HERO ── */}
-            <motion.div {...fadeUp} style={{ padding: '32px 20px', textAlign: 'center', position: 'relative', zIndex: 1 }}>
+            <motion.div {...fadeUp} style={{ padding: '20px 20px', textAlign: 'center', position: 'relative', zIndex: 1 }}>
                 <h1 style={{ fontSize: '32px', fontWeight: 900, marginBottom: '12px', lineHeight: 1.1 }}>
                     Tiered Luxury <br/> <span style={{ color: colors.accent }}>Tailored for You.</span>
                 </h1>

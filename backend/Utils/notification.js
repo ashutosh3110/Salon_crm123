@@ -54,13 +54,14 @@ exports.sendNotification = async ({ customerId, salonId, title, message, image, 
                     notification: {
                         title: title,
                         body: message,
-                        ...(image && { imageUrl: image })
+                        ...(image && { image: image })
                     },
                     data: {
                         ...data,
                         type,
                         notificationId: newNotification._id.toString(),
-                        click_action: actionUrl || '/app/notifications'
+                        click_action: actionUrl || '/app/notifications',
+                        url: actionUrl || '/app/notifications' // Duplicate for redundancy
                     },
                     tokens: tokens
                 };
@@ -107,6 +108,44 @@ exports.broadcastNotification = async ({ salonId, title, message, image, type = 
         return { success: true, count: customers.length };
     } catch (error) {
         console.error('Broadcast Error:', error);
+        return { success: false, error: error.message };
+    }
+};
+/**
+ * Send Notification to all Admins of a salon
+ */
+exports.sendAdminNotification = async ({ salonId, title, message, image, type = 'system', actionUrl, data = {} }) => {
+    try {
+        const User = require('../Models/User');
+        const admins = await User.find({ salonId, role: 'admin', status: 'active' });
+        
+        if (admins.length === 0) return { success: false, message: 'No admins found for this salon' };
+
+        const results = [];
+        for (const adminUser of admins) {
+            const tokens = [];
+            if (adminUser.fcmTokenWeb) tokens.push(...(Array.isArray(adminUser.fcmTokenWeb) ? adminUser.fcmTokenWeb : [adminUser.fcmTokenWeb]));
+            if (adminUser.fcmTokenMobile) tokens.push(...(Array.isArray(adminUser.fcmTokenMobile) ? adminUser.fcmTokenMobile : [adminUser.fcmTokenMobile]));
+
+            if (tokens.length > 0) {
+                try {
+                    if (admin.apps.length > 0) {
+                        const messagePayload = {
+                            notification: { title, body: message, ...(image && { image }) },
+                            data: { ...data, type, click_action: actionUrl || '/admin/dashboard', url: actionUrl || '/admin/dashboard' },
+                            tokens: tokens
+                        };
+                        const response = await admin.messaging().sendEachForMulticast(messagePayload);
+                        results.push({ adminId: adminUser._id, success: true, response });
+                    }
+                } catch (err) {
+                    console.error(`Push to admin ${adminUser._id} failed:`, err.message);
+                }
+            }
+        }
+        return { success: true, results };
+    } catch (error) {
+        console.error('Admin Notification Error:', error);
         return { success: false, error: error.message };
     }
 };

@@ -250,7 +250,7 @@ export default function AppProfilePage() {
                 </div>
             )}
 
-            <div className="pt-12 pb-6">
+            <div className="pt-4 pb-6">
                 <span className="text-[10px] font-black uppercase mb-1 block opacity-40 tracking-[0.2em]" style={{ color: colors.textMuted }}>
                     Account Details
                 </span>

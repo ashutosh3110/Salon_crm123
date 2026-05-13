@@ -140,7 +140,7 @@ exports.createOrder = async (req, res) => {
 
         // Send Push Notification
         try {
-            const { sendNotification } = require('../Utils/notification');
+            const { sendNotification, sendAdminNotification } = require('../Utils/notification');
             await sendNotification({
                 customerId: order.customerId,
                 salonId: order.salonId,
@@ -150,8 +150,32 @@ exports.createOrder = async (req, res) => {
                 actionUrl: `/app/orders/${order._id}`,
                 data: { orderId: order._id.toString() }
             });
+
+            // Notify Admins
+            const { sendWhatsAppMessage } = require('../Utils/whatsapp');
+            const User = require('../Models/User');
+            const populatedOrder = await Order.findById(order._id).populate('customerId', 'name');
+
+            const adminTitle = 'New Order Received! 🛒';
+            const adminMsg = `New order received from ${populatedOrder.customerId?.name || 'Customer'} for ${items.length} items. Total: ₹${totalAmount}.`;
+
+            await sendAdminNotification({
+                salonId,
+                title: adminTitle,
+                message: adminMsg,
+                type: 'order',
+                actionUrl: `/admin/shop-orders` // or specific order link if available
+            });
+
+            // WhatsApp to Admins
+            const admins = await User.find({ salonId, role: 'admin', status: 'active' });
+            for (const ad of admins) {
+                if (ad.phone) {
+                    await sendWhatsAppMessage(ad.phone, adminMsg);
+                }
+            }
         } catch (pushErr) {
-            console.error('Order Push failed:', pushErr.message);
+            console.error('Order Notification failed:', pushErr.message);
         }
 
         res.status(201).json({
@@ -331,12 +355,44 @@ exports.updateOrderStatus = async (req, res) => {
                 await sendNotification({
                     customerId: order.customerId,
                     salonId: order.salonId,
-                    title: `Order ${status.toUpperCase()}!`,
+                    title: status === 'accepted' ? 'Order Confirmed! 🛍️' : `Order ${status.toUpperCase()}!`,
                     message: statusMsgs[status],
                     type: 'order',
                     actionUrl: `/app/orders/${order._id}`,
                     data: { orderId: order._id.toString(), status }
                 });
+
+                // Send WhatsApp if accepted
+                if (status === 'accepted') {
+                    try {
+                        const populatedOrder = await Order.findById(order._id)
+                            .populate('customerId', 'name phone')
+                            .populate('salonId', 'businessName name')
+                            .populate('outletId', 'name city');
+
+                        if (populatedOrder && populatedOrder.customerId && populatedOrder.customerId.phone) {
+                            const brandName = populatedOrder.salonId?.businessName || populatedOrder.salonId?.name || 'Our Salon';
+                            const orderIdDisplay = populatedOrder._id.toString().slice(-6).toUpperCase();
+
+                            await sendWapixoTemplate(
+                                populatedOrder.customerId.phone,
+                                process.env.WHATSAPP_TEMPLATE_PRODUCT_BUY || 'product_buy',
+                                [
+                                    populatedOrder.customerId.name || 'Customer',
+                                    brandName,
+                                    orderIdDisplay,
+                                    `${populatedOrder.items.length} Items`,
+                                    `₹${populatedOrder.totalAmount}`,
+                                    populatedOrder.paymentMethod.toUpperCase(),
+                                    populatedOrder.outletId?.name || 'Our Outlet',
+                                    new Date().toLocaleDateString()
+                                ]
+                            );
+                        }
+                    } catch (wsErr) {
+                        console.error('Order Acceptance WhatsApp failed:', wsErr.message);
+                    }
+                }
             }
         } catch (pushErr) {
             console.error('Order Update Push failed:', pushErr.message);

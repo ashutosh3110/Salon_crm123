@@ -1,4 +1,4 @@
-
+import { useEffect } from 'react';
 import { X, ShoppingBag, Plus, Minus, ArrowRight } from 'lucide-react';
 import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
@@ -6,6 +6,32 @@ import { getImageUrl } from '../../utils/imageUtils';
 
 const CartDrawer = ({ isOpen, onClose, cart, total, onUpdateQuantity, onRemove, colors, isLight }) => {
     const navigate = useNavigate();
+
+    // Prevent background scroll when drawer is open
+    useEffect(() => {
+        if (isOpen) {
+            const scrollY = window.scrollY;
+            document.body.style.position = 'fixed';
+            document.body.style.top = `-${scrollY}px`;
+            document.body.style.width = '100%';
+            document.body.style.overflow = 'hidden';
+        } else {
+            const scrollY = document.body.style.top;
+            document.body.style.position = '';
+            document.body.style.top = '';
+            document.body.style.width = '';
+            document.body.style.overflow = '';
+            if (scrollY) {
+                window.scrollTo(0, parseInt(scrollY || '0') * -1);
+            }
+        }
+        return () => {
+            document.body.style.position = '';
+            document.body.style.top = '';
+            document.body.style.width = '';
+            document.body.style.overflow = '';
+        };
+    }, [isOpen]);
     
     const drawerContent = (
         <>
@@ -13,7 +39,8 @@ const CartDrawer = ({ isOpen, onClose, cart, total, onUpdateQuantity, onRemove, 
                 <div className="fixed inset-0 z-[10001] flex justify-end">
                     <div
                         onClick={onClose}
-                        className={`absolute inset-0 ${isLight ? 'bg-black/10' : 'bg-black/30'} backdrop-blur-md`}
+                        className={`absolute inset-0 ${isLight ? 'bg-black/10' : 'bg-black/30'} backdrop-blur-md touch-none`}
+                        style={{ touchAction: 'none' }}
                     />
                     <div
                         style={{ background: colors.card, borderLeft: `1px solid ${colors.border}` }}

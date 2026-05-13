@@ -25,8 +25,9 @@ const AppLoyaltyPage = () => {
     const navigate = useNavigate();
     const { theme } = useCustomerTheme();
     const { customer } = useCustomerAuth();
-    const { balance, initializeWallet } = useWallet();
+    const { balance, initializeWallet, refreshWallet } = useWallet();
     const isLight = theme === 'light';
+    const points = customer?.loyaltyPoints || 0;
 
     const colors = {
         bg: isLight ? '#FDFCFB' : '#080808',
@@ -63,11 +64,12 @@ const AppLoyaltyPage = () => {
             }
         };
         loadLoyaltyData();
-    }, []);
+        refreshWallet(); // Also refresh wallet to get latest points/balance
+    }, [refreshWallet]);
 
-    const points = Math.max(0, Number(balance || 0));
+    // const points = Math.max(0, Number(balance || 0)); // Old logic was wrong
     // Calculate how many points equal 1 rupee
-    const ptsPerRupee = rule.pointsRate || 10;
+    const ptsPerRupee = rule.pointsRate || 100;
     const redeemableValue = Math.floor(points / (ptsPerRupee || 1));
 
     const fadeUp = {
@@ -89,6 +91,21 @@ const AppLoyaltyPage = () => {
                     <AppBackButton />
                     <h1 className="text-xl font-black italic tracking-tight" style={{ color: colors.text }}>Loyalty Rewards</h1>
                 </div>
+                <button 
+                    onClick={() => navigate('/app/loyalty/how-it-works')}
+                    style={{ 
+                        fontSize: '11px', 
+                        fontWeight: 900, 
+                        color: colors.accent, 
+                        textTransform: 'uppercase', 
+                        letterSpacing: '0.05em',
+                        background: 'none',
+                        border: 'none',
+                        padding: '4px 8px'
+                    }}
+                >
+                    How it works
+                </button>
             </div>
 
             <div style={{ padding: '0 24px' }}>

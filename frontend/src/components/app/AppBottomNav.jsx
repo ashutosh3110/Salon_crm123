@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { Home, Scissors, CalendarPlus, ShoppingBag, User, Wallet } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useCustomerTheme } from '../../contexts/CustomerThemeContext';
+import { useNotifications } from '../../contexts/NotificationContext';
 
 const tabs = [
     { id: 'home', label: 'Home', icon: Home, path: '/app' },
@@ -16,14 +17,13 @@ export default function AppBottomNav() {
     const location = useLocation();
     const navigate = useNavigate();
     const { theme } = useCustomerTheme();
+    const { unreadCount } = useNotifications();
     const isLight = theme === 'light';
     const [isKeyboardVisible, setIsKeyboardVisible] = useState(false);
 
     useEffect(() => {
         const initialHeight = window.innerHeight;
         const handleResize = () => {
-            // If the current height is significantly less than the initial height,
-            // the keyboard is likely visible (common on Android/Chrome)
             if (window.innerHeight < initialHeight * 0.8) {
                 setIsKeyboardVisible(true);
             } else {
@@ -67,6 +67,7 @@ export default function AppBottomNav() {
                 {tabs.map((tab) => {
                     const active = isActive(tab.path);
                     const Icon = tab.icon;
+                    const hasNotifications = tab.id === 'profile' && unreadCount > 0;
 
                     return (
                         <motion.button
@@ -82,11 +83,20 @@ export default function AppBottomNav() {
                                 position: 'relative',
                             }}
                         >
-                            <Icon
-                                size={21}
-                                strokeWidth={active ? 2.2 : 1.6}
-                                color={active ? '#C8956C' : (isLight ? 'rgba(0,0,0,0.3)' : 'rgba(255,255,255,0.32)')}
-                            />
+                            <div style={{ position: 'relative' }}>
+                                <Icon
+                                    size={21}
+                                    strokeWidth={active ? 2.2 : 1.6}
+                                    color={active ? '#C8956C' : (isLight ? 'rgba(0,0,0,0.3)' : 'rgba(255,255,255,0.32)')}
+                                />
+                                {hasNotifications && (
+                                    <motion.div
+                                        initial={{ scale: 0 }}
+                                        animate={{ scale: 1 }}
+                                        className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-[#ff4757] rounded-full border border-white dark:border-[#1A1A1A] animate-pulse-red"
+                                    />
+                                )}
+                            </div>
                             <span style={{
                                 fontSize: '10px',
                                 fontWeight: active ? 600 : 400,

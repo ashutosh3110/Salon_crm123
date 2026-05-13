@@ -75,7 +75,10 @@ export default function ReEngagementTool() {
                                         {customer.name.charAt(0)}
                                     </div>
                                     <div className="space-y-1">
-                                        <h5 className="font-bold text-text group-hover:text-primary transition-colors tracking-tight text-base uppercase">{customer.name}</h5>
+                                        <div className="flex items-center gap-3">
+                                            <h5 className="font-bold text-text group-hover:text-primary transition-colors tracking-tight text-base uppercase">{customer.name}</h5>
+                                            <span className="px-2 py-0.5 bg-surface-alt border border-border text-[9px] font-black text-text-muted tracking-widest">{customer.phone}</span>
+                                        </div>
                                         <div className="flex items-center gap-3 text-[10px] font-black text-text-muted">
                                             <span className="flex items-center gap-1 uppercase tracking-widest">
                                                 <Calendar className="w-3 h-3" />
