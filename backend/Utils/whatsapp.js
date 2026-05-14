@@ -5,8 +5,9 @@ const axios = require('axios');
  * @param {string} to - Recipient phone number (with country code, no plus sign)
  * @param {string} templateName - Name of the approved template
  * @param {Array} parameters - Array of text parameters for the body {{1}}, {{2}}, etc.
+ * @param {string} headerUrl - Optional URL for media header
  */
-exports.sendWhatsAppTemplate = async (to, templateName, parameters = []) => {
+exports.sendWhatsAppTemplate = async (to, templateName, parameters = [], headerUrl = null) => {
     try {
         const token = process.env.WHATSAPP_CLOUD_TOKEN;
         const phoneId = process.env.WHATSAPP_CLOUD_PHONE_NUMBER_ID;
@@ -15,42 +16,51 @@ exports.sendWhatsAppTemplate = async (to, templateName, parameters = []) => {
         if (!token || !phoneId) {
             // Fallback to Wapixo if Meta credentials missing
             if (process.env.WAPIXO_ACCESS_TOKEN && process.env.WAPIXO_VENDOR_UID) {
-                return exports.sendWapixoTemplate(to, templateName, parameters);
+                return exports.sendWapixoTemplate(to, templateName, parameters, headerUrl);
             }
             console.error('WhatsApp credentials missing in .env');
             return { success: false, message: 'WhatsApp credentials missing' };
         }
 
-        // Clean phone number (remove spaces, dashes, etc.)
+        // ... (phone cleaning code)
         let cleanTo = to.replace(/[^0-9]/g, '');
+        if (cleanTo.length === 10) cleanTo = '91' + cleanTo;
 
-        // If it's a 10-digit number, assume it's India (91)
-        if (cleanTo.length === 10) {
-            cleanTo = '91' + cleanTo;
+        const components = [
+            {
+                type: "body",
+                parameters: parameters.map(text => ({
+                    type: "text",
+                    text: text
+                }))
+            }
+        ];
+
+        if (headerUrl) {
+            components.push({
+                type: "header",
+                parameters: [
+                    {
+                        type: "document",
+                        document: {
+                            link: headerUrl,
+                            filename: "Invoice.pdf"
+                        }
+                    }
+                ]
+            });
         }
-
-        // Use number without + prefix as required by Meta Cloud API
-        const finalTo = cleanTo;
 
         const payload = {
             messaging_product: "whatsapp",
-            to: finalTo,
+            to: cleanTo,
             type: "template",
             template: {
                 name: templateName,
                 language: {
                     code: languageCode
-                    
                 },
-                components: [
-                    {
-                        type: "body",
-                        parameters: parameters.map(text => ({
-                            type: "text",
-                            text: text
-                        }))
-                    }
-                ]
+                components
             }
         };
 
@@ -172,7 +182,8 @@ exports.sendWapixoTemplate = async (to, templateName, parameters = [], headerUrl
         });
 
         if (headerUrl) {
-            payload.header_url = headerUrl;
+            payload.header_document = headerUrl;
+            payload.header_document_name = "Invoice.pdf";
         }
 
         // Wapixo requires message_body even for templates in some versions

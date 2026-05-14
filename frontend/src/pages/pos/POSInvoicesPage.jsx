@@ -735,7 +735,16 @@ export default function POSInvoicesPage() {
                                         <td className="px-3 py-4 text-text-muted text-[10px] font-bold uppercase tracking-tight truncate">
                                             {formatDate(inv.createdAt)}
                                         </td>
-                                        <td className="px-3 py-4 font-black text-text text-[10px] uppercase tracking-tight truncate" title={inv.customerId?.name || 'Guest'}>{inv.customerId?.name || 'Guest'}</td>
+                                        <td className="px-3 py-4 truncate">
+                                            <div className="font-black text-text text-[10px] uppercase tracking-tight truncate" title={inv.customerId?.name || 'Guest'}>
+                                                {inv.customerId?.name || 'Guest'}
+                                            </div>
+                                            {inv.customerId?.phone && (
+                                                <div className="text-[9px] font-bold text-text-muted mt-0.5 tracking-tight">
+                                                    {inv.customerId.phone}
+                                                </div>
+                                            )}
+                                        </td>
                                         <td className="px-3 py-4 text-text-muted text-[9px] font-black uppercase tracking-widest truncate">{inv.outletId?.name || '-'}</td>
                                         <td className="px-3 py-4">
                                             <span className="flex items-center gap-1.5 font-black text-text text-[9px] uppercase tracking-widest">
