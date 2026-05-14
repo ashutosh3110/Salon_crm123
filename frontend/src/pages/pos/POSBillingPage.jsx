@@ -1737,7 +1737,7 @@ export default function POSBillingPage() {
                                         <button onClick={() => removeItem(idx)} className="p-1 text-text-muted hover:text-rose-500"><X className="w-4 h-4" /></button>
                                     </div>
                                     {/* Multi-Staff Row */}
-                                    {item.type === 'service' && (
+                                    {item.type === 'service' ? (
                                         <div className="space-y-1.5">
                                             {(item.staffIds || ['']).map((sid, sIdx) => (
                                                 <div key={sIdx} className="flex items-center gap-2">
@@ -1769,6 +1769,35 @@ export default function POSBillingPage() {
                                             >
                                                 <Plus className="w-3 h-3" /> Add Another Staff
                                             </button>
+                                        </div>
+                                    ) : (
+                                        <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-2">
+                                            <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
+                                                <ShoppingCart className="w-2.5 h-2.5 text-primary" /> Edit Quantity
+                                            </label>
+                                            <div className="flex items-center bg-white border border-slate-200 rounded-lg h-9 overflow-hidden">
+                                                <button 
+                                                    onClick={() => updateQty(idx, -1)}
+                                                    className="px-3 hover:bg-slate-50 text-slate-400 border-r border-slate-100 transition-colors h-full"
+                                                >
+                                                    <Minus className="w-3.5 h-3.5" />
+                                                </button>
+                                                <input 
+                                                    type="number"
+                                                    className="flex-1 text-center text-xs font-black text-slate-900 outline-none h-full bg-transparent"
+                                                    value={item.quantity}
+                                                    onChange={(e) => {
+                                                        const val = parseInt(e.target.value) || 1;
+                                                        updateQty(idx, val - item.quantity);
+                                                    }}
+                                                />
+                                                <button 
+                                                    onClick={() => updateQty(idx, 1)}
+                                                    className="px-3 hover:bg-slate-50 text-slate-400 border-l border-slate-100 transition-colors h-full"
+                                                >
+                                                    <Plus className="w-3.5 h-3.5" />
+                                                </button>
+                                            </div>
                                         </div>
                                     )}
                                     {packageEligibleItems.includes(item.name) && (
@@ -2698,7 +2727,7 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                                         </button>
                                     </div>
 
-                                    {item.type === 'service' && (
+                                    {item.type === 'service' ? (
                                         <div className={`p-2.5 rounded-2xl border ${(!item.staffIds || item.staffIds.length === 0) ? 'bg-amber-50 border-amber-200' : 'bg-white border-slate-100 shadow-sm'}`}>
                                             <label className={`text-[8px] font-black uppercase tracking-widest flex items-center gap-1.5 mb-2 ${(!item.staffIds || item.staffIds.length === 0) ? 'text-amber-600' : 'text-slate-400'}`}>
                                                 <Sparkles className="w-2.5 h-2.5" /> Assign Stylists
@@ -2781,6 +2810,38 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                                                         </motion.div>
                                                     )}
                                                 </AnimatePresence>
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        <div className="p-2.5 rounded-2xl border border-slate-100 bg-white shadow-sm">
+                                            <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-1.5 mb-2">
+                                                <ShoppingCart className="w-2.5 h-2.5 text-primary" /> Edit Quantity
+                                            </label>
+                                            <div className="flex items-center gap-3">
+                                                <div className="flex-1 flex items-center bg-slate-50 border border-slate-200 rounded-xl h-10 overflow-hidden">
+                                                    <button 
+                                                        onClick={(e) => { e.stopPropagation(); updateQQty(idx, -1); }}
+                                                        className="px-4 hover:bg-slate-200 text-slate-400 transition-colors h-full border-r border-slate-200"
+                                                    >
+                                                        <Minus className="w-4 h-4" />
+                                                    </button>
+                                                    <input 
+                                                        type="number"
+                                                        className="flex-1 bg-white text-center text-sm font-black text-slate-900 outline-none h-full"
+                                                        value={item.quantity}
+                                                        onChange={(e) => {
+                                                            const val = parseInt(e.target.value) || 1;
+                                                            updateQQty(idx, val - item.quantity);
+                                                        }}
+                                                        onClick={(e) => e.stopPropagation()}
+                                                    />
+                                                    <button 
+                                                        onClick={(e) => { e.stopPropagation(); updateQQty(idx, 1); }}
+                                                        className="px-4 hover:bg-slate-200 text-slate-400 transition-colors h-full border-l border-slate-200"
+                                                    >
+                                                        <Plus className="w-4 h-4" />
+                                                    </button>
+                                                </div>
                                             </div>
                                         </div>
                                     )}
