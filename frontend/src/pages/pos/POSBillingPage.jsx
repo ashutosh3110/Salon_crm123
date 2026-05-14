@@ -2079,6 +2079,7 @@ export default function POSBillingPage() {
                     }}
                     outlets={outlets}
                     services={services}
+                    products={products}
                     staff={businessStaff}
                     customers={businessCustomers}
                     addCustomer={addBusinessCustomer}
@@ -2092,7 +2093,7 @@ export default function POSBillingPage() {
 }
 
 // ─── Quick Invoice Modal Component ───
-function QuickInvoiceModal({ onClose, onSuccess, outlets, services, staff, customers, addCustomer, activeOutletId, fiscal, platformSettings }) {
+function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, staff, customers, addCustomer, activeOutletId, fiscal, platformSettings }) {
     const [qOutletId, setQOutletId] = useState(activeOutletId || (outlets?.[0]?._id || ''));
     const [qClient, setQClient] = useState(null);
     const [qSearchClient, setQSearchClient] = useState('');
@@ -2111,6 +2112,7 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, staff, custo
     const [pendingClientSelect, setPendingClientSelect] = useState(null);
     const [showQOutletPicker, setShowQOutletPicker] = useState(false);
     const [qSelectedCategory, setQSelectedCategory] = useState(null);
+    const [qActiveTab, setQActiveTab] = useState('services');
 
     const qFilteredServices = useMemo(() => {
         if (!qOutletId) return (services || []);
@@ -2124,20 +2126,34 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, staff, custo
         });
     }, [services, qOutletId]);
 
+    const qFilteredProducts = useMemo(() => {
+        if (!qOutletId) return (products || []);
+        return (products || []).filter(p => {
+            const pOutletIds = p.outletIds || [];
+            const pOutletId = p.outletId?._id || p.outletId;
+            if (pOutletIds.length === 0 && !pOutletId) return true;
+            const matchPlural = pOutletIds.some(id => String(id?._id || id) === String(qOutletId));
+            const matchSingular = pOutletId && String(pOutletId) === String(qOutletId);
+            return matchPlural || matchSingular;
+        });
+    }, [products, qOutletId]);
+
     const qCategories = useMemo(() => {
         const cats = [];
         cats.push({ name: 'All', image: null });
         
-        const uniqueNames = [...new Set(qFilteredServices.map(s => s.category).filter(Boolean))];
+        const items = qActiveTab === 'services' ? qFilteredServices : qFilteredProducts;
+        const uniqueNames = [...new Set(items.map(i => i.category).filter(Boolean))];
+        
         uniqueNames.forEach(name => {
-            const firstWithImg = qFilteredServices.find(s => s.category === name && (s.image || s.images?.[0]));
+            const firstWithImg = items.find(i => i.category === name && (i.image || i.images?.[0]));
             cats.push({ 
                 name, 
                 image: firstWithImg ? (firstWithImg.image || firstWithImg.images[0]) : null 
             });
         });
         return cats;
-    }, [qFilteredServices]);
+    }, [qFilteredServices, qFilteredProducts, qActiveTab]);
 
     useEffect(() => {
         setQSelectedCategory(null);
@@ -2182,13 +2198,15 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, staff, custo
             : qManualDiscount.value;
         
         const serviceGst = Number(platformSettings?.serviceGst || fiscal?.serviceGst || 18);
-        const taxRate = serviceGst / 100;
+        const productGst = Number(platformSettings?.productGst || fiscal?.productGst || 12);
 
         let totalTax = 0;
         let taxableValue = 0;
 
         qCart.forEach(item => {
             const itemGross = (item.price * item.quantity);
+            const taxRate = (item.type === 'service' ? serviceGst : productGst) / 100;
+
             if (fiscal?.inclusiveTax) {
                 const taxable = itemGross / (1 + taxRate);
                 taxableValue += taxable;
@@ -2215,14 +2233,20 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, staff, custo
     const paidAmount = Number(qPayments.cash || 0) + Number(qPayments.online || 0);
     const dueAmount = Math.max(0, totals.total - paidAmount);
 
-    const addToQCart = (service) => {
+    const addToQCart = (item, type = 'service') => {
         setQCart([...qCart, {
-            ...service,
-            itemId: service._id,
-            type: 'service',
+            ...item,
+            itemId: item._id,
+            type: type,
             quantity: 1,
-            staffIds: qFilteredStaff.length === 1 ? [typeof qFilteredStaff[0]._id === 'object' ? qFilteredStaff[0]._id?._id : String(qFilteredStaff[0]._id)] : [] 
+            staffIds: type === 'service' ? (qFilteredStaff.length === 1 ? [typeof qFilteredStaff[0]._id === 'object' ? qFilteredStaff[0]._id?._id : String(qFilteredStaff[0]._id)] : []) : [] 
         }]);
+    };
+
+    const updateQQty = (idx, delta) => {
+        const newCart = [...qCart];
+        newCart[idx].quantity = Math.max(1, (newCart[idx].quantity || 1) + delta);
+        setQCart(newCart);
     };
 
     const toggleStaffInItem = (itemIdx, sId) => {
@@ -2515,7 +2539,25 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, staff, custo
                             </div>
                         </div>
 
-                        {/* Service Selection Section */}
+                        {/* Tab Switcher */}
+                        <div className="px-4 pt-4 shrink-0">
+                            <div className="flex bg-slate-100 p-1 rounded-xl">
+                                <button
+                                    onClick={() => { setQActiveTab('services'); setQSelectedCategory(null); }}
+                                    className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${qActiveTab === 'services' ? 'bg-white text-primary shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
+                                >
+                                    <Scissors className="w-3.5 h-3.5" /> Services
+                                </button>
+                                <button
+                                    onClick={() => { setQActiveTab('products'); setQSelectedCategory(null); }}
+                                    className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${qActiveTab === 'products' ? 'bg-white text-primary shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
+                                >
+                                    <Package className="w-3.5 h-3.5" /> Products
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* Service/Product Selection Section */}
                         <div className="flex-1 overflow-hidden flex flex-col p-4 space-y-3">
                             <div className="flex items-center justify-between shrink-0">
                                 <div className="flex items-center gap-2">
@@ -2529,12 +2571,12 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, staff, custo
                                         </button>
                                     )}
                                     <h3 className="text-[9px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
-                                        <Scissors className="w-3 h-3" /> {qSelectedCategory || 'Service Categories'}
+                                        {qActiveTab === 'services' ? <Scissors className="w-3 h-3" /> : <Package className="w-3 h-3" />} {qSelectedCategory || (qActiveTab === 'services' ? 'Service Categories' : 'Product Categories')}
                                     </h3>
                                 </div>
                                 <div className="text-[8px] font-bold text-slate-400 bg-slate-100 px-2 py-0.5 rounded uppercase">
                                     {qSelectedCategory 
-                                        ? `${qFilteredServices.filter(s => qSelectedCategory === 'All' || s.category === qSelectedCategory).length} Services`
+                                        ? `${(qActiveTab === 'services' ? qFilteredServices : qFilteredProducts).filter(i => qSelectedCategory === 'All' || i.category === qSelectedCategory).length} ${qActiveTab === 'services' ? 'Services' : 'Products'}`
                                         : `${qCategories.length} Categories`
                                     }
                                 </div>
@@ -2574,31 +2616,35 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, staff, custo
                                     </div>
                                 ) : (
                                     <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                                        {qFilteredServices
-                                            .filter(s => qSelectedCategory === 'All' || s.category === qSelectedCategory)
-                                            .map(s => (
+                                        {(qActiveTab === 'services' ? qFilteredServices : qFilteredProducts)
+                                            .filter(i => qSelectedCategory === 'All' || i.category === qSelectedCategory)
+                                            .map(item => (
                                             <button 
-                                                key={s._id}
-                                                onClick={() => addToQCart(s)}
+                                                key={item._id}
+                                                onClick={() => addToQCart(item, qActiveTab === 'services' ? 'service' : 'product')}
                                                 className="bg-white border border-slate-200 hover:border-primary hover:shadow-md transition-all rounded-xl shadow-sm relative overflow-hidden flex flex-col group h-32"
                                             >
                                                 <div className="h-16 w-full overflow-hidden bg-gradient-to-br from-primary/5 to-primary/10 flex-shrink-0 relative">
                                                     {(() => {
-                                                        const img = s.image || s.images?.[0];
+                                                        const img = item.image || item.images?.[0];
                                                         return img ? (
-                                                            <img src={getImageUrl(img)} className="w-full h-full object-cover" alt={s.name} onError={e => { e.target.style.display='none'; e.target.nextSibling.style.display='flex'; }} />
+                                                            <img src={getImageUrl(img)} className="w-full h-full object-cover" alt={item.name} onError={e => { e.target.style.display='none'; e.target.nextSibling.style.display='flex'; }} />
                                                         ) : null;
                                                     })()}
-                                                    <div className={`w-full h-full items-center justify-center ${s.image || s.images?.[0] ? 'hidden' : 'flex'}`}>
-                                                        <Scissors className="w-6 h-6 text-primary/30 group-hover:text-primary/60 transition-colors" />
+                                                    <div className={`w-full h-full items-center justify-center ${item.image || item.images?.[0] ? 'hidden' : 'flex'}`}>
+                                                        {qActiveTab === 'services' ? (
+                                                            <Scissors className="w-6 h-6 text-primary/30 group-hover:text-primary/60 transition-colors" />
+                                                        ) : (
+                                                            <Package className="w-6 h-6 text-primary/30 group-hover:text-primary/60 transition-colors" />
+                                                        )}
                                                     </div>
                                                     <div className="absolute top-1.5 right-1.5 bg-white/90 backdrop-blur-sm rounded-lg p-1 opacity-0 group-hover:opacity-100 transition-opacity shadow-sm">
                                                         <Plus className="w-3 h-3 text-primary" />
                                                     </div>
                                                 </div>
                                                 <div className="flex-1 px-2.5 py-2 flex flex-col justify-between">
-                                                    <p className="text-[9px] font-black text-slate-800 group-hover:text-primary transition-colors line-clamp-2 leading-tight">{s.name}</p>
-                                                    <p className="text-[11px] font-black text-emerald-600">₹{s.price}</p>
+                                                    <p className="text-[9px] font-black text-slate-800 group-hover:text-primary transition-colors line-clamp-2 leading-tight">{item.name}</p>
+                                                    <p className="text-[11px] font-black text-emerald-600">₹{item.price}</p>
                                                 </div>
                                             </button>
                                         ))}
@@ -2636,7 +2682,14 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, staff, custo
                                     <div className="flex justify-between items-start">
                                         <div className="flex-1 pr-2">
                                             <p className="text-[10px] font-black text-slate-900 uppercase leading-tight line-clamp-1">{item.name}</p>
-                                            <p className="text-[10px] font-black text-emerald-600 mt-0.5">₹{item.price}</p>
+                                            <div className="flex items-center gap-2 mt-0.5">
+                                                <p className="text-[10px] font-black text-emerald-600">₹{item.price}</p>
+                                                <div className="flex items-center bg-slate-50 border border-slate-200 rounded-lg h-6 overflow-hidden ml-2">
+                                                    <button onClick={() => updateQQty(idx, -1)} className="px-1.5 hover:bg-slate-200 text-slate-400 transition-colors"><Minus className="w-2 h-2" /></button>
+                                                    <span className="px-2 text-[9px] font-black text-slate-900 border-x border-slate-200 flex items-center h-full bg-white">{item.quantity}</span>
+                                                    <button onClick={() => updateQQty(idx, 1)} className="px-1.5 hover:bg-slate-200 text-slate-400 transition-colors"><Plus className="w-2 h-2" /></button>
+                                                </div>
+                                            </div>
                                         </div>
                                         <button onClick={() => setQCart(qCart.filter((_, i) => i !== idx))} className="p-1 hover:bg-rose-50 rounded text-slate-400 hover:text-rose-500 transition-colors">
                                             <X className="w-3 h-3" />
@@ -2645,7 +2698,7 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, staff, custo
 
                                     <div className={`p-2.5 rounded-2xl border ${(!item.staffIds || item.staffIds.length === 0) ? 'bg-amber-50 border-amber-200' : 'bg-white border-slate-100 shadow-sm'}`}>
                                         <label className={`text-[8px] font-black uppercase tracking-widest flex items-center gap-1.5 mb-2 ${(!item.staffIds || item.staffIds.length === 0) ? 'text-amber-600' : 'text-slate-400'}`}>
-                                            <Sparkles className="w-2.5 h-2.5" /> Assign Stylists
+                                            <Sparkles className="w-2.5 h-2.5" /> {item.type === 'service' ? 'Assign Stylists' : 'Assigned Staff'}
                                         </label>
                                         
                                         <div className="relative">
