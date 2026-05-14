@@ -16,8 +16,7 @@ import {
     Image as ImageIcon,
     X,
     Truck,
-    Activity,
-    MessageSquare
+    Activity
 } from 'lucide-react';
 import { useBusiness } from '../../../contexts/BusinessContext';
 import { GoogleMap, MarkerF, useJsApiLoader } from '@react-google-maps/api';
@@ -153,11 +152,8 @@ export default function OutletForm() {
         beds: [],
         config: {
             bookingSms: true,
-            whatsappNotifications: true,
             enableDelivery: false,
-            deliveryCharge: 0,
-            whatsappCredits: 0,
-            whatsappExpiryDate: null
+            deliveryCharge: 0
         }
     });
 
@@ -187,11 +183,8 @@ export default function OutletForm() {
                     workingDays: found.workingDays || ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'],
                     config: found.config || {
                         bookingSms: true,
-                        whatsappNotifications: true,
                         enableDelivery: false,
-                        deliveryCharge: 0,
-                        whatsappCredits: 0,
-                        whatsappExpiryDate: null
+                        deliveryCharge: 0
                     }
                 });
             }
@@ -546,72 +539,7 @@ export default function OutletForm() {
                         </div>
                     </div>
 
-                    {/* WhatsApp Credits Card */}
-                    <div className="bg-white border border-border rounded-[2.5rem] p-8 shadow-sm hover:shadow-2xl transition-all duration-700">
-                        <div className="flex items-center justify-between mb-8">
-                            <div className="flex items-center gap-4">
-                                <div className="w-12 h-12 rounded-2xl bg-blue-500/10 flex items-center justify-center border border-blue-500/20">
-                                    <MessageSquare className="w-6 h-6 text-blue-500" strokeWidth={1.5} />
-                                </div>
-                                <div>
-                                    <h2 className="text-xl font-black text-text tracking-tighter uppercase italic">WhatsApp Credits</h2>
-                                    <p className="text-[10px] text-text-muted font-bold uppercase tracking-widest">Manage notification message balance</p>
-                                </div>
-                            </div>
-                            <div className="px-4 py-2 bg-blue-50 text-blue-600 rounded-xl text-[10px] font-black uppercase tracking-widest border border-blue-100">
-                                {form.config?.whatsappCredits || 0} MESSAGES LEFT
-                            </div>
-                        </div>
 
-                        <div className="grid grid-cols-1 gap-6">
-                            <div className="space-y-2">
-                                <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] ml-2">WhatsApp Balance</label>
-                                <input
-                                    type="number"
-                                    value={form.config?.whatsappCredits || 0}
-                                    onChange={(e) => setForm({ 
-                                        ...form, 
-                                        config: { ...form.config, whatsappCredits: Number(e.target.value) } 
-                                    })}
-                                    className="w-full px-6 py-4 rounded-2xl bg-slate-50 border border-border text-sm font-bold text-text focus:bg-white focus:ring-4 focus:ring-blue-500/10 outline-none transition-all"
-                                />
-                            </div>
-
-                            <div className="md:col-span-2">
-                                <div className="p-4 rounded-2xl bg-slate-50 border border-border flex items-center justify-between">
-                                    <div className="flex items-center gap-3">
-                                        <div className={`w-3 h-3 rounded-full ${form.config?.whatsappNotifications ? 'bg-emerald-500' : 'bg-slate-300'}`} />
-                                        <span className="text-[10px] font-black uppercase tracking-widest">WhatsApp Notifications Active</span>
-                                    </div>
-                                    <button 
-                                        type="button" 
-                                        onClick={() => setForm({ ...form, config: { ...form.config, whatsappNotifications: !form.config?.whatsappNotifications } })}
-                                        className={`w-12 h-6 rounded-full relative transition-all ${form.config?.whatsappNotifications ? 'bg-emerald-500' : 'bg-slate-300'}`}
-                                    >
-                                        <div className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-all ${form.config?.whatsappNotifications ? 'right-1' : 'left-1'}`} />
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-
-                        {platformSettings?.whatsappPricing && (
-                            <div className="mt-8 pt-8 border-t border-border flex items-center justify-between">
-                                <div className="flex items-center gap-2">
-                                    <Info className="w-4 h-4 text-blue-500" />
-                                    <p className="text-[10px] font-bold text-text-muted uppercase tracking-widest">
-                                        Buy more: ₹{platformSettings.whatsappPricing.pricePerMessage} / Msg (Min. {platformSettings.whatsappPricing.minPurchaseQty})
-                                    </p>
-                                </div>
-                                <button 
-                                    type="button" 
-                                    onClick={() => navigate('/admin/whatsapp-credits')}
-                                    className="text-[10px] font-black text-blue-600 uppercase tracking-widest hover:underline"
-                                >
-                                    Top-up Credits
-                                </button>
-                            </div>
-                        )}
-                    </div>
 
                     {/* Shift Dynamics Card (Moved to Left) */}
                     <div className="bg-slate-50 border border-border rounded-[2.5rem] p-8 overflow-hidden relative group">

@@ -140,8 +140,9 @@ exports.sendWhatsAppMessage = async (to, message) => {
  * @param {string} to - Recipient phone number
  * @param {string} templateName - Name of the approved template
  * @param {Array} parameters - Array of text parameters
+ * @param {string} headerUrl - Optional URL for media header (Image/Document)
  */
-exports.sendWapixoTemplate = async (to, templateName, parameters = []) => {
+exports.sendWapixoTemplate = async (to, templateName, parameters = [], headerUrl = null) => {
     try {
         const vendorUid = process.env.WAPIXO_VENDOR_UID;
         const accessToken = process.env.WAPIXO_ACCESS_TOKEN;
@@ -169,6 +170,10 @@ exports.sendWapixoTemplate = async (to, templateName, parameters = []) => {
         parameters.forEach((param, index) => {
             payload[`field_${index + 1}`] = param;
         });
+
+        if (headerUrl) {
+            payload.header_url = headerUrl;
+        }
 
         // Wapixo requires message_body even for templates in some versions
         payload.message_body = `Template: ${templateName}`;

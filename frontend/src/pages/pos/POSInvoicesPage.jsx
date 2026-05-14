@@ -2,8 +2,10 @@ import { useState, useMemo, useEffect } from 'react';
 import {
     Search, Calendar, Eye, X, Download,
     Clock, CreditCard, Banknote, Smartphone, Ban,
-    ChevronLeft, ChevronRight, FileText, Loader2, Store, ChevronDown, Printer
+    ChevronLeft, ChevronRight, FileText, Loader2, Store, ChevronDown, Printer,
+    Mail, MessageSquare
 } from 'lucide-react';
+import { toast } from 'react-hot-toast';
 import api from '../../services/api';
 import { useBusiness } from '../../contexts/BusinessContext';
 import {
@@ -431,6 +433,7 @@ export default function POSInvoicesPage() {
     const [selectedInvoice, setSelectedInvoice] = useState(null);
     const [page, setPage] = useState(1);
     const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
+    const [isSendingWhatsApp, setIsSendingWhatsApp] = useState(null);
     const perPage = 5;
 
     useEffect(() => {
@@ -504,6 +507,45 @@ export default function POSInvoicesPage() {
         } finally {
             setIsGeneratingPDF(null);
         }
+    };
+
+    const sendWhatsAppBill = async (inv) => {
+        const phone = inv.customerId?.phone;
+        if (!phone) return toast.error('Customer phone not found');
+        
+        setIsSendingWhatsApp(inv._id);
+        try {
+            // 1. Generate PDF blob (using POS receipt for WhatsApp)
+            const blob = await pdf(<POSReceiptPDF invoice={inv} salon={salon} />).toBlob();
+            
+            // 2. Prepare Form Data
+            const formData = new FormData();
+            formData.append('pdf', blob, `Invoice_${inv.invoiceNumber}.pdf`);
+            
+            // 3. Call API
+            const response = await api.post(`/pos/invoices/${inv._id}/send-whatsapp`, formData, {
+                headers: { 'Content-Type': 'multipart/form-data' }
+            });
+            
+            if (response.data.success) {
+                toast.success('Invoice sent on WhatsApp!');
+            } else {
+                toast.error(response.data.message || 'Failed to send WhatsApp');
+            }
+        } catch (error) {
+            console.error('WhatsApp Error:', error);
+            toast.error(error.response?.data?.message || 'Error sending WhatsApp invoice');
+        } finally {
+            setIsSendingWhatsApp(null);
+        }
+    };
+
+    const sendEmailBill = (inv) => {
+        const email = inv.customerId?.email;
+        if (!email) return toast.error('Customer email not found');
+        const subject = encodeURIComponent(`Invoice ${inv.invoiceNumber} from ${salon?.name || 'Salon'}`);
+        const body = encodeURIComponent(`Hello ${inv.customerId?.name || 'Customer'},\n\nPlease find your invoice details below:\nInvoice No: ${inv.invoiceNumber}\nTotal: ₹${inv.total}\n\nThank you!`);
+        window.location.href = `mailto:${email}?subject=${subject}&body=${body}`;
     };
 
     const filtered = useMemo(() => {
@@ -672,69 +714,79 @@ export default function POSInvoicesPage() {
                         <p className="text-[10px] font-black text-text-muted uppercase tracking-[0.3em]">No matching invoices found</p>
                     </div>
                 ) : (
-                    <div className="overflow-x-auto bg-background flex-1">
-                        <table className="w-full text-left border-collapse min-w-[1000px]">
+                    <div className="bg-background flex-1 overflow-hidden">
+                        <table className="w-full text-left border-collapse table-fixed">
                             <thead>
-                                <tr className="bg-surface-alt/80 text-[10px] font-black text-text-muted uppercase tracking-[0.2em] border-b border-border">
-                                    <th className="px-6 py-5">Invoice</th>
-                                    <th className="px-6 py-5 whitespace-nowrap">Date & Time</th>
-                                    <th className="px-6 py-5">Customer</th>
-                                    <th className="px-6 py-5">Outlet</th>
-                                    <th className="px-6 py-5">Payment Method</th>
-                                    <th className="px-6 py-5 text-right">Amount</th>
-                                    <th className="px-6 py-5">Status</th>
-                                    <th className="px-6 py-5 text-center">Action</th>
+                                <tr className="bg-surface-alt/80 text-[9px] font-black text-text-muted uppercase tracking-[0.2em] border-b border-border">
+                                    <th className="px-3 py-4 w-[12%]">Invoice</th>
+                                    <th className="px-3 py-4 w-[15%]">Date & Time</th>
+                                    <th className="px-3 py-4 w-[15%]">Customer</th>
+                                    <th className="px-3 py-4 w-[12%]">Outlet</th>
+                                    <th className="px-3 py-4 w-[12%]">Payment</th>
+                                    <th className="px-3 py-4 w-[12%] text-right">Amount</th>
+                                    <th className="px-3 py-4 w-[8%] text-center">Status</th>
+                                    <th className="px-3 py-4 w-[14%] text-center">Action</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-border/30">
                                 {paginated.map(inv => (
                                     <tr key={inv._id} className="hover:bg-surface-alt/50 transition-colors group">
-                                        <td className="px-6 py-5 font-black text-primary uppercase tracking-tighter whitespace-nowrap">{inv.invoiceNumber}</td>
-                                        <td className="px-6 py-5 text-text-muted text-[11px] font-bold uppercase tracking-tight flex items-center gap-2">
-                                            <Clock className="w-3.5 h-3.5 opacity-40" /> {formatDate(inv.createdAt)}
+                                        <td className="px-3 py-4 font-black text-primary uppercase tracking-tighter truncate" title={inv.invoiceNumber}>{inv.invoiceNumber}</td>
+                                        <td className="px-3 py-4 text-text-muted text-[10px] font-bold uppercase tracking-tight truncate">
+                                            {formatDate(inv.createdAt)}
                                         </td>
-                                        <td className="px-6 py-5 font-black text-text text-[11px] uppercase tracking-tight">{inv.customerId?.name || 'Guest'}</td>
-                                        <td className="px-6 py-5 text-text-muted text-[10px] font-black uppercase tracking-widest">{inv.outletId?.name || '-'}</td>
-                                        <td className="px-6 py-5">
-                                            <span className="flex items-center gap-2 font-black text-text text-[10px] uppercase tracking-widest">
-                                                <div className="p-1 bg-surface-alt border border-border group-hover:bg-background transition-colors">
-                                                    {getMethodIcon(inv.paymentMethod)}
-                                                </div>
+                                        <td className="px-3 py-4 font-black text-text text-[10px] uppercase tracking-tight truncate" title={inv.customerId?.name || 'Guest'}>{inv.customerId?.name || 'Guest'}</td>
+                                        <td className="px-3 py-4 text-text-muted text-[9px] font-black uppercase tracking-widest truncate">{inv.outletId?.name || '-'}</td>
+                                        <td className="px-3 py-4">
+                                            <span className="flex items-center gap-1.5 font-black text-text text-[9px] uppercase tracking-widest">
                                                 {inv.paymentMethod === 'online' ? 'UPI' : (inv.paymentMethod || 'Cash').toUpperCase()}
                                             </span>
                                         </td>
-                                        <td className="px-6 py-5 text-right font-black text-text tracking-tighter text-base">₹{Number(inv.total || inv.totalAmount || 0).toLocaleString()}</td>
-                                        <td className="px-6 py-5">
-                                            <span className={`inline-flex items-center px-3 py-1 rounded-none text-[9px] font-black uppercase tracking-[0.2em] border shadow-sm ${(inv.paymentStatus || '').toLowerCase() === 'paid' ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20' : 'bg-orange-500/10 text-orange-600 border-orange-500/20'}`}>
-                                                {(inv.paymentStatus || '').toLowerCase() === 'paid' ? 'Paid' : 'Pending'}
+                                        <td className="px-3 py-4 text-right font-black text-text tracking-tighter text-sm">₹{Number(inv.total || 0).toLocaleString()}</td>
+                                        <td className="px-3 py-4 text-center">
+                                            <span className={`inline-flex items-center px-2 py-0.5 text-[8px] font-black uppercase tracking-widest border ${(inv.paymentStatus || '').toLowerCase() === 'paid' ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20' : 'bg-orange-500/10 text-orange-600 border-orange-500/20'}`}>
+                                                {(inv.paymentStatus || '').toLowerCase() === 'paid' ? 'Paid' : 'Pend'}
                                             </span>
                                         </td>
-                                        <td className="px-6 py-5 text-center">
-                                            <div className="flex items-center justify-center gap-2">
-                                                <button onClick={() => setSelectedInvoice(inv)} className="p-2 border border-border bg-surface hover:bg-primary hover:border-primary hover:text-white transition-all group/btn active:scale-95 shadow-sm" title="View Details">
-                                                    <Eye className="w-4 h-4" />
+                                        <td className="px-3 py-4 text-center">
+                                            <div className="flex items-center justify-center gap-1">
+                                                <button onClick={() => setSelectedInvoice(inv)} className="p-1.5 border border-border bg-surface hover:bg-primary hover:text-white transition-all shadow-sm" title="View">
+                                                    <Eye className="w-3.5 h-3.5" />
                                                 </button>
                                                 
-                                                {/* POS Receipt Button */}
                                                 <button 
                                                     onClick={() => handleDownloadDirectPDF(inv, 'pos')} 
                                                     disabled={isGeneratingPDF === `${inv._id}_pos`}
-                                                    className="p-2 border border-border bg-surface hover:bg-emerald-500 hover:border-emerald-500 hover:text-white transition-all group/btn active:scale-95 shadow-sm flex items-center gap-2"
-                                                    title="Download POS Receipt"
+                                                    className="p-1.5 border border-border bg-surface hover:bg-emerald-500 hover:text-white transition-all shadow-sm"
+                                                    title="POS"
                                                 >
-                                                    {isGeneratingPDF === `${inv._id}_pos` ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Printer className="w-3.5 h-3.5" />}
-                                                    <span className="text-[9px] font-black uppercase">POS</span>
+                                                    {isGeneratingPDF === `${inv._id}_pos` ? <Loader2 className="w-3 h-3 animate-spin" /> : <Printer className="w-3.5 h-3.5" />}
                                                 </button>
 
-                                                {/* Standard Invoice Button */}
                                                 <button 
                                                     onClick={() => handleDownloadDirectPDF(inv, 'standard')} 
                                                     disabled={isGeneratingPDF === `${inv._id}_standard`}
-                                                    className="p-2 border border-border bg-surface hover:bg-blue-500 hover:border-blue-500 hover:text-white transition-all group/btn active:scale-95 shadow-sm flex items-center gap-2"
-                                                    title="Download Standard Invoice"
+                                                    className="p-1.5 border border-border bg-surface hover:bg-blue-500 hover:text-white transition-all shadow-sm"
+                                                    title="Bill"
                                                 >
-                                                    {isGeneratingPDF === `${inv._id}_standard` ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <FileText className="w-3.5 h-3.5" />}
-                                                    <span className="text-[9px] font-black uppercase">Bill</span>
+                                                    {isGeneratingPDF === `${inv._id}_standard` ? <Loader2 className="w-3 h-3 animate-spin" /> : <FileText className="w-3.5 h-3.5" />}
+                                                </button>
+
+                                                <button 
+                                                    onClick={() => sendWhatsAppBill(inv)} 
+                                                    disabled={isSendingWhatsApp === inv._id}
+                                                    className="p-1.5 border border-border bg-surface hover:bg-emerald-600 hover:text-white transition-all shadow-sm text-emerald-600 hover:text-white disabled:opacity-50"
+                                                    title="WhatsApp"
+                                                >
+                                                    {isSendingWhatsApp === inv._id ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <MessageSquare className="w-3.5 h-3.5" />}
+                                                </button>
+
+                                                <button 
+                                                    onClick={() => sendEmailBill(inv)} 
+                                                    className="p-1.5 border border-border bg-surface hover:bg-purple-500 hover:text-white transition-all shadow-sm text-purple-500 hover:text-white"
+                                                    title="Email"
+                                                >
+                                                    <Mail className="w-3.5 h-3.5" />
                                                 </button>
                                             </div>
                                         </td>

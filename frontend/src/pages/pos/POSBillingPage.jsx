@@ -7,7 +7,7 @@ import {
     Sparkles, User, UserPlus, ArrowRight, Percent, Info,
     Tag, Star, Wallet, Printer, Banknote, Smartphone, FileText, Download,
     ShoppingBag, CreditCard, Ticket, Gift, History, Calendar, Globe, Building2, ChevronDown,
-    AlertTriangle, CheckCircle2, UserMinus
+    AlertTriangle, CheckCircle2, UserMinus, LayoutGrid
 } from 'lucide-react';
 import api from '../../services/api';
 import {
@@ -381,7 +381,7 @@ export default function POSBillingPage() {
     const [appointmentId, setAppointmentId] = useState(null);
     const [orderId, setOrderId] = useState(null);
 
-    const [newClientForm, setNewClientForm] = useState({ name: '', phone: '', email: '' });
+    const [newClientForm, setNewClientForm] = useState({ name: '', phone: '' });
 
     // Billing & Payment System Updates
     const [includePreviousDue, setIncludePreviousDue] = useState(false);
@@ -540,7 +540,6 @@ export default function POSBillingPage() {
         }
 
         const totalDeductions = discount + (redeemPoints || 0) + (redeemWallet || 0);
-        const discountFactor = subtotal > 0 ? (subtotal - totalDeductions) / subtotal : 1;
 
         let totalTax = 0;
         let totalTaxableValue = 0;
@@ -548,18 +547,18 @@ export default function POSBillingPage() {
         cart.forEach(item => {
             if (item.isPackageRedemption) return;
 
-            const netItemTotal = (item.price * item.quantity) * discountFactor;
+            const itemGross = (item.price * item.quantity);
             const sGst = Number(platformSettings?.serviceGst || fiscal.serviceGst || 18);
             const pGst = Number(platformSettings?.productGst || fiscal.productGst || 12);
             const itemTaxRate = (item.type === 'service' ? sGst : pGst) / 100;
 
             if (fiscal.inclusiveTax) {
-                const taxableVal = netItemTotal / (1 + itemTaxRate);
+                const taxableVal = itemGross / (1 + itemTaxRate);
                 totalTaxableValue += taxableVal;
-                totalTax += (netItemTotal - taxableVal);
+                totalTax += (itemGross - taxableVal);
             } else {
-                totalTaxableValue += netItemTotal;
-                totalTax += (netItemTotal * itemTaxRate);
+                totalTaxableValue += itemGross;
+                totalTax += (itemGross * itemTaxRate);
             }
         });
 
@@ -570,13 +569,14 @@ export default function POSBillingPage() {
 
         const currentBillTotal = fiscal.inclusiveTax
             ? Math.max(0, subtotal - totalDeductions)
-            : Math.max(0, subtotal - totalDeductions) + totalTax;
+            : Math.max(0, (subtotal + totalTax) - totalDeductions);
 
         const previousDue = (selectedClient?.dueAmount || 0);
         const grandTotal = includePreviousDue ? currentBillTotal + previousDue : currentBillTotal;
 
-        const serviceDiscount = serviceSubtotal * (1 - discountFactor);
-        const productDiscount = productSubtotal * (1 - discountFactor);
+        const discountRatio = subtotal > 0 ? totalDeductions / subtotal : 0;
+        const serviceDiscount = serviceSubtotal * discountRatio;
+        const productDiscount = productSubtotal * discountRatio;
 
         let totalMembershipDiscount = 0;
         let totalGrossAmount = 0;
@@ -605,7 +605,6 @@ export default function POSBillingPage() {
             sgst,
             igst,
             isSameState,
-            discountFactor,
             total: grandTotal,
             taxable: totalTaxableValue,
             currentBillTotal,
@@ -2055,15 +2054,6 @@ export default function POSBillingPage() {
                                     }}
                                 />
                             </div>
-                            <div className="space-y-1.5">
-                                <label className="text-[10px] font-black text-text-muted uppercase tracking-widest">Email (Optional)</label>
-                                <input
-                                    type="email"
-                                    className="w-full p-3 bg-background border border-border text-sm font-black text-text outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 rounded-lg transition-all"
-                                    value={newClientForm.email}
-                                    onChange={(e) => setNewClientForm({ ...newClientForm, email: e.target.value })}
-                                />
-                            </div>
                         </div>
 
                         <div className="p-6 bg-surface-alt border-t border-border">
@@ -2085,8 +2075,6 @@ export default function POSBillingPage() {
                     onClose={() => setShowQuickInvoice(false)}
                     onSuccess={(inv) => {
                         setShowQuickInvoice(false);
-                        // Trigger download and navigate immediately, skipping the success modal
-                        handleDownloadPDF(inv);
                         navigate('/pos/invoices');
                     }}
                     outlets={outlets}
@@ -2110,11 +2098,11 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, staff, custo
     const [qSearchClient, setQSearchClient] = useState('');
     const [qCart, setQCart] = useState([]);
     const [qPayments, setQPayments] = useState({ cash: 0, online: 0 });
-    const [qManualDiscount, setQManualDiscount] = useState(0);
+    const [qManualDiscount, setQManualDiscount] = useState({ type: 'fixed', value: 0 });
     const [isProcessing, setIsProcessing] = useState(false);
     const [isSubmittingClient, setIsSubmittingClient] = useState(false);
     const [showNewClient, setShowNewClient] = useState(false);
-    const [newClientForm, setNewClientForm] = useState({ name: '', phone: '', email: '', gender: 'both' });
+    const [newClientForm, setNewClientForm] = useState({ name: '', phone: '' });
     const [showClientDropdown, setShowClientDropdown] = useState(false);
     const [openStaffIdx, setOpenStaffIdx] = useState(null);
     const [staffSearch, setStaffSearch] = useState('');
@@ -2122,6 +2110,7 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, staff, custo
     const [clientPrevDue, setClientPrevDue] = useState(0);
     const [pendingClientSelect, setPendingClientSelect] = useState(null);
     const [showQOutletPicker, setShowQOutletPicker] = useState(false);
+    const [qSelectedCategory, setQSelectedCategory] = useState(null);
 
     const qFilteredServices = useMemo(() => {
         if (!qOutletId) return (services || []);
@@ -2134,6 +2123,25 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, staff, custo
             return matchPlural || matchSingular;
         });
     }, [services, qOutletId]);
+
+    const qCategories = useMemo(() => {
+        const cats = [];
+        cats.push({ name: 'All', image: null });
+        
+        const uniqueNames = [...new Set(qFilteredServices.map(s => s.category).filter(Boolean))];
+        uniqueNames.forEach(name => {
+            const firstWithImg = qFilteredServices.find(s => s.category === name && (s.image || s.images?.[0]));
+            cats.push({ 
+                name, 
+                image: firstWithImg ? (firstWithImg.image || firstWithImg.images[0]) : null 
+            });
+        });
+        return cats;
+    }, [qFilteredServices]);
+
+    useEffect(() => {
+        setQSelectedCategory(null);
+    }, [qOutletId]);
 
     const qFilteredStaff = useMemo(() => {
         if (!staff || staff.length === 0) return [];
@@ -2169,7 +2177,9 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, staff, custo
 
     const totals = useMemo(() => {
         const subtotal = qCart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-        const discountFactor = subtotal > 0 ? (subtotal - qManualDiscount) / subtotal : 1;
+        const discountAmt = qManualDiscount.type === 'percentage' 
+            ? (subtotal * qManualDiscount.value) / 100 
+            : qManualDiscount.value;
         
         const serviceGst = Number(platformSettings?.serviceGst || fiscal?.serviceGst || 18);
         const taxRate = serviceGst / 100;
@@ -2178,24 +2188,24 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, staff, custo
         let taxableValue = 0;
 
         qCart.forEach(item => {
-            const netItemTotal = (item.price * item.quantity) * discountFactor;
+            const itemGross = (item.price * item.quantity);
             if (fiscal?.inclusiveTax) {
-                const taxable = netItemTotal / (1 + taxRate);
+                const taxable = itemGross / (1 + taxRate);
                 taxableValue += taxable;
-                totalTax += (netItemTotal - taxable);
+                totalTax += (itemGross - taxable);
             } else {
-                taxableValue += netItemTotal;
-                totalTax += (netItemTotal * taxRate);
+                taxableValue += itemGross;
+                totalTax += (itemGross * taxRate);
             }
         });
 
         const total = fiscal?.inclusiveTax 
-            ? Math.max(0, subtotal - qManualDiscount) 
-            : Math.max(0, subtotal - qManualDiscount) + totalTax;
+            ? Math.max(0, subtotal - discountAmt) 
+            : Math.max(0, (subtotal + totalTax) - discountAmt);
 
         return {
             subtotal,
-            discount: qManualDiscount,
+            discount: discountAmt,
             tax: totalTax,
             taxable: taxableValue,
             total: total
@@ -2277,7 +2287,8 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, staff, custo
                 }),
                 tax: totals.tax, 
                 payments: paymentArray,
-                discount: totals.discount
+                discount: totals.discount,
+                discountType: qManualDiscount.type
             };
 
             const res = await api.post('/pos/checkout', payload);
@@ -2336,7 +2347,7 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, staff, custo
                     </div>
                     <div className="flex items-center gap-2">
                         <button 
-                            onClick={() => { setQCart([]); setQClient(null); setQPayments({ cash: 0, online: 0 }); setQManualDiscount(0); }}
+                            onClick={() => { setQCart([]); setQClient(null); setQPayments({ cash: 0, online: 0 }); setQManualDiscount({ type: 'fixed', value: 0 }); }}
                             className="px-4 py-2 text-[10px] font-black text-slate-400 hover:text-rose-500 uppercase tracking-widest transition-colors"
                         >
                             Reset Form
@@ -2507,40 +2518,92 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, staff, custo
                         {/* Service Selection Section */}
                         <div className="flex-1 overflow-hidden flex flex-col p-4 space-y-3">
                             <div className="flex items-center justify-between shrink-0">
-                                <h3 className="text-[9px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
-                                    <Scissors className="w-3 h-3" /> Services
-                                </h3>
-                                <div className="text-[8px] font-bold text-slate-400 bg-slate-100 px-2 py-0.5 rounded uppercase">{qFilteredServices.length} Items</div>
+                                <div className="flex items-center gap-2">
+                                    {qSelectedCategory && (
+                                        <button 
+                                            onClick={() => setQSelectedCategory(null)}
+                                            className="p-1.5 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg transition-colors"
+                                            title="Back to Categories"
+                                        >
+                                            <ChevronDown className="w-3.5 h-3.5 rotate-90" />
+                                        </button>
+                                    )}
+                                    <h3 className="text-[9px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
+                                        <Scissors className="w-3 h-3" /> {qSelectedCategory || 'Service Categories'}
+                                    </h3>
+                                </div>
+                                <div className="text-[8px] font-bold text-slate-400 bg-slate-100 px-2 py-0.5 rounded uppercase">
+                                    {qSelectedCategory 
+                                        ? `${qFilteredServices.filter(s => qSelectedCategory === 'All' || s.category === qSelectedCategory).length} Services`
+                                        : `${qCategories.length} Categories`
+                                    }
+                                </div>
                             </div>
-                            <div className="flex-1 overflow-y-auto grid grid-cols-2 sm:grid-cols-3 gap-3 pr-1 scrollbar-thin">
-                                {qFilteredServices.map(s => (
-                                    <button 
-                                        key={s._id}
-                                        onClick={() => addToQCart(s)}
-                                        className="bg-white border border-slate-200 hover:border-primary hover:shadow-md transition-all rounded-xl shadow-sm relative overflow-hidden flex flex-col group h-32"
-                                    >
-                                        {/* Image or gradient header */}
-                                        <div className="h-16 w-full overflow-hidden bg-gradient-to-br from-primary/5 to-primary/10 flex-shrink-0 relative">
-                                            {(() => {
-                                                const img = s.image || s.images?.[0];
-                                                return img ? (
-                                                    <img src={getImageUrl(img)} className="w-full h-full object-cover" alt={s.name} onError={e => { e.target.style.display='none'; e.target.nextSibling.style.display='flex'; }} />
-                                                ) : null;
-                                            })()}
-                                            <div className={`w-full h-full items-center justify-center ${s.image || s.images?.[0] ? 'hidden' : 'flex'}`}>
-                                                <Scissors className="w-6 h-6 text-primary/30 group-hover:text-primary/60 transition-colors" />
-                                            </div>
-                                            <div className="absolute top-1.5 right-1.5 bg-white/90 backdrop-blur-sm rounded-lg p-1 opacity-0 group-hover:opacity-100 transition-opacity shadow-sm">
-                                                <Plus className="w-3 h-3 text-primary" />
-                                            </div>
-                                        </div>
-                                        {/* Info */}
-                                        <div className="flex-1 px-2.5 py-2 flex flex-col justify-between">
-                                            <p className="text-[9px] font-black text-slate-800 group-hover:text-primary transition-colors line-clamp-2 leading-tight">{s.name}</p>
-                                            <p className="text-[11px] font-black text-emerald-600">₹{s.price}</p>
-                                        </div>
-                                    </button>
-                                ))}
+                            <div className="flex-1 overflow-y-auto pr-1 scrollbar-thin">
+                                {!qSelectedCategory ? (
+                                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+                                        {qCategories.map(cat => (
+                                            <button 
+                                                key={cat.name}
+                                                onClick={() => setQSelectedCategory(cat.name)}
+                                                className="bg-white border border-slate-200 hover:border-primary hover:shadow-md transition-all rounded-xl overflow-hidden flex flex-col group h-24"
+                                            >
+                                                <div className="h-14 w-full bg-slate-50 relative overflow-hidden flex-shrink-0">
+                                                    {cat.image ? (
+                                                        <img 
+                                                            src={getImageUrl(cat.image)} 
+                                                            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" 
+                                                            alt={cat.name} 
+                                                        />
+                                                    ) : (
+                                                        <div className="w-full h-full flex items-center justify-center bg-primary/5">
+                                                            {cat.name === 'All' ? (
+                                                                <LayoutGrid className="w-6 h-6 text-primary/40" />
+                                                            ) : (
+                                                                <Tag className="w-5 h-5 text-primary/30" />
+                                                            )}
+                                                        </div>
+                                                    )}
+                                                    <div className="absolute inset-0 bg-black/5 group-hover:bg-black/0 transition-colors" />
+                                                </div>
+                                                <div className="flex-1 flex items-center justify-center p-1.5">
+                                                    <span className="text-[9px] font-black text-slate-800 uppercase tracking-tight text-center leading-tight group-hover:text-primary transition-colors">{cat.name}</span>
+                                                </div>
+                                            </button>
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                                        {qFilteredServices
+                                            .filter(s => qSelectedCategory === 'All' || s.category === qSelectedCategory)
+                                            .map(s => (
+                                            <button 
+                                                key={s._id}
+                                                onClick={() => addToQCart(s)}
+                                                className="bg-white border border-slate-200 hover:border-primary hover:shadow-md transition-all rounded-xl shadow-sm relative overflow-hidden flex flex-col group h-32"
+                                            >
+                                                <div className="h-16 w-full overflow-hidden bg-gradient-to-br from-primary/5 to-primary/10 flex-shrink-0 relative">
+                                                    {(() => {
+                                                        const img = s.image || s.images?.[0];
+                                                        return img ? (
+                                                            <img src={getImageUrl(img)} className="w-full h-full object-cover" alt={s.name} onError={e => { e.target.style.display='none'; e.target.nextSibling.style.display='flex'; }} />
+                                                        ) : null;
+                                                    })()}
+                                                    <div className={`w-full h-full items-center justify-center ${s.image || s.images?.[0] ? 'hidden' : 'flex'}`}>
+                                                        <Scissors className="w-6 h-6 text-primary/30 group-hover:text-primary/60 transition-colors" />
+                                                    </div>
+                                                    <div className="absolute top-1.5 right-1.5 bg-white/90 backdrop-blur-sm rounded-lg p-1 opacity-0 group-hover:opacity-100 transition-opacity shadow-sm">
+                                                        <Plus className="w-3 h-3 text-primary" />
+                                                    </div>
+                                                </div>
+                                                <div className="flex-1 px-2.5 py-2 flex flex-col justify-between">
+                                                    <p className="text-[9px] font-black text-slate-800 group-hover:text-primary transition-colors line-clamp-2 leading-tight">{s.name}</p>
+                                                    <p className="text-[11px] font-black text-emerald-600">₹{s.price}</p>
+                                                </div>
+                                            </button>
+                                        ))}
+                                    </div>
+                                )}
                             </div>
                         </div>
                     </div>
@@ -2686,13 +2749,18 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, staff, custo
                             </div>
                             <div className="flex flex-col">
                                 <span className="text-[9px] font-black text-rose-400 uppercase tracking-[0.2em]">Discount</span>
-                                <div className="flex items-center gap-1.5 bg-rose-50 px-2 py-1 rounded-lg border border-rose-100">
-                                    <span className="text-rose-500 font-black font-mono">₹</span>
+                                <div className="flex items-center bg-rose-50 rounded-lg border border-rose-100 overflow-hidden">
+                                    <button 
+                                        onClick={() => setQManualDiscount(prev => ({ ...prev, type: prev.type === 'fixed' ? 'percentage' : 'fixed' }))}
+                                        className="px-2 py-1.5 bg-rose-100 text-rose-600 text-[10px] font-black border-r border-rose-200 hover:bg-rose-200 transition-colors"
+                                    >
+                                        {qManualDiscount.type === 'fixed' ? '₹' : '%'}
+                                    </button>
                                     <input 
                                         type="number" 
-                                        className="w-16 bg-transparent text-[13px] font-black text-rose-600 outline-none font-mono text-center" 
-                                        value={qManualDiscount || ''} 
-                                        onChange={(e) => setQManualDiscount(Number(e.target.value))} 
+                                        className="w-16 bg-transparent text-[13px] font-black text-rose-600 outline-none font-mono text-center py-1" 
+                                        value={qManualDiscount.value || ''} 
+                                        onChange={(e) => setQManualDiscount({ ...qManualDiscount, value: Number(e.target.value) })} 
                                         placeholder="0" 
                                     />
                                 </div>
@@ -2896,32 +2964,7 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, staff, custo
                                         onChange={(e) => setNewClientForm({...newClientForm, phone: e.target.value.replace(/\D/g, '').slice(0, 10)})}
                                     />
                                 </div>
-                                <div className="space-y-1.5">
-                                    <label className="text-[10px] font-black text-slate-400 uppercase">Email (Optional)</label>
-                                    <input 
-                                        type="email"
-                                        placeholder="e.g. john@example.com"
-                                        className="w-full bg-slate-50 border border-slate-200 p-3 text-xs font-black text-slate-900 outline-none rounded-xl"
-                                        value={newClientForm.email}
-                                        onChange={(e) => setNewClientForm({...newClientForm, email: e.target.value})}
-                                    />
                                 </div>
-                                <div className="space-y-1.5">
-                                    <label className="text-[10px] font-black text-slate-400 uppercase">Gender</label>
-                                    <div className="flex gap-2">
-                                        {['men', 'women', 'both'].map(g => (
-                                            <button
-                                                key={g}
-                                                type="button"
-                                                onClick={() => setNewClientForm({...newClientForm, gender: g})}
-                                                className={`flex-1 py-2 text-[9px] font-black uppercase rounded-lg border transition-all ${newClientForm.gender === g ? 'bg-primary text-white border-primary' : 'bg-white text-slate-500 border-slate-200 hover:border-primary/30'}`}
-                                            >
-                                                {g}
-                                            </button>
-                                        ))}
-                                    </div>
-                                </div>
-                            </div>
                             <div className="p-6 bg-slate-50 border-t border-slate-200">
                                 <button 
                                     type="submit" 

@@ -284,3 +284,51 @@ exports.getDashboard = async (req, res) => {
         res.status(500).json({ success: false, message: 'Server Error' });
     }
 };
+// @desc    Send invoice via WhatsApp
+// @route   POST /api/pos/invoices/:id/send-whatsapp
+// @access  Private
+exports.sendInvoiceWhatsApp = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const invoice = await Invoice.findById(id).populate('customerId');
+        if (!invoice) return res.status(404).json({ success: false, message: 'Invoice not found' });
+        
+        const phone = invoice.customerId?.phone;
+        if (!phone) return res.status(400).json({ success: false, message: 'Customer phone not found' });
+
+        // Handle PDF file
+        if (!req.file) return res.status(400).json({ success: false, message: 'No PDF file provided' });
+        
+        // Get full URL for the file
+        const protocol = req.protocol;
+        const host = req.get('host');
+        const fileUrl = `${protocol}://${host}/${req.file.path.replace(/\\/g, '/')}`;
+
+        const { sendWapixoTemplate, checkAndDeductWhatsAppCredit } = require('../Utils/whatsapp');
+        const canSend = await checkAndDeductWhatsAppCredit(invoice.outletId || invoice.salonId);
+        
+        if (!canSend) return res.status(400).json({ success: false, message: 'Insufficient WhatsApp credits or feature disabled' });
+
+        const salon = await Salon.findById(invoice.salonId);
+        const brandName = salon?.businessName || salon?.name || 'Our Salon';
+
+        const templateName = process.env.WHATSAPP_TEMPLATE_INVOICE || 'invoice_template';
+        
+        const params = [
+            invoice.customerId?.name || 'Customer',
+            brandName,
+            invoice.invoiceNumber
+        ];
+
+        const result = await sendWapixoTemplate(phone, templateName, params, fileUrl);
+
+        if (result.success) {
+            res.json({ success: true, message: 'WhatsApp invoice sent successfully' });
+        } else {
+            res.status(500).json({ success: false, message: result.message });
+        }
+    } catch (err) {
+        console.error('Send WhatsApp Error:', err);
+        res.status(500).json({ success: false, message: err.message });
+    }
+};
