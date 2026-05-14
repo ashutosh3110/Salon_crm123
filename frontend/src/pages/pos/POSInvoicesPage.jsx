@@ -430,6 +430,7 @@ export default function POSInvoicesPage() {
 
     const [search, setSearch] = useState('');
     const [dateFilter, setDateFilter] = useState('all');
+    const [typeFilter, setTypeFilter] = useState('all');
     const [selectedInvoice, setSelectedInvoice] = useState(null);
     const [page, setPage] = useState(1);
     const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
@@ -560,9 +561,17 @@ export default function POSInvoicesPage() {
                 const today = new Date().toISOString().split('T')[0];
                 matchDate = inv.createdAt?.startsWith(today);
             }
-            return matchSearch && matchDate;
+
+            let matchType = true;
+            if (typeFilter === 'service') {
+                matchType = inv.items?.some(i => i.type === 'service');
+            } else if (typeFilter === 'product') {
+                matchType = inv.items?.some(i => i.type === 'product');
+            }
+
+            return matchSearch && matchDate && matchType;
         });
-    }, [invoices, search, dateFilter]);
+    }, [invoices, search, dateFilter, typeFilter]);
 
     const totalPages = Math.ceil(filtered.length / perPage);
     const paginated = filtered.slice((page - 1) * perPage, page * perPage);
@@ -627,6 +636,27 @@ export default function POSInvoicesPage() {
                             className={`inline-flex items-center gap-3 px-6 py-2 rounded-none text-[10px] font-black uppercase tracking-[0.2em] transition-all ${dateFilter === 'all' ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'text-text-secondary hover:text-text hover:bg-surface-alt'}`}
                         >
                             <FileText className="w-4 h-4" /> All
+                        </button>
+                    </div>
+
+                    <div className="flex bg-surface p-1 border border-border shadow-sm">
+                        <button
+                            onClick={() => { setTypeFilter('all'); setPage(1); }}
+                            className={`inline-flex items-center gap-3 px-6 py-2 rounded-none text-[10px] font-black uppercase tracking-[0.2em] transition-all ${typeFilter === 'all' ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'text-text-secondary hover:text-text hover:bg-surface-alt'}`}
+                        >
+                            <FileText className="w-4 h-4" /> All Invoices
+                        </button>
+                        <button
+                            onClick={() => { setTypeFilter('service'); setPage(1); }}
+                            className={`inline-flex items-center gap-3 px-6 py-2 rounded-none text-[10px] font-black uppercase tracking-[0.2em] transition-all ${typeFilter === 'service' ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'text-text-secondary hover:text-text hover:bg-surface-alt'}`}
+                        >
+                            <Smartphone className="w-4 h-4" /> Services
+                        </button>
+                        <button
+                            onClick={() => { setTypeFilter('product'); setPage(1); }}
+                            className={`inline-flex items-center gap-3 px-6 py-2 rounded-none text-[10px] font-black uppercase tracking-[0.2em] transition-all ${typeFilter === 'product' ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'text-text-secondary hover:text-text hover:bg-surface-alt'}`}
+                        >
+                            <CreditCard className="w-4 h-4" /> Products
                         </button>
                     </div>
                 </div>
