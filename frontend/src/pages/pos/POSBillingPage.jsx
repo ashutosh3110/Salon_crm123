@@ -1737,38 +1737,40 @@ export default function POSBillingPage() {
                                         <button onClick={() => removeItem(idx)} className="p-1 text-text-muted hover:text-rose-500"><X className="w-4 h-4" /></button>
                                     </div>
                                     {/* Multi-Staff Row */}
-                                    <div className="space-y-1.5">
-                                        {(item.staffIds || ['']).map((sid, sIdx) => (
-                                            <div key={sIdx} className="flex items-center gap-2">
-                                                <span className="text-[9px] font-black text-text-muted uppercase shrink-0 w-8">
-                                                    {sIdx === 0 ? 'Staff:' : ''}
-                                                </span>
-                                                <select
-                                                    className="flex-1 bg-surface-alt border border-border/60 text-[10px] font-bold px-2 py-1.5 text-text focus:ring-1 focus:ring-primary/30 focus:border-primary transition-all"
-                                                    value={sid || ''}
-                                                    onChange={(e) => updateStaff(idx, sIdx, e.target.value)}
-                                                >
-                                                    <option value="">Select Stylist</option>
-                                                    {availableStaff.map(s => <option key={s._id} value={s._id}>{s.name}</option>)}
-                                                </select>
-                                                {(item.staffIds || []).length > 1 && (
-                                                    <button
-                                                        onClick={() => removeStaff(idx, sIdx)}
-                                                        className="p-1 text-rose-400 hover:text-rose-600 hover:bg-rose-50 rounded transition-all shrink-0"
-                                                        title="Remove staff"
+                                    {item.type === 'service' && (
+                                        <div className="space-y-1.5">
+                                            {(item.staffIds || ['']).map((sid, sIdx) => (
+                                                <div key={sIdx} className="flex items-center gap-2">
+                                                    <span className="text-[9px] font-black text-text-muted uppercase shrink-0 w-8">
+                                                        {sIdx === 0 ? 'Staff:' : ''}
+                                                    </span>
+                                                    <select
+                                                        className="flex-1 bg-surface-alt border border-border/60 text-[10px] font-bold px-2 py-1.5 text-text focus:ring-1 focus:ring-primary/30 focus:border-primary transition-all"
+                                                        value={sid || ''}
+                                                        onChange={(e) => updateStaff(idx, sIdx, e.target.value)}
                                                     >
-                                                        <X className="w-3 h-3" />
-                                                    </button>
-                                                )}
-                                            </div>
-                                        ))}
-                                        <button
-                                            onClick={() => addStaff(idx)}
-                                            className="flex items-center gap-1.5 text-[10px] font-black text-primary border border-primary/30 bg-primary/5 hover:bg-primary hover:text-white px-3 py-1 rounded-full transition-all ml-0 mt-1"
-                                        >
-                                            <Plus className="w-3 h-3" /> Add Another Staff
-                                        </button>
-                                    </div>
+                                                        <option value="">Select Stylist</option>
+                                                        {availableStaff.map(s => <option key={s._id} value={s._id}>{s.name}</option>)}
+                                                    </select>
+                                                    {(item.staffIds || []).length > 1 && (
+                                                        <button
+                                                            onClick={() => removeStaff(idx, sIdx)}
+                                                            className="p-1 text-rose-400 hover:text-rose-600 hover:bg-rose-50 rounded transition-all shrink-0"
+                                                            title="Remove staff"
+                                                        >
+                                                            <X className="w-3 h-3" />
+                                                        </button>
+                                                    )}
+                                                </div>
+                                            ))}
+                                            <button
+                                                onClick={() => addStaff(idx)}
+                                                className="flex items-center gap-1.5 text-[10px] font-black text-primary border border-primary/30 bg-primary/5 hover:bg-primary hover:text-white px-3 py-1 rounded-full transition-all ml-0 mt-1"
+                                            >
+                                                <Plus className="w-3 h-3" /> Add Another Staff
+                                            </button>
+                                        </div>
+                                    )}
                                     {packageEligibleItems.includes(item.name) && (
                                         <button
                                             onClick={() => togglePackageRedemption(idx)}
@@ -2294,7 +2296,7 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
     const handleConfirm = async () => {
         if (!qClient) return toast.error('Please select a client');
         if (qCart.length === 0) return toast.error('Cart is empty');
-        if (qCart.some(item => !item.staffIds || item.staffIds.some(sid => !sid))) return toast.error('Please assign stylists for all items');
+        if (qCart.some(item => item.type === 'service' && (!item.staffIds || item.staffIds.length === 0 || item.staffIds.some(sid => !sid)))) return toast.error('Please assign stylists for all services');
 
         setIsProcessing(true);
         try {
@@ -2696,90 +2698,92 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                                         </button>
                                     </div>
 
-                                    <div className={`p-2.5 rounded-2xl border ${(!item.staffIds || item.staffIds.length === 0) ? 'bg-amber-50 border-amber-200' : 'bg-white border-slate-100 shadow-sm'}`}>
-                                        <label className={`text-[8px] font-black uppercase tracking-widest flex items-center gap-1.5 mb-2 ${(!item.staffIds || item.staffIds.length === 0) ? 'text-amber-600' : 'text-slate-400'}`}>
-                                            <Sparkles className="w-2.5 h-2.5" /> {item.type === 'service' ? 'Assign Stylists' : 'Assigned Staff'}
-                                        </label>
-                                        
-                                        <div className="relative">
-                                            <div 
-                                                className="min-h-[42px] bg-slate-50/50 border border-slate-200 rounded-xl p-1.5 flex flex-wrap gap-1.5 cursor-pointer hover:border-primary/50 transition-all"
-                                                onClick={() => setOpenStaffIdx(openStaffIdx === idx ? null : idx)}
-                                            >
-                                                {(item.staffIds || []).length > 0 ? (
-                                                    item.staffIds.map(sId => {
-                                                        const s = staff.find(st => String(st._id) === String(sId));
-                                                        return (
-                                                            <div key={sId} className="bg-primary text-white text-[9px] font-black pl-2 pr-1 py-1 rounded-lg flex items-center gap-1.5 shadow-sm shadow-primary/20 animate-in zoom-in-95">
-                                                                <span className="uppercase italic">{s?.name || 'Stylist'}</span>
-                                                                <button 
-                                                                    onClick={(e) => { e.stopPropagation(); toggleStaffInItem(idx, sId); }}
-                                                                    className="w-4 h-4 hover:bg-white/20 rounded flex items-center justify-center transition-colors"
-                                                                >
-                                                                    <X className="w-2.5 h-2.5" />
-                                                                </button>
-                                                            </div>
-                                                        );
-                                                    })
-                                                ) : (
-                                                    <span className="text-[10px] font-bold text-slate-400 italic flex items-center px-2 py-1">Select stylists...</span>
-                                                )}
-                                                <div className="ml-auto px-1 flex items-center text-slate-300">
-                                                    <ChevronDown className={`w-4 h-4 transition-transform ${openStaffIdx === idx ? 'rotate-180 text-primary' : ''}`} />
+                                    {item.type === 'service' && (
+                                        <div className={`p-2.5 rounded-2xl border ${(!item.staffIds || item.staffIds.length === 0) ? 'bg-amber-50 border-amber-200' : 'bg-white border-slate-100 shadow-sm'}`}>
+                                            <label className={`text-[8px] font-black uppercase tracking-widest flex items-center gap-1.5 mb-2 ${(!item.staffIds || item.staffIds.length === 0) ? 'text-amber-600' : 'text-slate-400'}`}>
+                                                <Sparkles className="w-2.5 h-2.5" /> Assign Stylists
+                                            </label>
+                                            
+                                            <div className="relative">
+                                                <div 
+                                                    className="min-h-[42px] bg-slate-50/50 border border-slate-200 rounded-xl p-1.5 flex flex-wrap gap-1.5 cursor-pointer hover:border-primary/50 transition-all"
+                                                    onClick={() => setOpenStaffIdx(openStaffIdx === idx ? null : idx)}
+                                                >
+                                                    {(item.staffIds || []).length > 0 ? (
+                                                        item.staffIds.map(sId => {
+                                                            const s = staff.find(st => String(st._id) === String(sId));
+                                                            return (
+                                                                <div key={sId} className="bg-primary text-white text-[9px] font-black pl-2 pr-1 py-1 rounded-lg flex items-center gap-1.5 shadow-sm shadow-primary/20 animate-in zoom-in-95">
+                                                                    <span className="uppercase italic">{s?.name || 'Stylist'}</span>
+                                                                    <button 
+                                                                        onClick={(e) => { e.stopPropagation(); toggleStaffInItem(idx, sId); }}
+                                                                        className="w-4 h-4 hover:bg-white/20 rounded flex items-center justify-center transition-colors"
+                                                                    >
+                                                                        <X className="w-2.5 h-2.5" />
+                                                                    </button>
+                                                                </div>
+                                                            );
+                                                        })
+                                                    ) : (
+                                                        <span className="text-[10px] font-bold text-slate-400 italic flex items-center px-2 py-1">Select stylists...</span>
+                                                    )}
+                                                    <div className="ml-auto px-1 flex items-center text-slate-300">
+                                                        <ChevronDown className={`w-4 h-4 transition-transform ${openStaffIdx === idx ? 'rotate-180 text-primary' : ''}`} />
+                                                    </div>
                                                 </div>
-                                            </div>
 
-                                            <AnimatePresence>
-                                                {openStaffIdx === idx && (
-                                                    <motion.div 
-                                                        initial={{ opacity: 0, y: 5, scale: 0.98 }} 
-                                                        animate={{ opacity: 1, y: 0, scale: 1 }} 
-                                                        exit={{ opacity: 0, y: 5, scale: 0.98 }} 
-                                                        className="absolute top-full left-0 right-0 z-[100] mt-2 bg-white border border-slate-200 shadow-2xl rounded-2xl overflow-hidden flex flex-col"
-                                                    >
-                                                        <div className="p-2 border-b border-slate-50 bg-slate-50/30">
-                                                            <div className="relative">
-                                                                <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3 h-3 text-slate-400" />
-                                                                <input 
-                                                                    autoFocus
-                                                                    type="text" 
-                                                                    placeholder="Search stylist..." 
-                                                                    className="w-full bg-white border border-slate-200 pl-8 pr-3 py-1.5 text-[10px] font-black text-slate-900 outline-none rounded-lg focus:border-primary transition-all shadow-sm"
-                                                                    value={staffSearch}
-                                                                    onChange={(e) => setStaffSearch(e.target.value)}
-                                                                    onClick={(e) => e.stopPropagation()}
-                                                                />
+                                                <AnimatePresence>
+                                                    {openStaffIdx === idx && (
+                                                        <motion.div 
+                                                            initial={{ opacity: 0, y: 5, scale: 0.98 }} 
+                                                            animate={{ opacity: 1, y: 0, scale: 1 }} 
+                                                            exit={{ opacity: 0, y: 5, scale: 0.98 }} 
+                                                            className="absolute top-full left-0 right-0 z-[100] mt-2 bg-white border border-slate-200 shadow-2xl rounded-2xl overflow-hidden flex flex-col"
+                                                        >
+                                                            <div className="p-2 border-b border-slate-50 bg-slate-50/30">
+                                                                <div className="relative">
+                                                                    <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3 h-3 text-slate-400" />
+                                                                    <input 
+                                                                        autoFocus
+                                                                        type="text" 
+                                                                        placeholder="Search stylist..." 
+                                                                        className="w-full bg-white border border-slate-200 pl-8 pr-3 py-1.5 text-[10px] font-black text-slate-900 outline-none rounded-lg focus:border-primary transition-all shadow-sm"
+                                                                        value={staffSearch}
+                                                                        onChange={(e) => setStaffSearch(e.target.value)}
+                                                                        onClick={(e) => e.stopPropagation()}
+                                                                    />
+                                                                </div>
                                                             </div>
-                                                        </div>
-                                                        <div className="max-h-[180px] overflow-y-auto scrollbar-thin">
-                                                            {qFilteredStaff.filter(s => s.name.toLowerCase().includes(staffSearch.toLowerCase())).length > 0 ? (
-                                                                qFilteredStaff.filter(s => s.name.toLowerCase().includes(staffSearch.toLowerCase())).map(s => {
-                                                                    const isSelected = (item.staffIds || []).includes(String(s._id));
-                                                                    return (
-                                                                        <button 
-                                                                            key={s._id} 
-                                                                            onClick={(e) => { e.stopPropagation(); toggleStaffInItem(idx, s._id); }}
-                                                                            className={`w-full p-2.5 text-left flex items-center gap-3 hover:bg-slate-50 border-b border-slate-50 last:border-0 transition-colors ${isSelected ? 'bg-primary/5' : ''}`}
-                                                                        >
-                                                                            <div className={`w-7 h-7 rounded-lg flex items-center justify-center font-black text-[9px] transition-all ${isSelected ? 'bg-primary text-white' : 'bg-slate-100 text-slate-500'}`}>
-                                                                                {isSelected ? <Check className="w-4 h-4" /> : s.name.charAt(0).toUpperCase()}
-                                                                            </div>
-                                                                            <div className="flex-1">
-                                                                                <p className={`text-[10px] font-black uppercase tracking-tighter ${isSelected ? 'text-primary' : 'text-slate-700'}`}>{s.name}</p>
-                                                                                <p className="text-[8px] font-bold text-slate-400 uppercase tracking-widest italic">{s.role || 'Staff'}</p>
-                                                                            </div>
-                                                                        </button>
-                                                                    );
-                                                                })
-                                                            ) : (
-                                                                <div className="p-6 text-center text-slate-400 italic text-[9px] font-black uppercase tracking-widest">No staff found</div>
-                                                            )}
-                                                        </div>
-                                                    </motion.div>
-                                                )}
-                                            </AnimatePresence>
+                                                            <div className="max-h-[180px] overflow-y-auto scrollbar-thin">
+                                                                {qFilteredStaff.filter(s => s.name.toLowerCase().includes(staffSearch.toLowerCase())).length > 0 ? (
+                                                                    qFilteredStaff.filter(s => s.name.toLowerCase().includes(staffSearch.toLowerCase())).map(s => {
+                                                                        const isSelected = (item.staffIds || []).includes(String(s._id));
+                                                                        return (
+                                                                            <button 
+                                                                                key={s._id} 
+                                                                                onClick={(e) => { e.stopPropagation(); toggleStaffInItem(idx, s._id); }}
+                                                                                className={`w-full p-2.5 text-left flex items-center gap-3 hover:bg-slate-50 border-b border-slate-50 last:border-0 transition-colors ${isSelected ? 'bg-primary/5' : ''}`}
+                                                                            >
+                                                                                <div className={`w-7 h-7 rounded-lg flex items-center justify-center font-black text-[9px] transition-all ${isSelected ? 'bg-primary text-white' : 'bg-slate-100 text-slate-500'}`}>
+                                                                                    {isSelected ? <Check className="w-4 h-4" /> : s.name.charAt(0).toUpperCase()}
+                                                                                </div>
+                                                                                <div className="flex-1">
+                                                                                    <p className={`text-[10px] font-black uppercase tracking-tighter ${isSelected ? 'text-primary' : 'text-slate-700'}`}>{s.name}</p>
+                                                                                    <p className="text-[8px] font-bold text-slate-400 uppercase tracking-widest italic">{s.role || 'Staff'}</p>
+                                                                                </div>
+                                                                            </button>
+                                                                        );
+                                                                    })
+                                                                ) : (
+                                                                    <div className="p-6 text-center text-slate-400 italic text-[9px] font-black uppercase tracking-widest">No staff found</div>
+                                                                )}
+                                                            </div>
+                                                        </motion.div>
+                                                    )}
+                                                </AnimatePresence>
+                                            </div>
                                         </div>
-                                    </div>
+                                    )}
                                 </div>
                             ))}
                         </div>
