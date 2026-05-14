@@ -1729,11 +1729,13 @@ export default function POSBillingPage() {
                                                 )}
                                             </div>
                                         </div>
-                                        <div className="flex items-center bg-surface-alt">
-                                            <button onClick={() => updateQty(idx, -1)} className="p-1 px-2 hover:bg-border text-text-muted"><Minus className="w-3 h-3" /></button>
-                                            <span className="px-2 text-xs font-black text-text">{item.quantity}</span>
-                                            <button onClick={() => updateQty(idx, 1)} className="p-1 px-2 hover:bg-border text-text-muted"><Plus className="w-3 h-3" /></button>
-                                        </div>
+                                        {item.type === 'service' && (
+                                            <div className="flex items-center bg-surface-alt">
+                                                <button onClick={() => updateQty(idx, -1)} className="p-1 px-2 hover:bg-border text-text-muted"><Minus className="w-3 h-3" /></button>
+                                                <span className="px-2 text-xs font-black text-text">{item.quantity}</span>
+                                                <button onClick={() => updateQty(idx, 1)} className="p-1 px-2 hover:bg-border text-text-muted"><Plus className="w-3 h-3" /></button>
+                                            </div>
+                                        )}
                                         <button onClick={() => removeItem(idx)} className="p-1 text-text-muted hover:text-rose-500"><X className="w-4 h-4" /></button>
                                     </div>
                                     {/* Multi-Staff Row */}
@@ -2715,11 +2717,13 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                                             <p className="text-[10px] font-black text-slate-900 uppercase leading-tight line-clamp-1">{item.name}</p>
                                             <div className="flex items-center gap-2 mt-0.5">
                                                 <p className="text-[10px] font-black text-emerald-600">₹{item.price}</p>
-                                                <div className="flex items-center bg-slate-50 border border-slate-200 rounded-lg h-6 overflow-hidden ml-2">
-                                                    <button onClick={() => updateQQty(idx, -1)} className="px-1.5 hover:bg-slate-200 text-slate-400 transition-colors"><Minus className="w-2 h-2" /></button>
-                                                    <span className="px-2 text-[9px] font-black text-slate-900 border-x border-slate-200 flex items-center h-full bg-white">{item.quantity}</span>
-                                                    <button onClick={() => updateQQty(idx, 1)} className="px-1.5 hover:bg-slate-200 text-slate-400 transition-colors"><Plus className="w-2 h-2" /></button>
-                                                </div>
+                                                {item.type === 'service' && (
+                                                    <div className="flex items-center bg-slate-50 border border-slate-200 rounded-lg h-6 overflow-hidden ml-2">
+                                                        <button onClick={() => updateQQty(idx, -1)} className="px-1.5 hover:bg-slate-200 text-slate-400 transition-colors"><Minus className="w-2 h-2" /></button>
+                                                        <span className="px-2 text-[9px] font-black text-slate-900 border-x border-slate-200 flex items-center h-full bg-white">{item.quantity}</span>
+                                                        <button onClick={() => updateQQty(idx, 1)} className="px-1.5 hover:bg-slate-200 text-slate-400 transition-colors"><Plus className="w-2 h-2" /></button>
+                                                    </div>
+                                                )}
                                             </div>
                                         </div>
                                         <button onClick={() => setQCart(qCart.filter((_, i) => i !== idx))} className="p-1 hover:bg-rose-50 rounded text-slate-400 hover:text-rose-500 transition-colors">
