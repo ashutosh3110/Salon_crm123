@@ -103,7 +103,6 @@ export default function ServicesPage({ tab = 'list' }) {
                 'Gender': 'both',
                 'Outlets (Comma Separated)': '',
                 'Description': 'Professional precision haircutting',
-                'GST %': 18,
                 'Commission Applicable': 'yes',
                 'Commission Type': 'percent',
                 'Commission Value': 10,

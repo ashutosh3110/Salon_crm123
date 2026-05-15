@@ -3,7 +3,7 @@ import {
     Search, Calendar, Eye, X, Download,
     Clock, CreditCard, Banknote, Smartphone, Ban,
     ChevronLeft, ChevronRight, FileText, Loader2, Store, ChevronDown, Printer,
-    Mail, MessageSquare
+    Mail, MessageSquare, MessageCircle, Send
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import api from '../../services/api';
@@ -22,10 +22,10 @@ Font.register({
 });
 
 const pdfStyles = StyleSheet.create({
-    page: { 
-        padding: 12, 
-        fontSize: 9, 
-        fontFamily: 'Roboto', 
+    page: {
+        padding: 12,
+        fontSize: 9,
+        fontFamily: 'Roboto',
         backgroundColor: '#FFFFFF',
         flexDirection: 'column'
     },
@@ -35,14 +35,14 @@ const pdfStyles = StyleSheet.create({
         display: 'flex',
         flexDirection: 'column'
     },
-    salonName: { 
-        fontSize: 14, 
-        fontWeight: 700, 
+    salonName: {
+        fontSize: 14,
+        fontWeight: 700,
         marginBottom: 2,
         textTransform: 'uppercase'
     },
-    salonMeta: { 
-        fontSize: 8, 
+    salonMeta: {
+        fontSize: 8,
         color: '#000',
         marginBottom: 1,
         fontWeight: 400
@@ -60,12 +60,12 @@ const pdfStyles = StyleSheet.create({
         marginBottom: 2,
         fontSize: 8
     },
-    label: { 
+    label: {
         fontWeight: 400,
         textTransform: 'none',
         width: 80
     },
-    value: { 
+    value: {
         flex: 1,
         textAlign: 'right',
         fontWeight: 700
@@ -77,16 +77,16 @@ const pdfStyles = StyleSheet.create({
         textAlign: 'center',
         marginVertical: 2
     },
-    tableHeader: { 
-        flexDirection: 'row', 
-        borderBottomWidth: 1, 
-        borderBottomColor: '#000', 
-        paddingBottom: 2, 
+    tableHeader: {
+        flexDirection: 'row',
+        borderBottomWidth: 1,
+        borderBottomColor: '#000',
+        paddingBottom: 2,
         marginBottom: 4,
         fontWeight: 700,
         fontSize: 8
     },
-    tableRow: { 
+    tableRow: {
         flexDirection: 'column',
         marginBottom: 5
     },
@@ -102,29 +102,29 @@ const pdfStyles = StyleSheet.create({
     },
     colDesc: { flex: 2 },
     colPrice: { flex: 1, textAlign: 'right' },
-    summaryRow: { 
-        flexDirection: 'row', 
-        justifyContent: 'space-between', 
+    summaryRow: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
         marginBottom: 2,
         fontSize: 9
     },
-    grandTotal: { 
-        fontSize: 11, 
-        fontWeight: 700, 
-        borderTopWidth: 1, 
-        borderTopColor: '#000', 
+    grandTotal: {
+        fontSize: 11,
+        fontWeight: 700,
+        borderTopWidth: 1,
+        borderTopColor: '#000',
         borderTopStyle: 'solid',
         borderBottomWidth: 1,
         borderBottomColor: '#000',
         borderBottomStyle: 'solid',
-        paddingVertical: 4, 
+        paddingVertical: 4,
         marginVertical: 4,
         flexDirection: 'row',
         justifyContent: 'space-between'
     },
-    footer: { 
-        marginTop: 10, 
-        textAlign: 'center', 
+    footer: {
+        marginTop: 10,
+        textAlign: 'center',
         fontSize: 8,
         color: '#000',
         fontWeight: 700
@@ -140,126 +140,222 @@ const pdfStyles = StyleSheet.create({
 
 const POSReceiptPDF = ({ invoice, salon }) => {
     const createdAt = new Date(invoice.createdAt);
-    const dateStr = createdAt.toLocaleDateString('en-IN', { day: '2-digit', month: '2-digit', year: 'numeric' }).replace(/\//g, '-');
-    const timeStr = createdAt.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true });
+
+    const dateStr = createdAt.toLocaleDateString('en-GB', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric'
+    });
+    const timeStr = createdAt.toLocaleTimeString('en-IN', {
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: true
+    });
 
     // Payment breakdown
+    const walletPaid = invoice.walletRedeemed || 0;
     const cashPaid = invoice.payments?.filter(p => p.method === 'cash').reduce((sum, p) => sum + p.amount, 0) || 0;
     const onlinePaid = invoice.payments?.filter(p => ['online', 'card', 'upi'].includes(p.method)).reduce((sum, p) => sum + p.amount, 0) || 0;
+
+    // Payment Method String
+    const methods = [];
+    if (walletPaid > 0) methods.push('Wallet');
+    if (cashPaid > 0) methods.push('Cash');
+    if (onlinePaid > 0) methods.push('UPI');
+    const paymentMethodStr = methods.join(' + ') || (invoice.paymentMethod?.toUpperCase() || 'CASH');
+
+    const formatAddress = (addr) => {
+        if (!addr) return '-';
+        if (typeof addr === 'string') return addr;
+        const parts = [addr.city, addr.state].filter(Boolean);
+        return parts.join(', ');
+    };
 
     return (
         <Document>
             <Page size={[226, 800]} style={pdfStyles.page}>
-                <View style={pdfStyles.centered}>
-                    <Text style={pdfStyles.salonName}>{salon?.name || salon?.businessName || '-'}</Text>
-                    <Text style={pdfStyles.salonMeta}>{invoice.outletId?.name || '-'}</Text>
-                    <Text style={pdfStyles.salonMeta}>Contact : {salon?.phone || '-'}</Text>
+                {/* Header Separator */}
+                <Text style={{ textAlign: 'center', fontSize: 8 }}>========================================</Text>
+                <Text style={{ textAlign: 'center', fontSize: 10, fontWeight: 700, marginVertical: 2, letterSpacing: 1 }}>POS INVOICE</Text>
+                <Text style={{ textAlign: 'center', fontSize: 8 }}>========================================</Text>
+
+                {/* Business Info */}
+                <View style={{ marginTop: 8, gap: 1 }}>
+                    <View style={{ flexDirection: 'row' }}>
+                        <Text style={{ width: 70 }}>Salon Name</Text>
+                        <Text>: {salon?.name || salon?.businessName || '-'}</Text>
+                    </View>
+                    <View style={{ flexDirection: 'row' }}>
+                        <Text style={{ width: 70 }}>Outlet Name</Text>
+                        <Text>: {invoice.outletId?.name || '-'}</Text>
+                    </View>
+                    <View style={{ flexDirection: 'row' }}>
+                        <Text style={{ width: 70 }}>Address</Text>
+                        <Text>: {formatAddress(salon?.address)}</Text>
+                    </View>
+                    <View style={{ flexDirection: 'row' }}>
+                        <Text style={{ width: 70 }}>Mobile No.</Text>
+                        <Text>: {salon?.phone || '-'}</Text>
+                    </View>
+                    <View style={{ flexDirection: 'row' }}>
+                        <Text style={{ width: 70 }}>GSTIN</Text>
+                        <Text>: {salon?.gstNumber || 'N/A'}</Text>
+                    </View>
                 </View>
 
-                <View style={pdfStyles.divider} />
-
-                <View style={pdfStyles.metaRow}>
-                    <Text style={pdfStyles.label}>Invoice No :</Text>
-                    <Text style={pdfStyles.value}>{invoice.invoiceNumber || '-'}</Text>
+                <View style={{ marginTop: 8, borderTopWidth: 1, borderTopColor: '#000', borderTopStyle: 'dashed', paddingTop: 4, gap: 1 }}>
+                    <View style={{ flexDirection: 'row' }}>
+                        <Text style={{ width: 70 }}>Invoice No</Text>
+                        <Text>: {invoice.invoiceNumber || '-'}</Text>
+                    </View>
+                    <View style={{ flexDirection: 'row' }}>
+                        <Text style={{ width: 70 }}>Invoice Date</Text>
+                        <Text>: {dateStr}</Text>
+                    </View>
+                    <View style={{ flexDirection: 'row' }}>
+                        <Text style={{ width: 70 }}>Bill Time</Text>
+                        <Text>: {timeStr}</Text>
+                    </View>
+                    <View style={{ flexDirection: 'row' }}>
+                        <Text style={{ width: 70 }}>Payment Status</Text>
+                        <Text>: {(invoice.paymentStatus || 'Paid').toUpperCase()}</Text>
+                    </View>
                 </View>
-                <View style={pdfStyles.metaRow}>
-                    <Text style={pdfStyles.label}>Date :</Text>
-                    <Text style={pdfStyles.value}>{dateStr}</Text>
-                </View>
-                <View style={pdfStyles.metaRow}>
-                    <Text style={pdfStyles.label}>Time :</Text>
-                    <Text style={pdfStyles.value}>{timeStr}</Text>
-                </View>
 
-                <View style={{ marginTop: 6, marginBottom: 2 }}>
-                    <Text style={{ fontSize: 8 }}>Customer : {invoice.customerId?.name || 'Walk-in'}</Text>
-                </View>
-
-                <View style={pdfStyles.divider} />
-                <Text style={pdfStyles.sectionTitle}>SERVICES</Text>
-                <View style={pdfStyles.divider} />
-
-                {invoice.items?.map((item, i) => (
-                    <View key={i} style={pdfStyles.tableRow}>
-                        <View style={pdfStyles.itemMainRow}>
-                            <Text style={pdfStyles.colDesc}>{i + 1}. {item.name || '-'}</Text>
-                            <Text style={pdfStyles.colPrice}>₹{(item.total || 0).toFixed(0)}</Text>
+                <View style={{ marginTop: 8, borderTopWidth: 1, borderTopColor: '#000', borderTopStyle: 'dashed', paddingTop: 4 }}>
+                    <Text style={{ fontSize: 9, fontWeight: 700, marginBottom: 2 }}>Customer Details</Text>
+                    <View style={{ borderTopWidth: 1, borderTopColor: '#000', borderTopStyle: 'dashed', paddingTop: 2, gap: 1 }}>
+                        <View style={{ flexDirection: 'row' }}>
+                            <Text style={{ width: 75 }}>Customer Name</Text>
+                            <Text>: {invoice.customerId?.name || 'Walk-in'}</Text>
                         </View>
-                        {item.stylistIds?.length > 0 && (
-                            <View style={pdfStyles.itemSubRow}>
-                                <Text>Staff : {item.stylistIds.map(s => s.name || '-').join(', ')}</Text>
+                        <View style={{ flexDirection: 'row' }}>
+                            <Text style={{ width: 75 }}>Mobile Number</Text>
+                            <Text>: {invoice.customerId?.phone || '-'}</Text>
+                        </View>
+                    </View>
+                </View>
+
+                {/* Services Table */}
+                <View style={{ marginTop: 10 }}>
+                    <Text style={{ textAlign: 'center', fontSize: 8 }}>========================================</Text>
+                    <View style={{ flexDirection: 'row', fontSize: 7, fontWeight: 700, marginVertical: 2 }}>
+                        <Text style={{ width: 15 }}>Sr</Text>
+                        <Text style={{ flex: 1.5 }}>Particulars</Text>
+                        <Text style={{ width: 45 }}>Staff</Text>
+                        <Text style={{ width: 20, textAlign: 'center' }}>Qty</Text>
+                        <Text style={{ width: 35, textAlign: 'right' }}>Rate</Text>
+                        <Text style={{ width: 40, textAlign: 'right' }}>Amount</Text>
+                    </View>
+                    <Text style={{ textAlign: 'center', fontSize: 8 }}>========================================</Text>
+
+                    {invoice.items?.map((item, i) => (
+                        <View key={i} style={{ flexDirection: 'row', fontSize: 7, marginTop: 4, alignItems: 'flex-start' }}>
+                            <Text style={{ width: 15 }}>{i + 1}</Text>
+                            <Text style={{ flex: 1.5 }}>{item.name || '-'}</Text>
+                            <Text style={{ width: 45, fontSize: 6 }}>{item.stylistIds?.map(s => s.name || '-').join(', ') || '-'}</Text>
+                            <Text style={{ width: 20, textAlign: 'center' }}>{item.quantity || 1}</Text>
+                            <Text style={{ width: 35, textAlign: 'right' }}>{(item.price || 0).toFixed(0)}</Text>
+                            <Text style={{ width: 40, textAlign: 'right' }}>{(item.total || (item.price * (item.quantity || 1))).toFixed(0)}</Text>
+                        </View>
+                    ))}
+                </View>
+
+                {/* Financials */}
+                <View style={{ marginTop: 10 }}>
+                    <Text style={{ textAlign: 'center', fontSize: 8 }}>----------------------------------------</Text>
+                    <View style={{ gap: 1, marginTop: 2 }}>
+                        <View style={{ flexDirection: 'row', justifyContent: 'flex-end', fontSize: 8 }}>
+                            <Text style={{ width: 80, textAlign: 'right', paddingRight: 4 }}>Sub Total</Text>
+                            <Text style={{ width: 45, textAlign: 'right' }}>: {(invoice.subtotal || 0).toFixed(0)}</Text>
+                        </View>
+                        <View style={{ flexDirection: 'row', justifyContent: 'flex-end', fontSize: 8 }}>
+                            <Text style={{ width: 80, textAlign: 'right', paddingRight: 4 }}>GST (18%)</Text>
+                            <Text style={{ width: 45, textAlign: 'right' }}>: {(invoice.tax || 0).toFixed(0)}</Text>
+                        </View>
+                        {(invoice.discount || 0) > 0 && (
+                            <View style={{ flexDirection: 'row', justifyContent: 'flex-end', fontSize: 8 }}>
+                                <Text style={{ width: 80, textAlign: 'right', paddingRight: 4 }}>Discount</Text>
+                                <Text style={{ width: 45, textAlign: 'right' }}>: -{(invoice.discount || 0).toFixed(0)}</Text>
                             </View>
                         )}
-                        {!item.stylistIds?.length && (
-                            <View style={pdfStyles.itemSubRow}>
-                                <Text>Staff : -</Text>
+                        {(invoice.membershipDiscount || 0) > 0 && (
+                            <View style={{ flexDirection: 'row', justifyContent: 'flex-end', fontSize: 8 }}>
+                                <Text style={{ width: 80, textAlign: 'right', paddingRight: 4 }}>Membership Disc</Text>
+                                <Text style={{ width: 45, textAlign: 'right' }}>: -{(invoice.membershipDiscount || 0).toFixed(0)}</Text>
                             </View>
                         )}
                     </View>
-                ))}
-
-                <View style={pdfStyles.divider} />
-
-                <View style={pdfStyles.summaryRow}>
-                    <Text>Subtotal</Text>
-                    <Text>₹{(invoice.subtotal || 0).toFixed(0)}</Text>
+                    <Text style={{ textAlign: 'center', fontSize: 8 }}>----------------------------------------</Text>
+                    <View style={{ flexDirection: 'row', justifyContent: 'flex-end', fontWeight: 700, fontSize: 10, marginVertical: 2 }}>
+                        <Text style={{ width: 80, textAlign: 'right', paddingRight: 4 }}>Grand Total</Text>
+                        <Text style={{ width: 45, textAlign: 'right' }}>: {((invoice.subtotal || 0) + (invoice.tax || 0) - (invoice.discount || 0) - (invoice.membershipDiscount || 0)).toFixed(0)}</Text>
+                    </View>
+                    <Text style={{ textAlign: 'center', fontSize: 8 }}>========================================</Text>
                 </View>
-                
-                {invoice.tax > 0 && (
-                    <View style={pdfStyles.summaryRow}>
-                        <Text>GST (18%)</Text>
-                        <Text>₹{(invoice.tax || 0).toFixed(0)}</Text>
-                    </View>
-                )}
 
-                {invoice.loyaltyPointsRedeemed > 0 && (
-                    <View style={pdfStyles.summaryRow}>
-                        <Text>Membership Discount</Text>
-                        <Text>-₹{(invoice.loyaltyPointsRedeemed || 0).toFixed(0)}</Text>
-                    </View>
-                )}
-
-                {(invoice.discount - (invoice.loyaltyPointsRedeemed || 0)) > 0 && (
-                    <View style={pdfStyles.summaryRow}>
-                        <Text>Extra Discount</Text>
-                        <Text>-₹{(invoice.discount - (invoice.loyaltyPointsRedeemed || 0)).toFixed(0)}</Text>
-                    </View>
-                )}
-
-                <View style={pdfStyles.divider} />
-                <View style={pdfStyles.grandTotal}>
-                    <Text>TOTAL</Text>
-                    <Text>₹{(invoice.total || 0).toFixed(0)}</Text>
-                </View>
-                <View style={pdfStyles.divider} />
-
-                <View style={{ marginTop: 4 }}>
-                    <Text style={pdfStyles.sectionTitle}>PAYMENT DETAILS</Text>
-                    <View style={pdfStyles.divider} />
-                    
-                    <View style={pdfStyles.paymentRow}>
-                        <Text>Cash Paid</Text>
-                        <Text>₹{cashPaid.toFixed(0)}</Text>
-                    </View>
-                    <View style={pdfStyles.paymentRow}>
-                        <Text>Online Paid</Text>
-                        <Text>₹{onlinePaid.toFixed(0)}</Text>
-                    </View>
-                    <View style={pdfStyles.paymentRow}>
-                        <Text>Due Amount</Text>
-                        <Text>₹{(invoice.dueAmount || 0).toFixed(0)}</Text>
-                    </View>
-
-                    <View style={{ marginTop: 4 }}>
-                        <Text style={{ fontSize: 8 }}>Payment Mode : {invoice.paymentMethod?.toUpperCase() || '-'}</Text>
+                {/* Payment Details */}
+                <View style={{ marginTop: 8 }}>
+                    <Text style={{ fontSize: 9, fontWeight: 700, marginBottom: 2 }}>Payment Details</Text>
+                    <View style={{ gap: 1, marginTop: 2, fontSize: 8 }}>
+                        <View style={{ flexDirection: 'row' }}>
+                            <Text style={{ width: 100 }}>Wallet Used</Text>
+                            <Text>: {walletPaid.toFixed(0)}</Text>
+                        </View>
+                        {(invoice.previousDueCollected || 0) > 0 && (
+                            <View style={{ flexDirection: 'row' }}>
+                                <Text style={{ width: 100 }}>Prev. Due Paid</Text>
+                                <Text>: {(invoice.previousDueCollected || 0).toFixed(0)}</Text>
+                            </View>
+                        )}
+                        <View style={{ flexDirection: 'row' }}>
+                            <Text style={{ width: 100 }}>Cash Paid</Text>
+                            <Text>: {cashPaid.toFixed(0)}</Text>
+                        </View>
+                        <View style={{ flexDirection: 'row' }}>
+                            <Text style={{ width: 100 }}>Online Paid</Text>
+                            <Text>: {onlinePaid.toFixed(0)}</Text>
+                        </View>
+                        <View style={{ flexDirection: 'row' }}>
+                            <Text style={{ width: 100 }}>Due Amount</Text>
+                            <Text>: {(invoice.dueAmount || 0).toFixed(0)}</Text>
+                        </View>
+                        <View style={{ marginTop: 4, flexDirection: 'row' }}>
+                            <Text style={{ width: 100 }}>Payment Method</Text>
+                            <Text>: {paymentMethodStr}</Text>
+                        </View>
                     </View>
                 </View>
 
-                <View style={pdfStyles.divider} />
-                <View style={pdfStyles.footer}>
-                    <Text>Thank You Visit Again 🙂</Text>
+                {/* Terms & Conditions */}
+                <View style={{ marginTop: 10 }}>
+                    <Text style={{ textAlign: 'center', fontSize: 8 }}>========================================</Text>
+                    <Text style={{ fontSize: 8, fontWeight: 700, marginVertical: 2 }}>Terms & Conditions</Text>
+                    <View style={{ gap: 2, marginTop: 2 }}>
+                        {salon?.termsAndConditions?.length > 0 ? (
+                            salon.termsAndConditions.map((term, idx) => (
+                                <Text key={idx} style={{ fontSize: 7, color: '#444' }}>
+                                    {idx + 1}. {term}
+                                </Text>
+                            ))
+                        ) : (
+                            <>
+                                <Text style={{ fontSize: 7, color: '#444' }}>1. Services once billed cannot be cancelled.</Text>
+                                <Text style={{ fontSize: 7, color: '#444' }}>2. Please keep invoice for future reference.</Text>
+                                <Text style={{ fontSize: 7, color: '#444' }}>3. Thank you for visiting our salon.</Text>
+                            </>
+                        )}
+                    </View>
                 </View>
-                <View style={pdfStyles.divider} />
+
+
+
+                {/* Final Footer */}
+                <View style={{ marginTop: 15 }}>
+                    <Text style={{ textAlign: 'center', fontSize: 8 }}>----------------------------------------</Text>
+                    <Text style={{ textAlign: 'center', fontSize: 9, fontWeight: 700, marginVertical: 4 }}>THANK YOU • VISIT AGAIN</Text>
+                    <Text style={{ textAlign: 'center', fontSize: 8 }}>========================================</Text>
+                </View>
             </Page>
         </Document>
     );
@@ -269,7 +365,7 @@ const POSReceiptPDF = ({ invoice, salon }) => {
 const StandardInvoicePDF = ({ invoice, salon }) => {
     const createdAt = new Date(invoice.createdAt);
     const dateStr = createdAt.toLocaleDateString('en-IN', { day: '2-digit', month: 'long', year: 'numeric' });
-    
+
     // Payment breakdown
     const cashPaid = invoice.payments?.filter(p => p.method === 'cash').reduce((sum, p) => sum + p.amount, 0) || 0;
     const onlinePaid = invoice.payments?.filter(p => ['online', 'card', 'upi'].includes(p.method)).reduce((sum, p) => sum + p.amount, 0) || 0;
@@ -293,7 +389,7 @@ const StandardInvoicePDF = ({ invoice, salon }) => {
                         <Text style={{ color: '#666', marginBottom: 2 }}>{invoice.outletId?.name || '-'}</Text>
                         <Text style={{ color: '#666', marginBottom: 2 }}>{typeof salon?.address === 'object' ? `${salon.address.street || ''}, ${salon.address.city || ''}` : (salon?.address || '-')}</Text>
                         <Text style={{ color: '#666' }}>Contact Number: {salon?.phone || '-'}</Text>
-                        <Text style={{ color: '#666', marginTop: 2 }}>GSTIN: {salon?.gstin || 'N/A'}</Text>
+                        <Text style={{ color: '#666', marginTop: 2 }}>GSTIN: {salon?.gstNumber || 'N/A'}</Text>
                     </View>
                     <View style={{ width: '35%', textAlign: 'right' }}>
                         <View style={{ marginBottom: 10 }}>
@@ -337,8 +433,8 @@ const StandardInvoicePDF = ({ invoice, salon }) => {
                     {invoice.items?.map((item, i) => (
                         <View key={i} style={{ flexDirection: 'row', padding: 10, borderBottom: 1, borderColor: '#eee', alignItems: 'center' }}>
                             <Text style={{ flex: 2 }}>{item.name}</Text>
-                            <Text style={{ flex: 1.5, fontSize: 9 }}>{item.stylistIds?.map(s => s.name).join(', ') || '-'}</Text>
-                            <Text style={{ flex: 1, textAlign: 'right', fontWeight: 700 }}>₹{(item.total || 0).toFixed(2)}</Text>
+                            <Text style={{ flex: 1.5, fontSize: 9 }}>{item.stylistIds?.map(s => typeof s === 'object' ? s.name : s).join(', ') || '-'}</Text>
+                            <Text style={{ flex: 1, textAlign: 'right', fontWeight: 700 }}>₹{(item.total || (item.price * item.quantity) || 0).toFixed(2)}</Text>
                         </View>
                     ))}
                 </View>
@@ -354,24 +450,36 @@ const StandardInvoicePDF = ({ invoice, salon }) => {
                                 <Text>₹{(invoice.subtotal || 0).toFixed(2)}</Text>
                             </View>
                             <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 5 }}>
-                                <Text style={{ color: '#666' }}>GST (18%)</Text>
-                                <Text>₹{(invoice.tax || 0).toFixed(2)}</Text>
+                                <Text style={{ color: '#666' }}>GST (Tax)</Text>
+                                <Text>+₹{(invoice.tax || 0).toFixed(2)}</Text>
                             </View>
-                            {invoice.loyaltyPointsRedeemed > 0 && (
+                            {(invoice.membershipDiscount || 0) > 0 && (
                                 <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 5 }}>
-                                    <Text style={{ color: '#10b981' }}>Membership Plan Discount</Text>
-                                    <Text style={{ color: '#10b981' }}>-₹{(invoice.loyaltyPointsRedeemed || 0).toFixed(2)}</Text>
+                                    <Text style={{ color: '#10b981' }}>Membership Discount</Text>
+                                    <Text style={{ color: '#10b981' }}>-₹{(invoice.membershipDiscount || 0).toFixed(2)}</Text>
                                 </View>
                             )}
-                            {(invoice.discount - (invoice.loyaltyPointsRedeemed || 0)) > 0 && (
+                            {(invoice.discount || 0) > 0 && (
                                 <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 5 }}>
                                     <Text style={{ color: '#10b981' }}>Additional Discount</Text>
-                                    <Text style={{ color: '#10b981' }}>-₹{(invoice.discount - (invoice.loyaltyPointsRedeemed || 0)).toFixed(2)}</Text>
+                                    <Text style={{ color: '#10b981' }}>-₹{(invoice.discount || 0).toFixed(2)}</Text>
+                                </View>
+                            )}
+                            {(invoice.walletRedeemed || 0) > 0 && (
+                                <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 5 }}>
+                                    <Text style={{ color: '#10b981' }}>Wallet Redeemed</Text>
+                                    <Text style={{ color: '#10b981' }}>-₹{(invoice.walletRedeemed || 0).toFixed(2)}</Text>
+                                </View>
+                            )}
+                            {(invoice.previousDueCollected || 0) > 0 && (
+                                <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 5 }}>
+                                    <Text style={{ color: '#3b82f6' }}>Prev. Due Collected</Text>
+                                    <Text style={{ color: '#3b82f6' }}>+₹{(invoice.previousDueCollected || 0).toFixed(2)}</Text>
                                 </View>
                             )}
                             <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 10, paddingTop: 10, borderTop: 2, borderColor: '#C8956C' }}>
                                 <Text style={{ fontSize: 14, fontWeight: 700 }}>Grand Total</Text>
-                                <Text style={{ fontSize: 14, fontWeight: 700, color: '#C8956C' }}>₹{(invoice.total || 0).toFixed(2)}</Text>
+                                <Text style={{ fontSize: 14, fontWeight: 700, color: '#C8956C' }}>₹{((invoice.total || 0) + (invoice.previousDueCollected || 0)).toFixed(2)}</Text>
                             </View>
                         </View>
                     </View>
@@ -406,12 +514,19 @@ const StandardInvoicePDF = ({ invoice, salon }) => {
                     </View>
                 </View>
 
-                {/* Notes */}
-                <View style={{ marginTop: 50, padding: 15, borderTop: 1, borderColor: '#eee' }}>
-                    <Text style={{ fontSize: 9, fontWeight: 700, color: '#666', marginBottom: 5 }}>NOTES</Text>
-                    <Text style={{ fontSize: 8, color: '#999', marginBottom: 2 }}>• Goods once sold will not be returned.</Text>
-                    <Text style={{ fontSize: 8, color: '#999' }}>• Please keep this invoice for future reference.</Text>
-                </View>
+                {/* Terms & Conditions */}
+                {salon?.termsAndConditions?.length > 0 && (
+                    <View style={{ marginTop: 50, padding: 15, borderTop: 1, borderColor: '#eee' }}>
+                        <Text style={{ fontSize: 9, fontWeight: 700, color: '#C8956C', marginBottom: 10, textTransform: 'uppercase', letterSpacing: 1 }}>Terms & Conditions</Text>
+                        <View style={{ gap: 4 }}>
+                            {salon.termsAndConditions.map((term, idx) => (
+                                <Text key={idx} style={{ fontSize: 8, color: '#666' }}>
+                                    • {term}
+                                </Text>
+                            ))}
+                        </View>
+                    </View>
+                )}
 
                 {/* Footer */}
                 <View style={{ position: 'absolute', bottom: 40, left: 40, right: 40, textAlign: 'center', borderTop: 1, borderColor: '#eee', paddingTop: 20 }}>
@@ -435,7 +550,8 @@ export default function POSInvoicesPage() {
     const [page, setPage] = useState(1);
     const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
     const [isSendingWhatsApp, setIsSendingWhatsApp] = useState(null);
-    const perPage = 5;
+    const [isSendingEmail, setIsSendingEmail] = useState(null);
+    const perPage = 10;
 
     useEffect(() => {
         if (selectedInvoice) {
@@ -512,22 +628,22 @@ export default function POSInvoicesPage() {
 
     const sendWhatsAppBill = async (inv) => {
         const phone = inv.customerId?.phone;
-        if (!phone) return toast.error('Customer phone not found');
-        
+        if (!phone) return toast('Customer phone not found', { icon: 'ℹ️' });
+
         setIsSendingWhatsApp(inv._id);
         try {
             // 1. Generate PDF blob (using POS receipt for WhatsApp)
             const blob = await pdf(<POSReceiptPDF invoice={inv} salon={salon} />).toBlob();
-            
+
             // 2. Prepare Form Data
             const formData = new FormData();
             formData.append('pdf', blob, `Invoice_${inv.invoiceNumber}.pdf`);
-            
+
             // 3. Call API
             const response = await api.post(`/pos/invoices/${inv._id}/send-whatsapp`, formData, {
                 headers: { 'Content-Type': 'multipart/form-data' }
             });
-            
+
             if (response.data.success) {
                 toast.success('Invoice sent on WhatsApp!');
             } else {
@@ -541,12 +657,30 @@ export default function POSInvoicesPage() {
         }
     };
 
-    const sendEmailBill = (inv) => {
+    const sendEmailBill = async (inv) => {
         const email = inv.customerId?.email;
-        if (!email) return toast.error('Customer email not found');
-        const subject = encodeURIComponent(`Invoice ${inv.invoiceNumber} from ${salon?.name || 'Salon'}`);
-        const body = encodeURIComponent(`Hello ${inv.customerId?.name || 'Customer'},\n\nPlease find your invoice details below:\nInvoice No: ${inv.invoiceNumber}\nTotal: ₹${inv.total}\n\nThank you!`);
-        window.location.href = `mailto:${email}?subject=${subject}&body=${body}`;
+        if (!email) return toast('Customer email not found', { icon: 'ℹ️' });
+        
+        setIsSendingEmail(inv._id);
+        try {
+            // Generate standard PDF
+            const blob = await pdf(<StandardInvoicePDF invoice={inv} salon={salon} />).toBlob();
+            const formData = new FormData();
+            formData.append('pdf', blob, `Invoice_${inv.invoiceNumber}.pdf`);
+
+            const res = await api.post(`/pos/invoices/${inv._id}/send-email`, formData, {
+                headers: { 'Content-Type': 'multipart/form-data' }
+            });
+
+            if (res.data.success) {
+                toast.success('Invoice sent via Email!');
+            }
+        } catch (error) {
+            console.error('Email Send Error:', error);
+            toast.error(error.response?.data?.message || 'Failed to send Email');
+        } finally {
+            setIsSendingEmail(null);
+        }
     };
 
     const filtered = useMemo(() => {
@@ -786,44 +920,13 @@ export default function POSInvoicesPage() {
                                             </span>
                                         </td>
                                         <td className="px-3 py-4 text-center">
-                                            <div className="flex items-center justify-center gap-1">
-                                                <button onClick={() => setSelectedInvoice(inv)} className="p-1.5 border border-border bg-surface hover:bg-primary hover:text-white transition-all shadow-sm" title="View">
+                                            <div className="flex items-center justify-center gap-2">
+                                                <button 
+                                                    onClick={() => setSelectedInvoice(inv)} 
+                                                    className="px-4 py-1.5 border border-border bg-surface hover:bg-primary hover:text-white transition-all shadow-sm flex items-center gap-2 text-[10px] font-black uppercase tracking-widest" 
+                                                    title="View Details"
+                                                >
                                                     <Eye className="w-3.5 h-3.5" />
-                                                </button>
-                                                
-                                                <button 
-                                                    onClick={() => handleDownloadDirectPDF(inv, 'pos')} 
-                                                    disabled={isGeneratingPDF === `${inv._id}_pos`}
-                                                    className="p-1.5 border border-border bg-surface hover:bg-emerald-500 hover:text-white transition-all shadow-sm"
-                                                    title="POS"
-                                                >
-                                                    {isGeneratingPDF === `${inv._id}_pos` ? <Loader2 className="w-3 h-3 animate-spin" /> : <Printer className="w-3.5 h-3.5" />}
-                                                </button>
-
-                                                <button 
-                                                    onClick={() => handleDownloadDirectPDF(inv, 'standard')} 
-                                                    disabled={isGeneratingPDF === `${inv._id}_standard`}
-                                                    className="p-1.5 border border-border bg-surface hover:bg-blue-500 hover:text-white transition-all shadow-sm"
-                                                    title="Bill"
-                                                >
-                                                    {isGeneratingPDF === `${inv._id}_standard` ? <Loader2 className="w-3 h-3 animate-spin" /> : <FileText className="w-3.5 h-3.5" />}
-                                                </button>
-
-                                                <button 
-                                                    onClick={() => sendWhatsAppBill(inv)} 
-                                                    disabled={isSendingWhatsApp === inv._id}
-                                                    className="p-1.5 border border-border bg-surface hover:bg-emerald-600 hover:text-white transition-all shadow-sm text-emerald-600 hover:text-white disabled:opacity-50"
-                                                    title="WhatsApp"
-                                                >
-                                                    {isSendingWhatsApp === inv._id ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <MessageSquare className="w-3.5 h-3.5" />}
-                                                </button>
-
-                                                <button 
-                                                    onClick={() => sendEmailBill(inv)} 
-                                                    className="p-1.5 border border-border bg-surface hover:bg-purple-500 hover:text-white transition-all shadow-sm text-purple-500 hover:text-white"
-                                                    title="Email"
-                                                >
-                                                    <Mail className="w-3.5 h-3.5" />
                                                 </button>
                                             </div>
                                         </td>
@@ -876,6 +979,9 @@ export default function POSInvoicesPage() {
                                 <div className="bg-surface-alt/50 border border-border p-4">
                                     <p className="text-[9px] font-black text-text-muted uppercase tracking-widest mb-1">Customer</p>
                                     <p className="text-sm font-black text-text uppercase tracking-tight">{selectedInvoice.customerId?.name || 'Guest'}</p>
+                                    {selectedInvoice.customerId?.phone && (
+                                        <p className="text-[10px] font-black text-primary mt-1 tracking-widest">{selectedInvoice.customerId.phone}</p>
+                                    )}
                                 </div>
                                 <div className="bg-surface-alt/50 border border-border p-4">
                                     <p className="text-[9px] font-black text-text-muted uppercase tracking-widest mb-1">Outlet</p>
@@ -883,30 +989,41 @@ export default function POSInvoicesPage() {
                                 </div>
                                 <div className="bg-surface-alt/50 border border-border p-4">
                                     <p className="text-[9px] font-black text-text-muted uppercase tracking-widest mb-1">Staff</p>
-                                    <p className="text-sm font-black text-text uppercase tracking-tight">{selectedInvoice.staffId?.name || 'System'}</p>
+                                    <p className="text-sm font-black text-text uppercase tracking-tight">
+                                        {[...new Set(selectedInvoice.items?.flatMap(item => 
+                                            item.stylistIds?.map(s => typeof s === 'object' ? s.name : s) || []
+                                        ).filter(Boolean))].join(', ') || selectedInvoice.staffId?.name || 'System'}
+                                    </p>
                                 </div>
                             </div>
 
-                                <div className="space-y-3">
-                                    <div className="flex items-center gap-4">
-                                        <div className="h-px bg-border flex-1" />
-                                        <p className="text-[9px] font-black text-text-muted uppercase tracking-[0.3em]">Session Ledger</p>
-                                        <div className="h-px bg-border flex-1" />
-                                    </div>
-                                    <div className="space-y-2">
-                                        {selectedInvoice.items?.map((item, i) => (
-                                            <div key={i} className="flex justify-between items-center p-3 bg-surface border border-border/50 group hover:border-primary/30 transition-all cursor-default">
-                                                <div>
-                                                    <p className="font-black text-text uppercase text-[11px] tracking-tight group-hover:text-primary transition-colors">{item.name}</p>
-                                                    <p className="text-[9px] text-text-muted font-black uppercase tracking-[0.1em] mt-0.5 italic">Qty: {item.quantity} • {item.type}</p>
-                                                </div>
-                                                <div className="text-right">
-                                                    <span className="font-black text-text text-sm tracking-tighter">Rs.{(item.total ?? (item.price * item.quantity) ?? 0).toLocaleString()}</span>
-                                                </div>
-                                            </div>
-                                        ))}
-                                    </div>
+                            <div className="space-y-3">
+                                <div className="flex items-center gap-4">
+                                    <div className="h-px bg-border flex-1" />
+                                    <p className="text-[9px] font-black text-text-muted uppercase tracking-[0.3em]">Session Ledger</p>
+                                    <div className="h-px bg-border flex-1" />
                                 </div>
+                                <div className="space-y-2">
+                                    {selectedInvoice.items?.map((item, i) => (
+                                        <div key={i} className="flex justify-between items-center p-3 bg-surface border border-border/50 group hover:border-primary/30 transition-all cursor-default">
+                                            <div>
+                                                <p className="font-black text-text uppercase text-[11px] tracking-tight group-hover:text-primary transition-colors">{item.name}</p>
+                                                <p className="text-[9px] text-text-muted font-black uppercase tracking-[0.1em] mt-0.5 italic">
+                                                    Qty: {item.quantity} • {item.type}
+                                                    {item.stylistIds?.length > 0 && (
+                                                        <span className="text-primary ml-1 font-bold">
+                                                            • Staff: {item.stylistIds.map(s => typeof s === 'object' ? s.name : s).join(', ')}
+                                                        </span>
+                                                    )}
+                                                </p>
+                                            </div>
+                                            <div className="text-right">
+                                                <span className="font-black text-text text-sm tracking-tighter">Rs.{(item.total ?? (item.price * item.quantity) ?? 0).toLocaleString()}</span>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
 
                             <div className="bg-surface-alt/30 border border-border p-4 space-y-3">
                                 <div className="flex justify-between text-[10px] font-black text-text-muted uppercase tracking-widest">
@@ -923,43 +1040,84 @@ export default function POSInvoicesPage() {
                                         <span>-Rs.{selectedInvoice.discount?.toLocaleString()}</span>
                                     </div>
                                 )}
+                                {(selectedInvoice.membershipDiscount || 0) > 0 && (
+                                    <div className="flex justify-between text-[10px] font-black text-emerald-600 uppercase tracking-widest">
+                                        <span>Membership Disc</span>
+                                        <span>-Rs.{(selectedInvoice.membershipDiscount || 0).toLocaleString()}</span>
+                                    </div>
+                                )}
+                                {(selectedInvoice.walletRedeemed || 0) > 0 && (
+                                    <div className="flex justify-between text-[10px] font-black text-emerald-600 uppercase tracking-widest">
+                                        <span>Wallet Used</span>
+                                        <span>-Rs.{(selectedInvoice.walletRedeemed || 0).toLocaleString()}</span>
+                                    </div>
+                                )}
+                                {(selectedInvoice.previousDueCollected || 0) > 0 && (
+                                    <div className="flex justify-between text-[10px] font-black text-blue-600 uppercase tracking-widest">
+                                        <span>Prev. Due Collected</span>
+                                        <span>+Rs.{(selectedInvoice.previousDueCollected || 0).toLocaleString()}</span>
+                                    </div>
+                                )}
                                 <div className="border-t border-border pt-3 mt-1 flex justify-between items-center">
                                     <div>
                                         <p className="text-[9px] font-black text-primary uppercase tracking-[0.3em]">Final Amount</p>
                                         <p className="text-xl font-black text-text tracking-tighter uppercase whitespace-nowrap">Rs.{selectedInvoice.total?.toLocaleString()}</p>
                                     </div>
-                                    <div className="flex items-center gap-3 bg-background border border-border p-2.5 shadow-sm group/sig">
-                                        <div className={`p-1.5 border border-border group-hover/sig:border-primary/40 transition-colors ${selectedInvoice.paymentStatus === 'paid' ? 'text-emerald-500 bg-emerald-500/5' : 'text-orange-500 bg-orange-500/5'}`}>
-                                            {getMethodIcon(selectedInvoice.paymentMethod)}
-                                        </div>
-                                        <div className="text-right">
-                                            <p className={`text-[8px] font-black uppercase tracking-widest ${selectedInvoice.paymentStatus === 'paid' ? 'text-emerald-500' : 'text-orange-500'}`}>{selectedInvoice.paymentStatus === 'paid' ? 'Paid' : 'Pending'}</p>
-                                            <p className="text-[10px] font-black text-text uppercase tracking-tight">{selectedInvoice.paymentMethod === 'online' ? 'UPI' : selectedInvoice.paymentMethod?.toUpperCase()}</p>
+                                    <div className="flex flex-col gap-1.5 text-right">
+                                        <p className={`text-[8px] font-black uppercase tracking-widest ${selectedInvoice.paymentStatus === 'paid' ? 'text-emerald-500' : 'text-orange-500'}`}>
+                                            {selectedInvoice.paymentStatus?.toUpperCase()}
+                                        </p>
+                                        <div className="space-y-1">
+                                            {selectedInvoice.payments?.map((p, idx) => (
+                                                <div key={idx} className="flex items-center justify-end gap-1.5">
+                                                    <span className="text-[8px] font-black text-text-muted uppercase tracking-widest">{p.method === 'online' ? 'UPI' : p.method?.toUpperCase()}</span>
+                                                    <span className="text-[11px] font-black text-text tracking-tighter">₹{p.amount?.toLocaleString()}</span>
+                                                </div>
+                                            ))}
+                                            {(selectedInvoice.walletRedeemed || 0) > 0 && (
+                                                <div className="flex items-center justify-end gap-1.5">
+                                                    <span className="text-[8px] font-black text-emerald-600 uppercase tracking-widest">Wallet</span>
+                                                    <span className="text-[11px] font-black text-emerald-600 tracking-tighter">₹{selectedInvoice.walletRedeemed?.toLocaleString()}</span>
+                                                </div>
+                                            )}
                                         </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
 
-                        <div className="p-6 bg-surface-alt border-t border-border flex flex-col sm:flex-row gap-3">
+                        <div className="p-4 bg-surface-alt border-t border-border grid grid-cols-2 sm:grid-cols-4 gap-2">
                             <button
                                 disabled={!!isGeneratingPDF}
                                 onClick={() => handleDownloadPDF('pos')}
-                                className="flex-1 py-3 bg-emerald-600 text-white font-black text-[10px] uppercase tracking-[0.2em] hover:bg-emerald-700 transition-all flex items-center justify-center gap-3 disabled:opacity-50 shadow-lg shadow-emerald-600/20 active:scale-95"
+                                className="py-3 bg-emerald-600 text-white font-black text-[9px] uppercase tracking-wider hover:bg-emerald-700 transition-all flex items-center justify-center gap-2 disabled:opacity-50 shadow-lg shadow-emerald-600/20 active:scale-95"
                             >
-                                {isGeneratingPDF === 'pos' ? <Loader2 className="w-4 h-4 animate-spin" /> : <Printer className="w-4 h-4" />}
-                                {isGeneratingPDF === 'pos' ? 'Generating...' : 'POS Receipt'}
+                                {isGeneratingPDF === 'pos' ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Printer className="w-3.5 h-3.5" />}
+                                <span>Receipt</span>
                             </button>
                             <button
                                 disabled={!!isGeneratingPDF}
                                 onClick={() => handleDownloadPDF('standard')}
-                                className="flex-1 py-3 bg-primary text-white font-black text-[10px] uppercase tracking-[0.2em] hover:bg-primary-dark transition-all flex items-center justify-center gap-3 disabled:opacity-50 shadow-lg shadow-primary/20 active:scale-95"
+                                className="py-3 bg-slate-900 text-white font-black text-[9px] uppercase tracking-wider hover:bg-black transition-all flex items-center justify-center gap-2 disabled:opacity-50 shadow-lg shadow-slate-900/20 active:scale-95"
                             >
-                                {isGeneratingPDF === 'standard' ? <Loader2 className="w-4 h-4 animate-spin" /> : <FileText className="w-4 h-4" />}
-                                {isGeneratingPDF === 'standard' ? 'Generating...' : 'A4 Invoice'}
+                                {isGeneratingPDF === 'standard' ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <FileText className="w-3.5 h-3.5" />}
+                                <span>A4 Bill</span>
                             </button>
-                            <button onClick={() => setSelectedInvoice(null)} className="px-6 py-3 border border-border bg-surface text-text-muted font-black text-[10px] uppercase tracking-[0.2em] hover:text-text hover:bg-surface-alt transition-all active:scale-95">
-                                Close
+                            <button
+                                disabled={isSendingWhatsApp === selectedInvoice._id}
+                                onClick={() => sendWhatsAppBill(selectedInvoice)}
+                                className="py-3 bg-[#25D366] text-white font-black text-[9px] uppercase tracking-wider hover:bg-[#128C7E] transition-all flex items-center justify-center gap-2 disabled:opacity-50 shadow-lg shadow-[#25D366]/20 active:scale-95"
+                            >
+                                {isSendingWhatsApp === selectedInvoice._id ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <MessageCircle className="w-3.5 h-3.5" />}
+                                <span>WhatsApp</span>
+                            </button>
+                            <button
+                                disabled={isSendingEmail === selectedInvoice._id}
+                                onClick={() => sendEmailBill(selectedInvoice)}
+                                className="py-3 bg-indigo-600 text-white font-black text-[9px] uppercase tracking-wider hover:bg-indigo-700 transition-all flex items-center justify-center gap-2 disabled:opacity-50 shadow-lg shadow-indigo-600/20 active:scale-95"
+                            >
+                                {isSendingEmail === selectedInvoice._id ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Mail className="w-3.5 h-3.5" />}
+                                <span>Email</span>
                             </button>
                         </div>
                     </div>

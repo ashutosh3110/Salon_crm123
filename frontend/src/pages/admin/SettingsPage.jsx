@@ -3,13 +3,13 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
 import { useAuth } from '../../contexts/AuthContext';
 import { useBusiness } from '../../contexts/BusinessContext';
-import { MapPin, Camera, Upload, User as UserIcon } from 'lucide-react';
+import { MapPin, Camera, Upload, User as UserIcon, FileText, Plus, X, GripVertical, ChevronUp, ChevronDown } from 'lucide-react';
 import PasswordField from '../../components/common/PasswordField';
 import { getImageUrl } from '../../utils/imageUtils';
 import { useRef } from 'react';
 import api from '../../services/api';
 
-const VALID_SECTIONS = ['profile', 'notifications', 'security', 'business'];
+const VALID_SECTIONS = ['profile', 'notifications', 'security', 'business', 'terms'];
 
 const DEFAULT_NOTIFICATIONS = {
     bookingConfirmations: true,
@@ -74,6 +74,8 @@ export default function SettingsPage() {
 
     const [locationForm, setLocationForm] = useState({ latitude: '', longitude: '' });
     const [notifications, setNotifications] = useState({ ...DEFAULT_NOTIFICATIONS });
+    const [termsList, setTermsList] = useState([]);
+    const [newTerm, setNewTerm] = useState('');
 
     useEffect(() => {
         if (user) {
@@ -117,6 +119,8 @@ export default function SettingsPage() {
                     longitude: String(salon.longitude),
                 });
             }
+            // Load terms & conditions
+            setTermsList(Array.isArray(salon.termsAndConditions) ? [...salon.termsAndConditions] : []);
         }
     }, [salon]);
 
@@ -282,6 +286,40 @@ export default function SettingsPage() {
 
     /* handleReferralSubmit removed - managed globally by Super Admin */
 
+    const handleAddTerm = () => {
+        const trimmed = newTerm.trim();
+        if (!trimmed) return toast.error('Please type a term before adding.');
+        if (termsList.includes(trimmed)) return toast.error('This term already exists.');
+        setTermsList([...termsList, trimmed]);
+        setNewTerm('');
+    };
+
+    const handleRemoveTerm = (idx) => {
+        setTermsList(termsList.filter((_, i) => i !== idx));
+    };
+
+    const handleMoveTerm = (idx, dir) => {
+        const newList = [...termsList];
+        const swapIdx = idx + dir;
+        if (swapIdx < 0 || swapIdx >= newList.length) return;
+        [newList[idx], newList[swapIdx]] = [newList[swapIdx], newList[idx]];
+        setTermsList(newList);
+    };
+
+    const handleTermsSubmit = async (e) => {
+        e.preventDefault();
+        setIsSaving(true);
+        try {
+            await updateSalon({ termsAndConditions: termsList });
+            await fetchSalon?.();
+            toast.success('Terms & Conditions saved successfully.');
+        } catch (error) {
+            toast.error(error?.message || 'Failed to save terms & conditions');
+        } finally {
+            setIsSaving(false);
+        }
+    };
+
     const useMyLocation = () => {
         if (!navigator.geolocation) {
             toast.error('Geolocation is not supported by your browser.');
@@ -320,6 +358,7 @@ export default function SettingsPage() {
                     { id: 'profile', label: 'Profile' },
                     { id: 'business', label: 'Business Info' },
                     { id: 'security', label: 'Security' },
+                    { id: 'terms', label: 'Terms & Conditions' },
                 ].map((t) => (
                     <Link key={t.id} to={`/admin/settings/${t.id}`} className={tabClass(t.id)}>
                         {t.label}
@@ -651,6 +690,146 @@ export default function SettingsPage() {
                                     </button>
                                 </form>
                             </div>
+                        </div>
+                    )}
+
+                    {activeTab === 'terms' && (
+                        <div className="space-y-8 max-w-2xl text-left">
+                            <div>
+                                <div className="flex items-center gap-3">
+                                    <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
+                                        <FileText className="w-5 h-5 text-primary" />
+                                    </div>
+                                    <div>
+                                        <h2 className="text-lg font-bold text-text tracking-tight">Terms & Conditions</h2>
+                                        <p className="text-xs text-text-muted font-medium mt-0.5">
+                                            These terms will be printed at the bottom of your invoices / bills.
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Add New Term */}
+                            <div className="bg-surface-alt/30 border border-border rounded-2xl p-5">
+                                <label className="text-[10px] font-black text-text-muted uppercase tracking-widest mb-3 block">
+                                    Add a new term or condition
+                                </label>
+                                <div className="flex gap-3">
+                                    <input
+                                        type="text"
+                                        value={newTerm}
+                                        onChange={(e) => setNewTerm(e.target.value)}
+                                        onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleAddTerm(); } }}
+                                        placeholder="e.g. No refund after 24 hours of service."
+                                        className="flex-1 px-4 py-3 rounded-xl border border-border text-sm font-semibold focus:border-primary outline-none transition-all bg-surface hover:border-primary/40 focus:ring-4 focus:ring-primary/5"
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={handleAddTerm}
+                                        className="px-5 py-3 bg-primary text-primary-foreground rounded-xl font-bold text-xs uppercase tracking-widest shadow-lg shadow-primary/20 hover:shadow-primary/30 active:scale-95 transition-all flex items-center gap-2 shrink-0"
+                                    >
+                                        <Plus className="w-4 h-4" /> Add
+                                    </button>
+                                </div>
+                            </div>
+
+                            {/* Terms Ordered List */}
+                            {termsList.length === 0 ? (
+                                <div className="text-center py-16 border-2 border-dashed border-border rounded-2xl">
+                                    <FileText className="w-12 h-12 mx-auto text-text-muted/30 mb-3" />
+                                    <p className="text-sm font-bold text-text-muted/60">No terms added yet</p>
+                                    <p className="text-xs text-text-muted/40 mt-1">Add terms above — they'll appear as a numbered list on your bills.</p>
+                                </div>
+                            ) : (
+                                <form onSubmit={handleTermsSubmit} className="space-y-4">
+                                    <div className="bg-surface border border-border rounded-2xl overflow-hidden divide-y divide-border">
+                                        {termsList.map((term, idx) => (
+                                            <div
+                                                key={idx}
+                                                className="flex items-center gap-3 px-4 py-3.5 hover:bg-surface-alt/20 transition-colors group"
+                                            >
+                                                {/* Grip / Number */}
+                                                <div className="flex items-center gap-2 shrink-0">
+                                                    <GripVertical className="w-4 h-4 text-text-muted/30 group-hover:text-text-muted/60 transition-colors" />
+                                                    <span className="w-7 h-7 rounded-lg bg-primary/10 text-primary text-[11px] font-black flex items-center justify-center">
+                                                        {idx + 1}
+                                                    </span>
+                                                </div>
+
+                                                {/* Term Text (editable) */}
+                                                <input
+                                                    type="text"
+                                                    value={term}
+                                                    onChange={(e) => {
+                                                        const updated = [...termsList];
+                                                        updated[idx] = e.target.value;
+                                                        setTermsList(updated);
+                                                    }}
+                                                    className="flex-1 text-sm font-semibold text-text bg-transparent outline-none border-b border-transparent focus:border-primary/30 transition-all py-1"
+                                                />
+
+                                                {/* Reorder & Delete */}
+                                                <div className="flex items-center gap-1 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => handleMoveTerm(idx, -1)}
+                                                        disabled={idx === 0}
+                                                        className="p-1.5 rounded-lg hover:bg-surface-alt text-text-muted hover:text-primary disabled:opacity-20 disabled:cursor-not-allowed transition-all"
+                                                        title="Move up"
+                                                    >
+                                                        <ChevronUp className="w-3.5 h-3.5" />
+                                                    </button>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => handleMoveTerm(idx, 1)}
+                                                        disabled={idx === termsList.length - 1}
+                                                        className="p-1.5 rounded-lg hover:bg-surface-alt text-text-muted hover:text-primary disabled:opacity-20 disabled:cursor-not-allowed transition-all"
+                                                        title="Move down"
+                                                    >
+                                                        <ChevronDown className="w-3.5 h-3.5" />
+                                                    </button>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => handleRemoveTerm(idx)}
+                                                        className="p-1.5 rounded-lg hover:bg-rose-50 text-text-muted hover:text-rose-500 transition-all ml-1"
+                                                        title="Remove term"
+                                                    >
+                                                        <X className="w-3.5 h-3.5" />
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+
+                                    <div className="flex items-center justify-between pt-4 border-t border-border">
+                                        <p className="text-[10px] font-bold text-text-muted">
+                                            {termsList.length} term{termsList.length !== 1 ? 's' : ''} — will appear as an ordered list on invoices
+                                        </p>
+                                        <button
+                                            type="submit"
+                                            disabled={isSaving}
+                                            className="px-8 py-3.5 bg-primary text-primary-foreground rounded-xl font-bold text-xs uppercase tracking-widest shadow-xl shadow-primary/20 disabled:opacity-50 hover:shadow-primary/30 active:scale-95 transition-all"
+                                        >
+                                            {isSaving ? 'Saving…' : 'Save Terms & Conditions'}
+                                        </button>
+                                    </div>
+                                </form>
+                            )}
+
+                            {/* Preview Card */}
+                            {termsList.length > 0 && (
+                                <div className="mt-6">
+                                    <p className="text-[10px] font-black text-text-muted uppercase tracking-widest mb-3">Invoice Preview</p>
+                                    <div className="bg-white border border-border rounded-2xl p-6 shadow-sm">
+                                        <p className="text-[10px] font-black text-text-muted uppercase tracking-widest mb-2 border-b border-border pb-2">Terms & Conditions</p>
+                                        <ol className="list-decimal list-inside space-y-1.5 pl-1">
+                                            {termsList.map((t, i) => (
+                                                <li key={i} className="text-[11px] font-medium text-text-muted leading-relaxed">{t}</li>
+                                            ))}
+                                        </ol>
+                                    </div>
+                                </div>
+                            )}
                         </div>
                     )}
 

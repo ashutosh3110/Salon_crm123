@@ -115,7 +115,7 @@ const ServiceCard = ({ service, onBook, colors, isLight, categories, navigate })
                 <p className="text-[10px] mb-3 line-clamp-1 opacity-60 leading-tight" style={{ color: colors.text }}>{service.description || "Premium service."}</p>
 
                 <div className="mt-auto flex items-center justify-between pt-1">
-                    <span className="text-[13px] font-black text-[#C8956C]">₹{service.price}</span>
+                    {/* <span className="text-[13px] font-black text-[#C8956C]">₹{service.price}</span> */}
                     <motion.button
                         whileTap={{ scale: 0.9 }}
                         onClick={() => onBook(service._id || service.id)}

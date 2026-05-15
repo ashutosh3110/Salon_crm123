@@ -110,7 +110,19 @@ export function BusinessProvider({ children }) {
         }
     }, []);
 
-    const [activeOutletId, setActiveOutletId] = useState(() => localStorage.getItem('active_outlet_id') || null);
+    const [activeOutletId, _setActiveOutletId] = useState(() => localStorage.getItem('active_outlet_id') || null);
+    const skipNextOutletToastRef = useRef(false);
+    const skipNextInitializationRef = useRef(false);
+
+    const setActiveOutletId = useCallback((idOrFn, options = {}) => {
+        if (options.quiet) {
+            skipNextOutletToastRef.current = true;
+        }
+        if (options.background) {
+            skipNextInitializationRef.current = true;
+        }
+        _setActiveOutletId(idOrFn);
+    }, []);
     
     // Ref to prevent infinite loops in toast/refetch
     const lastNotifiedOutletIdRef = useRef(activeOutletId);
@@ -414,16 +426,16 @@ export function BusinessProvider({ children }) {
         }
     }, [activeSalonId]);
 
-    const fetchCustomerInitialData = useCallback(async () => {
+    const fetchCustomerInitialData = useCallback(async (options = {}) => {
         if (initializationRef.current) return;
         const sid = activeSalonId || localStorage.getItem('active_salon_id');
         if (!sid || sid === 'mock_tenant_id' || !/^[0-9a-fA-F]{24}$/.test(sid)) {
             setIsInitializing(false);
             return;
         }
-
+        
         initializationRef.current = true;
-        setIsInitializing(true);
+        if (!options.background) setIsInitializing(true);
         try {
             const customerId = customer?._id || localStorage.getItem('customer_user') ? JSON.parse(localStorage.getItem('customer_user'))._id : null;
             
@@ -481,7 +493,7 @@ export function BusinessProvider({ children }) {
             lastNotifiedOutletIdRef.current = activeOutletId;
             
             // Show a premium selection message
-            if (activeOutlet) {
+            if (activeOutlet && !skipNextOutletToastRef.current) {
                 toast.success(`Active Hub: ${activeOutlet.name}`, {
                     icon: '📍',
                     duration: 3000,
@@ -498,6 +510,7 @@ export function BusinessProvider({ children }) {
                     }
                 });
             }
+            skipNextOutletToastRef.current = false;
         }
     }, [activeOutletId, activeOutlet]);
     const fetchSalon = useCallback(async () => {
@@ -1068,21 +1081,23 @@ export function BusinessProvider({ children }) {
             // Prevent double initialization if already has data for this salon AND outlet, or already fetching
             const currentSalonId = String(salon?._id || '');
             const currentOutletId = String(localStorage.getItem('last_initialized_outlet_id') || '');
-
+ 
             if (initializationRef.current) return;
             if (salon && currentSalonId === effectiveTid && currentOutletId === effectiveOid) return;
-
+ 
             localStorage.setItem('last_initialized_outlet_id', effectiveOid);
-            fetchCustomerInitialData();
+            fetchCustomerInitialData({ background: skipNextInitializationRef.current });
+            skipNextInitializationRef.current = false;
         } else if (effectiveTid) {
             if (lastInitializedId.current === effectiveTid) return;
             if (isInitializing || initializationRef.current) return;
-
+ 
             const initGuest = async () => {
                 try {
                     initializationRef.current = true;
                     lastInitializedId.current = effectiveTid;
-                    await fetchCustomerInitialData();
+                    await fetchCustomerInitialData({ background: skipNextInitializationRef.current });
+                    skipNextInitializationRef.current = false;
                 } catch (err) {
                     console.error("Guest initialization failed:", err);
                 } finally {

@@ -82,6 +82,10 @@ const salonSchema = new mongoose.Schema({
     whatsappSettings: {
         whatsappNotifications: { type: Boolean, default: true },
         whatsappCredits: { type: Number, default: 0 }
+    },
+    termsAndConditions: {
+        type: [String],
+        default: []
     }
 }, {
     timestamps: true,

@@ -16,11 +16,14 @@ exports.checkout = async (req, res) => {
             outletId,
             items,
             tax,
+            subtotal: reqSubtotal,
             payments = [], // Array of { method, amount, transactionId }
             useLoyaltyPoints = 0,
             useWalletAmount = 0,
             promotionId,
             discount = 0,
+            membershipDiscount = 0,
+            previousDueCollected = 0,
             bookingId,
             orderId
         } = req.body;
@@ -28,7 +31,6 @@ exports.checkout = async (req, res) => {
         const salonId = req.user.salonId;
 
         // 1. Generate Invoice Number (atomic to prevent duplicate numbers)
-        const Salon = require('../Models/Salon');
         const salonDoc = await Salon.findByIdAndUpdate(
             salonId,
             { $inc: { invoiceCounter: 1 } },
@@ -49,7 +51,7 @@ exports.checkout = async (req, res) => {
                     if (product) {
                         const qty = Number(item.quantity) || 1;
                         product.stock = (product.stock || 0) - qty;
-                        
+
                         if (outletId) {
                             const outletKey = outletId.toString();
                             const currentOutletStock = product.stockByOutlet.get(outletKey) || 0;
@@ -63,11 +65,12 @@ exports.checkout = async (req, res) => {
             }
         }
 
-        const total = Math.max(0, subtotal - discount - useLoyaltyPoints - useWalletAmount + tax);
-        
+        const finalSubtotal = reqSubtotal || subtotal;
+        const total = Math.max(0, finalSubtotal - discount - (Number(membershipDiscount) || 0) - useLoyaltyPoints + tax);
+
         // Calculate paid amount from split payments
         const paidAmount = payments.reduce((acc, p) => acc + (Number(p.amount) || 0), 0);
-        const dueAmount = Math.max(0, total - paidAmount);
+        const dueAmount = Math.max(0, total - useWalletAmount - (paidAmount - previousDueCollected));
 
         // 3. Calculate loyalty points (Rule from settings)
         const settings = await Setting.findOne();
@@ -81,16 +84,18 @@ exports.checkout = async (req, res) => {
             outletId,
             customerId: clientId,
             items,
-            subtotal,
+            subtotal: finalSubtotal,
             discount,
+            membershipDiscount: (Number(membershipDiscount) || 0),
             tax,
             total,
             payments,
             dueAmount,
-            paymentStatus: dueAmount > 0 ? (paidAmount > 0 ? 'partially_paid' : 'pending') : 'paid',
+            paymentStatus: dueAmount > 0 ? (paidAmount + useWalletAmount > 0 ? 'partially_paid' : 'pending') : 'paid',
             loyaltyPointsRedeemed: useLoyaltyPoints,
             loyaltyPointsEarned: earnedPoints,
             walletRedeemed: useWalletAmount,
+            previousDueCollected: Number(previousDueCollected) || 0,
             bookingId,
             orderId
         });
@@ -98,15 +103,12 @@ exports.checkout = async (req, res) => {
         // 5. Update Customer Profile
         const customer = await Customer.findById(clientId);
         if (customer) {
-            // Deduct redeemed
-            customer.loyaltyPoints = (customer.loyaltyPoints || 0) - useLoyaltyPoints;
+            customer.loyaltyPoints = (customer.loyaltyPoints || 0) - useLoyaltyPoints + earnedPoints;
             customer.walletBalance = (customer.walletBalance || 0) - useWalletAmount;
+
+            const totalReceived = (Number(useWalletAmount) || 0) + (Number(paidAmount) || 0);
+            customer.dueAmount = Math.max(0, (customer.dueAmount || 0) + total - totalReceived);
             
-            // Add earned and update debt
-            customer.loyaltyPoints += earnedPoints;
-            customer.dueAmount = (customer.dueAmount || 0) + dueAmount;
-            
-            // Stats
             customer.totalVisits = (customer.totalVisits || 0) + 1;
             customer.totalSpend = (customer.totalSpend || 0) + total;
             customer.lastVisit = new Date();
@@ -114,7 +116,6 @@ exports.checkout = async (req, res) => {
 
             await customer.save();
 
-            // Log Transaction
             if (earnedPoints > 0) {
                 await LoyaltyTransaction.create({
                     customerId: customer._id,
@@ -126,22 +127,22 @@ exports.checkout = async (req, res) => {
             }
         }
 
-        res.status(201).json({
-            success: true,
-            data: invoice
-        });
+        const populatedInvoice = await Invoice.findById(invoice._id)
+            .populate('customerId', 'name phone email')
+            .populate('outletId', 'name')
+            .populate('items.stylistIds', 'name');
 
-        // Send Product Purchase WhatsApp Message (if items contain products)
+        res.status(201).json({ success: true, data: populatedInvoice });
+
+        // Send WhatsApp Message for product purchase
         try {
             const hasProducts = items.some(item => item.type === 'product');
             if (hasProducts && customer) {
                 const { checkAndDeductWhatsAppCredit } = require('../Utils/whatsapp');
                 const canSend = await checkAndDeductWhatsAppCredit(outletId || salonId);
-                
                 if (canSend) {
                     const salon = await Salon.findById(salonId);
                     const brandName = salon?.businessName || salon?.name || 'Our Salon';
-                    const firstProduct = items.find(item => item.type === 'product');
                     const productNames = items.filter(item => item.type === 'product').map(i => i.name).join(', ');
                     const totalQty = items.filter(item => item.type === 'product').reduce((acc, i) => acc + i.quantity, 0);
 
@@ -153,7 +154,7 @@ exports.checkout = async (req, res) => {
                             brandName,
                             productNames.length > 30 ? productNames.substring(0, 27) + '...' : productNames,
                             String(totalQty),
-                            `₹${firstProduct.price}`,
+                            `₹${items.find(i => i.type === 'product').price}`,
                             `₹${discount || 0}`,
                             payments[0]?.method?.toUpperCase() || 'CASH',
                             `₹${total}`
@@ -162,9 +163,8 @@ exports.checkout = async (req, res) => {
                 }
             }
         } catch (wsErr) {
-            console.error('Product Purchase WhatsApp failed:', wsErr.message);
+            console.error('WhatsApp failed:', wsErr.message);
         }
-
     } catch (err) {
         console.error('POS Checkout Error:', err);
         res.status(500).json({ success: false, message: err.message });
@@ -172,62 +172,47 @@ exports.checkout = async (req, res) => {
 };
 
 // @desc    Get all invoices for a salon
-// @route   GET /api/pos/invoices
-// @access  Private
 exports.getInvoices = async (req, res) => {
     try {
         const salonId = req.user.salonId;
         const { outletId } = req.query;
-        
         const query = { salonId };
         if (outletId) query.outletId = outletId;
 
         const invoices = await Invoice.find(query)
             .populate('customerId', 'name phone email')
             .populate('outletId', 'name')
+            .populate('items.stylistIds', 'name')
             .sort({ createdAt: -1 });
 
-        res.json({
-            success: true,
-            count: invoices.length,
-            data: invoices
-        });
+        res.json({ success: true, count: invoices.length, data: invoices });
     } catch (err) {
         res.status(500).json({ success: false, message: 'Server Error' });
     }
 };
 
-// @desc    Get dashboard stats for POS
-// @route   GET /api/pos/dashboard
-// @access  Private
+// @desc    Get dashboard stats
 exports.getDashboard = async (req, res) => {
     try {
         const salonId = req.user.salonId;
         const { outletId } = req.query;
-        
-        // Define Today's range in IST (+5:30)
+
         const now = new Date();
         const istOffset = 5.5 * 60 * 60 * 1000;
         const todayStart = new Date(now.getTime() + istOffset);
         todayStart.setUTCHours(0, 0, 0, 0);
         const startOfDay = new Date(todayStart.getTime() - istOffset);
-        
+
         const todayEnd = new Date(now.getTime() + istOffset);
         todayEnd.setUTCHours(23, 59, 59, 999);
         const endOfDay = new Date(todayEnd.getTime() - istOffset);
 
-        const statsQuery = { 
-            salonId, 
-            createdAt: { $gte: startOfDay, $lte: endOfDay } 
-        };
+        const statsQuery = { salonId, createdAt: { $gte: startOfDay, $lte: endOfDay } };
         if (outletId) statsQuery.outletId = outletId;
-
-        const recentQuery = { salonId };
-        if (outletId) recentQuery.outletId = outletId;
 
         const [todayInvoices, allRecentInvoices] = await Promise.all([
             Invoice.find(statsQuery),
-            Invoice.find(recentQuery)
+            Invoice.find({ salonId, ...(outletId && { outletId }) })
                 .populate('customerId', 'name phone')
                 .populate('outletId', 'name')
                 .sort({ createdAt: -1 })
@@ -244,91 +229,104 @@ exports.getDashboard = async (req, res) => {
             const amount = inv.total || 0;
             if ((inv.paymentStatus || '').toLowerCase() !== 'paid') {
                 breakdown.unpaid += amount;
-                return;
+            } else {
+                const method = (inv.paymentMethod || inv.payments?.[0]?.method || 'cash').toLowerCase();
+                if (method === 'cash') breakdown.cash += amount;
+                else if (method === 'upi' || method === 'online') breakdown.upi += amount;
+                else breakdown.cash += amount;
             }
-            
-            const method = (inv.paymentMethod || inv.payments?.[0]?.method || 'cash').toLowerCase();
-            if (method === 'cash') breakdown.cash += amount;
-            else if (method === 'card') breakdown.card += amount;
-            else if (method === 'upi' || method === 'online') breakdown.upi += amount;
-            else breakdown.cash += amount;
         });
-
-        const recentInvoices = allRecentInvoices.map(inv => ({
-            ...inv.toObject(),
-            clientId: inv.customerId, // Map for frontend compatibility
-            clientName: inv.customerId?.name || 'Guest'
-        }));
 
         res.json({
             success: true,
             data: {
-                stats: {
-                    revenue,
-                    count,
-                    avgBill,
-                    unpaidCount
-                },
+                stats: { revenue, count, avgBill, unpaidCount },
                 breakdown: [
                     { name: 'Cash', value: breakdown.cash, color: '#10b981' },
-                    { name: 'Card', value: breakdown.card, color: '#3b82f6' },
                     { name: 'UPI', value: breakdown.upi, color: '#8b5cf6' },
                     { name: 'Unpaid', value: breakdown.unpaid, color: '#f59e0b' },
                 ],
-                recentInvoices
+                recentInvoices: allRecentInvoices.map(inv => ({
+                    ...inv.toObject(),
+                    clientId: inv.customerId,
+                    clientName: inv.customerId?.name || 'Guest'
+                }))
             }
         });
-
     } catch (err) {
-        console.error('POS Dashboard Error:', err);
+        console.error('Dashboard Error:', err);
         res.status(500).json({ success: false, message: 'Server Error' });
     }
 };
+
 // @desc    Send invoice via WhatsApp
-// @route   POST /api/pos/invoices/:id/send-whatsapp
-// @access  Private
 exports.sendInvoiceWhatsApp = async (req, res) => {
     try {
         const { id } = req.params;
         const invoice = await Invoice.findById(id).populate('customerId');
         if (!invoice) return res.status(404).json({ success: false, message: 'Invoice not found' });
-        
+
         const phone = invoice.customerId?.phone;
         if (!phone) return res.status(400).json({ success: false, message: 'Customer phone not found' });
-
-        // Handle PDF file
         if (!req.file) return res.status(400).json({ success: false, message: 'No PDF file provided' });
-        
-        // Get full URL for the file
+
         const protocol = req.protocol;
         const host = req.get('host');
-        const fileUrl = `${protocol}://${host}/${req.file.path.replace(/\\/g, '/')}`;
+        const baseUrl = process.env.BACKEND_URL || `${protocol}://${host}`;
+        const fileUrl = `${baseUrl}/${req.file.path.replace(/\\/g, '/')}`;
 
         const { sendWapixoTemplate, checkAndDeductWhatsAppCredit } = require('../Utils/whatsapp');
         const canSend = await checkAndDeductWhatsAppCredit(invoice.outletId || invoice.salonId);
-        
-        if (!canSend) return res.status(400).json({ success: false, message: 'Insufficient WhatsApp credits or feature disabled' });
+        if (!canSend) return res.status(400).json({ success: false, message: 'Insufficient credits' });
 
         const salon = await Salon.findById(invoice.salonId);
         const brandName = salon?.businessName || salon?.name || 'Our Salon';
 
-        const templateName = process.env.WHATSAPP_TEMPLATE_INVOICE || 'invoice_template';
-        
-        const params = [
-            invoice.customerId?.name || 'Customer',
-            brandName,
-            invoice.invoiceNumber
-        ];
+        const result = await sendWapixoTemplate(
+            phone,
+            process.env.WHATSAPP_TEMPLATE_INVOICE || 'customer_invoice_template',
+            [invoice.customerId?.name || 'Customer', brandName, invoice.invoiceNumber],
+            fileUrl
+        );
 
-        const result = await sendWapixoTemplate(phone, templateName, params, fileUrl);
-
-        if (result.success) {
-            res.json({ success: true, message: 'WhatsApp invoice sent successfully' });
-        } else {
-            res.status(500).json({ success: false, message: result.message });
-        }
+        if (result.success) res.json({ success: true, message: 'WhatsApp sent' });
+        else res.status(500).json({ success: false, message: result.message });
     } catch (err) {
-        console.error('Send WhatsApp Error:', err);
+        console.error('WhatsApp Error:', err);
         res.status(500).json({ success: false, message: err.message });
+    }
+};
+
+// @desc    Send invoice via Email
+exports.sendInvoiceEmail = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const invoice = await Invoice.findById(id).populate('customerId');
+        if (!invoice) return res.status(404).json({ success: false, message: 'Invoice not found' });
+
+        const email = invoice.customerId?.email;
+        if (!email) return res.status(400).json({ success: false, message: 'Customer email not found' });
+        if (!req.file) return res.status(400).json({ success: false, message: 'No PDF file provided' });
+
+        const sendEmail = require('../Utils/sendEmail');
+        const salon = await Salon.findById(invoice.salonId);
+        const brandName = salon?.businessName || salon?.name || 'Our Salon';
+
+        await sendEmail({
+            email,
+            subject: `Invoice from ${brandName} - #${invoice.invoiceNumber}`,
+            html: `<div style="font-family: sans-serif; padding: 20px;">
+                <h2>Invoice #${invoice.invoiceNumber}</h2>
+                <p>Dear ${invoice.customerId.name},</p>
+                <p>Thank you for visiting ${brandName}. Your invoice is attached.</p>
+                <p><strong>Total:</strong> ₹${invoice.total}</p>
+            </div>`,
+            attachments: [{ filename: `Invoice_${invoice.invoiceNumber}.pdf`, path: req.file.path }]
+        });
+
+        res.json({ success: true, message: 'Email sent' });
+    } catch (err) {
+        console.error('Email Error:', err);
+        res.status(500).json({ success: false, message: 'Server Error' });
     }
 };

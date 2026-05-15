@@ -44,6 +44,10 @@ const invoiceSchema = new mongoose.Schema({
     }],
     subtotal: Number,
     discount: Number,
+    membershipDiscount: {
+        type: Number,
+        default: 0
+    },
     tax: Number,
     total: Number,
     paymentMethod: {
@@ -76,6 +80,10 @@ const invoiceSchema = new mongoose.Schema({
     orderId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Order'
+    },
+    previousDueCollected: {
+        type: Number,
+        default: 0
     },
     notes: String,
     status: {

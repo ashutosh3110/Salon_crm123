@@ -302,7 +302,7 @@ export default function AddProductForm({ onSave, initialData, onCancel }) {
                             </button>
                         </div>
 
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 gap-4">
                             <div className="space-y-1.5">
                                 <label className="text-[9px] font-black text-text-muted uppercase tracking-[0.2em]">Selling Price (MRP) <span className="text-rose-500">*</span></label>
                                 <div className="relative">
@@ -316,15 +316,6 @@ export default function AddProductForm({ onSave, initialData, onCancel }) {
                                         onChange={(e) => setFormData({ ...formData, sellingPrice: e.target.value })}
                                     />
                                 </div>
-                            </div>
-                            <div className="space-y-1.5">
-                                <label className="text-[9px] font-black text-text-muted uppercase tracking-[0.2em]">GST %</label>
-                                <CustomSelect
-                                    value={formData.gstPercent + '%'}
-                                    onChange={(val) => setFormData({ ...formData, gstPercent: val.replace('%', '') })}
-                                    options={["0%", "5%", "12%", "18%", "28%"]}
-                                    className="h-[46px] !text-[11px] font-black"
-                                />
                             </div>
                         </div>
                     </div>

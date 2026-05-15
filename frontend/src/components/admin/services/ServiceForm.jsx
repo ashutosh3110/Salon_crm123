@@ -363,20 +363,6 @@ export default function ServiceForm({ onSave, onCancel, categories = [], initial
                                     />
                                 </div>
                             </div>
-                            <div className="space-y-1 col-span-1">
-                                <label className="text-[9px] font-bold text-text-muted uppercase tracking-tighter italic">GST %</label>
-                                <select 
-                                    className="w-full bg-surface-alt border border-border rounded-lg px-2 py-1.5 text-[10px] font-bold outline-none"
-                                    value={formData.gst}
-                                    onChange={(e) => setFormData({ ...formData, gst: e.target.value })}
-                                >
-                                    <option value="0">0%</option>
-                                    <option value="5">5%</option>
-                                    <option value="12">12%</option>
-                                    <option value="18">18%</option>
-                                    <option value="28">28%</option>
-                                </select>
-                            </div>
                         </div>
 
                     </div>

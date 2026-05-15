@@ -271,23 +271,7 @@ export default function POSBillingPage() {
     const [cart, setCart] = useState([]);
     const [selectedClient, setSelectedClient] = useState(null);
     const [payments, setPayments] = useState([{ method: 'cash', amount: 0 }]);
-    const [taxPercent, setTaxPercent] = useState(18);
-    const [customerGstin, setCustomerGstin] = useState('');
-    const [customerState, setCustomerState] = useState('Uttar Pradesh'); // Default to Salon State
-    const [pendingAppOrder, setPendingAppOrder] = useState(null);
-    const [showOutletPickerMain, setShowOutletPickerMain] = useState(false);
-
-    useEffect(() => {
-        if (!platformSettings) {
-            fetchPlatformSettings();
-        }
-        // Fetch staff and customers to ensure POS is ready
-        fetchStaff?.();
-        if (!businessCustomers || businessCustomers.length === 0) {
-            fetchCustomers?.();
-        }
-    }, [platformSettings, fetchPlatformSettings, fetchStaff, businessCustomers, fetchCustomers]);
-
+    const [isManualPayment, setIsManualPayment] = useState(false);
     // Fiscal Settings (from localStorage)
     const fiscal = useMemo(() => {
         const saved = localStorage.getItem('pos_fiscal_settings');
@@ -313,11 +297,28 @@ export default function POSBillingPage() {
         return base;
     }, [platformSettings]);
 
+    const taxPercent = useMemo(() => {
+        return Number(platformSettings?.serviceGst ?? fiscal?.serviceGst ?? 18);
+    }, [platformSettings, fiscal]);
+    const [customerGstin, setCustomerGstin] = useState('');
+    const [customerState, setCustomerState] = useState('Uttar Pradesh'); // Default to Salon State
+    const [pendingAppOrder, setPendingAppOrder] = useState(null);
+    const [showOutletPickerMain, setShowOutletPickerMain] = useState(false);
+
+    useEffect(() => {
+        if (!platformSettings) {
+            fetchPlatformSettings();
+        }
+        // Fetch staff and customers to ensure POS is ready
+        fetchStaff?.();
+        if (!businessCustomers || businessCustomers.length === 0) {
+            fetchCustomers?.();
+        }
+    }, [platformSettings, fetchPlatformSettings, fetchStaff, businessCustomers, fetchCustomers]);
+
+
     useEffect(() => {
         if (fiscal.state) setCustomerState(fiscal.state);
-        // Fallback tax percent for general display
-        if (fiscal.serviceGst) setTaxPercent(fiscal.serviceGst);
-
         // Refresh data to accurately filter billed items
         fetchInvoices?.();
         fetchOrders?.();
@@ -376,7 +377,6 @@ export default function POSBillingPage() {
     const [appliedPromotion, setAppliedPromotion] = useState(null);
     const [appliedVoucher, setAppliedVoucher] = useState(null);
     const [voucherCodeInput, setVoucherCodeInput] = useState('');
-    const [redeemPoints, setRedeemPoints] = useState(0);
     const [redeemWallet, setRedeemWallet] = useState(0);
     const [appointmentId, setAppointmentId] = useState(null);
     const [orderId, setOrderId] = useState(null);
@@ -539,28 +539,36 @@ export default function POSBillingPage() {
             else discount += appliedVoucher.value;
         }
 
-        const totalDeductions = discount + (redeemPoints || 0) + (redeemWallet || 0);
+        const totalDeductions = discount + (redeemWallet || 0);
 
-        let totalTax = 0;
+        let serviceTax = 0;
+        let productTax = 0;
         let totalTaxableValue = 0;
+
+        const sGstRate = Number(platformSettings?.serviceGst ?? fiscal.serviceGst ?? 18);
+        const pGstRate = Number(platformSettings?.productGst ?? fiscal.productGst ?? 12);
 
         cart.forEach(item => {
             if (item.isPackageRedemption) return;
 
             const itemGross = (item.price * item.quantity);
-            const sGst = Number(platformSettings?.serviceGst || fiscal.serviceGst || 18);
-            const pGst = Number(platformSettings?.productGst || fiscal.productGst || 12);
-            const itemTaxRate = (item.type === 'service' ? sGst : pGst) / 100;
+            const itemTaxRate = (item.type === 'service' ? sGstRate : pGstRate) / 100;
 
             if (fiscal.inclusiveTax) {
                 const taxableVal = itemGross / (1 + itemTaxRate);
                 totalTaxableValue += taxableVal;
-                totalTax += (itemGross - taxableVal);
+                const tax = (itemGross - taxableVal);
+                if (item.type === 'service') serviceTax += tax;
+                else productTax += tax;
             } else {
                 totalTaxableValue += itemGross;
-                totalTax += (itemGross * itemTaxRate);
+                const tax = (itemGross * itemTaxRate);
+                if (item.type === 'service') serviceTax += tax;
+                else productTax += tax;
             }
         });
+
+        const totalTax = serviceTax + productTax;
 
         const isSameState = customerState === fiscal.state;
         const cgst = isSameState ? totalTax / 2 : 0;
@@ -600,6 +608,10 @@ export default function POSBillingPage() {
             discount,
             serviceDiscount,
             productDiscount,
+            serviceTax,
+            productTax,
+            serviceGstRate: sGstRate,
+            productGstRate: pGstRate,
             tax: totalTax,
             cgst,
             sgst,
@@ -609,10 +621,9 @@ export default function POSBillingPage() {
             taxable: totalTaxableValue,
             currentBillTotal,
             previousDue,
-            redeemPoints: (redeemPoints || 0),
             redeemWallet: (redeemWallet || 0)
         };
-    }, [cart, manualDiscount, appliedPromotion, appliedVoucher, redeemPoints, redeemWallet, taxPercent, selectedClient, includePreviousDue, fiscal, customerState]);
+    }, [cart, manualDiscount, appliedPromotion, appliedVoucher, redeemWallet, taxPercent, selectedClient, includePreviousDue, fiscal, customerState]);
 
     // Get real-time wallet balance
     const clientWalletBalance = useMemo(() => {
@@ -620,12 +631,12 @@ export default function POSBillingPage() {
         return (allWallets || {})[selectedClient._id]?.balance || 0;
     }, [selectedClient, allWallets]);
 
-    // Update auto-payment if single payment
-    useMemo(() => {
-        if (payments.length === 1 && payments[0].amount !== totals.total) {
+    // Sync payment amount to total unless manually edited by user
+    useEffect(() => {
+        if (!isManualPayment && payments.length === 1) {
             setPayments([{ ...payments[0], amount: totals.total }]);
         }
-    }, [totals.total, payments.length]);
+    }, [totals.total, isManualPayment, payments.length]);
 
 
     // ─── App Integration ────────────────────────────────────
@@ -735,9 +746,9 @@ export default function POSBillingPage() {
                 const isPaid = b.paymentStatus?.toLowerCase() === 'paid';
                 if (!isPaid) return false;
 
-                // Filter by outlet
-                const matchOutlet = !activeOutletId || String(b.outletId?._id || b.outletId) === String(activeOutletId);
-                if (!matchOutlet) return false;
+                // Show all completed bookings (addToCart will switch outlet automatically)
+                // const matchOutlet = !activeOutletId || String(b.outletId?._id || b.outletId) === String(activeOutletId);
+                // if (!matchOutlet) return false;
 
                 const alreadyBilled = (invoices || []).some(inv => String(inv.bookingId?._id || inv.bookingId) === String(b._id));
                 if (alreadyBilled) return false;
@@ -765,9 +776,9 @@ export default function POSBillingPage() {
                 const isPaid = o.paymentStatus?.toLowerCase() === 'paid';
                 if (!isPaid) return false;
 
-                // Filter by outlet
-                const matchOutlet = !activeOutletId || String(o.outletId?._id || o.outletId) === String(activeOutletId);
-                if (!matchOutlet) return false;
+                // Show all completed orders (addToCart will switch outlet automatically)
+                // const matchOutlet = !activeOutletId || String(o.outletId?._id || o.outletId) === String(activeOutletId);
+                // if (!matchOutlet) return false;
 
                 const alreadyBilled = (invoices || []).some(inv => String(inv.orderId?._id || inv.orderId) === String(o._id));
                 if (alreadyBilled) return false;
@@ -871,6 +882,8 @@ export default function POSBillingPage() {
                 staffIds: staffId ? [staffId] : [],
                 appointmentId: item._id
             }]);
+            const bookingOutletId = item.outletId?._id || item.outletId;
+            if (bookingOutletId) setActiveOutletId(String(bookingOutletId), { quiet: true, background: true });
             setAppointmentId(item._id);
             setOrderId(null);
             return;
@@ -907,6 +920,8 @@ export default function POSBillingPage() {
                 };
             }).filter(i => i.itemId);
 
+            const orderOutletId = item.outletId?._id || item.outletId;
+            if (orderOutletId) setActiveOutletId(String(orderOutletId), { quiet: true, background: true });
             setCart(newCartItems);
             setOrderId(item._id);
             setAppointmentId(null);
@@ -972,23 +987,12 @@ export default function POSBillingPage() {
     };
 
     // ─── Redemption Logic ──────────────────────────────────
-    const handleRedeemPoints = () => {
-        if (!selectedClient) return;
-        if (redeemPoints > 0) {
-            setRedeemPoints(0);
-        } else {
-            // Assume 1 point = 1 Rupee for simplicity, but capped at taxable subtotal
-            const maxRedeemable = Math.max(0, totals.subtotal - totals.discount);
-            setRedeemPoints(Math.min(selectedClient.loyaltyPoints, maxRedeemable));
-        }
-    };
-
     const handleRedeemWallet = () => {
         if (!selectedClient) return;
         if (redeemWallet > 0) {
             setRedeemWallet(0);
         } else {
-            const maxRedeemable = Math.max(0, totals.subtotal - totals.discount - redeemPoints);
+            const maxRedeemable = Math.max(0, totals.subtotal - totals.discount);
             setRedeemWallet(Math.min(clientWalletBalance, maxRedeemable));
         }
     };
@@ -1001,6 +1005,9 @@ export default function POSBillingPage() {
         const newPayments = [...payments];
         newPayments[idx][field] = value;
         setPayments(newPayments);
+        if (field === 'amount') {
+            setIsManualPayment(true);
+        }
     };
 
     const removePayment = (idx) => {
@@ -1056,7 +1063,6 @@ export default function POSBillingPage() {
                     }),
                     tax: totals.tax,
                     payments: payments.map(p => ({ method: p.method, amount: p.amount })),
-                    useLoyaltyPoints: redeemPoints,
                     useWalletAmount: redeemWallet,
                     discount: totals.discount,
                     bookingId: appointmentId,
@@ -1091,7 +1097,6 @@ export default function POSBillingPage() {
                         manual: manualDiscount,
                         promotion: appliedPromotion,
                         voucher: appliedVoucher,
-                        points: redeemPoints,
                         wallet: redeemWallet
                     },
                     paymentDate: paymentDate
@@ -1198,6 +1203,8 @@ export default function POSBillingPage() {
         setManualDiscount({ type: 'fixed', value: 0 });
         setRedeemPoints(0);
         setRedeemWallet(0);
+        setOrderId(null);
+        setAppointmentId(null);
     };
 
     // ─── Keyboard Shortcuts ───────────────────────────────
@@ -1269,7 +1276,7 @@ export default function POSBillingPage() {
                     <div className="border-t border-dashed border-black pt-2 space-y-1">
                         <div className="flex justify-between"><span>Subtotal</span><span>₹{successInvoice?.totals?.subtotal?.toFixed(0) || '0'}</span></div>
                         <div className="flex justify-between"><span>GST (18%)</span><span>₹{successInvoice?.totals?.tax?.toFixed(0) || '0'}</span></div>
-                        
+
                         {(successInvoice?.discounts?.points > 0) && (
                             <div className="flex justify-between"><span>Membership Discount</span><span>-₹{successInvoice.discounts.points}</span></div>
                         )}
@@ -1489,17 +1496,15 @@ export default function POSBillingPage() {
                                     className={`relative bg-background border p-4 text-left hover:border-primary transition-all group flex flex-col justify-between h-[120px] shadow-sm hover:shadow-md active:scale-95 ${isSelected ? 'border-primary bg-primary/5 ring-1 ring-primary' : 'border-border'
                                         }`}
                                 >
-                                    {isSelected && (
+                                    {isSelected ? (
                                         <div className="absolute top-0 right-0 bg-primary text-white text-[8px] font-black px-2 py-0.5 uppercase tracking-tighter">
                                             In Cart
                                         </div>
+                                    ) : (
+                                        <div className="absolute top-0 right-0 p-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                            <span className="text-[10px] font-black text-text-muted group-hover:text-primary transition-colors">ADD</span>
+                                        </div>
                                     )}
-                                    <div className="flex justify-between items-start">
-                                        <span className={`p-1.5 ${item.type === 'service' ? 'bg-blue-50 dark:bg-blue-500/10 text-blue-500' : 'bg-amber-50 dark:bg-amber-500/10 text-amber-500'}`}>
-                                            {activeTab === 'services' ? <Scissors className="w-3.5 h-3.5" /> : <Package className="w-3.5 h-3.5" />}
-                                        </span>
-                                        {!isSelected && <span className="text-[10px] font-black text-text-muted group-hover:text-primary transition-colors">ADD</span>}
-                                    </div>
                                     <div>
                                         <h4 className="text-xs font-extrabold text-text line-clamp-2 uppercase tracking-tight leading-tight">{item.name}</h4>
                                         <p className="text-sm font-black text-primary mt-1">₹{item.price}</p>
@@ -1513,442 +1518,231 @@ export default function POSBillingPage() {
                     </div>
                 </div>
 
-                {/* ─── RIGHT PANEL: Cart & Checkout ─── */}
-                <div className={`w-full lg:w-[420px] h-full flex flex-col bg-surface border-0 lg:border border-border shadow-xl overflow-y-auto scrollbar-thin ${mobileView === 'cart' ? 'flex' : 'hidden'} lg:flex`}>
+                <div className="w-full lg:w-[400px] h-full p-2 bg-background">
+                    <div className="h-full rounded-2xl border border-border bg-surface flex flex-col overflow-hidden">
 
-                    <div className="p-4 border-b border-border space-y-3 bg-surface-alt/50">
-                        <div className="flex items-center justify-between">
-                            <label className="text-[10px] font-black text-text-muted uppercase tracking-widest flex items-center gap-1.5">
-                                <User className="w-3 h-3" /> Selected Client
-                            </label>
-                            {selectedClient && (
-                                <button onClick={() => setShowClientInfo(!showClientInfo)} className="text-[10px] font-bold text-primary flex items-center gap-1 hover:underline">
-                                    {showClientInfo ? 'Hide Details' : 'View History'} <ArrowRight className="w-3 h-3" />
-                                </button>
-                            )}
+                        {/* HEADER */}
+                        <div className="px-3 py-2 border-b border-border flex items-center justify-between">
+                            <h2 className="text-xs font-black uppercase tracking-widest">
+                                Billing Cart
+                            </h2>
+
+                            <span className="text-[10px] font-bold text-text-muted">
+                                {cart.length} Items
+                            </span>
                         </div>
 
-                        {!selectedClient ? (
-                            <div className="relative">
-                                <input
-                                    type="text"
-                                    placeholder="Search by Phone or Name..."
-                                    className="w-full px-4 py-3 text-sm bg-background text-text border border-border outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 rounded-lg transition-all"
-                                    value={searchClient}
-                                    onChange={(e) => {
-                                        const val = e.target.value;
-                                        // If it's all numbers, limit to 10
-                                        if (/^\d*$/.test(val) && val.length > 10) return;
-                                        setSearchClient(val);
-                                        setShowClientDropdown(true);
-                                    }}
-                                    onFocus={() => setShowClientDropdown(true)}
-                                />
-                                {showClientDropdown && searchClient && (
-                                    <div className="absolute top-full left-0 w-full bg-surface border border-border shadow-2xl z-20 mt-1 animate-in fade-in slide-in-from-top-2 duration-200">
-                                        <div className="max-h-[300px] overflow-y-auto scrollbar-thin">
-                                            {filteredClients.length > 0 ? filteredClients.map(c => (
-                                                <button
-                                                    key={c.id || c._id}
-                                                    onClick={() => { setSelectedClient(c); setShowClientInfo(true); setShowClientDropdown(false); setSearchClient(''); }}
-                                                    className="w-full p-4 text-left hover:bg-surface-alt flex items-center justify-between border-b border-border/50 group transition-all"
-                                                >
-                                                    <div>
-                                                        <p className="text-sm font-black text-text uppercase tracking-tight group-hover:text-primary transition-colors">{c.name}</p>
-                                                        <p className="text-[11px] font-bold text-text-muted mt-0.5">{maskPhone(c.phone, user?.role)}</p>
-                                                    </div>
-                                                    <span className="text-[10px] font-black tracking-widest text-text-secondary bg-surface-alt px-3 py-1.5 border border-border group-hover:bg-primary group-hover:text-white group-hover:border-primary transition-all">SELECT</span>
-                                                </button>
-                                            )) : (
-                                                <div className="p-4 text-center text-[10px] font-bold text-text-muted uppercase italic tracking-widest">No matching clients</div>
-                                            )}
-                                        </div>
-                                    </div>
-                                )}
-                            </div>
-                        ) : (
-                            <div className="flex items-center justify-between bg-background border border-border p-3">
-                                <div className="flex items-center gap-3">
-                                    <div className="w-9 h-9 bg-primary/10 text-primary flex items-center justify-center font-black">
-                                        {selectedClient?.name?.charAt(0) || 'U'}
-                                    </div>
-                                    <div>
-                                        <div className="flex items-center gap-2">
-                                            <p className="text-sm font-black text-text">{selectedClient.name}</p>
-                                            {selectedClient.isVIP && (
-                                                <span className="px-1.5 py-0.5 bg-slate-900 text-[8px] font-black text-amber-400 uppercase tracking-widest border border-amber-400/20 flex items-center gap-1 shadow-sm">
-                                                    <Star className="w-2 h-2 fill-amber-400" /> Premium
-                                                </span>
-                                            )}
-                                        </div>
-                                        <p className="text-[11px] text-text-muted font-bold">{maskPhone(selectedClient.phone, user?.role)}</p>
-                                    </div>
-                                </div>
-                                <button onClick={() => resetBill()} className="p-2 text-text-muted hover:text-rose-500 transition-colors">
-                                    <Trash2 className="w-4 h-4" />
-                                </button>
-                            </div>
-                        )}
+                        {/* CONTENT - Scrollable area */}
+                        <div className="flex-1 p-2 space-y-3 overflow-y-auto scrollbar-thin">
 
-                        {selectedClient && (
-                            <div className="mt-2 space-y-2 px-1">
-                                <div className="flex items-center gap-2">
-                                    <Building2 className="w-3 h-3 text-text-muted flex-shrink-0" />
-                                    <span className="text-[9px] font-black text-text-muted uppercase tracking-widest leading-none">Selected Outlet:</span>
-                                    <div className="relative flex-1">
-                                        <button
-                                            onClick={() => setShowOutletPickerMain(prev => !prev)}
-                                            className="flex items-center gap-1.5 bg-surface-alt border border-border/50 rounded-lg px-2 py-1 hover:border-primary transition-all cursor-pointer w-full"
-                                        >
-                                            {(() => {
-                                                const sel = outlets.find(o => String(o._id) === String(activeOutletId));
-                                                const img = sel?.image || sel?.images?.[0];
-                                                return sel ? (
-                                                    <>
-                                                        <div className="w-5 h-5 rounded overflow-hidden border border-border flex-shrink-0">
-                                                            {img
-                                                                ? <img src={getImageUrl(img)} className="w-full h-full object-cover" alt={sel.name} onError={e => { e.target.style.display='none'; e.target.nextSibling.style.display='flex'; }} />
-                                                                : null
-                                                            }
-                                                            <div className={`w-full h-full bg-primary/10 items-center justify-center ${img ? 'hidden' : 'flex'}`}><Building2 className="w-3 h-3 text-primary" /></div>
-                                                        </div>
-                                                        <span className="text-[10px] font-black uppercase text-primary truncate">{sel.name}</span>
-                                                    </>
-                                                ) : <span className="text-[10px] font-bold text-text-muted italic">-- Select Outlet --</span>;
-                                            })()}
-                                            <ChevronDown className={`w-3 h-3 text-text-muted ml-auto transition-transform ${showOutletPickerMain ? 'rotate-180' : ''}`} />
-                                        </button>
-                                        <AnimatePresence>
-                                            {showOutletPickerMain && (
-                                                <motion.div
-                                                    initial={{ opacity: 0, y: 6 }}
-                                                    animate={{ opacity: 1, y: 0 }}
-                                                    exit={{ opacity: 0, y: 6 }}
-                                                    className="absolute top-full left-0 right-0 mt-1 bg-white border border-border shadow-2xl rounded-xl overflow-hidden z-[80]"
-                                                >
-                                                    {outlets.map(o => (
-                                                        <button
-                                                            key={o._id}
-                                                            onClick={() => { setActiveOutletId(o._id); setShowOutletPickerMain(false); }}
-                                                            className={`w-full flex items-center gap-2.5 px-3 py-2.5 hover:bg-slate-50 border-b border-slate-50 last:border-0 transition-colors ${String(o._id) === String(activeOutletId) ? 'bg-primary/5' : ''}`}
-                                                        >
-                                                            <div className="w-8 h-8 rounded-lg overflow-hidden border border-border flex-shrink-0 bg-slate-50">
-                                                                {(() => {
-                                                                    const img = o.image || o.images?.[0];
-                                                                    return img ? (
-                                                                        <img src={getImageUrl(img)} className="w-full h-full object-cover" alt={o.name} onError={e => { e.target.style.display='none'; e.target.nextSibling.style.display='flex'; }} />
-                                                                    ) : null;
-                                                                })()}
-                                                                <div className={`w-full h-full items-center justify-center bg-primary/10 ${o.image || o.images?.[0] ? 'hidden' : 'flex'}`}><Building2 className="w-4 h-4 text-primary" /></div>
-                                                            </div>
-                                                            <div className="flex-1 text-left min-w-0">
-                                                                <p className={`text-[10px] font-black uppercase truncate ${String(o._id) === String(activeOutletId) ? 'text-primary' : 'text-slate-800'}`}>{o.name}</p>
-                                                                {(() => { const a = typeof o.address==='string'?o.address:typeof o.address==='object'&&o.address?[o.address.street,o.address.city].filter(Boolean).join(', '):(typeof o.location?.city==='string'?o.location.city:''); return a?<p className="text-[8px] text-slate-400 font-bold truncate">{a}</p>:null; })()}
-                                                            </div>
-                                                            {String(o._id) === String(activeOutletId) && <Check className="w-3.5 h-3.5 text-primary flex-shrink-0" />}
-                                                        </button>
-                                                    ))}
-                                                </motion.div>
-                                            )}
-                                        </AnimatePresence>
-                                    </div>
-                                </div>
-
-                                <div className="flex items-center gap-2">
-                                    <Globe className="w-3 h-3 text-text-muted" />
-                                    <span className="text-[9px] font-black text-text-muted uppercase tracking-widest leading-none">Billing State / Location:</span>
-                                    <select
-                                        value={customerState}
-                                        onChange={(e) => setCustomerState(e.target.value)}
-                                        className="bg-transparent text-[10px] font-black uppercase text-primary border-none outline-none cursor-pointer hover:underline"
-                                    >
-                                        {fiscal.state && <option value={fiscal.state}>{fiscal.state} (INTRA)</option>}
-                                        <option value="Delhi">Delhi (INTER)</option>
-                                        <option value="Maharashtra">Maharashtra (INTER)</option>
-                                        <option value="Karnataka">Karnataka (INTER)</option>
-                                        <option value="Gujarat">Gujarat (INTER)</option>
-                                        <option value="Haryana">Haryana (INTER)</option>
-                                    </select>
-                                </div>
-                            </div>
-                        )}
-
-                    </div>
-
-                    {/* Pending App Order Alert */}
-                    {pendingAppOrder && (
-                        <motion.div
-                            initial={{ opacity: 0, y: -10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            className="mx-4 p-4 bg-primary/5 border border-primary/20 flex flex-col gap-3"
-                        >
-                            <div className="flex items-center gap-2">
-                                <ShoppingBag className="w-5 h-5 text-primary" />
-                                <p className="text-[10px] font-black uppercase tracking-widest text-primary">Pending App Selection Found</p>
-                            </div>
-                            <div className="flex items-center justify-between">
-                                <span className="text-xs font-bold">{pendingAppOrder.items.length} Products • ₹{pendingAppOrder.total}</span>
-                                <button
-                                    onClick={importAppOrder}
-                                    className="px-3 py-1.5 bg-primary text-white text-[9px] font-black uppercase tracking-widest shadow-lg shadow-primary/20"
-                                >Add to Bill</button>
-                            </div>
-                        </motion.div>
-                    )}
-
-                    <div className="flex-1 overflow-y-auto p-4 space-y-3">
-                        {cart.length === 0 ? (
-                            <div className="h-full flex flex-col items-center justify-center opacity-30 text-text-muted">
-                                <ShoppingCart className="w-12 h-12 mb-2" />
-                                <p className="text-sm font-black uppercase tracking-widest text-center">Terminal Cart Empty</p>
-                            </div>
-                        ) : (
-                            cart.map((item, idx) => (
-                                <div key={idx} className="space-y-2 border-b border-border pb-3 last:border-0 group">
-                                    <div className="flex items-start justify-between gap-3">
-                                        <div className="flex-1 min-w-0">
-                                            <div className="flex items-center gap-2">
-                                                <p className="text-xs font-black text-text uppercase truncate tracking-tight">{item.name}</p>
-                                                {item.isPackageRedemption && (
-                                                    <span className="px-1.5 py-0.5 bg-amber-500 text-[8px] font-black text-white uppercase tracking-widest">Package</span>
-                                                )}
-                                            </div>
-                                            <div className="flex items-center gap-2 mt-0.5">
-                                                <p className="text-[11px] font-bold text-primary">
-                                                    {item.isPackageRedemption ? '₹0 (Redeemed)' : `₹${Math.round((item.price * item.quantity) * totals.discountFactor)}`}
-                                                </p>
-                                                {!item.isPackageRedemption && totals.discountFactor < 1 && (
-                                                    <p className="text-[9px] font-bold text-text-muted line-through">
-                                                        ₹{item.price * item.quantity}
-                                                    </p>
-                                                )}
-                                                {!item.isPackageRedemption && totals.discountFactor < 1 && (
-                                                    <span className="text-[8px] font-black text-emerald-500 uppercase tracking-tighter">
-                                                        -₹{Math.round((item.price * item.quantity) * (1 - totals.discountFactor))} OFF
-                                                    </span>
-                                                )}
-                                            </div>
-                                        </div>
-                                        {item.type === 'service' && (
-                                            <div className="flex items-center bg-surface-alt">
-                                                <button onClick={() => updateQty(idx, -1)} className="p-1 px-2 hover:bg-border text-text-muted"><Minus className="w-3 h-3" /></button>
-                                                <span className="px-2 text-xs font-black text-text">{item.quantity}</span>
-                                                <button onClick={() => updateQty(idx, 1)} className="p-1 px-2 hover:bg-border text-text-muted"><Plus className="w-3 h-3" /></button>
-                                            </div>
-                                        )}
-                                        <button onClick={() => removeItem(idx)} className="p-1 text-text-muted hover:text-rose-500"><X className="w-4 h-4" /></button>
-                                    </div>
-                                    {/* Multi-Staff Row */}
-                                    {item.type === 'service' ? (
-                                        <div className="space-y-1.5">
-                                            {(item.staffIds || ['']).map((sid, sIdx) => (
-                                                <div key={sIdx} className="flex items-center gap-2">
-                                                    <span className="text-[9px] font-black text-text-muted uppercase shrink-0 w-8">
-                                                        {sIdx === 0 ? 'Staff:' : ''}
-                                                    </span>
-                                                    <select
-                                                        className="flex-1 bg-surface-alt border border-border/60 text-[10px] font-bold px-2 py-1.5 text-text focus:ring-1 focus:ring-primary/30 focus:border-primary transition-all"
-                                                        value={sid || ''}
-                                                        onChange={(e) => updateStaff(idx, sIdx, e.target.value)}
-                                                    >
-                                                        <option value="">Select Stylist</option>
-                                                        {availableStaff.map(s => <option key={s._id} value={s._id}>{s.name}</option>)}
-                                                    </select>
-                                                    {(item.staffIds || []).length > 1 && (
-                                                        <button
-                                                            onClick={() => removeStaff(idx, sIdx)}
-                                                            className="p-1 text-rose-400 hover:text-rose-600 hover:bg-rose-50 rounded transition-all shrink-0"
-                                                            title="Remove staff"
-                                                        >
-                                                            <X className="w-3 h-3" />
-                                                        </button>
-                                                    )}
-                                                </div>
-                                            ))}
-                                            <button
-                                                onClick={() => addStaff(idx)}
-                                                className="flex items-center gap-1.5 text-[10px] font-black text-primary border border-primary/30 bg-primary/5 hover:bg-primary hover:text-white px-3 py-1 rounded-full transition-all ml-0 mt-1"
-                                            >
-                                                <Plus className="w-3 h-3" /> Add Another Staff
-                                            </button>
-                                        </div>
+                            {/* CLIENT + OUTLET */}
+                            <div className="grid grid-cols-2 gap-2">
+                                {/* CLIENT */}
+                                <div className="border border-border rounded-xl p-2 bg-background">
+                                    <p className="text-[9px] font-black uppercase text-text-muted mb-1">Client</p>
+                                    {selectedClient ? (
+                                        <>
+                                            <p className="text-xs font-black truncate">{selectedClient.name}</p>
+                                            <p className="text-[10px] text-text-muted font-bold truncate">{maskPhone(selectedClient.phone, user?.role)}</p>
+                                        </>
                                     ) : (
-                                        <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-2">
-                                            <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
-                                                <ShoppingCart className="w-2.5 h-2.5 text-primary" /> Edit Quantity
-                                            </label>
-                                            <div className="flex items-center bg-white border border-slate-200 rounded-lg h-9 overflow-hidden">
-                                                <button 
-                                                    onClick={() => updateQty(idx, -1)}
-                                                    className="px-3 hover:bg-slate-50 text-slate-400 border-r border-slate-100 transition-colors h-full"
-                                                >
-                                                    <Minus className="w-3.5 h-3.5" />
-                                                </button>
-                                                <input 
-                                                    type="number"
-                                                    className="flex-1 text-center text-xs font-black text-slate-900 outline-none h-full bg-transparent"
-                                                    value={item.quantity}
-                                                    onChange={(e) => {
-                                                        const val = parseInt(e.target.value) || 1;
-                                                        updateQty(idx, val - item.quantity);
-                                                    }}
-                                                />
-                                                <button 
-                                                    onClick={() => updateQty(idx, 1)}
-                                                    className="px-3 hover:bg-slate-50 text-slate-400 border-l border-slate-100 transition-colors h-full"
-                                                >
-                                                    <Plus className="w-3.5 h-3.5" />
-                                                </button>
-                                            </div>
-                                        </div>
-                                    )}
-                                    {packageEligibleItems.includes(item.name) && (
-                                        <button
-                                            onClick={() => togglePackageRedemption(idx)}
-                                            className={`flex items-center gap-1.5 px-3 py-1 text-[9px] font-black uppercase tracking-widest border transition-all ${item.isPackageRedemption ? 'bg-amber-500 text-white border-amber-500' : 'bg-surface-alt text-text-secondary border-border hover:border-amber-500 hover:text-amber-500'}`}
-                                        >
-                                            <Gift className="w-3 h-3" /> USE PKG
-                                        </button>
+                                        <p className="text-[10px] italic text-text-muted">No client selected</p>
                                     )}
                                 </div>
-                            ))
-                        )}
-                    </div>
 
-                    <div className="p-4 bg-surface-alt border-t border-border space-y-4">
-                        <div className="space-y-1.5 border-b border-border pb-3">
-                            {/* Membership Breakdown (if applicable) */}
-                            {totals.membershipDiscount > 0 && (
-                                <div className="flex justify-between items-center text-rose-500">
-                                    <span className="text-[10px] font-black uppercase tracking-widest">Membership Discount</span>
-                                    <span className="text-sm font-black">-₹{totals.membershipDiscount.toLocaleString()}</span>
-                                </div>
-                            )}
-                            {totals.discount > 0 && (
-                                <div className="flex justify-between items-center text-emerald-500">
-                                    <span className="text-[10px] font-black uppercase tracking-widest">Offers / Manual Discount</span>
-                                    <span className="text-sm font-black">-₹{totals.discount.toLocaleString()}</span>
-                                </div>
-                            )}
-                            {totals.redeemPoints > 0 && (
-                                <div className="flex justify-between items-center text-blue-500">
-                                    <span className="text-[10px] font-black uppercase tracking-widest">Loyalty Points</span>
-                                    <span className="text-sm font-black">-₹{totals.redeemPoints.toLocaleString()}</span>
-                                </div>
-                            )}
-                            {totals.redeemWallet > 0 && (
-                                <div className="flex justify-between items-center text-emerald-600">
-                                    <span className="text-[10px] font-black uppercase tracking-widest">Wallet Used</span>
-                                    <span className="text-sm font-black">-₹{totals.redeemWallet.toLocaleString()}</span>
-                                </div>
-                            )}
+                                {/* OUTLET */}
+                                <div className="border border-border rounded-xl p-2 bg-background relative">
+                                    <p className="text-[9px] font-black uppercase text-text-muted mb-1">Outlet</p>
+                                    <button
+                                        onClick={() => !(appointmentId || orderId) && setShowOutletPickerMain(!showOutletPickerMain)}
+                                        className={`w-full flex items-center justify-between text-xs font-black ${(appointmentId || orderId) ? 'opacity-80 cursor-not-allowed' : ''}`}
+                                    >
+                                        <span className="truncate">
+                                            {(() => {
+                                                const booking = appointmentId ? businessBookings?.find(b => b._id === appointmentId) : null;
+                                                const order = orderId ? businessOrders?.find(o => o._id === orderId) : null;
+                                                const bOutletId = (booking || order) ? (booking?.outletId?._id || booking?.outletId || order?.outletId?._id || order?.outletId) : activeOutletId;
+                                                const sel = outlets.find(o => String(o._id) === String(bOutletId));
+                                                return sel ? sel.name : 'Select Outlet';
+                                            })()}
+                                        </span>
+                                        {!(appointmentId || orderId) && <ChevronDown className="w-3 h-3 text-text-muted" />}
+                                    </button>
 
-                            {/* Summary Totals */}
-                            <div className="border-t border-border/30 pt-2 mt-2 space-y-1.5">
-                                <div className="flex justify-between text-[10px] font-bold text-text-muted uppercase">
-                                    <span>Subtotal (Net)</span>
-                                    <span>₹{totals.subtotal.toFixed(0)}</span>
-                                </div>
-
-                                {(totals.discount > 0 || totals.redeemPoints > 0 || totals.redeemWallet > 0) && (
-                                    <div className="flex justify-between text-[10px] font-bold text-emerald-600 uppercase">
-                                        <span>Total Offers / Redemptions</span>
-                                        <span>-₹{(totals.discount + totals.redeemPoints + totals.redeemWallet).toFixed(0)}</span>
-                                    </div>
-                                )}
-
-                                <div className="flex justify-between text-xs font-black text-text border-y border-border/10 py-1 my-1">
-                                    <span>TAXABLE AMOUNT</span>
-                                    <span>₹{totals.taxable.toFixed(0)}</span>
-                                </div>
-
-                                <div className="flex justify-between text-xs font-bold text-text">
-                                    <span>GST ({taxPercent}%)</span>
-                                    <span>₹{totals.tax.toFixed(0)}</span>
+                                    <AnimatePresence>
+                                        {showOutletPickerMain && !appointmentId && (
+                                            <motion.div
+                                                initial={{ opacity: 0, y: 6 }}
+                                                animate={{ opacity: 1, y: 0 }}
+                                                exit={{ opacity: 0, y: 6 }}
+                                                className="absolute top-full left-0 right-0 mt-1 bg-white border border-border shadow-2xl rounded-xl overflow-hidden z-[80]"
+                                            >
+                                                {outlets.map(o => (
+                                                    <button
+                                                        key={o._id}
+                                                        onClick={() => { setActiveOutletId(o._id); setShowOutletPickerMain(false); }}
+                                                        className={`w-full text-left px-3 py-2 text-[10px] font-black uppercase border-b border-border/50 last:border-0 hover:bg-slate-50 transition-colors ${String(o._id) === String(activeOutletId) ? 'text-primary bg-primary/5' : 'text-slate-800'}`}
+                                                    >
+                                                        {o.name}
+                                                    </button>
+                                                ))}
+                                            </motion.div>
+                                        )}
+                                    </AnimatePresence>
                                 </div>
                             </div>
 
-                            {includePreviousDue && (
-                                <div className="flex justify-between text-xs font-bold text-rose-500">
-                                    <span>PREVIOUS DUE</span>
-                                    <span>₹{totals.previousDue.toFixed(0)}</span>
-                                </div>
-                            )}
-                        </div>
-
-                        <div className="flex items-center justify-between">
-                            <h4 className="text-sm font-black text-text uppercase tracking-widest">Grand Total</h4>
-                            <span className="text-2xl font-black text-primary tracking-tight">₹{totals.total.toFixed(0)}</span>
-                        </div>
-
-                        <div className="flex flex-col gap-3">
+                            {/* CART ITEMS */}
                             <div className="space-y-2">
-                                <div className="flex items-center justify-between">
-                                    <label className="text-[9px] font-black text-text-muted uppercase tracking-widest">Payment Split</label>
+                                {cart.length === 0 ? (
+                                    <div className="py-8 text-center opacity-40 border border-dashed border-border rounded-xl">
+                                        <ShoppingCart className="w-6 h-6 mx-auto mb-1" />
+                                        <p className="text-[10px] font-black uppercase">Empty Cart</p>
+                                    </div>
+                                ) : (
+                                    cart.map((item, idx) => (
+                                        <div key={idx} className="flex items-center gap-2 border border-border rounded-lg px-2 py-2 bg-surface-alt">
+                                            <div className="flex-1 min-w-0">
+                                                <p className="text-[11px] font-black truncate">{item.name}</p>
+                                                <p className="text-[10px] font-bold text-primary">₹{(item.price * item.quantity).toFixed(2)}</p>
+                                            </div>
+                                            <div className="flex items-center border border-border rounded-lg overflow-hidden h-7">
+                                                <button onClick={() => updateQty(idx, -1)} className="w-6 h-full flex items-center justify-center hover:bg-border/30"><Minus className="w-3 h-3" /></button>
+                                                <span className="px-2 text-[10px] font-black">{item.quantity}</span>
+                                                <button onClick={() => updateQty(idx, 1)} className="w-6 h-full flex items-center justify-center hover:bg-border/30"><Plus className="w-3 h-3" /></button>
+                                            </div>
+                                            <button onClick={() => removeItem(idx)} className="text-rose-500 hover:bg-rose-50 p-1 rounded-md transition-colors"><X className="w-3 h-3" /></button>
+                                        </div>
+                                    ))
+                                )}
+                            </div>
+
+                            {/* PAYMENT SECTION */}
+                            <div className="border border-border rounded-xl bg-background p-2 space-y-2 relative overflow-hidden">
+                                <div className="flex items-center justify-between px-1 mb-1">
+                                    <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Payment Method</span>
+                                    <label className="flex items-center gap-1.5 text-[9px] font-black text-primary cursor-pointer hover:opacity-80 transition-all bg-primary/5 px-2 py-1 rounded-lg border border-primary/10">
+                                        <input 
+                                            type="checkbox" 
+                                            checked={isManualPayment} 
+                                            onChange={(e) => {
+                                                setIsManualPayment(e.target.checked);
+                                                if(e.target.checked) {
+                                                    setTimeout(() => {
+                                                        const el = document.querySelector('input[type="number"][data-payment-idx="0"]');
+                                                        el?.focus();
+                                                        el?.select();
+                                                    }, 100);
+                                                }
+                                            }}
+                                            className="w-3 h-3 rounded border-primary/20 text-primary focus:ring-primary/20"
+                                        />
+                                        <span className="uppercase tracking-tight">Partial Pay</span>
+                                    </label>
                                 </div>
-                                <div className="space-y-2 max-h-[150px] overflow-y-auto pr-1">
-                                    {payments.map((p, i) => (
-                                        <div key={i} className="flex gap-2 items-center bg-background border border-border p-1">
+
+                                {payments.map((p, i) => (
+                                    <div key={i} className="flex flex-col gap-1.5 border-b border-border/50 last:border-0 pb-2 last:pb-0">
+                                        <div className="flex gap-2">
                                             <select
                                                 value={p.method}
-                                                onChange={(e) => updatePayment(i, 'method', e.target.value)}
-                                                className="flex-1 bg-surface-alt border border-border text-[10px] font-black p-1.5 text-text outline-none focus:border-primary rounded transition-all"
+                                                onChange={(e) => updatePayment(i, "method", e.target.value)}
+                                                className="flex-1 h-8 rounded-lg border border-border px-2 text-[10px] font-black outline-none focus:border-primary transition-all uppercase"
                                             >
                                                 <option value="cash">CASH</option>
                                                 <option value="online">ONLINE</option>
-                                                <option value="card">CARD</option>
-                                                <option value="wallet">WALLET</option>
                                             </select>
-                                            <input
-                                                type="number"
-                                                value={Number(p.amount).toFixed(2)}
-                                                onChange={(e) => updatePayment(i, 'amount', Number(e.target.value))}
-                                                className="w-24 text-right bg-surface-alt border border-border text-xs font-black p-1.5 text-text outline-none focus:border-primary focus:ring-1 focus:ring-primary/20 rounded transition-all"
-                                            />
+
+                                            <div className="relative">
+                                                <input
+                                                    type="number"
+                                                    data-payment-idx={i}
+                                                    value={p.amount}
+                                                    onChange={(e) => updatePayment(i, "amount", Number(e.target.value))}
+                                                    className="w-28 h-8 rounded-lg border border-border px-2 text-right text-[11px] font-black outline-none focus:border-primary transition-all pr-8"
+                                                />
+                                                <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[8px] font-bold text-slate-400">₹</span>
+                                            </div>
+                                            
                                             {payments.length > 1 && (
-                                                <button onClick={() => removePayment(i)} className="p-1 text-rose-500 hover:bg-rose-50"><X className="w-3 h-3" /></button>
+                                                <button onClick={() => removePayment(i)} className="h-8 w-8 flex items-center justify-center text-rose-500 hover:bg-rose-50 rounded-lg transition-colors border border-transparent hover:border-rose-100 shrink-0">
+                                                    <X className="w-3.5 h-3.5" />
+                                                </button>
                                             )}
                                         </div>
-                                    ))}
-                                </div>
+                                        
+                                        {payments.length === 1 && totals.total > p.amount && (
+                                            <div className="flex items-center gap-1.5 px-2 py-1 bg-rose-50 border border-rose-100 rounded-lg">
+                                                <div className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse" />
+                                                <span className="text-[9px] font-black text-rose-600 uppercase tracking-tighter">
+                                                    ₹{(totals.total - p.amount).toFixed(2)} will be marked as Due
+                                                </span>
+                                            </div>
+                                        )}
+                                    </div>
+                                ))}
+
                                 {payments.reduce((s, p) => s + p.amount, 0) < totals.total && (
-                                    <p className="text-[9px] font-bold text-amber-500 italic flex items-center gap-1">
-                                        <Info className="w-3 h-3" /> Remaining: ₹{totals.total - payments.reduce((s, p) => s + p.amount, 0)} (will be marked as Pending)
-                                    </p>
+                                    <button
+                                        onClick={addPaymentMethod}
+                                        className="w-full h-8 border border-dashed border-primary/40 bg-primary/5 rounded-lg text-[9px] font-black text-primary hover:bg-primary/10 transition-colors flex items-center justify-center gap-1.5 uppercase tracking-widest mt-1"
+                                    >
+                                        <Plus className="w-3 h-3" /> Split Payment
+                                    </button>
+                                )}
+                            </div>
+                        </div>
+
+                        {/* FOOTER - Fixed at bottom */}
+                        <div className="p-3 border-t border-border bg-surface space-y-3 shrink-0">
+                            {/* TOTAL */}
+                            <div className="border border-border rounded-xl bg-slate-900 text-white p-3 shadow-lg shadow-slate-950/10">
+                                <div className="flex justify-between text-[11px] font-bold mb-1 opacity-60">
+                                    <span>Subtotal</span>
+                                    <span>₹{totals.subtotal.toFixed(2)}</span>
+                                </div>
+
+                                {totals.serviceTax > 0 && (
+                                    <div className="flex justify-between text-[11px] font-bold mb-1">
+                                        <span className="opacity-60">GST (Services - {totals.serviceGstRate}%)</span>
+                                        <span>₹{totals.serviceTax.toFixed(2)}</span>
+                                    </div>
+                                )}
+
+                                {totals.productTax > 0 && (
+                                    <div className="flex justify-between text-[11px] font-bold mb-1">
+                                        <span className="opacity-60">GST (Products - {totals.productGstRate}%)</span>
+                                        <span>₹{totals.productTax.toFixed(2)}</span>
+                                    </div>
+                                )}
+
+                                <div className="border-t border-white/10 mt-2 pt-2 flex items-center justify-between">
+                                    <span className="text-sm font-black uppercase tracking-widest text-primary">TOTAL</span>
+                                    <span className="text-2xl font-black tracking-tight">₹{totals.total.toFixed(2)}</span>
+                                </div>
+
+                                {totals.total - payments.reduce((s, p) => s + p.amount, 0) > 0.5 && (
+                                    <div className="flex justify-between text-[10px] font-black text-rose-400 mt-2 bg-rose-500/5 p-2 rounded-lg border border-rose-500/20 animate-pulse">
+                                        <span className="uppercase tracking-widest">Balance Due</span>
+                                        <span>₹{(totals.total - payments.reduce((s, p) => s + p.amount, 0)).toFixed(2)}</span>
+                                    </div>
                                 )}
                             </div>
 
-                            <div className="flex items-center justify-between py-2 border-y border-border/50">
-                                <div className="flex items-center gap-2">
-                                    <Calendar className="w-3.5 h-3.5 text-text-muted" />
-                                    <span className="text-[10px] font-black uppercase tracking-widest text-text-muted">Payment Date:</span>
-                                </div>
-                                <input
-                                    type="date"
-                                    className="bg-surface-alt border border-border px-3 py-1.5 rounded text-[11px] font-black text-text outline-none focus:border-primary focus:ring-1 focus:ring-primary/20 transition-all"
-                                    value={paymentDate}
-                                    onChange={(e) => setPaymentDate(e.target.value)}
-                                />
-                            </div>
-
-                            <div className="grid grid-cols-2 gap-2 mt-4">
+                            {/* ACTIONS */}
+                            <div className="grid grid-cols-2 gap-2">
                                 <button
                                     onClick={() => setShowDiscountModal(true)}
-                                    className="py-2.5 bg-background border border-border font-black text-[10px] text-text-secondary uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-surface-alt active:scale-95 transition-all relative"
+                                    className="h-10 rounded-xl border border-border bg-background text-[10px] font-black uppercase hover:bg-surface-alt transition-colors"
                                 >
-                                    <Percent className="w-3.5 h-3.5" />
-                                    OFFERS
-                                    {(appliedPromotion || appliedVoucher || manualDiscount.value > 0 || redeemPoints > 0 || redeemWallet > 0) && (
-                                        <div className="absolute -top-1 -right-1 w-2 h-2 bg-primary rounded-full animate-pulse shadow-sm shadow-primary/40" />
-                                    )}
+                                    Offers
                                 </button>
+
                                 <button
                                     onClick={handleCheckout}
-                                    disabled={cart.length === 0 || checkingOut}
-                                    className="py-2.5 bg-primary text-white font-black text-[10px] uppercase tracking-widest flex items-center justify-center gap-3 hover:bg-primary-dark active:scale-95 transition-all disabled:opacity-50 shadow-lg shadow-primary/20"
+                                    className="h-10 rounded-xl bg-primary text-white text-[10px] font-black uppercase hover:opacity-90 active:scale-95 transition-all shadow-lg shadow-primary/20"
                                 >
-                                    {checkingOut ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Sparkles className="w-3.5 h-3.5" />}
-                                    COMPLETE BILL
+                                    Complete Bill
                                 </button>
                             </div>
                         </div>
@@ -1966,11 +1760,11 @@ export default function POSBillingPage() {
                             <button onClick={() => setShowDiscountModal(false)} className="text-text-muted hover:text-rose-500"><X className="w-5 h-5" /></button>
                         </div>
 
-                        <div className="p-6 overflow-y-auto scrollbar-thin">
+                        <div className="p-6 overflow-y-auto scrollbar-thin max-h-[60vh]">
                             <div className="space-y-6">
-                                <div className="bg-surface-alt p-4 border border-border">
+                                <div className="bg-surface-alt p-4 border border-border rounded-xl">
                                     <label className="text-[10px] font-black text-text-muted uppercase tracking-widest mb-3 block">Flat or Percentage Adjustment</label>
-                                    <div className="flex border border-border bg-background">
+                                    <div className="flex border border-border bg-background rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-primary/10 transition-all">
                                         <select
                                             className="bg-surface-alt border-r border-border text-[10px] font-black p-3 text-text outline-none"
                                             value={manualDiscount.type}
@@ -1981,7 +1775,7 @@ export default function POSBillingPage() {
                                         </select>
                                         <input
                                             type="number"
-                                            className="flex-1 p-3 text-sm font-black bg-background text-text border-l border-border outline-none focus:ring-2 focus:ring-primary/10 transition-all"
+                                            className="flex-1 p-3 text-sm font-black bg-background text-text outline-none"
                                             value={manualDiscount.value || ''}
                                             onChange={(e) => setManualDiscount({ ...manualDiscount, value: Number(e.target.value) })}
                                             onFocus={(e) => { if (manualDiscount.value === 0) setManualDiscount({ ...manualDiscount, value: '' }) }}
@@ -1989,13 +1783,46 @@ export default function POSBillingPage() {
                                         />
                                     </div>
                                 </div>
+
+                                {selectedClient && (
+                                    <div className="space-y-4">
+                                        {/* Wallet Balance */}
+                                        <div className="bg-emerald-50/50 p-4 border border-emerald-100 rounded-xl">
+                                            <div className="flex justify-between items-center mb-2">
+                                                <div className="flex items-center gap-2">
+                                                    <Wallet className="w-4 h-4 text-emerald-500" />
+                                                    <span className="text-[10px] font-black text-emerald-900 uppercase tracking-widest">Wallet Balance</span>
+                                                </div>
+                                                <span className="text-xs font-black text-emerald-600">₹{clientWalletBalance.toFixed(0)}</span>
+                                            </div>
+                                            <div className="flex gap-2">
+                                                <input
+                                                    type="number"
+                                                    placeholder="Amount to redeem"
+                                                    className="flex-1 p-2.5 text-sm font-black bg-white border border-emerald-200 outline-none focus:border-emerald-500 rounded-lg transition-all"
+                                                    value={redeemWallet || ''}
+                                                    onChange={(e) => {
+                                                        const val = Math.min(Number(e.target.value), clientWalletBalance);
+                                                        setRedeemWallet(val);
+                                                    }}
+                                                />
+                                                <button
+                                                    onClick={handleRedeemWallet}
+                                                    className={`px-4 py-2.5 text-[10px] font-black uppercase tracking-widest rounded-lg transition-all ${redeemWallet > 0 ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/20' : 'bg-emerald-100 text-emerald-600 hover:bg-emerald-100'}`}
+                                                >
+                                                    {redeemWallet > 0 ? 'Reset' : 'Use Max'}
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
                             </div>
                         </div>
 
                         <div className="p-6 bg-surface-alt border-t border-border flex justify-between items-center">
                             <div className="text-left">
                                 <p className="text-[9px] font-black text-text-muted uppercase">Total Reductions</p>
-                                <p className="text-xl font-black text-primary">₹{(Number(totals.discount) + Number(redeemPoints || 0) + Number(redeemWallet || 0)).toFixed(0)}</p>
+                                <p className="text-xl font-black text-primary">₹{(Number(totals.discount) + Number(redeemWallet || 0)).toFixed(0)}</p>
                             </div>
                             <button onClick={() => setShowDiscountModal(false)} className="px-10 py-3 bg-text text-background font-black text-xs uppercase tracking-widest hover:opacity-90 transition-opacity shadow-lg shadow-black/10 active:scale-95 transition-all">
                                 Confirm & Apply
@@ -2090,8 +1917,8 @@ export default function POSBillingPage() {
                         </div>
 
                         <div className="p-6 bg-surface-alt border-t border-border">
-                            <button 
-                                type="submit" 
+                            <button
+                                type="submit"
                                 disabled={isSubmittingClient}
                                 className="w-full py-4 bg-primary text-white font-black text-xs uppercase tracking-widest hover:bg-primary-dark transition-all shadow-lg shadow-primary/20 disabled:opacity-50"
                             >
@@ -2119,6 +1946,7 @@ export default function POSBillingPage() {
                     activeOutletId={activeOutletId}
                     fiscal={fiscal}
                     platformSettings={platformSettings}
+                    allWallets={allWallets}
                 />
             )}
         </div>
@@ -2126,7 +1954,7 @@ export default function POSBillingPage() {
 }
 
 // ─── Quick Invoice Modal Component ───
-function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, staff, customers, addCustomer, activeOutletId, fiscal, platformSettings }) {
+function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, staff, customers, addCustomer, activeOutletId, fiscal, platformSettings, allWallets }) {
     const [qOutletId, setQOutletId] = useState(activeOutletId || (outlets?.[0]?._id || ''));
     const [qClient, setQClient] = useState(null);
     const [qSearchClient, setQSearchClient] = useState('');
@@ -2146,6 +1974,32 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
     const [showQOutletPicker, setShowQOutletPicker] = useState(false);
     const [qSelectedCategory, setQSelectedCategory] = useState(null);
     const [qActiveTab, setQActiveTab] = useState('services');
+    const [qRedeemWallet, setQRedeemWallet] = useState(0);
+    const [qActiveMembership, setQActiveMembership] = useState(null);
+    const [qCollectedPrevDue, setQCollectedPrevDue] = useState(0);
+
+    useEffect(() => {
+        const fetchMembership = async () => {
+            if (!qClient?._id) {
+                setQActiveMembership(null);
+                return;
+            }
+            try {
+                const res = await api.get(`/loyalty/membership/active?customerId=${qClient._id}`);
+                if (res.data.success) {
+                    setQActiveMembership(res.data.data);
+                }
+            } catch (err) {
+                setQActiveMembership(null);
+            }
+        };
+        fetchMembership();
+    }, [qClient]);
+
+    const qClientWalletBalance = useMemo(() => {
+        if (!qClient?._id) return 0;
+        return (allWallets || {})[qClient._id]?.balance || 0;
+    }, [qClient, allWallets]);
 
     const qFilteredServices = useMemo(() => {
         if (!qOutletId) return (services || []);
@@ -2174,15 +2028,15 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
     const qCategories = useMemo(() => {
         const cats = [];
         cats.push({ name: 'All', image: null });
-        
+
         const items = qActiveTab === 'services' ? qFilteredServices : qFilteredProducts;
         const uniqueNames = [...new Set(items.map(i => i.category).filter(Boolean))];
-        
+
         uniqueNames.forEach(name => {
             const firstWithImg = items.find(i => i.category === name && (i.image || i.images?.[0]));
-            cats.push({ 
-                name, 
-                image: firstWithImg ? (firstWithImg.image || firstWithImg.images[0]) : null 
+            cats.push({
+                name,
+                image: firstWithImg ? (firstWithImg.image || firstWithImg.images[0]) : null
             });
         });
         return cats;
@@ -2195,19 +2049,19 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
     const qFilteredStaff = useMemo(() => {
         if (!staff || staff.length === 0) return [];
         if (!qOutletId) return staff;
-        
+
         const filtered = staff.filter(s => {
             // Check singular outletId
             const sOutletId = s.outletId?._id || s.outletId;
             // Check multiple outletIds (if exists in schema)
             const sOutletIds = Array.isArray(s.outletIds) ? s.outletIds.map(id => id?._id || id) : [];
-            
+
             // If staff is not assigned to ANY outlet, show them everywhere
             if (!sOutletId && sOutletIds.length === 0) return true;
-            
+
             const matchSingular = sOutletId && String(sOutletId) === String(qOutletId);
             const matchPlural = sOutletIds.some(id => String(id) === String(qOutletId));
-            
+
             return matchSingular || matchPlural;
         });
 
@@ -2218,53 +2072,92 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
     const qFilteredClients = useMemo(() => {
         const st = qSearchClient.toLowerCase().trim();
         if (!st) return (customers || []).slice(0, 10);
-        return (customers || []).filter(c => 
-            (c.name || '').toLowerCase().includes(st) || 
+        return (customers || []).filter(c =>
+            (c.name || '').toLowerCase().includes(st) ||
             (c.phone || '').includes(st)
         ).slice(0, 10);
     }, [customers, qSearchClient]);
 
     const totals = useMemo(() => {
         const subtotal = qCart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-        const discountAmt = qManualDiscount.type === 'percentage' 
-            ? (subtotal * qManualDiscount.value) / 100 
+        const discountAmt = qManualDiscount.type === 'percentage'
+            ? (subtotal * qManualDiscount.value) / 100
             : qManualDiscount.value;
-        
-        const serviceGst = Number(platformSettings?.serviceGst || fiscal?.serviceGst || 18);
-        const productGst = Number(platformSettings?.productGst || fiscal?.productGst || 12);
 
-        let totalTax = 0;
+        const serviceGstRate = Number(platformSettings?.serviceGst ?? fiscal?.serviceGst ?? 18);
+        const productGstRate = Number(platformSettings?.productGst ?? fiscal?.productGst ?? 12);
+
+        let serviceTax = 0;
+        let productTax = 0;
         let taxableValue = 0;
 
         qCart.forEach(item => {
             const itemGross = (item.price * item.quantity);
-            const taxRate = (item.type === 'service' ? serviceGst : productGst) / 100;
+            const taxRate = (item.type === 'service' ? serviceGstRate : productGstRate) / 100;
 
             if (fiscal?.inclusiveTax) {
                 const taxable = itemGross / (1 + taxRate);
                 taxableValue += taxable;
-                totalTax += (itemGross - taxable);
+                const tax = (itemGross - taxable);
+                if (item.type === 'service') serviceTax += tax;
+                else productTax += tax;
             } else {
                 taxableValue += itemGross;
-                totalTax += (itemGross * taxRate);
+                const tax = (itemGross * taxRate);
+                if (item.type === 'service') serviceTax += tax;
+                else productTax += tax;
             }
         });
+        const totalTax = serviceTax + productTax;
 
-        const total = fiscal?.inclusiveTax 
-            ? Math.max(0, subtotal - discountAmt) 
-            : Math.max(0, (subtotal + totalTax) - discountAmt);
+        // Membership discount logic for Quick Invoice
+        let membershipDiscountAmt = 0;
+        if (qActiveMembership && qActiveMembership.planId) {
+            const plan = qActiveMembership.planId;
+            qCart.forEach(item => {
+                const itemTotal = item.price * item.quantity;
+                if (item.type === 'service' && plan.serviceDiscountValue > 0) {
+                    membershipDiscountAmt += plan.serviceDiscountType === 'percentage'
+                        ? (itemTotal * plan.serviceDiscountValue) / 100
+                        : (plan.serviceDiscountValue * item.quantity);
+                } else if (item.type === 'product' && plan.productDiscountValue > 0) {
+                    membershipDiscountAmt += plan.productDiscountType === 'percentage'
+                        ? (itemTotal * plan.productDiscountValue) / 100
+                        : (plan.productDiscountValue * item.quantity);
+                }
+            });
+        }
+
+        const totalDeductions = discountAmt + membershipDiscountAmt;
+
+        const total = fiscal?.inclusiveTax
+            ? Math.max(0, subtotal - totalDeductions)
+            : Math.max(0, (subtotal + totalTax) - totalDeductions);
 
         return {
             subtotal,
             discount: discountAmt,
+            membershipDiscount: membershipDiscountAmt,
+            redeemWallet: qRedeemWallet,
             tax: totalTax,
+            serviceTax,
+            productTax,
+            serviceGstRate,
+            productGstRate,
             taxable: taxableValue,
-            total: total
+            total: total,
+            totalWithPrevDue: total + qCollectedPrevDue
         };
-    }, [qCart, qManualDiscount, fiscal, platformSettings]);
+    }, [qCart, qManualDiscount, fiscal, platformSettings, qRedeemWallet, qActiveMembership, qCollectedPrevDue]);
 
-    const paidAmount = Number(qPayments.cash || 0) + Number(qPayments.online || 0);
-    const dueAmount = Math.max(0, totals.total - paidAmount);
+    const paidAmount = Number(qPayments.cash || 0) + Number(qPayments.online || 0) + Number(qRedeemWallet || 0);
+    const dueAmount = Math.max(0, totals.totalWithPrevDue - paidAmount);
+
+    useEffect(() => {
+        if (paidAmount > totals.totalWithPrevDue + 1) {
+            toast(`Warning: Total payment exceeds total payable by ₹${(paidAmount - totals.totalWithPrevDue).toFixed(0)}`, { id: 'overpaid-toast' });
+        }
+    }, [paidAmount, totals.totalWithPrevDue]);
 
     const addToQCart = (item, type = 'service') => {
         setQCart([...qCart, {
@@ -2272,7 +2165,7 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
             itemId: item._id,
             type: type,
             quantity: 1,
-            staffIds: type === 'service' ? (qFilteredStaff.length === 1 ? [typeof qFilteredStaff[0]._id === 'object' ? qFilteredStaff[0]._id?._id : String(qFilteredStaff[0]._id)] : []) : [] 
+            staffIds: type === 'service' ? (qFilteredStaff.length === 1 ? [typeof qFilteredStaff[0]._id === 'object' ? qFilteredStaff[0]._id?._id : String(qFilteredStaff[0]._id)] : []) : []
         }]);
     };
 
@@ -2328,6 +2221,7 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
         if (!qClient) return toast.error('Please select a client');
         if (qCart.length === 0) return toast.error('Cart is empty');
         if (qCart.some(item => item.type === 'service' && (!item.staffIds || item.staffIds.length === 0 || item.staffIds.some(sid => !sid)))) return toast.error('Please assign stylists for all services');
+        if (paidAmount > totals.totalWithPrevDue + 1) return toast(`Total payment (₹${paidAmount}) exceeds Total Payable (₹${totals.totalWithPrevDue.toFixed(0)})`);
 
         setIsProcessing(true);
         try {
@@ -2342,15 +2236,18 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                     const { staffIds, ...rest } = i;
                     return { ...rest, stylistIds: (staffIds || []).filter(Boolean).map(sid => typeof sid === 'object' ? sid?._id : String(sid)) };
                 }),
-                tax: totals.tax, 
+                tax: totals.tax,
                 payments: paymentArray,
                 discount: totals.discount,
-                discountType: qManualDiscount.type
+                membershipDiscount: totals.membershipDiscount || 0,
+                previousDueCollected: qCollectedPrevDue,
+                discountType: qManualDiscount.type,
+                useWalletAmount: qRedeemWallet
             };
 
             const res = await api.post('/pos/checkout', payload);
             toast.success('Invoice Generated!');
-            
+
             const dbInvoice = res.data.data;
             const invoiceData = {
                 ...dbInvoice,
@@ -2365,8 +2262,8 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                     ...item,
                     staffName: (item.staffIds || []).filter(Boolean).map(id => staff.find(s => String(s._id) === String(id))?.name).filter(Boolean).join(', ') || 'Unassigned'
                 })),
-                totals: { 
-                    ...totals, 
+                totals: {
+                    ...totals,
                     paidAmount: (Number(qPayments.cash || 0) + Number(qPayments.online || 0)),
                     balanceDue: Math.max(0, totals.total - (Number(qPayments.cash || 0) + Number(qPayments.online || 0)))
                 },
@@ -2375,7 +2272,7 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                     ...(qPayments.online > 0 ? [{ method: 'online', amount: qPayments.online }] : [])
                 ]
             };
-            
+
             onSuccess(invoiceData);
         } catch (err) {
             toast.error(err.response?.data?.message || 'Checkout failed');
@@ -2386,10 +2283,10 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
 
     return (
         <div className="fixed inset-0 bg-slate-900/90 backdrop-blur-md z-[100] flex items-center justify-center p-0 sm:p-2 overflow-hidden">
-            <motion.div 
+            <motion.div
                 initial={{ opacity: 0, scale: 0.95, y: 20 }}
                 animate={{ opacity: 1, scale: 1, y: 0 }}
-                className="bg-white w-full max-w-6xl h-full sm:h-[95vh] shadow-2xl flex flex-col sm:rounded-2xl border border-slate-200 overflow-hidden"
+                className="bg-white w-full max-w-[96%] h-full sm:h-[95vh] shadow-2xl flex flex-col sm:rounded-2xl border border-slate-200 overflow-hidden"
             >
                 {/* Header */}
                 <div className="p-4 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
@@ -2403,7 +2300,7 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                         </div>
                     </div>
                     <div className="flex items-center gap-2">
-                        <button 
+                        <button
                             onClick={() => { setQCart([]); setQClient(null); setQPayments({ cash: 0, online: 0 }); setQManualDiscount({ type: 'fixed', value: 0 }); }}
                             className="px-4 py-2 text-[10px] font-black text-slate-400 hover:text-rose-500 uppercase tracking-widest transition-colors"
                         >
@@ -2436,7 +2333,7 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                                                 <>
                                                     <div className="w-6 h-6 rounded-lg overflow-hidden border border-slate-100 flex-shrink-0 bg-slate-50 shadow-sm">
                                                         {img
-                                                            ? <img src={getImageUrl(img)} className="w-full h-full object-cover" alt={sel.name} onError={e => { e.target.style.display='none'; e.target.nextSibling.style.display='flex'; }} />
+                                                            ? <img src={getImageUrl(img)} className="w-full h-full object-cover" alt={sel.name} onError={e => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'flex'; }} />
                                                             : null
                                                         }
                                                         <div className={`w-full h-full items-center justify-center bg-primary/10 ${img ? 'hidden' : 'flex'}`}><Building2 className="w-3 h-3 text-primary" /></div>
@@ -2465,14 +2362,14 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                                                             {(() => {
                                                                 const img = o.image || o.images?.[0];
                                                                 return img ? (
-                                                                    <img src={getImageUrl(img)} className="w-full h-full object-cover" alt={o.name} onError={e => { e.target.style.display='none'; e.target.nextSibling.style.display='flex'; }} />
+                                                                    <img src={getImageUrl(img)} className="w-full h-full object-cover" alt={o.name} onError={e => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'flex'; }} />
                                                                 ) : null;
                                                             })()}
                                                             <div className={`w-full h-full items-center justify-center bg-primary/10 ${o.image || o.images?.[0] ? 'hidden' : 'flex'}`}><Building2 className="w-5 h-5 text-primary" /></div>
                                                         </div>
                                                         <div className="flex-1 text-left min-w-0">
                                                             <p className={`text-[11px] font-black uppercase tracking-tighter truncate ${String(o._id) === String(qOutletId) ? 'text-primary' : 'text-slate-800'}`}>{o.name}</p>
-                                                            {(() => { const a = typeof o.address==='string'?o.address:typeof o.address==='object'&&o.address?[o.address.street,o.address.city].filter(Boolean).join(', '):[o.location?.street,o.location?.city].filter(s=>typeof s==='string'&&s).join(', '); return a?<p className="text-[8px] font-bold text-slate-400 truncate">{a}</p>:null; })()}
+                                                            {(() => { const a = typeof o.address === 'string' ? o.address : typeof o.address === 'object' && o.address ? [o.address.street, o.address.city].filter(Boolean).join(', ') : [o.location?.street, o.location?.city].filter(s => typeof s === 'string' && s).join(', '); return a ? <p className="text-[8px] font-bold text-slate-400 truncate">{a}</p> : null; })()}
                                                         </div>
                                                         {String(o._id) === String(qOutletId) && <Check className="w-4 h-4 text-primary flex-shrink-0" />}
                                                     </button>
@@ -2488,28 +2385,46 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                                     <User className="w-2.5 h-2.5" /> Client
                                 </label>
                                 {qClient ? (
-                                    <div className={`flex items-center justify-between py-1 px-2 rounded-lg border ${Number(qClient.dueAmount||0) > 0 ? 'bg-amber-50 border-amber-300' : 'bg-emerald-50 border-emerald-200'}`}>
+                                    <div className={`flex items-center justify-between py-1 px-2 rounded-lg border ${Number(qClient.dueAmount || 0) > 0 ? 'bg-amber-50 border-amber-300' : 'bg-emerald-50 border-emerald-200'}`}>
                                         <div className="flex items-center gap-2 min-w-0 flex-1">
-                                            <div className={`w-6 h-6 flex-shrink-0 text-white flex items-center justify-center font-black rounded text-[9px] ${Number(qClient.dueAmount||0) > 0 ? 'bg-amber-500' : 'bg-emerald-600'}`}>
+                                            <div className={`w-6 h-6 flex-shrink-0 text-white flex items-center justify-center font-black rounded text-[9px] ${Number(qClient.dueAmount || 0) > 0 ? 'bg-amber-500' : 'bg-emerald-600'}`}>
                                                 {qClient?.name?.charAt(0).toUpperCase() || 'U'}
                                             </div>
                                             <div className="min-w-0">
                                                 <p className="text-[10px] font-black text-slate-900 truncate">{qClient.name}</p>
-                                                {Number(qClient.dueAmount||0) > 0 && (
-                                                    <p className="text-[8px] font-black text-amber-600 flex items-center gap-0.5">
-                                                        <AlertTriangle className="w-2.5 h-2.5" /> ₹{Number(qClient.dueAmount).toFixed(0)} pending
-                                                    </p>
-                                                )}
+                                                <div className="flex flex-wrap items-center gap-1 mt-0.5">
+                                                    {Number(qClient.dueAmount || 0) > 0 && (
+                                                        <p className="text-[8px] font-black text-amber-600 flex items-center gap-0.5">
+                                                            <AlertTriangle className="w-2.5 h-2.5" /> ₹{Number(qClient.dueAmount).toFixed(0)} pending
+                                                        </p>
+                                                    )}
+                                                    {qActiveMembership && (
+                                                        <span className="text-[7px] font-black bg-primary text-white px-1.5 py-0.5 rounded-lg uppercase tracking-wider flex items-center gap-1">
+                                                            <Sparkles className="w-2 h-2" /> {qActiveMembership.planId?.name}
+                                                        </span>
+                                                    )}
+                                                </div>
                                             </div>
                                         </div>
-                                        <button onClick={() => setQClient(null)} className="text-slate-400 hover:text-rose-500 p-1 flex-shrink-0"><X className="w-3 h-3" /></button>
+                                        <div className="flex items-center gap-2">
+                                            {qClientWalletBalance > 0 && (
+                                                <button
+                                                    onClick={() => setQRedeemWallet(qRedeemWallet > 0 ? 0 : Math.min(qClientWalletBalance, totals.subtotal + totals.tax - totals.discount))}
+                                                    className={`px-2 py-1 rounded-lg border flex flex-col items-center transition-all ${qRedeemWallet > 0 ? 'bg-emerald-500 border-emerald-500 text-white' : 'bg-white border-emerald-200 text-emerald-600 hover:bg-emerald-50'}`}
+                                                >
+                                                    <span className="text-[7px] font-black uppercase leading-none">Wallet</span>
+                                                    <span className="text-[9px] font-black leading-none mt-0.5">₹{qClientWalletBalance.toFixed(0)}</span>
+                                                </button>
+                                            )}
+                                            <button onClick={() => setQClient(null)} className="text-slate-400 hover:text-rose-500 p-1 flex-shrink-0"><X className="w-3 h-3" /></button>
+                                        </div>
                                     </div>
                                 ) : (
                                     <div className="relative">
                                         <div className="flex items-center gap-2">
                                             <div className="relative group flex-1">
                                                 <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3 h-3 text-slate-400" />
-                                                <input 
+                                                <input
                                                     type="text"
                                                     placeholder="Search client..."
                                                     className="w-full bg-white border border-slate-200 pl-8 pr-2 py-1.5 text-[11px] font-black text-slate-900 outline-none focus:border-primary rounded-lg"
@@ -2518,7 +2433,7 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                                                     onChange={(e) => { setQSearchClient(e.target.value); setShowClientDropdown(true); }}
                                                 />
                                             </div>
-                                            <button 
+                                            <button
                                                 onClick={() => { setShowNewClient(true); setShowClientDropdown(false); }}
                                                 className="bg-primary/10 text-primary p-1.5 rounded-lg hover:bg-primary hover:text-white transition-all shadow-sm"
                                                 title="Quick Add New Client"
@@ -2528,7 +2443,7 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                                         </div>
                                         <AnimatePresence>
                                             {showClientDropdown && (
-                                                <motion.div 
+                                                <motion.div
                                                     initial={{ opacity: 0, y: 5, scale: 0.98 }}
                                                     animate={{ opacity: 1, y: 0, scale: 1 }}
                                                     exit={{ opacity: 0, y: 5 }}
@@ -2537,26 +2452,32 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                                                     {qFilteredClients.length > 0 ? (
                                                         <div className="max-h-[220px] overflow-y-auto scrollbar-thin">
                                                             {qFilteredClients.map(c => (
-                                                                <button 
+                                                                <button
                                                                     key={c._id}
                                                                     onClick={() => handleSelectClient(c)}
                                                                     className="w-full p-2.5 text-left hover:bg-slate-50 border-b border-slate-100 last:border-0 flex items-center gap-2.5 group transition-colors"
                                                                 >
-                                                                    <div className={`w-8 h-8 flex-shrink-0 flex items-center justify-center font-black rounded-xl text-[10px] ${Number(c.dueAmount||0)>0 ? 'bg-amber-100 text-amber-700' : 'bg-primary/10 text-primary'}`}>{c.name.charAt(0).toUpperCase()}</div>
+                                                                    <div className={`w-8 h-8 flex-shrink-0 flex items-center justify-center font-black rounded-xl text-[10px] ${Number(c.dueAmount || 0) > 0 ? 'bg-amber-100 text-amber-700' : 'bg-primary/10 text-primary'}`}>{c.name.charAt(0).toUpperCase()}</div>
                                                                     <div className="flex-1 min-w-0">
                                                                         <p className="text-[10px] font-black text-slate-900 truncate">{c.name}</p>
                                                                         <div className="flex items-center gap-2">
                                                                             <p className="text-[8px] font-bold text-slate-400">{c.phone}</p>
-                                                                            {Number(c.dueAmount||0) > 0 && <span className="text-[7px] font-black text-amber-600 bg-amber-50 px-1.5 py-0.5 rounded-lg border border-amber-100">Due ₹{Number(c.dueAmount).toFixed(0)}</span>}
+                                                                            {Number(c.dueAmount || 0) > 0 && <span className="text-[7px] font-black text-amber-600 bg-amber-50 px-1.5 py-0.5 rounded-lg border border-amber-100">Due ₹{Number(c.dueAmount).toFixed(0)}</span>}
                                                                         </div>
                                                                     </div>
+                                                                    {allWallets?.[c._id]?.balance > 0 && (
+                                                                        <div className="flex flex-col items-end px-2 py-0.5 bg-emerald-50 border border-emerald-100 rounded-lg shrink-0">
+                                                                            <span className="text-[6px] font-black text-emerald-600 uppercase tracking-widest leading-none">Wallet</span>
+                                                                            <span className="text-[9px] font-black text-emerald-600 leading-none mt-0.5">₹{allWallets[c._id].balance.toFixed(0)}</span>
+                                                                        </div>
+                                                                    )}
                                                                 </button>
                                                             ))}
                                                         </div>
                                                     ) : (
                                                         <div className="p-4 text-center space-y-2">
                                                             <p className="text-[9px] font-bold text-slate-400 italic">{qSearchClient ? `No client found for "${qSearchClient}"` : 'Start typing to search...'}</p>
-                                                            <button 
+                                                            <button
                                                                 onClick={() => { setShowNewClient(true); setShowClientDropdown(false); }}
                                                                 className="w-full py-2 bg-primary text-white text-[9px] font-black uppercase rounded-xl flex items-center justify-center gap-1.5"
                                                             >
@@ -2595,7 +2516,7 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                             <div className="flex items-center justify-between shrink-0">
                                 <div className="flex items-center gap-2">
                                     {qSelectedCategory && (
-                                        <button 
+                                        <button
                                             onClick={() => setQSelectedCategory(null)}
                                             className="p-1.5 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg transition-colors"
                                             title="Back to Categories"
@@ -2608,7 +2529,7 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                                     </h3>
                                 </div>
                                 <div className="text-[8px] font-bold text-slate-400 bg-slate-100 px-2 py-0.5 rounded uppercase">
-                                    {qSelectedCategory 
+                                    {qSelectedCategory
                                         ? `${(qActiveTab === 'services' ? qFilteredServices : qFilteredProducts).filter(i => qSelectedCategory === 'All' || i.category === qSelectedCategory).length} ${qActiveTab === 'services' ? 'Services' : 'Products'}`
                                         : `${qCategories.length} Categories`
                                     }
@@ -2618,17 +2539,17 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                                 {!qSelectedCategory ? (
                                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
                                         {qCategories.map(cat => (
-                                            <button 
+                                            <button
                                                 key={cat.name}
                                                 onClick={() => setQSelectedCategory(cat.name)}
                                                 className="bg-white border border-slate-200 hover:border-primary hover:shadow-md transition-all rounded-xl overflow-hidden flex flex-col group h-24"
                                             >
                                                 <div className="h-14 w-full bg-slate-50 relative overflow-hidden flex-shrink-0">
                                                     {cat.image ? (
-                                                        <img 
-                                                            src={getImageUrl(cat.image)} 
-                                                            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" 
-                                                            alt={cat.name} 
+                                                        <img
+                                                            src={getImageUrl(cat.image)}
+                                                            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                                                            alt={cat.name}
                                                         />
                                                     ) : (
                                                         <div className="w-full h-full flex items-center justify-center bg-primary/5">
@@ -2652,35 +2573,35 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                                         {(qActiveTab === 'services' ? qFilteredServices : qFilteredProducts)
                                             .filter(i => qSelectedCategory === 'All' || i.category === qSelectedCategory)
                                             .map(item => (
-                                            <button 
-                                                key={item._id}
-                                                onClick={() => addToQCart(item, qActiveTab === 'services' ? 'service' : 'product')}
-                                                className="bg-white border border-slate-200 hover:border-primary hover:shadow-md transition-all rounded-xl shadow-sm relative overflow-hidden flex flex-col group h-32"
-                                            >
-                                                <div className="h-16 w-full overflow-hidden bg-gradient-to-br from-primary/5 to-primary/10 flex-shrink-0 relative">
-                                                    {(() => {
-                                                        const img = item.image || item.images?.[0];
-                                                        return img ? (
-                                                            <img src={getImageUrl(img)} className="w-full h-full object-cover" alt={item.name} onError={e => { e.target.style.display='none'; e.target.nextSibling.style.display='flex'; }} />
-                                                        ) : null;
-                                                    })()}
-                                                    <div className={`w-full h-full items-center justify-center ${item.image || item.images?.[0] ? 'hidden' : 'flex'}`}>
-                                                        {qActiveTab === 'services' ? (
-                                                            <Scissors className="w-6 h-6 text-primary/30 group-hover:text-primary/60 transition-colors" />
-                                                        ) : (
-                                                            <Package className="w-6 h-6 text-primary/30 group-hover:text-primary/60 transition-colors" />
-                                                        )}
+                                                <button
+                                                    key={item._id}
+                                                    onClick={() => addToQCart(item, qActiveTab === 'services' ? 'service' : 'product')}
+                                                    className="bg-white border border-slate-200 hover:border-primary hover:shadow-md transition-all rounded-xl shadow-sm relative overflow-hidden flex flex-col group h-32"
+                                                >
+                                                    <div className="h-16 w-full overflow-hidden bg-gradient-to-br from-primary/5 to-primary/10 flex-shrink-0 relative">
+                                                        {(() => {
+                                                            const img = item.image || item.images?.[0];
+                                                            return img ? (
+                                                                <img src={getImageUrl(img)} className="w-full h-full object-cover" alt={item.name} onError={e => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'flex'; }} />
+                                                            ) : null;
+                                                        })()}
+                                                        <div className={`w-full h-full items-center justify-center ${item.image || item.images?.[0] ? 'hidden' : 'flex'}`}>
+                                                            {qActiveTab === 'services' ? (
+                                                                <Scissors className="w-6 h-6 text-primary/30 group-hover:text-primary/60 transition-colors" />
+                                                            ) : (
+                                                                <Package className="w-6 h-6 text-primary/30 group-hover:text-primary/60 transition-colors" />
+                                                            )}
+                                                        </div>
+                                                        <div className="absolute top-1.5 right-1.5 bg-white/90 backdrop-blur-sm rounded-lg p-1 opacity-0 group-hover:opacity-100 transition-opacity shadow-sm">
+                                                            <Plus className="w-3 h-3 text-primary" />
+                                                        </div>
                                                     </div>
-                                                    <div className="absolute top-1.5 right-1.5 bg-white/90 backdrop-blur-sm rounded-lg p-1 opacity-0 group-hover:opacity-100 transition-opacity shadow-sm">
-                                                        <Plus className="w-3 h-3 text-primary" />
+                                                    <div className="flex-1 px-2.5 py-2 flex flex-col justify-between">
+                                                        <p className="text-[9px] font-black text-slate-800 group-hover:text-primary transition-colors line-clamp-2 leading-tight">{item.name}</p>
+                                                        <p className="text-[11px] font-black text-emerald-600">₹{item.price}</p>
                                                     </div>
-                                                </div>
-                                                <div className="flex-1 px-2.5 py-2 flex flex-col justify-between">
-                                                    <p className="text-[9px] font-black text-slate-800 group-hover:text-primary transition-colors line-clamp-2 leading-tight">{item.name}</p>
-                                                    <p className="text-[11px] font-black text-emerald-600">₹{item.price}</p>
-                                                </div>
-                                            </button>
-                                        ))}
+                                                </button>
+                                            ))}
                                     </div>
                                 )}
                             </div>
@@ -2688,20 +2609,20 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                     </div>
 
                     {/* Right Panel: Invoice Summary */}
-                    <div className="w-full lg:w-[420px] bg-slate-50 flex flex-col border-t lg:border-t-0 lg:border-l border-slate-200 overflow-hidden h-full">
+                    <div className="w-full lg:w-[480px] bg-slate-50 flex flex-col border-t lg:border-t-0 lg:border-l border-slate-200 overflow-hidden h-full">
                         <div className="p-4 border-b border-slate-200 bg-white flex items-center justify-between shrink-0">
                             <div className="flex items-center gap-2">
                                 <ShoppingCart className="w-4 h-4 text-primary" />
                                 <h3 className="text-[10px] font-black text-slate-900 uppercase tracking-widest">Cart Items ({qCart.length})</h3>
                             </div>
-                            <button 
+                            <button
                                 onClick={() => setQCart([])}
                                 className="text-[9px] font-black text-rose-500 uppercase tracking-widest hover:underline"
                             >
                                 Clear All
                             </button>
                         </div>
-                        
+
                         <div className="flex-1 overflow-y-auto p-4 space-y-3 scrollbar-thin">
                             {qCart.length === 0 ? (
                                 <div className="h-full flex flex-col items-center justify-center opacity-30 italic text-slate-400 text-center space-y-3">
@@ -2736,9 +2657,9 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                                             <label className={`text-[8px] font-black uppercase tracking-widest flex items-center gap-1.5 mb-2 ${(!item.staffIds || item.staffIds.length === 0) ? 'text-amber-600' : 'text-slate-400'}`}>
                                                 <Sparkles className="w-2.5 h-2.5" /> Assign Stylists
                                             </label>
-                                            
+
                                             <div className="relative">
-                                                <div 
+                                                <div
                                                     className="min-h-[42px] bg-slate-50/50 border border-slate-200 rounded-xl p-1.5 flex flex-wrap gap-1.5 cursor-pointer hover:border-primary/50 transition-all"
                                                     onClick={() => setOpenStaffIdx(openStaffIdx === idx ? null : idx)}
                                                 >
@@ -2748,7 +2669,7 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                                                             return (
                                                                 <div key={sId} className="bg-primary text-white text-[9px] font-black pl-2 pr-1 py-1 rounded-lg flex items-center gap-1.5 shadow-sm shadow-primary/20 animate-in zoom-in-95">
                                                                     <span className="uppercase italic">{s?.name || 'Stylist'}</span>
-                                                                    <button 
+                                                                    <button
                                                                         onClick={(e) => { e.stopPropagation(); toggleStaffInItem(idx, sId); }}
                                                                         className="w-4 h-4 hover:bg-white/20 rounded flex items-center justify-center transition-colors"
                                                                     >
@@ -2767,19 +2688,19 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
 
                                                 <AnimatePresence>
                                                     {openStaffIdx === idx && (
-                                                        <motion.div 
-                                                            initial={{ opacity: 0, y: 5, scale: 0.98 }} 
-                                                            animate={{ opacity: 1, y: 0, scale: 1 }} 
-                                                            exit={{ opacity: 0, y: 5, scale: 0.98 }} 
+                                                        <motion.div
+                                                            initial={{ opacity: 0, y: 5, scale: 0.98 }}
+                                                            animate={{ opacity: 1, y: 0, scale: 1 }}
+                                                            exit={{ opacity: 0, y: 5, scale: 0.98 }}
                                                             className="absolute top-full left-0 right-0 z-[100] mt-2 bg-white border border-slate-200 shadow-2xl rounded-2xl overflow-hidden flex flex-col"
                                                         >
                                                             <div className="p-2 border-b border-slate-50 bg-slate-50/30">
                                                                 <div className="relative">
                                                                     <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3 h-3 text-slate-400" />
-                                                                    <input 
+                                                                    <input
                                                                         autoFocus
-                                                                        type="text" 
-                                                                        placeholder="Search stylist..." 
+                                                                        type="text"
+                                                                        placeholder="Search stylist..."
                                                                         className="w-full bg-white border border-slate-200 pl-8 pr-3 py-1.5 text-[10px] font-black text-slate-900 outline-none rounded-lg focus:border-primary transition-all shadow-sm"
                                                                         value={staffSearch}
                                                                         onChange={(e) => setStaffSearch(e.target.value)}
@@ -2792,8 +2713,8 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                                                                     qFilteredStaff.filter(s => s.name.toLowerCase().includes(staffSearch.toLowerCase())).map(s => {
                                                                         const isSelected = (item.staffIds || []).includes(String(s._id));
                                                                         return (
-                                                                            <button 
-                                                                                key={s._id} 
+                                                                            <button
+                                                                                key={s._id}
                                                                                 onClick={(e) => { e.stopPropagation(); toggleStaffInItem(idx, s._id); }}
                                                                                 className={`w-full p-2.5 text-left flex items-center gap-3 hover:bg-slate-50 border-b border-slate-50 last:border-0 transition-colors ${isSelected ? 'bg-primary/5' : ''}`}
                                                                             >
@@ -2823,13 +2744,13 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                                             </label>
                                             <div className="flex items-center gap-3">
                                                 <div className="flex-1 flex items-center bg-slate-50 border border-slate-200 rounded-xl h-10 overflow-hidden">
-                                                    <button 
+                                                    <button
                                                         onClick={(e) => { e.stopPropagation(); updateQQty(idx, -1); }}
                                                         className="px-4 hover:bg-slate-200 text-slate-400 transition-colors h-full border-r border-slate-200"
                                                     >
                                                         <Minus className="w-4 h-4" />
                                                     </button>
-                                                    <input 
+                                                    <input
                                                         type="number"
                                                         className="flex-1 bg-white text-center text-sm font-black text-slate-900 outline-none h-full"
                                                         value={item.quantity}
@@ -2839,7 +2760,7 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                                                         }}
                                                         onClick={(e) => e.stopPropagation()}
                                                     />
-                                                    <button 
+                                                    <button
                                                         onClick={(e) => { e.stopPropagation(); updateQQty(idx, 1); }}
                                                         className="px-4 hover:bg-slate-200 text-slate-400 transition-colors h-full border-l border-slate-200"
                                                     >
@@ -2863,30 +2784,44 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                         <div className="flex items-center gap-8 px-4 border-r border-slate-100 py-2">
                             <div className="flex flex-col">
                                 <span className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em]">Subtotal</span>
-                                <span className="text-[14px] font-black text-slate-900 font-mono italic">₹{totals.subtotal.toFixed(0)}</span>
+                                <span className="text-[14px] font-black text-slate-900 font-mono italic">₹{totals.subtotal.toFixed(2)}</span>
                             </div>
-                            <div className="flex flex-col">
-                                <span className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em]">GST</span>
-                                <span className="text-[14px] font-black text-slate-900 font-mono italic">₹{totals.tax.toFixed(0)}</span>
-                            </div>
+                            {totals.serviceTax > 0 && (
+                                <div className="flex flex-col">
+                                    <span className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em]">S-GST ({totals.serviceGstRate}%)</span>
+                                    <span className="text-[14px] font-black text-slate-900 font-mono italic">₹{totals.serviceTax.toFixed(2)}</span>
+                                </div>
+                            )}
+                            {totals.productTax > 0 && (
+                                <div className="flex flex-col">
+                                    <span className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em]">P-GST ({totals.productGstRate}%)</span>
+                                    <span className="text-[14px] font-black text-slate-900 font-mono italic">₹{totals.productTax.toFixed(2)}</span>
+                                </div>
+                            )}
                             <div className="flex flex-col">
                                 <span className="text-[9px] font-black text-rose-400 uppercase tracking-[0.2em]">Discount</span>
                                 <div className="flex items-center bg-rose-50 rounded-lg border border-rose-100 overflow-hidden">
-                                    <button 
+                                    <button
                                         onClick={() => setQManualDiscount(prev => ({ ...prev, type: prev.type === 'fixed' ? 'percentage' : 'fixed' }))}
                                         className="px-2 py-1.5 bg-rose-100 text-rose-600 text-[10px] font-black border-r border-rose-200 hover:bg-rose-200 transition-colors"
                                     >
                                         {qManualDiscount.type === 'fixed' ? '₹' : '%'}
                                     </button>
-                                    <input 
-                                        type="number" 
-                                        className="w-16 bg-transparent text-[13px] font-black text-rose-600 outline-none font-mono text-center py-1" 
-                                        value={qManualDiscount.value || ''} 
-                                        onChange={(e) => setQManualDiscount({ ...qManualDiscount, value: Number(e.target.value) })} 
-                                        placeholder="0" 
+                                    <input
+                                        type="number"
+                                        className="w-16 bg-transparent text-[13px] font-black text-rose-600 outline-none font-mono text-center py-1"
+                                        value={qManualDiscount.value || ''}
+                                        onChange={(e) => setQManualDiscount({ ...qManualDiscount, value: Number(e.target.value) })}
+                                        placeholder="0"
                                     />
                                 </div>
                             </div>
+                            {totals.membershipDiscount > 0 && (
+                                <div className="flex flex-col">
+                                    <span className="text-[9px] font-black text-primary uppercase tracking-[0.2em]">Mem. Disc</span>
+                                    <span className="text-[14px] font-black text-primary font-mono italic">-₹{totals.membershipDiscount.toFixed(2)}</span>
+                                </div>
+                            )}
                         </div>
 
                         {/* Payment Inputs Row */}
@@ -2905,6 +2840,21 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                                     <input type="number" className="w-full bg-transparent text-[15px] font-black text-slate-900 outline-none font-mono" value={qPayments.online || ''} onChange={(e) => setQPayments({ ...qPayments, online: Number(e.target.value) })} placeholder="0" />
                                 </div>
                             </div>
+                            {qClient && qClientWalletBalance > 0 && (
+                                <div className="flex-1 min-w-[140px] bg-emerald-50 border border-emerald-100 p-2.5 rounded-2xl focus-within:border-emerald-500 focus-within:bg-white transition-all shadow-sm group">
+                                    <label className="text-[8px] font-black text-emerald-600 uppercase tracking-widest block mb-1">Wallet Use (Bal: ₹{qClientWalletBalance.toFixed(0)})</label>
+                                    <div className="flex items-center gap-2">
+                                        <Wallet className="w-4 h-4 text-emerald-500" />
+                                        <input
+                                            type="number"
+                                            className="w-full bg-transparent text-[15px] font-black text-emerald-600 outline-none font-mono"
+                                            value={qRedeemWallet || ''}
+                                            onChange={(e) => setQRedeemWallet(Math.min(qClientWalletBalance, Number(e.target.value)))}
+                                            placeholder="0"
+                                        />
+                                    </div>
+                                </div>
+                            )}
                         </div>
 
                         {/* Grand Total & Finalize */}
@@ -2916,26 +2866,57 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                                         <AlertTriangle className="w-3.5 h-3.5 text-rose-500" />
                                         <div className="flex flex-col">
                                             <span className="text-[7px] font-black text-rose-400 uppercase tracking-widest leading-none">This bill due</span>
-                                            <span className="text-[13px] font-black text-rose-600 font-mono leading-none">₹{dueAmount.toFixed(0)}</span>
+                                            <span className="text-[13px] font-black text-rose-600 font-mono leading-none">₹{dueAmount.toFixed(2)}</span>
                                         </div>
                                     </div>
                                 )}
                                 {/* Historical outstanding badge */}
-                                {qClient && Number(qClient.dueAmount||0) > 0 && (
+                                {qClient && Number(qClient.dueAmount || 0) > 0 && (
                                     <div className="flex items-center gap-1.5 bg-amber-50 border border-amber-200 px-3 py-1.5 rounded-xl">
                                         <AlertTriangle className="w-3.5 h-3.5 text-amber-500" />
                                         <div className="flex flex-col">
                                             <span className="text-[7px] font-black text-amber-500 uppercase tracking-widest leading-none">Prev. outstanding</span>
-                                            <span className="text-[13px] font-black text-amber-600 font-mono leading-none">₹{Number(qClient.dueAmount).toFixed(0)}</span>
+                                            <span className="text-[13px] font-black text-amber-600 font-mono leading-none">₹{Number(qClient.dueAmount).toFixed(2)}</span>
                                         </div>
                                     </div>
                                 )}
+                                {/* Wallet Suggestion Badge */}
+                                {qClient && qClientWalletBalance > 0 && qRedeemWallet === 0 && dueAmount > 0 && (
+                                    <div className="flex items-center gap-1.5 bg-emerald-50 border border-emerald-200 px-3 py-1.5 rounded-xl animate-bounce">
+                                        <Wallet className="w-3.5 h-3.5 text-emerald-500" />
+                                        <button
+                                            onClick={() => setQRedeemWallet(Math.min(qClientWalletBalance, dueAmount))}
+                                            className="text-[9px] font-black text-emerald-600 uppercase tracking-widest leading-none"
+                                        >
+                                            Pay ₹{Math.min(qClientWalletBalance, dueAmount).toFixed(2)} from wallet?
+                                        </button>
+                                    </div>
+                                )}
+                                {paidAmount > totals.totalWithPrevDue + 1 && (
+                                    <div className="flex items-center gap-1.5 bg-rose-50 border border-rose-200 px-3 py-1.5 rounded-xl">
+                                        <AlertTriangle className="w-3.5 h-3.5 text-rose-500" />
+                                        <div className="flex flex-col">
+                                            <span className="text-[7px] font-black text-rose-500 uppercase tracking-widest leading-none">Overpaid</span>
+                                            <span className="text-[13px] font-black text-rose-600 font-mono leading-none">₹{(paidAmount - totals.totalWithPrevDue).toFixed(2)}</span>
+                                        </div>
+                                    </div>
+                                )}
+                                {qCollectedPrevDue > 0 && (
+                                    <span className="text-[9px] font-black text-emerald-600 uppercase tracking-widest leading-none">Prev. Due Collected: +₹{qCollectedPrevDue.toFixed(2)}</span>
+                                )}
+                                {totals.redeemWallet > 0 && (
+                                    <span className="text-[9px] font-black text-emerald-600 uppercase tracking-widest leading-none">Wallet Used: -₹{totals.redeemWallet.toFixed(2)}</span>
+                                )}
                                 <div className="flex items-center gap-3 bg-slate-900 text-white px-6 py-3 rounded-2xl shadow-xl shadow-slate-900/20">
+                                    <div className="flex flex-col items-end mr-2">
+                                        <span className="text-[7px] font-black uppercase tracking-widest text-white/40">Bill: ₹{totals.total.toFixed(2)}</span>
+                                        {qCollectedPrevDue > 0 && <span className="text-[7px] font-black uppercase tracking-widest text-emerald-400">+ Due: ₹{qCollectedPrevDue.toFixed(2)}</span>}
+                                    </div>
                                     <span className="text-[9px] font-black uppercase tracking-[0.2em] text-white/50 italic">Total</span>
-                                    <span className="text-2xl font-black italic font-mono">₹{totals.total.toFixed(0)}</span>
+                                    <span className="text-2xl font-black italic font-mono">₹{totals.totalWithPrevDue.toFixed(2)}</span>
                                 </div>
                             </div>
-                            
+
                             <button
                                 onClick={handleConfirm}
                                 disabled={isProcessing || qCart.length === 0}
@@ -3009,9 +2990,10 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                                         <Banknote className="w-4 h-4 text-emerald-500 flex-shrink-0" />
                                         <input
                                             type="number"
-                                            id="due-collect-input"
                                             placeholder={`Up to ₹${clientPrevDue.toFixed(0)}`}
                                             className="flex-1 bg-white border border-emerald-200 px-3 py-2 text-[13px] font-black text-slate-900 outline-none rounded-lg focus:border-emerald-500 transition-all font-mono"
+                                            value={qCollectedPrevDue || ''}
+                                            onChange={(e) => setQCollectedPrevDue(Math.min(clientPrevDue, Number(e.target.value)))}
                                             max={clientPrevDue}
                                         />
                                     </div>
@@ -3032,9 +3014,9 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                                         setShowDueWarning(false);
                                         setPendingClientSelect(null);
                                     }}
-                                    className="flex-1 py-3 text-[11px] font-black text-white uppercase tracking-widest bg-amber-500 hover:bg-amber-600 rounded-xl transition-all shadow-lg shadow-amber-500/20"
+                                    className="flex-1 py-3 text-[11px] font-black text-white uppercase tracking-widest bg-emerald-600 hover:bg-emerald-700 rounded-xl transition-all shadow-lg shadow-emerald-500/20"
                                 >
-                                    Proceed Anyway
+                                    Collect & Proceed
                                 </button>
                             </div>
                         </motion.div>
@@ -3045,16 +3027,16 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
             {/* Quick Create Client Modal */}
             <AnimatePresence>
                 {showNewClient && (
-                    <motion.div 
+                    <motion.div
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
                         className="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-[110] flex items-center justify-center p-4"
                     >
-                        <motion.form 
+                        <motion.form
                             initial={{ scale: 0.9, y: 10 }}
                             animate={{ scale: 1, y: 0 }}
-                            onSubmit={handleQuickCreateClient} 
+                            onSubmit={handleQuickCreateClient}
                             className="bg-white w-full max-w-sm rounded-2xl shadow-2xl border border-slate-200 overflow-hidden"
                         >
                             <div className="p-5 bg-slate-50 border-b border-slate-200 flex justify-between items-center">
@@ -3066,30 +3048,30 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                             <div className="p-6 space-y-4">
                                 <div className="space-y-1.5">
                                     <label className="text-[10px] font-black text-slate-400 uppercase">Customer Name</label>
-                                    <input 
+                                    <input
                                         required
                                         type="text"
                                         placeholder="e.g. John Doe"
                                         className="w-full bg-slate-50 border border-slate-200 p-3 text-xs font-black text-slate-900 outline-none rounded-xl"
                                         value={newClientForm.name}
-                                        onChange={(e) => setNewClientForm({...newClientForm, name: e.target.value})}
+                                        onChange={(e) => setNewClientForm({ ...newClientForm, name: e.target.value })}
                                     />
                                 </div>
                                 <div className="space-y-1.5">
                                     <label className="text-[10px] font-black text-slate-400 uppercase">Contact Number</label>
-                                    <input 
+                                    <input
                                         required
                                         type="tel"
                                         placeholder="10-digit mobile"
                                         className="w-full bg-slate-50 border border-slate-200 p-3 text-xs font-black text-slate-900 outline-none rounded-xl"
                                         value={newClientForm.phone}
-                                        onChange={(e) => setNewClientForm({...newClientForm, phone: e.target.value.replace(/\D/g, '').slice(0, 10)})}
+                                        onChange={(e) => setNewClientForm({ ...newClientForm, phone: e.target.value.replace(/\D/g, '').slice(0, 10) })}
                                     />
                                 </div>
-                                </div>
+                            </div>
                             <div className="p-6 bg-slate-50 border-t border-slate-200">
-                                <button 
-                                    type="submit" 
+                                <button
+                                    type="submit"
                                     disabled={isSubmittingClient}
                                     className="w-full py-3 bg-primary text-white font-black text-[11px] uppercase rounded-xl shadow-lg shadow-primary/20 hover:opacity-90 disabled:opacity-50"
                                 >

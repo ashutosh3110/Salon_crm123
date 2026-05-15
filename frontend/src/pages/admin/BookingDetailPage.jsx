@@ -62,20 +62,31 @@ export default function BookingDetailPage() {
     const [isReassignModalOpen, setIsReassignModalOpen] = useState(false);
     const [isUpdating, setIsUpdating] = useState(false);
 
-    useEffect(() => {
-        if (staff.length === 0) fetchStaff?.();
-    }, [staff, fetchStaff]);
+    const fetchedRef = React.useRef(false);
 
     useEffect(() => {
+        if (fetchedRef.current) return;
+        
         const fetchDetail = async () => {
             setLoading(true);
-            if (bookings.length === 0) await fetchBookings();
-            if (invoices?.length === 0) await fetchInvoices?.();
-            if (!platformSettings) await fetchPlatformSettings?.();
-            setLoading(false);
+            try {
+                const promises = [];
+                if (staff?.length === 0 && fetchStaff) promises.push(fetchStaff());
+                if (bookings?.length === 0 && fetchBookings) promises.push(fetchBookings());
+                if ((!invoices || invoices.length === 0) && fetchInvoices) promises.push(fetchInvoices());
+                if (!platformSettings && fetchPlatformSettings) promises.push(fetchPlatformSettings());
+                
+                if (promises.length > 0) {
+                    await Promise.all(promises);
+                }
+            } finally {
+                fetchedRef.current = true;
+                setLoading(false);
+            }
         };
         fetchDetail();
-    }, [id, bookings, fetchBookings, invoices, fetchInvoices, platformSettings, fetchPlatformSettings]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     useEffect(() => {
         const b = bookings.find(x => x._id === id || x.id === id);

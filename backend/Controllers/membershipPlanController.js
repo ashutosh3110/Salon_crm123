@@ -351,8 +351,8 @@ exports.getActiveMembership = async (req, res) => {
     try {
         let customerId = req.user._id;
 
-        // Allow admins to check membership for a specific customer
-        if (req.query.customerId && ['admin', 'manager', 'superadmin'].includes(req.user.role)) {
+        // Allow admins/staff to check membership for a specific customer
+        if (req.query.customerId && ['admin', 'manager', 'superadmin', 'staff', 'receptionist'].includes(req.user.role)) {
             customerId = req.query.customerId;
         }
 
@@ -377,13 +377,13 @@ exports.buyMembershipWithWallet = async (req, res) => {
         const plan = await MembershipPlan.findById(planId);
         if (!plan) return res.status(404).json({ success: false, message: 'Plan not found' });
 
-        const customer = await Customer.findById(req.user._id);
+        const customer = await Customer.findById(req.user.id || req.user._id);
         if (!customer) return res.status(404).json({ success: false, message: 'Customer not found' });
 
         const globalSettings = await Setting.findOne();
         const sGst = globalSettings?.serviceGst || 18;
-        const taxAmount = Math.round(plan.price * (sGst / 100));
-        const totalWithTax = plan.price + taxAmount;
+        const taxAmount = Math.round(Number(plan.price) * (sGst / 100));
+        const totalWithTax = Number(plan.price) + taxAmount;
 
         if ((customer.walletBalance || 0) < totalWithTax) {
             return res.status(400).json({ success: false, message: 'Insufficient wallet balance' });
