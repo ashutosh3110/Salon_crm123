@@ -40,7 +40,11 @@ const invoiceSchema = new mongoose.Schema({
         stylistIds: [{
             type: mongoose.Schema.Types.ObjectId,
             ref: 'Staff'
-        }]
+        }],
+        isInclusiveTax: {
+            type: Boolean,
+            default: false
+        }
     }],
     subtotal: Number,
     discount: Number,

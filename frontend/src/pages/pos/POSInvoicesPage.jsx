@@ -250,10 +250,10 @@ const POSReceiptPDF = ({ invoice, salon }) => {
                     <Text style={{ textAlign: 'center', fontSize: 8 }}>========================================</Text>
 
                     {invoice.items?.map((item, i) => (
-                        <View key={i} style={{ flexDirection: 'row', fontSize: 7, marginTop: 4, alignItems: 'flex-start' }}>
-                            <Text style={{ width: 15 }}>{i + 1}</Text>
-                            <Text style={{ flex: 1.5 }}>{item.name || '-'}</Text>
-                            <Text style={{ width: 45, fontSize: 6 }}>{item.stylistIds?.map(s => s.name || '-').join(', ') || '-'}</Text>
+                            <View key={i} style={{ flexDirection: 'row', fontSize: 7, marginTop: 4, alignItems: 'flex-start' }}>
+                                <Text style={{ width: 15 }}>{i + 1}</Text>
+                                <Text style={{ flex: 1.5 }}>{item.name || '-'} {item.isInclusiveTax ? '(INCL. GST)' : ''}</Text>
+                                <Text style={{ width: 45, fontSize: 6 }}>{item.stylistIds?.map(s => s.name || '-').join(', ') || '-'}</Text>
                             <Text style={{ width: 20, textAlign: 'center' }}>{item.quantity || 1}</Text>
                             <Text style={{ width: 35, textAlign: 'right' }}>{(item.price || 0).toFixed(0)}</Text>
                             <Text style={{ width: 40, textAlign: 'right' }}>{(item.total || (item.price * (item.quantity || 1))).toFixed(0)}</Text>
@@ -432,7 +432,7 @@ const StandardInvoicePDF = ({ invoice, salon }) => {
                     </View>
                     {invoice.items?.map((item, i) => (
                         <View key={i} style={{ flexDirection: 'row', padding: 10, borderBottom: 1, borderColor: '#eee', alignItems: 'center' }}>
-                            <Text style={{ flex: 2 }}>{item.name}</Text>
+                            <Text style={{ flex: 2 }}>{item.name} {item.isInclusiveTax ? '(Incl. GST)' : ''}</Text>
                             <Text style={{ flex: 1.5, fontSize: 9 }}>{item.stylistIds?.map(s => typeof s === 'object' ? s.name : s).join(', ') || '-'}</Text>
                             <Text style={{ flex: 1, textAlign: 'right', fontWeight: 700 }}>₹{(item.total || (item.price * item.quantity) || 0).toFixed(2)}</Text>
                         </View>

@@ -47,7 +47,8 @@ export default function ServiceForm({ onSave, onCancel, categories = [], initial
         outletIds: initialData?.outletIds || [],
         status: initialData?.status || 'active',
         gender: initialData?.gender || 'both',
-        resourceType: initialData?.resourceType || 'chair'
+        resourceType: initialData?.resourceType || 'chair',
+        isInclusiveTax: initialData?.isInclusiveTax || false
     });
 
     const [imageFile, setImageFile] = useState(null);
@@ -117,6 +118,7 @@ export default function ServiceForm({ onSave, onCancel, categories = [], initial
             submissionData.set('duration', parseInt(formData.duration));
             submissionData.set('price', parseFloat(formData.price));
             submissionData.set('gst', parseInt(formData.gst));
+            submissionData.set('isInclusiveTax', formData.isInclusiveTax);
             submissionData.set('commissionValue', parseFloat(formData.commissionValue) || 0);
 
             // Append Image File if new one selected
@@ -362,6 +364,17 @@ export default function ServiceForm({ onSave, onCancel, categories = [], initial
                                         onChange={(e) => setFormData({ ...formData, price: e.target.value })}
                                     />
                                 </div>
+                            </div>
+                            <div className="space-y-1 col-span-1">
+                                <label className="text-[9px] font-bold text-text-muted uppercase tracking-tighter italic">Tax Mode</label>
+                                <select 
+                                    className="w-full px-2 py-1.5 rounded-lg bg-surface-alt border border-border text-[9px] font-black uppercase tracking-tighter"
+                                    value={formData.isInclusiveTax ? 'including' : 'excluding'}
+                                    onChange={(e) => setFormData({ ...formData, isInclusiveTax: e.target.value === 'including' })}
+                                >
+                                    <option value="excluding">Excluding GST</option>
+                                    <option value="including">Including GST</option>
+                                </select>
                             </div>
                         </div>
 

@@ -30,6 +30,10 @@ const serviceSchema = new mongoose.Schema({
         type: Number,
         default: 18
     },
+    isInclusiveTax: {
+        type: Boolean,
+        default: false
+    },
     commissionApplicable: {
         type: Boolean,
         default: true

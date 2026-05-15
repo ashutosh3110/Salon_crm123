@@ -177,7 +177,7 @@ const InvoicePDF = ({ invoice, role, salon, taxRate = 18 }) => (
             {invoice?.items?.map((item, i) => (
                 <View key={i} style={pdfStyles.tableRow}>
                     <View style={pdfStyles.itemMainRow}>
-                        <Text style={pdfStyles.colDesc}>{item?.name?.toUpperCase() || 'SERVICE'}</Text>
+                        <Text style={pdfStyles.colDesc}>{item?.name?.toUpperCase() || 'SERVICE'} {item?.isInclusiveTax ? '(INCL. GST)' : ''}</Text>
                         <Text style={pdfStyles.colPrice}>Rs. {(item?.price * item?.quantity || 0).toFixed(0)}</Text>
                     </View>
                     <View style={pdfStyles.itemSubRow}>
@@ -548,21 +548,24 @@ export default function POSBillingPage() {
         const sGstRate = Number(platformSettings?.serviceGst ?? fiscal.serviceGst ?? 18);
         const pGstRate = Number(platformSettings?.productGst ?? fiscal.productGst ?? 12);
 
+        let totalExclusiveTax = 0;
+
         cart.forEach(item => {
             if (item.isPackageRedemption) return;
 
             const itemGross = (item.price * item.quantity);
             const itemTaxRate = (item.type === 'service' ? sGstRate : pGstRate) / 100;
+            const isItemInclusive = String(item.isInclusiveTax) === 'true' || (item.isInclusiveTax === undefined && fiscal.inclusiveTax);
 
-            if (fiscal.inclusiveTax) {
-                const taxableVal = itemGross / (1 + itemTaxRate);
-                totalTaxableValue += taxableVal;
-                const tax = (itemGross - taxableVal);
-                if (item.type === 'service') serviceTax += tax;
-                else productTax += tax;
+            if (isItemInclusive) {
+                totalTaxableValue += itemGross;
+                // Tax is already in price, so we don't show it in the breakup as per user request
+                if (item.type === 'service') serviceTax += 0;
+                else productTax += 0;
             } else {
                 totalTaxableValue += itemGross;
                 const tax = (itemGross * itemTaxRate);
+                totalExclusiveTax += tax;
                 if (item.type === 'service') serviceTax += tax;
                 else productTax += tax;
             }
@@ -575,9 +578,7 @@ export default function POSBillingPage() {
         const sgst = isSameState ? totalTax / 2 : 0;
         const igst = !isSameState ? totalTax : 0;
 
-        const currentBillTotal = fiscal.inclusiveTax
-            ? Math.max(0, subtotal - totalDeductions)
-            : Math.max(0, (subtotal + totalTax) - totalDeductions);
+        const currentBillTotal = Math.max(0, (subtotal + totalExclusiveTax) - totalDeductions);
 
         const previousDue = (selectedClient?.dueAmount || 0);
         const grandTotal = includePreviousDue ? currentBillTotal + previousDue : currentBillTotal;
@@ -1048,12 +1049,18 @@ export default function POSBillingPage() {
                     clientId: selectedClient._id,
                     outletId: String(finalOutletId),
                     items: cart.map(item => {
+                        const itemTaxRate = ((item.type === 'service' ? totals.serviceGstRate : totals.productGstRate) / 100);
+                        const isItemInclusive = String(item.isInclusiveTax) === 'true' || (item.isInclusiveTax === undefined && fiscal.inclusiveTax);
+                        // If inclusive, we use full price as base price so that no extra tax is calculated/shown
+                        const basePrice = item.price;
+
                         const baseItem = {
                             type: item.type,
                             itemId: item.id || item._id,
                             name: item.name,
-                            price: item.price,
-                            quantity: item.quantity
+                            price: basePrice,
+                            quantity: item.quantity,
+                            isInclusiveTax: isItemInclusive
                         };
                         const sIds = (item.staffIds || []).filter(Boolean).map(id => typeof id === 'object' ? id?._id : String(id));
                         if (sIds.length > 0) {
@@ -1506,8 +1513,15 @@ export default function POSBillingPage() {
                                         </div>
                                     )}
                                     <div>
-                                        <h4 className="text-xs font-extrabold text-text line-clamp-2 uppercase tracking-tight leading-tight">{item.name}</h4>
-                                        <p className="text-sm font-black text-primary mt-1">₹{item.price}</p>
+                                        <div className="flex items-center justify-between gap-2 mb-1">
+                                            <h4 className="text-xs font-extrabold text-text line-clamp-1 uppercase tracking-tight leading-tight">{item.name}</h4>
+                                            <span className={`text-[7px] font-black px-1 py-0.5 rounded uppercase ${item.isInclusiveTax ? 'bg-emerald-50 text-emerald-600' : 'bg-slate-50 text-slate-400'}`}>
+                                                {item.isInclusiveTax ? 'Incl' : 'Excl'}
+                                            </span>
+                                        </div>
+                                        <div className="flex items-baseline gap-1">
+                                            <p className="text-sm font-black text-primary">₹{item.price}</p>
+                                        </div>
                                         {item.barcode && (
                                             <p className="text-[8px] font-mono text-text-muted/60 mt-0.5 truncate">{item.barcode}</p>
                                         )}
@@ -1604,7 +1618,12 @@ export default function POSBillingPage() {
                                         <div key={idx} className="flex items-center gap-2 border border-border rounded-lg px-2 py-2 bg-surface-alt">
                                             <div className="flex-1 min-w-0">
                                                 <p className="text-[11px] font-black truncate">{item.name}</p>
-                                                <p className="text-[10px] font-bold text-primary">₹{(item.price * item.quantity).toFixed(2)}</p>
+                                                <div className="flex flex-col">
+                                                    <p className="text-[11px] font-black text-primary leading-none">₹{(item.price * item.quantity).toFixed(2)}</p>
+                                                    {(String(item.isInclusiveTax) === 'true' || fiscal.inclusiveTax) && (
+                                                        <span className="text-[7px] font-black uppercase text-emerald-600 mt-1">INCLUDING GST</span>
+                                                    )}
+                                                </div>
                                             </div>
                                             <div className="flex items-center border border-border rounded-lg overflow-hidden h-7">
                                                 <button onClick={() => updateQty(idx, -1)} className="w-6 h-full flex items-center justify-center hover:bg-border/30"><Minus className="w-3 h-3" /></button>
@@ -2094,13 +2113,13 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
         qCart.forEach(item => {
             const itemGross = (item.price * item.quantity);
             const taxRate = (item.type === 'service' ? serviceGstRate : productGstRate) / 100;
+            const isItemInclusive = String(item.isInclusiveTax) === 'true' || (item.isInclusiveTax === undefined && fiscal?.inclusiveTax);
 
-            if (fiscal?.inclusiveTax) {
-                const taxable = itemGross / (1 + taxRate);
-                taxableValue += taxable;
-                const tax = (itemGross - taxable);
-                if (item.type === 'service') serviceTax += tax;
-                else productTax += tax;
+            if (isItemInclusive) {
+                taxableValue += itemGross;
+                // Tax hidden for inclusive as requested
+                if (item.type === 'service') serviceTax += 0;
+                else productTax += 0;
             } else {
                 taxableValue += itemGross;
                 const tax = (itemGross * taxRate);
@@ -2130,9 +2149,7 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
 
         const totalDeductions = discountAmt + membershipDiscountAmt;
 
-        const total = fiscal?.inclusiveTax
-            ? Math.max(0, subtotal - totalDeductions)
-            : Math.max(0, (subtotal + totalTax) - totalDeductions);
+        const total = Math.max(0, (subtotal + totalTax) - totalDeductions);
 
         return {
             subtotal,
