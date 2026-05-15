@@ -765,6 +765,14 @@ export default function POSBillingPage() {
                 name: `${b.serviceId?.name || b.serviceName || 'Service'} (${b.clientId?.name || b.clientName || 'Walk-in'})`,
                 price: b.price || b.totalPrice || 0,
                 type: 'service',
+                // Look up latest settings from master service list
+                ...(() => {
+                    const sDef = services.find(s => String(s._id) === String(b.serviceId?._id || b.serviceId));
+                    return {
+                        isInclusiveTax: sDef ? sDef.isInclusiveTax : b.serviceId?.isInclusiveTax,
+                        gst: sDef ? sDef.gst : b.serviceId?.gst
+                    };
+                })(),
                 isAppointment: true,
                 customerPhone: b.clientId?.phone || b.clientPhone || '',
                 originalBooking: b
@@ -810,7 +818,7 @@ export default function POSBillingPage() {
 
             return matchSearch && matchCat;
         });
-    }, [activeTab, searchItem, selectedCategory, serviceMode, businessBookings, businessOrders, invoices, allOutletItems, activeOutletId]);
+    }, [activeTab, searchItem, selectedCategory, serviceMode, businessBookings, businessOrders, invoices, allOutletItems, activeOutletId, services]);
 
     const filteredClients = useMemo(() => {
         const clientsList = Array.isArray(businessCustomers) ? businessCustomers : [];
