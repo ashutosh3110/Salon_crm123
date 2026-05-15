@@ -41,7 +41,8 @@ export default function SalonProfilePage() {
         fetchFeedbacks,
         services: businessServices, 
         outlets: businessOutlets, 
-        categories: businessCategories 
+        categories: businessCategories,
+        salon
     } = useBusiness();
     const { user } = useAuth();
 
@@ -453,7 +454,9 @@ export default function SalonProfilePage() {
                                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                                             <span style={{ fontSize: '13px', color: colors.textMuted }}>{service.duration} mins</span>
                                             <span style={{ width: '4px', height: '4px', borderRadius: '50%', background: colors.border }} />
-                                            <span style={{ fontSize: '14px', fontWeight: 800, color: '#C8956C' }}>₹{service.price}</span>
+                                            {outlet?.showServicePrice !== false && salon?.showServicePrice !== false && (
+                                                <span style={{ fontSize: '14px', fontWeight: 800, color: '#C8956C' }}>₹{service.price}</span>
+                                            )}
                                         </div>
                                     </div>
                                     <motion.button

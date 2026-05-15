@@ -3,11 +3,13 @@ import { motion } from 'framer-motion';
 import { Clock, ChevronRight, Armchair, DoorClosed, Heart } from 'lucide-react';
 import { useCustomerTheme } from '../../contexts/CustomerThemeContext';
 import { useFavorites } from '../../contexts/FavoritesContext';
+import { useBusiness } from '../../contexts/BusinessContext';
 
 const ServiceCard = memo(({ service, onBook, index = 0 }) => {
     const { theme } = useCustomerTheme();
     const isLight = theme === 'light';
     const { isServiceLiked, toggleServiceLike } = useFavorites();
+    const { salon, activeOutlet } = useBusiness();
     const isLiked = isServiceLiked(service._id || service.id);
 
     const colors = {
@@ -61,7 +63,9 @@ const ServiceCard = memo(({ service, onBook, index = 0 }) => {
                         {service.name}
                     </h3>
                     <div className="flex items-center gap-3 mt-3">
-                        <span className="text-base font-black text-[#C8956C] tracking-tighter">₹{service.price.toLocaleString()}</span>
+                        {activeOutlet?.showServicePrice !== false && salon?.showServicePrice !== false && (
+                            <span className="text-base font-black text-[#C8956C] tracking-tighter">₹{service.price.toLocaleString()}</span>
+                        )}
                         <span className="w-1 h-1 rounded-full bg-black/10 dark:bg-white/10" />
                         <span className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest opacity-40" style={{ color: colors.textMuted }}>
                             <Clock className="w-3.5 h-3.5 text-[#C8956C]" /> {service.duration} MIN

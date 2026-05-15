@@ -10,6 +10,7 @@ import { useCustomerTheme } from '../../contexts/CustomerThemeContext';
 import { useInventory } from '../../contexts/InventoryContext';
 import { mapInventoryProductToShopProduct } from '../../utils/shopProductMapper';
 import { getImageUrl } from '../../utils/imageUtils';
+import { useBusiness } from '../../contexts/BusinessContext';
 
 export default function AppFavoritesPage() {
     const navigate = useNavigate();
@@ -18,6 +19,7 @@ export default function AppFavoritesPage() {
     const { favoriteProducts, toggleProductLike, favoriteServices, toggleServiceLike } = useFavorites();
     const { addToCart } = useCart();
     const { shopCategories } = useInventory();
+    const { salon, activeOutlet } = useBusiness();
     const [activeTab, setActiveTab] = useState('products');
 
     const likedProductsData = useMemo(() => {
@@ -192,7 +194,9 @@ export default function AppFavoritesPage() {
                                                 </div>
                                                 <div className="mt-auto pt-3 flex items-center justify-between border-t border-black/5 dark:border-white/5">
                                                     <div>
-                                                        <span className="text-sm font-black text-[#C8956C] tracking-tighter">₹{service.price?.toLocaleString()}</span>
+                                                        {activeOutlet?.showServicePrice !== false && salon?.showServicePrice !== false && (
+                                                            <span className="text-sm font-black text-[#C8956C] tracking-tighter">₹{service.price?.toLocaleString()}</span>
+                                                        )}
                                                     </div>
                                                     <button
                                                         onClick={(e) => { e.stopPropagation(); navigate(`/app/service/${service._id}`); }}

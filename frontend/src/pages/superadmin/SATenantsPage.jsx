@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import api from '../../services/api';
 import {
@@ -600,6 +600,7 @@ export default function SATenantsPage() {
     const [availablePlans, setAvailablePlans] = useState([]);
     const [page, setPage] = useState(1);
     const [meta, setMeta] = useState({ totalPages: 1, totalResults: 0, limit: 10 });
+    const [expandedSalons, setExpandedSalons] = useState([]); // Array of salon IDs
 
     const showToast = (msg, type = 'success') => {
         setToast({ msg, type });
@@ -925,6 +926,43 @@ export default function SATenantsPage() {
         showToast(`Impersonating "${tenant.name}" — feature logs audit trail.`, 'info');
     };
 
+    const toggleExpand = (e, id) => {
+        e.stopPropagation();
+        setExpandedSalons(prev => 
+            prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
+        );
+    };
+
+    const handleSalonToggle = async (salonId, currentVal) => {
+        try {
+            const newVal = !currentVal;
+            await api.put(`/salons/${salonId}`, { showServicePrice: newVal });
+            setTenants(prev => prev.map(t => t._id === salonId ? { ...t, showServicePrice: newVal } : t));
+            showToast(`Global price visibility updated for salon.`);
+        } catch (err) {
+            showToast(`Failed to update global toggle.`, 'error');
+        }
+    };
+
+    const handleOutletToggle = async (salonId, outletId, currentVal) => {
+        try {
+            const newVal = !currentVal;
+            await api.put(`/outlets/${outletId}`, { showServicePrice: newVal });
+            setTenants(prev => prev.map(t => {
+                if (t._id === salonId) {
+                    return {
+                        ...t,
+                        outlets: t.outlets.map(o => o._id === outletId ? { ...o, showServicePrice: newVal } : o)
+                    };
+                }
+                return t;
+            }));
+            showToast(`Outlet price visibility updated.`);
+        } catch (err) {
+            showToast(`Failed to update outlet toggle.`, 'error');
+        }
+    };
+
     return (
         <div className="space-y-5 pb-8">
 
@@ -1034,6 +1072,7 @@ export default function SATenantsPage() {
                         <table className="w-full">
                             <thead>
                                 <tr className="bg-surface/60 border-b border-border">
+                                    <th className="px-4 py-3 w-10"></th>
                                     {['Salon', 'Owner / Email', 'Phone', 'GST', 'City', 'Plan', 'Status', 'Joined', 'Actions'].map(h => (
                                         <th key={h} className={`text-xs font-semibold text-text-secondary uppercase tracking-wider px-4 py-3 ${h === 'Actions' ? 'text-right' : 'text-left'}`}>
                                             {h}
@@ -1044,135 +1083,203 @@ export default function SATenantsPage() {
                             <tbody className="divide-y divide-border">
                                 {filtered.map(t => {
                                     const sc = STATUS_CFG[t.status] || STATUS_CFG.inactive;
+                                    const isExpanded = expandedSalons.includes(t._id);
                                     return (
-                                <tr 
-                                    key={t._id} 
-                                    onClick={() => navigate(`/superadmin/tenants/${t._id}`)}
-                                    className="hover:bg-surface/40 transition-colors group cursor-pointer"
-                                >
-                                            {/* Salon */}
-                                            <td className="px-4 py-3.5">
-                                                <div className="flex items-center gap-3 group/link">
-                                                    <div className="w-9 h-9 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center text-sm font-black text-primary shrink-0 group-hover:bg-primary group-hover:text-primary-foreground transition-all">
-                                                        {t.name[0].toUpperCase()}
-                                                    </div>
-                                                    <div>
-                                                        <div className="text-sm font-semibold text-text group-hover:text-primary transition-colors">{t.name}</div>
-                                                        <div className="text-[10px] text-text-muted font-mono">{t.slug}</div>
-                                                    </div>
-                                                </div>
-                                            </td>
-                                            {/* Owner / Email */}
-                                            <td className="px-4 py-3.5">
-                                                <div className="text-sm font-medium text-text">{t.ownerName}</div>
-                                                <div className="text-[11px] text-text-muted">{t.email}</div>
-                                            </td>
-                                            {/* Phone */}
-                                            <td className="px-4 py-3.5">
-                                                <div className="text-sm text-text-secondary">{t.phone || '—'}</div>
-                                            </td>
-                                            {/* GST */}
-                                            <td className="px-4 py-3.5">
-                                                <div className="text-[11px] font-mono font-bold text-text-secondary">{t.gstNumber || '—'}</div>
-                                            </td>
-                                            {/* City */}
-                                            <td className="px-4 py-3.5">
-                                                <div className="flex items-center gap-1 text-sm text-text-secondary">
-                                                    <MapPin className="w-3.5 h-3.5 text-text-muted shrink-0" />
-                                                    {t.address?.city || t.city || '—'}
-                                                </div>
-                                            </td>
-                                            {/* Plan */}
-                                            <td className="px-4 py-3.5">
-                                                <div className="flex items-center gap-2">
-                                                    <span className={`inline-flex items-center gap-1.5 text-[10px] font-black px-2.5 py-1 rounded-lg border transition-all ${
-                                                        t.subscriptionPlan && t.subscriptionPlan.toLowerCase() !== 'none'
-                                                        ? (planColors[t.subscriptionPlan.toLowerCase()] || 'bg-slate-100 text-slate-600 border-slate-200')
-                                                        : 'bg-rose-50 text-rose-600 border-rose-200 uppercase'
-                                                    }`}>
-                                                        {t.subscriptionPlan && t.subscriptionPlan.toLowerCase() !== 'none' && (planIcons[t.subscriptionPlan.toLowerCase()] ? <Crown className="w-3 h-3" /> : <div className="w-1.5 h-1.5 rounded-full bg-current opacity-60" />)}
-                                                        {(t.subscriptionPlan && t.subscriptionPlan.toLowerCase() !== 'none') ? t.subscriptionPlan.toUpperCase() : 'Not Subscribed'}
-                                                    </span>
-                                                </div>
-                                            </td>
-
-                                            {/* Status */}
-                                            <td className="px-4 py-3.5">
-                                                <div className="flex items-center gap-2">
-                                                    <span className={`inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full border ${sc.cls}`}>
-                                                        {sc.icon && <sc.icon className="w-3 h-3" />}
-                                                        {sc.label.toUpperCase()}
-                                                    </span>
-                                                </div>
-                                            </td>
-                                            {/* Joined */}
-                                            <td className="px-4 py-3.5">
-                                                <span className="text-sm text-text-muted whitespace-nowrap">
-                                                    {new Date(t.createdAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}
-                                                </span>
-                                            </td>
-                                            {/* Actions */}
-                                            <td className="px-4 py-3.5">
-                                                <div className="flex items-center justify-end gap-1">
-                                                    {/* View */}
-                                                    <Link 
-                                                        to={`/superadmin/tenants/${t._id}`}
-                                                        className="p-2 rounded-lg bg-surface border border-border text-text-muted hover:text-primary hover:border-primary/30 transition-all"
-                                                        title="View Profile"
-                                                    >
-                                                        <EyeIcon className="w-4 h-4" />
-                                                    </Link>
-                                                    
-                                                    {/* Edit */}
+                                        <React.Fragment key={t._id}>
+                                            <tr 
+                                                onClick={() => navigate(`/superadmin/tenants/${t._id}`)}
+                                                className={`hover:bg-surface/40 transition-colors group cursor-pointer ${isExpanded ? 'bg-primary/5' : ''}`}
+                                            >
+                                                {/* Expand Column */}
+                                                <td className="px-4 py-3.5">
                                                     <button 
-                                                        onClick={() => setModal({ mode: 'edit', tenant: t })}
-                                                        className="p-2 rounded-lg bg-surface border border-border text-text-muted hover:text-blue-500 hover:border-blue-200 transition-all"
-                                                        title="Edit Salon"
+                                                        onClick={(e) => toggleExpand(e, t._id)}
+                                                        className={`p-1.5 rounded-lg transition-all ${isExpanded ? 'bg-primary text-primary-foreground rotate-180' : 'hover:bg-primary/10 text-text-muted hover:text-primary'}`}
                                                     >
-                                                        <Edit3 className="w-4 h-4" />
+                                                        <ChevronDown className="w-4 h-4" />
                                                     </button>
-
-                                                    {/* Approve/Deactivate */}
-                                                    {t.status === 'pending' || t.status === 'inactive' ? (
-                                                        <div className="flex items-center gap-1">
-                                                            <button 
-                                                                onClick={() => handleApprove(t)}
-                                                                className="p-2 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-600 hover:bg-emerald-500 hover:text-white transition-all"
-                                                                title="Approve & Activate"
-                                                            >
-                                                                <CheckCircle className="w-4 h-4" />
-                                                            </button>
-                                                            <button 
-                                                                onClick={() => handleReject(t)}
-                                                                className="p-2 rounded-lg bg-red-50 border border-red-200 text-red-600 hover:bg-red-500 hover:text-white transition-all"
-                                                                title="Reject Application"
-                                                            >
-                                                                <XCircle className="w-4 h-4" />
-                                                            </button>
+                                                </td>
+                                                {/* Salon */}
+                                                <td className="px-4 py-3.5">
+                                                    <div className="flex items-center gap-3 group/link">
+                                                        <div className="w-9 h-9 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center text-sm font-black text-primary shrink-0 group-hover:bg-primary group-hover:text-primary-foreground transition-all">
+                                                            {t.name[0].toUpperCase()}
                                                         </div>
-                                                    ) : (
-                                                        <button 
-                                                            onClick={() => handleSuspend(t)}
-                                                            className={`p-2 rounded-lg border transition-all ${t.status === 'suspended' 
-                                                                ? 'bg-emerald-50 border-emerald-200 text-emerald-600 hover:bg-emerald-500 hover:text-white' 
-                                                                : 'bg-surface border-border text-text-muted hover:text-orange-500 hover:border-orange-200'}`}
-                                                            title={t.status === 'suspended' ? 'Reactivate' : 'Suspend'}
-                                                        >
-                                                            {t.status === 'suspended' ? <RefreshCw className="w-4 h-4" /> : <Ban className="w-4 h-4" />}
-                                                        </button>
-                                                    )}
+                                                        <div>
+                                                            <div className="text-sm font-semibold text-text group-hover:text-primary transition-colors">{t.name}</div>
+                                                            <div className="text-[10px] text-text-muted font-mono">{t.slug}</div>
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                                {/* Owner / Email */}
+                                                <td className="px-4 py-3.5">
+                                                    <div className="text-sm font-medium text-text">{t.ownerName}</div>
+                                                    <div className="text-[11px] text-text-muted">{t.email}</div>
+                                                </td>
+                                                {/* Phone */}
+                                                <td className="px-4 py-3.5">
+                                                    <div className="text-sm text-text-secondary">{t.phone || '—'}</div>
+                                                </td>
+                                                {/* GST */}
+                                                <td className="px-4 py-3.5">
+                                                    <div className="text-[11px] font-mono font-bold text-text-secondary">{t.gstNumber || '—'}</div>
+                                                </td>
+                                                {/* City */}
+                                                <td className="px-4 py-3.5">
+                                                    <div className="flex items-center gap-1 text-sm text-text-secondary">
+                                                        <MapPin className="w-3.5 h-3.5 text-text-muted shrink-0" />
+                                                        {t.address?.city || t.city || '—'}
+                                                    </div>
+                                                </td>
+                                                {/* Plan */}
+                                                <td className="px-4 py-3.5">
+                                                    <div className="flex items-center gap-2">
+                                                        <span className={`inline-flex items-center gap-1.5 text-[10px] font-black px-2.5 py-1 rounded-lg border transition-all ${
+                                                            t.subscriptionPlan && t.subscriptionPlan.toLowerCase() !== 'none'
+                                                            ? (planColors[t.subscriptionPlan.toLowerCase()] || 'bg-slate-100 text-slate-600 border-slate-200')
+                                                            : 'bg-rose-50 text-rose-600 border-rose-200 uppercase'
+                                                        }`}>
+                                                            {t.subscriptionPlan && t.subscriptionPlan.toLowerCase() !== 'none' && (planIcons[t.subscriptionPlan.toLowerCase()] ? <Crown className="w-3 h-3" /> : <div className="w-1.5 h-1.5 rounded-full bg-current opacity-60" />)}
+                                                            {(t.subscriptionPlan && t.subscriptionPlan.toLowerCase() !== 'none') ? t.subscriptionPlan.toUpperCase() : 'Not Subscribed'}
+                                                        </span>
+                                                    </div>
+                                                </td>
 
-                                                    {/* Delete */}
-                                                    <button 
-                                                        onClick={() => handleDelete(t)}
-                                                        className="p-2 rounded-lg bg-surface border border-border text-text-muted hover:text-red-500 hover:border-red-200 transition-all"
-                                                        title="Delete Salon"
-                                                    >
-                                                        <Trash2 className="w-4 h-4" />
-                                                    </button>
-                                                </div>
-                                            </td>
-                                        </tr>
+                                                {/* Status */}
+                                                <td className="px-4 py-3.5">
+                                                    <div className="flex items-center gap-2">
+                                                        <span className={`inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full border ${sc.cls}`}>
+                                                            {sc.icon && <sc.icon className="w-3 h-3" />}
+                                                            {sc.label.toUpperCase()}
+                                                        </span>
+                                                    </div>
+                                                </td>
+                                                {/* Joined */}
+                                                <td className="px-4 py-3.5">
+                                                    <span className="text-sm text-text-muted whitespace-nowrap">
+                                                        {new Date(t.createdAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}
+                                                    </span>
+                                                </td>
+                                                {/* Actions */}
+                                                <td className="px-4 py-3.5">
+                                                    <div className="flex items-center justify-end gap-1">
+                                                        {/* View */}
+                                                        <Link 
+                                                            to={`/superadmin/tenants/${t._id}`}
+                                                            className="p-2 rounded-lg bg-surface border border-border text-text-muted hover:text-primary hover:border-primary/30 transition-all"
+                                                            title="View Profile"
+                                                        >
+                                                            <EyeIcon className="w-4 h-4" />
+                                                        </Link>
+                                                        
+                                                        {/* Edit */}
+                                                        <button 
+                                                            onClick={(e) => { e.stopPropagation(); setModal({ mode: 'edit', tenant: t }); }}
+                                                            className="p-2 rounded-lg bg-surface border border-border text-text-muted hover:text-blue-500 hover:border-blue-200 transition-all"
+                                                            title="Edit Salon"
+                                                        >
+                                                            <Edit3 className="w-4 h-4" />
+                                                        </button>
+
+                                                        {/* Approve/Deactivate */}
+                                                        {t.status === 'pending' || t.status === 'inactive' ? (
+                                                            <div className="flex items-center gap-1">
+                                                                <button 
+                                                                    onClick={(e) => { e.stopPropagation(); handleApprove(t); }}
+                                                                    className="p-2 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-600 hover:bg-emerald-500 hover:text-white transition-all"
+                                                                    title="Approve & Activate"
+                                                                >
+                                                                    <CheckCircle className="w-4 h-4" />
+                                                                </button>
+                                                                <button 
+                                                                    onClick={(e) => { e.stopPropagation(); handleReject(t); }}
+                                                                    className="p-2 rounded-lg bg-red-50 border border-red-200 text-red-600 hover:bg-red-500 hover:text-white transition-all"
+                                                                    title="Reject Application"
+                                                                >
+                                                                    <XCircle className="w-4 h-4" />
+                                                                </button>
+                                                            </div>
+                                                        ) : (
+                                                            <button 
+                                                                onClick={(e) => { e.stopPropagation(); handleSuspend(t); }}
+                                                                className={`p-2 rounded-lg border transition-all ${t.status === 'suspended' 
+                                                                    ? 'bg-emerald-50 border-emerald-200 text-emerald-600 hover:bg-emerald-500 hover:text-white' 
+                                                                    : 'bg-surface border-border text-text-muted hover:text-orange-500 hover:border-orange-200'}`}
+                                                                title={t.status === 'suspended' ? 'Reactivate' : 'Suspend'}
+                                                            >
+                                                                {t.status === 'suspended' ? <RefreshCw className="w-4 h-4" /> : <Ban className="w-4 h-4" />}
+                                                            </button>
+                                                        )}
+
+                                                        {/* Delete */}
+                                                        <button 
+                                                            onClick={(e) => { e.stopPropagation(); handleDelete(t); }}
+                                                            className="p-2 rounded-lg bg-surface border border-border text-text-muted hover:text-red-500 hover:border-red-200 transition-all"
+                                                            title="Delete Salon"
+                                                        >
+                                                            <Trash2 className="w-4 h-4" />
+                                                        </button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+
+                                            {/* Expansion Row */}
+                                            {isExpanded && (
+                                                <tr className="bg-surface-alt/20">
+                                                    <td colSpan="10" className="px-8 py-6">
+                                                        <div className="bg-surface rounded-2xl border border-border/50 shadow-inner p-6">
+                                                            <div className="flex items-center justify-between mb-6">
+                                                                <div>
+                                                                    <h4 className="text-sm font-black text-text uppercase tracking-tight">Outlets & Service Price Visibility</h4>
+                                                                    <p className="text-[10px] text-text-muted font-bold uppercase tracking-widest mt-0.5">Control price visibility in Customer APK</p>
+                                                                </div>
+                                                                <div className="flex items-center gap-4 bg-surface-alt/50 px-4 py-2 rounded-xl border border-border">
+                                                                    <span className="text-xs font-bold text-text-secondary">Global Toggle:</span>
+                                                                    <label className="relative inline-flex items-center cursor-pointer">
+                                                                        <input type="checkbox" className="sr-only peer" checked={t.showServicePrice !== false} onChange={() => handleSalonToggle(t._id, t.showServicePrice !== false)} />
+                                                                        <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+                                                                    </label>
+                                                                    <span className="text-[10px] font-black uppercase text-primary">{t.showServicePrice !== false ? 'Prices Shown' : 'Prices Hidden'}</span>
+                                                                </div>
+                                                            </div>
+
+                                                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                                                {t.outlets && t.outlets.length > 0 ? t.outlets.map(o => (
+                                                                    <div key={o._id} className="flex items-center gap-4 p-4 rounded-xl border border-border bg-surface-alt/30 hover:border-primary/20 transition-all">
+                                                                        <div className="w-12 h-12 rounded-lg overflow-hidden bg-slate-100 shrink-0 border border-border">
+                                                                            {o.images && o.images[0] ? (
+                                                                                <img src={o.images[0].startsWith('http') ? o.images[0] : `${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/${o.images[0]}`} alt={o.name} className="w-full h-full object-cover" />
+                                                                            ) : (
+                                                                                <div className="w-full h-full flex items-center justify-center text-xs font-bold text-text-muted">
+                                                                                    {o.name[0].toUpperCase()}
+                                                                                </div>
+                                                                            )}
+                                                                        </div>
+                                                                        <div className="flex-1 min-w-0">
+                                                                            <h5 className="text-xs font-bold text-text truncate">{o.name}</h5>
+                                                                            <p className="text-[10px] text-text-muted truncate">{o.address?.city || '—'}</p>
+                                                                        </div>
+                                                                        <div className="flex flex-col items-end gap-1">
+                                                                            <label className="relative inline-flex items-center cursor-pointer">
+                                                                                <input type="checkbox" className="sr-only peer" checked={o.showServicePrice !== false} onChange={() => handleOutletToggle(t._id, o._id, o.showServicePrice !== false)} />
+                                                                                <div className="w-9 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-500"></div>
+                                                                            </label>
+                                                                            <span className={`text-[9px] font-black uppercase ${o.showServicePrice !== false ? 'text-emerald-600' : 'text-red-500'}`}>
+                                                                                {o.showServicePrice !== false ? 'Show Price' : 'Hide Price'}
+                                                                            </span>
+                                                                        </div>
+                                                                    </div>
+                                                                )) : (
+                                                                    <div className="col-span-full py-8 text-center bg-surface-alt/10 rounded-xl border border-dashed border-border">
+                                                                        <p className="text-xs text-text-muted font-bold uppercase tracking-widest">No outlets found for this salon</p>
+                                                                    </div>
+                                                                )}
+                                                            </div>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            )}
+                                        </React.Fragment>
                                     );
                                 })}
                             </tbody>

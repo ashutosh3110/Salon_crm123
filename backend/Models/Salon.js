@@ -59,6 +59,10 @@ const salonSchema = new mongoose.Schema({
         type: Object,
         default: {}
     },
+    showServicePrice: {
+        type: Boolean,
+        default: true
+    },
     limits: {
         staffLimit: { type: Number, default: 0 },
         outletLimit: { type: Number, default: 0 },

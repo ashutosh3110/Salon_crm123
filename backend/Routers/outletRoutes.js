@@ -31,7 +31,7 @@ router.route('/')
 
 router.route('/:id')
     .get(getOutlet)
-    .put(authorize('admin', 'manager'), optimizedUpload.array('images', 5), checkImageLimit, processToWebP('outlets'), updateOutlet)
+    .put(authorize('admin', 'manager', 'superadmin'), optimizedUpload.array('images', 5), checkImageLimit, processToWebP('outlets'), updateOutlet)
     .delete(authorize('admin'), deleteOutlet);
 
 module.exports = router;

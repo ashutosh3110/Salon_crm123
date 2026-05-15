@@ -206,7 +206,12 @@ exports.createOutlet = async (req, res) => {
 // @access  Private (Admin/Manager)
 exports.updateOutlet = async (req, res) => {
     try {
-        let outlet = await Outlet.findOne({ _id: req.params.id, salonId: req.user.salonId });
+        const query = { _id: req.params.id };
+        if (req.user.role !== 'superadmin') {
+            query.salonId = req.user.salonId;
+        }
+        
+        let outlet = await Outlet.findOne(query);
         if (!outlet) return res.status(404).json({ success: false, message: 'Outlet not found' });
 
         // Parse JSON strings from FormData

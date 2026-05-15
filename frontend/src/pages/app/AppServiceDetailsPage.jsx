@@ -57,7 +57,7 @@ export default function AppServiceDetailsPage() {
     const { id } = useParams();
     const navigate = useNavigate();
     const { colors, isLight } = useCustomerTheme();
-    const { services, categories: businessCategories, fetchServices, isInitializing } = useBusiness();
+    const { services, categories: businessCategories, fetchServices, isInitializing, salon, activeOutlet } = useBusiness();
     const { isServiceLiked, toggleServiceLike } = useFavorites();
     
     const [reviews, setReviews] = useState([]);
@@ -262,7 +262,9 @@ export default function AppServiceDetailsPage() {
                     <div className="flex items-end justify-between gap-4">
                         <div className="space-y-0.5">
                             <p className="text-[10px] font-black uppercase tracking-[0.3em] opacity-30">Investment</p>
-                            <p className="text-4xl font-black text-[#C8956C] tracking-tighter italic">₹{service.price}</p>
+                            {activeOutlet?.showServicePrice !== false && salon?.showServicePrice !== false && (
+                                <p className="text-4xl font-black text-[#C8956C] tracking-tighter italic">₹{service.price}</p>
+                            )}
                         </div>
                         <div className="flex flex-col items-end gap-1">
                             <div className="flex items-center gap-2 p-2 px-4 rounded-2xl bg-black/5 dark:bg-white/5 border border-black/5">

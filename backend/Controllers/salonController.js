@@ -217,7 +217,8 @@ exports.getSalons = async (req, res) => {
         const salons = await Salon.find(query)
             .sort({ createdAt: -1 })
             .skip(skip)
-            .limit(parseInt(limit));
+            .limit(parseInt(limit))
+            .populate('outlets');
 
         res.json({ 
             success: true, 

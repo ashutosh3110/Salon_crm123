@@ -35,7 +35,7 @@ const ServiceSkeleton = ({ colors, isLight }) => (
     </div>
 );
 
-const ServiceCard = ({ service, onBook, colors, isLight, categories, navigate }) => {
+const ServiceCard = ({ service, onBook, colors, isLight, categories, navigate, showPrice }) => {
     const { isServiceLiked, toggleServiceLike } = useFavorites();
     const serviceId = service._id || service.id;
     const isLiked = isServiceLiked(serviceId);
@@ -115,7 +115,9 @@ const ServiceCard = ({ service, onBook, colors, isLight, categories, navigate })
                 <p className="text-[10px] mb-3 line-clamp-1 opacity-60 leading-tight" style={{ color: colors.text }}>{service.description || "Premium service."}</p>
 
                 <div className="mt-auto flex items-center justify-between pt-1">
-                    {/* <span className="text-[13px] font-black text-[#C8956C]">₹{service.price}</span> */}
+                    {showPrice !== false && (
+                        <span className="text-[13px] font-black text-[#C8956C]">₹{service.price}</span>
+                    )}
                     <motion.button
                         whileTap={{ scale: 0.9 }}
                         onClick={() => onBook(service._id || service.id)}
@@ -139,6 +141,7 @@ export default function AppServicesPage() {
     const { 
         activeOutlet, 
         activeOutletId,
+        salon
     } = useBusiness();
     
     const { gender: appGender } = useGender();
@@ -469,6 +472,7 @@ export default function AppServicesPage() {
                                     isLight={isLight}
                                     categories={categories}
                                     navigate={navigate}
+                                    showPrice={activeOutlet?.showServicePrice !== false && salon?.showServicePrice !== false}
                                 />
                             </motion.div>
                         ))}

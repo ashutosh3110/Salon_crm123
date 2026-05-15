@@ -49,6 +49,10 @@ const outletSchema = new mongoose.Schema({
         type: Boolean,
         default: true
     },
+    showServicePrice: {
+        type: Boolean,
+        default: true
+    },
     chairs: [{
         id: Number,
         name: String

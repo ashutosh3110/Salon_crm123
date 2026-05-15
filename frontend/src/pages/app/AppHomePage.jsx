@@ -36,7 +36,7 @@ const getAddressString = (addr) => {
 
 // Helper to handle address strings
 
-const ServiceCard = memo(({ service, onBook, onClick, colors, isLight }) => {
+const ServiceCard = memo(({ service, onBook, onClick, colors, isLight, showPrice }) => {
     const [imgSrc, setImgSrc] = useState(() => getImageUrl(service.image) || fallbackImage);
 
     const handleError = () => {
@@ -92,7 +92,9 @@ const ServiceCard = memo(({ service, onBook, onClick, colors, isLight }) => {
                 </h3>
 
                 <div style={{ marginTop: 'auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                    <p style={{ fontSize: '15px', fontWeight: 800, color: colors.text, margin: 0 }}>₹{service.price || 499}</p>
+                    {showPrice !== false && (
+                        <p style={{ fontSize: '15px', fontWeight: 800, color: colors.text, margin: 0 }}>₹{service.price || 499}</p>
+                    )}
                     <button
                         onClick={(e) => { e.stopPropagation(); onBook(service._id || service.id); }}
                         style={{
@@ -305,7 +307,8 @@ export default function AppHomePage() {
         categories: contextCategories,
         loyaltySettings: loyaltyRule,
         fetchLoyaltySettings,
-        isInitializing: isContextInitializing
+        isInitializing: isContextInitializing,
+        salon
     } = useBusiness();
     const servicesScrollRef = useRef(null);
     const outletsScrollRef = useRef(null);
@@ -851,6 +854,7 @@ export default function AppHomePage() {
                                         onClick={(id) => navigate(`/app/service/${id}`)}
                                         colors={colors}
                                         isLight={isLight}
+                                        showPrice={activeOutlet?.showServicePrice !== false && salon?.showServicePrice !== false}
                                     />
                                 </div>
                             ));
