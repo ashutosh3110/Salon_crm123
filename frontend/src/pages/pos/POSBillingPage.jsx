@@ -1622,12 +1622,12 @@ export default function POSBillingPage() {
                                 <div className="flex items-center justify-between px-1 mb-1">
                                     <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Payment Method</span>
                                     <label className="flex items-center gap-1.5 text-[9px] font-black text-primary cursor-pointer hover:opacity-80 transition-all bg-primary/5 px-2 py-1 rounded-lg border border-primary/10">
-                                        <input 
-                                            type="checkbox" 
-                                            checked={isManualPayment} 
+                                        <input
+                                            type="checkbox"
+                                            checked={isManualPayment}
                                             onChange={(e) => {
                                                 setIsManualPayment(e.target.checked);
-                                                if(e.target.checked) {
+                                                if (e.target.checked) {
                                                     setTimeout(() => {
                                                         const el = document.querySelector('input[type="number"][data-payment-idx="0"]');
                                                         el?.focus();
@@ -1663,14 +1663,14 @@ export default function POSBillingPage() {
                                                 />
                                                 <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[8px] font-bold text-slate-400">₹</span>
                                             </div>
-                                            
+
                                             {payments.length > 1 && (
                                                 <button onClick={() => removePayment(i)} className="h-8 w-8 flex items-center justify-center text-rose-500 hover:bg-rose-50 rounded-lg transition-colors border border-transparent hover:border-rose-100 shrink-0">
                                                     <X className="w-3.5 h-3.5" />
                                                 </button>
                                             )}
                                         </div>
-                                        
+
                                         {payments.length === 1 && totals.total > p.amount && (
                                             <div className="flex items-center gap-1.5 px-2 py-1 bg-rose-50 border border-rose-100 rounded-lg">
                                                 <div className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse" />
