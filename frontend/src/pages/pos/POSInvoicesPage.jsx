@@ -269,10 +269,12 @@ const POSReceiptPDF = ({ invoice, salon }) => {
                             <Text style={{ width: 80, textAlign: 'right', paddingRight: 4 }}>Sub Total</Text>
                             <Text style={{ width: 45, textAlign: 'right' }}>: {(invoice.subtotal || 0).toFixed(0)}</Text>
                         </View>
-                        <View style={{ flexDirection: 'row', justifyContent: 'flex-end', fontSize: 8 }}>
-                            <Text style={{ width: 80, textAlign: 'right', paddingRight: 4 }}>GST (18%)</Text>
-                            <Text style={{ width: 45, textAlign: 'right' }}>: {(invoice.tax || 0).toFixed(0)}</Text>
-                        </View>
+                        {(invoice.tax || 0) > 0 && (
+                            <View style={{ flexDirection: 'row', justifyContent: 'flex-end', fontSize: 8 }}>
+                                <Text style={{ width: 80, textAlign: 'right', paddingRight: 4 }}>GST (18%)</Text>
+                                <Text style={{ width: 45, textAlign: 'right' }}>: {(invoice.tax || 0).toFixed(0)}</Text>
+                            </View>
+                        )}
                         {(invoice.discount || 0) > 0 && (
                             <View style={{ flexDirection: 'row', justifyContent: 'flex-end', fontSize: 8 }}>
                                 <Text style={{ width: 80, textAlign: 'right', paddingRight: 4 }}>Discount</Text>
@@ -449,10 +451,12 @@ const StandardInvoicePDF = ({ invoice, salon }) => {
                                 <Text style={{ color: '#666' }}>Service Total</Text>
                                 <Text>₹{(invoice.subtotal || 0).toFixed(2)}</Text>
                             </View>
-                            <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 5 }}>
-                                <Text style={{ color: '#666' }}>GST (Tax)</Text>
-                                <Text>+₹{(invoice.tax || 0).toFixed(2)}</Text>
-                            </View>
+                            {(invoice.tax || 0) > 0 && (
+                                <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 5 }}>
+                                    <Text style={{ color: '#666' }}>GST (Tax)</Text>
+                                    <Text>+₹{(invoice.tax || 0).toFixed(2)}</Text>
+                                </View>
+                            )}
                             {(invoice.membershipDiscount || 0) > 0 && (
                                 <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 5 }}>
                                     <Text style={{ color: '#10b981' }}>Membership Discount</Text>
