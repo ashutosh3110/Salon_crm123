@@ -39,6 +39,7 @@ export default function CustomerProfileModal({ customer, isOpen, onClose }) {
     const [rechargeAmount, setRechargeAmount] = useState('');
     const [rechargeType, setRechargeType] = useState('CREDIT');
     const [rechargeNote, setRechargeNote] = useState('');
+    const [rechargeExpiry, setRechargeExpiry] = useState('');
     const [isRecharging, setIsRecharging] = useState(false);
 
     // Optional: WhatsApp message to send after successful CREDIT recharge
@@ -115,10 +116,11 @@ export default function CustomerProfileModal({ customer, isOpen, onClose }) {
         try {
             // For DEBIT, keep existing local adjustment.
             if (rechargeType !== 'CREDIT') {
-                await adminAdjustBalance(customer._id, amountNum, rechargeType, description);
+                await adminAdjustBalance(customer._id, amountNum, rechargeType, description, rechargeExpiry || null);
                 sendRechargeWhatsApp();
                 setRechargeAmount('');
                 setRechargeNote('');
+                setRechargeExpiry('');
                 setSendWhatsAppAfterRecharge(false);
                 setRechargeWhatsAppMessage('');
                 return;
@@ -152,11 +154,12 @@ export default function CustomerProfileModal({ customer, isOpen, onClose }) {
                             });
 
                             if (verifyRes.data?.success) {
-                                await adminAdjustBalance(customer._id, amountNum, rechargeType, description);
+                                await adminAdjustBalance(customer._id, amountNum, rechargeType, description, rechargeExpiry || null);
                                 sendRechargeWhatsApp();
 
                                 setRechargeAmount('');
                                 setRechargeNote('');
+                                setRechargeExpiry('');
                                 setSendWhatsAppAfterRecharge(false);
                                 setRechargeWhatsAppMessage('');
                                 resolve(true);
@@ -395,6 +398,16 @@ export default function CustomerProfileModal({ customer, isOpen, onClose }) {
                                                 value={rechargeNote}
                                                 onChange={(e) => setRechargeNote(e.target.value)}
                                                 className="w-full bg-white border border-border px-4 py-2 text-[10px] font-black uppercase outline-none focus:border-primary"
+                                            />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <label className="text-[9px] font-black text-text-muted uppercase tracking-widest">Expiry Date (Opt.)</label>
+                                            <input 
+                                                type="date"
+                                                value={rechargeExpiry}
+                                                min={new Date().toISOString().split('T')[0]}
+                                                onChange={(e) => setRechargeExpiry(e.target.value)}
+                                                className="w-full bg-white border border-border px-4 py-2 text-[10px] font-black outline-none focus:border-primary"
                                             />
                                         </div>
 

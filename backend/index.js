@@ -46,6 +46,10 @@ const server = app.listen(PORT, () => {
 // Initialize Socket.io
 init(server);
 
+// Start Cron Jobs
+const { startWalletExpiryCron } = require('./Utils/cron');
+startWalletExpiryCron();
+
 // Handle unhandled romi rejections
 process.on('unhandledRejection', (err, promise) => {
     console.log(`Error: ${err.message}`);

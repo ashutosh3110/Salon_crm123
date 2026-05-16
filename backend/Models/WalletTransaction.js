@@ -25,9 +25,14 @@ const walletTransactionSchema = new mongoose.Schema({
     },
     paymentId: String, // Razorpay Payment ID
     orderId: String,   // Razorpay Order ID
+    expiryDate: Date,  // Optional expiry date for promotional credits
+    remainingAmount: { // Remaining portion of this credit that can be spent
+        type: Number,
+        default: 0
+    },
     status: {
         type: String,
-        enum: ['PENDING', 'COMPLETED', 'FAILED'],
+        enum: ['PENDING', 'COMPLETED', 'FAILED', 'EXPIRED'],
         default: 'PENDING'
     }
 }, {

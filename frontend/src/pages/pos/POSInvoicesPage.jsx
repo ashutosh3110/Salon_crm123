@@ -730,41 +730,41 @@ export default function POSInvoicesPage() {
             default: return <Banknote className="w-3.5 h-3.5 text-green-500" />;
         }
     };
-
     return (
-        <div className="space-y-8 animate-in fade-in duration-700 pb-10">
-            {/* Header */}
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6 border-b border-border pb-6">
-                <div>
-                    <h1 className="text-2xl font-black text-text uppercase tracking-tight">Invoices</h1>
-                    <p className="text-[10px] font-black text-text-muted mt-2 uppercase tracking-[0.2em] opacity-60 flex items-center gap-2">
-                        <div className="w-1.5 h-1.5 rounded-none bg-primary animate-pulse" />
-                        View and manage invoice history
-                    </p>
-                </div>
-                <div className="flex flex-wrap items-center gap-4">
-                    {/* Outlet Selection */}
-                    <div className="relative group min-w-[160px]">
-                        <div className="absolute left-3 top-1/2 -translate-y-1/2">
-                            <Store className="w-3 h-3 text-primary" />
-                        </div>
-                        <select
-                            value={activeOutletId || ''}
-                            onChange={(e) => setActiveOutletId(e.target.value)}
-                            className="pl-8 pr-8 py-2.5 bg-surface border border-border text-[9px] font-black uppercase tracking-widest outline-none focus:border-primary transition-all cursor-pointer appearance-none w-full"
-                        >
-                            <option value="">All Outlets</option>
-                            {(outlets || []).map(o => (
-                                <option key={o._id} value={o._id}>{o.name.toUpperCase()}</option>
-                            ))}
-                        </select>
-                        <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
-                            <ChevronDown className="w-3 h-3 text-text-muted group-hover:text-primary transition-colors" />
-                        </div>
+        <div className="space-y-10 animate-in fade-in duration-700 pb-10">
+            {/* Header Area */}
+            <div className="flex flex-col gap-8">
+                <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-6">
+                    <div>
+                        <h1 className="text-4xl font-black text-text uppercase tracking-tighter leading-none">Invoices</h1>
+                        <p className="text-[10px] font-black text-text-muted mt-3 uppercase tracking-[0.3em] opacity-40 flex items-center gap-2">
+                            <span className="w-6 h-[1px] bg-primary" />
+                            History Ledger & Financial Analytics
+                        </p>
                     </div>
 
+                    <div className="flex flex-wrap items-center gap-3">
+                         {/* Outlet Selection */}
+                         <div className="relative group min-w-[200px]">
+                            <select
+                                value={activeOutletId || ''}
+                                onChange={(e) => setActiveOutletId(e.target.value)}
+                                className="w-full pl-12 pr-12 py-4 bg-surface border border-border text-[10px] font-black uppercase tracking-widest outline-none focus:border-primary transition-all cursor-pointer appearance-none shadow-sm hover:shadow-md"
+                            >
+                                <option value="">All Outlets</option>
+                                {(outlets || []).map(o => (
+                                    <option key={o._id} value={o._id}>{o.name}</option>
+                                ))}
+                            </select>
+                            <Store className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-primary" />
+                            <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-hover:text-primary transition-colors pointer-events-none" />
+                        </div>
+                    </div>
+                </div>
+
+                <div className="flex flex-wrap items-center justify-between gap-4 p-2 bg-surface border border-border shadow-sm">
                     {/* Date Filters */}
-                    <div className="flex bg-surface p-1 border border-border shadow-sm">
+                    <div className="flex gap-1">
                         {[
                             { id: 'today', label: 'Today', icon: Calendar },
                             { id: 'all', label: 'All Time', icon: Clock }
@@ -772,15 +772,15 @@ export default function POSInvoicesPage() {
                             <button
                                 key={f.id}
                                 onClick={() => { setDateFilter(f.id); setPage(1); }}
-                                className={`inline-flex items-center gap-2 px-4 py-2 text-[9px] font-black uppercase tracking-widest transition-all ${dateFilter === f.id ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'text-text-secondary hover:text-text hover:bg-surface-alt'}`}
+                                className={`flex items-center gap-2 px-8 py-3 text-[9px] font-black uppercase tracking-[0.2em] transition-all ${dateFilter === f.id ? 'bg-primary text-white shadow-xl shadow-primary/20' : 'text-text-secondary hover:text-text hover:bg-surface-alt'}`}
                             >
-                                <f.icon className="w-3.5 h-3.5" /> {f.label}
+                                <f.icon className="w-4 h-4" /> {f.label}
                             </button>
                         ))}
                     </div>
 
                     {/* Type Filters */}
-                    <div className="flex bg-surface p-1 border border-border shadow-sm">
+                    <div className="flex gap-1 sm:border-l border-border/50 sm:pl-4">
                         {[
                             { id: 'all', label: 'All Invoices', icon: FileText },
                             { id: 'service', label: 'Services', icon: Smartphone },
@@ -789,9 +789,9 @@ export default function POSInvoicesPage() {
                             <button
                                 key={f.id}
                                 onClick={() => { setTypeFilter(f.id); setPage(1); }}
-                                className={`inline-flex items-center gap-2 px-4 py-2 text-[9px] font-black uppercase tracking-widest transition-all ${typeFilter === f.id ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'text-text-secondary hover:text-text hover:bg-surface-alt'}`}
+                                className={`flex items-center gap-2 px-8 py-3 text-[9px] font-black uppercase tracking-[0.2em] transition-all ${typeFilter === f.id ? 'bg-primary text-white shadow-xl shadow-primary/20' : 'text-text-secondary hover:text-text hover:bg-surface-alt'}`}
                             >
-                                <f.icon className="w-3.5 h-3.5" /> {f.label}
+                                <f.icon className="w-4 h-4" /> {f.label}
                             </button>
                         ))}
                     </div>
@@ -800,70 +800,87 @@ export default function POSInvoicesPage() {
 
             {/* Earning Stats */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-                <div className="bg-surface border border-border p-6 shadow-sm group hover:border-primary transition-all">
-                    <div className="flex justify-between items-start mb-4">
-                        <div className="p-2 bg-primary/10 text-primary">
-                            <Banknote className="w-5 h-5" />
-                        </div>
-                        <span className="text-[9px] font-black text-emerald-500 uppercase tracking-widest bg-emerald-500/10 px-2 py-1">Overall</span>
+                <div className="bg-surface border border-border p-8 shadow-sm group hover:border-primary transition-all duration-300 relative overflow-hidden">
+                    <div className="absolute top-0 right-0 p-3 opacity-5 group-hover:opacity-20 transition-opacity">
+                        <Banknote className="w-16 h-16" />
                     </div>
-                    <p className="text-[10px] font-black text-text-muted uppercase tracking-widest">Total Revenue</p>
-                    <h3 className="text-2xl font-black text-text mt-1 tracking-tighter">₹{invoices.reduce((s, i) => s + (i.total || 0), 0).toLocaleString()}</h3>
+                    <div className="relative z-10">
+                        <div className="flex items-center gap-3 mb-6">
+                            <div className="p-2.5 bg-primary/10 text-primary">
+                                <Banknote className="w-5 h-5" />
+                            </div>
+                            <span className="text-[8px] font-black text-primary uppercase tracking-[0.2em] bg-primary/10 px-2 py-0.5">Overall</span>
+                        </div>
+                        <p className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Total Revenue</p>
+                        <h3 className="text-3xl font-black text-text mt-2 tracking-tighter">₹{invoices.reduce((s, i) => s + (i.total || 0), 0).toLocaleString()}</h3>
+                    </div>
                 </div>
 
-                <div className="bg-surface border border-border p-6 shadow-sm group hover:border-emerald-500 transition-all">
-                    <div className="flex justify-between items-start mb-4">
-                        <div className="p-2 bg-emerald-500/10 text-emerald-500">
-                            <Calendar className="w-5 h-5" />
-                        </div>
-                        <span className="text-[9px] font-black text-emerald-500 uppercase tracking-widest bg-emerald-500/10 px-2 py-1">Today</span>
+                <div className="bg-surface border border-border p-8 shadow-sm group hover:border-emerald-500 transition-all duration-300 relative overflow-hidden">
+                    <div className="absolute top-0 right-0 p-3 opacity-5 group-hover:opacity-20 transition-opacity">
+                        <Calendar className="w-16 h-16" />
                     </div>
-                    <p className="text-[10px] font-black text-text-muted uppercase tracking-widest">Today's Earnings</p>
-                    <h3 className="text-2xl font-black text-text mt-1 tracking-tighter">
-                        ₹{invoices.filter(i => new Date(i.createdAt).toDateString() === new Date().toDateString()).reduce((s, i) => s + (i.total || 0), 0).toLocaleString()}
-                    </h3>
+                    <div className="relative z-10">
+                        <div className="flex items-center gap-3 mb-6">
+                            <div className="p-2.5 bg-emerald-500/10 text-emerald-500">
+                                <Calendar className="w-5 h-5" />
+                            </div>
+                            <span className="text-[8px] font-black text-emerald-500 uppercase tracking-[0.2em] bg-emerald-500/10 px-2 py-0.5">Today</span>
+                        </div>
+                        <p className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Today's Earnings</p>
+                        <h3 className="text-3xl font-black text-text mt-2 tracking-tighter">
+                            ₹{invoices.filter(i => new Date(i.createdAt).toDateString() === new Date().toDateString()).reduce((s, i) => s + (i.total || 0), 0).toLocaleString()}
+                        </h3>
+                    </div>
                 </div>
 
-                <div className="bg-surface border border-border p-6 shadow-sm group hover:border-blue-500 transition-all">
-                    <div className="flex justify-between items-start mb-4">
-                        <div className="p-2 bg-blue-500/10 text-blue-500">
-                            <CreditCard className="w-5 h-5" />
-                        </div>
-                        <span className="text-[9px] font-black text-blue-500 uppercase tracking-widest bg-blue-500/10 px-2 py-1">Digital</span>
+                <div className="bg-surface border border-border p-8 shadow-sm group hover:border-blue-500 transition-all duration-300 relative overflow-hidden">
+                    <div className="absolute top-0 right-0 p-3 opacity-5 group-hover:opacity-20 transition-opacity">
+                        <Smartphone className="w-16 h-16" />
                     </div>
-                    <p className="text-[10px] font-black text-text-muted uppercase tracking-widest">Online / Card</p>
-                    <h3 className="text-2xl font-black text-text mt-1 tracking-tighter">
-                        ₹{invoices.filter(i => ['online', 'card'].includes(i.paymentMethod)).reduce((s, i) => s + (i.total || 0), 0).toLocaleString()}
-                    </h3>
+                    <div className="relative z-10">
+                        <div className="flex items-center gap-3 mb-6">
+                            <div className="p-2.5 bg-blue-500/10 text-blue-500">
+                                <Smartphone className="w-5 h-5" />
+                            </div>
+                            <span className="text-[8px] font-black text-blue-500 uppercase tracking-[0.2em] bg-blue-500/10 px-2 py-0.5">Digital</span>
+                        </div>
+                        <p className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">UPI / Card</p>
+                        <h3 className="text-3xl font-black text-text mt-2 tracking-tighter">
+                            ₹{invoices.filter(i => ['online', 'card', 'upi'].includes(i.paymentMethod)).reduce((s, i) => s + (i.total || 0), 0).toLocaleString()}
+                        </h3>
+                    </div>
                 </div>
 
-                <div className="bg-surface border border-border p-6 shadow-sm group hover:border-amber-500 transition-all">
-                    <div className="flex justify-between items-start mb-4">
-                        <div className="p-2 bg-amber-500/10 text-amber-500">
-                            <Smartphone className="w-5 h-5" />
-                        </div>
-                        <span className="text-[9px] font-black text-amber-500 uppercase tracking-widest bg-amber-500/10 px-2 py-1">Cash</span>
+                <div className="bg-surface border border-border p-8 shadow-sm group hover:border-amber-500 transition-all duration-300 relative overflow-hidden">
+                    <div className="absolute top-0 right-0 p-3 opacity-5 group-hover:opacity-20 transition-opacity">
+                        <Banknote className="w-16 h-16" />
                     </div>
-                    <p className="text-[10px] font-black text-text-muted uppercase tracking-widest">Cash Collected</p>
-                    <h3 className="text-2xl font-black text-text mt-1 tracking-tighter">
-                        ₹{invoices.filter(i => i.paymentMethod === 'cash' || !i.paymentMethod).reduce((s, i) => s + (i.total || 0), 0).toLocaleString()}
-                    </h3>
+                    <div className="relative z-10">
+                        <div className="flex items-center gap-3 mb-6">
+                            <div className="p-2.5 bg-amber-500/10 text-amber-500">
+                                <Banknote className="w-5 h-5" />
+                            </div>
+                            <span className="text-[8px] font-black text-amber-500 uppercase tracking-[0.2em] bg-amber-500/10 px-2 py-0.5">Physical</span>
+                        </div>
+                        <p className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Cash Collected</p>
+                        <h3 className="text-3xl font-black text-text mt-2 tracking-tighter">
+                            ₹{invoices.filter(i => i.paymentMethod === 'cash' || !i.paymentMethod).reduce((s, i) => s + (i.total || 0), 0).toLocaleString()}
+                        </h3>
+                    </div>
                 </div>
             </div>
 
-            {/* Search */}
-            <div className="relative max-w-xl group">
-                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-primary transition-colors" />
+            {/* Search Bar */}
+            <div className="relative max-w-2xl mx-auto group">
+                <Search className="absolute left-6 top-1/2 -translate-y-1/2 w-5 h-5 text-text-muted/40 group-focus-within:text-primary transition-colors" />
                 <input
                     type="text"
                     value={search}
                     onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-                    placeholder="Search by invoice number, customer name, or phone"
-                    className="w-full pl-12 pr-6 py-4 rounded-none border border-border bg-surface text-[11px] font-black uppercase tracking-widest placeholder:opacity-30 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/20 transition-all shadow-sm"
+                    placeholder="Search by invoice number, customer name, or phone..."
+                    className="w-full pl-16 pr-8 py-5 bg-surface border border-border text-[12px] font-black uppercase tracking-widest placeholder:opacity-20 focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/5 transition-all shadow-sm"
                 />
-                <div className="absolute right-4 top-1/2 -translate-y-1/2 text-[9px] font-black text-text-muted opacity-40 group-focus-within:opacity-100 uppercase tracking-widest">
-                    Search
-                </div>
             </div>
 
             {/* Table */}
@@ -1063,9 +1080,15 @@ export default function POSInvoicesPage() {
                                     </div>
                                 )}
                                 <div className="border-t border-border pt-3 mt-1 flex justify-between items-center">
-                                    <div>
-                                        <p className="text-[9px] font-black text-primary uppercase tracking-[0.3em]">Final Amount</p>
-                                        <p className="text-xl font-black text-text tracking-tighter uppercase whitespace-nowrap">Rs.{selectedInvoice.total?.toLocaleString()}</p>
+                                    <div className="flex flex-col gap-1">
+                                        <div className="flex items-center gap-2">
+                                            <p className="text-[8px] font-black text-text-muted uppercase tracking-[0.1em]">Invoice Total</p>
+                                            <p className="text-[11px] font-black text-text">Rs.{selectedInvoice.total?.toLocaleString()}</p>
+                                        </div>
+                                        <div>
+                                            <p className="text-[9px] font-black text-primary uppercase tracking-[0.3em]">Grand Total</p>
+                                            <p className="text-xl font-black text-text tracking-tighter uppercase whitespace-nowrap">Rs.{((selectedInvoice.total || 0) + (selectedInvoice.previousDueCollected || 0)).toLocaleString()}</p>
+                                        </div>
                                     </div>
                                     <div className="flex flex-col gap-1.5 text-right">
                                         <p className={`text-[8px] font-black uppercase tracking-widest ${selectedInvoice.paymentStatus === 'paid' ? 'text-emerald-500' : 'text-orange-500'}`}>

@@ -452,6 +452,7 @@ function WalletMonitor({ customers, onCustomerClick, customersMetadata, currentP
     const [selectedIds, setSelectedIds] = useState([]);
     const [bulkAmount, setBulkAmount] = useState('');
     const [bulkNote, setBulkNote] = useState('');
+    const [bulkExpiry, setBulkExpiry] = useState('');
     const [isProcessing, setIsProcessing] = useState(false);
     const [isSelectingAll, setIsSelectingAll] = useState(false);
 
@@ -461,11 +462,12 @@ function WalletMonitor({ customers, onCustomerClick, customersMetadata, currentP
         if (!bulkAmount || selectedIds.length === 0) return;
         setIsProcessing(true);
         try {
-            const res = await bulkRecharge(selectedIds, Number(bulkAmount), bulkNote || 'Bulk Promotional Credit');
+            const res = await bulkRecharge(selectedIds, Number(bulkAmount), bulkNote || 'Bulk Promotional Credit', bulkExpiry || null);
             if (res.success) {
                 alert(`Successfully recharged ${selectedIds.length} wallets!`);
                 setBulkAmount('');
                 setBulkNote('');
+                setBulkExpiry('');
                 setSelectedIds([]);
             } else {
                 alert('Recharge failed: ' + (res.message || 'Unknown error'));
@@ -512,7 +514,7 @@ function WalletMonitor({ customers, onCustomerClick, customersMetadata, currentP
                                             className="w-full md:w-48 p-4 bg-surface-alt border border-border font-black text-[10px] outline-none focus:border-primary transition-all disabled:opacity-30"
                                         />
                                     </div>
-                                    <div className="relative group flex-1">
+                                    <div className="relative group">
                                         <label className="absolute -top-2 left-3 bg-surface px-2 text-[8px] font-black text-text-muted uppercase tracking-widest z-10">Add Remarks</label>
                                         <input 
                                             type="text" 
@@ -520,7 +522,18 @@ function WalletMonitor({ customers, onCustomerClick, customersMetadata, currentP
                                             disabled={selectedIds.length === 0}
                                             value={bulkNote} 
                                             onChange={e => setBulkNote(e.target.value)} 
-                                            className="w-full p-4 bg-surface-alt border border-border font-black text-[10px] uppercase outline-none focus:border-primary transition-all disabled:opacity-30"
+                                            className="w-full md:w-64 p-4 bg-surface-alt border border-border font-black text-[10px] uppercase outline-none focus:border-primary transition-all disabled:opacity-30"
+                                        />
+                                    </div>
+                                    <div className="relative group">
+                                        <label className="absolute -top-2 left-3 bg-surface px-2 text-[8px] font-black text-text-muted uppercase tracking-widest z-10 transition-all group-focus-within:text-primary">Expiry Date (Optional)</label>
+                                        <input 
+                                            type="date" 
+                                            disabled={selectedIds.length === 0}
+                                            value={bulkExpiry} 
+                                            min={new Date().toISOString().split('T')[0]}
+                                            onChange={e => setBulkExpiry(e.target.value)} 
+                                            className="w-full md:w-44 p-4 bg-surface-alt border border-border font-black text-[10px] outline-none focus:border-primary transition-all disabled:opacity-30"
                                         />
                                     </div>
                                 </div>

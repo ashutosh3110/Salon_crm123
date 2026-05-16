@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import {
     Plus, Wallet, TrendingUp, TrendingDown,
-    CheckCircle2, ChevronRight, X, Zap
+    CheckCircle2, ChevronRight, X, Zap, Clock
 } from 'lucide-react';
 import AppBackButton from '../../components/app/AppBackButton';
 import { useWallet } from '../../contexts/WalletContext';
@@ -128,7 +128,96 @@ export default function AppWalletPage() {
                     </div>
                 </div>
             </motion.div>
-        </div>
+
+                {/* Transactions Section */}
+                <div className="mt-8">
+                    <div className="flex items-center justify-between mb-4">
+                        <h3 style={{ color: colors.text, fontSize: '16px', fontWeight: 900 }}>Recent Transactions</h3>
+                        <div className="p-2 rounded-full" style={{ background: colors.card, border: `1px solid ${colors.border}` }}>
+                            <ChevronRight size={16} style={{ color: colors.textMuted }} />
+                        </div>
+                    </div>
+
+                    <div className="space-y-3">
+                        {transactions && transactions.length > 0 ? (
+                            transactions.map((tx, idx) => (
+                                <motion.div
+                                    key={tx.id || idx}
+                                    initial={{ opacity: 0, x: -10 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    transition={{ delay: idx * 0.05 }}
+                                    style={{
+                                        background: colors.card,
+                                        padding: '16px',
+                                        borderRadius: '20px',
+                                        border: `1px solid ${colors.border}`,
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'space-between'
+                                    }}
+                                >
+                                    <div className="flex items-center gap-4">
+                                        <div style={{
+                                            width: '44px', height: '44px', borderRadius: '14px',
+                                            background: tx.type === 'CREDIT' ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)',
+                                            display: 'flex', alignItems: 'center', justifyContent: 'center'
+                                        }}>
+                                            {tx.type === 'CREDIT' ? 
+                                                <TrendingUp size={20} className="text-emerald-500" /> : 
+                                                <TrendingDown size={20} className="text-red-500" />
+                                            }
+                                        </div>
+                                        <div>
+                                            <div className="flex items-center gap-2 mb-1">
+                                                <p style={{ color: colors.text, fontSize: '14px', fontWeight: 800 }}>{tx.description}</p>
+                                                {tx.expiryDate && (
+                                                    <span style={{ 
+                                                        fontSize: '8px', fontWeight: 900, background: '#C8956C', 
+                                                        color: '#FFF', padding: '2px 6px', borderRadius: '4px',
+                                                        textTransform: 'uppercase', letterSpacing: '0.05em'
+                                                    }}>
+                                                        PROMO
+                                                    </span>
+                                                )}
+                                            </div>
+                                            <div className="flex flex-col gap-1">
+                                                <p style={{ color: colors.textMuted, fontSize: '11px', fontWeight: 600 }}>
+                                                    {tx.date ? new Date(tx.date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : '-'}
+                                                </p>
+                                                {tx.expiryDate && (
+                                                    <div className="flex items-center gap-1.5 mt-1 bg-red-500/10 py-1 px-2 rounded-md w-fit border border-red-500/20">
+                                                        <Clock size={10} className="text-red-500" />
+                                                        <p style={{ color: '#EF4444', fontSize: '10px', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.02em' }}>
+                                                            Expires on: {new Date(tx.expiryDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}
+                                                        </p>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="text-right">
+                                        <p style={{ 
+                                            color: tx.type === 'CREDIT' ? '#10B981' : colors.text, 
+                                            fontSize: '15px', fontWeight: 900 
+                                        }}>
+                                            {tx.type === 'CREDIT' ? '+' : '-'}₹{tx.amount.toLocaleString()}
+                                        </p>
+                                        {tx.remainingAmount !== undefined && tx.remainingAmount < tx.amount && tx.remainingAmount > 0 && (
+                                            <p style={{ color: colors.textMuted, fontSize: '9px', fontWeight: 700 }}>
+                                                ₹{tx.remainingAmount} left
+                                            </p>
+                                        )}
+                                    </div>
+                                </motion.div>
+                            ))
+                        ) : (
+                            <div className="py-12 text-center">
+                                <p style={{ color: colors.textMuted, fontSize: '13px', fontWeight: 600 }}>No transactions yet</p>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            </div>
 
 
             {/* Add Money Modal */}

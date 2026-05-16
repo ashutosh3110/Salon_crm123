@@ -3,8 +3,20 @@ import { useLocation } from 'react-router-dom';
 import { useCustomerAuth } from './CustomerAuthContext';
 import { useBusiness } from './BusinessContext';
 import api from '../services/api';
+import { toast } from 'react-hot-toast';
 
 const WalletContext = createContext(null);
+
+const loadRazorpayScript = () => {
+    return new Promise((resolve) => {
+        const script = document.createElement('script');
+        script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+        script.async = true;
+        script.onload = () => resolve(true);
+        script.onerror = () => resolve(false);
+        document.body.appendChild(script);
+    });
+};
 
 function mapLoyaltyTx(tx) {
     const createdAt = tx?.createdAt || tx?.date || tx?.updatedAt;
@@ -68,13 +80,13 @@ export function WalletProvider({ children }) {
         setLoading(true);
         try {
             const res = await api.get('/wallet');
-            if (res.data.success) {
+            if (res.data.success && res.data.data) {
                 const data = res.data.data;
                 setBalance(data.balance || 0);
                 setTransactions((data.transactions || []).map(tx => ({
                     ...tx,
-                    id: tx._id,
-                    date: tx.createdAt
+                    id: tx.id || tx._id,
+                    date: tx.date || tx.createdAt
                 })));
             }
         } catch (error) {
@@ -128,11 +140,12 @@ export function WalletProvider({ children }) {
         return res.data;
     };
 
-    const verifyWalletTopup = async (paymentId, orderId, signature) => {
+    const verifyWalletTopup = async (paymentId, orderId, signature, amount) => {
         const res = await api.post('/wallet/topup/verify', {
-            razorpay_payment_id: paymentId,
-            razorpay_order_id: orderId,
-            razorpay_signature: signature
+            razorpayPaymentId: paymentId,
+            razorpayOrderId: orderId,
+            razorpaySignature: signature,
+            amount: amount
         });
         if (res.data.success) {
             await refreshWallet();
@@ -140,10 +153,84 @@ export function WalletProvider({ children }) {
         return res.data;
     };
 
+    const addMoney = async (amount) => {
+        return new Promise(async (resolve) => {
+            try {
+                // 1. Load Razorpay Script
+                const isLoaded = await loadRazorpayScript();
+                if (!isLoaded) {
+                    toast.error('Razorpay SDK failed to load. Check your connection.');
+                    return resolve({ success: false });
+                }
+
+                // 2. Create Order
+                const orderRes = await createWalletOrder(amount);
+                if (!orderRes.success) {
+                    toast.error(orderRes.message || 'Failed to create payment order');
+                    return resolve({ success: false });
+                }
+
+                const order = orderRes.order;
+
+                // 3. Open Razorpay Options
+                const options = {
+                    key: import.meta.env.VITE_RAZORPAY_KEY_ID,
+                    amount: order.amount,
+                    currency: order.currency,
+                    name: 'Salon Wallet Topup',
+                    description: `Adding ₹${amount} to your wallet`,
+                    order_id: order.id,
+                    handler: async (response) => {
+                        try {
+                            const verifyRes = await verifyWalletTopup(
+                                response.razorpay_payment_id,
+                                response.razorpay_order_id,
+                                response.razorpay_signature,
+                                amount
+                            );
+                            if (verifyRes.success) {
+                                toast.success('Wallet recharged successfully!');
+                                await refreshWallet();
+                                resolve({ success: true });
+                            } else {
+                                toast.error(verifyRes.message || 'Verification failed');
+                                resolve({ success: false });
+                            }
+                        } catch (err) {
+                            console.error('Verification error:', err);
+                            toast.error('Payment verification failed');
+                            resolve({ success: false });
+                        }
+                    },
+                    prefill: {
+                        name: customer?.name || '',
+                        email: customer?.email || '',
+                        contact: customer?.phone || ''
+                    },
+                    theme: {
+                        color: '#C8956C'
+                    },
+                    modal: {
+                        ondismiss: () => {
+                            resolve({ success: false, message: 'Payment cancelled' });
+                        }
+                    }
+                };
+
+                const rzp = new window.Razorpay(options);
+                rzp.open();
+            } catch (err) {
+                console.error('Add money flow failed:', err);
+                toast.error('Could not initialize payment');
+                resolve({ success: false, message: err.message });
+            }
+        });
+    };
+
     // Admin/Staff Functions
-    const bulkRecharge = async (customerIds, amount, note) => {
+    const bulkRecharge = async (customerIds, amount, note, expiryDate = null) => {
         try {
-            const res = await api.post('/wallet/bulk-recharge', { customerIds, amount, note });
+            const res = await api.post('/wallet/bulk-recharge', { customerIds, amount, note, expiryDate });
             return res.data;
         } catch (err) {
             console.error('Bulk recharge failed:', err);
@@ -151,14 +238,15 @@ export function WalletProvider({ children }) {
         }
     };
 
-    const adminAdjustBalance = async (customerId, amount, type, note) => {
+    const adminAdjustBalance = async (customerId, amount, type, note, expiryDate = null) => {
         try {
             // We can use bulkRecharge for single adjustment too, or if there's a specific endpoint
             // For now, using bulkRecharge pattern since it's available
             const res = await api.post('/wallet/bulk-recharge', { 
                 customerIds: [customerId], 
                 amount: type === 'DEBIT' ? -amount : amount, 
-                note 
+                note,
+                expiryDate
             });
             if (res.data?.success) {
                 await initializeWallet(customerId);
@@ -174,7 +262,7 @@ export function WalletProvider({ children }) {
         if (!customerId) return;
         try {
             const res = await api.get(`/wallet/customer/${customerId}`);
-            if (res.data?.success) {
+            if (res.data?.success && res.data?.data) {
                 const data = res.data.data;
                 setCustomerWallets(prev => ({
                     ...prev,
@@ -209,13 +297,15 @@ export function WalletProvider({ children }) {
         customerWallets,
         getWallet,
         refreshWallet,
+        addMoney,
         createWalletOrder,
         verifyWalletTopup,
         bulkRecharge,
         adminAdjustBalance,
         initializeWallet,
+        spentThisMonth: 0,
         walletSettings: loyaltySettings
-    }), [balance, transactions, loading, allWallets, customerWallets, getWallet, refreshWallet, loyaltySettings]);
+    }), [balance, transactions, loading, allWallets, customerWallets, getWallet, refreshWallet, loyaltySettings, addMoney]);
 
     return (
         <WalletContext.Provider value={value}>

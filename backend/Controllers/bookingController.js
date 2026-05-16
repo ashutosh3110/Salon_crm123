@@ -1,5 +1,6 @@
 const Booking = require('../Models/Booking');
 const { sendWapixoTemplate } = require('../Utils/whatsapp');
+const { spendWallet } = require('../Utils/walletHelper');
 const User = require('../Models/User');
 const Service = require('../Models/Service');
 const Customer = require('../Models/Customer');
@@ -156,24 +157,8 @@ exports.createBooking = async (req, res) => {
                 return res.status(400).json({ success: false, message: 'Insufficient wallet balance' });
             }
 
-            // Deduct balance
-            customer.walletBalance -= finalTotal;
-            
-            // Increment total spend and visits
-            customer.totalSpend = (customer.totalSpend || 0) + finalTotal;
-            customer.totalVisits = (customer.totalVisits || 0) + 1;
-            
-            await customer.save();
-
-            // Create wallet transaction
-            await WalletTransaction.create({
-                customerId: targetCustomerId,
-                salonId: salonId,
-                amount: finalTotal,
-                type: 'DEBIT',
-                description: `Payment for service: ${service.name}`,
-                status: 'COMPLETED'
-            });
+            // Use wallet helper to spend balance
+            await spendWallet(targetCustomerId, finalTotal, `Payment for service: ${service.name}`);
         }
 
         const booking = await Booking.create({

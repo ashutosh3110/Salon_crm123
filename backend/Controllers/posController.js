@@ -4,6 +4,7 @@ const Customer = require('../Models/Customer');
 const LoyaltyTransaction = require('../Models/LoyaltyTransaction');
 const Setting = require('../Models/Setting');
 const { sendWapixoTemplate } = require('../Utils/whatsapp');
+const { spendWallet } = require('../Utils/walletHelper');
 const Salon = require('../Models/Salon');
 
 // @desc    Checkout and generate invoice
@@ -70,7 +71,9 @@ exports.checkout = async (req, res) => {
 
         // Calculate paid amount from split payments
         const paidAmount = payments.reduce((acc, p) => acc + (Number(p.amount) || 0), 0);
-        const dueAmount = Math.max(0, total - useWalletAmount - (paidAmount - previousDueCollected));
+        // previousDueCollected is a separate field for money taken for old dues
+        // The current invoice due is just the total minus what was paid for this transaction
+        const dueAmount = Math.max(0, total - useWalletAmount - paidAmount);
 
         // 3. Calculate loyalty points (Rule from settings)
         const settings = await Setting.findOne();
@@ -95,7 +98,7 @@ exports.checkout = async (req, res) => {
             loyaltyPointsRedeemed: useLoyaltyPoints,
             loyaltyPointsEarned: earnedPoints,
             walletRedeemed: useWalletAmount,
-            previousDueCollected: Number(previousDueCollected) || 0,
+            previousDueCollected: (Number(previousDueCollected) || 0) > 0 ? Number(previousDueCollected) : Math.max(0, (paidAmount + useWalletAmount) - total),
             bookingId,
             orderId
         });
@@ -104,9 +107,16 @@ exports.checkout = async (req, res) => {
         const customer = await Customer.findById(clientId);
         if (customer) {
             customer.loyaltyPoints = (customer.loyaltyPoints || 0) - useLoyaltyPoints + earnedPoints;
-            customer.walletBalance = (customer.walletBalance || 0) - useWalletAmount;
+            
+            // Use wallet helper to spend balance if applicable
+            if (useWalletAmount > 0) {
+                await spendWallet(clientId, useWalletAmount, `Payment for POS Invoice #${invoiceNumber}`);
+            }
 
             const totalReceived = (Number(useWalletAmount) || 0) + (Number(paidAmount) || 0);
+            const collectedPrev = Number(previousDueCollected) || 0;
+            
+            // New due amount = (Existing Due + Current Bill) - (All money received today)
             customer.dueAmount = Math.max(0, (customer.dueAmount || 0) + total - totalReceived);
             
             customer.totalVisits = (customer.totalVisits || 0) + 1;

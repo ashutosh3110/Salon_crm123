@@ -2179,10 +2179,15 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
     const dueAmount = Math.max(0, totals.totalWithPrevDue - paidAmount);
 
     useEffect(() => {
-        if (paidAmount > totals.totalWithPrevDue + 1) {
-            toast(`Warning: Total payment exceeds total payable by ₹${(paidAmount - totals.totalWithPrevDue).toFixed(0)}`, { id: 'overpaid-toast' });
+        const totalLiability = totals.total + (Number(qClient?.dueAmount) || 0);
+        if (paidAmount > totalLiability + 1) {
+            toast(`Info: Total payment exceeds total liability by ₹${(paidAmount - totalLiability).toFixed(0)}`, { 
+                id: 'overpaid-toast',
+                icon: 'ℹ️',
+                duration: 4000
+            });
         }
-    }, [paidAmount, totals.totalWithPrevDue]);
+    }, [paidAmount, totals.total, qClient?.dueAmount]);
 
     const addToQCart = (item, type = 'service') => {
         setQCart([...qCart, {
@@ -2246,7 +2251,11 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
         if (!qClient) return toast.error('Please select a client');
         if (qCart.length === 0) return toast.error('Cart is empty');
         if (qCart.some(item => item.type === 'service' && (!item.staffIds || item.staffIds.length === 0 || item.staffIds.some(sid => !sid)))) return toast.error('Please assign stylists for all services');
-        if (paidAmount > totals.totalWithPrevDue + 1) return toast(`Total payment (₹${paidAmount}) exceeds Total Payable (₹${totals.totalWithPrevDue.toFixed(0)})`);
+        
+        const totalLiability = totals.total + (Number(qClient?.dueAmount) || 0);
+        if (paidAmount > totalLiability + 1) {
+            return toast.error(`Overpayment Error: You are paying ₹${paidAmount}, but total liability is only ₹${totalLiability.toFixed(0)}. Please adjust the payment amount.`);
+        }
 
         setIsProcessing(true);
         try {
@@ -2289,8 +2298,8 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                 })),
                 totals: {
                     ...totals,
-                    paidAmount: (Number(qPayments.cash || 0) + Number(qPayments.online || 0)),
-                    balanceDue: Math.max(0, totals.total - (Number(qPayments.cash || 0) + Number(qPayments.online || 0)))
+                    paidAmount: (Number(qPayments.cash || 0) + Number(qPayments.online || 0) + Number(qRedeemWallet || 0)),
+                    balanceDue: Math.max(0, totals.totalWithPrevDue - (Number(qPayments.cash || 0) + Number(qPayments.online || 0) + Number(qRedeemWallet || 0)))
                 },
                 payments: [
                     ...(qPayments.cash > 0 ? [{ method: 'cash', amount: qPayments.cash }] : []),
@@ -2884,63 +2893,83 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
 
                         {/* Grand Total & Finalize */}
                         <div className="flex items-center gap-4 shrink-0">
-                            <div className="flex flex-col items-end gap-1.5 mr-2">
-                                {/* Current bill due badge */}
-                                {dueAmount > 1 && (
-                                    <div className="flex items-center gap-1.5 bg-rose-50 border border-rose-200 px-3 py-1.5 rounded-xl">
-                                        <AlertTriangle className="w-3.5 h-3.5 text-rose-500" />
-                                        <div className="flex flex-col">
-                                            <span className="text-[7px] font-black text-rose-400 uppercase tracking-widest leading-none">This bill due</span>
-                                            <span className="text-[13px] font-black text-rose-600 font-mono leading-none">₹{dueAmount.toFixed(2)}</span>
+                                <div className="flex flex-col items-end gap-1.5 mr-2">
+                                    {/* Current bill due badge */}
+                                    {dueAmount > 1 && (
+                                        <div className="flex items-center gap-1.5 bg-rose-50 border border-rose-200 px-3 py-1.5 rounded-xl">
+                                            <AlertTriangle className="w-3.5 h-3.5 text-rose-500" />
+                                            <div className="flex flex-col">
+                                                <span className="text-[7px] font-black text-rose-400 uppercase tracking-widest leading-none">This bill due</span>
+                                                <span className="text-[13px] font-black text-rose-600 font-mono leading-none">₹{dueAmount.toFixed(2)}</span>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {/* Historical outstanding status badges */}
+                                    {qClient && Number(qClient.dueAmount || 0) > 0 && (
+                                        qCollectedPrevDue > 0 ? (
+                                            <div className="flex items-center gap-1.5 bg-emerald-50 border border-emerald-200 px-3 py-1.5 rounded-xl shadow-sm">
+                                                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
+                                                <div className="flex flex-col">
+                                                    <span className="text-[7px] font-black text-emerald-500 uppercase tracking-widest leading-none">Prev. Due Collected</span>
+                                                    <span className="text-[13px] font-black text-emerald-600 font-mono leading-none italic">₹{qCollectedPrevDue.toFixed(2)}</span>
+                                                </div>
+                                            </div>
+                                        ) : (
+                                            <div className="flex items-center gap-1.5 bg-rose-50 border border-rose-200 px-3 py-1.5 rounded-xl shadow-sm animate-pulse">
+                                                <AlertTriangle className="w-3.5 h-3.5 text-rose-500" />
+                                                <div className="flex flex-col">
+                                                    <span className="text-[7px] font-black text-rose-500 uppercase tracking-widest leading-none">Previous Due Amount is</span>
+                                                    <span className="text-[13px] font-black text-rose-600 font-mono leading-none italic">₹{Number(qClient.dueAmount).toFixed(2)}</span>
+                                                </div>
+                                            </div>
+                                        )
+                                    )}
+
+                                    {/* Wallet Suggestion Badge */}
+                                    {qClient && qClientWalletBalance > 0 && qRedeemWallet === 0 && dueAmount > 0 && (
+                                        <div className="flex items-center gap-1.5 bg-emerald-50 border border-emerald-200 px-3 py-1.5 rounded-xl animate-bounce">
+                                            <Wallet className="w-3.5 h-3.5 text-emerald-500" />
+                                            <button
+                                                onClick={() => setQRedeemWallet(Math.min(qClientWalletBalance, dueAmount))}
+                                                className="text-[9px] font-black text-emerald-600 uppercase tracking-widest leading-none"
+                                            >
+                                                Pay ₹{Math.min(qClientWalletBalance, dueAmount).toFixed(2)} from wallet?
+                                            </button>
+                                        </div>
+                                    )}
+
+                                    {(() => {
+                                        const totalLiability = totals.total + (Number(qClient?.dueAmount) || 0);
+                                        if (paidAmount > totalLiability + 1) {
+                                            return (
+                                                <div className="flex items-center gap-1.5 bg-rose-50 border border-rose-200 px-3 py-1.5 rounded-xl">
+                                                    <AlertTriangle className="w-3.5 h-3.5 text-rose-500" />
+                                                    <div className="flex flex-col">
+                                                        <span className="text-[7px] font-black text-rose-500 uppercase tracking-widest leading-none">Overpaid</span>
+                                                        <span className="text-[13px] font-black text-rose-600 font-mono leading-none">₹{(paidAmount - totalLiability).toFixed(2)}</span>
+                                                    </div>
+                                                </div>
+                                            );
+                                        }
+                                        return null;
+                                    })()}
+
+                                    {totals.redeemWallet > 0 && (
+                                        <span className="text-[9px] font-black text-emerald-600 uppercase tracking-widest leading-none">Wallet Used: -₹{totals.redeemWallet.toFixed(2)}</span>
+                                    )}
+
+                                    <div className="flex items-center gap-4 bg-slate-900 text-white px-6 py-3 rounded-2xl shadow-xl shadow-slate-900/20">
+                                        <div className="flex flex-col items-end border-r border-white/10 pr-4">
+                                            <span className="text-[7px] font-black uppercase tracking-widest text-white/40 leading-none">Net Bill</span>
+                                            <span className="text-[16px] font-black italic font-mono text-white leading-none mt-1">₹{totals.total.toFixed(2)}</span>
+                                        </div>
+                                        <div className="flex flex-col items-end">
+                                            <span className="text-[9px] font-black uppercase tracking-[0.2em] text-white/50 italic leading-none">Total to Pay</span>
+                                            <span className="text-[26px] font-black italic font-mono leading-none mt-1">₹{totals.totalWithPrevDue.toFixed(2)}</span>
                                         </div>
                                     </div>
-                                )}
-                                {/* Historical outstanding badge */}
-                                {qClient && Number(qClient.dueAmount || 0) > 0 && (
-                                    <div className="flex items-center gap-1.5 bg-amber-50 border border-amber-200 px-3 py-1.5 rounded-xl">
-                                        <AlertTriangle className="w-3.5 h-3.5 text-amber-500" />
-                                        <div className="flex flex-col">
-                                            <span className="text-[7px] font-black text-amber-500 uppercase tracking-widest leading-none">Prev. outstanding</span>
-                                            <span className="text-[13px] font-black text-amber-600 font-mono leading-none">₹{Number(qClient.dueAmount).toFixed(2)}</span>
-                                        </div>
-                                    </div>
-                                )}
-                                {/* Wallet Suggestion Badge */}
-                                {qClient && qClientWalletBalance > 0 && qRedeemWallet === 0 && dueAmount > 0 && (
-                                    <div className="flex items-center gap-1.5 bg-emerald-50 border border-emerald-200 px-3 py-1.5 rounded-xl animate-bounce">
-                                        <Wallet className="w-3.5 h-3.5 text-emerald-500" />
-                                        <button
-                                            onClick={() => setQRedeemWallet(Math.min(qClientWalletBalance, dueAmount))}
-                                            className="text-[9px] font-black text-emerald-600 uppercase tracking-widest leading-none"
-                                        >
-                                            Pay ₹{Math.min(qClientWalletBalance, dueAmount).toFixed(2)} from wallet?
-                                        </button>
-                                    </div>
-                                )}
-                                {paidAmount > totals.totalWithPrevDue + 1 && (
-                                    <div className="flex items-center gap-1.5 bg-rose-50 border border-rose-200 px-3 py-1.5 rounded-xl">
-                                        <AlertTriangle className="w-3.5 h-3.5 text-rose-500" />
-                                        <div className="flex flex-col">
-                                            <span className="text-[7px] font-black text-rose-500 uppercase tracking-widest leading-none">Overpaid</span>
-                                            <span className="text-[13px] font-black text-rose-600 font-mono leading-none">₹{(paidAmount - totals.totalWithPrevDue).toFixed(2)}</span>
-                                        </div>
-                                    </div>
-                                )}
-                                {qCollectedPrevDue > 0 && (
-                                    <span className="text-[9px] font-black text-emerald-600 uppercase tracking-widest leading-none">Prev. Due Collected: +₹{qCollectedPrevDue.toFixed(2)}</span>
-                                )}
-                                {totals.redeemWallet > 0 && (
-                                    <span className="text-[9px] font-black text-emerald-600 uppercase tracking-widest leading-none">Wallet Used: -₹{totals.redeemWallet.toFixed(2)}</span>
-                                )}
-                                <div className="flex items-center gap-3 bg-slate-900 text-white px-6 py-3 rounded-2xl shadow-xl shadow-slate-900/20">
-                                    <div className="flex flex-col items-end mr-2">
-                                        <span className="text-[7px] font-black uppercase tracking-widest text-white/40">Bill: ₹{totals.total.toFixed(2)}</span>
-                                        {qCollectedPrevDue > 0 && <span className="text-[7px] font-black uppercase tracking-widest text-emerald-400">+ Due: ₹{qCollectedPrevDue.toFixed(2)}</span>}
-                                    </div>
-                                    <span className="text-[9px] font-black uppercase tracking-[0.2em] text-white/50 italic">Total</span>
-                                    <span className="text-2xl font-black italic font-mono">₹{totals.totalWithPrevDue.toFixed(2)}</span>
                                 </div>
-                            </div>
 
                             <button
                                 onClick={handleConfirm}

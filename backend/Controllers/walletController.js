@@ -5,6 +5,7 @@ const Razorpay = require('razorpay');
 const crypto = require('crypto');
 const Salon = require('../Models/Salon');
 const LoyaltyTransaction = require('../Models/LoyaltyTransaction');
+const { addCredit } = require('../Utils/walletHelper');
 
 // Initialize Razorpay
 let razorpay;
@@ -41,15 +42,19 @@ exports.getWalletDetails = async (req, res) => {
 
         res.json({
             success: true,
-            balance: customer.walletBalance || 0,
-            transactions: transactions.map(tx => ({
-                id: tx._id,
-                amount: tx.amount,
-                type: tx.type,
-                description: tx.description,
-                date: tx.createdAt,
-                status: tx.status
-            }))
+            data: {
+                balance: customer.walletBalance || 0,
+                transactions: transactions.map(tx => ({
+                    id: tx._id,
+                    amount: tx.amount,
+                    remainingAmount: tx.remainingAmount,
+                    type: tx.type,
+                    description: tx.description,
+                    date: tx.createdAt,
+                    status: tx.status,
+                    expiryDate: tx.expiryDate
+                }))
+            }
         });
     } catch (err) {
         res.status(500).json({ success: false, message: err.message });
@@ -100,24 +105,14 @@ exports.verifyTopup = async (req, res) => {
             .digest('hex');
 
         if (expectedSignature === razorpaySignature) {
-            // Update customer balance
-            const customer = await Customer.findByIdAndUpdate(
+            // Use wallet helper to add credit
+            const customer = await Customer.findById(req.user._id);
+            await addCredit(
                 req.user._id,
-                { $inc: { walletBalance: Number(amount) } },
-                { new: true }
+                customer.salonId,
+                amount,
+                'Wallet Top-up via Razorpay'
             );
-
-            // Create transaction record
-            await WalletTransaction.create({
-                customerId: req.user._id,
-                salonId: customer.salonId,
-                amount: Number(amount),
-                type: 'CREDIT',
-                description: 'Wallet Top-up via Razorpay',
-                paymentId: razorpayPaymentId,
-                orderId: razorpayOrderId,
-                status: 'COMPLETED'
-            });
 
             // Send WhatsApp Message with credit check
             try {
@@ -179,8 +174,10 @@ exports.verifyTopup = async (req, res) => {
 
             res.json({
                 success: true,
-                balance: customer.walletBalance,
-                message: 'Wallet top-up successful'
+                data: {
+                    balance: customer.walletBalance,
+                    message: 'Wallet top-up successful'
+                }
             });
         } else {
             res.status(400).json({ success: false, message: 'Invalid payment signature' });
@@ -210,24 +207,18 @@ exports.bulkRecharge = async (req, res) => {
         // Perform bulk update
         const results = await Promise.all(customerIds.map(async (cid) => {
             try {
-                // Update customer balance
-                const customer = await Customer.findByIdAndUpdate(
+                // Use helper to add credit with optional expiry
+                await addCredit(
                     cid,
-                    { $inc: { walletBalance: numericAmount } },
-                    { new: true }
+                    salonId,
+                    numericAmount,
+                    note || 'Bulk Promotional Credit',
+                    req.body.expiryDate ? new Date(req.body.expiryDate) : null
                 );
+                
+                const customer = await Customer.findById(cid);
 
                 if (customer) {
-                    // Create transaction record
-                    await WalletTransaction.create({
-                        customerId: cid,
-                        salonId: salonId,
-                        amount: numericAmount,
-                        type: 'CREDIT',
-                        description: note || 'Bulk Promotional Credit',
-                        status: 'COMPLETED'
-                    });
-
                     // Send WhatsApp Message with credit check
                     try {
                         const salon = await Salon.findById(salonId);
@@ -284,6 +275,59 @@ exports.bulkRecharge = async (req, res) => {
         res.status(500).json({ success: false, message: err.message });
     }
 };
+
+// @desc    Direct top-up (simulated/direct)
+// @route   POST /api/wallet/topup/direct
+// @access  Private (Customer)
+exports.directTopup = async (req, res) => {
+    try {
+        const { amount } = req.body;
+        if (!amount || amount <= 0) {
+            return res.status(400).json({ success: false, message: 'Valid amount is required' });
+        }
+
+        const customer = await Customer.findById(req.user._id);
+        if (!customer) {
+            return res.status(404).json({ success: false, message: 'Customer not found' });
+        }
+
+        await addCredit(
+            req.user._id,
+            customer.salonId,
+            amount,
+            'Wallet Top-up (Direct)'
+        );
+
+        // Award Loyalty Points
+        try {
+            const salon = await Salon.findById(customer.salonId);
+            if (salon && salon.loyaltySetting && salon.loyaltySetting.active) {
+                const rate = salon.loyaltySetting.pointsRate || 100;
+                const points = Math.floor(Number(amount) / rate);
+                if (points > 0) {
+                    await Customer.findByIdAndUpdate(req.user._id, { $inc: { loyaltyPoints: points } });
+                    await LoyaltyTransaction.create({
+                        customerId: req.user._id,
+                        salonId: customer.salonId,
+                        amount: points,
+                        type: 'EARN',
+                        description: `Points earned on Wallet Top-up (₹${amount})`
+                    });
+                }
+            }
+        } catch (le) { console.error('Loyalty Error:', le); }
+
+        res.json({
+            success: true,
+            data: {
+                balance: customer.walletBalance,
+                message: 'Wallet top-up successful'
+            }
+        });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+};
 // @desc    Get wallet balance for a specific customer
 // @route   GET /api/wallet/customer/:customerId
 // @access  Private
@@ -295,7 +339,9 @@ exports.getCustomerWallet = async (req, res) => {
         }
         res.json({
             success: true,
-            balance: customer.walletBalance || 0
+            data: {
+                balance: customer.walletBalance || 0
+            }
         });
     } catch (err) {
         res.status(500).json({ success: false, message: err.message });
