@@ -1085,25 +1085,29 @@ export default function POSInvoicesPage() {
                                 {selectedInvoice.cgst > 0 && (
                                     <div className="flex justify-between text-[10px] font-black text-text uppercase tracking-widest">
                                         <span>CGST ({(selectedInvoice.gstPercent ) / 2}%)</span>
-                                        <span>+Rs.{selectedInvoice.cgst?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                                        <span>{selectedInvoice.includingGst ? '(Included)' : `+Rs.${selectedInvoice.cgst?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}</span>
+                                        {selectedInvoice.includingGst && <span>Rs.{selectedInvoice.cgst?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>}
                                     </div>
                                 )}
                                 {selectedInvoice.sgst > 0 && (
                                     <div className="flex justify-between text-[10px] font-black text-text uppercase tracking-widest">
                                         <span>SGST ({(selectedInvoice.gstPercent) / 2}%)</span>
-                                        <span>+Rs.{selectedInvoice.sgst?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                                        <span>{selectedInvoice.includingGst ? '(Included)' : `+Rs.${selectedInvoice.sgst?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}</span>
+                                        {selectedInvoice.includingGst && <span>Rs.{selectedInvoice.sgst?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>}
                                     </div>
                                 )}
                                 {selectedInvoice.igst > 0 && (
                                     <div className="flex justify-between text-[10px] font-black text-text uppercase tracking-widest">
                                         <span>IGST ({selectedInvoice.gstPercent}%)</span>
-                                        <span>+Rs.{selectedInvoice.igst?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                                        <span>{selectedInvoice.includingGst ? '(Included)' : `+Rs.${selectedInvoice.igst?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}</span>
+                                        {selectedInvoice.includingGst && <span>Rs.{selectedInvoice.igst?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>}
                                     </div>
                                 )}
                                 {(!selectedInvoice.cgst && !selectedInvoice.sgst && !selectedInvoice.igst && (selectedInvoice.tax || 0) > 0) && (
                                     <div className="flex justify-between text-[10px] font-black text-text uppercase tracking-widest">
                                         <span>Tax (GST {selectedInvoice.gstPercent}%)</span>
-                                        <span>+Rs.{selectedInvoice.tax?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                                        <span>{selectedInvoice.includingGst ? '(Included)' : `+Rs.${selectedInvoice.tax?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}</span>
+                                        {selectedInvoice.includingGst && <span>Rs.{selectedInvoice.tax?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>}
                                     </div>
                                 )}
                                 {selectedInvoice.discount > 0 && (
@@ -1156,6 +1160,12 @@ export default function POSInvoicesPage() {
                                                 <div className="flex items-center justify-end gap-1.5">
                                                     <span className="text-[8px] font-black text-emerald-600 uppercase tracking-widest">Wallet</span>
                                                     <span className="text-[11px] font-black text-emerald-600 tracking-tighter">₹{selectedInvoice.walletRedeemed?.toLocaleString()}</span>
+                                                </div>
+                                            )}
+                                            {selectedInvoice.paymentStatus !== 'paid' && (
+                                                <div className="flex items-center justify-end gap-1.5 pt-1 border-t border-dashed border-orange-500/20 mt-1">
+                                                    <span className="text-[8px] font-black text-orange-600 uppercase tracking-widest">Balance Due</span>
+                                                    <span className="text-[11px] font-black text-orange-600 tracking-tighter">₹{(selectedInvoice.dueAmount || 0).toLocaleString()}</span>
                                                 </div>
                                             )}
                                         </div>

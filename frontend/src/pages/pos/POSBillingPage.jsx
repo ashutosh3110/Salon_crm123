@@ -539,7 +539,20 @@ export default function POSBillingPage() {
             else discount += appliedVoucher.value;
         }
 
-        const totalDeductions = discount + (redeemWallet || 0);
+        let totalMembershipDiscount = 0;
+        let totalGrossAmount = 0;
+
+        cart.forEach(item => {
+            if (item.isPackageRedemption) return;
+            if (item.originalBooking) {
+                totalGrossAmount += (item.originalBooking.subtotal || item.price) * item.quantity;
+                totalMembershipDiscount += (item.originalBooking.membershipDiscount || 0) * item.quantity;
+            } else {
+                totalGrossAmount += (item.price * item.quantity);
+            }
+        });
+
+        const totalDeductions = discount + totalMembershipDiscount;
 
         let totalBaseAmount = 0;
         let totalGstAmount = 0;
@@ -583,32 +596,24 @@ export default function POSBillingPage() {
             }
         });
 
+        const round2 = (num) => Math.round(num * 100) / 100;
         const isSameState = customerState === fiscal.state;
-        const cgst = isSameState ? totalGstAmount / 2 : 0;
-        const sgst = isSameState ? totalGstAmount / 2 : 0;
-        const igst = !isSameState ? totalGstAmount : 0;
+        const cgst = isSameState ? round2(totalGstAmount / 2) : 0;
+        const sgst = isSameState ? round2(totalGstAmount / 2) : 0;
+        const igst = !isSameState ? round2(totalGstAmount) : 0;
 
-        const currentBillTotal = Math.max(0, (subtotal + totalExclusiveTax) - totalDeductions);
+        const cgstExcl = isSameState ? round2(totalExclusiveTax / 2) : 0;
+        const sgstExcl = isSameState ? round2(totalExclusiveTax / 2) : 0;
+        const igstExcl = !isSameState ? round2(totalExclusiveTax) : 0;
+        const finalExclusiveTax = cgstExcl + sgstExcl + igstExcl;
 
+        const currentBillTotal = round2(Math.max(0, (subtotal + finalExclusiveTax) - totalDeductions));
         const previousDue = (selectedClient?.dueAmount || 0);
         const grandTotal = includePreviousDue ? currentBillTotal + previousDue : currentBillTotal;
 
         const discountRatio = subtotal > 0 ? totalDeductions / subtotal : 0;
         const serviceDiscount = serviceSubtotal * discountRatio;
         const productDiscount = productSubtotal * discountRatio;
-
-        let totalMembershipDiscount = 0;
-        let totalGrossAmount = 0;
-
-        cart.forEach(item => {
-            if (item.isPackageRedemption) return;
-            if (item.originalBooking) {
-                totalGrossAmount += (item.originalBooking.subtotal || item.price) * item.quantity;
-                totalMembershipDiscount += (item.originalBooking.membershipDiscount || 0) * item.quantity;
-            } else {
-                totalGrossAmount += (item.price * item.quantity);
-            }
-        });
 
         return {
             subtotal,
@@ -631,15 +636,16 @@ export default function POSBillingPage() {
             includingGst: fiscal.inclusiveTax, // This represents the global setting used
             cgst,
             sgst,
-            cgstExcl: totalExclusiveTax / 2,
-            sgstExcl: totalExclusiveTax / 2,
+            cgstExcl,
+            sgstExcl,
             igst,
             isSameState,
+            totalExclusiveTax: finalExclusiveTax,
             total: grandTotal,
             taxable: totalBaseAmount,
             currentBillTotal,
             previousDue,
-            redeemWallet: (redeemWallet || 0)
+            redeemWallet: Math.min(redeemWallet || 0, Math.max(0, grandTotal - payments.reduce((acc, p) => acc + (Number(p.amount) || 0), 0)))
         };
     }, [cart, manualDiscount, appliedPromotion, appliedVoucher, redeemWallet, taxPercent, selectedClient, includePreviousDue, fiscal, platformSettings, customerState]);
 
@@ -1018,7 +1024,8 @@ export default function POSBillingPage() {
         if (redeemWallet > 0) {
             setRedeemWallet(0);
         } else {
-            const maxRedeemable = Math.max(0, totals.subtotal - totals.discount);
+            const totalPaid = payments.reduce((acc, p) => acc + (Number(p.amount) || 0), 0);
+            const maxRedeemable = Math.max(0, totals.total - totalPaid);
             setRedeemWallet(Math.min(clientWalletBalance, maxRedeemable));
         }
     };
@@ -1094,7 +1101,7 @@ export default function POSBillingPage() {
                         }
                         return baseItem;
                     }),
-                    tax: totals.tax,
+                    tax: totals.totalExclusiveTax,
                     gstPercent: totals.serviceGstRate, // Use service rate as default
                     includingGst: totals.includingGst,
                     baseAmount: totals.baseAmount,
@@ -1103,7 +1110,7 @@ export default function POSBillingPage() {
                     sgst: totals.sgst,
                     subtotal: totals.subtotal,
                     payments: payments.map(p => ({ method: p.method, amount: p.amount })),
-                    useWalletAmount: redeemWallet,
+                    useWalletAmount: totals.redeemWallet,
                     discount: totals.discount,
                     membershipDiscount: totals.membershipDiscount,
                     bookingId: appointmentId,
@@ -1765,28 +1772,65 @@ export default function POSBillingPage() {
                                     <span>₹{totals.subtotal.toFixed(2)}</span>
                                 </div>
 
-                                {totals.totalExclusiveTax > 0 && (
-                                    <>
-                                        <div className="flex justify-between text-[11px] font-bold mb-1">
-                                            <span className="opacity-60">CGST ({(totals.serviceGstRate) / 2}%)</span>
-                                            <span>₹{(totals.totalExclusiveTax / 2).toFixed(2)}</span>
+                                {totals.cgst > 0 && (
+                                    <div className="flex justify-between text-[11px] font-bold mb-1">
+                                        <span className="opacity-60">CGST ({(totals.serviceGstRate) / 2}%)</span>
+                                        <div className="flex gap-1 text-right">
+                                            {totals.cgst > totals.cgstExcl && <span className="text-emerald-400/80 font-normal">(Included)</span>}
+                                            {totals.cgstExcl > 0 && <span>+</span>}
+                                            <span>₹{totals.cgst.toFixed(2)}</span>
                                         </div>
-                                        <div className="flex justify-between text-[11px] font-bold mb-1">
-                                            <span className="opacity-60">SGST ({(totals.serviceGstRate) / 2}%)</span>
-                                            <span>₹{(totals.totalExclusiveTax / 2).toFixed(2)}</span>
+                                    </div>
+                                )}
+                                {totals.sgst > 0 && (
+                                    <div className="flex justify-between text-[11px] font-bold mb-1">
+                                        <span className="opacity-60">SGST ({(totals.serviceGstRate) / 2}%)</span>
+                                        <div className="flex gap-1 text-right">
+                                            {totals.sgst > totals.sgstExcl && <span className="text-emerald-400/80 font-normal">(Included)</span>}
+                                            {totals.sgstExcl > 0 && <span>+</span>}
+                                            <span>₹{totals.sgst.toFixed(2)}</span>
                                         </div>
-                                    </>
+                                    </div>
+                                )}
+                                {totals.igst > 0 && (
+                                    <div className="flex justify-between text-[11px] font-bold mb-1">
+                                        <span className="opacity-60">IGST ({totals.serviceGstRate}%)</span>
+                                        <div className="flex gap-1 text-right">
+                                            {totals.igst > totals.totalExclusiveTax && <span className="text-emerald-400/80 font-normal">(Included)</span>}
+                                            {totals.totalExclusiveTax > 0 && <span>+</span>}
+                                            <span>₹{totals.igst.toFixed(2)}</span>
+                                        </div>
+                                    </div>
                                 )}
 
+                                {totals.discount > 0 && (
+                                    <div className="flex justify-between text-[11px] font-bold mb-1 text-emerald-400">
+                                        <span>Discount</span>
+                                        <span>-₹{totals.discount.toFixed(2)}</span>
+                                    </div>
+                                )}
+                                {totals.membershipDiscount > 0 && (
+                                    <div className="flex justify-between text-[11px] font-bold mb-1 text-emerald-400">
+                                        <span>Membership Disc</span>
+                                        <span>-₹{totals.membershipDiscount.toFixed(2)}</span>
+                                    </div>
+                                )}
                                 <div className="border-t border-white/10 mt-2 pt-2 flex items-center justify-between">
                                     <span className="text-sm font-black uppercase tracking-widest text-primary">TOTAL</span>
                                     <span className="text-2xl font-black tracking-tight">₹{totals.total.toFixed(2)}</span>
                                 </div>
 
-                                {totals.total - payments.reduce((s, p) => s + p.amount, 0) > 0.5 && (
+                                {totals.redeemWallet > 0 && (
+                                    <div className="flex justify-between text-[11px] font-bold mt-2 text-emerald-400">
+                                        <span>Wallet Used</span>
+                                        <span>-₹{totals.redeemWallet.toFixed(2)}</span>
+                                    </div>
+                                )}
+
+                                {totals.total - totals.redeemWallet - payments.reduce((s, p) => s + p.amount, 0) > 0.5 && (
                                     <div className="flex justify-between text-[10px] font-black text-rose-400 mt-2 bg-rose-500/5 p-2 rounded-lg border border-rose-500/20 animate-pulse">
                                         <span className="uppercase tracking-widest">Balance Due</span>
-                                        <span>₹{(totals.total - payments.reduce((s, p) => s + p.amount, 0)).toFixed(2)}</span>
+                                        <span>₹{(totals.total - totals.redeemWallet - payments.reduce((s, p) => s + p.amount, 0)).toFixed(2)}</span>
                                     </div>
                                 )}
                             </div>
@@ -1864,7 +1908,9 @@ export default function POSBillingPage() {
                                                     className="flex-1 p-2.5 text-sm font-black bg-white border border-emerald-200 outline-none focus:border-emerald-500 rounded-lg transition-all"
                                                     value={redeemWallet || ''}
                                                     onChange={(e) => {
-                                                        const val = Math.min(Number(e.target.value), clientWalletBalance);
+                                                        const totalPaid = payments.reduce((acc, p) => acc + (Number(p.amount) || 0), 0);
+                                                        const maxAllowed = Math.max(0, totals.total - totalPaid);
+                                                        const val = Math.min(Number(e.target.value), Math.min(clientWalletBalance, maxAllowed));
                                                         setRedeemWallet(val);
                                                     }}
                                                 />
@@ -1884,7 +1930,7 @@ export default function POSBillingPage() {
                         <div className="p-6 bg-surface-alt border-t border-border flex justify-between items-center">
                             <div className="text-left">
                                 <p className="text-[9px] font-black text-text-muted uppercase">Total Reductions</p>
-                                <p className="text-xl font-black text-primary">₹{(Number(totals.discount) + Number(redeemWallet || 0)).toFixed(0)}</p>
+                                <p className="text-xl font-black text-primary">₹{(Number(totals.discount) + Number(totals.membershipDiscount) + Number(totals.redeemWallet || 0)).toFixed(0)}</p>
                             </div>
                             <button onClick={() => setShowDiscountModal(false)} className="px-10 py-3 bg-text text-background font-black text-xs uppercase tracking-widest hover:opacity-90 transition-opacity shadow-lg shadow-black/10 active:scale-95 transition-all">
                                 Confirm & Apply
@@ -2036,9 +2082,10 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
     const [showQOutletPicker, setShowQOutletPicker] = useState(false);
     const [qSelectedCategory, setQSelectedCategory] = useState(null);
     const [qActiveTab, setQActiveTab] = useState('services');
+    const [qCollectedPrevDue, setQCollectedPrevDue] = useState(0);
     const [qRedeemWallet, setQRedeemWallet] = useState(0);
     const [qActiveMembership, setQActiveMembership] = useState(null);
-    const [qCollectedPrevDue, setQCollectedPrevDue] = useState(0);
+
 
     useEffect(() => {
         const fetchMembership = async () => {
@@ -2146,8 +2193,8 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
             ? (subtotal * qManualDiscount.value) / 100
             : qManualDiscount.value;
 
-        const serviceGstRate = Number(platformSettings?.serviceGst ?? fiscal?.serviceGst ?? 18);
-        const productGstRate = Number(platformSettings?.productGst ?? fiscal?.productGst ?? 12);
+        const serviceGstRate = Number(platformSettings?.serviceGst ?? fiscal?.serviceGst ?? 5);
+        const productGstRate = Number(platformSettings?.productGst ?? fiscal?.productGst ?? 18);
 
         let totalGstAmount = 0;
         let totalBaseAmount = 0;
@@ -2207,17 +2254,23 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
 
         const totalDeductions = discountAmt + membershipDiscountAmt;
 
-        const total = Math.max(0, (subtotal + totalExclusiveTax) - totalDeductions);
-
+        const round2 = (num) => Math.round(num * 100) / 100;
         const isSameState = true; // Defaulting to true for Quick Invoice context as per existing logic patterns
-        const cgst = totalGstAmount / 2;
-        const sgst = totalGstAmount / 2;
+        const cgst = isSameState ? round2(totalGstAmount / 2) : 0;
+        const sgst = isSameState ? round2(totalGstAmount / 2) : 0;
+        const igst = !isSameState ? round2(totalGstAmount) : 0;
+
+        const cgstExcl = isSameState ? round2(totalExclusiveTax / 2) : 0;
+        const sgstExcl = isSameState ? round2(totalExclusiveTax / 2) : 0;
+        const igstExcl = !isSameState ? round2(totalExclusiveTax) : 0;
+        const finalExclusiveTax = cgstExcl + sgstExcl + igstExcl;
+
+        const total = round2(Math.max(0, (subtotal + finalExclusiveTax) - totalDeductions));
 
         return {
             subtotal,
             discount: discountAmt,
             membershipDiscount: membershipDiscountAmt,
-            redeemWallet: qRedeemWallet,
             tax: totalGstAmount,
             serviceTax,
             productTax,
@@ -2227,16 +2280,25 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
             gstAmount: totalGstAmount,
             cgst,
             sgst,
-            cgstExcl: totalExclusiveTax / 2,
-            sgstExcl: totalExclusiveTax / 2,
+            cgstExcl,
+            sgstExcl,
             includingGst: fiscal?.inclusiveTax,
             serviceGstRate,
             productGstRate,
             taxable: totalBaseAmount,
             total: total,
-            totalWithPrevDue: total + qCollectedPrevDue
+            totalWithPrevDue: total + qCollectedPrevDue,
+            totalExclusiveTax: finalExclusiveTax,
+            redeemWallet: Math.min(qRedeemWallet || 0, total + qCollectedPrevDue)
         };
     }, [qCart, qManualDiscount, fiscal, platformSettings, qRedeemWallet, qActiveMembership, qCollectedPrevDue]);
+    
+    // Auto-fill cash payment for Quick Invoice unless user has already started typing
+    useEffect(() => {
+        if (qPayments.cash === 0 && qPayments.online === 0 && totals.total > 0) {
+            setQPayments(prev => ({ ...prev, cash: totals.total }));
+        }
+    }, [totals.total]);
 
     const paidAmount = Number(qPayments.cash || 0) + Number(qPayments.online || 0) + Number(qRedeemWallet || 0);
     const dueAmount = Math.max(0, totals.totalWithPrevDue - paidAmount);
@@ -2337,7 +2399,7 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                         stylistIds: (staffIds || []).filter(Boolean).map(sid => typeof sid === 'object' ? sid?._id : String(sid)) 
                     };
                 }),
-                tax: totals.tax,
+                tax: totals.totalExclusiveTax,
                 gstPercent: totals.serviceGstRate,
                 includingGst: totals.includingGst,
                 baseAmount: totals.baseAmount,
@@ -2350,7 +2412,7 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                 membershipDiscount: totals.membershipDiscount || 0,
                 previousDueCollected: qCollectedPrevDue,
                 discountType: qManualDiscount.type,
-                useWalletAmount: qRedeemWallet
+                useWalletAmount: totals.redeemWallet
             };
 
             const res = await api.post('/pos/checkout', payload);
@@ -2517,7 +2579,7 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                                         <div className="flex items-center gap-2">
                                             {qClientWalletBalance > 0 && (
                                                 <button
-                                                    onClick={() => setQRedeemWallet(qRedeemWallet > 0 ? 0 : Math.min(qClientWalletBalance, totals.subtotal + totals.tax - totals.discount))}
+                                                    onClick={() => setQRedeemWallet(qRedeemWallet > 0 ? 0 : Math.min(qClientWalletBalance, totals.totalWithPrevDue))}
                                                     className={`px-2 py-1 rounded-lg border flex flex-col items-center transition-all ${qRedeemWallet > 0 ? 'bg-emerald-500 border-emerald-500 text-white' : 'bg-white border-emerald-200 text-emerald-600 hover:bg-emerald-50'}`}
                                                 >
                                                     <span className="text-[7px] font-black uppercase leading-none">Wallet</span>
@@ -2900,17 +2962,32 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                                 <span className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em]">Subtotal</span>
                                 <span className="text-[14px] font-black text-slate-900 font-mono italic">₹{totals.subtotal.toFixed(2)}</span>
                             </div>
-                            {totals.totalExclusiveTax > 0 && (
-                                <>
-                                    <div className="flex flex-col">
-                                        <span className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em]">CGST ({(totals.serviceGstRate) / 2}%)</span>
-                                        <span className="text-[14px] font-black text-slate-900 font-mono italic">₹{(totals.totalExclusiveTax / 2).toFixed(2)}</span>
-                                    </div>
-                                    <div className="flex flex-col">
-                                        <span className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em]">SGST ({(totals.serviceGstRate) / 2}%)</span>
-                                        <span className="text-[14px] font-black text-slate-900 font-mono italic">₹{(totals.totalExclusiveTax / 2).toFixed(2)}</span>
-                                    </div>
-                                </>
+                            {totals.cgst > 0 && (
+                                <div className="flex flex-col">
+                                    <span className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em]">CGST ({(totals.serviceGstRate) / 2}%)</span>
+                                    <span className="text-[14px] font-black text-slate-900 font-mono italic">
+                                        {totals.cgst > totals.cgstExcl && <span className="text-emerald-600 text-[9px] not-italic align-top mr-1">(INCL)</span>}
+                                        ₹{totals.cgst.toFixed(2)}
+                                    </span>
+                                </div>
+                            )}
+                            {totals.sgst > 0 && (
+                                <div className="flex flex-col">
+                                    <span className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em]">SGST ({(totals.serviceGstRate) / 2}%)</span>
+                                    <span className="text-[14px] font-black text-slate-900 font-mono italic">
+                                        {totals.sgst > totals.sgstExcl && <span className="text-emerald-600 text-[9px] not-italic align-top mr-1">(INCL)</span>}
+                                        ₹{totals.sgst.toFixed(2)}
+                                    </span>
+                                </div>
+                            )}
+                            {totals.igst > 0 && (
+                                <div className="flex flex-col">
+                                    <span className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em]">IGST ({totals.serviceGstRate}%)</span>
+                                    <span className="text-[14px] font-black text-slate-900 font-mono italic">
+                                        {totals.igst > totals.totalExclusiveTax && <span className="text-emerald-600 text-[9px] not-italic align-top mr-1">(INCL)</span>}
+                                        ₹{totals.igst.toFixed(2)}
+                                    </span>
+                                </div>
                             )}
                             <div className="flex flex-col">
                                 <span className="text-[9px] font-black text-rose-400 uppercase tracking-[0.2em]">Discount</span>
@@ -2963,7 +3040,7 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                                             type="number"
                                             className="w-full bg-transparent text-[15px] font-black text-emerald-600 outline-none font-mono"
                                             value={qRedeemWallet || ''}
-                                            onChange={(e) => setQRedeemWallet(Math.min(qClientWalletBalance, Number(e.target.value)))}
+                                            onChange={(e) => setQRedeemWallet(Math.min(qClientWalletBalance, Math.min(totals.totalWithPrevDue, Number(e.target.value))))}
                                             placeholder="0"
                                         />
                                     </div>

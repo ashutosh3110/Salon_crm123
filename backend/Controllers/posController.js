@@ -73,18 +73,20 @@ exports.checkout = async (req, res) => {
         }
 
         const finalSubtotal = reqSubtotal || subtotal;
-        const total = Math.max(0, finalSubtotal - discount - (Number(membershipDiscount) || 0) - useLoyaltyPoints + tax);
+        // Round total to 2 decimal places to avoid floating point issues with status
+        const total = Math.round(Math.max(0, finalSubtotal - discount - (Number(membershipDiscount) || 0) - useLoyaltyPoints + tax) * 100) / 100;
 
-        // Calculate paid amount from split payments
         const paidAmount = payments.reduce((acc, p) => acc + (Number(p.amount) || 0), 0);
         // previousDueCollected is a separate field for money taken for old dues
         // The current invoice due is just the total minus what was paid for this transaction
-        const dueAmount = Math.max(0, total - useWalletAmount - paidAmount);
+        const dueAmount = Math.round(Math.max(0, total - useWalletAmount - paidAmount) * 100) / 100;
 
         // 3. Calculate loyalty points (Rule from settings)
         const settings = await Setting.findOne();
         const pointsRate = settings?.loyaltySettings?.pointsRate || 100;
         const earnedPoints = Math.floor(total / pointsRate);
+
+        const roundTo2 = (num) => Math.round((Number(num) || 0) * 100) / 100;
 
         // 4. Create Invoice
         const invoice = await Invoice.create({
@@ -93,19 +95,19 @@ exports.checkout = async (req, res) => {
             outletId,
             customerId: clientId,
             items,
-            subtotal: finalSubtotal,
-            discount,
-            membershipDiscount: (Number(membershipDiscount) || 0),
-            tax,
+            subtotal: roundTo2(finalSubtotal),
+            discount: roundTo2(discount),
+            membershipDiscount: roundTo2(membershipDiscount),
+            tax: roundTo2(tax),
             gstPercent,
             includingGst,
-            baseAmount,
-            gstAmount,
-            cgst,
-            sgst,
-            total,
-            payments,
-            dueAmount,
+            baseAmount: roundTo2(baseAmount),
+            gstAmount: roundTo2(gstAmount),
+            cgst: roundTo2(cgst),
+            sgst: roundTo2(sgst),
+            total: roundTo2(total),
+            payments: payments.map(p => ({ ...p, amount: roundTo2(p.amount) })),
+            dueAmount: roundTo2(dueAmount),
             paymentStatus: dueAmount > 0 ? (paidAmount + useWalletAmount > 0 ? 'partially_paid' : 'pending') : 'paid',
             loyaltyPointsRedeemed: useLoyaltyPoints,
             loyaltyPointsEarned: earnedPoints,
