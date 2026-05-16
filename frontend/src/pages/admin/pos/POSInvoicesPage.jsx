@@ -135,19 +135,48 @@ export default function POSInvoicesPage() {
                             </div>
                             <button onClick={() => setSelectedInvoice(null)} className="p-2 hover:bg-red-500 hover:text-white transition-colors"><X className="w-5 h-5" /></button>
                         </div>
-                        <div className="space-y-4">
-                            <div className="flex justify-between text-xs font-black uppercase tracking-widest">
-                                <span className="text-text-muted italic">Entity Profile</span>
-                                <span className="text-text">{selectedInvoice.clientId?.name}</span>
-                            </div>
-                            <div className="flex justify-between text-xs font-black uppercase tracking-widest">
-                                <span className="text-text-muted italic">Protocol Auth</span>
-                                <span className="text-text capitalize">{selectedInvoice.paymentMethod}</span>
-                            </div>
+                        <div className="space-y-2 py-4 border-y border-border">
+                            {selectedInvoice.items?.map((item, i) => (
+                                <div key={i} className="flex justify-between text-[11px] font-bold uppercase tracking-tight">
+                                    <span className="text-text-secondary">{item.name} x {item.quantity}</span>
+                                    <span className="text-text">₹{(item.price * item.quantity).toLocaleString()}</span>
+                                </div>
+                            ))}
                         </div>
+
+                        <div className="space-y-2">
+                            <div className="flex justify-between text-[10px] font-black uppercase tracking-widest text-text-muted">
+                                <span>Subtotal</span>
+                                <span>₹{(selectedInvoice.subtotal || 0).toLocaleString()}</span>
+                            </div>
+                            <div className="flex justify-between text-[10px] font-black uppercase tracking-widest text-text-muted">
+                                <span>Base Amount</span>
+                                <span>₹{(selectedInvoice.baseAmount || 0).toLocaleString()}</span>
+                            </div>
+                            <div className="flex justify-between text-[10px] font-black uppercase tracking-widest text-text-muted">
+                                <span>CGST (9%)</span>
+                                <span>₹{(selectedInvoice.cgst || 0).toLocaleString()}</span>
+                            </div>
+                            <div className="flex justify-between text-[10px] font-black uppercase tracking-widest text-text-muted">
+                                <span>SGST (9%)</span>
+                                <span>₹{(selectedInvoice.sgst || 0).toLocaleString()}</span>
+                            </div>
+                            {selectedInvoice.discount > 0 && (
+                                <div className="flex justify-between text-[10px] font-black uppercase tracking-widest text-rose-500">
+                                    <span>Discount</span>
+                                    <span>-₹{(selectedInvoice.discount || 0).toLocaleString()}</span>
+                                </div>
+                            )}
+                        </div>
+
                         <div className="p-6 bg-surface-alt border border-border">
                             <div className="flex justify-between items-end">
-                                <p className="text-[10px] font-black text-text-muted uppercase tracking-widest">Verified Payload Sum</p>
+                                <div>
+                                    <p className="text-[10px] font-black text-text-muted uppercase tracking-widest">Total Payload</p>
+                                    <p className="text-[8px] font-black text-primary uppercase tracking-widest mt-1">
+                                        {selectedInvoice.includingGst ? '[ GST INCLUDED ]' : '[ GST EXCLUDED ]'}
+                                    </p>
+                                </div>
                                 <p className="text-3xl font-black text-primary">₹{selectedInvoice.total?.toLocaleString()}</p>
                             </div>
                         </div>

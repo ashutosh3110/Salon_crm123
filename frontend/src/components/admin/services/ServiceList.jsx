@@ -223,7 +223,6 @@ export default function ServiceList({ services = [], onDelete, onToggleStatus, o
                                 <th className="px-6 py-4 text-[10px] font-bold text-text-muted uppercase tracking-widest text-center">Duration</th>
                                 <th className="px-6 py-4 text-[10px] font-bold text-text-muted uppercase tracking-widest text-center">Price</th>
                                 <th className="px-6 py-4 text-[10px] font-bold text-text-muted uppercase tracking-widest text-center">Tax Mode</th>
-                                <th className="px-6 py-4 text-[10px] font-bold text-text-muted uppercase tracking-widest text-center">GST %</th>
                                 <th className="px-6 py-4 text-[10px] font-bold text-text-muted uppercase tracking-widest text-center">Outlets</th>
                                 <th className="px-6 py-4 text-[10px] font-bold text-text-muted uppercase tracking-widest text-center">Status</th>
                                 <th className="px-6 py-4 text-[10px] font-bold text-text-muted uppercase tracking-widest text-right">Actions</th>
@@ -319,9 +318,6 @@ export default function ServiceList({ services = [], onDelete, onToggleStatus, o
                                             <span className={`text-[9px] font-black uppercase px-2 py-0.5 rounded-full border ${service.isInclusiveTax ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 'bg-slate-50 text-slate-500 border-slate-200'}`}>
                                                 {service.isInclusiveTax ? 'Including GST' : 'Excluding GST'}
                                             </span>
-                                        </td>
-                                        <td className="px-6 py-4 text-center text-xs font-bold text-text">
-                                            {service.gst}%
                                         </td>
                                         <td className="px-6 py-4 text-center">
                                             <button 
@@ -464,7 +460,6 @@ export default function ServiceList({ services = [], onDelete, onToggleStatus, o
                                         <div className="flex items-center gap-1 text-sm font-bold text-text">
                                             <IndianRupee className="w-3 h-3 text-text-muted" />
                                             {service.price}
-                                            <span className="text-[9px] text-text-muted">({service.gst}%)</span>
                                             <span className={`ml-2 text-[8px] font-black uppercase px-1.5 py-0.5 rounded ${service.isInclusiveTax ? 'bg-emerald-50 text-emerald-600' : 'bg-slate-50 text-slate-500'}`}>
                                                 {service.isInclusiveTax ? 'Incl.' : 'Excl.'}
                                             </span>

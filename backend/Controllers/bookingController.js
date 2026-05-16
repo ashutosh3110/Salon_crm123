@@ -123,7 +123,7 @@ exports.createBooking = async (req, res) => {
         } else {
             // Legacy/Backend calculation fallback
             const settings = await Setting.findOne();
-            const serviceGst = settings?.serviceGst || 18;
+            const serviceGst = settings?.serviceGst || 5;
             
             let basePrice = service.price;
             let discountedPrice = basePrice;

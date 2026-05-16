@@ -27,8 +27,7 @@ const serviceSchema = new mongoose.Schema({
     },
     image: String,
     gst: {
-        type: Number,
-        default: 18
+        type: Number
     },
     isInclusiveTax: {
         type: Boolean,

@@ -39,7 +39,6 @@ export default function ServiceForm({ onSave, onCancel, categories = [], initial
         duration: initialData?.duration || '',
         price: initialData?.price || '',
         image: initialData?.image || '',
-        gst: initialData?.gst || '18',
         commissionApplicable: initialData?.commissionApplicable !== undefined ? initialData.commissionApplicable : true,
         commissionType: initialData?.commissionType || 'percent',
         commissionValue: initialData?.commissionValue || '10',
@@ -117,7 +116,6 @@ export default function ServiceForm({ onSave, onCancel, categories = [], initial
             // Append specific numeric conversions that backend expects
             submissionData.set('duration', parseInt(formData.duration));
             submissionData.set('price', parseFloat(formData.price));
-            submissionData.set('gst', parseInt(formData.gst));
             submissionData.set('isInclusiveTax', formData.isInclusiveTax);
             submissionData.set('commissionValue', parseFloat(formData.commissionValue) || 0);
 

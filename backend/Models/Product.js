@@ -62,6 +62,13 @@ const productSchema = new mongoose.Schema({
         type: Number,
         default: 5
     },
+    gstPercent: {
+        type: Number
+    },
+    isInclusiveTax: {
+        type: Boolean,
+        default: false
+    },
     status: {
         type: String,
         enum: ['active', 'inactive'],

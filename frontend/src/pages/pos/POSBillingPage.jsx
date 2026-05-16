@@ -191,18 +191,18 @@ const InvoicePDF = ({ invoice, role, salon, taxRate = 18 }) => (
 
             <View style={pdfStyles.summaryRow}>
                 <Text>Subtotal</Text>
-                <Text>Rs. {invoice?.totals?.subtotal?.toFixed(0) || '0'}</Text>
+                <Text>Rs. {invoice?.totals?.subtotal?.toFixed(2) || '0.00'}</Text>
             </View>
             {(invoice.discounts?.manual?.value > 0 || invoice.discounts?.points > 0 || invoice.discounts?.wallet > 0) && (
                 <View style={pdfStyles.summaryRow}>
                     <Text>Total Discount</Text>
-                    <Text>-Rs. {(Number(invoice.discounts?.manual?.value || 0) + Number(invoice.discounts?.points || 0) + Number(invoice.discounts?.wallet || 0)).toFixed(0)}</Text>
+                    <Text>-Rs. {(Number(invoice.discounts?.manual?.value || 0) + Number(invoice.discounts?.points || 0) + Number(invoice.discounts?.wallet || 0)).toFixed(2)}</Text>
                 </View>
             )}
 
             <View style={pdfStyles.summaryRow}>
-                <Text>Taxable Value</Text>
-                <Text>Rs. {invoice?.totals?.taxable?.toFixed(2) || '0.00'}</Text>
+                <Text>Base Amount</Text>
+                <Text>Rs. {invoice?.totals?.baseAmount?.toFixed(2) || invoice?.totals?.taxable?.toFixed(2) || '0.00'}</Text>
             </View>
 
             {invoice?.totals?.isSameState ? (
@@ -224,7 +224,7 @@ const InvoicePDF = ({ invoice, role, salon, taxRate = 18 }) => (
             )}
 
             <View style={pdfStyles.grandTotal}>
-                <Text>GRAND TOTAL</Text>
+                <Text>TOTAL {invoice?.includingGst ? '(INCL. GST)' : ''}</Text>
                 <Text>Rs. {invoice?.totals?.total?.toFixed(0) || '0'}</Text>
             </View>
 
@@ -541,42 +541,52 @@ export default function POSBillingPage() {
 
         const totalDeductions = discount + (redeemWallet || 0);
 
+        let totalBaseAmount = 0;
+        let totalGstAmount = 0;
         let serviceTax = 0;
         let productTax = 0;
-        let totalTaxableValue = 0;
-
-        const sGstRate = Number(platformSettings?.serviceGst ?? fiscal.serviceGst ?? 18);
-        const pGstRate = Number(platformSettings?.productGst ?? fiscal.productGst ?? 12);
-
+        let serviceTaxExcl = 0;
+        let productTaxExcl = 0;
         let totalExclusiveTax = 0;
+
+        const sGstRate = Number(platformSettings?.serviceGst ?? fiscal.serviceGst ?? 5);
+        const pGstRate = Number(platformSettings?.productGst ?? fiscal.productGst ?? 18);
+        console.log('[Totals] Settings Debug:', { platformSettings, sGstRate, pGstRate });
 
         cart.forEach(item => {
             if (item.isPackageRedemption) return;
 
             const itemGross = (item.price * item.quantity);
-            const itemTaxRate = (item.type === 'service' ? sGstRate : pGstRate) / 100;
+            const itemTaxPercent = (item.type === 'service' ? sGstRate : pGstRate);
             const isItemInclusive = String(item.isInclusiveTax) === 'true' || (item.isInclusiveTax === undefined && fiscal.inclusiveTax);
 
             if (isItemInclusive) {
-                totalTaxableValue += itemGross;
-                // Tax is already in price, so we don't show it in the breakup as per user request
-                if (item.type === 'service') serviceTax += 0;
-                else productTax += 0;
+                const gstAmount = (itemGross * itemTaxPercent) / (100 + itemTaxPercent);
+                const baseAmount = itemGross - gstAmount;
+                totalGstAmount += gstAmount;
+                totalBaseAmount += baseAmount;
+                if (item.type === 'service') serviceTax += gstAmount;
+                else productTax += gstAmount;
             } else {
-                totalTaxableValue += itemGross;
-                const tax = (itemGross * itemTaxRate);
-                totalExclusiveTax += tax;
-                if (item.type === 'service') serviceTax += tax;
-                else productTax += tax;
+                const gstAmount = (itemGross * itemTaxPercent) / 100;
+                const baseAmount = itemGross;
+                totalGstAmount += gstAmount;
+                totalBaseAmount += baseAmount;
+                totalExclusiveTax += gstAmount;
+                if (item.type === 'service') {
+                    serviceTax += gstAmount;
+                    serviceTaxExcl += gstAmount;
+                } else {
+                    productTax += gstAmount;
+                    productTaxExcl += gstAmount;
+                }
             }
         });
 
-        const totalTax = serviceTax + productTax;
-
         const isSameState = customerState === fiscal.state;
-        const cgst = isSameState ? totalTax / 2 : 0;
-        const sgst = isSameState ? totalTax / 2 : 0;
-        const igst = !isSameState ? totalTax : 0;
+        const cgst = isSameState ? totalGstAmount / 2 : 0;
+        const sgst = isSameState ? totalGstAmount / 2 : 0;
+        const igst = !isSameState ? totalGstAmount : 0;
 
         const currentBillTotal = Math.max(0, (subtotal + totalExclusiveTax) - totalDeductions);
 
@@ -609,22 +619,29 @@ export default function POSBillingPage() {
             discount,
             serviceDiscount,
             productDiscount,
-            serviceTax,
-            productTax,
             serviceGstRate: sGstRate,
             productGstRate: pGstRate,
-            tax: totalTax,
+            tax: totalGstAmount,
+            serviceTax,
+            productTax,
+            serviceTaxExcl,
+            productTaxExcl,
+            baseAmount: totalBaseAmount,
+            gstAmount: totalGstAmount,
+            includingGst: fiscal.inclusiveTax, // This represents the global setting used
             cgst,
             sgst,
+            cgstExcl: totalExclusiveTax / 2,
+            sgstExcl: totalExclusiveTax / 2,
             igst,
             isSameState,
             total: grandTotal,
-            taxable: totalTaxableValue,
+            taxable: totalBaseAmount,
             currentBillTotal,
             previousDue,
             redeemWallet: (redeemWallet || 0)
         };
-    }, [cart, manualDiscount, appliedPromotion, appliedVoucher, redeemWallet, taxPercent, selectedClient, includePreviousDue, fiscal, customerState]);
+    }, [cart, manualDiscount, appliedPromotion, appliedVoucher, redeemWallet, taxPercent, selectedClient, includePreviousDue, fiscal, platformSettings, customerState]);
 
     // Get real-time wallet balance
     const clientWalletBalance = useMemo(() => {
@@ -1068,6 +1085,7 @@ export default function POSBillingPage() {
                             name: item.name,
                             price: basePrice,
                             quantity: item.quantity,
+                            gstPercent: item.type === 'service' ? totals.serviceGstRate : totals.productGstRate,
                             isInclusiveTax: isItemInclusive
                         };
                         const sIds = (item.staffIds || []).filter(Boolean).map(id => typeof id === 'object' ? id?._id : String(id));
@@ -1077,9 +1095,17 @@ export default function POSBillingPage() {
                         return baseItem;
                     }),
                     tax: totals.tax,
+                    gstPercent: totals.serviceGstRate, // Use service rate as default
+                    includingGst: totals.includingGst,
+                    baseAmount: totals.baseAmount,
+                    gstAmount: totals.gstAmount,
+                    cgst: totals.cgst,
+                    sgst: totals.sgst,
+                    subtotal: totals.subtotal,
                     payments: payments.map(p => ({ method: p.method, amount: p.amount })),
                     useWalletAmount: redeemWallet,
                     discount: totals.discount,
+                    membershipDiscount: totals.membershipDiscount,
                     bookingId: appointmentId,
                     orderId: orderId
                 };
@@ -1289,19 +1315,29 @@ export default function POSBillingPage() {
                     </div>
 
                     <div className="border-t border-dashed border-black pt-2 space-y-1">
-                        <div className="flex justify-between"><span>Subtotal</span><span>₹{successInvoice?.totals?.subtotal?.toFixed(0) || '0'}</span></div>
-                        <div className="flex justify-between"><span>GST (18%)</span><span>₹{successInvoice?.totals?.tax?.toFixed(0) || '0'}</span></div>
+                        <div className="flex justify-between"><span>Subtotal</span><span>₹{successInvoice?.totals?.subtotal?.toFixed(2) || '0.00'}</span></div>
+                        
+                        <div className="flex justify-between"><span>Base Amount</span><span>₹{successInvoice?.totals?.baseAmount?.toFixed(2) || '0.00'}</span></div>
+                        {successInvoice?.totals?.cgst > 0 && (
+                            <div className="flex justify-between"><span>CGST ({(successInvoice?.totals?.serviceGstRate || 18) / 2}%)</span><span>₹{successInvoice.totals.cgst.toFixed(2)}</span></div>
+                        )}
+                        {successInvoice?.totals?.sgst > 0 && (
+                            <div className="flex justify-between"><span>SGST ({(successInvoice?.totals?.serviceGstRate || 18) / 2}%)</span><span>₹{successInvoice.totals.sgst.toFixed(2)}</span></div>
+                        )}
+                        {(!successInvoice?.totals?.cgst && successInvoice?.totals?.tax > 0) && (
+                            <div className="flex justify-between"><span>GST ({successInvoice?.totals?.serviceGstRate || 18}%)</span><span>₹{successInvoice.totals.tax.toFixed(2)}</span></div>
+                        )}
 
-                        {(successInvoice?.discounts?.points > 0) && (
-                            <div className="flex justify-between"><span>Membership Discount</span><span>-₹{successInvoice.discounts.points}</span></div>
+                        {(successInvoice?.discounts?.points > 0 || successInvoice?.totals?.membershipDiscount > 0) && (
+                            <div className="flex justify-between"><span>Membership Discount</span><span>-₹{(successInvoice?.totals?.membershipDiscount || successInvoice.discounts.points).toFixed(2)}</span></div>
                         )}
                         {(successInvoice?.discounts?.manual?.value > 0 || successInvoice?.discounts?.promotion || successInvoice?.discounts?.wallet > 0) && (
-                            <div className="flex justify-between"><span>Extra Discount</span><span>-₹{(successInvoice.totals.discount - (successInvoice.discounts.points || 0)).toFixed(0)}</span></div>
+                            <div className="flex justify-between"><span>Extra Discount</span><span>-₹{(successInvoice.totals.discount).toFixed(2)}</span></div>
                         )}
 
                         <div className="flex justify-between text-base font-black border-y border-black py-1 my-1">
                             <span>TOTAL</span>
-                            <span>₹{successInvoice?.totals?.total?.toFixed(0) || '0'}</span>
+                            <span>₹{successInvoice?.totals?.total?.toFixed(2) || '0.00'}</span>
                         </div>
                     </div>
 
@@ -1729,18 +1765,17 @@ export default function POSBillingPage() {
                                     <span>₹{totals.subtotal.toFixed(2)}</span>
                                 </div>
 
-                                {totals.serviceTax > 0 && (
-                                    <div className="flex justify-between text-[11px] font-bold mb-1">
-                                        <span className="opacity-60">GST (Services - {totals.serviceGstRate}%)</span>
-                                        <span>₹{totals.serviceTax.toFixed(2)}</span>
-                                    </div>
-                                )}
-
-                                {totals.productTax > 0 && (
-                                    <div className="flex justify-between text-[11px] font-bold mb-1">
-                                        <span className="opacity-60">GST (Products - {totals.productGstRate}%)</span>
-                                        <span>₹{totals.productTax.toFixed(2)}</span>
-                                    </div>
+                                {totals.totalExclusiveTax > 0 && (
+                                    <>
+                                        <div className="flex justify-between text-[11px] font-bold mb-1">
+                                            <span className="opacity-60">CGST ({(totals.serviceGstRate) / 2}%)</span>
+                                            <span>₹{(totals.totalExclusiveTax / 2).toFixed(2)}</span>
+                                        </div>
+                                        <div className="flex justify-between text-[11px] font-bold mb-1">
+                                            <span className="opacity-60">SGST ({(totals.serviceGstRate) / 2}%)</span>
+                                            <span>₹{(totals.totalExclusiveTax / 2).toFixed(2)}</span>
+                                        </div>
+                                    </>
                                 )}
 
                                 <div className="border-t border-white/10 mt-2 pt-2 flex items-center justify-between">
@@ -2114,28 +2149,43 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
         const serviceGstRate = Number(platformSettings?.serviceGst ?? fiscal?.serviceGst ?? 18);
         const productGstRate = Number(platformSettings?.productGst ?? fiscal?.productGst ?? 12);
 
+        let totalGstAmount = 0;
+        let totalBaseAmount = 0;
         let serviceTax = 0;
         let productTax = 0;
-        let taxableValue = 0;
+        let serviceTaxExcl = 0;
+        let productTaxExcl = 0;
+        let totalExclusiveTax = 0;
 
         qCart.forEach(item => {
             const itemGross = (item.price * item.quantity);
-            const taxRate = (item.type === 'service' ? serviceGstRate : productGstRate) / 100;
-            const isItemInclusive = String(item.isInclusiveTax) === 'true' || (item.isInclusiveTax === undefined && fiscal?.inclusiveTax);
+            const itemTaxPercent = Number(item.type === 'service' ? serviceGstRate : productGstRate);
+            const isItemInclusive = item.isInclusiveTax === true || String(item.isInclusiveTax) === 'true' || (item.isInclusiveTax === undefined && !!fiscal?.inclusiveTax);
 
             if (isItemInclusive) {
-                taxableValue += itemGross;
-                // Tax hidden for inclusive as requested
-                if (item.type === 'service') serviceTax += 0;
-                else productTax += 0;
+                // GST Amount = (Price * GST) / (100 + GST)
+                const gstAmount = (itemGross * itemTaxPercent) / (100 + itemTaxPercent);
+                const baseAmount = itemGross - gstAmount;
+                totalGstAmount += gstAmount;
+                totalBaseAmount += baseAmount;
+                if (item.type === 'service') serviceTax += gstAmount;
+                else productTax += gstAmount;
             } else {
-                taxableValue += itemGross;
-                const tax = (itemGross * taxRate);
-                if (item.type === 'service') serviceTax += tax;
-                else productTax += tax;
+                // GST Amount = (Price * GST) / 100
+                const gstAmount = (itemGross * itemTaxPercent) / 100;
+                const baseAmount = itemGross;
+                totalGstAmount += gstAmount;
+                totalBaseAmount += baseAmount;
+                totalExclusiveTax += gstAmount;
+                if (item.type === 'service') {
+                    serviceTax += gstAmount;
+                    serviceTaxExcl += gstAmount;
+                } else {
+                    productTax += gstAmount;
+                    productTaxExcl += gstAmount;
+                }
             }
         });
-        const totalTax = serviceTax + productTax;
 
         // Membership discount logic for Quick Invoice
         let membershipDiscountAmt = 0;
@@ -2157,19 +2207,32 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
 
         const totalDeductions = discountAmt + membershipDiscountAmt;
 
-        const total = Math.max(0, (subtotal + totalTax) - totalDeductions);
+        const total = Math.max(0, (subtotal + totalExclusiveTax) - totalDeductions);
+
+        const isSameState = true; // Defaulting to true for Quick Invoice context as per existing logic patterns
+        const cgst = totalGstAmount / 2;
+        const sgst = totalGstAmount / 2;
 
         return {
             subtotal,
             discount: discountAmt,
             membershipDiscount: membershipDiscountAmt,
             redeemWallet: qRedeemWallet,
-            tax: totalTax,
+            tax: totalGstAmount,
             serviceTax,
             productTax,
+            serviceTaxExcl,
+            productTaxExcl,
+            baseAmount: totalBaseAmount,
+            gstAmount: totalGstAmount,
+            cgst,
+            sgst,
+            cgstExcl: totalExclusiveTax / 2,
+            sgstExcl: totalExclusiveTax / 2,
+            includingGst: fiscal?.inclusiveTax,
             serviceGstRate,
             productGstRate,
-            taxable: taxableValue,
+            taxable: totalBaseAmount,
             total: total,
             totalWithPrevDue: total + qCollectedPrevDue
         };
@@ -2268,9 +2331,20 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                 outletId: qOutletId,
                 items: qCart.map(i => {
                     const { staffIds, ...rest } = i;
-                    return { ...rest, stylistIds: (staffIds || []).filter(Boolean).map(sid => typeof sid === 'object' ? sid?._id : String(sid)) };
+                    return { 
+                        ...rest, 
+                        gstPercent: i.type === 'service' ? totals.serviceGstRate : totals.productGstRate,
+                        stylistIds: (staffIds || []).filter(Boolean).map(sid => typeof sid === 'object' ? sid?._id : String(sid)) 
+                    };
                 }),
                 tax: totals.tax,
+                gstPercent: totals.serviceGstRate,
+                includingGst: totals.includingGst,
+                baseAmount: totals.baseAmount,
+                gstAmount: totals.gstAmount,
+                cgst: totals.cgst,
+                sgst: totals.sgst,
+                subtotal: totals.subtotal,
                 payments: paymentArray,
                 discount: totals.discount,
                 membershipDiscount: totals.membershipDiscount || 0,
@@ -2672,6 +2746,13 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                                             <p className="text-[10px] font-black text-slate-900 uppercase leading-tight line-clamp-1">{item.name}</p>
                                             <div className="flex items-center gap-2 mt-0.5">
                                                 <p className="text-[10px] font-black text-emerald-600">₹{item.price}</p>
+                                                <span className={`text-[7px] font-black px-1.5 py-0.5 rounded-lg border uppercase tracking-widest ${
+                                                    (item.isInclusiveTax === true || String(item.isInclusiveTax) === 'true' || (item.isInclusiveTax === undefined && fiscal?.inclusiveTax))
+                                                        ? 'bg-emerald-50 border-emerald-200 text-emerald-600' 
+                                                        : 'bg-slate-50 border-slate-200 text-slate-400'
+                                                }`}>
+                                                    {(item.isInclusiveTax === true || String(item.isInclusiveTax) === 'true' || (item.isInclusiveTax === undefined && fiscal?.inclusiveTax)) ? 'Incl' : 'Excl'}
+                                                </span>
                                                 {item.type === 'service' && (
                                                     <div className="flex items-center bg-slate-50 border border-slate-200 rounded-lg h-6 overflow-hidden ml-2">
                                                         <button onClick={() => updateQQty(idx, -1)} className="px-1.5 hover:bg-slate-200 text-slate-400 transition-colors"><Minus className="w-2 h-2" /></button>
@@ -2807,7 +2888,6 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                                 </div>
                             ))}
                         </div>
-
                     </div>{/* End Right Panel */}
                 </div>{/* End flex body */}
 
@@ -2820,17 +2900,17 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                                 <span className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em]">Subtotal</span>
                                 <span className="text-[14px] font-black text-slate-900 font-mono italic">₹{totals.subtotal.toFixed(2)}</span>
                             </div>
-                            {totals.serviceTax > 0 && (
-                                <div className="flex flex-col">
-                                    <span className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em]">S-GST ({totals.serviceGstRate}%)</span>
-                                    <span className="text-[14px] font-black text-slate-900 font-mono italic">₹{totals.serviceTax.toFixed(2)}</span>
-                                </div>
-                            )}
-                            {totals.productTax > 0 && (
-                                <div className="flex flex-col">
-                                    <span className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em]">P-GST ({totals.productGstRate}%)</span>
-                                    <span className="text-[14px] font-black text-slate-900 font-mono italic">₹{totals.productTax.toFixed(2)}</span>
-                                </div>
+                            {totals.totalExclusiveTax > 0 && (
+                                <>
+                                    <div className="flex flex-col">
+                                        <span className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em]">CGST ({(totals.serviceGstRate) / 2}%)</span>
+                                        <span className="text-[14px] font-black text-slate-900 font-mono italic">₹{(totals.totalExclusiveTax / 2).toFixed(2)}</span>
+                                    </div>
+                                    <div className="flex flex-col">
+                                        <span className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em]">SGST ({(totals.serviceGstRate) / 2}%)</span>
+                                        <span className="text-[14px] font-black text-slate-900 font-mono italic">₹{(totals.totalExclusiveTax / 2).toFixed(2)}</span>
+                                    </div>
+                                </>
                             )}
                             <div className="flex flex-col">
                                 <span className="text-[9px] font-black text-rose-400 uppercase tracking-[0.2em]">Discount</span>

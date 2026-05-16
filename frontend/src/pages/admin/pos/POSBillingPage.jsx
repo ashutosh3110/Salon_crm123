@@ -23,6 +23,7 @@ export default function POSBillingPage() {
     const [selectedOutlet, setSelectedOutlet] = useState(null);
     const [paymentMethod, setPaymentMethod] = useState('cash');
     const [taxPercent, setTaxPercent] = useState(18);
+    const [includingGst, setIncludingGst] = useState(false);
     const [selectedPromotion, setSelectedPromotion] = useState(null);
     const [useLoyaltyPoints, setUseLoyaltyPoints] = useState(0);
     const [loyaltyBalance, setLoyaltyBalance] = useState(0);
@@ -146,7 +147,27 @@ export default function POSBillingPage() {
     };
 
     const subTotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
-    const taxAmount = Math.round(subTotal * (taxPercent / 100));
+    
+    // GST Calculation logic
+    const calculateGST = () => {
+        if (includingGst) {
+            const gstAmount = (subTotal * taxPercent) / (100 + taxPercent);
+            const baseAmount = subTotal - gstAmount;
+            const cgst = gstAmount / 2;
+            const sgst = gstAmount / 2;
+            return { gstAmount, baseAmount, cgst, sgst, grandTotal: subTotal };
+        } else {
+            const gstAmount = (subTotal * taxPercent) / 100;
+            const baseAmount = subTotal;
+            const cgst = gstAmount / 2;
+            const sgst = gstAmount / 2;
+            const grandTotal = subTotal + gstAmount;
+            return { gstAmount, baseAmount, cgst, sgst, grandTotal };
+        }
+    };
+
+    const { gstAmount, baseAmount, cgst, sgst, grandTotal: calculatedGrandTotal } = calculateGST();
+
     const loyaltyDiscount = useLoyaltyPoints;
     const promoDiscount = selectedPromotion
         ? selectedPromotion.discountType === 'percentage'
@@ -154,7 +175,7 @@ export default function POSBillingPage() {
             : selectedPromotion.discountValue || 0
         : 0;
     const totalDiscount = loyaltyDiscount + promoDiscount;
-    const grandTotal = Math.max(0, subTotal + taxAmount - totalDiscount);
+    const finalTotal = Math.max(0, calculatedGrandTotal - totalDiscount);
 
     const handleCreateClient = async (e) => {
         e.preventDefault();
@@ -190,12 +211,17 @@ export default function POSBillingPage() {
                     ...(item.stylistId && { stylistId: item.stylistId }),
                 })),
                 paymentMethod,
-                tax: taxAmount,
+                tax: Math.round(gstAmount),
+                gstPercent,
+                includingGst,
+                baseAmount: Number(baseAmount.toFixed(2)),
+                gstAmount: Number(gstAmount.toFixed(2)),
+                cgst: Number(cgst.toFixed(2)),
+                sgst: Number(sgst.toFixed(2)),
                 useLoyaltyPoints,
                 ...(selectedPromotion && { promotionId: selectedPromotion._id }),
-                invoiceNumber: `INV-${Date.now().toString().slice(-6)}`,
-                total: grandTotal,
-                createdAt: new Date().toISOString()
+                total: Math.round(finalTotal),
+                subtotal: subTotal,
             };
 
             const res = await api.post('/pos/checkout', payload);
@@ -344,13 +370,50 @@ export default function POSBillingPage() {
                             ))}
                         </div>
                         <div className="p-6 bg-surface-alt border-t border-border space-y-4 text-left">
-                            <div className="flex items-center justify-between text-[11px] font-black uppercase tracking-widest opacity-40">
-                                <span>Subtotal Buffer</span>
-                                <span>₹{subTotal}</span>
+                            <div className="flex items-center justify-between mb-4">
+                                <span className="text-[10px] font-black uppercase tracking-widest text-text-muted">GST Included in Price</span>
+                                <button 
+                                    onClick={() => setIncludingGst(!includingGst)}
+                                    className={`w-12 h-6 rounded-full p-1 transition-colors ${includingGst ? 'bg-primary' : 'bg-border'}`}
+                                >
+                                    <div className={`w-4 h-4 bg-white rounded-full transition-transform ${includingGst ? 'translate-x-6' : 'translate-x-0'}`} />
+                                </button>
                             </div>
-                            <div className="flex items-center justify-between text-2xl font-black uppercase tracking-tighter">
-                                <span>Total Payload</span>
-                                <span className="text-primary">₹{grandTotal}</span>
+
+                            <div className="flex items-center justify-between text-[11px] font-black uppercase tracking-widest opacity-40">
+                                <span>Subtotal</span>
+                                <span>₹{subTotal.toFixed(2)}</span>
+                            </div>
+
+                            <div className="space-y-1 pt-2 border-t border-border/10">
+                                <div className="flex items-center justify-between text-[10px] font-bold uppercase tracking-widest text-text-muted">
+                                    <span>Base Amount</span>
+                                    <span>₹{baseAmount.toFixed(2)}</span>
+                                </div>
+                                <div className="flex items-center justify-between text-[10px] font-bold uppercase tracking-widest text-text-muted">
+                                    <span>CGST (9%)</span>
+                                    <span>₹{cgst.toFixed(2)}</span>
+                                </div>
+                                <div className="flex items-center justify-between text-[10px] font-bold uppercase tracking-widest text-text-muted">
+                                    <span>SGST (9%)</span>
+                                    <span>₹{sgst.toFixed(2)}</span>
+                                </div>
+                                <div className="flex items-center justify-between text-[10px] font-bold uppercase tracking-widest text-text-muted">
+                                    <span>Total GST</span>
+                                    <span>₹{gstAmount.toFixed(2)}</span>
+                                </div>
+                            </div>
+
+                            {totalDiscount > 0 && (
+                                <div className="flex items-center justify-between text-[11px] font-black uppercase tracking-widest text-rose-500">
+                                    <span>Discount</span>
+                                    <span>-₹{totalDiscount.toFixed(2)}</span>
+                                </div>
+                            )}
+
+                            <div className="flex items-center justify-between text-2xl font-black uppercase tracking-tighter pt-2 border-t border-border">
+                                <span>Final Total</span>
+                                <span className="text-primary">₹{finalTotal.toFixed(2)}</span>
                             </div>
                             <button onClick={handleCheckout} disabled={checkingOut || !selectedClient || cart.length === 0} className="w-full py-5 bg-text text-white text-[11px] font-black uppercase tracking-[0.3em] hover:bg-primary transition-all disabled:opacity-20 flex items-center justify-center gap-3">
                                 {checkingOut ? 'Committing...' : 'Initialize Charge'}

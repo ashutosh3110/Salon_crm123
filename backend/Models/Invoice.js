@@ -53,10 +53,21 @@ const invoiceSchema = new mongoose.Schema({
         default: 0
     },
     tax: Number,
+    gstPercent: {
+        type: Number
+    },
+    includingGst: {
+        type: Boolean,
+        default: false
+    },
+    baseAmount: Number,
+    gstAmount: Number,
+    cgst: Number,
+    sgst: Number,
     total: Number,
     paymentMethod: {
         type: String,
-        enum: ['cash', 'card', 'online', 'wallet', 'split'],
+        enum: ['cash', 'card', 'online', 'wallet', 'split', 'unpaid'],
         default: 'cash'
     },
     paymentStatus: {

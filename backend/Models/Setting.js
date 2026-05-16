@@ -73,11 +73,11 @@ const settingSchema = new mongoose.Schema({
     },
     serviceGst: {
         type: Number,
-        default: 18
+        default: 5
     },
     productGst: {
         type: Number,
-        default: 12
+        default: 18
     },
     whatsappPricing: {
         pricePerMessage: { type: Number, default: 0.50 },

@@ -63,6 +63,7 @@ export default function AddProductForm({ onSave, initialData, onCancel }) {
         expiryDate: '',
         outletIds: initialData?.outletIds || [],
         isShopProduct: false,
+        isInclusiveTax: false,
         appCategory: '',
         images: [],
         shopDescription: '',
@@ -178,6 +179,7 @@ export default function AddProductForm({ onSave, initialData, onCancel }) {
             threshold: parseInt(formData.threshold),
             stock: parseInt(formData.stock),
             gstPercent: parseInt(formData.gstPercent),
+            isInclusiveTax: formData.isInclusiveTax,
             mfgDate: formData.mfgDate,
             expiryDate: formData.expiryDate
         });
@@ -302,7 +304,7 @@ export default function AddProductForm({ onSave, initialData, onCancel }) {
                             </button>
                         </div>
 
-                        <div className="grid grid-cols-1 gap-4">
+                        <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-1.5">
                                 <label className="text-[9px] font-black text-text-muted uppercase tracking-[0.2em]">Selling Price (MRP) <span className="text-rose-500">*</span></label>
                                 <div className="relative">
@@ -315,6 +317,21 @@ export default function AddProductForm({ onSave, initialData, onCancel }) {
                                         onFocus={(e) => { if (e.target.value === '0') setFormData(prev => ({ ...prev, sellingPrice: '' })); }}
                                         onChange={(e) => setFormData({ ...formData, sellingPrice: e.target.value })}
                                     />
+                                </div>
+                            </div>
+                            <div className="space-y-1.5">
+                                <label className="text-[9px] font-black text-text-muted uppercase tracking-[0.2em]">Tax Config</label>
+                                <div 
+                                    onClick={() => setFormData(prev => ({ ...prev, isInclusiveTax: !prev.isInclusiveTax }))}
+                                    className={`flex items-center justify-between px-4 py-3 border cursor-pointer transition-all ${formData.isInclusiveTax ? 'bg-primary/5 border-primary' : 'bg-background border-border'}`}
+                                >
+                                    <div className="flex flex-col">
+                                        <span className={`text-[10px] font-black uppercase tracking-tight ${formData.isInclusiveTax ? 'text-primary' : 'text-text'}`}>Incl. GST</span>
+                                        <span className="text-[8px] font-bold text-text-muted uppercase tracking-tighter">Tax included in MRP</span>
+                                    </div>
+                                    <div className={`w-10 h-5 rounded-full p-1 transition-all duration-300 ${formData.isInclusiveTax ? 'bg-primary' : 'bg-slate-300'}`}>
+                                        <div className={`w-3 h-3 rounded-full bg-white transition-all duration-300 transform ${formData.isInclusiveTax ? 'translate-x-5' : 'translate-x-0'}`} />
+                                    </div>
                                 </div>
                             </div>
                         </div>

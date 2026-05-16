@@ -255,8 +255,8 @@ const POSReceiptPDF = ({ invoice, salon }) => {
                                 <Text style={{ flex: 1.5 }}>{item.name || '-'} {item.isInclusiveTax ? '(INCL. GST)' : ''}</Text>
                                 <Text style={{ width: 45, fontSize: 6 }}>{item.stylistIds?.map(s => s.name || '-').join(', ') || '-'}</Text>
                             <Text style={{ width: 20, textAlign: 'center' }}>{item.quantity || 1}</Text>
-                            <Text style={{ width: 35, textAlign: 'right' }}>{(item.price || 0).toFixed(0)}</Text>
-                            <Text style={{ width: 40, textAlign: 'right' }}>{(item.total || (item.price * (item.quantity || 1))).toFixed(0)}</Text>
+                            <Text style={{ width: 35, textAlign: 'right' }}>{(item.price || 0).toFixed(2)}</Text>
+                            <Text style={{ width: 40, textAlign: 'right' }}>{(item.total || (item.price * (item.quantity || 1))).toFixed(2)}</Text>
                         </View>
                     ))}
                 </View>
@@ -265,33 +265,51 @@ const POSReceiptPDF = ({ invoice, salon }) => {
                 <View style={{ marginTop: 10 }}>
                     <Text style={{ textAlign: 'center', fontSize: 8 }}>----------------------------------------</Text>
                     <View style={{ gap: 1, marginTop: 2 }}>
-                        <View style={{ flexDirection: 'row', justifyContent: 'flex-end', fontSize: 8 }}>
-                            <Text style={{ width: 80, textAlign: 'right', paddingRight: 4 }}>Sub Total</Text>
-                            <Text style={{ width: 45, textAlign: 'right' }}>: {(invoice.subtotal || 0).toFixed(0)}</Text>
+                        <View style={{ flexDirection: 'row', justifyContent: 'space-between', fontSize: 8 }}>
+                            <Text style={{ width: 80, textAlign: 'right', paddingRight: 4 }}>Taxable Value</Text>
+                            <Text style={{ width: 45, textAlign: 'right' }}>: {(invoice.baseAmount || invoice.subtotal || 0).toFixed(2)}</Text>
                         </View>
-                        {(invoice.tax || 0) > 0 && (
-                            <View style={{ flexDirection: 'row', justifyContent: 'flex-end', fontSize: 8 }}>
-                                <Text style={{ width: 80, textAlign: 'right', paddingRight: 4 }}>GST (18%)</Text>
-                                <Text style={{ width: 45, textAlign: 'right' }}>: {(invoice.tax || 0).toFixed(0)}</Text>
+                        {invoice.cgst > 0 && (
+                            <View style={{ flexDirection: 'row', justifyContent: 'space-between', fontSize: 8 }}>
+                                <Text style={{ width: 80, textAlign: 'right', paddingRight: 4 }}>CGST ({(invoice.gstPercent) / 2}%)</Text>
+                                <Text style={{ width: 45, textAlign: 'right' }}>: {(invoice.cgst || 0).toFixed(2)}</Text>
+                            </View>
+                        )}
+                        {invoice.sgst > 0 && (
+                            <View style={{ flexDirection: 'row', justifyContent: 'space-between', fontSize: 8 }}>
+                                <Text style={{ width: 80, textAlign: 'right', paddingRight: 4 }}>SGST ({(invoice.gstPercent) / 2}%)</Text>
+                                <Text style={{ width: 45, textAlign: 'right' }}>: {(invoice.sgst || 0).toFixed(2)}</Text>
+                            </View>
+                        )}
+                        {invoice.igst > 0 && (
+                            <View style={{ flexDirection: 'row', justifyContent: 'space-between', fontSize: 8 }}>
+                                <Text style={{ width: 80, textAlign: 'right', paddingRight: 4 }}>IGST ({invoice.gstPercent}%)</Text>
+                                <Text style={{ width: 45, textAlign: 'right' }}>: {(invoice.igst || 0).toFixed(2)}</Text>
+                            </View>
+                        )}
+                        {(!invoice.cgst && !invoice.sgst && !invoice.igst && (invoice.tax || 0) > 0) && (
+                            <View style={{ flexDirection: 'row', justifyContent: 'space-between', fontSize: 8 }}>
+                                <Text style={{ width: 80, textAlign: 'right', paddingRight: 4 }}>GST ({invoice.gstPercent}%)</Text>
+                                <Text style={{ width: 45, textAlign: 'right' }}>: {(invoice.tax || 0).toFixed(2)}</Text>
                             </View>
                         )}
                         {(invoice.discount || 0) > 0 && (
-                            <View style={{ flexDirection: 'row', justifyContent: 'flex-end', fontSize: 8 }}>
+                            <View style={{ flexDirection: 'row', justifyContent: 'space-between', fontSize: 8 }}>
                                 <Text style={{ width: 80, textAlign: 'right', paddingRight: 4 }}>Discount</Text>
-                                <Text style={{ width: 45, textAlign: 'right' }}>: -{(invoice.discount || 0).toFixed(0)}</Text>
+                                <Text style={{ width: 45, textAlign: 'right' }}>: -{(invoice.discount || 0).toFixed(2)}</Text>
                             </View>
                         )}
                         {(invoice.membershipDiscount || 0) > 0 && (
                             <View style={{ flexDirection: 'row', justifyContent: 'flex-end', fontSize: 8 }}>
                                 <Text style={{ width: 80, textAlign: 'right', paddingRight: 4 }}>Membership Disc</Text>
-                                <Text style={{ width: 45, textAlign: 'right' }}>: -{(invoice.membershipDiscount || 0).toFixed(0)}</Text>
+                                <Text style={{ width: 45, textAlign: 'right' }}>: -{(invoice.membershipDiscount || 0).toFixed(2)}</Text>
                             </View>
                         )}
                     </View>
                     <Text style={{ textAlign: 'center', fontSize: 8 }}>----------------------------------------</Text>
                     <View style={{ flexDirection: 'row', justifyContent: 'flex-end', fontWeight: 700, fontSize: 10, marginVertical: 2 }}>
                         <Text style={{ width: 80, textAlign: 'right', paddingRight: 4 }}>Grand Total</Text>
-                        <Text style={{ width: 45, textAlign: 'right' }}>: {((invoice.subtotal || 0) + (invoice.tax || 0) - (invoice.discount || 0) - (invoice.membershipDiscount || 0)).toFixed(0)}</Text>
+                        <Text style={{ width: 45, textAlign: 'right' }}>: {((invoice.total || 0) + (invoice.previousDueCollected || 0)).toFixed(2)}</Text>
                     </View>
                     <Text style={{ textAlign: 'center', fontSize: 8 }}>========================================</Text>
                 </View>
@@ -302,25 +320,25 @@ const POSReceiptPDF = ({ invoice, salon }) => {
                     <View style={{ gap: 1, marginTop: 2, fontSize: 8 }}>
                         <View style={{ flexDirection: 'row' }}>
                             <Text style={{ width: 100 }}>Wallet Used</Text>
-                            <Text>: {walletPaid.toFixed(0)}</Text>
+                            <Text>: {walletPaid.toFixed(2)}</Text>
                         </View>
                         {(invoice.previousDueCollected || 0) > 0 && (
                             <View style={{ flexDirection: 'row' }}>
                                 <Text style={{ width: 100 }}>Prev. Due Paid</Text>
-                                <Text>: {(invoice.previousDueCollected || 0).toFixed(0)}</Text>
+                                <Text>: {(invoice.previousDueCollected || 0).toFixed(2)}</Text>
                             </View>
                         )}
                         <View style={{ flexDirection: 'row' }}>
                             <Text style={{ width: 100 }}>Cash Paid</Text>
-                            <Text>: {cashPaid.toFixed(0)}</Text>
+                            <Text>: {cashPaid.toFixed(2)}</Text>
                         </View>
                         <View style={{ flexDirection: 'row' }}>
                             <Text style={{ width: 100 }}>Online Paid</Text>
-                            <Text>: {onlinePaid.toFixed(0)}</Text>
+                            <Text>: {onlinePaid.toFixed(2)}</Text>
                         </View>
                         <View style={{ flexDirection: 'row' }}>
                             <Text style={{ width: 100 }}>Due Amount</Text>
-                            <Text>: {(invoice.dueAmount || 0).toFixed(0)}</Text>
+                            <Text>: {(invoice.dueAmount || 0).toFixed(2)}</Text>
                         </View>
                         <View style={{ marginTop: 4, flexDirection: 'row' }}>
                             <Text style={{ width: 100 }}>Payment Method</Text>
@@ -448,12 +466,24 @@ const StandardInvoicePDF = ({ invoice, salon }) => {
                         <Text style={{ fontSize: 10, fontWeight: 700, color: '#C8956C', marginBottom: 10, textTransform: 'uppercase', letterSpacing: 1 }}>Bill Summary</Text>
                         <View style={{ borderTop: 1, borderColor: '#eee', paddingTop: 10 }}>
                             <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 5 }}>
-                                <Text style={{ color: '#666' }}>Service Total</Text>
-                                <Text>₹{(invoice.subtotal || 0).toFixed(2)}</Text>
+                                <Text style={{ color: '#666' }}>Taxable Value</Text>
+                                <Text>₹{(invoice.baseAmount || invoice.subtotal || 0).toFixed(2)}</Text>
                             </View>
-                            {(invoice.tax || 0) > 0 && (
+                            {invoice.cgst > 0 && (
                                 <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 5 }}>
-                                    <Text style={{ color: '#666' }}>GST (Tax)</Text>
+                                    <Text style={{ color: '#666' }}>CGST ({(invoice.gstPercent) / 2}%)</Text>
+                                    <Text>+₹{(invoice.cgst || 0).toFixed(2)}</Text>
+                                </View>
+                            )}
+                            {invoice.sgst > 0 && (
+                                <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 5 }}>
+                                    <Text style={{ color: '#666' }}>SGST ({(invoice.gstPercent) / 2}%)</Text>
+                                    <Text>+₹{(invoice.sgst || 0).toFixed(2)}</Text>
+                                </View>
+                            )}
+                            {(!invoice.cgst && (invoice.tax || 0) > 0) && (
+                                <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 5 }}>
+                                    <Text style={{ color: '#666' }}>GST ({invoice.gstPercent}%)</Text>
                                     <Text>+₹{(invoice.tax || 0).toFixed(2)}</Text>
                                 </View>
                             )}
@@ -559,6 +589,7 @@ export default function POSInvoicesPage() {
 
     useEffect(() => {
         if (selectedInvoice) {
+            console.log('[InvoiceDetail] selectedInvoice.gstPercent:', selectedInvoice.gstPercent);
             document.body.style.overflow = 'hidden';
             document.documentElement.style.overflow = 'hidden';
         } else {
@@ -1048,29 +1079,49 @@ export default function POSInvoicesPage() {
 
                             <div className="bg-surface-alt/30 border border-border p-4 space-y-3">
                                 <div className="flex justify-between text-[10px] font-black text-text-muted uppercase tracking-widest">
-                                    <span>Subtotal</span>
-                                    <span>Rs.{(selectedInvoice.subtotal || 0).toLocaleString()}</span>
+                                    <span>Taxable Value</span>
+                                    <span>Rs.{(selectedInvoice.baseAmount || selectedInvoice.subtotal || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                                 </div>
-                                <div className="flex justify-between text-[10px] font-black text-text uppercase tracking-widest">
-                                    <span>Tax (GST)</span>
-                                    <span>+Rs.{selectedInvoice.tax?.toLocaleString()}</span>
-                                </div>
+                                {selectedInvoice.cgst > 0 && (
+                                    <div className="flex justify-between text-[10px] font-black text-text uppercase tracking-widest">
+                                        <span>CGST ({(selectedInvoice.gstPercent ) / 2}%)</span>
+                                        <span>+Rs.{selectedInvoice.cgst?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                                    </div>
+                                )}
+                                {selectedInvoice.sgst > 0 && (
+                                    <div className="flex justify-between text-[10px] font-black text-text uppercase tracking-widest">
+                                        <span>SGST ({(selectedInvoice.gstPercent) / 2}%)</span>
+                                        <span>+Rs.{selectedInvoice.sgst?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                                    </div>
+                                )}
+                                {selectedInvoice.igst > 0 && (
+                                    <div className="flex justify-between text-[10px] font-black text-text uppercase tracking-widest">
+                                        <span>IGST ({selectedInvoice.gstPercent}%)</span>
+                                        <span>+Rs.{selectedInvoice.igst?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                                    </div>
+                                )}
+                                {(!selectedInvoice.cgst && !selectedInvoice.sgst && !selectedInvoice.igst && (selectedInvoice.tax || 0) > 0) && (
+                                    <div className="flex justify-between text-[10px] font-black text-text uppercase tracking-widest">
+                                        <span>Tax (GST {selectedInvoice.gstPercent}%)</span>
+                                        <span>+Rs.{selectedInvoice.tax?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                                    </div>
+                                )}
                                 {selectedInvoice.discount > 0 && (
                                     <div className="flex justify-between text-[10px] font-black text-emerald-600 uppercase tracking-widest">
                                         <span>Discount</span>
-                                        <span>-Rs.{selectedInvoice.discount?.toLocaleString()}</span>
+                                        <span>-Rs.{selectedInvoice.discount?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                                     </div>
                                 )}
                                 {(selectedInvoice.membershipDiscount || 0) > 0 && (
                                     <div className="flex justify-between text-[10px] font-black text-emerald-600 uppercase tracking-widest">
                                         <span>Membership Disc</span>
-                                        <span>-Rs.{(selectedInvoice.membershipDiscount || 0).toLocaleString()}</span>
+                                        <span>-Rs.{(selectedInvoice.membershipDiscount || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                                     </div>
                                 )}
                                 {(selectedInvoice.walletRedeemed || 0) > 0 && (
                                     <div className="flex justify-between text-[10px] font-black text-emerald-600 uppercase tracking-widest">
                                         <span>Wallet Used</span>
-                                        <span>-Rs.{(selectedInvoice.walletRedeemed || 0).toLocaleString()}</span>
+                                        <span>-Rs.{(selectedInvoice.walletRedeemed || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                                     </div>
                                 )}
                                 {(selectedInvoice.previousDueCollected || 0) > 0 && (
@@ -1083,11 +1134,11 @@ export default function POSInvoicesPage() {
                                     <div className="flex flex-col gap-1">
                                         <div className="flex items-center gap-2">
                                             <p className="text-[8px] font-black text-text-muted uppercase tracking-[0.1em]">Invoice Total</p>
-                                            <p className="text-[11px] font-black text-text">Rs.{selectedInvoice.total?.toLocaleString()}</p>
+                                            <p className="text-[11px] font-black text-text">Rs.{selectedInvoice.total?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
                                         </div>
                                         <div>
                                             <p className="text-[9px] font-black text-primary uppercase tracking-[0.3em]">Grand Total</p>
-                                            <p className="text-xl font-black text-text tracking-tighter uppercase whitespace-nowrap">Rs.{((selectedInvoice.total || 0) + (selectedInvoice.previousDueCollected || 0)).toLocaleString()}</p>
+                                            <p className="text-xl font-black text-text tracking-tighter uppercase whitespace-nowrap">Rs.{((selectedInvoice.total || 0) + (selectedInvoice.previousDueCollected || 0)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
                                         </div>
                                     </div>
                                     <div className="flex flex-col gap-1.5 text-right">
