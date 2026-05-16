@@ -100,6 +100,8 @@ exports.checkout = async (req, res) => {
             membershipDiscount: roundTo2(membershipDiscount),
             tax: roundTo2(tax),
             gstPercent,
+            serviceGstPercent: req.body.serviceGstPercent,
+            productGstPercent: req.body.productGstPercent,
             includingGst,
             baseAmount: roundTo2(baseAmount),
             gstAmount: roundTo2(gstAmount),

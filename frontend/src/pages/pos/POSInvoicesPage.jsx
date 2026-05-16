@@ -1084,14 +1084,22 @@ export default function POSInvoicesPage() {
                                 </div>
                                 {selectedInvoice.cgst > 0 && (
                                     <div className="flex justify-between text-[10px] font-black text-text uppercase tracking-widest">
-                                        <span>CGST ({(selectedInvoice.gstPercent ) / 2}%)</span>
+                                        <span>
+                                            CGST {selectedInvoice.items?.every(i => i.type === 'service') ? `(${(selectedInvoice.serviceGstPercent || selectedInvoice.gstPercent || 5) / 2}%)` : 
+                                                  selectedInvoice.items?.every(i => i.type === 'product') ? `(${(selectedInvoice.productGstPercent || selectedInvoice.gstPercent || 10) / 2}%)` : 
+                                                  (selectedInvoice.serviceGstPercent === selectedInvoice.productGstPercent) ? `(${(selectedInvoice.serviceGstPercent || selectedInvoice.gstPercent || 5) / 2}%)` : ''}
+                                        </span>
                                         <span>{selectedInvoice.includingGst ? '(Included)' : `+Rs.${selectedInvoice.cgst?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}</span>
                                         {selectedInvoice.includingGst && <span>Rs.{selectedInvoice.cgst?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>}
                                     </div>
                                 )}
                                 {selectedInvoice.sgst > 0 && (
                                     <div className="flex justify-between text-[10px] font-black text-text uppercase tracking-widest">
-                                        <span>SGST ({(selectedInvoice.gstPercent) / 2}%)</span>
+                                        <span>
+                                            SGST {selectedInvoice.items?.every(i => i.type === 'service') ? `(${(selectedInvoice.serviceGstPercent || selectedInvoice.gstPercent || 5) / 2}%)` : 
+                                                  selectedInvoice.items?.every(i => i.type === 'product') ? `(${(selectedInvoice.productGstPercent || selectedInvoice.gstPercent || 10) / 2}%)` : 
+                                                  (selectedInvoice.serviceGstPercent === selectedInvoice.productGstPercent) ? `(${(selectedInvoice.serviceGstPercent || selectedInvoice.gstPercent || 5) / 2}%)` : ''}
+                                        </span>
                                         <span>{selectedInvoice.includingGst ? '(Included)' : `+Rs.${selectedInvoice.sgst?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}</span>
                                         {selectedInvoice.includingGst && <span>Rs.{selectedInvoice.sgst?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>}
                                     </div>

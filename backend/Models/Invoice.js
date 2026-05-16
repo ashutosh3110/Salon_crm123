@@ -44,7 +44,8 @@ const invoiceSchema = new mongoose.Schema({
         isInclusiveTax: {
             type: Boolean,
             default: false
-        }
+        },
+        gstPercent: Number
     }],
     subtotal: Number,
     discount: Number,
@@ -56,6 +57,8 @@ const invoiceSchema = new mongoose.Schema({
     gstPercent: {
         type: Number
     },
+    serviceGstPercent: Number,
+    productGstPercent: Number,
     includingGst: {
         type: Boolean,
         default: false

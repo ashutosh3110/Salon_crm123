@@ -23,7 +23,8 @@ export default function ProductsPage() {
         stockQuantity: '', 
         lowStockThreshold: 5,
         availabilityType: 'all', 
-        outletIds: []
+        outletIds: [],
+        isInclusiveTax: false
     });
 
     const fetchProducts = async () => {
@@ -53,6 +54,7 @@ export default function ProductsPage() {
             availability: f.availabilityType === 'selected' ? 'selected' : 'all',
             outletIds: Array.isArray(f.outletIds) ? f.outletIds : [],
         },
+        isInclusiveTax: f.isInclusiveTax
     });
 
     const handleSubmit = async (e) => {
@@ -85,7 +87,8 @@ export default function ProductsPage() {
             stockQuantity: p.stockQuantity || p.stock || 0, 
             lowStockThreshold: p.extended?.threshold || p.lowStockThreshold || 5,
             availabilityType: p.extended?.outletIds?.length > 0 || p.outletIds?.length > 0 ? 'selected' : 'all',
-            outletIds: p.extended?.outletIds || p.outletIds || []
+            outletIds: p.extended?.outletIds || p.outletIds || [],
+            isInclusiveTax: !!p.isInclusiveTax
         });
         setShowModal(true);
     };
@@ -107,7 +110,7 @@ export default function ProductsPage() {
                     <p className="text-[10px] font-black text-text-muted mt-1 uppercase tracking-[0.2em]">{products.length} products registered</p>
                 </div>
                 <button
-                    onClick={() => { setEditing(null); setForm({ name: '', sku: '', price: '', category: '', stockQuantity: '', lowStockThreshold: 5, availabilityType: 'all', outletIds: [] }); setShowModal(true); }}
+                    onClick={() => { setEditing(null); setForm({ name: '', sku: '', price: '', category: '', stockQuantity: '', lowStockThreshold: 5, availabilityType: 'all', outletIds: [], isInclusiveTax: false }); setShowModal(true); }}
                     className="flex items-center gap-2 bg-primary text-white px-6 py-3 border font-black text-[10px] uppercase tracking-widest shadow-xl shadow-primary/20 hover:scale-[1.02] transition-all"
                 >
                     <Plus className="w-4 h-4" /> Register New Asset
@@ -245,6 +248,22 @@ export default function ProductsPage() {
                                 <div className="space-y-1">
                                     <label className="text-[10px] font-black text-text-muted uppercase tracking-widest italic">Threshold</label>
                                     <input type="number" value={form.lowStockThreshold} onChange={(e) => setForm({ ...form, lowStockThreshold: e.target.value })} className="w-full px-5 py-3 bg-surface-alt border border-border/60 text-sm font-black italic focus:border-primary outline-none" />
+                                </div>
+                            </div>
+                            
+                            <div className="flex items-center justify-between p-5 bg-emerald-50 border border-emerald-200 rounded-lg group cursor-pointer hover:bg-emerald-100/50 transition-all"
+                                 onClick={() => setForm(prev => ({ ...prev, isInclusiveTax: !prev.isInclusiveTax }))}>
+                                <div className="flex items-center gap-3">
+                                    <div className={`w-8 h-8 rounded-full flex items-center justify-center ${form.isInclusiveTax ? 'bg-emerald-500 text-white' : 'bg-slate-200 text-slate-400'}`}>
+                                        <CheckCircle2 size={16} />
+                                    </div>
+                                    <div>
+                                        <p className="text-[10px] font-black uppercase tracking-tight text-emerald-900">Tax Protocol: {form.isInclusiveTax ? 'Inclusive' : 'Exclusive'}</p>
+                                        <p className="text-[8px] font-black text-emerald-700/60 uppercase italic">Price {form.isInclusiveTax ? 'Includes' : 'Excludes'} GST Amount</p>
+                                    </div>
+                                </div>
+                                <div className={`w-12 h-6 rounded-full p-1 transition-all duration-300 ${form.isInclusiveTax ? 'bg-emerald-500' : 'bg-slate-300'}`}>
+                                    <div className={`w-4 h-4 rounded-full bg-white transition-all duration-300 transform ${form.isInclusiveTax ? 'translate-x-6' : 'translate-x-0'}`} />
                                 </div>
                             </div>
 

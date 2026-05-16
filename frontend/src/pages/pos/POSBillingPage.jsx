@@ -272,6 +272,7 @@ export default function POSBillingPage() {
     const [selectedClient, setSelectedClient] = useState(null);
     const [payments, setPayments] = useState([{ method: 'cash', amount: 0 }]);
     const [isManualPayment, setIsManualPayment] = useState(false);
+    const [activeMembership, setActiveMembership] = useState(null);
     // Fiscal Settings (from localStorage)
     const fiscal = useMemo(() => {
         const saved = localStorage.getItem('pos_fiscal_settings');
@@ -280,8 +281,8 @@ export default function POSBillingPage() {
             gstin: '09AAFCC0301F1ZN',
             state: 'Uttar Pradesh',
             stateCode: '09',
-            serviceGst: 18,
-            productGst: 12,
+            serviceGst: 5,
+            productGst: 10,
             inclusiveTax: false
         };
 
@@ -298,7 +299,8 @@ export default function POSBillingPage() {
     }, [platformSettings]);
 
     const taxPercent = useMemo(() => {
-        return Number(platformSettings?.serviceGst ?? fiscal?.serviceGst ?? 18);
+        // Return service rate by default for backward compatibility where a single rate is expected
+        return Number(platformSettings?.serviceGst ?? fiscal?.serviceGst ?? 5);
     }, [platformSettings, fiscal]);
     const [customerGstin, setCustomerGstin] = useState('');
     const [customerState, setCustomerState] = useState('Uttar Pradesh'); // Default to Salon State
@@ -316,6 +318,27 @@ export default function POSBillingPage() {
         }
     }, [platformSettings, fetchPlatformSettings, fetchStaff, businessCustomers, fetchCustomers]);
 
+
+    useEffect(() => {
+        if (selectedClient?._id) {
+            const fetchActiveMembership = async () => {
+                try {
+                    const res = await api.get(`/loyalty/membership/active?customerId=${selectedClient._id}`);
+                    if (res.data.success && res.data.data) {
+                        setActiveMembership(res.data.data);
+                    } else {
+                        setActiveMembership(null);
+                    }
+                } catch (err) {
+                    console.error("Membership fetch error:", err);
+                    setActiveMembership(null);
+                }
+            };
+            fetchActiveMembership();
+        } else {
+            setActiveMembership(null);
+        }
+    }, [selectedClient]);
 
     useEffect(() => {
         if (fiscal.state) setCustomerState(fiscal.state);
@@ -549,6 +572,24 @@ export default function POSBillingPage() {
                 totalMembershipDiscount += (item.originalBooking.membershipDiscount || 0) * item.quantity;
             } else {
                 totalGrossAmount += (item.price * item.quantity);
+                
+                // Calculate membership discount if active
+                if (activeMembership && activeMembership.planId) {
+                    const plan = activeMembership.planId;
+                    if (item.type === 'service') {
+                        if (plan.serviceDiscountType === 'percentage') {
+                            totalMembershipDiscount += (item.price * item.quantity * (plan.serviceDiscountValue || 0)) / 100;
+                        } else {
+                            totalMembershipDiscount += (plan.serviceDiscountValue || 0) * item.quantity;
+                        }
+                    } else if (item.type === 'product') {
+                        if (plan.productDiscountType === 'percentage') {
+                            totalMembershipDiscount += (item.price * item.quantity * (plan.productDiscountValue || 0)) / 100;
+                        } else {
+                            totalMembershipDiscount += (plan.productDiscountValue || 0) * item.quantity;
+                        }
+                    }
+                }
             }
         });
 
@@ -563,7 +604,7 @@ export default function POSBillingPage() {
         let totalExclusiveTax = 0;
 
         const sGstRate = Number(platformSettings?.serviceGst ?? fiscal.serviceGst ?? 5);
-        const pGstRate = Number(platformSettings?.productGst ?? fiscal.productGst ?? 18);
+        const pGstRate = Number(platformSettings?.productGst ?? fiscal.productGst ?? 10);
         console.log('[Totals] Settings Debug:', { platformSettings, sGstRate, pGstRate });
 
         cart.forEach(item => {
@@ -1108,6 +1149,8 @@ export default function POSBillingPage() {
                     gstAmount: totals.gstAmount,
                     cgst: totals.cgst,
                     sgst: totals.sgst,
+                    serviceGstPercent: totals.serviceGstRate,
+                    productGstPercent: totals.productGstRate,
                     subtotal: totals.subtotal,
                     payments: payments.map(p => ({ method: p.method, amount: p.amount })),
                     useWalletAmount: totals.redeemWallet,
@@ -1326,13 +1369,27 @@ export default function POSBillingPage() {
                         
                         <div className="flex justify-between"><span>Base Amount</span><span>₹{successInvoice?.totals?.baseAmount?.toFixed(2) || '0.00'}</span></div>
                         {successInvoice?.totals?.cgst > 0 && (
-                            <div className="flex justify-between"><span>CGST ({(successInvoice?.totals?.serviceGstRate || 18) / 2}%)</span><span>₹{successInvoice.totals.cgst.toFixed(2)}</span></div>
+                            <div className="flex justify-between">
+                                <span>
+                                    CGST {successInvoice?.items?.every(i => i.type === 'service') ? `(${(successInvoice?.totals?.serviceGstRate || 5) / 2}%)` : 
+                                          successInvoice?.items?.every(i => i.type === 'product') ? `(${(successInvoice?.totals?.productGstRate || 10) / 2}%)` : 
+                                          successInvoice?.totals?.serviceGstRate === successInvoice?.totals?.productGstRate ? `(${(successInvoice?.totals?.serviceGstRate || 5) / 2}%)` : ''}
+                                </span>
+                                <span>₹{successInvoice.totals.cgst.toFixed(2)}</span>
+                            </div>
                         )}
                         {successInvoice?.totals?.sgst > 0 && (
-                            <div className="flex justify-between"><span>SGST ({(successInvoice?.totals?.serviceGstRate || 18) / 2}%)</span><span>₹{successInvoice.totals.sgst.toFixed(2)}</span></div>
+                            <div className="flex justify-between">
+                                <span>
+                                    SGST {successInvoice?.items?.every(i => i.type === 'service') ? `(${(successInvoice?.totals?.serviceGstRate || 5) / 2}%)` : 
+                                          successInvoice?.items?.every(i => i.type === 'product') ? `(${(successInvoice?.totals?.productGstRate || 10) / 2}%)` : 
+                                          successInvoice?.totals?.serviceGstRate === successInvoice?.totals?.productGstRate ? `(${(successInvoice?.totals?.serviceGstRate || 5) / 2}%)` : ''}
+                                </span>
+                                <span>₹{successInvoice.totals.sgst.toFixed(2)}</span>
+                            </div>
                         )}
                         {(!successInvoice?.totals?.cgst && successInvoice?.totals?.tax > 0) && (
-                            <div className="flex justify-between"><span>GST ({successInvoice?.totals?.serviceGstRate || 18}%)</span><span>₹{successInvoice.totals.tax.toFixed(2)}</span></div>
+                            <div className="flex justify-between"><span>GST {successInvoice?.totals?.serviceGstRate === successInvoice?.totals?.productGstRate ? `(${successInvoice?.totals?.serviceGstRate || 5}%)` : ''}</span><span>₹{successInvoice.totals.tax.toFixed(2)}</span></div>
                         )}
 
                         {(successInvoice?.discounts?.points > 0 || successInvoice?.totals?.membershipDiscount > 0) && (
@@ -1603,12 +1660,17 @@ export default function POSBillingPage() {
                             {/* CLIENT + OUTLET */}
                             <div className="grid grid-cols-2 gap-2">
                                 {/* CLIENT */}
-                                <div className="border border-border rounded-xl p-2 bg-background">
+                                <div className="border border-border rounded-xl p-2 bg-background relative overflow-hidden">
                                     <p className="text-[9px] font-black uppercase text-text-muted mb-1">Client</p>
                                     {selectedClient ? (
                                         <>
                                             <p className="text-xs font-black truncate">{selectedClient.name}</p>
                                             <p className="text-[10px] text-text-muted font-bold truncate">{maskPhone(selectedClient.phone, user?.role)}</p>
+                                            {activeMembership && (
+                                                <div className="absolute top-0 right-0 bg-emerald-500 text-white text-[7px] font-black px-1.5 py-0.5 uppercase tracking-tighter rounded-bl-lg">
+                                                    VIP Member
+                                                </div>
+                                            )}
                                         </>
                                     ) : (
                                         <p className="text-[10px] italic text-text-muted">No client selected</p>
@@ -1671,7 +1733,7 @@ export default function POSBillingPage() {
                                                 <p className="text-[11px] font-black truncate">{item.name}</p>
                                                 <div className="flex flex-col">
                                                     <p className="text-[11px] font-black text-primary leading-none">₹{(item.price * item.quantity).toFixed(2)}</p>
-                                                    {(String(item.isInclusiveTax) === 'true' || fiscal.inclusiveTax) && (
+                                                    {(item.isInclusiveTax === true || String(item.isInclusiveTax) === 'true' || (item.isInclusiveTax === undefined && fiscal.inclusiveTax)) && (
                                                         <span className="text-[7px] font-black uppercase text-emerald-600 mt-1">INCLUDING GST</span>
                                                     )}
                                                 </div>
@@ -1774,7 +1836,11 @@ export default function POSBillingPage() {
 
                                 {totals.cgst > 0 && (
                                     <div className="flex justify-between text-[11px] font-bold mb-1">
-                                        <span className="opacity-60">CGST ({(totals.serviceGstRate) / 2}%)</span>
+                                        <span className="opacity-60">
+                                            CGST {cart.every(i => i.type === 'service') ? `(${(totals.serviceGstRate) / 2}%)` : 
+                                                 cart.every(i => i.type === 'product') ? `(${(totals.productGstRate) / 2}%)` : 
+                                                 totals.serviceGstRate === totals.productGstRate ? `(${(totals.serviceGstRate) / 2}%)` : ''}
+                                        </span>
                                         <div className="flex gap-1 text-right">
                                             {totals.cgst > totals.cgstExcl && <span className="text-emerald-400/80 font-normal">(Included)</span>}
                                             {totals.cgstExcl > 0 && <span>+</span>}
@@ -1784,7 +1850,11 @@ export default function POSBillingPage() {
                                 )}
                                 {totals.sgst > 0 && (
                                     <div className="flex justify-between text-[11px] font-bold mb-1">
-                                        <span className="opacity-60">SGST ({(totals.serviceGstRate) / 2}%)</span>
+                                        <span className="opacity-60">
+                                            SGST {cart.every(i => i.type === 'service') ? `(${(totals.serviceGstRate) / 2}%)` : 
+                                                 cart.every(i => i.type === 'product') ? `(${(totals.productGstRate) / 2}%)` : 
+                                                 totals.serviceGstRate === totals.productGstRate ? `(${(totals.serviceGstRate) / 2}%)` : ''}
+                                        </span>
                                         <div className="flex gap-1 text-right">
                                             {totals.sgst > totals.sgstExcl && <span className="text-emerald-400/80 font-normal">(Included)</span>}
                                             {totals.sgstExcl > 0 && <span>+</span>}
@@ -1794,7 +1864,7 @@ export default function POSBillingPage() {
                                 )}
                                 {totals.igst > 0 && (
                                     <div className="flex justify-between text-[11px] font-bold mb-1">
-                                        <span className="opacity-60">IGST ({totals.serviceGstRate}%)</span>
+                                        <span className="opacity-60">IGST {totals.serviceGstRate === totals.productGstRate ? `(${totals.serviceGstRate}%)` : ''}</span>
                                         <div className="flex gap-1 text-right">
                                             {totals.igst > totals.totalExclusiveTax && <span className="text-emerald-400/80 font-normal">(Included)</span>}
                                             {totals.totalExclusiveTax > 0 && <span>+</span>}
@@ -2194,7 +2264,7 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
             : qManualDiscount.value;
 
         const serviceGstRate = Number(platformSettings?.serviceGst ?? fiscal?.serviceGst ?? 5);
-        const productGstRate = Number(platformSettings?.productGst ?? fiscal?.productGst ?? 18);
+        const productGstRate = Number(platformSettings?.productGst ?? fiscal?.productGst ?? 10);
 
         let totalGstAmount = 0;
         let totalBaseAmount = 0;
@@ -2379,7 +2449,7 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
         
         const totalLiability = totals.total + (Number(qClient?.dueAmount) || 0);
         if (paidAmount > totalLiability + 1) {
-            return toast.error(`Overpayment Error: You are paying ₹${paidAmount}, but total liability is only ₹${totalLiability.toFixed(0)}. Please adjust the payment amount.`);
+            toast(`Note: You are paying ₹${paidAmount}, which exceeds the total liability of ₹${totalLiability.toFixed(0)}. Excess will be adjusted.`, { icon: 'ℹ️' });
         }
 
         setIsProcessing(true);
@@ -2406,6 +2476,8 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                 gstAmount: totals.gstAmount,
                 cgst: totals.cgst,
                 sgst: totals.sgst,
+                serviceGstPercent: totals.serviceGstRate,
+                productGstPercent: totals.productGstRate,
                 subtotal: totals.subtotal,
                 payments: paymentArray,
                 discount: totals.discount,
@@ -2964,7 +3036,11 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                             </div>
                             {totals.cgst > 0 && (
                                 <div className="flex flex-col">
-                                    <span className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em]">CGST ({(totals.serviceGstRate) / 2}%)</span>
+                                    <span className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em]">
+                                        CGST {qCart.every(i => i.type === 'service') ? `(${(totals.serviceGstRate) / 2}%)` : 
+                                              qCart.every(i => i.type === 'product') ? `(${(totals.productGstRate) / 2}%)` : 
+                                              totals.serviceGstRate === totals.productGstRate ? `(${(totals.serviceGstRate) / 2}%)` : ''}
+                                    </span>
                                     <span className="text-[14px] font-black text-slate-900 font-mono italic">
                                         {totals.cgst > totals.cgstExcl && <span className="text-emerald-600 text-[9px] not-italic align-top mr-1">(INCL)</span>}
                                         ₹{totals.cgst.toFixed(2)}
@@ -2973,7 +3049,11 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                             )}
                             {totals.sgst > 0 && (
                                 <div className="flex flex-col">
-                                    <span className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em]">SGST ({(totals.serviceGstRate) / 2}%)</span>
+                                    <span className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em]">
+                                        SGST {qCart.every(i => i.type === 'service') ? `(${(totals.serviceGstRate) / 2}%)` : 
+                                              qCart.every(i => i.type === 'product') ? `(${(totals.productGstRate) / 2}%)` : 
+                                              totals.serviceGstRate === totals.productGstRate ? `(${(totals.serviceGstRate) / 2}%)` : ''}
+                                    </span>
                                     <span className="text-[14px] font-black text-slate-900 font-mono italic">
                                         {totals.sgst > totals.sgstExcl && <span className="text-emerald-600 text-[9px] not-italic align-top mr-1">(INCL)</span>}
                                         ₹{totals.sgst.toFixed(2)}
@@ -2982,7 +3062,7 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                             )}
                             {totals.igst > 0 && (
                                 <div className="flex flex-col">
-                                    <span className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em]">IGST ({totals.serviceGstRate}%)</span>
+                                    <span className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em]">IGST {totals.serviceGstRate === totals.productGstRate ? `(${totals.serviceGstRate}%)` : ''}</span>
                                     <span className="text-[14px] font-black text-slate-900 font-mono italic">
                                         {totals.igst > totals.totalExclusiveTax && <span className="text-emerald-600 text-[9px] not-italic align-top mr-1">(INCL)</span>}
                                         ₹{totals.igst.toFixed(2)}
