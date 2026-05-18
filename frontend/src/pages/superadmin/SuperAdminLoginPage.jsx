@@ -171,7 +171,7 @@ export default function SuperAdminLoginPage() {
                                             className="w-full flex flex-col items-start p-4 bg-black/40 border border-white/5 hover:border-primary/30 transition-all rounded-2xl group"
                                         >
                                             <span className="text-[8px] font-black uppercase tracking-widest text-white/20 group-hover:text-primary/60 block mb-1">Use Master Account</span>
-                                            <span className="text-[11px] font-black text-white/60 group-hover:text-white tracking-widest uppercase">superadmin@salon.com</span>
+                                            <span className="text-[11px] font-black text-white/60 group-hover:text-white tracking-widest uppercase">superadmin@gmail.com</span>
                                         </button>
                                     </div>
 

@@ -128,7 +128,37 @@ exports.getSalonDashboard = async (req, res) => {
 exports.getSuperAdminDashboard = async (req, res) => {
     try {
         const Payment = require('../Models/Payment');
-        
+        const { startDate, endDate, plan, city } = req.query;
+
+        // Build salon match criteria
+        let salonMatch = {};
+        if (plan) {
+            salonMatch.subscriptionPlan = plan;
+        }
+        if (city) {
+            salonMatch['address.city'] = new RegExp(city, 'i');
+        }
+
+        // Build date filter
+        let dateQuery = {};
+        let hasDateFilter = false;
+        if (startDate || endDate) {
+            hasDateFilter = true;
+            if (startDate) dateQuery.$gte = new Date(startDate);
+            if (endDate) {
+                const end = new Date(endDate);
+                end.setHours(23, 59, 59, 999);
+                dateQuery.$lte = end;
+            }
+            salonMatch.createdAt = dateQuery;
+        }
+
+        // Build payment match criteria
+        let paymentMatch = { status: 'captured' };
+        if (hasDateFilter) {
+            paymentMatch.createdAt = dateQuery;
+        }
+
         // 1. Total Salon Stats & Counts by Status
         // Also get individual counts like active, pending etc
         const [
@@ -138,6 +168,7 @@ exports.getSuperAdminDashboard = async (req, res) => {
             earnings
         ] = await Promise.all([
             Salon.aggregate([
+                { $match: salonMatch },
                 {
                     $group: {
                         _id: null,
@@ -150,12 +181,13 @@ exports.getSuperAdminDashboard = async (req, res) => {
                     }
                 }
             ]),
-            Salon.find().populate('outlets').sort({ createdAt: -1 }).limit(5),
+            Salon.find(salonMatch).populate('outlets').sort({ createdAt: -1 }).limit(5),
             Salon.aggregate([
+                { $match: salonMatch },
                 { $group: { _id: "$subscriptionPlan", count: { $sum: 1 } } }
             ]),
             Payment.aggregate([
-                { $match: { status: 'captured' } },
+                { $match: paymentMatch },
                 {
                     $group: {
                         _id: null,
@@ -177,13 +209,23 @@ exports.getSuperAdminDashboard = async (req, res) => {
         const stats = totals[0] || { total: 0, active: 0, trial: 0, expired: 0, suspended: 0, pending: 0 };
         const revenue = earnings[0] || { totalRevenue: 0, revenueToday: 0 };
 
-        // 5. Growth Trends (Last 6 Months)
-        const sixMonthsAgo = new Date();
-        sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
+        // 5. Growth Trends
+        let growthPaymentMatch = { status: 'captured' };
+        let growthSalonMatch = { ...salonMatch };
+
+        if (hasDateFilter) {
+            growthPaymentMatch.createdAt = dateQuery;
+            // growthSalonMatch.createdAt is already set inside salonMatch
+        } else {
+            const sixMonthsAgo = new Date();
+            sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
+            growthPaymentMatch.createdAt = { $gte: sixMonthsAgo };
+            growthSalonMatch.createdAt = { $gte: sixMonthsAgo };
+        }
 
         const [mrrTrend, salonGrowth] = await Promise.all([
             Payment.aggregate([
-                { $match: { status: 'captured', createdAt: { $gte: sixMonthsAgo } } },
+                { $match: growthPaymentMatch },
                 {
                     $group: {
                         _id: { $dateToString: { format: "%Y-%m", date: "$createdAt" } },
@@ -194,7 +236,7 @@ exports.getSuperAdminDashboard = async (req, res) => {
                 { $project: { month: "$_id", mrr: 1, _id: 0 } }
             ]),
             Salon.aggregate([
-                { $match: { createdAt: { $gte: sixMonthsAgo } } },
+                { $match: growthSalonMatch },
                 {
                     $group: {
                         _id: { $dateToString: { format: "%Y-%m", date: "$createdAt" } },

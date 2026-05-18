@@ -10,6 +10,7 @@ import {
     Building2, Users, TrendingUp, AlertTriangle, ArrowUpRight,
     CreditCard, Activity, DollarSign, Clock, CheckCircle2,
     XCircle, Wifi, ArrowRight, RefreshCw, Zap, Crown, MessageSquare,
+    Calendar,
 } from 'lucide-react';
 import {
     AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell,
@@ -124,10 +125,20 @@ export default function SADashboardPage() {
     const [systemOk] = useState(true); // mock system health
     const [sendingTest, setSendingTest] = useState(false);
 
-    const fetchStats = async (isRefresh = false) => {
+    // Filters state
+    const [datePeriod, setDatePeriod] = useState('all');
+    const [startDate, setStartDate] = useState('');
+    const [endDate, setEndDate] = useState('');
+    const [showDateFilter, setShowDateFilter] = useState(false);
+
+    const fetchStats = async (isRefresh = false, currentFilters = null) => {
         if (isRefresh) setRefreshing(true);
         try {
-            const res = await api.get('/dashboard/superadmin');
+            const params = {
+                startDate: currentFilters ? currentFilters.startDate : startDate,
+                endDate: currentFilters ? currentFilters.endDate : endDate
+            };
+            const res = await api.get('/dashboard/superadmin', { params });
             if (res.data.success) {
                 const d = res.data.data;
                 setStats(d);
@@ -136,10 +147,61 @@ export default function SADashboardPage() {
             }
         } catch (error) {
             console.error('Error fetching dashboard stats:', error);
+            toast.error('Failed to load dashboard data');
         } finally {
             setLoading(false);
             setRefreshing(false);
         }
+    };
+
+    const applyPreset = (preset) => {
+        setDatePeriod(preset);
+        const now = new Date();
+        let start = '';
+        let end = now.toISOString().split('T')[0];
+
+        if (preset === 'today') {
+            start = now.toISOString().split('T')[0];
+        } else if (preset === 'week') {
+            const startOfWeek = new Date(now);
+            startOfWeek.setDate(now.getDate() - now.getDay()); // Sunday
+            start = startOfWeek.toISOString().split('T')[0];
+        } else if (preset === 'month') {
+            const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+            start = startOfMonth.toISOString().split('T')[0];
+        } else if (preset === '30days') {
+            const thirtyDaysAgo = new Date(now);
+            thirtyDaysAgo.setDate(now.getDate() - 30);
+            start = thirtyDaysAgo.toISOString().split('T')[0];
+        } else if (preset === '6months') {
+            const sixMonthsAgo = new Date(now);
+            sixMonthsAgo.setMonth(now.getMonth() - 6);
+            start = sixMonthsAgo.toISOString().split('T')[0];
+        } else if (preset === 'all') {
+            start = '';
+            end = '';
+        }
+
+        if (preset !== 'custom') {
+            setStartDate(start);
+            setEndDate(end);
+            setShowDateFilter(false);
+            fetchStats(true, { startDate: start, endDate: end });
+        } else {
+            setShowDateFilter(true);
+        }
+    };
+
+    const handleApplyFilters = () => {
+        fetchStats(true);
+    };
+
+    const handleResetFilters = () => {
+        setDatePeriod('all');
+        setStartDate('');
+        setEndDate('');
+        setShowDateFilter(false);
+        fetchStats(true, { startDate: '', endDate: '' });
     };
 
     const [pendingEnquiries, setPendingEnquiries] = useState(0);
@@ -207,20 +269,93 @@ export default function SADashboardPage() {
             {/* ── Page header ── */}
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                 <div>
-                    <h1 className="text-2xl font-black text-text tracking-tight">Platform Overview</h1>
+                    <h1 className="text-2xl font-black text-text tracking-tight flex items-center gap-2">
+                        Platform Overview
+                        <span className="flex h-2.5 w-2.5 relative">
+                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                            <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+                        </span>
+                    </h1>
                     <p className="text-sm text-text-secondary mt-0.5">Track everything — from total salons and daily income to system health.</p>
                 </div>
                 <div className="flex items-center gap-3">
-
-             
                     <button
                         onClick={() => fetchStats(true)}
                         disabled={refreshing}
-                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-surface border border-border text-text-secondary text-xs font-semibold hover:border-primary/30 hover:text-primary transition-all"
+                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-surface border border-border text-text-secondary text-xs font-semibold hover:border-primary/30 hover:text-primary transition-all hover:shadow-sm"
                     >
                         <RefreshCw className={`w-3.5 h-3.5 ${refreshing ? 'animate-spin' : ''}`} /> Refresh
                     </button>
                 </div>
+            </div>
+
+            {/* ── Date Filter Presets and Custom Picker ── */}
+            <div className="bg-surface/80 backdrop-blur-md rounded-2xl border border-border p-4 shadow-sm flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+                <div className="flex flex-wrap items-center gap-2">
+                    <span className="text-xs font-bold text-text-secondary uppercase tracking-wider flex items-center gap-1.5 mr-1">
+                        <Calendar className="w-4 h-4 text-primary" /> Filter Period:
+                    </span>
+                    {[
+                        { key: 'all', label: 'All Time' },
+                        { key: 'today', label: 'Today' },
+                        { key: 'week', label: 'This Week' },
+                        { key: 'month', label: 'This Month' },
+                        { key: '30days', label: 'Last 30 Days' },
+                        { key: '6months', label: 'Last 6 Months' },
+                        { key: 'custom', label: 'Custom Range' },
+                    ].map(p => (
+                        <button
+                            key={p.key}
+                            onClick={() => applyPreset(p.key)}
+                            className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all border ${
+                                datePeriod === p.key
+                                    ? 'bg-primary text-white border-primary shadow-md shadow-primary/20 scale-95'
+                                    : 'bg-white text-text-secondary border-border hover:border-primary/45 hover:text-primary hover:bg-primary/5'
+                            }`}
+                        >
+                            {p.label}
+                        </button>
+                    ))}
+                </div>
+
+                {/* Custom Pickers */}
+                {(datePeriod === 'custom' || showDateFilter) && (
+                    <div className="flex items-center gap-3 bg-slate-50 p-2 rounded-xl border border-border animate-in fade-in slide-in-from-right-3 duration-250 self-start lg:self-auto">
+                        <div className="flex items-center gap-2">
+                            <label className="text-[10px] font-black uppercase text-text-muted tracking-wider">From</label>
+                            <input
+                                type="date"
+                                value={startDate}
+                                onChange={e => setStartDate(e.target.value)}
+                                className="px-2.5 py-1.5 rounded-lg border border-border text-xs text-text bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                            />
+                        </div>
+                        <span className="text-xs text-text-muted font-bold">to</span>
+                        <div className="flex items-center gap-2">
+                            <label className="text-[10px] font-black uppercase text-text-muted tracking-wider">To</label>
+                            <input
+                                type="date"
+                                value={endDate}
+                                onChange={e => setEndDate(e.target.value)}
+                                className="px-2.5 py-1.5 rounded-lg border border-border text-xs text-text bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                            />
+                        </div>
+                        <button
+                            onClick={handleApplyFilters}
+                            className="px-3.5 py-1.5 bg-primary text-white text-xs font-bold rounded-lg hover:bg-primary/95 shadow-md shadow-primary/20 transition-all"
+                        >
+                            Apply
+                        </button>
+                        {(startDate || endDate) && (
+                            <button
+                                onClick={handleResetFilters}
+                                className="px-2 py-1 bg-surface border border-border text-text-secondary text-[11px] font-bold rounded-lg hover:border-primary/30 hover:text-primary transition-all"
+                            >
+                                Reset
+                            </button>
+                        )}
+                    </div>
+                )}
             </div>
 
             {/* ── KPI Grid ── */}
