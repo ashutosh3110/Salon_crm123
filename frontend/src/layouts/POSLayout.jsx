@@ -25,7 +25,6 @@ export default function POSLayout() {
                 .admin-panel *,
                 .admin-panel *::before,
                 .admin-panel *::after {
-                    border-radius: 0 !important;
                     font-family: 'Open Sans', sans-serif;
                 }
                 .admin-panel h1, 

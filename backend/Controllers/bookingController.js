@@ -13,6 +13,7 @@ const crypto = require('crypto');
 const Break = require('../Models/Break');
 const Staff = require('../Models/Staff');
 const Setting = require('../Models/Setting');
+const { calculateTotals } = require('../Utils/billingCalc');
 
 // Initialize Razorpay
 let razorpay;
@@ -124,27 +125,26 @@ exports.createBooking = async (req, res) => {
             // Legacy/Backend calculation fallback
             const settings = await Setting.findOne();
             const serviceGst = settings?.serviceGst || 5;
-            
-            let basePrice = service.price;
-            let discountedPrice = basePrice;
 
-            if (activeMembership && activeMembership.planId) {
-                const plan = activeMembership.planId;
-                if (plan.serviceDiscountValue > 0) {
-                    if (plan.serviceDiscountType === 'percentage') {
-                        discountedPrice -= (basePrice * plan.serviceDiscountValue) / 100;
-                    } else {
-                        discountedPrice -= plan.serviceDiscountValue;
-                    }
-                }
-            }
-            discountedPrice = Math.max(0, Math.floor(discountedPrice));
-            
-            finalSubtotal = basePrice;
-            finalMembershipDiscount = basePrice - discountedPrice;
+            const calc = calculateTotals({
+                items: [{
+                    type: 'service',
+                    price: service.price,
+                    quantity: 1,
+                    isInclusiveTax: service.isInclusiveTax,
+                    gstPercent: service.gst !== undefined ? service.gst : serviceGst
+                }],
+                activeMembership,
+                serviceGstRate: serviceGst,
+                productGstRate: settings?.productGst || 10,
+                inclusiveTaxFallback: false
+            });
+
+            finalSubtotal = calc.subtotal;
+            finalMembershipDiscount = calc.membershipDiscount;
             finalPromoDiscount = 0;
-            finalTax = Math.round(discountedPrice * (serviceGst / 100));
-            finalTotal = discountedPrice + finalTax;
+            finalTax = calc.tax;
+            finalTotal = calc.total;
         }
 
         // Handle Wallet Payment

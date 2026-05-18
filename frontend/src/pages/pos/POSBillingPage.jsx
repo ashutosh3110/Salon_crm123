@@ -24,6 +24,7 @@ import {
 } from '@react-pdf/renderer';
 import { useWallet } from '../../contexts/WalletContext';
 import { getImageUrl } from '../../utils/imageUtils';
+import { calculateTotals } from '../../utils/billingCalc';
 
 // Thermal receipts often use standard characters to ensure maximum compatibility across all printers
 Font.register({
@@ -534,161 +535,23 @@ export default function POSBillingPage() {
 
     // ─── Calculations ──────────────────────────────────────
     const totals = useMemo(() => {
-        let serviceSubtotal = 0;
-        let productSubtotal = 0;
-
-        cart.forEach(item => {
-            if (item.isPackageRedemption) return;
-            if (item.type === 'service') serviceSubtotal += (item.price * item.quantity);
-            else productSubtotal += (item.price * item.quantity);
+        return calculateTotals({
+            items: cart,
+            manualDiscount,
+            appliedPromotion,
+            appliedVoucher,
+            activeMembership,
+            serviceGstRate: Number(platformSettings?.serviceGst ?? fiscal.serviceGst ?? 5),
+            productGstRate: Number(platformSettings?.productGst ?? fiscal.productGst ?? 10),
+            inclusiveTaxFallback: !!fiscal.inclusiveTax,
+            customerState,
+            salonState: fiscal.state,
+            includePreviousDue,
+            previousDue: selectedClient?.dueAmount || 0,
+            redeemWallet,
+            payments
         });
-
-        const subtotal = serviceSubtotal + productSubtotal;
-
-        let discount = 0;
-        // Manual
-        if (manualDiscount.type === 'percentage') discount += (subtotal * manualDiscount.value) / 100;
-        else discount += manualDiscount.value;
-
-        // Promotion
-        if (appliedPromotion) {
-            if (appliedPromotion.discountType === 'percentage') discount += (subtotal * appliedPromotion.discountValue) / 100;
-            else discount += appliedPromotion.discountValue;
-        }
-
-        // Voucher
-        if (appliedVoucher) {
-            if (appliedVoucher.type === 'percentage') discount += (subtotal * appliedVoucher.value) / 100;
-            else discount += appliedVoucher.value;
-        }
-
-        let totalMembershipDiscount = 0;
-        let totalGrossAmount = 0;
-
-        cart.forEach(item => {
-            if (item.isPackageRedemption) return;
-            if (item.originalBooking) {
-                totalGrossAmount += (item.originalBooking.subtotal || item.price) * item.quantity;
-                totalMembershipDiscount += (item.originalBooking.membershipDiscount || 0) * item.quantity;
-            } else {
-                totalGrossAmount += (item.price * item.quantity);
-                
-                // Calculate membership discount if active
-                if (activeMembership && activeMembership.planId) {
-                    const plan = activeMembership.planId;
-                    if (item.type === 'service') {
-                        if (plan.serviceDiscountType === 'percentage') {
-                            totalMembershipDiscount += (item.price * item.quantity * (plan.serviceDiscountValue || 0)) / 100;
-                        } else {
-                            totalMembershipDiscount += (plan.serviceDiscountValue || 0) * item.quantity;
-                        }
-                    } else if (item.type === 'product') {
-                        if (plan.productDiscountType === 'percentage') {
-                            totalMembershipDiscount += (item.price * item.quantity * (plan.productDiscountValue || 0)) / 100;
-                        } else {
-                            totalMembershipDiscount += (plan.productDiscountValue || 0) * item.quantity;
-                        }
-                    }
-                }
-            }
-        });
-
-        const totalDeductions = discount + totalMembershipDiscount;
-
-        let totalBaseAmount = 0;
-        let totalGstAmount = 0;
-        let serviceTax = 0;
-        let productTax = 0;
-        let serviceTaxExcl = 0;
-        let productTaxExcl = 0;
-        let totalExclusiveTax = 0;
-
-        const sGstRate = Number(platformSettings?.serviceGst ?? fiscal.serviceGst ?? 5);
-        const pGstRate = Number(platformSettings?.productGst ?? fiscal.productGst ?? 10);
-        console.log('[Totals] Settings Debug:', { platformSettings, sGstRate, pGstRate });
-
-        cart.forEach(item => {
-            if (item.isPackageRedemption) return;
-
-            const itemGross = (item.price * item.quantity);
-            const itemTaxPercent = (item.type === 'service' ? sGstRate : pGstRate);
-            const isItemInclusive = String(item.isInclusiveTax) === 'true' || (item.isInclusiveTax === undefined && fiscal.inclusiveTax);
-
-            if (isItemInclusive) {
-                const gstAmount = (itemGross * itemTaxPercent) / (100 + itemTaxPercent);
-                const baseAmount = itemGross - gstAmount;
-                totalGstAmount += gstAmount;
-                totalBaseAmount += baseAmount;
-                if (item.type === 'service') serviceTax += gstAmount;
-                else productTax += gstAmount;
-            } else {
-                const gstAmount = (itemGross * itemTaxPercent) / 100;
-                const baseAmount = itemGross;
-                totalGstAmount += gstAmount;
-                totalBaseAmount += baseAmount;
-                totalExclusiveTax += gstAmount;
-                if (item.type === 'service') {
-                    serviceTax += gstAmount;
-                    serviceTaxExcl += gstAmount;
-                } else {
-                    productTax += gstAmount;
-                    productTaxExcl += gstAmount;
-                }
-            }
-        });
-
-        const round2 = (num) => Math.round(num * 100) / 100;
-        const isSameState = customerState === fiscal.state;
-        const cgst = isSameState ? round2(totalGstAmount / 2) : 0;
-        const sgst = isSameState ? round2(totalGstAmount / 2) : 0;
-        const igst = !isSameState ? round2(totalGstAmount) : 0;
-
-        const cgstExcl = isSameState ? round2(totalExclusiveTax / 2) : 0;
-        const sgstExcl = isSameState ? round2(totalExclusiveTax / 2) : 0;
-        const igstExcl = !isSameState ? round2(totalExclusiveTax) : 0;
-        const finalExclusiveTax = cgstExcl + sgstExcl + igstExcl;
-
-        const currentBillTotal = round2(Math.max(0, (subtotal + finalExclusiveTax) - totalDeductions));
-        const previousDue = (selectedClient?.dueAmount || 0);
-        const grandTotal = includePreviousDue ? currentBillTotal + previousDue : currentBillTotal;
-
-        const discountRatio = subtotal > 0 ? totalDeductions / subtotal : 0;
-        const serviceDiscount = serviceSubtotal * discountRatio;
-        const productDiscount = productSubtotal * discountRatio;
-
-        return {
-            subtotal,
-            serviceSubtotal,
-            productSubtotal,
-            grossAmount: totalGrossAmount,
-            membershipDiscount: totalMembershipDiscount,
-            discount,
-            serviceDiscount,
-            productDiscount,
-            serviceGstRate: sGstRate,
-            productGstRate: pGstRate,
-            tax: totalGstAmount,
-            serviceTax,
-            productTax,
-            serviceTaxExcl,
-            productTaxExcl,
-            baseAmount: totalBaseAmount,
-            gstAmount: totalGstAmount,
-            includingGst: fiscal.inclusiveTax, // This represents the global setting used
-            cgst,
-            sgst,
-            cgstExcl,
-            sgstExcl,
-            igst,
-            isSameState,
-            totalExclusiveTax: finalExclusiveTax,
-            total: grandTotal,
-            taxable: totalBaseAmount,
-            currentBillTotal,
-            previousDue,
-            redeemWallet: Math.min(redeemWallet || 0, Math.max(0, grandTotal - payments.reduce((acc, p) => acc + (Number(p.amount) || 0), 0)))
-        };
-    }, [cart, manualDiscount, appliedPromotion, appliedVoucher, redeemWallet, taxPercent, selectedClient, includePreviousDue, fiscal, platformSettings, customerState]);
+    }, [cart, manualDiscount, appliedPromotion, appliedVoucher, activeMembership, redeemWallet, taxPercent, selectedClient, includePreviousDue, fiscal, platformSettings, customerState, payments]);
 
     // Get real-time wallet balance
     const clientWalletBalance = useMemo(() => {
@@ -1027,6 +890,16 @@ export default function POSBillingPage() {
         setCart(newCart);
     };
 
+    const updateItemMembershipDiscount = (idx, type, value) => {
+        const newCart = [...cart];
+        newCart[idx] = {
+            ...newCart[idx],
+            membershipDiscountType: type,
+            membershipDiscountValue: Number(value) || 0
+        };
+        setCart(newCart);
+    };
+
     const removeItem = (idx) => {
         setCart(cart.filter((_, i) => i !== idx));
     };
@@ -1134,7 +1007,9 @@ export default function POSBillingPage() {
                             price: basePrice,
                             quantity: item.quantity,
                             gstPercent: item.type === 'service' ? totals.serviceGstRate : totals.productGstRate,
-                            isInclusiveTax: isItemInclusive
+                            isInclusiveTax: isItemInclusive,
+                            membershipDiscountType: item.membershipDiscountType,
+                            membershipDiscountValue: item.membershipDiscountValue
                         };
                         const sIds = (item.staffIds || []).filter(Boolean).map(id => typeof id === 'object' ? id?._id : String(id));
                         if (sIds.length > 0) {
@@ -1485,7 +1360,7 @@ export default function POSBillingPage() {
     }
 
     return (
-        <div className="flex flex-col h-[calc(100vh-100px)] mt-2">
+        <div className="flex flex-col h-[calc(100vh-125px)] lg:h-[calc(100vh-115px)] mt-0 overflow-hidden">
 
             {/* Mobile Tab Switcher */}
             <div className="flex lg:hidden border-b border-border bg-surface shrink-0">
@@ -1608,11 +1483,11 @@ export default function POSBillingPage() {
                                 <button
                                     key={item.id || item._id}
                                     onClick={() => addToCart(item)}
-                                    className={`relative bg-background border p-4 text-left hover:border-primary transition-all group flex flex-col justify-between h-[120px] shadow-sm hover:shadow-md active:scale-95 ${isSelected ? 'border-primary bg-primary/5 ring-1 ring-primary' : 'border-border'
+                                    className={`relative bg-background border rounded-xl p-4 text-left hover:border-primary transition-all group flex flex-col justify-between h-[120px] shadow-sm hover:shadow-md active:scale-95 ${isSelected ? 'border-primary bg-primary/5 ring-1 ring-primary' : 'border-border'
                                         }`}
                                 >
                                     {isSelected ? (
-                                        <div className="absolute top-0 right-0 bg-primary text-white text-[8px] font-black px-2 py-0.5 uppercase tracking-tighter">
+                                        <div className="absolute top-0 right-0 bg-primary text-white text-[8px] font-black px-2.5 py-1 uppercase tracking-wider rounded-tr-xl rounded-bl-xl shadow-sm">
                                             In Cart
                                         </div>
                                     ) : (
@@ -1620,10 +1495,10 @@ export default function POSBillingPage() {
                                             <span className="text-[10px] font-black text-text-muted group-hover:text-primary transition-colors">ADD</span>
                                         </div>
                                     )}
-                                    <div>
-                                        <div className="flex items-center justify-between gap-2 mb-1">
+                                    <div className="w-full">
+                                        <div className="flex items-center justify-between gap-2 mb-1 w-full">
                                             <h4 className="text-xs font-extrabold text-text line-clamp-1 uppercase tracking-tight leading-tight">{item.name}</h4>
-                                            <span className={`text-[7px] font-black px-1 py-0.5 rounded uppercase ${item.isInclusiveTax ? 'bg-emerald-50 text-emerald-600' : 'bg-slate-50 text-slate-400'}`}>
+                                            <span className={`text-[7px] font-black px-1.5 py-0.5 rounded-md uppercase ${item.isInclusiveTax ? 'bg-emerald-500/10 text-emerald-600' : 'bg-slate-100 text-slate-500'}`}>
                                                 {item.isInclusiveTax ? 'Incl' : 'Excl'}
                                             </span>
                                         </div>
@@ -1735,6 +1610,62 @@ export default function POSBillingPage() {
                                                     <p className="text-[11px] font-black text-primary leading-none">₹{(item.price * item.quantity).toFixed(2)}</p>
                                                     {(item.isInclusiveTax === true || String(item.isInclusiveTax) === 'true' || (item.isInclusiveTax === undefined && fiscal.inclusiveTax)) && (
                                                         <span className="text-[7px] font-black uppercase text-emerald-600 mt-1">INCLUDING GST</span>
+                                                    )}
+                                                    {item.type === 'service' && activeMembership && (
+                                                        <div className="mt-1.5 flex items-center gap-1 bg-primary/5 border border-primary/10 rounded-lg p-1 transition-all w-fit">
+                                                            <Sparkles className="w-2.5 h-2.5 text-primary animate-pulse" />
+                                                            <span className="text-[7.5px] font-black text-primary uppercase tracking-wider">Mem. Disc:</span>
+                                                            
+                                                            {/* Toggle between % and ₹ */}
+                                                            <div className="flex items-center bg-white border border-primary/10 rounded-md overflow-hidden h-4">
+                                                                <button 
+                                                                    type="button"
+                                                                    onClick={() => updateItemMembershipDiscount(idx, 'percentage', item.membershipDiscountValue !== undefined ? item.membershipDiscountValue : (activeMembership?.planId?.serviceDiscountType === 'fixed' ? activeMembership.planId.serviceDiscountValue : (activeMembership?.planId?.serviceDiscountValue || 0)))}
+                                                                    className={`px-1 text-[7.5px] font-black h-full flex items-center ${
+                                                                        (item.membershipDiscountType !== undefined ? item.membershipDiscountType : (activeMembership?.planId?.serviceDiscountType || 'percentage')) === 'percentage' 
+                                                                            ? 'bg-primary text-white' 
+                                                                            : 'text-slate-400 hover:bg-slate-50'
+                                                                    }`}
+                                                                >
+                                                                    %
+                                                                </button>
+                                                                <button 
+                                                                    type="button"
+                                                                    onClick={() => updateItemMembershipDiscount(idx, 'fixed', item.membershipDiscountValue !== undefined ? item.membershipDiscountValue : (activeMembership?.planId?.serviceDiscountType === 'fixed' ? activeMembership.planId.serviceDiscountValue : (activeMembership?.planId?.serviceDiscountValue || 0)))}
+                                                                    className={`px-1 text-[7.5px] font-black h-full flex items-center ${
+                                                                        (item.membershipDiscountType !== undefined ? item.membershipDiscountType : (activeMembership?.planId?.serviceDiscountType || 'percentage')) === 'fixed' 
+                                                                            ? 'bg-primary text-white' 
+                                                                            : 'text-slate-400 hover:bg-slate-50'
+                                                                    }`}
+                                                                >
+                                                                    ₹
+                                                                </button>
+                                                            </div>
+
+                                                            {/* Numeric Input */}
+                                                            <input 
+                                                                type="number" 
+                                                                min="0"
+                                                                max={
+                                                                    (item.membershipDiscountType !== undefined ? item.membershipDiscountType : (activeMembership?.planId?.serviceDiscountType || 'percentage')) === 'percentage' 
+                                                                        ? '100' 
+                                                                        : String(item.price)
+                                                                }
+                                                                value={
+                                                                    item.membershipDiscountValue !== undefined 
+                                                                        ? item.membershipDiscountValue 
+                                                                        : (activeMembership?.planId?.serviceDiscountValue || 0)
+                                                                }
+                                                                onChange={(e) => {
+                                                                    const val = Math.max(0, Number(e.target.value) || 0);
+                                                                    const currentType = item.membershipDiscountType !== undefined 
+                                                                        ? item.membershipDiscountType 
+                                                                        : (activeMembership?.planId?.serviceDiscountType || 'percentage');
+                                                                    updateItemMembershipDiscount(idx, currentType, val);
+                                                                }}
+                                                                className="w-10 bg-white border border-primary/10 rounded-md text-[8px] font-black text-center h-4 focus:outline-none focus:border-primary/50 text-slate-800"
+                                                            />
+                                                        </div>
                                                     )}
                                                 </div>
                                             </div>
@@ -2258,108 +2189,27 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
     }, [customers, qSearchClient]);
 
     const totals = useMemo(() => {
-        const subtotal = qCart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-        const discountAmt = qManualDiscount.type === 'percentage'
-            ? (subtotal * qManualDiscount.value) / 100
-            : qManualDiscount.value;
-
-        const serviceGstRate = Number(platformSettings?.serviceGst ?? fiscal?.serviceGst ?? 5);
-        const productGstRate = Number(platformSettings?.productGst ?? fiscal?.productGst ?? 10);
-
-        let totalGstAmount = 0;
-        let totalBaseAmount = 0;
-        let serviceTax = 0;
-        let productTax = 0;
-        let serviceTaxExcl = 0;
-        let productTaxExcl = 0;
-        let totalExclusiveTax = 0;
-
-        qCart.forEach(item => {
-            const itemGross = (item.price * item.quantity);
-            const itemTaxPercent = Number(item.type === 'service' ? serviceGstRate : productGstRate);
-            const isItemInclusive = item.isInclusiveTax === true || String(item.isInclusiveTax) === 'true' || (item.isInclusiveTax === undefined && !!fiscal?.inclusiveTax);
-
-            if (isItemInclusive) {
-                // GST Amount = (Price * GST) / (100 + GST)
-                const gstAmount = (itemGross * itemTaxPercent) / (100 + itemTaxPercent);
-                const baseAmount = itemGross - gstAmount;
-                totalGstAmount += gstAmount;
-                totalBaseAmount += baseAmount;
-                if (item.type === 'service') serviceTax += gstAmount;
-                else productTax += gstAmount;
-            } else {
-                // GST Amount = (Price * GST) / 100
-                const gstAmount = (itemGross * itemTaxPercent) / 100;
-                const baseAmount = itemGross;
-                totalGstAmount += gstAmount;
-                totalBaseAmount += baseAmount;
-                totalExclusiveTax += gstAmount;
-                if (item.type === 'service') {
-                    serviceTax += gstAmount;
-                    serviceTaxExcl += gstAmount;
-                } else {
-                    productTax += gstAmount;
-                    productTaxExcl += gstAmount;
-                }
-            }
+        const res = calculateTotals({
+            items: qCart,
+            manualDiscount: qManualDiscount,
+            appliedPromotion: null,
+            appliedVoucher: null,
+            activeMembership: qActiveMembership,
+            serviceGstRate: Number(platformSettings?.serviceGst ?? fiscal?.serviceGst ?? 5),
+            productGstRate: Number(platformSettings?.productGst ?? fiscal?.productGst ?? 10),
+            inclusiveTaxFallback: !!fiscal?.inclusiveTax,
+            customerState: null,
+            salonState: null,
+            includePreviousDue: false,
+            previousDue: 0,
+            redeemWallet: qRedeemWallet,
+            payments: []
         });
 
-        // Membership discount logic for Quick Invoice
-        let membershipDiscountAmt = 0;
-        if (qActiveMembership && qActiveMembership.planId) {
-            const plan = qActiveMembership.planId;
-            qCart.forEach(item => {
-                const itemTotal = item.price * item.quantity;
-                if (item.type === 'service' && plan.serviceDiscountValue > 0) {
-                    membershipDiscountAmt += plan.serviceDiscountType === 'percentage'
-                        ? (itemTotal * plan.serviceDiscountValue) / 100
-                        : (plan.serviceDiscountValue * item.quantity);
-                } else if (item.type === 'product' && plan.productDiscountValue > 0) {
-                    membershipDiscountAmt += plan.productDiscountType === 'percentage'
-                        ? (itemTotal * plan.productDiscountValue) / 100
-                        : (plan.productDiscountValue * item.quantity);
-                }
-            });
-        }
-
-        const totalDeductions = discountAmt + membershipDiscountAmt;
-
-        const round2 = (num) => Math.round(num * 100) / 100;
-        const isSameState = true; // Defaulting to true for Quick Invoice context as per existing logic patterns
-        const cgst = isSameState ? round2(totalGstAmount / 2) : 0;
-        const sgst = isSameState ? round2(totalGstAmount / 2) : 0;
-        const igst = !isSameState ? round2(totalGstAmount) : 0;
-
-        const cgstExcl = isSameState ? round2(totalExclusiveTax / 2) : 0;
-        const sgstExcl = isSameState ? round2(totalExclusiveTax / 2) : 0;
-        const igstExcl = !isSameState ? round2(totalExclusiveTax) : 0;
-        const finalExclusiveTax = cgstExcl + sgstExcl + igstExcl;
-
-        const total = round2(Math.max(0, (subtotal + finalExclusiveTax) - totalDeductions));
-
         return {
-            subtotal,
-            discount: discountAmt,
-            membershipDiscount: membershipDiscountAmt,
-            tax: totalGstAmount,
-            serviceTax,
-            productTax,
-            serviceTaxExcl,
-            productTaxExcl,
-            baseAmount: totalBaseAmount,
-            gstAmount: totalGstAmount,
-            cgst,
-            sgst,
-            cgstExcl,
-            sgstExcl,
-            includingGst: fiscal?.inclusiveTax,
-            serviceGstRate,
-            productGstRate,
-            taxable: totalBaseAmount,
-            total: total,
-            totalWithPrevDue: total + qCollectedPrevDue,
-            totalExclusiveTax: finalExclusiveTax,
-            redeemWallet: Math.min(qRedeemWallet || 0, total + qCollectedPrevDue)
+            ...res,
+            totalWithPrevDue: res.currentBillTotal + qCollectedPrevDue,
+            redeemWallet: Math.min(qRedeemWallet || 0, res.currentBillTotal + qCollectedPrevDue)
         };
     }, [qCart, qManualDiscount, fiscal, platformSettings, qRedeemWallet, qActiveMembership, qCollectedPrevDue]);
     
@@ -2398,6 +2248,34 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
         const newCart = [...qCart];
         newCart[idx].quantity = Math.max(1, (newCart[idx].quantity || 1) + delta);
         setQCart(newCart);
+    };
+
+    const updateQItemMembershipDiscount = (idx, type, value) => {
+        const newQCart = [...qCart];
+        const item = newQCart[idx];
+        const prevType = item.membershipDiscountType !== undefined 
+            ? item.membershipDiscountType 
+            : (qActiveMembership?.planId?.serviceDiscountType || 'percentage');
+        
+        let finalValue = Number(value) || 0;
+        
+        if (prevType !== type) {
+            const price = Number(item.price) || 0;
+            if (type === 'percentage') {
+                finalValue = price > 0 ? Math.round(((value * 100) / price) * 100) / 100 : 0;
+                finalValue = Math.min(100, finalValue);
+            } else {
+                finalValue = Math.round(((price * value) / 100) * 100) / 100;
+                finalValue = Math.min(price, finalValue);
+            }
+        }
+
+        newQCart[idx] = {
+            ...newQCart[idx],
+            membershipDiscountType: type,
+            membershipDiscountValue: finalValue
+        };
+        setQCart(newQCart);
     };
 
     const toggleStaffInItem = (itemIdx, sId) => {
@@ -2554,9 +2432,9 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                     </div>
                 </div>
 
-                <div className="flex-1 flex flex-col lg:flex-row overflow-hidden bg-white">
+                <div className="flex-1 min-h-0 flex flex-col lg:flex-row overflow-hidden bg-white">
                     {/* Left Panel: Configuration & Services */}
-                    <div className="flex-1 flex flex-col bg-white overflow-hidden border-r border-slate-100">
+                    <div className="flex-1 min-h-0 flex flex-col bg-white overflow-hidden border-r border-slate-100">
                         {/* Top Bar: Compact Outlet & Client */}
                         <div className="p-4 bg-slate-50/50 border-b border-slate-100 grid grid-cols-1 md:grid-cols-2 gap-4 shrink-0">
                             <div className="space-y-1 relative">
@@ -2648,7 +2526,28 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                                                 </div>
                                             </div>
                                         </div>
-                                        <div className="flex items-center gap-2">
+                                        <div className="flex items-center gap-2 flex-shrink-0">
+                                            {Number(qClient.dueAmount || 0) > 0 && (
+                                                <div className="flex items-center gap-1 bg-white border border-amber-200 rounded-lg px-2 py-0.5 shadow-sm">
+                                                    <span className="text-[7.5px] font-black text-amber-600 uppercase tracking-tight">Collect:</span>
+                                                    <div className="relative">
+                                                        <span className="absolute left-1 top-1/2 -translate-y-1/2 text-[8px] font-bold text-amber-500">₹</span>
+                                                        <input
+                                                            type="number"
+                                                            min="0"
+                                                            max={Math.ceil(Number(qClient.dueAmount))}
+                                                            className="w-14 pl-3 bg-transparent text-[10px] font-black text-slate-800 outline-none font-mono text-center h-4"
+                                                            placeholder="0"
+                                                            value={qCollectedPrevDue || ''}
+                                                            onChange={(e) => {
+                                                                const val = Math.min(Math.ceil(Number(qClient.dueAmount)), Math.max(0, Number(e.target.value) || 0));
+                                                                setQCollectedPrevDue(val);
+                                                                setQPayments(prev => ({ ...prev, cash: totals.total + val }));
+                                                            }}
+                                                        />
+                                                    </div>
+                                                </div>
+                                            )}
                                             {qClientWalletBalance > 0 && (
                                                 <button
                                                     onClick={() => setQRedeemWallet(qRedeemWallet > 0 ? 0 : Math.min(qClientWalletBalance, totals.totalWithPrevDue))}
@@ -2658,7 +2557,7 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                                                     <span className="text-[9px] font-black leading-none mt-0.5">₹{qClientWalletBalance.toFixed(0)}</span>
                                                 </button>
                                             )}
-                                            <button onClick={() => setQClient(null)} className="text-slate-400 hover:text-rose-500 p-1 flex-shrink-0"><X className="w-3 h-3" /></button>
+                                            <button onClick={() => { setQClient(null); setQCollectedPrevDue(0); }} className="text-slate-400 hover:text-rose-500 p-1 flex-shrink-0"><X className="w-3 h-3" /></button>
                                         </div>
                                     </div>
                                 ) : (
@@ -2851,7 +2750,7 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                     </div>
 
                     {/* Right Panel: Invoice Summary */}
-                    <div className="w-full lg:w-[480px] bg-slate-50 flex flex-col border-t lg:border-t-0 lg:border-l border-slate-200 overflow-hidden h-full">
+                    <div className="w-full lg:w-[480px] bg-slate-50 flex flex-col border-t lg:border-t-0 lg:border-l border-slate-200 overflow-hidden h-[300px] lg:h-full min-h-0">
                         <div className="p-4 border-b border-slate-200 bg-white flex items-center justify-between shrink-0">
                             <div className="flex items-center gap-2">
                                 <ShoppingCart className="w-4 h-4 text-primary" />
@@ -2895,9 +2794,65 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                                                     </div>
                                                 )}
                                             </div>
+                                            {item.type === 'service' && qActiveMembership && (
+                                                <div className="mt-2 flex items-center gap-1.5 bg-slate-50 border border-slate-200 rounded-xl p-1.5 transition-all w-fit">
+                                                    <Sparkles className="w-2.5 h-2.5 text-slate-500 animate-pulse" />
+                                                    <span className="text-[8px] font-black text-slate-500 uppercase tracking-wider">Mem. Disc:</span>
+                                                    
+                                                    {/* Toggle between % and ₹ */}
+                                                    <div className="flex items-center bg-white border border-slate-200 rounded-lg overflow-hidden h-5">
+                                                        <button 
+                                                            type="button"
+                                                            onClick={() => updateQItemMembershipDiscount(idx, 'percentage', item.membershipDiscountValue !== undefined ? item.membershipDiscountValue : (qActiveMembership?.planId?.serviceDiscountType === 'fixed' ? qActiveMembership.planId.serviceDiscountValue : (qActiveMembership?.planId?.serviceDiscountValue || 0)))}
+                                                            className={`px-1.5 text-[8px] font-black h-full flex items-center ${
+                                                                (item.membershipDiscountType !== undefined ? item.membershipDiscountType : (qActiveMembership?.planId?.serviceDiscountType || 'percentage')) === 'percentage' 
+                                                                    ? 'bg-slate-800 text-white' 
+                                                                    : 'text-slate-400 hover:bg-slate-50'
+                                                            }`}
+                                                        >
+                                                            %
+                                                        </button>
+                                                        <button 
+                                                            type="button"
+                                                            onClick={() => updateQItemMembershipDiscount(idx, 'fixed', item.membershipDiscountValue !== undefined ? item.membershipDiscountValue : (qActiveMembership?.planId?.serviceDiscountType === 'fixed' ? qActiveMembership.planId.serviceDiscountValue : (qActiveMembership?.planId?.serviceDiscountValue || 0)))}
+                                                            className={`px-1.5 text-[8px] font-black h-full flex items-center ${
+                                                                (item.membershipDiscountType !== undefined ? item.membershipDiscountType : (qActiveMembership?.planId?.serviceDiscountType || 'percentage')) === 'fixed' 
+                                                                    ? 'bg-slate-800 text-white' 
+                                                                    : 'text-slate-400 hover:bg-slate-50'
+                                                            }`}
+                                                        >
+                                                            ₹
+                                                        </button>
+                                                    </div>
+
+                                                    {/* Numeric Input */}
+                                                    <input 
+                                                        type="number" 
+                                                        min="0"
+                                                        max={
+                                                            (item.membershipDiscountType !== undefined ? item.membershipDiscountType : (qActiveMembership?.planId?.serviceDiscountType || 'percentage')) === 'percentage' 
+                                                                ? '100' 
+                                                                : String(item.price)
+                                                        }
+                                                        value={
+                                                            item.membershipDiscountValue !== undefined 
+                                                                ? item.membershipDiscountValue 
+                                                                : (qActiveMembership?.planId?.serviceDiscountValue || 0)
+                                                        }
+                                                        onChange={(e) => {
+                                                            const val = Math.max(0, Number(e.target.value) || 0);
+                                                            const currentType = item.membershipDiscountType !== undefined 
+                                                                ? item.membershipDiscountType 
+                                                                : (qActiveMembership?.planId?.serviceDiscountType || 'percentage');
+                                                            updateQItemMembershipDiscount(idx, currentType, val);
+                                                        }}
+                                                        className="w-10 bg-white border border-slate-200 rounded-lg text-[8px] font-black text-center h-5 focus:outline-none focus:border-slate-400 text-slate-800" /> {(() => { const currentType = item.membershipDiscountType !== undefined ? item.membershipDiscountType : (qActiveMembership?.planId?.serviceDiscountType || 'percentage'); const currentValue = Number(item.membershipDiscountValue !== undefined ? item.membershipDiscountValue : (qActiveMembership?.planId?.serviceDiscountValue || 0)); const appliedRupeeDiscount = currentType === 'percentage' ? (Number(item.price) * Number(item.quantity) * currentValue) / 100 : currentValue * Number(item.quantity); if (appliedRupeeDiscount > 0) { return ( <span className="text-[9px] font-black text-emerald-600 font-mono bg-emerald-50 border border-emerald-100 px-1.5 py-0.5 rounded-lg flex items-center shrink-0 ml-1.5 animate-in zoom-in-95"> -₹{appliedRupeeDiscount.toFixed(0)} </span> ); } return null; })()}
+                                                    
+                                                </div>
+                                            )}
                                         </div>
-                                        <button onClick={() => setQCart(qCart.filter((_, i) => i !== idx))} className="p-1 hover:bg-rose-50 rounded text-slate-400 hover:text-rose-500 transition-colors">
-                                            <X className="w-3 h-3" />
+                                        <button onClick={() => setQCart(qCart.filter((_, i) => i !== idx))} className="p-1.5 bg-rose-50 hover:bg-rose-500 text-rose-500 hover:text-white rounded-lg transition-all shadow-sm border border-rose-100 hover:border-rose-500 flex items-center justify-center group" title="Delete item">
+                                            <Trash2 className="w-3.5 h-3.5 transition-transform duration-200 group-hover:scale-110" />
                                         </button>
                                     </div>
 
@@ -3027,9 +2982,9 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
 
                 {/* Bottom Billing Row */}
                 <div className="flex-shrink-0 bg-white border-t border-slate-200 shadow-[0_-8px_30px_rgba(0,0,0,0.08)] z-20">
-                    <div className="max-w-7xl mx-auto px-6 py-4 flex flex-col lg:flex-row items-center gap-6">
+                    <div className="max-w-7xl mx-auto px-4 py-3 lg:px-6 lg:py-4 flex flex-col sm:flex-row flex-wrap lg:flex-nowrap items-center justify-between gap-4 lg:gap-6">
                         {/* Totals Breakdown */}
-                        <div className="flex items-center gap-8 px-4 border-r border-slate-100 py-2">
+                        <div className="flex flex-wrap items-center gap-4 lg:gap-8 px-2 lg:px-4 border-b sm:border-b-0 sm:border-r border-slate-100 py-2 w-full sm:w-auto justify-between sm:justify-start">
                             <div className="flex flex-col">
                                 <span className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em]">Subtotal</span>
                                 <span className="text-[14px] font-black text-slate-900 font-mono italic">₹{totals.subtotal.toFixed(2)}</span>
@@ -3093,10 +3048,22 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                                     <span className="text-[14px] font-black text-primary font-mono italic">-₹{totals.membershipDiscount.toFixed(2)}</span>
                                 </div>
                             )}
+                            {qClient && Number(qClient.dueAmount || 0) > 0 && (
+                                <div className="flex flex-col">
+                                    <span className="text-[9px] font-black text-amber-500 uppercase tracking-[0.2em]">Prev. Due</span>
+                                    <span className="text-[14px] font-black text-amber-600 font-mono italic">₹{Number(qClient.dueAmount).toFixed(2)}</span>
+                                </div>
+                            )}
+                            {qCollectedPrevDue > 0 && (
+                                <div className="flex flex-col">
+                                    <span className="text-[9px] font-black text-emerald-500 uppercase tracking-[0.2em]">Due Paid</span>
+                                    <span className="text-[14px] font-black text-emerald-600 font-mono italic">+₹{qCollectedPrevDue.toFixed(2)}</span>
+                                </div>
+                            )}
                         </div>
 
                         {/* Payment Inputs Row */}
-                        <div className="flex-1 flex flex-col sm:flex-row items-center gap-3">
+                        <div className="flex-1 flex flex-row flex-wrap items-center gap-3 w-full sm:w-auto min-w-[300px]">
                             <div className="flex-1 min-w-[140px] bg-slate-50 border border-slate-200 p-2.5 rounded-2xl focus-within:border-primary/50 focus-within:bg-white transition-all shadow-sm group">
                                 <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest block mb-1 group-focus-within:text-primary">Cash Payment</label>
                                 <div className="flex items-center gap-2">
@@ -3128,95 +3095,69 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                             )}
                         </div>
 
-                        {/* Grand Total & Finalize */}
-                        <div className="flex items-center gap-4 shrink-0">
-                                <div className="flex flex-col items-end gap-1.5 mr-2">
-                                    {/* Current bill due badge */}
-                                    {dueAmount > 1 && (
-                                        <div className="flex items-center gap-1.5 bg-rose-50 border border-rose-200 px-3 py-1.5 rounded-xl">
-                                            <AlertTriangle className="w-3.5 h-3.5 text-rose-500" />
-                                            <div className="flex flex-col">
-                                                <span className="text-[7px] font-black text-rose-400 uppercase tracking-widest leading-none">This bill due</span>
-                                                <span className="text-[13px] font-black text-rose-600 font-mono leading-none">₹{dueAmount.toFixed(2)}</span>
-                                            </div>
-                                        </div>
-                                    )}
-
-                                    {/* Historical outstanding status badges */}
-                                    {qClient && Number(qClient.dueAmount || 0) > 0 && (
-                                        qCollectedPrevDue > 0 ? (
-                                            <div className="flex items-center gap-1.5 bg-emerald-50 border border-emerald-200 px-3 py-1.5 rounded-xl shadow-sm">
-                                                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
-                                                <div className="flex flex-col">
-                                                    <span className="text-[7px] font-black text-emerald-500 uppercase tracking-widest leading-none">Prev. Due Collected</span>
-                                                    <span className="text-[13px] font-black text-emerald-600 font-mono leading-none italic">₹{qCollectedPrevDue.toFixed(2)}</span>
-                                                </div>
-                                            </div>
-                                        ) : (
-                                            <div className="flex items-center gap-1.5 bg-rose-50 border border-rose-200 px-3 py-1.5 rounded-xl shadow-sm animate-pulse">
-                                                <AlertTriangle className="w-3.5 h-3.5 text-rose-500" />
-                                                <div className="flex flex-col">
-                                                    <span className="text-[7px] font-black text-rose-500 uppercase tracking-widest leading-none">Previous Due Amount is</span>
-                                                    <span className="text-[13px] font-black text-rose-600 font-mono leading-none italic">₹{Number(qClient.dueAmount).toFixed(2)}</span>
-                                                </div>
-                                            </div>
-                                        )
-                                    )}
-
-                                    {/* Wallet Suggestion Badge */}
-                                    {qClient && qClientWalletBalance > 0 && qRedeemWallet === 0 && dueAmount > 0 && (
-                                        <div className="flex items-center gap-1.5 bg-emerald-50 border border-emerald-200 px-3 py-1.5 rounded-xl animate-bounce">
-                                            <Wallet className="w-3.5 h-3.5 text-emerald-500" />
-                                            <button
-                                                onClick={() => setQRedeemWallet(Math.min(qClientWalletBalance, dueAmount))}
-                                                className="text-[9px] font-black text-emerald-600 uppercase tracking-widest leading-none"
-                                            >
-                                                Pay ₹{Math.min(qClientWalletBalance, dueAmount).toFixed(2)} from wallet?
-                                            </button>
-                                        </div>
-                                    )}
-
-                                    {(() => {
-                                        const totalLiability = totals.total + (Number(qClient?.dueAmount) || 0);
-                                        if (paidAmount > totalLiability + 1) {
-                                            return (
-                                                <div className="flex items-center gap-1.5 bg-rose-50 border border-rose-200 px-3 py-1.5 rounded-xl">
-                                                    <AlertTriangle className="w-3.5 h-3.5 text-rose-500" />
-                                                    <div className="flex flex-col">
-                                                        <span className="text-[7px] font-black text-rose-500 uppercase tracking-widest leading-none">Overpaid</span>
-                                                        <span className="text-[13px] font-black text-rose-600 font-mono leading-none">₹{(paidAmount - totalLiability).toFixed(2)}</span>
-                                                    </div>
-                                                </div>
-                                            );
-                                        }
-                                        return null;
-                                    })()}
-
-                                    {totals.redeemWallet > 0 && (
-                                        <span className="text-[9px] font-black text-emerald-600 uppercase tracking-widest leading-none">Wallet Used: -₹{totals.redeemWallet.toFixed(2)}</span>
-                                    )}
-
-                                    <div className="flex items-center gap-4 bg-slate-900 text-white px-6 py-3 rounded-2xl shadow-xl shadow-slate-900/20">
-                                        <div className="flex flex-col items-end border-r border-white/10 pr-4">
-                                            <span className="text-[7px] font-black uppercase tracking-widest text-white/40 leading-none">Net Bill</span>
-                                            <span className="text-[16px] font-black italic font-mono text-white leading-none mt-1">₹{totals.total.toFixed(2)}</span>
-                                        </div>
-                                        <div className="flex flex-col items-end">
-                                            <span className="text-[9px] font-black uppercase tracking-[0.2em] text-white/50 italic leading-none">Total to Pay</span>
-                                            <span className="text-[26px] font-black italic font-mono leading-none mt-1">₹{totals.totalWithPrevDue.toFixed(2)}</span>
-                                        </div>
-                                    </div>
+                        {/* Grand Total & Finalize Unified Checkout Card */}
+                        <div className="flex flex-col bg-slate-900 text-white rounded-2xl p-3 shadow-xl shadow-slate-900/20 shrink-0 min-w-[280px]">
+                            {/* Top row: Net Bill & Total to Pay */}
+                            <div className="flex items-center justify-between border-b border-white/10 pb-2 mb-2">
+                                <div className="flex flex-col items-start pr-3">
+                                    <span className="text-[7.5px] font-black uppercase tracking-widest text-white/40 leading-none">Net Bill</span>
+                                    <span className="text-[13px] font-black italic font-mono text-white leading-none mt-1">₹{totals.total.toFixed(2)}</span>
                                 </div>
+                                <div className="flex flex-col items-end">
+                                    <span className="text-[9px] font-black uppercase tracking-[0.2em] text-white/50 italic leading-none">Total to Pay</span>
+                                    <span className="text-[20px] font-black italic font-mono leading-none mt-1">₹{totals.totalWithPrevDue.toFixed(2)}</span>
+                                </div>
+                            </div>
+                            
+                            {/* Badges/Info Row (Compact) */}
+                            {Math.round(dueAmount * 100) / 100 > 0 && (
+                                <div className="flex items-center justify-center bg-rose-500/10 border border-rose-500/20 px-2 py-1 rounded-xl gap-1 mb-2">
+                                    <AlertTriangle className="w-3 h-3 text-rose-400" />
+                                    <span className="text-[8px] font-black text-rose-400 uppercase tracking-wider">This bill due: ₹{dueAmount.toFixed(2)}</span>
+                                </div>
+                            )}
 
+                            {/* Wallet recommendation */}
+                            {qClient && qClientWalletBalance > 0 && qRedeemWallet === 0 && dueAmount > 0 && (
+                                <button
+                                    onClick={() => setQRedeemWallet(Math.min(qClientWalletBalance, dueAmount))}
+                                    className="w-full mb-2 bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 py-1.5 px-2 rounded-xl text-[8.5px] font-black uppercase tracking-wider flex items-center justify-center gap-1 transition-all animate-bounce border border-emerald-500/10"
+                                >
+                                    <Wallet className="w-3 h-3 text-emerald-400" />
+                                    <span>Use wallet (₹{Math.min(qClientWalletBalance, dueAmount).toFixed(0)})?</span>
+                                </button>
+                            )}
+
+                            {/* Overpaid feedback */}
+                            {(() => {
+                                const totalLiability = totals.total + (Number(qClient?.dueAmount) || 0);
+                                if (paidAmount > totalLiability + 1) {
+                                    return (
+                                        <div className="flex items-center justify-center bg-rose-500/10 border border-rose-500/20 px-2 py-1 rounded-xl gap-1 mb-2 animate-pulse">
+                                            <AlertTriangle className="w-3 h-3 text-rose-400" />
+                                            <span className="text-[8px] font-black text-rose-400 uppercase tracking-wider">Overpaid: ₹{(paidAmount - totalLiability).toFixed(2)}</span>
+                                        </div>
+                                    );
+                                }
+                                return null;
+                            })()}
+
+                            {totals.redeemWallet > 0 && (
+                                <div className="text-center mb-2">
+                                    <span className="text-[8px] font-black text-emerald-400 uppercase tracking-widest leading-none bg-emerald-500/10 px-2 py-0.5 rounded-lg border border-emerald-500/10">Wallet Used: -₹{totals.redeemWallet.toFixed(2)}</span>
+                                </div>
+                            )}
+
+                            {/* Finalize Button */}
                             <button
                                 onClick={handleConfirm}
                                 disabled={isProcessing || qCart.length === 0}
-                                className="h-[60px] px-10 bg-emerald-600 text-white font-black text-[12px] uppercase tracking-[0.3em] hover:bg-emerald-700 hover:shadow-2xl hover:shadow-emerald-600/30 transition-all rounded-2xl disabled:opacity-50 flex items-center justify-center gap-3 relative overflow-hidden group shadow-lg min-w-[220px]"
+                                className="w-full py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-black text-[11px] uppercase tracking-[0.25em] transition-all rounded-xl disabled:opacity-50 flex items-center justify-center gap-2 shadow-lg shadow-emerald-600/20 relative overflow-hidden group"
                             >
                                 <div className="absolute top-0 left-0 w-full h-full bg-white/10 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700" />
-                                {isProcessing ? <Loader2 className="w-5 h-5 animate-spin" /> : (
+                                {isProcessing ? <Loader2 className="w-4 h-4 animate-spin" /> : (
                                     <>
-                                        <CheckCircle2 className="w-5 h-5" />
+                                        <CheckCircle2 className="w-4 h-4" />
                                         <span>Finalize Bill</span>
                                     </>
                                 )}
@@ -3284,8 +3225,8 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                                             placeholder={`Up to ₹${clientPrevDue.toFixed(0)}`}
                                             className="flex-1 bg-white border border-emerald-200 px-3 py-2 text-[13px] font-black text-slate-900 outline-none rounded-lg focus:border-emerald-500 transition-all font-mono"
                                             value={qCollectedPrevDue || ''}
-                                            onChange={(e) => setQCollectedPrevDue(Math.min(clientPrevDue, Number(e.target.value)))}
-                                            max={clientPrevDue}
+                                            onChange={(e) => setQCollectedPrevDue(Math.min(Math.ceil(clientPrevDue), Number(e.target.value)))}
+                                            max={Math.ceil(clientPrevDue)}
                                         />
                                     </div>
                                 </div>

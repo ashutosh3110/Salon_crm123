@@ -45,7 +45,9 @@ const invoiceSchema = new mongoose.Schema({
             type: Boolean,
             default: false
         },
-        gstPercent: Number
+        gstPercent: Number,
+        membershipDiscountType: String,
+        membershipDiscountValue: Number
     }],
     subtotal: Number,
     discount: Number,
