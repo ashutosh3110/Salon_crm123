@@ -20,7 +20,8 @@ const {
     createMembershipOrder,
     verifyMembershipPayment,
     getActiveMembership,
-    buyMembershipWithWallet
+    buyMembershipWithWallet,
+    assignMembershipDirect
 } = require('../Controllers/membershipPlanController');
 
 const { protect, authorize } = require('../Middleware/auth');
@@ -57,6 +58,7 @@ router.get('/membership/active', getActiveMembership);
 router.post('/membership/order', createMembershipOrder);
 router.post('/membership/verify', verifyMembershipPayment);
 router.post('/membership/wallet-pay', buyMembershipWithWallet);
+router.post('/membership/assign', authorize('admin', 'manager'), assignMembershipDirect);
 
 router.get('/referral-settings', getReferralSettings);
 router.get('/referrals/me', getMyReferrals);

@@ -32,6 +32,16 @@ export default function MembersListTab() {
     const [meta, setMeta] = useState({ page: 1, totalPages: 1, total: 0, limit: 20 });
     const [selectedMember, setSelectedMember] = useState(null);
 
+    // Assignment Modal State
+    const [showAssignModal, setShowAssignModal] = useState(false);
+    const [plans, setPlans] = useState([]);
+    const [selectedCustomerId, setSelectedCustomerId] = useState('');
+    const [selectedPlanId, setSelectedPlanId] = useState('');
+    const [searchCustomerTerm, setSearchCustomerTerm] = useState('');
+    const [assigning, setAssigning] = useState(false);
+    const [errorMessage, setErrorMessage] = useState('');
+    const [successMessage, setSuccessMessage] = useState('');
+
     useEffect(() => {
         const loadMembers = async () => {
             setLoading(true);
@@ -56,6 +66,56 @@ export default function MembersListTab() {
         };
         loadMembers();
     }, [page, searchTerm, filter, activeOutletId]);
+
+    // Load membership plans when assignment modal is shown
+    useEffect(() => {
+        if (showAssignModal) {
+            const fetchPlans = async () => {
+                try {
+                    const res = await api.get('/loyalty/membership-plans');
+                    setPlans(res.data?.data || []);
+                } catch (err) {
+                    console.error('Failed to fetch membership plans', err);
+                }
+            };
+            fetchPlans();
+        }
+    }, [showAssignModal]);
+
+    const handleAssignMembership = async (e) => {
+        e.preventDefault();
+        if (!selectedCustomerId || !selectedPlanId) {
+            setErrorMessage('Please select both a customer and a plan.');
+            return;
+        }
+        setAssigning(true);
+        setErrorMessage('');
+        setSuccessMessage('');
+        try {
+            const res = await api.post('/loyalty/membership/assign', {
+                customerId: selectedCustomerId,
+                planId: selectedPlanId
+            });
+            if (res.data?.success) {
+                setSuccessMessage('Membership plan assigned successfully!');
+                // Reload list
+                setPage(1);
+                setTimeout(() => {
+                    setShowAssignModal(false);
+                    setSelectedCustomerId('');
+                    setSelectedPlanId('');
+                    setSearchCustomerTerm('');
+                    setSuccessMessage('');
+                }, 1500);
+            } else {
+                setErrorMessage(res.data?.message || 'Failed to assign membership.');
+            }
+        } catch (err) {
+            setErrorMessage(err.response?.data?.message || 'Server error occurred.');
+        } finally {
+            setAssigning(false);
+        }
+    };
 
     const downloadCsv = () => {
         const header = ['Name', 'Phone', 'Plan', 'Status', 'Joined', 'Expiry', 'Points'];
@@ -124,6 +184,13 @@ export default function MembersListTab() {
                     </div>
                     <button onClick={downloadCsv} className="p-3.5 border border-border/40 text-text-muted hover:text-primary hover:bg-primary/5 hover:border-primary/40 transition-all shadow-sm">
                         <Download size={18} />
+                    </button>
+                    <button
+                        onClick={() => setShowAssignModal(true)}
+                        className="px-6 py-3.5 bg-primary text-white border border-primary font-black text-[9px] uppercase tracking-[0.2em] transition-all whitespace-nowrap hover:bg-primary-dark hover:scale-105 active:scale-95 shadow-lg shadow-primary/20 flex items-center gap-2"
+                    >
+                        <ShieldCheck className="w-3.5 h-3.5" />
+                        Assign Plan
                     </button>
                 </div>
             </div>
@@ -283,6 +350,152 @@ export default function MembersListTab() {
                                     Close Registry
                                 </button>
                             </div>
+                        </motion.div>
+                    </div>
+                )}
+            </AnimatePresence>
+
+            {/* Assign Membership Plan Modal */}
+            <AnimatePresence>
+                {showAssignModal && (
+                    <div className="fixed inset-0 z-[1000] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                            animate={{ opacity: 1, scale: 1, y: 0 }}
+                            exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                            className="bg-surface border border-border w-full max-w-lg overflow-hidden shadow-2xl rounded-none font-sans"
+                        >
+                            {/* Modal Header */}
+                            <div className="bg-surface-alt border-b border-border/40 px-6 py-4 flex items-center justify-between">
+                                <div className="flex items-center gap-3">
+                                    <ShieldCheck className="w-5 h-5 text-primary" />
+                                    <h3 className="text-sm font-black uppercase tracking-widest italic">Assign Subscription Plan</h3>
+                                </div>
+                                <button 
+                                    onClick={() => {
+                                        setShowAssignModal(false);
+                                        setSelectedCustomerId('');
+                                        setSelectedPlanId('');
+                                        setSearchCustomerTerm('');
+                                        setErrorMessage('');
+                                        setSuccessMessage('');
+                                    }} 
+                                    className="text-text-muted hover:text-primary transition-colors"
+                                >
+                                    <X size={20} />
+                                </button>
+                            </div>
+
+                            {/* Modal Body */}
+                            <form onSubmit={handleAssignMembership} className="p-8 space-y-6 text-left">
+                                {errorMessage && (
+                                    <div className="p-4 bg-rose-500/10 border border-rose-500/30 text-rose-500 text-xs font-bold flex items-center gap-2">
+                                        <AlertCircle className="w-4 h-4" />
+                                        {errorMessage}
+                                    </div>
+                                )}
+
+                                {successMessage && (
+                                    <div className="p-4 bg-emerald-500/10 border border-emerald-500/30 text-emerald-500 text-xs font-bold flex items-center gap-2">
+                                        <ShieldCheck className="w-4 h-4" />
+                                        {successMessage}
+                                    </div>
+                                )}
+
+                                {/* Search & Select Customer */}
+                                <div className="relative">
+                                    <label className="text-[10px] font-black text-text-muted uppercase tracking-widest block mb-2">Select Customer</label>
+                                    <div className="relative group">
+                                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-primary transition-colors" />
+                                        <input
+                                            type="text"
+                                            placeholder="Type customer name or phone..."
+                                            value={searchCustomerTerm}
+                                            onChange={(e) => setSearchCustomerTerm(e.target.value)}
+                                            className="w-full h-12 bg-surface border border-border/40 pl-12 pr-4 text-xs font-bold text-foreground focus:border-primary outline-none transition-all shadow-sm"
+                                        />
+                                        {selectedCustomerId && (
+                                            <button 
+                                                type="button"
+                                                onClick={() => {
+                                                    setSelectedCustomerId('');
+                                                    setSearchCustomerTerm('');
+                                                }}
+                                                className="absolute right-4 top-1/2 -translate-y-1/2 text-text-muted hover:text-primary"
+                                            >
+                                                <X size={16} />
+                                            </button>
+                                        )}
+                                    </div>
+                                    {searchCustomerTerm && !selectedCustomerId && (
+                                        <div className="absolute z-20 w-full mt-1 max-h-48 overflow-y-auto bg-surface border border-border shadow-2xl divide-y divide-border/20">
+                                            {customers
+                                                .filter(c => 
+                                                    (c.name || '').toLowerCase().includes(searchCustomerTerm.toLowerCase()) || 
+                                                    (c.phone || '').includes(searchCustomerTerm)
+                                                )
+                                                .slice(0, 10)
+                                                .map(c => (
+                                                    <button
+                                                        key={c._id || c.id}
+                                                        type="button"
+                                                        onClick={() => {
+                                                            setSelectedCustomerId(c._id || c.id);
+                                                            setSearchCustomerTerm(`${c.name || 'Unknown'} (${c.phone || ''})`);
+                                                        }}
+                                                        className="w-full text-left px-4 py-3 hover:bg-primary/10 transition-colors text-xs font-black italic flex justify-between items-center"
+                                                    >
+                                                        <span>{c.name || 'Unknown'}</span>
+                                                        <span className="text-[10px] font-bold text-text-muted uppercase tracking-widest">{c.phone || ''}</span>
+                                                    </button>
+                                                ))
+                                            }
+                                        </div>
+                                    )}
+                                </div>
+
+                                {/* Select Membership Plan */}
+                                <div>
+                                    <label className="text-[10px] font-black text-text-muted uppercase tracking-widest block mb-2">Select Membership Plan</label>
+                                    <select
+                                        value={selectedPlanId}
+                                        onChange={(e) => setSelectedPlanId(e.target.value)}
+                                        className="w-full h-12 bg-surface border border-border/40 px-4 text-xs font-bold text-foreground focus:border-primary outline-none transition-all shadow-sm"
+                                    >
+                                        <option value="">-- Choose a Plan --</option>
+                                        {plans.map(p => (
+                                            <option key={p._id || p.id} value={p._id || p.id}>
+                                                {p.name} - ₹{p.price} ({p.duration} Days)
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+
+                                {/* Modal Footer / Actions */}
+                                <div className="bg-surface-alt border-t border-border/40 -mx-8 -mb-8 px-8 py-4 flex justify-end gap-3">
+                                    <button 
+                                        type="button"
+                                        onClick={() => {
+                                            setShowAssignModal(false);
+                                            setSelectedCustomerId('');
+                                            setSelectedPlanId('');
+                                            setSearchCustomerTerm('');
+                                            setErrorMessage('');
+                                            setSuccessMessage('');
+                                        }}
+                                        className="px-6 py-2.5 border border-border/40 text-[10px] font-black uppercase tracking-[0.2em] hover:bg-surface transition-all"
+                                    >
+                                        Cancel
+                                    </button>
+                                    <button 
+                                        type="submit"
+                                        disabled={assigning}
+                                        className="px-6 py-2.5 bg-primary text-white text-[10px] font-black uppercase tracking-[0.2em] hover:bg-primary-dark transition-all disabled:opacity-50 flex items-center gap-2"
+                                    >
+                                        {assigning ? 'Activating...' : 'Activate Subscription'}
+                                    </button>
+                                </div>
+                            </form>
                         </motion.div>
                     </div>
                 )}

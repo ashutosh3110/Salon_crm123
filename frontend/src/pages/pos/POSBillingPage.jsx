@@ -404,6 +404,8 @@ export default function POSBillingPage() {
     const [redeemWallet, setRedeemWallet] = useState(0);
     const [appointmentId, setAppointmentId] = useState(null);
     const [orderId, setOrderId] = useState(null);
+    const [selectedBookingIds, setSelectedBookingIds] = useState([]);
+    const [selectedOrderIds, setSelectedOrderIds] = useState([]);
 
     const [newClientForm, setNewClientForm] = useState({ name: '', phone: '' });
 
@@ -565,6 +567,20 @@ export default function POSBillingPage() {
             setPayments([{ ...payments[0], amount: totals.total }]);
         }
     }, [totals.total, isManualPayment, payments.length]);
+
+    // Main Terminal Overpayment Warning Toast
+    useEffect(() => {
+        const mainPaidAmount = payments.reduce((s, p) => s + p.amount, 0);
+        const mainTotalLiability = totals.total - totals.redeemWallet + (includePreviousDue ? Number(selectedClient?.dueAmount || 0) : 0);
+        const overpaidDiff = Math.round((mainPaidAmount - mainTotalLiability) * 100) / 100;
+        if (overpaidDiff > 0) {
+            toast(`Info: Total payment exceeds total liability by ₹${overpaidDiff.toFixed(2)}`, { 
+                id: 'main-overpaid-toast',
+                icon: 'ℹ️',
+                duration: 2000
+            });
+        }
+    }, [payments, totals.total, totals.redeemWallet, selectedClient?.dueAmount, includePreviousDue]);
 
 
     // ─── App Integration ────────────────────────────────────
@@ -792,75 +808,97 @@ export default function POSBillingPage() {
     // ─── Cart Logic ────────────────────────────────────────
     const addToCart = (item, forcedType) => {
         if (item.isAppointment) {
-            if (item.clientId?._id || item.clientId) {
-                const clientIdStr = String(item.clientId?._id || item.clientId);
-                const client = businessCustomers.find(c => String(c._id || c.id) === clientIdStr);
-                if (client) {
-                    setSelectedClient(client);
-                } else {
-                    setSelectedClient({
-                        _id: clientIdStr,
-                        name: item.clientName || item.clientId?.name || 'Walk-in',
-                        phone: item.clientPhone || item.clientId?.phone || '',
-                        loyaltyPoints: 0,
-                        walletBalance: 0,
-                        dueAmount: 0
-                    });
+            const isAlreadySelected = selectedBookingIds.includes(item._id);
+            if (isAlreadySelected) {
+                // DESELECT: Remove booking ID and its cart items
+                setSelectedBookingIds(prev => prev.filter(id => id !== item._id));
+                setCart(prev => prev.filter(c => c.appointmentId !== item._id));
+                if (appointmentId === item._id) setAppointmentId(null);
+            } else {
+                // SELECT: Add booking ID and its cart item
+                if (item.clientId?._id || item.clientId) {
+                    const clientIdStr = String(item.clientId?._id || item.clientId);
+                    const client = businessCustomers.find(c => String(c._id || c.id) === clientIdStr);
+                    if (client) {
+                        setSelectedClient(client);
+                    } else {
+                        setSelectedClient({
+                            _id: clientIdStr,
+                            name: item.clientName || item.clientId?.name || 'Walk-in',
+                            phone: item.clientPhone || item.clientId?.phone || '',
+                            loyaltyPoints: 0,
+                            walletBalance: 0,
+                            dueAmount: 0
+                        });
+                    }
+                    setShowClientInfo(true);
                 }
-                setShowClientInfo(true);
+                const staffId = item.staffId?._id || item.staffId;
+                const newCartItem = {
+                    ...item,
+                    itemId: item.serviceId?._id || item.serviceId || item._id,
+                    type: 'service',
+                    quantity: 1,
+                    staffIds: staffId ? [staffId] : [],
+                    appointmentId: item._id
+                };
+                setCart(prev => [...prev, newCartItem]);
+                const bookingOutletId = item.outletId?._id || item.outletId;
+                if (bookingOutletId) setActiveOutletId(String(bookingOutletId), { quiet: true, background: true });
+                setSelectedBookingIds(prev => [...prev, item._id]);
+                setAppointmentId(item._id);
+                setOrderId(null);
             }
-            const staffId = item.staffId?._id || item.staffId;
-            setCart([{
-                ...item,
-                itemId: item.serviceId?._id || item.serviceId || item._id,
-                type: 'service',
-                quantity: 1,
-                staffIds: staffId ? [staffId] : [],
-                appointmentId: item._id
-            }]);
-            const bookingOutletId = item.outletId?._id || item.outletId;
-            if (bookingOutletId) setActiveOutletId(String(bookingOutletId), { quiet: true, background: true });
-            setAppointmentId(item._id);
-            setOrderId(null);
             return;
         }
 
         if (item.isOrder) {
-            if (item.customerId?._id || item.customerId) {
-                const customerIdStr = String(item.customerId?._id || item.customerId);
-                const client = businessCustomers.find(c => String(c._id || c.id) === customerIdStr);
-                if (client) {
-                    setSelectedClient(client);
-                } else {
-                    setSelectedClient({
-                        _id: customerIdStr,
-                        name: item.customerId?.name || 'Walk-in',
-                        phone: item.customerId?.phone || '',
-                        loyaltyPoints: 0,
-                        walletBalance: 0,
-                        dueAmount: 0
-                    });
+            const isAlreadySelected = selectedOrderIds.includes(item._id);
+            if (isAlreadySelected) {
+                // DESELECT: Remove order ID and its cart items
+                setSelectedOrderIds(prev => prev.filter(id => id !== item._id));
+                setCart(prev => prev.filter(c => c.orderId !== item._id));
+                if (orderId === item._id) setOrderId(null);
+            } else {
+                // SELECT: Add order ID and its cart items
+                if (item.customerId?._id || item.customerId) {
+                    const customerIdStr = String(item.customerId?._id || item.customerId);
+                    const client = businessCustomers.find(c => String(c._id || c.id) === customerIdStr);
+                    if (client) {
+                        setSelectedClient(client);
+                    } else {
+                        setSelectedClient({
+                            _id: customerIdStr,
+                            name: item.customerId?.name || 'Walk-in',
+                            phone: item.customerId?.phone || '',
+                            loyaltyPoints: 0,
+                            walletBalance: 0,
+                            dueAmount: 0
+                        });
+                    }
+                    setShowClientInfo(true);
                 }
-                setShowClientInfo(true);
-            }
-            const newCartItems = (item.items || []).map(oi => {
-                const product = products.find(p => String(p._id) === String(oi.productId?._id || oi.productId));
-                return {
-                    ...(product || {}),
-                    name: oi.productId?.name || product?.name || 'Product',
-                    price: oi.price || product?.price || 0,
-                    itemId: oi.productId?._id || product?._id,
-                    type: 'product',
-                    quantity: oi.quantity || 1,
-                    staffIds: ['']
-                };
-            }).filter(i => i.itemId);
+                const newCartItems = (item.items || []).map(oi => {
+                    const product = products.find(p => String(p._id) === String(oi.productId?._id || oi.productId));
+                    return {
+                        ...(product || {}),
+                        name: oi.productId?.name || product?.name || 'Product',
+                        price: oi.price || product?.price || 0,
+                        itemId: oi.productId?._id || product?._id,
+                        type: 'product',
+                        quantity: oi.quantity || 1,
+                        staffIds: [''],
+                        orderId: item._id
+                    };
+                }).filter(i => i.itemId);
 
-            const orderOutletId = item.outletId?._id || item.outletId;
-            if (orderOutletId) setActiveOutletId(String(orderOutletId), { quiet: true, background: true });
-            setCart(newCartItems);
-            setOrderId(item._id);
-            setAppointmentId(null);
+                const orderOutletId = item.outletId?._id || item.outletId;
+                if (orderOutletId) setActiveOutletId(String(orderOutletId), { quiet: true, background: true });
+                setCart(prev => [...prev, ...newCartItems]);
+                setSelectedOrderIds(prev => [...prev, item._id]);
+                setOrderId(item._id);
+                setAppointmentId(null);
+            }
             return;
         }
 
@@ -1088,7 +1126,20 @@ export default function POSBillingPage() {
 
 
                 // ── Sync Appointment Status ──
-                if (appointmentId) {
+                // ── Sync Booking Statuses ──
+                if (selectedBookingIds.length > 0) {
+                    for (const bId of selectedBookingIds) {
+                        try {
+                            await api.patch(`/bookings/${bId}/status`, {
+                                status: 'completed',
+                                paymentStatus: 'paid',
+                                paymentMethod: payments[0]?.method || 'salon'
+                            });
+                        } catch (syncErr) {
+                            console.error('[POS] Booking Sync Error:', syncErr);
+                        }
+                    }
+                } else if (appointmentId) {
                     try {
                         await api.patch(`/bookings/${appointmentId}/status`, {
                             status: 'completed',
@@ -1096,7 +1147,28 @@ export default function POSBillingPage() {
                             paymentMethod: payments[0]?.method || 'salon'
                         });
                     } catch (syncErr) {
-                        console.error('[POS] Protocol Sync Error:', syncErr);
+                        console.error('[POS] Booking Sync Error:', syncErr);
+                    }
+                }
+
+                // ── Sync Order Statuses ──
+                if (selectedOrderIds.length > 0) {
+                    for (const oId of selectedOrderIds) {
+                        try {
+                            await api.patch(`/orders/${oId}/status`, {
+                                status: 'completed'
+                            });
+                        } catch (syncErr) {
+                            console.error('[POS] Order Sync Error:', syncErr);
+                        }
+                    }
+                } else if (orderId) {
+                    try {
+                        await api.patch(`/orders/${orderId}/status`, {
+                            status: 'completed'
+                        });
+                    } catch (syncErr) {
+                        console.error('[POS] Order Sync Error:', syncErr);
                     }
                 }
             } catch (err) {
@@ -1171,6 +1243,8 @@ export default function POSBillingPage() {
         setRedeemWallet(0);
         setOrderId(null);
         setAppointmentId(null);
+        setSelectedBookingIds([]);
+        setSelectedOrderIds([]);
     };
 
     // ─── Keyboard Shortcuts ───────────────────────────────
@@ -1478,7 +1552,11 @@ export default function POSBillingPage() {
 
                     <div className="flex-1 overflow-y-auto grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3 pr-2 scrollbar-thin">
                         {filteredItems.map(item => {
-                            const isSelected = cart.some(c => String(c.id || c._id) === String(item.id || item._id));
+                            const isSelected = item.isAppointment 
+                                ? selectedBookingIds.includes(item._id)
+                                : item.isOrder
+                                    ? selectedOrderIds.includes(item._id)
+                                    : cart.some(c => String(c.itemId) === String(item._id || item.id));
                             return (
                                 <button
                                     key={item.id || item._id}
@@ -1832,6 +1910,13 @@ export default function POSBillingPage() {
                                     <div className="flex justify-between text-[10px] font-black text-rose-400 mt-2 bg-rose-500/5 p-2 rounded-lg border border-rose-500/20 animate-pulse">
                                         <span className="uppercase tracking-widest">Balance Due</span>
                                         <span>₹{(totals.total - totals.redeemWallet - payments.reduce((s, p) => s + p.amount, 0)).toFixed(2)}</span>
+                                    </div>
+                                )}
+
+                                {payments.reduce((s, p) => s + p.amount, 0) - (totals.total - totals.redeemWallet) > 0.005 && (
+                                    <div className="flex justify-between text-[10px] font-black text-rose-400 mt-2 bg-rose-500/10 p-2 rounded-lg border border-rose-500/20 animate-pulse">
+                                        <span className="uppercase tracking-widest text-rose-400">Overpaid</span>
+                                        <span className="text-rose-400">₹{(payments.reduce((s, p) => s + p.amount, 0) - (totals.total - totals.redeemWallet)).toFixed(2)}</span>
                                     </div>
                                 )}
                             </div>
@@ -2225,11 +2310,12 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
 
     useEffect(() => {
         const totalLiability = totals.total + (Number(qClient?.dueAmount) || 0);
-        if (paidAmount > totalLiability + 1) {
-            toast(`Info: Total payment exceeds total liability by ₹${(paidAmount - totalLiability).toFixed(0)}`, { 
+        const overpaidDiff = Math.round((paidAmount - totalLiability) * 100) / 100;
+        if (overpaidDiff > 0) {
+            toast(`Info: Total payment exceeds total liability by ₹${overpaidDiff.toFixed(2)}`, { 
                 id: 'overpaid-toast',
                 icon: 'ℹ️',
-                duration: 4000
+                duration: 2000
             });
         }
     }, [paidAmount, totals.total, qClient?.dueAmount]);
@@ -3131,11 +3217,12 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                             {/* Overpaid feedback */}
                             {(() => {
                                 const totalLiability = totals.total + (Number(qClient?.dueAmount) || 0);
-                                if (paidAmount > totalLiability + 1) {
+                                const overpaidDiff = Math.round((paidAmount - totalLiability) * 100) / 100;
+                                if (overpaidDiff > 0) {
                                     return (
                                         <div className="flex items-center justify-center bg-rose-500/10 border border-rose-500/20 px-2 py-1 rounded-xl gap-1 mb-2 animate-pulse">
                                             <AlertTriangle className="w-3 h-3 text-rose-400" />
-                                            <span className="text-[8px] font-black text-rose-400 uppercase tracking-wider">Overpaid: ₹{(paidAmount - totalLiability).toFixed(2)}</span>
+                                            <span className="text-[8px] font-black text-rose-400 uppercase tracking-wider">Overpaid: ₹{overpaidDiff.toFixed(2)}</span>
                                         </div>
                                     );
                                 }

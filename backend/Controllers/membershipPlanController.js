@@ -495,3 +495,95 @@ exports.buyMembershipWithWallet = async (req, res) => {
         res.status(500).json({ success: false, message: err.message });
     }
 };
+
+// @desc    Assign membership plan to a customer directly by admin
+// @route   POST /api/loyalty/membership/assign
+// @access  Private (Admin/Manager)
+exports.assignMembershipDirect = async (req, res) => {
+    try {
+        const { customerId, planId } = req.body;
+        const salonId = req.user.salonId;
+
+        if (!customerId || !planId) {
+            return res.status(400).json({ success: false, message: 'Please provide customerId and planId' });
+        }
+
+        const plan = await MembershipPlan.findById(planId);
+        if (!plan) {
+            return res.status(404).json({ success: false, message: 'Membership plan not found' });
+        }
+
+        const Customer = require('../Models/Customer');
+        const customer = await Customer.findById(customerId);
+        if (!customer) {
+            return res.status(404).json({ success: false, message: 'Customer not found' });
+        }
+
+        // Calculate expiry date
+        const expiryDate = new Date();
+        expiryDate.setDate(expiryDate.getDate() + (plan.duration || 30));
+
+        // Create or Update membership
+        const membership = await CustomerMembership.findOneAndUpdate(
+            { customerId, salonId },
+            {
+                planId,
+                status: 'active',
+                expiryDate,
+                amount: plan.price, // Admin assignment records the plan price
+                paymentId: `admin_assigned_${Date.now()}`
+            },
+            { upsert: true, new: true }
+        );
+
+        // Send Push Notification & WhatsApp to customer
+        try {
+            const { sendNotification } = require('../Utils/notification');
+            const { sendWapixoTemplate } = require('../Utils/whatsapp');
+            const Salon = require('../Models/Salon');
+            const salon = await Salon.findById(salonId);
+            const brandName = salon?.businessName || salon?.name || 'Our Salon';
+
+            await sendNotification({
+                customerId,
+                salonId,
+                title: 'Membership Activated! 🎖️',
+                message: `Hi ${customer.name}, your ${plan.name} membership has been activated by ${req.user.name || 'Admin'} until ${expiryDate.toLocaleDateString()}. Enjoy your benefits!`,
+                type: 'membership',
+                actionUrl: '/app/membership'
+            });
+
+            // Send WhatsApp
+            const { checkAndDeductWhatsAppCredit } = require('../Utils/whatsapp');
+            const canSendMem = await checkAndDeductWhatsAppCredit(customer.lastOutletId || salonId);
+
+            if (canSendMem) {
+                await sendWapixoTemplate(
+                    customer.phone,
+                    process.env.WHATSAPP_TEMPLATE_MEMBERSHIP_PLAN,
+                    [
+                        customer.name,
+                        brandName,
+                        plan.name,
+                        `${plan.serviceDiscountValue}${plan.serviceDiscountType === 'percentage' ? '%' : ' Rs'}`,
+                        `${plan.productDiscountValue}${plan.productDiscountType === 'percentage' ? '%' : ' Rs'}`,
+                        new Date().toLocaleDateString(),
+                        expiryDate.toLocaleDateString()
+                    ]
+                );
+            }
+        } catch (msgErr) {
+            console.error('Admin assignment messaging failed:', msgErr.message);
+        }
+
+        res.json({
+            success: true,
+            message: 'Membership plan assigned successfully',
+            data: membership
+        });
+
+    } catch (err) {
+        console.error('Assign membership direct error:', err);
+        res.status(500).json({ success: false, message: err.message });
+    }
+};

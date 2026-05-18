@@ -3,6 +3,7 @@ const WalletTransaction = require('../Models/WalletTransaction');
 const LoyaltyTransaction = require('../Models/LoyaltyTransaction');
 const Salon = require('../Models/Salon');
 const Setting = require('../Models/Setting');
+const CustomerMembership = require('../Models/CustomerMembership');
 
 // @desc    Redeem loyalty points to wallet balance
 // @route   POST /api/loyalty/redeem
@@ -26,7 +27,7 @@ exports.redeemLoyaltyPoints = async (req, res) => {
             return res.status(400).json({ 
                 success: false, 
                 message: `Minimum ${settings.minRedeemPoints} points required to redeem` 
-            });
+              });
         }
 
         if (customer.loyaltyPoints < points) {
@@ -261,7 +262,8 @@ exports.getMyReferrals = async (req, res) => {
         res.status(500).json({ success: false, message: 'Server Error' });
     }
 };
-// @desc    Get loyalty members for salon (customers with transactions)
+
+// @desc    Get loyalty members for salon (Only customers with purchased membership subscriptions)
 // @route   GET /api/loyalty/members
 // @access  Private (Admin/Manager)
 exports.getLoyaltyMembers = async (req, res) => {
@@ -270,40 +272,69 @@ exports.getLoyaltyMembers = async (req, res) => {
         const { page = 1, limit = 20, search, status } = req.query;
         const skip = (parseInt(page) - 1) * parseInt(limit);
 
-        // Rule: Only show customers who have at least one transaction (visit or spend) in this salon
-        let query = { 
-            salonId,
-            $or: [
-                { totalVisits: { $gt: 0 } },
-                { totalSpend: { $gt: 0 } }
-            ]
-        };
-
-        if (search) {
-            const searchRegex = new RegExp(search, 'i');
-            query.$and = [
-                { 
-                    $or: [
-                        { name: searchRegex },
-                        { phone: searchRegex }
-                    ]
-                }
-            ];
-        }
-
+        let membershipQuery = { salonId };
+        
         if (status && status !== 'all') {
-            query.status = status;
+            if (status === 'active') {
+                membershipQuery.status = 'active';
+                membershipQuery.expiryDate = { $gt: new Date() };
+            } else if (status === 'expired') {
+                membershipQuery.$or = [
+                    { status: 'expired' },
+                    { expiryDate: { $lte: new Date() } }
+                ];
+            } else {
+                membershipQuery.status = status;
+            }
         }
 
-        const total = await Customer.countDocuments(query);
-        const members = await Customer.find(query)
-            .sort({ updatedAt: -1 })
-            .skip(skip)
-            .limit(parseInt(limit));
+        // Fetch memberships matching the status criteria and populate customer and plan details
+        let memberships = await CustomerMembership.find(membershipQuery)
+            .populate({
+                path: 'customerId',
+                match: search ? {
+                    $or: [
+                        { name: new RegExp(search, 'i') },
+                        { phone: new RegExp(search, 'i') }
+                    ]
+                } : {}
+            })
+            .populate('planId', 'name');
+
+        // Filter memberships where the customer matches the search query and exists
+        memberships = memberships.filter(m => m.customerId !== null && m.customerId !== undefined);
+
+        const total = memberships.length;
+
+        // Paginate local results array
+        const paginatedMemberships = memberships.slice(skip, skip + parseInt(limit));
+
+        // Format members structure to precisely match frontend expectation
+        const formattedMembers = paginatedMemberships.map(m => {
+            const customerObj = m.customerId;
+            const isExpired = m.status === 'expired' || new Date(m.expiryDate) <= new Date();
+            const loyaltyStatus = isExpired ? 'expired' : m.status;
+            
+            return {
+                _id: customerObj._id,
+                id: customerObj._id,
+                name: customerObj.name,
+                phone: customerObj.phone,
+                loyaltyPoints: customerObj.loyaltyPoints || 0,
+                totalPoints: customerObj.loyaltyPoints || 0,
+                walletBalance: customerObj.walletBalance || 0,
+                dueAmount: customerObj.dueAmount || 0,
+                loyaltyPlan: m.planId?.name || 'Standard Plan',
+                loyaltyStatus: loyaltyStatus,
+                loyaltyExpiry: m.expiryDate ? new Date(m.expiryDate).toLocaleDateString('en-IN') : 'NEVER',
+                createdAt: m.createdAt,
+                updatedAt: m.updatedAt
+            };
+        });
 
         res.json({
             success: true,
-            data: members,
+            data: formattedMembers,
             meta: {
                 page: parseInt(page),
                 totalPages: Math.ceil(total / parseInt(limit)),
@@ -316,7 +347,8 @@ exports.getLoyaltyMembers = async (req, res) => {
         res.status(500).json({ success: false, message: 'Server Error' });
     }
 };
-// @desc    Get all loyalty transactions for salon
+
+// @desc    Get all loyalty transactions for salon (Only membership plan purchase transactions)
 // @route   GET /api/loyalty/transactions
 // @access  Private (Admin/Manager)
 exports.getAdminLoyaltyTransactions = async (req, res) => {
@@ -326,15 +358,6 @@ exports.getAdminLoyaltyTransactions = async (req, res) => {
         const skip = (parseInt(page) - 1) * parseInt(limit);
 
         let query = { salonId };
-
-        if (type && type !== 'ALL') {
-            // Support both REDEEM and REDEEMED for flexibility
-            if (type === 'REDEEM') {
-                query.type = { $in: ['REDEEM', 'REDEEMED'] };
-            } else {
-                query.type = type;
-            }
-        }
 
         if (from || to) {
             query.createdAt = {};
@@ -346,28 +369,45 @@ exports.getAdminLoyaltyTransactions = async (req, res) => {
             }
         }
 
-        const total = await LoyaltyTransaction.countDocuments(query);
-        const transactions = await LoyaltyTransaction.find(query)
+        // Fetch memberships matching the criteria and populate customer and plan details
+        let memberships = await CustomerMembership.find(query)
             .populate('customerId', 'name phone')
-            .sort({ createdAt: -1 })
-            .skip(skip)
-            .limit(parseInt(limit));
+            .populate('planId', 'name price')
+            .sort({ createdAt: -1 });
 
-        // Only return transactions where the customer still exists and belongs to this salon context
-        const validTransactions = transactions.filter(tx => tx.customerId);
+        // Filter out memberships where the customer doesn't exist
+        memberships = memberships.filter(m => m.customerId);
+
+        const total = memberships.length;
+
+        // Paginate local results array
+        const paginatedMemberships = memberships.slice(skip, skip + parseInt(limit));
+
+        // Format to match exactly what LoyaltyTransactionsTab.jsx expects:
+        const formattedTransactions = paginatedMemberships.map(m => {
+            return {
+                _id: m._id,
+                id: m._id,
+                createdAt: m.createdAt,
+                customerId: {
+                    _id: m.customerId._id,
+                    name: m.customerId.name,
+                    phone: m.customerId.phone
+                },
+                type: 'REDEEM', // Treat membership purchases as REDEEM/DEBIT of funds
+                points: m.amount || m.planId?.price || 0, // Display membership cost/points
+                invoiceId: m.paymentId || m.orderId || 'MEMBERSHIP_PURCHASE',
+                description: `Purchased Membership Plan: ${m.planId?.name || 'Standard'}`
+            };
+        });
 
         res.json({
             success: true,
-            data: validTransactions.map(tx => ({
-                ...tx._doc,
-                id: tx._id,
-                points: tx.amount, // Map amount to points for frontend
-                type: (tx.type === 'REDEEMED' || tx.type === 'DEBIT') ? 'REDEEM' : 'EARN' // Normalize type
-            })),
+            data: formattedTransactions,
             meta: {
                 page: parseInt(page),
                 totalPages: Math.ceil(total / parseInt(limit)),
-                total: validTransactions.length,
+                total: formattedTransactions.length,
                 limit: parseInt(limit)
             }
         });
