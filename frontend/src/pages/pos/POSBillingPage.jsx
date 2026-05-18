@@ -1689,10 +1689,12 @@ export default function POSBillingPage() {
                                                     {(item.isInclusiveTax === true || String(item.isInclusiveTax) === 'true' || (item.isInclusiveTax === undefined && fiscal.inclusiveTax)) && (
                                                         <span className="text-[7px] font-black uppercase text-emerald-600 mt-1">INCLUDING GST</span>
                                                     )}
-                                                    {item.type === 'service' && activeMembership && (
+                                                    {item.type === 'service' && (
                                                         <div className="mt-1.5 flex items-center gap-1 bg-primary/5 border border-primary/10 rounded-lg p-1 transition-all w-fit">
                                                             <Sparkles className="w-2.5 h-2.5 text-primary animate-pulse" />
-                                                            <span className="text-[7.5px] font-black text-primary uppercase tracking-wider">Mem. Disc:</span>
+                                                            <span className="text-[7.5px] font-black text-primary uppercase tracking-wider">
+                                                                {activeMembership ? 'Mem. Disc:' : 'Discount:'}
+                                                            </span>
                                                             
                                                             {/* Toggle between % and ₹ */}
                                                             <div className="flex items-center bg-white border border-primary/10 rounded-md overflow-hidden h-4">
@@ -2880,10 +2882,12 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                                                     </div>
                                                 )}
                                             </div>
-                                            {item.type === 'service' && qActiveMembership && (
+                                            {item.type === 'service' && (
                                                 <div className="mt-2 flex items-center gap-1.5 bg-slate-50 border border-slate-200 rounded-xl p-1.5 transition-all w-fit">
                                                     <Sparkles className="w-2.5 h-2.5 text-slate-500 animate-pulse" />
-                                                    <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Mem. Disc:</span>
+                                                    <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">
+                                                        {qActiveMembership ? 'Mem. Disc:' : 'Discount:'}
+                                                    </span>
                                                     
                                                     {/* Toggle between % and ₹ */}
                                                     <div className="flex items-center bg-white border border-slate-200 rounded-lg overflow-hidden h-5">
