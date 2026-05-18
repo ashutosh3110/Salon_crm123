@@ -223,7 +223,7 @@ export default function SASupportPage() {
             {/* Header */}
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-border pb-6">
                 <div>
-                    <h1 className="text-2xl font-black italic tracking-tighter uppercase">Support <span className="text-primary text-3xl">Portal</span></h1>
+                    <h1 className="text-2xl font-black tracking-tighter uppercase">Support Portal <span className="text-primary text-3xl"></span></h1>
                     <p className="text-[11px] text-text-muted font-medium uppercase tracking-[0.2em] mt-1">Manage platform support and salon requests</p>
                 </div>
                 <div className="flex items-center gap-2 bg-surface p-1 rounded-xl border border-border/60">
@@ -278,7 +278,7 @@ export default function SASupportPage() {
                         ) : tickets.length === 0 ? (
                             <div className="py-20 text-center bg-white border border-border border-dashed rounded-2xl">
                                 <CheckCircle className="w-16 h-16 text-emerald-400/20 mx-auto mb-4" />
-                                <h3 className="text-sm font-black uppercase tracking-widest text-text-muted italic">No Active Tickets</h3>
+                                <h3 className="text-sm font-black uppercase tracking-widest text-text-muted">No Active Tickets</h3>
                                 <p className="text-[11px] text-text-muted mt-2 uppercase tracking-widest">Everything is running smoothly. No active tickets found.</p>
                             </div>
                         ) : (
@@ -307,7 +307,7 @@ export default function SASupportPage() {
                                                         <div className="w-6 h-6 rounded-full bg-surface border border-border flex items-center justify-center">
                                                             <Shield className="w-3 h-3 text-primary" />
                                                         </div>
-                                                        <span className="text-[11px] font-bold text-text italic">{t.tenantId?.name}</span>
+                                                        <span className="text-[11px] font-bold text-text">{t.tenantId?.name}</span>
                                                     </div>
                                                     <div className="flex items-center gap-2 opacity-70">
                                                         <Users className="w-3.5 h-3.5" />
@@ -456,7 +456,7 @@ export default function SASupportPage() {
                     <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setIsCreateModalOpen(false)}></div>
                     <div className="relative w-full max-w-lg bg-white rounded-3xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
                         <div className="p-6 border-b border-border flex items-center justify-between bg-surface/50">
-                            <h2 className="text-xl font-black italic uppercase tracking-tight">Create <span className="text-primary italic">Support Ticket</span></h2>
+                            <h2 className="text-xl font-black uppercase tracking-tight">Create <span className="text-primary">Support Ticket</span></h2>
                             <button onClick={() => setIsCreateModalOpen(false)} className="p-2 hover:bg-surface rounded-xl transition-colors">
                                 <X className="w-5 h-5" />
                             </button>

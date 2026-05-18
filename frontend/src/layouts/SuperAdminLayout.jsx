@@ -176,6 +176,207 @@ export default function SuperAdminLayout() {
                     font-weight: 600 !important;
                     font-size: 0.8rem !important;
                 }
+
+                /* ==========================================
+                   🎨 PREMIUM DARK MODE OVERRIDES
+                   ========================================== */
+                /* Restore brand primary color inside Super Admin Panel instead of shadcn silver override */
+                .dark .sa-panel {
+                    --primary: #b85c5c !important;
+                    --primary-foreground: #ffffff !important;
+                }
+
+                /* Robust background overrides in Dark Mode */
+                .dark .sa-panel .bg-white,
+                .dark .sa-panel .bg-surface,
+                .dark .sa-panel .bg-background,
+                .dark .sa-panel .bg-slate-50,
+                .dark .sa-panel .bg-slate-100,
+                .dark .sa-panel .bg-gray-50,
+                .dark .sa-panel .bg-gray-100,
+                .dark .sa-panel [class*="bg-white"],
+                .dark .sa-panel [class*="bg-surface"],
+                .dark .sa-panel [class*="bg-background"],
+                .dark .sa-panel [class*="bg-slate-50"],
+                .dark .sa-panel [class*="bg-slate-100"],
+                .dark .sa-panel [class*="bg-gray-50"],
+                .dark .sa-panel [class*="bg-gray-100"],
+                .dark [role="dialog"],
+                .dark [role="dialog"] .bg-white,
+                .dark [role="dialog"] [class*="bg-white"],
+                .dark [role="dialog"] .bg-slate-50,
+                .dark [role="dialog"] [class*="bg-slate-50"],
+                .dark .fixed.inset-0 .bg-white,
+                .dark .fixed.inset-0 [class*="bg-white"],
+                .dark .fixed.inset-0 .bg-slate-50,
+                .dark .fixed.inset-0 [class*="bg-slate-50"] {
+                    background-color: #1e293b !important; /* slate-800 */
+                }
+
+                /* Deep slate-900 backgrounds for main page, modal overlays, inputs, etc. */
+                .dark .sa-panel,
+                .dark .sa-panel .bg-surface-alt,
+                .dark .sa-panel [class*="bg-surface-alt"],
+                .dark .sa-panel .bg-\[\#fafafa\],
+                .dark .sa-panel [class*="bg-[#fafafa]"],
+                .dark [class*="bg-[#fafafa]"],
+                .dark .sa-panel input,
+                .dark .sa-panel select,
+                .dark .sa-panel textarea,
+                .dark [role="dialog"] input,
+                .dark [role="dialog"] select,
+                .dark [role="dialog"] textarea,
+                .dark .fixed.inset-0 input,
+                .dark .fixed.inset-0 select,
+                .dark .fixed.inset-0 textarea {
+                    background-color: #121826 !important; /* slate-900 */
+                }
+
+                /* Robust border color overrides in Dark Mode */
+                .dark .sa-panel .border,
+                .dark .sa-panel .border-border,
+                .dark .sa-panel [class*="border-border"],
+                .dark .sa-panel [class*="border-r"],
+                .dark .sa-panel [class*="border-b"],
+                .dark .sa-panel [class*="border-t"],
+                .dark .sa-panel [class*="border-l"],
+                .dark .sa-panel [class*="border-2"],
+                .dark .sa-panel table th,
+                .dark .sa-panel table td,
+                .dark [role="dialog"] .border,
+                .dark [role="dialog"] [class*="border"],
+                .dark .fixed.inset-0 .border,
+                .dark .fixed.inset-0 [class*="border"] {
+                    border-color: rgba(255, 255, 255, 0.08) !important;
+                }
+
+                /* Robust text color overrides in Dark Mode */
+                .dark .sa-panel .text-text,
+                .dark .sa-panel [class*="text-text"],
+                .dark .sa-panel [class*="text-slate-900"],
+                .dark .sa-panel [class*="text-slate-800"],
+                .dark .sa-panel [class*="text-slate-700"],
+                .dark .sa-panel [class*="text-gray-900"],
+                .dark .sa-panel [class*="text-gray-800"],
+                .dark .sa-panel [class*="text-gray-700"],
+                .dark .sa-panel h1,
+                .dark .sa-panel h2,
+                .dark .sa-panel h3,
+                .dark .sa-panel h4,
+                .dark .sa-panel h5,
+                .dark .sa-panel h6,
+                .dark [role="dialog"] .text-text,
+                .dark [role="dialog"] [class*="text-text"],
+                .dark [role="dialog"] h1,
+                .dark [role="dialog"] h2,
+                .dark [role="dialog"] h3,
+                .dark [role="dialog"] h4,
+                .dark [role="dialog"] h5,
+                .dark [role="dialog"] h6,
+                .dark .fixed.inset-0 .text-text,
+                .dark .fixed.inset-0 [class*="text-text"],
+                .dark .fixed.inset-0 h1,
+                .dark .fixed.inset-0 h2,
+                .dark .fixed.inset-0 h3,
+                .dark .fixed.inset-0 h4,
+                .dark .fixed.inset-0 h5,
+                .dark .fixed.inset-0 h6 {
+                    color: #f8fafc !important; /* slate-50 */
+                }
+
+                .dark .sa-panel .text-text-secondary,
+                .dark .sa-panel [class*="text-text-secondary"],
+                .dark .sa-panel [class*="text-slate-600"],
+                .dark .sa-panel [class*="text-slate-500"],
+                .dark .sa-panel [class*="text-gray-600"],
+                .dark .sa-panel [class*="text-gray-500"],
+                .dark [role="dialog"] .text-text-secondary,
+                .dark [role="dialog"] [class*="text-text-secondary"],
+                .dark .fixed.inset-0 .text-text-secondary,
+                .dark .fixed.inset-0 [class*="text-text-secondary"] {
+                    color: #94a3b8 !important; /* slate-400 */
+                }
+
+                .dark .sa-panel .text-text-muted,
+                .dark .sa-panel [class*="text-text-muted"],
+                .dark .sa-panel [class*="text-slate-400"],
+                .dark .sa-panel [class*="text-gray-400"],
+                .dark [role="dialog"] .text-text-muted,
+                .dark [role="dialog"] [class*="text-text-muted"],
+                .dark .fixed.inset-0 .text-text-muted,
+                .dark .fixed.inset-0 [class*="text-text-muted"] {
+                    color: #64748b !important; /* slate-500 */
+                }
+
+                /* Ensure dark mode input placeholders and borders are clearly visible */
+                .dark .sa-panel input::placeholder,
+                .dark .sa-panel textarea::placeholder,
+                .dark [role="dialog"] input::placeholder,
+                .dark [role="dialog"] textarea::placeholder,
+                .dark .fixed.inset-0 input::placeholder,
+                .dark .fixed.inset-0 textarea::placeholder {
+                    color: rgba(255, 255, 255, 0.35) !important;
+                }
+
+                /* --- Sidebar & Topbar dark mode overrides --- */
+                .dark .sa-panel aside,
+                .dark .sa-panel header,
+                .dark .sa-panel aside div,
+                .dark .sa-panel header div {
+                    background-color: #1e293b !important; /* slate-800 background */
+                    color: #f8fafc !important;
+                    border-color: rgba(255, 255, 255, 0.08) !important;
+                }
+
+                /* --- Navigation elements --- */
+                .dark .sa-panel aside a {
+                    color: #cbd5e1 !important;
+                }
+                .dark .sa-panel aside a:hover {
+                    background-color: #121826 !important; /* dark body bg on hover */
+                    color: #ffffff !important;
+                }
+                .dark .sa-panel aside a.active {
+                    background-color: #b85c5c !important; /* Keep primary crimson for active */
+                    color: #ffffff !important;
+                }
+
+                /* --- Spacious & Beautiful Tables in Dark Mode --- */
+                .dark .sa-panel table th {
+                    color: #94a3b8 !important; /* slate-400 */
+                    background-color: #121826 !important; /* slate-900 */
+                    border-bottom: 2px solid rgba(255, 255, 255, 0.08) !important;
+                }
+                .dark .sa-panel table td {
+                    color: #cbd5e1 !important; /* slate-300 */
+                    border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+                }
+                .dark .sa-panel table tr:hover td {
+                    background-color: #1e293b !important;
+                }
+
+                /* --- Form Controls in Dark Mode --- */
+                .dark .sa-panel label {
+                    color: #94a3b8 !important; /* slate-400 */
+                }
+                .dark .sa-panel input:focus, 
+                .dark .sa-panel select:focus, 
+                .dark .sa-panel textarea:focus {
+                    border-color: #b85c5c !important;
+                    box-shadow: 0 0 0 4px rgba(184, 92, 92, 0.25) !important;
+                }
+
+                /* --- SVG and Recharts Ticks & Lines in Dark Mode --- */
+                .dark .sa-panel .recharts-cartesian-grid-horizontal line,
+                .dark .sa-panel .recharts-cartesian-grid-vertical line {
+                    stroke: rgba(255, 255, 255, 0.08) !important;
+                }
+                .dark .sa-panel .recharts-text {
+                    fill: #94a3b8 !important;
+                }
+                .dark .sa-panel .recharts-legend-item-text {
+                    color: #cbd5e1 !important;
+                }
             `}</style>
 
             <SuperAdminSidebar

@@ -350,10 +350,10 @@ export default function SASettingsPage() {
             </div>
 
             {/* ── Avatar + Quick Info Banner ── */}
-            <div className="bg-gradient-to-r from-primary via-[#A03040] to-[#8B1A2D] rounded-2xl p-6 flex flex-col sm:flex-row items-center sm:items-start gap-5 shadow-xl shadow-primary/20">
+            <div className="bg-[#8B1A2D] rounded-2xl p-6 flex flex-col sm:flex-row items-center sm:items-start gap-5 shadow-xl shadow-[#8B1A2D]/20">
                 {/* Avatar circle */}
                 <div className="shrink-0">
-                    <div className="w-20 h-20 rounded-2xl bg-white/20 border-2 border-white/30 flex items-center justify-center text-white text-3xl font-black shadow-lg">
+                    <div className="w-20 h-20 rounded-2xl bg-white/10 border border-white/20 flex items-center justify-center text-white text-3xl font-black shadow-lg">
                         {initials}
                     </div>
                 </div>
@@ -649,7 +649,7 @@ export default function SASettingsPage() {
                                         suffix={<span className="text-[10px] font-bold text-text-muted mr-3">Days</span>}
                                     />
                                     <div className="flex items-end pb-1.5">
-                                        <p className="text-[10px] text-text-muted italic leading-relaxed">
+                                        <p className="text-[10px] text-text-muted leading-relaxed">
                                             Controls the default trial duration for new salon registrations and image upload size limits.
                                         </p>
                                     </div>
@@ -678,7 +678,7 @@ export default function SASettingsPage() {
                                         suffix={<span className="text-[10px] font-bold text-text-muted mr-3">%</span>}
                                     />
                                     <div className="flex items-end pb-1.5">
-                                        <p className="text-[10px] text-text-muted italic leading-relaxed">
+                                        <p className="text-[10px] text-text-muted leading-relaxed">
                                             Default GST percentages applied to services and retail products across the platform.
                                         </p>
                                     </div>
@@ -707,7 +707,7 @@ export default function SASettingsPage() {
                                         suffix={<span className="text-[10px] font-bold text-text-muted mr-3">Msgs</span>}
                                     />
                                     <div className="flex items-end pb-1.5">
-                                        <p className="text-[10px] text-text-muted italic leading-relaxed">
+                                        <p className="text-[10px] text-text-muted leading-relaxed">
                                             Controls the base price for WhatsApp message credits and the minimum quantity salons can purchase.
                                         </p>
                                     </div>

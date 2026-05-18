@@ -487,7 +487,7 @@ function GalleryEditor({ data, onChange }) {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 mb-8 border-b border-border pb-6">
                 <div className="space-y-4">
                     <Field label="Heading (Before Accent)" value={data.heading} onChange={set('heading')} />
-                    <Field label="Accent Word (Italic)" value={data.heading_accent} onChange={set('heading_accent')} />
+                    <Field label="Accent Word" value={data.heading_accent} onChange={set('heading_accent')} />
                     <Field label="Heading (After Accent)" value={data.heading_suffix} onChange={set('heading_suffix')} />
                 </div>
                 <Field label="Subtitle" value={data.description} onChange={set('description')} type="textarea" rows={4} />
@@ -535,7 +535,7 @@ function SpecialOffersEditor({ data, onChange }) {
                         onError={e => e.currentTarget.style.opacity = '0.2'} />
                 ))}
                 <div className="ml-4 text-left border-l border-white/10 pl-4">
-                    <p className="text-white font-black text-sm uppercase tracking-tight">{data.heading} <em className="text-[#D4A373] font-serif">{data.heading_italic}</em></p>
+                    <p className="text-white font-black text-sm uppercase tracking-tight">{data.heading} <span className="text-[#D4A373] font-sans ml-1">{data.heading_italic}</span></p>
                     <p className="text-white/60 text-[10px] mt-1 max-w-[250px] line-clamp-2 font-medium">{data.description}</p>
                     <span className="inline-block mt-2 text-[9px] font-black uppercase tracking-[0.2em] bg-[#D4A373] text-white px-2.5 py-1 rounded shadow-sm">{data.btn_label}</span>
                 </div>
@@ -545,7 +545,7 @@ function SpecialOffersEditor({ data, onChange }) {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 mb-8">
                 <div className="space-y-4">
                     <Field label="Heading (Bold)" value={data.heading} onChange={set('heading')} />
-                    <Field label="Heading (Italic/Accent)" value={data.heading_italic} onChange={set('heading_italic')} />
+                    <Field label="Heading (Accent)" value={data.heading_italic} onChange={set('heading_italic')} />
                     <Field label="Button Label" value={data.btn_label} onChange={set('btn_label')} />
                 </div>
                 <Field label="Section Description" value={data.description} onChange={set('description')} type="textarea" rows={6} />

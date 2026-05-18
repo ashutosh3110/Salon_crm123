@@ -308,7 +308,7 @@ function StatusReasonModal({ tenant, type, onClose, onConfirm, saving }) {
             <div className="bg-surface rounded-[2rem] border border-border w-full max-w-md shadow-2xl relative overflow-hidden animate-in zoom-in-95 duration-200">
                 <div className="px-8 py-6 border-b border-border/50 flex items-center justify-between bg-surface-alt/30">
                     <div>
-                        <h3 className="font-black text-text uppercase italic tracking-tight">{title}</h3>
+                        <h3 className="font-black text-text uppercase tracking-tight">{title}</h3>
                         <p className="text-[10px] text-text-muted font-bold uppercase tracking-widest mt-0.5">Salon: {tenant.name}</p>
                     </div>
                     <button onClick={onClose} className="p-2 hover:bg-surface rounded-xl transition-colors">

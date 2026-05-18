@@ -387,7 +387,7 @@ export default function SASubscriptionsPage() {
                                                                     className="w-32 bg-surface text-lg font-bold text-text px-4 py-2 rounded-xl border border-primary/20 focus:outline-none focus:border-primary transition-all"
                                                                     placeholder="Limit"
                                                                 />
-                                                                <span className="text-[10px] font-bold text-text-muted italic">messages total</span>
+                                                                <span className="text-[10px] font-bold text-text-muted">messages total</span>
                                                             </div>
                                                         </div>
                                                     )}

@@ -66,7 +66,6 @@ export default function SuperAdminTopbar({ onMenuClick }) {
                     >
                         <Menu className="w-5 h-5 text-text-secondary" />
                     </button>
-                    <span className="text-sm font-medium text-text-secondary hidden sm:block italic">Wapixo Super Admin</span>
                 </div>
 
                 {/* Right */}
@@ -88,7 +87,7 @@ export default function SuperAdminTopbar({ onMenuClick }) {
              
 
                     <div className="flex items-center gap-2 pl-3 border-l border-border/40 ml-1">
-                        <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-primary to-primary-dark flex items-center justify-center text-xs font-black text-white shadow-lg shadow-primary/20">
+                        <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#FDF6C7] via-[#D4AF37] to-[#AA7C11] flex items-center justify-center text-xs font-black text-[#5C4008] shadow-lg shadow-[#D4AF37]/35 border border-[#F5D77F]/30">
                             SA
                         </div>
                         <div className="hidden sm:block">

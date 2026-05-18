@@ -176,18 +176,18 @@ export default function SABlogPage() {
             {/* Header / Command Center */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 bg-white border border-border p-8 regular-radius shadow-sm">
                 <div className="flex items-center gap-6">
-                    <div className="w-16 h-16 bg-black text-white flex items-center justify-center italic font-black text-2xl shadow-xl">
+                    <div className="w-16 h-16 bg-black text-white flex items-center justify-center font-black text-2xl shadow-xl">
                         W
                     </div>
                     <div>
-                        <h1 className="text-3xl font-black italic tracking-tighter uppercase leading-none">Articles & <span className="text-primary">News</span></h1>
+                        <h1 className="text-3xl font-black tracking-tighter uppercase leading-none">Articles & <span className="text-primary">News</span></h1>
                         <p className="text-[10px] text-text-muted font-bold uppercase tracking-[0.3em] mt-2">Manage your blog posts and news updates</p>
                     </div>
                 </div>
                 <div className="flex items-center gap-3">
                     <div className="px-6 py-3 border border-border bg-surface regular-radius flex flex-col items-center">
                         <span className="text-[8px] font-black text-text-muted uppercase tracking-widest leading-none mb-1">Total Articles</span>
-                        <span className="text-lg font-black italic leading-none">{posts.length}</span>
+                        <span className="text-lg font-black leading-none">{posts.length}</span>
                     </div>
                     <button
                         onClick={() => openEditor(null)}
@@ -285,13 +285,13 @@ export default function SABlogPage() {
                             <div className="flex items-center gap-3 text-[9px] font-black text-primary uppercase tracking-[0.3em] mb-4">
                                 <Calendar size={12} /> {new Date(post.createdAt).toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' })}
                             </div>
-                            <h3 className="text-xl font-black italic tracking-tighter uppercase leading-tight group-hover:text-primary transition-colors line-clamp-2 mb-8">
+                            <h3 className="text-xl font-black tracking-tighter uppercase leading-tight group-hover:text-primary transition-colors line-clamp-2 mb-8">
                                 {post.title}
                             </h3>
 
                             <div className="pt-6 border-t border-border flex items-center justify-between mt-auto">
                                 <div className="flex items-center gap-3">
-                                    <div className="w-8 h-8 bg-surface text-black text-[10px] font-black italic flex items-center justify-center border border-border">
+                                    <div className="w-8 h-8 bg-surface text-black text-[10px] font-black flex items-center justify-center border border-border">
                                         {post.author[0]}
                                     </div>
                                     <div>
@@ -333,7 +333,7 @@ export default function SABlogPage() {
                                     </div>
                                     <div>
                                         <h3 className="text-lg font-black text-text uppercase tracking-tight flex items-center gap-2">
-                                            Article <span className="text-primary font-black italic">Studio</span>
+                                            Article <span className="text-primary font-black">Studio</span>
                                         </h3>
                                         <p className="text-[10px] text-text-muted font-bold uppercase tracking-wider mt-0.5">
                                             {editingPost ? 'Refining Editorial Piece' : 'Drafting New Article Entry'}

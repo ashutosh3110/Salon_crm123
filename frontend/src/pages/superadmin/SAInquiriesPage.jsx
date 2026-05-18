@@ -148,11 +148,11 @@ export default function SAInquiriesPage() {
                     <tbody>
                         <AnimatePresence mode="popLayout">
                             {loading ? (
-                                <tr>
+                                <tr key="loading-row">
                                     <td colSpan="6" className="px-6 py-20 text-center">
                                         <div className="flex flex-col items-center">
                                             <Loader2 className="w-8 h-8 text-primary animate-spin mb-2" />
-                                            <p className="text-sm text-text-muted font-medium italic">Fetching latest inquiries...</p>
+                                            <p className="text-sm text-text-muted font-medium">Fetching latest inquiries...</p>
                                         </div>
                                     </td>
                                 </tr>
@@ -232,14 +232,14 @@ export default function SAInquiriesPage() {
                                     </motion.tr>
                                 ))
                             ) : (
-                                <tr>
+                                <tr key="empty-row">
                                     <td colSpan="6" className="px-6 py-20 text-center">
                                         <div className="flex flex-col items-center">
                                             <div className="w-16 h-16 bg-surface flex items-center justify-center mb-4">
                                                 <MessageSquare className="w-8 h-8 text-text-muted/30" strokeWidth={1} />
                                             </div>
                                             <h3 className="text-lg font-black text-text">Zero Leads found</h3>
-                                            <p className="text-sm text-text-muted max-w-[280px] mt-1 font-medium italic">
+                                            <p className="text-sm text-text-muted max-w-[280px] mt-1 font-medium">
                                                 Try adjusting your filters or search terms.
                                             </p>
                                         </div>

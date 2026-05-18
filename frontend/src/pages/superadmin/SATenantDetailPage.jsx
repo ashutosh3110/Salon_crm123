@@ -161,7 +161,7 @@ export default function SATenantDetailPage() {
         return (
             <div className="text-center py-20 bg-white rounded-3xl border border-border shadow-sm">
                 <AlertTriangle className="w-12 h-12 text-red-500 mx-auto mb-4" />
-                <h2 className="text-xl font-black text-text uppercase italic tracking-tighter">Salon not found</h2>
+                <h2 className="text-xl font-black text-text uppercase tracking-tighter">Salon not found</h2>
                 <Link to="/superadmin/tenants" className="text-primary font-black uppercase tracking-widest text-[10px] mt-6 inline-block hover:underline">Back to Salons</Link>
             </div>
         );
@@ -201,7 +201,7 @@ export default function SATenantDetailPage() {
                     Salons List
                 </Link>
                 <ChevronRight className="w-3 h-3 opacity-30" />
-                <span className="text-text tracking-tighter italic lowercase text-sm font-bold opacity-40">{selectedTenant.slug || selectedTenant._id}</span>
+                <span className="text-text tracking-tighter lowercase text-sm font-bold opacity-40">{selectedTenant.slug || selectedTenant._id}</span>
             </nav>
 
             {/* ── Hero & Actions ── */}
@@ -230,7 +230,7 @@ export default function SATenantDetailPage() {
                     <div className="flex-1 space-y-4">
                         <div className="space-y-1">
                             <div className="flex flex-wrap items-center gap-3">
-                                <h1 className="text-3xl font-black text-text tracking-tighter uppercase italic">{selectedTenant.name}</h1>
+                                <h1 className="text-3xl font-black text-text tracking-tighter uppercase">{selectedTenant.name}</h1>
                                 <div className="flex gap-2">
                                     <span className={`inline-flex items-center gap-1.5 text-[9px] font-black uppercase tracking-widest px-3 py-1 rounded-full border ${STATUS_CFG[selectedTenant.status]?.cls}`}>
                                         <div className="w-1.5 h-1.5 rounded-full bg-current animate-pulse" />
@@ -316,7 +316,7 @@ export default function SATenantDetailPage() {
                                 <div className="md:col-span-2 bg-white rounded-3xl border border-border shadow-sm p-8 space-y-8">
                                     <div className="flex items-center gap-3 mb-2">
                                         <div className="w-1.5 h-6 bg-primary rounded-full" />
-                                        <h3 className="font-black text-text text-lg uppercase italic tracking-tight">Salon Information</h3>
+                                        <h3 className="font-black text-text text-lg uppercase tracking-tight">Salon Information</h3>
                                     </div>
                                     <div className="grid sm:grid-cols-2 gap-x-12 gap-y-8">
                                         {[
@@ -343,7 +343,7 @@ export default function SATenantDetailPage() {
                                     <div className="relative z-10 space-y-8">
                                         <div className="space-y-1">
                                             <p className="text-[9px] font-black text-white/40 uppercase tracking-widest">Postal Address</p>
-                                            <p className="text-sm font-bold leading-relaxed opacity-80 italic">
+                                            <p className="text-sm font-bold leading-relaxed opacity-80">
                                                 {typeof selectedTenant.address === 'object' 
                                                     ? `${selectedTenant.address?.street || ''}, ${selectedTenant.address?.city || ''}, ${selectedTenant.address?.state || ''} - ${selectedTenant.address?.pincode || ''}` 
                                                     : selectedTenant.address || 'Address not updated'}
@@ -368,13 +368,13 @@ export default function SATenantDetailPage() {
                             <div className="bg-white rounded-3xl border border-border shadow-sm p-8 space-y-8">
                                 <div className="flex items-center gap-3 mb-2">
                                     <div className="w-1.5 h-6 bg-indigo-500 rounded-full" />
-                                    <h3 className="font-black text-text text-lg uppercase italic tracking-tight">Subscription Profile</h3>
+                                    <h3 className="font-black text-text text-lg uppercase tracking-tight">Subscription Profile</h3>
                                 </div>
                                 
                                 {(!selectedTenant.subscriptionPlan || selectedTenant.subscriptionPlan.toLowerCase() === 'free' || selectedTenant.subscriptionPlan.toLowerCase() === 'none') ? (
                                     <div className="text-center py-16 bg-surface rounded-2xl border border-dashed border-border">
                                         <AlertTriangle className="w-12 h-12 text-orange-400 mx-auto mb-4 opacity-80" />
-                                        <h4 className="text-lg font-black text-text uppercase italic tracking-tight">No Active Subscription</h4>
+                                        <h4 className="text-lg font-black text-text uppercase tracking-tight">No Active Subscription</h4>
                                         <p className="text-[10px] font-bold text-text-muted mt-2 uppercase tracking-widest">This salon is currently on the free tier or trial period.</p>
                                     </div>
                                 ) : (
@@ -382,7 +382,7 @@ export default function SATenantDetailPage() {
                                         <div className="p-8 rounded-3xl bg-indigo-50 border border-indigo-100 space-y-4">
                                             <p className="text-[10px] font-black text-indigo-400 uppercase tracking-widest">Active Plan</p>
                                             <div className="space-y-1">
-                                                <h4 className="text-3xl font-black text-indigo-700 uppercase italic tracking-tight">{selectedTenant.subscriptionPlan}</h4>
+                                                <h4 className="text-3xl font-black text-indigo-700 uppercase tracking-tight">{selectedTenant.subscriptionPlan}</h4>
                                                 <p className="text-[10px] font-bold text-indigo-500 uppercase tracking-widest">Premium Features Enabled</p>
                                             </div>
                                         </div>
@@ -441,7 +441,7 @@ export default function SATenantDetailPage() {
                                         <div className="space-y-2">
                                             <p className="text-[10px] font-black text-white/30 uppercase tracking-[0.3em]">Available Credits</p>
                                             <div className="flex items-baseline gap-4">
-                                                <h2 className="text-7xl font-black italic tracking-tighter tabular-nums">
+                                                <h2 className="text-7xl font-black tracking-tighter tabular-nums">
                                                     {selectedTenant.whatsappSettings?.whatsappCredits || 0}
                                                 </h2>
                                                 <span className="text-[10px] font-black text-white/40 uppercase tracking-[0.2em] mb-3">Balance Unit</span>
@@ -465,7 +465,7 @@ export default function SATenantDetailPage() {
 
                                 <div className="md:col-span-3 bg-white rounded-[2.5rem] border border-border shadow-sm p-10 space-y-8 flex flex-col justify-center">
                                     <div className="space-y-2">
-                                        <h3 className="text-2xl font-black text-text uppercase italic tracking-tighter">Adjust Credit Pool</h3>
+                                        <h3 className="text-2xl font-black text-text uppercase tracking-tighter">Adjust Credit Pool</h3>
                                         <p className="text-[10px] font-bold text-text-muted uppercase tracking-widest">Manual adjustment of salon-wide message balance</p>
                                     </div>
                                     
@@ -479,7 +479,7 @@ export default function SATenantDetailPage() {
                                                 type="number" 
                                                 id="sa-credits-input"
                                                 placeholder="e.g. +1000 or -500"
-                                                className="w-full h-16 px-6 rounded-2xl border border-border bg-surface text-lg font-black italic outline-none focus:border-primary focus:ring-4 focus:ring-primary/5 transition-all"
+                                                className="w-full h-16 px-6 rounded-2xl border border-border bg-surface text-lg font-black outline-none focus:border-primary focus:ring-4 focus:ring-primary/5 transition-all"
                                             />
                                         </div>
                                         <motion.button 
@@ -524,7 +524,7 @@ export default function SATenantDetailPage() {
                                 <div className="flex items-center justify-between border-b border-border pb-4">
                                     <div className="flex items-center gap-3">
                                         <div className="w-1.5 h-6 bg-emerald-500 rounded-full" />
-                                        <h3 className="font-black text-text text-lg uppercase italic tracking-tight">Fiscal Compliance</h3>
+                                        <h3 className="font-black text-text text-lg uppercase tracking-tight">Fiscal Compliance</h3>
                                     </div>
                                     <div className="flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-50 border border-emerald-100">
                                         <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
@@ -565,7 +565,7 @@ export default function SATenantDetailPage() {
                                     <div className="space-y-3">
                                         <div className="flex items-center justify-between px-1">
                                             <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Service GST Levy</label>
-                                            <span className="text-[10px] font-black text-primary italic">Standard 18%</span>
+                                            <span className="text-[10px] font-black text-primary">Standard 18%</span>
                                         </div>
                                         <div className="relative">
                                             <input
@@ -581,7 +581,7 @@ export default function SATenantDetailPage() {
                                     <div className="space-y-3">
                                         <div className="flex items-center justify-between px-1">
                                             <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Product GST Levy</label>
-                                            <span className="text-[10px] font-black text-indigo-500 italic">Standard 12%</span>
+                                            <span className="text-[10px] font-black text-indigo-500">Standard 12%</span>
                                         </div>
                                         <div className="relative">
                                             <input

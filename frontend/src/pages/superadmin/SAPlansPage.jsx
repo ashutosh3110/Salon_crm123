@@ -46,7 +46,7 @@ function PlanCard({ plan, onEdit, onClone, onToggleActive, onDelete, trialDays }
                 <div className="flex items-start justify-between mb-4">
                     <div className="space-y-1">
                         <div className="flex items-center gap-2">
-                             <h3 className="text-xl font-black text-text tracking-tight uppercase italic">{plan.name}</h3>
+                             <h3 className="text-xl font-black text-text tracking-tight uppercase">{plan.name}</h3>
                              {plan.popular && (
                                 <span className="bg-amber-100 text-amber-700 text-[9px] font-black px-2 py-0.5 rounded-full uppercase tracking-widest">
                                     Best Seller
@@ -63,7 +63,7 @@ function PlanCard({ plan, onEdit, onClone, onToggleActive, onDelete, trialDays }
                 <div className="flex items-baseline gap-1 mb-6">
                     {plan.price === 0 ? (
                         <div className="flex flex-col">
-                            <span className="text-3xl font-black text-emerald-600 tracking-tighter uppercase italic leading-none">Free</span>
+                            <span className="text-3xl font-black text-emerald-600 tracking-tighter uppercase leading-none">Free</span>
                             <span className="text-[10px] font-black text-emerald-600/60 uppercase tracking-widest mt-1">Validity: {trialDays} Days</span>
                         </div>
                     ) : (
@@ -87,7 +87,6 @@ function PlanCard({ plan, onEdit, onClone, onToggleActive, onDelete, trialDays }
                         <span className="text-text-muted">Outlet Limit</span>
                         <span className="text-text">{plan.limits?.outletLimit > 100 ? 'Unlimited' : plan.limits?.outletLimit} active branch</span>
                     </div>
-                    
                 </div>
 
                 <div className="flex items-center gap-2 mt-6 pt-4 border-t border-border">
@@ -150,7 +149,7 @@ function PlanModal({ plan, onClose, onSave, saving }) {
                 {/* Modal Header */}
                 <div className="px-6 py-4 border-b border-border flex items-center justify-between shrink-0 bg-surface">
                     <div>
-                        <h3 className="text-xl font-black text-text tracking-tight uppercase italic">{plan?._id ? 'Edit Plan' : 'Create New Plan'}</h3>
+                        <h3 className="text-xl font-black text-text tracking-tight uppercase">{plan?._id ? 'Edit Plan' : 'Create New Plan'}</h3>
                         <p className="text-[10px] text-text-muted font-bold tracking-widest uppercase">Configure subscription tier details</p>
                     </div>
                     <button onClick={onClose} className="p-2 hover:bg-surface-alt rounded-xl transition-colors text-text-muted">
@@ -403,7 +402,7 @@ export default function SAPlansPage() {
             {/* Header */}
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
-                   <h1 className="text-2xl font-black text-text tracking-tight uppercase italic">Subscription Plans</h1>
+                   <h1 className="text-2xl font-black text-text tracking-tight uppercase">Subscription Plans</h1>
                    <p className="text-sm text-text-secondary mt-0.5 font-medium">Define and manage template membership tiers for the ecosystem.</p>
                 </div>
                 

@@ -362,7 +362,7 @@ export default function SAAnalyticsPage() {
                                     })}
                                     {geoDistribution.length === 0 && (
                                         <tr>
-                                            <td colSpan={3} className="py-8 text-center text-sm text-text-muted italic">No location data available yet.</td>
+                                            <td colSpan={3} className="py-8 text-center text-sm text-text-muted">No location data available yet.</td>
                                         </tr>
                                     )}
                                 </tbody>

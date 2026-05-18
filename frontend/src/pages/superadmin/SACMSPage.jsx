@@ -165,7 +165,7 @@ export default function SACMSPage() {
             {/* Header */}
             <div className="flex items-center justify-between border-b border-border pb-6">
                 <div>
-                    <h1 className="text-2xl font-black italic tracking-tighter">WEBSITE <span className="text-primary">EDITOR</span></h1>
+                    <h1 className="text-2xl font-black tracking-tighter">WEBSITE <span className="text-primary">EDITOR</span></h1>
                     <p className="text-[11px] text-text-muted font-medium uppercase tracking-[0.2em] mt-1">Change your website text and legal pages</p>
                 </div>
                 <div className="flex gap-3">
@@ -323,7 +323,7 @@ export default function SACMSPage() {
                                             <div className="md:col-span-2 space-y-4">
                                                 <div className="text-[10px] font-black text-text-muted uppercase">Success Story</div>
                                                 <textarea
-                                                    className="w-full bg-white border border-border p-4 text-xs italic leading-relaxed outline-none min-h-[120px]"
+                                                    className="w-full bg-white border border-border p-4 text-xs leading-relaxed outline-none min-h-[120px]"
                                                     value={t.content}
                                                     onChange={(e) => {
                                                         const newT = [...data.landing_testimonials];
@@ -343,7 +343,7 @@ export default function SACMSPage() {
                         <div className="space-y-8">
                             <div className="bg-white p-8 border border-border space-y-6">
                                 <div className="flex items-center justify-between">
-                                    <h3 className="font-bold uppercase tracking-widest text-sm italic">Privacy Policy Configuration</h3>
+                                    <h3 className="font-bold uppercase tracking-widest text-sm">Privacy Policy Configuration</h3>
                                     <div className="text-[10px] font-medium text-text-muted">Last Edit: {data.legal_privacy.last_updated}</div>
                                 </div>
                                 {renderInput('legal_privacy', 'title', 'Page Title')}
@@ -352,7 +352,7 @@ export default function SACMSPage() {
 
                             <div className="bg-white p-8 border border-border space-y-6">
                                 <div className="flex items-center justify-between">
-                                    <h3 className="font-bold uppercase tracking-widest text-sm italic">Terms of Service Configuration</h3>
+                                    <h3 className="font-bold uppercase tracking-widest text-sm">Terms of Service Configuration</h3>
                                     <div className="text-[10px] font-medium text-text-muted">Last Edit: {data.legal_terms.last_updated}</div>
                                 </div>
                                 {renderInput('legal_terms', 'title', 'Page Title')}
@@ -361,7 +361,7 @@ export default function SACMSPage() {
 
                             <div className="bg-white p-8 border border-border space-y-6">
                                 <div className="flex items-center justify-between">
-                                    <h3 className="font-bold uppercase tracking-widest text-sm italic">Cookie Policy Configuration</h3>
+                                    <h3 className="font-bold uppercase tracking-widest text-sm">Cookie Policy Configuration</h3>
                                     <div className="text-[10px] font-medium text-text-muted">Last Edit: {data.legal_cookies.last_updated}</div>
                                 </div>
                                 {renderInput('legal_cookies', 'title', 'Page Title')}
@@ -475,17 +475,17 @@ export default function SACMSPage() {
                                         )}
                                         {activeTab === 'legal' && data.legal_privacy && data.legal_terms && (
                                             <div className="p-16 text-white space-y-12 w-full">
-                                                <h1 className="text-5xl font-black italic border-b border-primary pb-4 inline-block">{data.legal_privacy.title}</h1>
+                                                <h1 className="text-5xl font-black border-b border-primary pb-4 inline-block">{data.legal_privacy.title}</h1>
                                                 <div className="prose prose-invert max-w-none opacity-60 text-sm leading-relaxed" dangerouslySetInnerHTML={{ __html: data.legal_privacy.content }} />
                                                 
-                                                <h1 className="text-5xl font-black italic mt-32 border-b border-primary pb-4 inline-block">{data.legal_terms.title}</h1>
+                                                <h1 className="text-5xl font-black mt-32 border-b border-primary pb-4 inline-block">{data.legal_terms.title}</h1>
                                                 <div className="prose prose-invert max-w-none opacity-60 text-sm leading-relaxed" dangerouslySetInnerHTML={{ __html: data.legal_terms.content }} />
                                             </div>
                                         )}
                                         {activeTab === 'contact' && data.contact_page && (
                                             <div className="p-16 text-white bg-black min-h-screen flex flex-col justify-center items-center text-center w-full">
                                                 <span className="text-[10px] text-primary font-black uppercase tracking-[0.4em] mb-4">Enterprise Support</span>
-                                                <h2 className="text-6xl font-black italic mb-6 leading-[1.1]">{data.contact_page.title}</h2>
+                                                <h2 className="text-6xl font-black mb-6 leading-[1.1]">{data.contact_page.title}</h2>
                                                 <div className="w-12 h-0.5 bg-primary/40 mb-8" />
                                                 <p className="text-lg opacity-50 max-w-xl font-light leading-relaxed mb-12">{data.contact_page.subtitle}</p>
                                                 <div className="space-y-6">
@@ -512,7 +512,7 @@ export default function SACMSPage() {
 
                             <div className="mt-4 flex items-center gap-3">
                                 <RefreshCw size={10} className="text-primary animate-spin-slow" />
-                                <p className="text-[9px] text-white/30 font-medium italic tracking-tight">
+                                <p className="text-[9px] text-white/30 font-medium tracking-tight">
                                     Miniaturized real-time simulation active.
                                 </p>
                             </div>
@@ -523,13 +523,13 @@ export default function SACMSPage() {
                             <div className="space-y-1">
                                 <p className="text-[8px] font-black text-text-muted uppercase tracking-[0.2em]">Ecosystem Status</p>
                                 <div className="flex items-center gap-2">
-                                    <span className="text-xs font-bold text-emerald-600 tracking-tighter uppercase italic">Secured</span>
+                                    <span className="text-xs font-bold text-emerald-600 tracking-tighter uppercase">Secured</span>
                                     <Shield size={10} className="text-emerald-500" />
                                 </div>
                             </div>
                             <div className="space-y-1">
                                 <p className="text-[8px] font-black text-text-muted uppercase tracking-[0.2em]">Sync Latency</p>
-                                <p className="text-xs font-bold tracking-tighter italic">0.00ms</p>
+                                <p className="text-xs font-bold tracking-tighter">0.00ms</p>
                             </div>
                         </div>
                     </div>

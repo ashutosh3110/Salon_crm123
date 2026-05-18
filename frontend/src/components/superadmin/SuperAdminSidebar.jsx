@@ -7,7 +7,8 @@ import logoFull from '/new black wapixo logo .png';
 import {
     LayoutDashboard, Building2, Receipt, Settings,
     LogOut, ChevronLeft, ChevronRight, X,
-    BarChart3, HeadphonesIcon, PackageOpen, FileText, MessageSquare, Layout, Smartphone
+    BarChart3, HeadphonesIcon, PackageOpen, FileText, MessageSquare, Layout, Smartphone,
+    MoreVertical, ChevronsLeft, ChevronsRight
 } from 'lucide-react';
 
 const menuItems = [
@@ -109,14 +110,15 @@ export default function SuperAdminSidebar({ collapsed, setCollapsed, mobileOpen,
             {/* Collapse toggle */}
             <button
                 onClick={() => setCollapsed(!collapsed)}
-                className="hidden lg:flex absolute -right-3 top-8 w-6 h-6 rounded-full bg-background border border-border/40 items-center justify-center shadow-md hover:text-primary hover:border-primary transition-all z-50 group"
+                className="hidden lg:flex absolute -right-3.5 top-8 w-7 h-7 rounded-full bg-white dark:bg-slate-800 border border-border/40 items-center justify-center shadow-lg hover:text-primary hover:border-primary transition-all z-50 group cursor-pointer"
+                title={collapsed ? "Expand Sidebar" : "Collapse Sidebar"}
             >
-                {collapsed
-                    ? <ChevronRight className="w-3.5 h-3.5 text-text-muted group-hover:text-primary" />
-                    : <ChevronLeft className="w-3.5 h-3.5 text-text-muted group-hover:text-primary" />
-                }
+                {collapsed ? (
+                    <ChevronsRight className="w-4 h-4 text-slate-500 dark:text-slate-400 group-hover:text-primary shrink-0 transition-transform duration-200" />
+                ) : (
+                    <ChevronsLeft className="w-4 h-4 text-slate-500 dark:text-slate-400 group-hover:text-primary shrink-0 transition-transform duration-200" />
+                )}
             </button>
-
             {/* Logo */}
             <div className="flex items-center justify-between h-20 px-6 border-b border-border/40">
                 <div className="flex-1 flex items-center justify-center overflow-hidden">

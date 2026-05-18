@@ -65,7 +65,7 @@ export default function SuperAdminLoginPage() {
                     <div className="md:w-5/12 bg-[#0F0F0F] relative p-12 flex flex-col items-center justify-between border-r border-white/5">
                         <div className="w-full relative z-10 text-center md:text-left">
                             <span className="text-[10px] font-black uppercase tracking-[0.4em] text-primary/60 mb-2 block tracking-widest">SuperAdmin Access</span>
-                            <h1 className="text-4xl font-black tracking-tighter uppercase italic leading-none mb-6">
+                            <h1 className="text-4xl font-black tracking-tighter uppercase leading-none mb-6">
                                 Platform <br /> <span className="text-white/40">Control.</span>
                             </h1>
                             <p className="text-[10px] font-bold text-white/30 uppercase tracking-widest leading-relaxed max-w-[220px] mx-auto md:mx-0">
@@ -103,7 +103,7 @@ export default function SuperAdminLoginPage() {
                                         <Shield className="w-4 h-4 text-primary" />
                                     </div>
                                     <h2 className="text-2xl font-black uppercase tracking-tight">
-                                        Super <span className="text-primary italic">Secure.</span>
+                                        Super <span className="text-primary">Secure.</span>
                                     </h2>
                                 </div>
                                 <div className="h-1 w-12 bg-primary/20 rounded-full mx-auto md:mx-0" />
@@ -160,7 +160,7 @@ export default function SuperAdminLoginPage() {
                                     <div className="p-6 bg-white/[0.01] border border-white/[0.04] rounded-3xl space-y-4 backdrop-blur-sm">
                                         <div className="flex items-center gap-2">
                                             <Sparkles className="w-3 h-3 text-primary" />
-                                            <span className="text-[10px] font-black uppercase tracking-widest text-primary/60 italic">Quick Setup</span>
+                                            <span className="text-[10px] font-black uppercase tracking-widest text-primary/60">Quick Setup</span>
                                         </div>
                                         <button
                                             type="button"
@@ -172,7 +172,7 @@ export default function SuperAdminLoginPage() {
                                         </button>
                                     </div>
 
-                                    <p className="text-[10px] font-black text-center text-white/10 uppercase tracking-[0.3em] italic">
+                                    <p className="text-[10px] font-black text-center text-white/10 uppercase tracking-[0.3em]">
                                         Restricted Level Access Only
                                     </p>
                                 </div>
