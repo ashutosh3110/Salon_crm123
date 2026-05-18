@@ -13,6 +13,8 @@ export default function InvoicesPage() {
     const [invoices, setInvoices] = useState([]);
     const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState('');
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 10;
 
     const fetchInvoices = async () => {
         try { setLoading(true); const res = await api.get('/pos/invoices'); setInvoices(res.data?.data || res.data?.results || []); }
@@ -21,10 +23,15 @@ export default function InvoicesPage() {
 
     useEffect(() => { fetchInvoices(); }, []);
 
+    useEffect(() => { setCurrentPage(1); }, [search]);
+
     const filtered = invoices.filter((inv) => {
         const term = search.trim().toLowerCase();
         return (inv.invoiceNumber || '').toLowerCase().includes(term) || (inv.client?.name || '').toLowerCase().includes(term);
     });
+
+    const totalPages = Math.ceil(filtered.length / itemsPerPage);
+    const paginatedInvoices = filtered.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
     return (
         <div className="space-y-6">
@@ -56,41 +63,70 @@ export default function InvoicesPage() {
                         <p className="text-[10px] font-black text-text-muted mt-2 uppercase tracking-[0.2em]">Archival scan complete</p>
                     </div>
                 ) : (
-                    <div className="table-responsive">
-                        <table className="w-full text-sm min-w-[1000px]">
-                            <thead><tr className="border-b border-border bg-surface-alt">
-                                <th className="text-left px-8 py-5 text-[11px] font-black text-text uppercase tracking-widest bg-surface-alt/80">Document ID</th>
-                                <th className="text-left px-8 py-5 text-[11px] font-black text-text uppercase tracking-widest bg-surface-alt/80">Registry Entity</th>
-                                <th className="text-left px-8 py-5 text-[11px] font-black text-text uppercase tracking-widest bg-surface-alt/80 hidden md:table-cell">Timestamp</th>
-                                <th className="text-left px-8 py-5 text-[11px] font-black text-text uppercase tracking-widest bg-surface-alt/80">Value pulse</th>
-                                <th className="text-left px-8 py-5 text-[11px] font-black text-text uppercase tracking-widest bg-surface-alt/80">Status</th>
-                                <th className="text-left px-8 py-5 text-[11px] font-black text-text uppercase tracking-widest bg-surface-alt/80 hidden md:table-cell">Link Protocol</th>
-                            </tr></thead>
-                            <tbody>
-                                {filtered.map((inv) => (
-                                    <tr key={inv._id} className="border-b border-border last:border-0 hover:bg-surface-alt transition-all group">
-                                        <td className="px-8 py-5 font-mono text-[10px] font-black text-primary uppercase tracking-widest">{inv.invoiceNumber || inv._id?.slice(-8)}</td>
-                                        <td className="px-8 py-5">
-                                            <span className="text-sm font-black text-text uppercase tracking-tight">{inv.client?.name || 'Walk-in entity'}</span>
-                                        </td>
-                                        <td className="px-8 py-5 text-[10px] font-bold text-text-muted uppercase tracking-widest hidden md:table-cell">{new Date(inv.createdAt).toLocaleDateString('en-IN')}</td>
-                                        <td className="px-8 py-5">
-                                            <span className="flex items-center gap-1 font-black text-text text-sm">
-                                                <IndianRupee className="w-3.5 h-3.5 opacity-40" />
-                                                {(inv.total || inv.grandTotal || 0).toLocaleString('en-IN')}
-                                            </span>
-                                        </td>
-                                        <td className="px-8 py-5">
-                                            <span className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-none text-[9px] font-black border uppercase tracking-widest ${statusColors[inv.paymentStatus] || 'bg-slate-50 text-slate-500 border-slate-100'}`}>
-                                                {inv.paymentStatus || 'PAID'}
-                                            </span>
-                                        </td>
-                                        <td className="px-8 py-5 text-[10px] font-bold text-text-muted uppercase tracking-widest hidden md:table-cell">{inv.paymentMethod || '--'}</td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
+                    <>
+                        <div className="table-responsive">
+                            <table className="w-full text-sm min-w-[1000px]">
+                                <thead><tr className="border-b border-border bg-surface-alt">
+                                    <th className="text-left px-8 py-5 text-[11px] font-black text-text uppercase tracking-widest bg-surface-alt/80">Document ID</th>
+                                    <th className="text-left px-8 py-5 text-[11px] font-black text-text uppercase tracking-widest bg-surface-alt/80">Registry Entity</th>
+                                    <th className="text-left px-8 py-5 text-[11px] font-black text-text uppercase tracking-widest bg-surface-alt/80 hidden md:table-cell">Timestamp</th>
+                                    <th className="text-left px-8 py-5 text-[11px] font-black text-text uppercase tracking-widest bg-surface-alt/80">Value pulse</th>
+                                    <th className="text-left px-8 py-5 text-[11px] font-black text-text uppercase tracking-widest bg-surface-alt/80">Status</th>
+                                    <th className="text-left px-8 py-5 text-[11px] font-black text-text uppercase tracking-widest bg-surface-alt/80 hidden md:table-cell">Link Protocol</th>
+                                </tr></thead>
+                                <tbody>
+                                    {paginatedInvoices.map((inv) => (
+                                        <tr key={inv._id} className="border-b border-border last:border-0 hover:bg-surface-alt transition-all group">
+                                            <td className="px-8 py-5 font-mono text-[10px] font-black text-primary uppercase tracking-widest">{inv.invoiceNumber || inv._id?.slice(-8)}</td>
+                                            <td className="px-8 py-5">
+                                                <span className="text-sm font-black text-text uppercase tracking-tight">{inv.client?.name || 'Walk-in entity'}</span>
+                                            </td>
+                                            <td className="px-8 py-5 text-[10px] font-bold text-text-muted uppercase tracking-widest hidden md:table-cell">{new Date(inv.createdAt).toLocaleDateString('en-IN')}</td>
+                                            <td className="px-8 py-5">
+                                                <span className="flex items-center gap-1 font-black text-text text-sm">
+                                                    <IndianRupee className="w-3.5 h-3.5 opacity-40" />
+                                                    {(inv.total || inv.grandTotal || 0).toLocaleString('en-IN')}
+                                                </span>
+                                            </td>
+                                            <td className="px-8 py-5">
+                                                <span className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-none text-[9px] font-black border uppercase tracking-widest ${statusColors[inv.paymentStatus] || 'bg-slate-50 text-slate-500 border-slate-100'}`}>
+                                                    {inv.paymentStatus || 'PAID'}
+                                                </span>
+                                            </td>
+                                            <td className="px-8 py-5 text-[10px] font-bold text-text-muted uppercase tracking-widest hidden md:table-cell">{inv.paymentMethod || '--'}</td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        {/* Pagination Footer */}
+                        {filtered.length > 0 && (
+                            <div className="bg-surface-alt/50 px-6 py-4 border-t border-border flex items-center justify-between">
+                                <span className="text-[10px] font-black text-text-muted uppercase tracking-widest italic">
+                                    Showing {(currentPage - 1) * itemsPerPage + 1} - {Math.min(currentPage * itemsPerPage, filtered.length)} of {filtered.length} Invoices
+                                </span>
+                                <div className="flex gap-4">
+                                    <button 
+                                        type="button"
+                                        onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                                        disabled={currentPage === 1}
+                                        className="text-[10px] font-black text-text-muted uppercase tracking-widest hover:text-primary transition-colors disabled:opacity-20"
+                                    >
+                                        Previous
+                                    </button>
+                                    <button 
+                                        type="button"
+                                        onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                                        disabled={currentPage === totalPages || totalPages === 0}
+                                        className="text-[10px] font-black text-text-muted uppercase tracking-widest hover:text-primary transition-colors disabled:opacity-20"
+                                    >
+                                        Next
+                                    </button>
+                                </div>
+                            </div>
+                        )}
+                    </>
                 )}
             </div>
         </div>

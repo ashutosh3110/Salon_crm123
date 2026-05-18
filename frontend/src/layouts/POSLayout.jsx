@@ -35,8 +35,12 @@ export default function POSLayout() {
                 .admin-panel h4, 
                 .admin-panel h5, 
                 .admin-panel h6,
-                .admin-panel .font-serif {
+                .admin-panel .font-serif,
+                .admin-panel [class*="font-serif"],
+                .admin-panel .italic,
+                .admin-panel [class*="italic"] {
                     font-family: 'Outfit', 'Inter', 'Open Sans', sans-serif !important;
+                    font-style: normal !important; /* Force standard, clean, non-cursive upright text */
                 }
                 .admin-panel .font-sans {
                     font-family: 'Outfit', 'Inter', 'Open Sans', sans-serif !important;

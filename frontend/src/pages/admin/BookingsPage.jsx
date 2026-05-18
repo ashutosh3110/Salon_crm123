@@ -88,6 +88,14 @@ export default function BookingsPage() {
     const [outletFilter, setOutletFilter] = useState('all');
     const [staffFilter, setStaffFilter] = useState('all');
     const [statusFilter, setStatusFilter] = useState('all');
+
+    // Pagination state & effects
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 8;
+
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [searchTerm, dateFilter, outletFilter, staffFilter, statusFilter]);
     
     // Prevent background scroll when any modal is open
     useEffect(() => {
@@ -163,9 +171,12 @@ export default function BookingsPage() {
             }
         }
 
-        // Sort by creation date descending (newest on top)
-        return result.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
     }, [bookings, searchTerm, statusFilter, staffFilter, dateFilter]);
+
+    const totalPages = Math.ceil(filteredBookings.length / itemsPerPage);
+    const paginatedBookings = useMemo(() => {
+        return filteredBookings.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+    }, [filteredBookings, currentPage, itemsPerPage]);
 
     // Analytics Calculations
     const statusData = useMemo(() => {
@@ -463,7 +474,7 @@ export default function BookingsPage() {
                             <tbody className="divide-y divide-border/40 text-left font-black">
                                 {filteredBookings.length === 0 ? (
                                     <tr>
-                                        <td colSpan="7" className="px-8 py-32 text-center">
+                                        <td colSpan="8" className="px-8 py-32 text-center">
                                             <div className="flex flex-col items-center justify-center opacity-20">
                                                 <RotateCcw className="w-16 h-16 mb-6 animate-spin-slow" />
                                                 <p className="text-[10px] font-black uppercase tracking-[0.3em]">No bookings found matching your search.</p>
@@ -471,7 +482,7 @@ export default function BookingsPage() {
                                         </td>
                                     </tr>
                                 ) : (
-                                    filteredBookings.map((b, index) => (
+                                    paginatedBookings.map((b, index) => (
                                         <tr
                                             key={b._id}
                                             className="hover:bg-surface-alt/50 transition-all cursor-pointer group text-left"
@@ -537,6 +548,33 @@ export default function BookingsPage() {
                             </tbody>
                         </table>
                     </div>
+
+                    {/* Pagination Footer */}
+                    {filteredBookings.length > 0 && (
+                        <div className="bg-surface-alt/50 px-6 py-4 border-t border-border flex items-center justify-between">
+                            <span className="text-[10px] font-black text-text-muted uppercase tracking-widest italic">
+                                Showing {(currentPage - 1) * itemsPerPage + 1} - {Math.min(currentPage * itemsPerPage, filteredBookings.length)} of {filteredBookings.length} Bookings
+                            </span>
+                            <div className="flex gap-4">
+                                <button 
+                                    type="button"
+                                    onClick={(e) => { e.stopPropagation(); setCurrentPage(prev => Math.max(1, prev - 1)); }}
+                                    disabled={currentPage === 1}
+                                    className="text-[10px] font-black text-text-muted uppercase tracking-widest hover:text-primary transition-colors disabled:opacity-20"
+                                >
+                                    Previous
+                                </button>
+                                <button 
+                                    type="button"
+                                    onClick={(e) => { e.stopPropagation(); setCurrentPage(prev => Math.min(totalPages, prev + 1)); }}
+                                    disabled={currentPage === totalPages || totalPages === 0}
+                                    className="text-[10px] font-black text-text-muted uppercase tracking-widest hover:text-primary transition-colors disabled:opacity-20"
+                                >
+                                    Next
+                                </button>
+                            </div>
+                        </div>
+                    )}
                 </div>
             )}
 

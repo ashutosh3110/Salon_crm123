@@ -40,17 +40,16 @@ export default function BaseRoleLayout({ SidebarComponent, title, accentColor = 
             className="min-h-screen bg-background flex text-text transition-colors duration-300 admin-panel overflow-x-hidden"
             style={{ '--accent-color': activeAccentColor }}
         >
-            {/* Global sharp-edge override for entire panel, with opt-out for pill toggles and consistent primary buttons */}
+            {/* Global clean typography override for entire panel to match premium Poppins/Inter design system */}
             <style>{`
+                .admin-panel {
+                    --font-serif: 'Poppins', 'Inter', sans-serif !important;
+                    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+                }
                 .admin-panel *,
                 .admin-panel *::before,
                 .admin-panel *::after {
-                    border-radius: 0 !important;
-                    font-family: 'Open Sans', sans-serif;
-                }
-                .admin-panel .pill-toggle,
-                .admin-panel .pill-toggle * {
-                    border-radius: 9999px !important;
+                    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
                 }
                 .admin-panel button.bg-primary,
                 .admin-panel a.bg-primary {
@@ -62,11 +61,16 @@ export default function BaseRoleLayout({ SidebarComponent, title, accentColor = 
                 .admin-panel h4, 
                 .admin-panel h5, 
                 .admin-panel h6,
-                .admin-panel .font-serif {
-                    font-family: 'Libre Baskerville', 'Noto Serif', serif !important;
+                .admin-panel .font-serif,
+                .admin-panel [class*="font-serif"],
+                .admin-panel .italic,
+                .admin-panel [class*="italic"] {
+                    font-family: 'Poppins', 'Inter', sans-serif !important;
+                    font-style: normal !important; /* Force standard, clean, non-cursive upright text */
+                    font-weight: 700 !important;
                 }
                 .admin-panel .font-sans {
-                    font-family: 'Open Sans', sans-serif !important;
+                    font-family: 'Inter', sans-serif !important;
                 }
             `}</style>
             {/* Sidebar */}

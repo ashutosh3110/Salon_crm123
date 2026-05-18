@@ -12,9 +12,11 @@ export default function SuperAdminLayout() {
 
             {/* ── Global premium typography & spacious design overrides for Super Admin panel ── */}
             <style>{`
+                @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&family=Outfit:wght@400;500;600;700;800;900&display=swap');
+
                 /* --- Global Theme & Font Assignment --- */
                 .sa-panel {
-                    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+                    font-family: 'Poppins', 'Outfit', sans-serif !important;
                     background-color: #faf9f9 !important;
                     color: #1e293b !important;
                 }
@@ -22,8 +24,9 @@ export default function SuperAdminLayout() {
                 .sa-panel *,
                 .sa-panel *::before,
                 .sa-panel *::after {
-                    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+                    font-family: 'Poppins', 'Outfit', sans-serif !important;
                     letter-spacing: -0.01em;
+                    font-style: normal !important; /* Strictly forbid cursive & italics */
                 }
 
                 /* --- Headers & Titles --- */
@@ -33,81 +36,95 @@ export default function SuperAdminLayout() {
                 .sa-panel h4, 
                 .sa-panel h5, 
                 .sa-panel h6,
-                .sa-panel .font-serif {
-                    font-family: 'Poppins', 'Inter', sans-serif !important;
-                    font-weight: 700 !important;
-                    letter-spacing: -0.02em !important;
+                .sa-panel .font-serif,
+                .sa-panel [class*="font-serif"],
+                .sa-panel .italic,
+                .sa-panel [class*="italic"] {
+                    font-family: 'Poppins', 'Outfit', sans-serif !important;
+                    font-weight: 800 !important;
+                    font-style: normal !important;
+                    letter-spacing: -0.025em !important;
                     color: #0f172a !important;
                 }
 
-                /* --- Global Font Size Scale Amplifiers --- */
-                .sa-panel .text-\[10px\] {
-                    font-size: 12.5px !important;
-                    letter-spacing: 0.02em !important;
+                /* --- Global Font Size Scale Amplifiers (Big, eye-catching & readable) --- */
+                .sa-panel .text-\[10px\],
+                .sa-panel .text-\[10px\] * {
+                    font-size: 13px !important;
+                    letter-spacing: 0.04em !important;
+                    font-weight: 700 !important;
+                    text-transform: uppercase !important;
+                }
+                .sa-panel .text-\[11px\],
+                .sa-panel .text-\[11px\] * {
+                    font-size: 14px !important;
+                    letter-spacing: 0.03em !important;
                     font-weight: 600 !important;
                 }
-                .sa-panel .text-\[11px\] {
-                    font-size: 13.5px !important;
-                    letter-spacing: 0.01em !important;
-                    font-weight: 500 !important;
+                .sa-panel .text-xs,
+                .sa-panel .text-xs * {
+                    font-size: 0.95rem !important; /* Big & highly attractive */
+                    line-height: 1.45rem !important;
                 }
-                .sa-panel .text-xs {
-                    font-size: 0.875rem !important; /* ~14px instead of 12px */
-                    line-height: 1.35rem !important;
+                .sa-panel .text-sm,
+                .sa-panel .text-sm * {
+                    font-size: 1.05rem !important;
+                    line-height: 1.65rem !important;
                 }
-                .sa-panel .text-sm {
-                    font-size: 0.975rem !important; /* ~15.6px instead of 14px */
-                    line-height: 1.55rem !important;
+                .sa-panel .text-base,
+                .sa-panel .text-base * {
+                    font-size: 1.225rem !important;
+                    line-height: 1.85rem !important;
                 }
-                .sa-panel .text-base {
-                    font-size: 1.125rem !important; /* 18px instead of 16px */
-                    line-height: 1.75rem !important;
-                }
-                .sa-panel .text-lg {
-                    font-size: 1.25rem !important; /* 20px instead of 18px */
-                    line-height: 1.875rem !important;
-                }
-                .sa-panel .text-xl {
-                    font-size: 1.5rem !important; /* 24px instead of 20px */
+                .sa-panel .text-lg,
+                .sa-panel .text-lg * {
+                    font-size: 1.4rem !important;
                     line-height: 2rem !important;
                 }
-                .sa-panel .text-2xl {
-                    font-size: 1.875rem !important; /* 30px instead of 24px */
-                    line-height: 2.25rem !important;
-                    font-weight: 800 !important;
-                    letter-spacing: -0.025em !important;
+                .sa-panel .text-xl,
+                .sa-panel .text-xl * {
+                    font-size: 1.7rem !important;
+                    line-height: 2.35rem !important;
                 }
-                .sa-panel .text-3xl {
-                    font-size: 2.25rem !important;
-                    line-height: 2.5rem !important;
-                    font-weight: 900 !important;
+                .sa-panel .text-2xl,
+                .sa-panel .text-2xl * {
+                    font-size: 2.15rem !important;
+                    line-height: 2.65rem !important;
+                    font-weight: 850 !important;
                     letter-spacing: -0.03em !important;
                 }
+                .sa-panel .text-3xl,
+                .sa-panel .text-3xl * {
+                    font-size: 2.65rem !important;
+                    line-height: 3.25rem !important;
+                    font-weight: 900 !important;
+                    letter-spacing: -0.04em !important;
+                }
 
-                /* --- Spacious & Beautiful Tables --- */
+                /* --- Spacious, Clean & Beautifully Aligned Tables --- */
                 .sa-panel table {
                     border-collapse: separate !important;
                     border-spacing: 0 !important;
                     width: 100% !important;
                 }
                 .sa-panel table th {
-                    font-size: 0.825rem !important; /* ~13.2px */
-                    font-weight: 700 !important;
+                    font-size: 0.95rem !important;
+                    font-weight: 800 !important;
                     text-transform: uppercase !important;
-                    letter-spacing: 0.06em !important;
+                    letter-spacing: 0.08em !important;
                     color: #475569 !important; /* slate-600 */
                     background-color: #f8fafc !important; /* slate-50 */
-                    padding: 1.1rem 1.5rem !important;
+                    padding: 1.25rem 1.6rem !important;
                     border-bottom: 2px solid #e2e8f0 !important;
                     text-align: left;
                 }
                 .sa-panel table td {
-                    font-size: 0.95rem !important; /* ~15.2px */
-                    padding: 1.25rem 1.5rem !important; /* Elegant spacious cell padding */
+                    font-size: 1.05rem !important;
+                    padding: 1.35rem 1.6rem !important; /* Generous spacious padding for perfect readability */
                     color: #334155 !important; /* slate-700 */
                     border-bottom: 1px solid #f1f5f9 !important;
                     vertical-align: middle !important;
-                    line-height: 1.5 !important;
+                    line-height: 1.55 !important;
                 }
                 .sa-panel table tr {
                     transition: all 0.2s ease-in-out !important;
