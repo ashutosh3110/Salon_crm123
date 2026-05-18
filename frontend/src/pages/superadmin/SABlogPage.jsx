@@ -24,6 +24,24 @@ export default function SABlogPage() {
     const [previewUrl, setPreviewUrl] = useState('');
     const fileInputRef = useRef(null);
 
+    const [contentLength, setContentLength] = useState(0);
+    const [wordCount, setWordCount] = useState(0);
+
+    const openEditor = (post = null) => {
+        setEditingPost(post);
+        setContentLength(post?.content?.length || 0);
+        setWordCount(post?.content?.split(/\s+/).filter(Boolean).length || 0);
+        setSelectedImage(null);
+        setPreviewUrl('');
+        setIsEditorOpen(true);
+    };
+
+    const handleContentChange = (e) => {
+        const val = e.target.value;
+        setContentLength(val.length);
+        setWordCount(val.trim().split(/\s+/).filter(Boolean).length);
+    };
+
     useEffect(() => {
         fetchPosts();
     }, []);
@@ -172,10 +190,7 @@ export default function SABlogPage() {
                         <span className="text-lg font-black italic leading-none">{posts.length}</span>
                     </div>
                     <button
-                        onClick={() => {
-                            setEditingPost(null);
-                            setIsEditorOpen(true);
-                        }}
+                        onClick={() => openEditor(null)}
                         className="px-8 py-4 bg-black text-white text-[10px] font-black uppercase tracking-[0.3em] hover:bg-primary transition-all flex items-center gap-3 regular-radius shadow-2xl shadow-black/10 active:scale-[0.98]"
                     >
                         <Plus size={16} /> Create New Article
@@ -248,7 +263,7 @@ export default function SABlogPage() {
                             <div className="absolute inset-x-0 bottom-0 p-6 bg-gradient-to-t from-black to-transparent translate-y-full group-hover:translate-y-0 transition-all duration-500">
                                 <div className="flex gap-3">
                                     <button
-                                        onClick={() => { setEditingPost(post); setIsEditorOpen(true); }}
+                                        onClick={() => openEditor(post)}
                                         className="flex-1 bg-white text-black py-3 text-[10px] font-black uppercase tracking-[0.2em] hover:bg-primary transition-all flex items-center justify-center gap-2 regular-radius shadow-xl"
                                     >
                                         <Edit2 size={12} /> Edit
@@ -293,50 +308,75 @@ export default function SABlogPage() {
             <AnimatePresence>
                 {isEditorOpen && (
                     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-                        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setIsEditorOpen(false)} className="absolute inset-0 bg-black/95 backdrop-blur-md" />
-                        <motion.div initial={{ opacity: 0, scale: 0.95, y: 50 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 50 }} className="relative bg-white w-full max-w-3xl h-[92vh] overflow-hidden flex flex-col shadow-[0_0_100px_rgba(0,0,0,0.5)] regular-radius">
+                        <motion.div 
+                            initial={{ opacity: 0 }} 
+                            animate={{ opacity: 1 }} 
+                            exit={{ opacity: 0 }} 
+                            onClick={() => setIsEditorOpen(false)} 
+                            className="absolute inset-0 bg-slate-950/75 backdrop-blur-md" 
+                        />
+                        <motion.div 
+                            initial={{ opacity: 0, scale: 0.96, y: 30 }} 
+                            animate={{ opacity: 1, scale: 1, y: 0 }} 
+                            exit={{ opacity: 0, scale: 0.96, y: 30 }} 
+                            transition={{ type: "spring", duration: 0.5 }}
+                            className="relative bg-[#fafafa] w-full max-w-3xl h-[92vh] overflow-hidden flex flex-col shadow-2xl rounded-3xl border border-border"
+                        >
 
-                            {/* Modal Hub Header */}
-                            <div className="flex items-center justify-between px-10 py-8 border-b border-border bg-[#fafafa]">
-                                <div>
-                                    <h3 className="text-xl font-black italic uppercase tracking-tight">
-                                        Article <span className="text-primary">Editor</span>
-                                    </h3>
-                                    <p className="text-[9px] text-text-muted font-bold uppercase tracking-[0.2em] mt-0.5">Editing: {editingPost ? editingPost.title : 'New Article Entry'}</p>
-                                </div>
-                                <div className="flex gap-4">
-                                    <div className="flex items-center gap-2 bg-black text-white px-5 py-2.5 shadow-xl">
-                                        <Globe size={14} className="text-primary" />
-                                        <span className="text-[8px] font-black uppercase tracking-widest">Cloud Ready</span>
+                            {/* Modal Header */}
+                            <div className="flex items-center justify-between px-8 py-6 border-b border-border bg-white shadow-sm">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center shadow-inner">
+                                        <Sparkles className="w-5 h-5" />
                                     </div>
-                                    <button onClick={() => setIsEditorOpen(false)} className="w-12 h-12 flex items-center justify-center hover:bg-black/5 rounded-full transition-all border border-border">
-                                        <X size={24} />
+                                    <div>
+                                        <h3 className="text-lg font-black text-text uppercase tracking-tight flex items-center gap-2">
+                                            Article <span className="text-primary font-black italic">Studio</span>
+                                        </h3>
+                                        <p className="text-[10px] text-text-muted font-bold uppercase tracking-wider mt-0.5">
+                                            {editingPost ? 'Refining Editorial Piece' : 'Drafting New Article Entry'}
+                                        </p>
+                                    </div>
+                                </div>
+                                <div className="flex items-center gap-4">
+                                    <div className="flex items-center gap-2 bg-emerald-50 text-emerald-700 px-3.5 py-1.5 rounded-xl border border-emerald-100 shadow-sm animate-pulse">
+                                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                                        <span className="text-[9px] font-black uppercase tracking-wider">Cloud Synchronized</span>
+                                    </div>
+                                    <button 
+                                        onClick={() => setIsEditorOpen(false)} 
+                                        className="w-10 h-10 flex items-center justify-center hover:bg-red-50 hover:text-red-500 rounded-full transition-all border border-border hover:border-red-200"
+                                    >
+                                        <X className="w-5 h-5" />
                                     </button>
                                 </div>
                             </div>
 
-                            <form id="article-form" onSubmit={(e) => handleSavePost(e, 'published')} className="flex-1 overflow-y-auto bg-white p-10">
-                                <div className="max-w-2xl mx-auto space-y-8">
+                            <form id="article-form" onSubmit={(e) => handleSavePost(e, 'published')} className="flex-1 overflow-y-auto p-8 space-y-6">
+                                <div className="max-w-2xl mx-auto space-y-6">
                                     
-                                    {/* Title Section (Top) */}
-                                    <div className="space-y-1">
-                                        <label className="text-[9px] font-black text-text-muted uppercase tracking-[0.2em] block text-center mb-2">Article Headline</label>
+                                    {/* Headline Card */}
+                                    <div className="bg-white border border-border p-6 rounded-2xl shadow-sm space-y-3">
+                                        <label className="text-[10px] font-black text-text-muted uppercase tracking-widest flex items-center gap-1.5">
+                                            <Megaphone className="w-3.5 h-3.5 text-primary" /> Article Headline
+                                        </label>
                                         <input
-                                            required name="title"
+                                            required 
+                                            name="title"
                                             defaultValue={editingPost?.title}
-                                            className="w-full text-4xl font-black italic uppercase border-none outline-none placeholder:text-text-muted/30 focus:ring-0 px-0 bg-transparent text-center"
-                                            placeholder="ENTER ARTICLE TITLE..."
+                                            className="w-full bg-slate-50/50 border border-border rounded-xl px-4 py-3.5 text-lg font-bold text-text placeholder:text-text-muted/40 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                                            placeholder="Write a compelling headline..."
                                         />
                                     </div>
 
-                                    {/* Image Section (Middle) */}
-                                    <div className="space-y-3">
-                                        <label className="text-[9px] font-black text-text-muted uppercase tracking-[0.2em] flex items-center gap-2 justify-center">
-                                            <ImageIcon size={14} className="text-primary" /> Feature Image
+                                    {/* Cover Media Card */}
+                                    <div className="bg-white border border-border p-6 rounded-2xl shadow-sm space-y-3">
+                                        <label className="text-[10px] font-black text-text-muted uppercase tracking-widest flex items-center gap-1.5">
+                                            <ImageIcon className="w-3.5 h-3.5 text-primary" /> Cover Media Asset
                                         </label>
                                         <div 
                                             onClick={() => fileInputRef.current?.click()}
-                                            className="relative group aspect-video bg-[#fafafa] border border-border flex flex-col items-center justify-center overflow-hidden cursor-pointer hover:border-primary transition-all shadow-sm regular-radius"
+                                            className="relative group aspect-video bg-slate-50 border-2 border-dashed border-border hover:border-primary/55 rounded-2xl flex flex-col items-center justify-center overflow-hidden cursor-pointer transition-all hover:bg-slate-100/50"
                                         >
                                             <input 
                                                 type="file" 
@@ -346,56 +386,79 @@ export default function SABlogPage() {
                                                 accept="image/*" 
                                             />
                                             {(previewUrl || editingPost?.image) ? (
-                                                <img 
-                                                    src={previewUrl || getImageUrl(editingPost?.image)} 
-                                                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" 
-                                                />
+                                                <div className="w-full h-full relative">
+                                                    <img 
+                                                        src={previewUrl || getImageUrl(editingPost?.image)} 
+                                                        className="w-full h-full object-cover group-hover:scale-[1.02] transition-transform duration-700" 
+                                                        alt="Preview"
+                                                    />
+                                                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center gap-2">
+                                                        <span className="px-4 py-2 bg-white text-black text-[10px] font-black uppercase tracking-wider rounded-xl shadow-lg transform translate-y-2 group-hover:translate-y-0 transition-transform duration-300">
+                                                            Replace Asset
+                                                        </span>
+                                                    </div>
+                                                </div>
                                             ) : (
-                                                <div className="text-center p-6">
-                                                    <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center mx-auto mb-3 text-text-muted group-hover:bg-primary group-hover:text-white transition-all shadow-sm">
+                                                <div className="text-center p-6 space-y-2.5">
+                                                    <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center mx-auto text-text-muted group-hover:text-primary group-hover:scale-110 transition-all shadow-sm border border-border">
                                                         <ImageIcon size={20} />
                                                     </div>
-                                                    <span className="text-[8px] font-black uppercase tracking-widest text-text-muted">Upload Media Asset</span>
+                                                    <div>
+                                                        <span className="text-[10px] font-black uppercase tracking-wider text-text">Choose Cover Image</span>
+                                                        <p className="text-[9px] text-text-muted font-semibold mt-1">PNG, JPG, WEBP up to 10MB</p>
+                                                    </div>
                                                 </div>
                                             )}
                                         </div>
                                     </div>
 
-                                    {/* Content Section (Bottom) */}
-                                    <div className="space-y-3">
-                                        <label className="text-[9px] font-black text-text-muted uppercase tracking-[0.2em] flex items-center gap-2">
-                                            <FileText size={12} className="text-primary" /> Article Intel
-                                        </label>
+                                    {/* Intel Slate (Content Editor) */}
+                                    <div className="bg-white border border-border p-6 rounded-2xl shadow-sm space-y-3">
+                                        <div className="flex justify-between items-center">
+                                            <label className="text-[10px] font-black text-text-muted uppercase tracking-widest flex items-center gap-1.5">
+                                                <FileText className="w-3.5 h-3.5 text-primary" /> Story Intel
+                                            </label>
+                                            <div className="flex items-center gap-2 text-[9px] text-text-muted font-bold uppercase tracking-wider">
+                                                <span>Words: <strong className="text-text">{wordCount}</strong></span>
+                                                <span className="text-border">|</span>
+                                                <span>Chars: <strong className="text-text">{contentLength}</strong></span>
+                                            </div>
+                                        </div>
                                         <textarea
                                             name="content"
                                             defaultValue={editingPost?.content}
+                                            onChange={handleContentChange}
                                             required
-                                            className="w-full bg-[#fafafa] border border-border p-6 text-sm leading-relaxed focus:border-primary outline-none transition-all min-h-[140px] shadow-inner font-medium regular-radius"
-                                            placeholder="Write your content here..."
+                                            className="w-full bg-slate-50/50 border border-border rounded-xl p-4 text-sm leading-relaxed text-text placeholder:text-text-muted/40 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all min-h-[180px] font-medium"
+                                            placeholder="Write your article narrative here..."
                                         />
                                     </div>
 
                                     {/* Action Hub */}
-                                    <div className="pt-8 grid grid-cols-2 gap-4">
+                                    <div className="pt-4 grid grid-cols-2 gap-4">
                                         <button 
                                             type="button"
                                             onClick={(e) => handleSavePost(e, 'draft')}
                                             disabled={uploading}
-                                            className="py-5 bg-surface border border-border text-text text-[10px] font-black uppercase tracking-[0.3em] hover:bg-black hover:text-white transition-all regular-radius disabled:opacity-50"
+                                            className="py-4 bg-white border border-border text-text-secondary text-[10px] font-black uppercase tracking-[0.2em] hover:bg-slate-50 active:scale-[0.98] transition-all rounded-xl shadow-sm disabled:opacity-50"
                                         >
                                             Save as Draft
                                         </button>
                                         <button 
                                             type="submit" 
                                             disabled={uploading}
-                                            className="py-5 bg-black text-white text-[10px] font-black uppercase tracking-[0.3em] hover:bg-primary transition-all shadow-xl shadow-primary/20 flex items-center justify-center gap-3 group disabled:opacity-50 regular-radius"
+                                            className="py-4 bg-black text-white text-[10px] font-black uppercase tracking-[0.2em] hover:bg-primary active:scale-[0.98] transition-all shadow-xl shadow-primary/10 flex items-center justify-center gap-2.5 group disabled:opacity-50 rounded-xl"
                                         >
-                                            {uploading ? <Loader2 size={16} className="animate-spin" /> : <Globe size={16} />}
-                                            {uploading ? 'PUBLISHING...' : 'Publish Now'}
+                                            {uploading ? <Loader2 size={14} className="animate-spin" /> : <Globe size={14} />}
+                                            {uploading ? 'PUBLISHING...' : 'Publish Article'}
                                         </button>
                                     </div>
                                     
-                                    <button type="button" onClick={() => setIsEditorOpen(false)} className="w-full py-4 text-[9px] font-black uppercase tracking-widest text-text-muted hover:text-red-500 transition-all text-center">
+                                    <button 
+                                        type="button" 
+                                        onClick={() => setIsEditorOpen(false)} 
+                                        className="w-full py-2 text-[9px] font-black uppercase tracking-widest text-text-muted hover:text-red-500 hover:bg-red-50/50 rounded-xl transition-all text-center"
+                                    >
                                         Discard Entry
                                     </button>
                                 </div>

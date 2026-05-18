@@ -65,23 +65,91 @@ export default function SAAnalyticsPage() {
     const [loading, setLoading] = useState(true);
     const [data, setData] = useState(null);
     const [toast, setToast] = useState(null);
+    const [startDate, setStartDate] = useState('');
+    const [endDate, setEndDate] = useState('');
+    const [activePreset, setActivePreset] = useState('all'); // all, today, week, month, 30days, 6months, custom
+    const [showDatePicker, setShowDatePicker] = useState(false);
+
+    const fetchAnalytics = async () => {
+        try {
+            setLoading(true);
+            const params = {};
+            if (startDate) params.startDate = startDate;
+            if (endDate) params.endDate = endDate;
+            
+            const res = await api.get('/dashboard/superadmin/analytics', { params });
+            if (res.data.success) {
+                setData(res.data.data);
+            }
+        } catch (err) {
+            console.error('Failed to fetch analytics:', err);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     useEffect(() => {
-        const fetchAnalytics = async () => {
-            try {
-                setLoading(true);
-                const res = await api.get('/dashboard/superadmin/analytics');
-                if (res.data.success) {
-                    setData(res.data.data);
-                }
-            } catch (err) {
-                console.error('Failed to fetch analytics:', err);
-            } finally {
-                setLoading(false);
-            }
-        };
         fetchAnalytics();
-    }, []);
+    }, [startDate, endDate]);
+
+    const applyPreset = (preset) => {
+        setActivePreset(preset);
+        const now = new Date();
+        let start = '';
+        let end = now.toISOString().split('T')[0];
+
+        if (preset === 'today') {
+            start = now.toISOString().split('T')[0];
+        } else if (preset === 'week') {
+            const startOfWeek = new Date(now);
+            startOfWeek.setDate(now.getDate() - now.getDay()); // Sunday
+            start = startOfWeek.toISOString().split('T')[0];
+        } else if (preset === 'month') {
+            const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+            start = startOfMonth.toISOString().split('T')[0];
+        } else if (preset === '30days') {
+            const thirtyDaysAgo = new Date(now);
+            thirtyDaysAgo.setDate(now.getDate() - 30);
+            start = thirtyDaysAgo.toISOString().split('T')[0];
+        } else if (preset === '6months') {
+            const sixMonthsAgo = new Date(now);
+            sixMonthsAgo.setMonth(now.getMonth() - 6);
+            start = sixMonthsAgo.toISOString().split('T')[0];
+        } else if (preset === 'all') {
+            start = '';
+            end = '';
+        }
+
+        if (preset !== 'custom') {
+            setStartDate(start);
+            setEndDate(end);
+            setShowDatePicker(false);
+        } else {
+            setShowDatePicker(true);
+        }
+    };
+
+    const formatXAxis = (tickItem) => {
+        if (!tickItem) return '';
+        if (tickItem.length === 10) { // YYYY-MM-DD
+            try {
+                const date = new Date(tickItem);
+                return date.toLocaleDateString('en-IN', { day: '2-digit', month: 'short' });
+            } catch (e) {
+                return tickItem;
+            }
+        }
+        if (tickItem.length === 7) { // YYYY-MM
+            try {
+                const [year, month] = tickItem.split('-');
+                const date = new Date(year, parseInt(month) - 1, 1);
+                return date.toLocaleDateString('en-IN', { month: 'short', year: '2-digit' });
+            } catch (e) {
+                return tickItem;
+            }
+        }
+        return tickItem;
+    };
 
     const showToast = (msg) => {
         setToast(msg);
@@ -126,6 +194,61 @@ export default function SAAnalyticsPage() {
                 </div>
             </div>
 
+            {/* ── Date Filter Presets and Custom Picker ── */}
+            <div className="bg-white rounded-2xl border border-border p-4 shadow-sm flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+                <div className="flex flex-wrap items-center gap-2">
+                    <span className="text-xs font-bold text-text-muted uppercase tracking-wider flex items-center gap-1.5 mr-1">
+                        <Calendar className="w-4 h-4 text-primary" /> Filter Period:
+                    </span>
+                    {[
+                        { key: 'all', label: 'All Time' },
+                        { key: 'today', label: 'Today' },
+                        { key: 'week', label: 'This Week' },
+                        { key: 'month', label: 'This Month' },
+                        { key: '30days', label: 'Last 30 Days' },
+                        { key: '6months', label: 'Last 6 Months' },
+                        { key: 'custom', label: 'Custom Range' },
+                    ].map(p => (
+                        <button
+                            key={p.key}
+                            onClick={() => applyPreset(p.key)}
+                            className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all border ${
+                                activePreset === p.key
+                                    ? 'bg-primary text-white border-primary shadow-md shadow-primary/20 scale-95'
+                                    : 'bg-white text-text-secondary border-border hover:border-primary/45 hover:text-primary hover:bg-primary/5'
+                            }`}
+                        >
+                            {p.label}
+                        </button>
+                    ))}
+                </div>
+
+                {/* Custom Pickers */}
+                {(activePreset === 'custom' || showDatePicker) && (
+                    <div className="flex items-center gap-3 bg-surface-alt/10 p-2 rounded-xl border border-border animate-in fade-in slide-in-from-right-3 duration-250 self-start lg:self-auto">
+                        <div className="flex items-center gap-2">
+                            <label className="text-[10px] font-black uppercase text-text-muted tracking-wider">From</label>
+                            <input
+                                type="date"
+                                value={startDate}
+                                onChange={e => setStartDate(e.target.value)}
+                                className="px-2.5 py-1.5 rounded-lg border border-border text-xs text-text bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                            />
+                        </div>
+                        <span className="text-xs text-text-muted font-bold">to</span>
+                        <div className="flex items-center gap-2">
+                            <label className="text-[10px] font-black uppercase text-text-muted tracking-wider">To</label>
+                            <input
+                                type="date"
+                                value={endDate}
+                                onChange={e => setEndDate(e.target.value)}
+                                className="px-2.5 py-1.5 rounded-lg border border-border text-xs text-text bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                            />
+                        </div>
+                    </div>
+                )}
+            </div>
+
             {/* ── KPI cards ── */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                 <MetricCard label="Total Salons" value={kpis.totalSalons} sub={`${kpis.activeSalons} Active accounts`} icon={Building2} gradient="from-primary to-[#8B1A2D]" shadow="shadow-primary/20" />
@@ -136,7 +259,7 @@ export default function SAAnalyticsPage() {
 
             {/* ── Growth Charts ── */}
             <div className="grid lg:grid-cols-2 gap-6">
-                <Section title="Revenue Growth" subtitle="MRR Trend (Last 6 Months)" icon={TrendingUp}>
+                <Section title="Revenue Growth" subtitle="MRR Trend" icon={TrendingUp}>
                     <div className="w-full min-w-0 overflow-hidden">
                         <ResponsiveContainer width="100%" height={260} minWidth={0}>
                             <AreaChart data={growth.mrrTrend} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
@@ -147,7 +270,7 @@ export default function SAAnalyticsPage() {
                                     </linearGradient>
                                 </defs>
                                 <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
-                                <XAxis dataKey="month" tick={{ fontSize: 11, fill: '#94a3b8' }} axisLine={false} tickLine={false} />
+                                <XAxis dataKey="month" tickFormatter={formatXAxis} tick={{ fontSize: 11, fill: '#94a3b8' }} axisLine={false} tickLine={false} />
                                 <YAxis tick={{ fontSize: 11, fill: '#94a3b8' }} axisLine={false} tickLine={false} tickFormatter={v => `₹${(v / 1000).toFixed(0)}k`} />
                                 <Tooltip content={<CustomTooltip />} />
                                 <Area type="monotone" dataKey="revenue" name="Revenue" stroke="#B85C5C" strokeWidth={3} fillOpacity={1} fill="url(#colorRev)" />
@@ -156,11 +279,11 @@ export default function SAAnalyticsPage() {
                     </div>
                 </Section>
 
-                <Section title="Salon Acquisition" subtitle="New Monthly Signups" icon={Users}>
+                <Section title="Salon Acquisition" subtitle="New Signups" icon={Users}>
                     <ResponsiveContainer width="100%" height={260}>
                         <BarChart data={growth.salonTrend} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                             <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
-                            <XAxis dataKey="month" tick={{ fontSize: 11, fill: '#94a3b8' }} axisLine={false} tickLine={false} />
+                            <XAxis dataKey="month" tickFormatter={formatXAxis} tick={{ fontSize: 11, fill: '#94a3b8' }} axisLine={false} tickLine={false} />
                             <YAxis tick={{ fontSize: 11, fill: '#94a3b8' }} axisLine={false} tickLine={false} />
                             <Tooltip content={<CustomTooltip />} />
                             <Bar dataKey="count" name="New Salons" fill="#10b981" radius={[6, 6, 0, 0]} barSize={30} />

@@ -162,10 +162,12 @@ function InvoiceModal({ onClose, onSend }) {
 /* ══════════════════════════════════════════════════════════════════════ */
 /* ─── Date filter helper ─────────────────────────────────────────────── */
 const DATE_PERIODS = [
-    { value: 'all', label: 'All' },
+    { value: 'all', label: 'All Time' },
     { value: 'today', label: 'Today' },
     { value: 'week', label: 'This Week' },
     { value: 'month', label: 'This Month' },
+    { value: '30days', label: 'Last 30 Days' },
+    { value: '6months', label: 'Last 6 Months' },
     { value: 'custom', label: 'Custom' },
 ];
 
@@ -183,6 +185,18 @@ function isInPeriod(dateStr, period, customFrom, customTo) {
     }
     if (period === 'month') {
         return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+    }
+    if (period === '30days') {
+        const start = new Date();
+        start.setDate(now.getDate() - 30);
+        start.setHours(0, 0, 0, 0);
+        return d >= start && d <= now;
+    }
+    if (period === '6months') {
+        const start = new Date();
+        start.setMonth(now.getMonth() - 6);
+        start.setHours(0, 0, 0, 0);
+        return d >= start && d <= now;
     }
     if (period === 'custom') {
         const from = customFrom ? new Date(customFrom) : null;
@@ -221,6 +235,43 @@ export default function SABillingPage() {
     const showToast = (msg, type = 'success') => {
         setToast({ msg, type });
         setTimeout(() => setToast(null), 3000);
+    };
+
+    const applyPreset = (preset) => {
+        setDatePeriod(preset);
+        const now = new Date();
+        let start = '';
+        let end = now.toISOString().split('T')[0];
+
+        if (preset === 'today') {
+            start = now.toISOString().split('T')[0];
+        } else if (preset === 'week') {
+            const startOfWeek = new Date(now);
+            startOfWeek.setDate(now.getDate() - now.getDay()); // Sunday
+            start = startOfWeek.toISOString().split('T')[0];
+        } else if (preset === 'month') {
+            const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+            start = startOfMonth.toISOString().split('T')[0];
+        } else if (preset === '30days') {
+            const thirtyDaysAgo = new Date(now);
+            thirtyDaysAgo.setDate(now.getDate() - 30);
+            start = thirtyDaysAgo.toISOString().split('T')[0];
+        } else if (preset === '6months') {
+            const sixMonthsAgo = new Date(now);
+            sixMonthsAgo.setMonth(now.getMonth() - 6);
+            start = sixMonthsAgo.toISOString().split('T')[0];
+        } else if (preset === 'all') {
+            start = '';
+            end = '';
+        }
+
+        if (preset !== 'custom') {
+            setCustomFrom(start);
+            setCustomTo(end);
+            setShowDateFilter(false);
+        } else {
+            setShowDateFilter(true);
+        }
     };
 
     const fetchData = useCallback(async () => {
@@ -346,67 +397,6 @@ export default function SABillingPage() {
 
     /* ── Date filter toggle button (reusable) ── */
     const isDateFiltered = datePeriod !== 'all';
-    const activePeriodLabel = DATE_PERIODS.find(p => p.value === datePeriod)?.label || 'All';
-
-    const FilterToggleBtn = (
-        <button
-            onClick={() => setShowDateFilter(v => !v)}
-            className={`relative flex items-center gap-2 px-3.5 py-2.5 rounded-xl border text-sm font-semibold transition-all shadow-sm ${showDateFilter || isDateFiltered
-                ? 'bg-primary text-white border-primary shadow-primary/20'
-                : 'bg-white text-text-secondary border-border hover:border-primary/30 hover:text-primary'
-                }`}
-        >
-            <Filter className="w-4 h-4" />
-            <span className="hidden sm:inline">{isDateFiltered ? activePeriodLabel : 'Filter'}</span>
-            {isDateFiltered && !showDateFilter && (
-                <span className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-amber-400 border-2 border-white" />
-            )}
-        </button>
-    );
-
-    const DateFilterPanel = showDateFilter && (
-        <div className="bg-white rounded-2xl border border-primary/20 shadow-lg px-4 py-3.5 flex flex-wrap items-center gap-2 animate-in slide-in-from-top-2 duration-200">
-            <Calendar className="w-4 h-4 text-primary shrink-0" />
-            <span className="text-[11px] font-bold text-text-muted uppercase tracking-wider mr-1">Period:</span>
-            {DATE_PERIODS.map(p => (
-                <button
-                    key={p.value}
-                    onClick={() => { setDatePeriod(p.value); if (p.value !== 'custom') { setCustomFrom(''); setCustomTo(''); } }}
-                    className={`px-3 py-1.5 rounded-lg text-xs font-bold border transition-all ${datePeriod === p.value
-                        ? 'bg-primary text-white border-primary shadow-md shadow-primary/20'
-                        : 'bg-surface text-text-secondary border-border hover:border-primary/40 hover:text-primary'
-                        }`}
-                >
-                    {p.label}
-                </button>
-            ))}
-            {datePeriod === 'custom' && (
-                <div className="flex items-center gap-2 ml-1">
-                    <input
-                        type="date"
-                        value={customFrom}
-                        onChange={e => setCustomFrom(e.target.value)}
-                        className="px-2.5 py-1.5 rounded-lg border border-border text-xs text-text bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
-                    />
-                    <span className="text-xs text-text-muted font-semibold">to</span>
-                    <input
-                        type="date"
-                        value={customTo}
-                        onChange={e => setCustomTo(e.target.value)}
-                        className="px-2.5 py-1.5 rounded-lg border border-border text-xs text-text bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
-                    />
-                </div>
-            )}
-            {isDateFiltered && (
-                <button
-                    onClick={() => { setDatePeriod('all'); setCustomFrom(''); setCustomTo(''); setShowDateFilter(false); }}
-                    className="ml-auto flex items-center gap-1 text-xs font-bold text-red-500 hover:text-red-600 px-2 py-1 rounded-lg hover:bg-red-50 transition-all"
-                >
-                    <X className="w-3 h-3" /> Clear
-                </button>
-            )}
-        </div>
-    );
 
     return (
         <div className="space-y-5 pb-8">
@@ -472,10 +462,88 @@ export default function SABillingPage() {
                         );
                     })}
                 </div>
+
+            {/* ── Date Filter Presets and Custom Picker ── */}
+            <div className="bg-white rounded-2xl border border-border p-4 shadow-sm flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+                <div className="flex flex-wrap items-center gap-2">
+                    <span className="text-xs font-bold text-text-muted uppercase tracking-wider flex items-center gap-1.5 mr-1">
+                        <Calendar className="w-4 h-4 text-primary" /> Filter Period:
+                    </span>
+                    {[
+                        { key: 'all', label: 'All Time' },
+                        { key: 'today', label: 'Today' },
+                        { key: 'week', label: 'This Week' },
+                        { key: 'month', label: 'This Month' },
+                        { key: '30days', label: 'Last 30 Days' },
+                        { key: '6months', label: 'Last 6 Months' },
+                        { key: 'custom', label: 'Custom Range' },
+                    ].map(p => (
+                        <button
+                            key={p.key}
+                            onClick={() => applyPreset(p.key)}
+                            className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all border ${
+                                datePeriod === p.key
+                                    ? 'bg-primary text-white border-primary shadow-md shadow-primary/20 scale-95'
+                                    : 'bg-white text-text-secondary border-border hover:border-primary/45 hover:text-primary hover:bg-primary/5'
+                            }`}
+                        >
+                            {p.label}
+                        </button>
+                    ))}
+                </div>
+
+                {/* Custom Pickers */}
+                {(datePeriod === 'custom' || showDateFilter) && (
+                    <div className="flex items-center gap-3 bg-slate-50 p-2 rounded-xl border border-border animate-in fade-in slide-in-from-right-3 duration-250 self-start lg:self-auto">
+                        <div className="flex items-center gap-2">
+                            <label className="text-[10px] font-black uppercase text-text-muted tracking-wider">From</label>
+                            <input
+                                type="date"
+                                value={customFrom}
+                                onChange={e => setCustomFrom(e.target.value)}
+                                className="px-2.5 py-1.5 rounded-lg border border-border text-xs text-text bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                            />
+                        </div>
+                        <span className="text-xs text-text-muted font-bold">to</span>
+                        <div className="flex items-center gap-2">
+                            <label className="text-[10px] font-black uppercase text-text-muted tracking-wider">To</label>
+                            <input
+                                type="date"
+                                value={customTo}
+                                onChange={e => setCustomTo(e.target.value)}
+                                className="px-2.5 py-1.5 rounded-lg border border-border text-xs text-text bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                            />
+                        </div>
+                    </div>
+                )}
+            </div>
+
+            {/* ── Tabs Navigation ── */}
+            <div className="flex border-b border-border gap-2">
+                {TABS.map(t => {
+                    const isActive = tab === t.id;
+                    const Icon = t.icon;
+                    return (
+                        <button
+                            key={t.id}
+                            onClick={() => { setTab(t.id); setSF(''); }}
+                            className={`flex items-center gap-2 px-5 py-3 border-b-2 text-sm font-bold transition-all ${
+                                isActive
+                                    ? 'border-primary text-primary font-black animate-in fade-in duration-200'
+                                    : 'border-transparent text-text-muted hover:text-text hover:border-border'
+                            }`}
+                        >
+                            <Icon className="w-4 h-4" />
+                            {t.label}
+                        </button>
+                    );
+                })}
+            </div>
+
             {/* ════ TAB: PAYMENTS ════ */}
             {tab === 'payments' && (
                 <div className="space-y-3">
-                    {/* Search + status + filter toggle */}
+                    {/* Search + status */}
                     <div className="flex flex-col sm:flex-row gap-3">
                         <div className="relative flex-1">
                             <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
@@ -496,10 +564,7 @@ export default function SABillingPage() {
                                 { value: 'refunded', label: 'Refunded', icon: RotateCcw },
                             ]}
                         />
-                        {FilterToggleBtn}
                     </div>
-                    {/* Date filter panel */}
-                    {DateFilterPanel}
 
                     {/* Payments table */}
                     <div className="bg-white rounded-2xl border border-border shadow-sm overflow-hidden">
@@ -602,7 +667,7 @@ export default function SABillingPage() {
             {/* ════ TAB: INVOICES ════ */}
             {tab === 'invoices' && (
                 <div className="space-y-3">
-                    {/* Search + status + filter toggle */}
+                    {/* Search + status */}
                     <div className="flex flex-col sm:flex-row gap-3">
                         <div className="relative flex-1">
                             <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
@@ -623,10 +688,7 @@ export default function SABillingPage() {
                                 { value: 'refunded', label: 'Refunded', icon: RotateCcw },
                             ]}
                         />
-                        {FilterToggleBtn}
                     </div>
-                    {/* Date filter panel */}
-                    {DateFilterPanel}
 
                     <div className="bg-white rounded-2xl border border-border shadow-sm overflow-hidden">
                         <div className="overflow-x-auto">

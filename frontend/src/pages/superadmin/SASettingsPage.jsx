@@ -81,6 +81,8 @@ export default function SASettingsPage() {
         contactEmail: '',
         contactPhone: '',
         address: '',
+        logoUrl: '',
+        faviconUrl: '',
         socialLinks: { facebook: '', instagram: '', twitter: '', linkedin: '' },
         currency: 'INR',
         currencySymbol: '₹',
@@ -455,6 +457,36 @@ export default function SASettingsPage() {
                                 <Field label="Site Name" value={platform.siteName} onChange={e => setPlat('siteName', e.target.value)} placeholder="Salon CRM" />
                                 <Field label="Support Email" icon={Mail} value={platform.contactEmail} onChange={e => setPlat('contactEmail', e.target.value)} />
                             </div>
+
+                            <div className="grid sm:grid-cols-2 gap-4">
+                                <div>
+                                    <Field 
+                                        label="Logo URL" 
+                                        value={platform.logoUrl} 
+                                        onChange={e => setPlat('logoUrl', e.target.value)} 
+                                        placeholder="e.g. https://example.com/logo.png" 
+                                    />
+                                    {platform.logoUrl && (
+                                        <div className="mt-2 p-2 rounded-xl bg-slate-50 border border-slate-100 w-fit">
+                                            <img src={platform.logoUrl} alt="Logo Preview" className="h-8 object-contain" onError={(e) => { e.target.style.display = 'none'; }} />
+                                        </div>
+                                    )}
+                                </div>
+                                <div>
+                                    <Field 
+                                        label="Favicon URL" 
+                                        value={platform.faviconUrl} 
+                                        onChange={e => setPlat('faviconUrl', e.target.value)} 
+                                        placeholder="e.g. https://example.com/favicon.ico" 
+                                    />
+                                    {platform.faviconUrl && (
+                                        <div className="mt-2 p-2 rounded-xl bg-slate-50 border border-slate-100 w-fit">
+                                            <img src={platform.faviconUrl} alt="Favicon Preview" className="w-6 h-6 object-contain" onError={(e) => { e.target.style.display = 'none'; }} />
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+
                             <Field label="Office Address" icon={MapPin} value={platform.address} onChange={e => setPlat('address', e.target.value)} />
                             
                             <div className="pt-4 border-t border-border">

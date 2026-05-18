@@ -242,12 +242,49 @@ exports.getSuperAdminAnalytics = async (req, res) => {
         const Payment = require('../Models/Payment');
         const Salon = require('../Models/Salon');
         
+        const { startDate, endDate } = req.query;
+        let dateQuery = {};
+        const hasDateFilter = !!(startDate || endDate);
+
+        if (startDate) dateQuery.$gte = new Date(startDate);
+        if (endDate) {
+            const end = new Date(endDate);
+            end.setHours(23, 59, 59, 999);
+            dateQuery.$lte = end;
+        }
+
+        // Total / Active Salons Query
+        let totalSalonsQuery = {};
+        let activeSalonsQuery = { status: 'active' };
+        if (hasDateFilter) {
+            totalSalonsQuery.createdAt = dateQuery;
+            activeSalonsQuery.createdAt = dateQuery;
+        }
+
+        // Payment stats query
+        let paymentStatsMatch = { status: 'captured' };
+        if (hasDateFilter) {
+            paymentStatsMatch.createdAt = dateQuery;
+        }
+
+        // Monthly Recurring Revenue helper (last 30 days of the range or current date)
+        let mrrDateThreshold;
+        if (endDate) {
+            const end = new Date(endDate);
+            end.setMonth(end.getMonth() - 1);
+            mrrDateThreshold = end;
+        } else {
+            const oneMonthAgo = new Date();
+            oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
+            mrrDateThreshold = oneMonthAgo;
+        }
+
         // 1. Basic Stats
         const [totalSalons, activeSalons, paymentStats] = await Promise.all([
-            Salon.countDocuments(),
-            Salon.countDocuments({ status: 'active' }),
+            Salon.countDocuments(totalSalonsQuery),
+            Salon.countDocuments(activeSalonsQuery),
             Payment.aggregate([
-                { $match: { status: 'captured' } },
+                { $match: paymentStatsMatch },
                 {
                     $group: {
                         _id: null,
@@ -255,7 +292,7 @@ exports.getSuperAdminAnalytics = async (req, res) => {
                         mrr: {
                             $sum: {
                                 $cond: [
-                                    { $gte: ["$createdAt", new Date(new Date().setMonth(new Date().getMonth() - 1))] },
+                                    { $gte: ["$createdAt", mrrDateThreshold] },
                                     "$amount",
                                     0
                                 ]
@@ -268,16 +305,38 @@ exports.getSuperAdminAnalytics = async (req, res) => {
 
         const rev = paymentStats[0] || { totalRevenue: 0, mrr: 0 };
 
-        // 2. Growth Trends (Last 6 Months)
-        const sixMonthsAgo = new Date();
-        sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
+        // 2. Growth Trends Range Matcher
+        let growthPaymentMatch = { status: 'captured' };
+        let growthSalonMatch = {};
+
+        if (hasDateFilter) {
+            growthPaymentMatch.createdAt = dateQuery;
+            growthSalonMatch.createdAt = dateQuery;
+        } else {
+            const sixMonthsAgo = new Date();
+            sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
+            growthPaymentMatch.createdAt = { $gte: sixMonthsAgo };
+            growthSalonMatch.createdAt = { $gte: sixMonthsAgo };
+        }
+
+        // Dynamic Grouping Format: Month format (%Y-%m) or Day format (%Y-%m-%d) for shorter ranges
+        let isShortRange = false;
+        if (startDate && endDate) {
+            const diffTime = Math.abs(new Date(endDate) - new Date(startDate));
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            if (diffDays <= 31) {
+                isShortRange = true;
+            }
+        }
+
+        const dateFormat = isShortRange ? "%Y-%m-%d" : "%Y-%m";
 
         const [mrrTrend, salonGrowth] = await Promise.all([
             Payment.aggregate([
-                { $match: { status: 'captured', createdAt: { $gte: sixMonthsAgo } } },
+                { $match: growthPaymentMatch },
                 {
                     $group: {
-                        _id: { $dateToString: { format: "%Y-%m", date: "$createdAt" } },
+                        _id: { $dateToString: { format: dateFormat, date: "$createdAt" } },
                         revenue: { $sum: "$amount" }
                     }
                 },
@@ -285,10 +344,10 @@ exports.getSuperAdminAnalytics = async (req, res) => {
                 { $project: { month: "$_id", revenue: 1, _id: 0 } }
             ]),
             Salon.aggregate([
-                { $match: { createdAt: { $gte: sixMonthsAgo } } },
+                { $match: growthSalonMatch },
                 {
                     $group: {
-                        _id: { $dateToString: { format: "%Y-%m", date: "$createdAt" } },
+                        _id: { $dateToString: { format: dateFormat, date: "$createdAt" } },
                         count: { $sum: 1 }
                     }
                 },
@@ -298,13 +357,23 @@ exports.getSuperAdminAnalytics = async (req, res) => {
         ]);
 
         // 3. Plan Distribution
+        let planDistMatch = {};
+        if (hasDateFilter) {
+            planDistMatch.createdAt = dateQuery;
+        }
         const planDist = await Salon.aggregate([
+            { $match: planDistMatch },
             { $group: { _id: "$subscriptionPlan", value: { $sum: 1 } } },
             { $project: { name: "$_id", value: 1, _id: 0 } }
         ]);
 
         // 4. Geo Distribution
+        let geoDistMatch = {};
+        if (hasDateFilter) {
+            geoDistMatch.createdAt = dateQuery;
+        }
         const geoDist = await Salon.aggregate([
+            { $match: geoDistMatch },
             { $group: { _id: "$address.city", salons: { $sum: 1 } } },
             { $sort: { salons: -1 } },
             { $limit: 10 },
