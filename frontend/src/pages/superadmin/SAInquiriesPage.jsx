@@ -95,21 +95,25 @@ export default function SAInquiriesPage() {
 
             {/* Controls */}
             <div className="bg-white border border-border p-4 flex flex-col md:flex-row gap-4">
-                <div className="flex-1 relative">
-                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
-                    <input
-                        type="text"
-                        placeholder="Search by name, salon or email..."
-                        value={searchQuery}
-                        onKeyDown={handleSearch}
-                        className="w-full pl-10 pr-4 py-2.5 bg-surface text-sm font-medium border-none focus:ring-1 focus:ring-primary/20"
-                    />
-                    <button 
-                        onClick={fetchInquiries}
-                        className="absolute right-2 top-1/2 -translate-y-1/2 bg-primary text-white text-[10px] font-bold px-2 py-1"
-                    >
-                        GO
-                    </button>
+                <div className="flex-1 flex items-center gap-3">
+                    <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-slate-50 border border-border text-text-secondary shrink-0 shadow-sm">
+                        <Search className="w-4.5 h-4.5" />
+                    </div>
+                    <div className="relative flex-1">
+                        <input
+                            type="text"
+                            placeholder="Search by name, salon or email..."
+                            value={searchQuery}
+                            onKeyDown={handleSearch}
+                            className="w-full pl-3.5 pr-12 py-2.5 bg-surface text-sm font-medium border-none focus:ring-1 focus:ring-primary/20 rounded-xl"
+                        />
+                        <button 
+                            onClick={fetchInquiries}
+                            className="absolute right-2 top-1/2 -translate-y-1/2 bg-primary text-white text-[10px] font-bold px-2.5 py-1.5 rounded-lg"
+                        >
+                            GO
+                        </button>
+                    </div>
                 </div>
                 <div className="flex items-center gap-2">
                     <div className="flex items-center bg-surface border border-border px-4 py-2 gap-3 min-w-[160px]">

@@ -181,7 +181,7 @@ export default function SettingsPage() {
         formData.append('image', file);
 
         try {
-            const res = await api.post('/upload', formData, {
+            const res = await api.post('/uploads', formData, {
                 headers: { 'Content-Type': 'multipart/form-data' }
             });
 

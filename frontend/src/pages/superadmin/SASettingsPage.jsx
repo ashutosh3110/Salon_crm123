@@ -3,9 +3,12 @@ import {
     User, Mail, Phone, Lock, Eye, EyeOff, Save,
     CheckCircle, Shield, Edit3, KeyRound, Globe,
     BadgeCheck, AlertCircle, Loader2, DollarSign,
-    Info, MapPin, Share2, Gift, Star, MessageSquare
+    Info, MapPin, Share2, Gift, Star, MessageSquare,
+    UploadCloud
 } from 'lucide-react';
-import api from '../../services/api';
+import api, { API_BASE_URL } from '../../services/api';
+import { useBusiness } from '../../contexts/BusinessContext';
+import { getImageUrl } from '../../utils/imageUtils';
 
 /* ─── Section card ─────────────────────────────────────────────────── */
 function SectionCard({ title, subtitle, icon: Icon, iconColor = 'bg-primary/10 text-primary', children }) {
@@ -32,23 +35,27 @@ function Field({ label, icon: Icon, type = 'text', value, onChange, placeholder,
             <label className="block text-[11px] font-bold text-text-muted uppercase tracking-wider mb-1.5">
                 {label}
             </label>
-            <div className="relative">
+            <div className="flex items-center gap-3">
                 {Icon && (
-                    <Icon className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
-                )}
-                <input
-                    type={type}
-                    value={value || ''}
-                    onChange={onChange}
-                    placeholder={placeholder}
-                    readOnly={readOnly}
-                    className={`w-full ${Icon ? 'pl-10' : 'pl-3.5'} ${suffix ? 'pr-10' : 'pr-3.5'} py-2.5 rounded-xl bg-white border border-border text-text text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm ${readOnly ? 'bg-surface cursor-not-allowed text-text-muted' : ''}`}
-                />
-                {suffix && (
-                    <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                        {suffix}
+                    <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-slate-50 border border-border text-text-secondary shrink-0 shadow-sm">
+                        <Icon className="w-4.5 h-4.5" />
                     </div>
                 )}
+                <div className="relative flex-1">
+                    <input
+                        type={type}
+                        value={value || ''}
+                        onChange={onChange}
+                        placeholder={placeholder}
+                        readOnly={readOnly}
+                        className={`w-full pl-3.5 ${suffix ? 'pr-10' : 'pr-3.5'} py-2.5 rounded-xl bg-white border border-border text-text text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm ${readOnly ? 'bg-surface cursor-not-allowed text-text-muted' : ''}`}
+                    />
+                    {suffix && (
+                        <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                            {suffix}
+                        </div>
+                    )}
+                </div>
             </div>
         </div>
     );
@@ -56,12 +63,80 @@ function Field({ label, icon: Icon, type = 'text', value, onChange, placeholder,
 
 /* ══════════════════════════════════════════════════════════════════════ */
 export default function SASettingsPage() {
+    const { fetchPlatformSettings } = useBusiness();
     const [toast, setToast] = useState(null);
     const [loading, setLoading] = useState(true);
     const [savingProfile, setSavingProfile] = useState(false);
     const [savingPassword, setSavingPassword] = useState(false);
     const [savingPlatform, setSavingPlatform] = useState(false);
     const [savingLoyalty, setSavingLoyalty] = useState(false);
+
+    const [uploadingLogo, setUploadingLogo] = useState(false);
+    const [uploadingFavicon, setUploadingFavicon] = useState(false);
+
+    const handleLogoUpload = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const formData = new FormData();
+        formData.append('image', file);
+
+        setUploadingLogo(true);
+        try {
+            const { data } = await api.post('/uploads', formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data'
+                }
+            });
+            if (data.success) {
+                setPlatform(p => {
+                    const newPlatform = { ...p, logoUrl: data.url };
+                    api.patch('/settings', newPlatform).then(() => {
+                        fetchPlatformSettings?.();
+                    }).catch(err => console.error('Logo auto-save failed:', err));
+                    return newPlatform;
+                });
+                showToast('Platform logo uploaded successfully!');
+            }
+        } catch (err) {
+            console.error('Logo upload failed:', err);
+            showToast('Failed to upload logo.', 'error');
+        } finally {
+            setUploadingLogo(false);
+        }
+    };
+
+    const handleFaviconUpload = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const formData = new FormData();
+        formData.append('image', file);
+
+        setUploadingFavicon(true);
+        try {
+            const { data } = await api.post('/uploads', formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data'
+                }
+            });
+            if (data.success) {
+                setPlatform(p => {
+                    const newPlatform = { ...p, faviconUrl: data.url };
+                    api.patch('/settings', newPlatform).then(() => {
+                        fetchPlatformSettings?.();
+                    }).catch(err => console.error('Favicon auto-save failed:', err));
+                    return newPlatform;
+                });
+                showToast('Platform favicon uploaded successfully!');
+            }
+        } catch (err) {
+            console.error('Favicon upload failed:', err);
+            showToast('Failed to upload favicon.', 'error');
+        } finally {
+            setUploadingFavicon(false);
+        }
+    };
 
     /* Loyalty Settings */
     const [loyaltyData, setLoyaltyData] = useState({
@@ -200,6 +275,7 @@ export default function SASettingsPage() {
         try {
             await api.patch('/settings', platform);
             showToast('Platform settings saved!');
+            fetchPlatformSettings?.();
         } catch (err) {
             console.error('Update failed:', err);
             showToast(err.response?.data?.message || 'Failed to update settings.', 'error');
@@ -458,32 +534,75 @@ export default function SASettingsPage() {
                                 <Field label="Support Email" icon={Mail} value={platform.contactEmail} onChange={e => setPlat('contactEmail', e.target.value)} />
                             </div>
 
-                            <div className="grid sm:grid-cols-2 gap-4">
-                                <div>
-                                    <Field 
-                                        label="Logo URL" 
-                                        value={platform.logoUrl} 
-                                        onChange={e => setPlat('logoUrl', e.target.value)} 
-                                        placeholder="e.g. https://example.com/logo.png" 
-                                    />
-                                    {platform.logoUrl && (
-                                        <div className="mt-2 p-2 rounded-xl bg-slate-50 border border-slate-100 w-fit">
-                                            <img src={platform.logoUrl} alt="Logo Preview" className="h-8 object-contain" onError={(e) => { e.target.style.display = 'none'; }} />
+                            <div className="grid sm:grid-cols-2 gap-6">
+                                {/* Platform Logo Upload */}
+                                <div className="space-y-2">
+                                    <label className="block text-[11px] font-bold text-text-muted uppercase tracking-wider mb-1">
+                                        Platform Logo
+                                    </label>
+                                    <div className="flex items-center gap-4">
+                                        <div className="relative group flex items-center justify-center w-20 h-20 rounded-2xl border border-dashed border-border bg-slate-50 hover:bg-slate-100/50 hover:border-primary/50 transition-all shrink-0 cursor-pointer overflow-hidden shadow-inner">
+                                            {platform.logoUrl ? (
+                                                <img 
+                                                    src={getImageUrl(platform.logoUrl)} 
+                                                    alt="Platform Logo" 
+                                                    className="w-16 h-16 object-contain" 
+                                                    onError={(e) => { e.target.style.display = 'none'; }} 
+                                                />
+                                            ) : (
+                                                <span className="text-[10px] font-bold text-text-muted/60 uppercase">No Logo</span>
+                                            )}
                                         </div>
-                                    )}
+                                        <div className="flex-1 space-y-2">
+                                            <label className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-white border border-border text-text text-xs font-bold rounded-xl hover:border-primary/30 hover:text-primary transition-all shadow-sm cursor-pointer hover:bg-primary/5">
+                                                <UploadCloud className="w-4 h-4 text-primary" />
+                                                <span>{uploadingLogo ? 'Uploading...' : 'Upload Logo'}</span>
+                                                <input 
+                                                    type="file" 
+                                                    accept="image/*" 
+                                                    onChange={handleLogoUpload} 
+                                                    className="hidden" 
+                                                    disabled={uploadingLogo}
+                                                />
+                                            </label>
+                                            <p className="text-[9px] text-text-muted font-bold uppercase tracking-wider">PNG or SVG format recommended.</p>
+                                        </div>
+                                    </div>
                                 </div>
-                                <div>
-                                    <Field 
-                                        label="Favicon URL" 
-                                        value={platform.faviconUrl} 
-                                        onChange={e => setPlat('faviconUrl', e.target.value)} 
-                                        placeholder="e.g. https://example.com/favicon.ico" 
-                                    />
-                                    {platform.faviconUrl && (
-                                        <div className="mt-2 p-2 rounded-xl bg-slate-50 border border-slate-100 w-fit">
-                                            <img src={platform.faviconUrl} alt="Favicon Preview" className="w-6 h-6 object-contain" onError={(e) => { e.target.style.display = 'none'; }} />
+
+                                {/* Platform Favicon Upload */}
+                                <div className="space-y-2">
+                                    <label className="block text-[11px] font-bold text-text-muted uppercase tracking-wider mb-1">
+                                        Platform Favicon
+                                    </label>
+                                    <div className="flex items-center gap-4">
+                                        <div className="relative group flex items-center justify-center w-20 h-20 rounded-2xl border border-dashed border-border bg-slate-50 hover:bg-slate-100/50 hover:border-primary/50 transition-all shrink-0 cursor-pointer overflow-hidden shadow-inner">
+                                            {platform.faviconUrl ? (
+                                                <img 
+                                                    src={getImageUrl(platform.faviconUrl)} 
+                                                    alt="Favicon" 
+                                                    className="w-10 h-10 object-contain" 
+                                                    onError={(e) => { e.target.style.display = 'none'; }} 
+                                                />
+                                            ) : (
+                                                <Globe className="w-6 h-6 text-text-muted/60" />
+                                            )}
                                         </div>
-                                    )}
+                                        <div className="flex-1 space-y-2">
+                                            <label className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-white border border-border text-text text-xs font-bold rounded-xl hover:border-primary/30 hover:text-primary transition-all shadow-sm cursor-pointer hover:bg-primary/5">
+                                                <UploadCloud className="w-4 h-4 text-primary" />
+                                                <span>{uploadingFavicon ? 'Uploading...' : 'Upload Favicon'}</span>
+                                                <input 
+                                                    type="file" 
+                                                    accept="image/*" 
+                                                    onChange={handleFaviconUpload} 
+                                                    className="hidden" 
+                                                    disabled={uploadingFavicon}
+                                                />
+                                            </label>
+                                            <p className="text-[9px] text-text-muted font-bold uppercase tracking-wider">PNG, ICO, or WEBP up to 2MB.</p>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
 

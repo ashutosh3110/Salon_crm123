@@ -475,10 +475,12 @@ function SalonModal({ mode, tenant, onClose, onSave, saving }) {
                         <div className="grid grid-cols-2 gap-4">
                             <div className="col-span-2">
                                 <label className={labelCls}>Salon Name *</label>
-                                <div className="relative">
-                                    <Building2 className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
+                                <div className="flex items-center gap-3">
+                                    <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-slate-50 border border-border text-text-secondary shrink-0 shadow-sm">
+                                        <Building2 className="w-4.5 h-4.5" />
+                                    </div>
                                     <input 
-                                        className={`${inputCls} pl-10`} 
+                                        className={`${inputCls} flex-1`} 
                                         value={form.name} 
                                         onChange={e => {
                                             const val = e.target.value.replace(/[^a-zA-Z\s]/g, '');
@@ -545,10 +547,12 @@ function SalonModal({ mode, tenant, onClose, onSave, saving }) {
                             </div>
                             <div className="col-span-2">
                                 <label className={labelCls}>Street Address</label>
-                                <div className="relative">
-                                    <MapPin className="absolute left-3.5 top-3.5 w-4 h-4 text-text-muted" />
+                                <div className="flex items-start gap-3">
+                                    <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-slate-50 border border-border text-text-secondary shrink-0 shadow-sm mt-1">
+                                        <MapPin className="w-4.5 h-4.5" />
+                                    </div>
                                     <textarea 
-                                        className={`${inputCls} pl-10 min-h-[70px] py-2.5 resize-none`} 
+                                        className={`${inputCls} flex-1 min-h-[70px] py-2.5 resize-none`} 
                                         value={form.address} 
                                         onChange={e => set('address', e.target.value)} 
                                         placeholder="Full shop address, street, landmark..."
@@ -999,16 +1003,17 @@ export default function SATenantsPage() {
             </div>
 
 
-            {/* ── Search and Filters ── */}
             <div className="flex flex-col md:flex-row items-center gap-3 mb-6">
-                <div className="relative flex-1 w-full">
-                    <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
+                <div className="flex items-center gap-3 flex-1 w-full">
+                    <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-slate-50 border border-border text-text-secondary shrink-0 shadow-sm">
+                        <Search className="w-4.5 h-4.5" />
+                    </div>
                     <input 
                         type="text" 
                         value={search} 
                         onChange={e => setSearch(e.target.value)}
                         placeholder="Search by salon name, owner, or email..."
-                        className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-surface border border-border text-text placeholder-text-muted text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm" 
+                        className="flex-1 px-4 py-2.5 rounded-xl bg-surface border border-border text-text placeholder-text-muted text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm" 
                     />
                 </div>
                 

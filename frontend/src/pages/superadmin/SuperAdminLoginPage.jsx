@@ -121,11 +121,11 @@ export default function SuperAdminLoginPage() {
                                     {/* Email */}
                                     <div className="group space-y-2">
                                         <label className="text-[9px] font-black uppercase tracking-[0.2em] text-white/30 ml-1">Email Address</label>
-                                        <div className="relative border-b-2 border-white/5 group-focus-within:border-primary transition-all duration-300">
-                                            <Mail className="absolute left-0 top-1/2 -translate-y-1/2 w-4 h-4 text-white/20" />
+                                        <div className="flex items-center gap-3 border-b-2 border-white/5 group-focus-within:border-primary transition-all duration-300">
+                                            <Mail className="w-4 h-4 text-white/20 group-focus-within:text-primary transition-colors shrink-0" />
                                             <input
                                                 type="email" name="email" value={form.email} onChange={handleChange} required autoFocus
-                                                className="w-full pl-7 py-3 bg-transparent text-sm focus:outline-none placeholder:text-white/10 font-medium"
+                                                className="flex-1 py-3 bg-transparent text-sm focus:outline-none placeholder:text-white/10 font-medium"
                                                 placeholder="master@platform.com"
                                             />
                                         </div>
@@ -134,14 +134,14 @@ export default function SuperAdminLoginPage() {
                                     {/* Password */}
                                     <div className="group space-y-2">
                                         <label className="text-[9px] font-black uppercase tracking-[0.2em] text-white/30 ml-1">Password</label>
-                                        <div className="relative border-b-2 border-white/5 group-focus-within:border-primary transition-all duration-300">
-                                            <Lock className="absolute left-0 top-1/2 -translate-y-1/2 w-4 h-4 text-white/20" />
+                                        <div className="flex items-center gap-3 border-b-2 border-white/5 group-focus-within:border-primary transition-all duration-300">
+                                            <Lock className="w-4 h-4 text-white/20 group-focus-within:text-primary transition-colors shrink-0" />
                                             <input
                                                 type={showPassword ? 'text' : 'password'} name="password" value={form.password} onChange={handleChange} required
-                                                className="w-full pl-7 py-3 bg-transparent text-sm focus:outline-none placeholder:text-white/10 font-medium"
+                                                className="flex-1 py-3 bg-transparent text-sm focus:outline-none placeholder:text-white/10 font-medium"
                                                 placeholder="••••••••"
                                             />
-                                            <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-0 top-1/2 -translate-y-1/2 text-white/10 hover:text-white transition-colors">
+                                            <button type="button" onClick={() => setShowPassword(!showPassword)} className="text-white/10 hover:text-white transition-colors shrink-0">
                                                 {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                                             </button>
                                         </div>

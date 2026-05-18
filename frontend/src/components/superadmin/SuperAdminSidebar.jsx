@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
+import { useBusiness } from '../../contexts/BusinessContext';
+import { getImageUrl } from '../../utils/imageUtils';
 import logoFull from '/new black wapixo logo .png';
 import {
     LayoutDashboard, Building2, Receipt, Settings,
@@ -80,6 +82,7 @@ const menuItems = [
 
 export default function SuperAdminSidebar({ collapsed, setCollapsed, mobileOpen, setMobileOpen }) {
     const { logout, user } = useAuth();
+    const { platformSettings } = useBusiness();
     const location = useLocation();
     const [isLgUp, setIsLgUp] = useState(typeof window !== 'undefined' ? window.innerWidth >= 1024 : true);
 
@@ -119,7 +122,7 @@ export default function SuperAdminSidebar({ collapsed, setCollapsed, mobileOpen,
                 <div className="flex-1 flex items-center justify-center overflow-hidden">
                     <div className="w-45 h-45 flex items-center justify-center shrink-0">
                         <img
-                            src="/new black wapixo logo .png"
+                            src={platformSettings?.logoUrl ? getImageUrl(platformSettings.logoUrl) : "/new black wapixo logo .png"}
                             alt="Logo"
                             className="w-full h-full object-contain"
                         />
@@ -190,7 +193,7 @@ export default function SuperAdminSidebar({ collapsed, setCollapsed, mobileOpen,
                 <div className="px-3 pb-3 animate-in fade-in duration-300">
                     <div className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl bg-surface border border-border">
                         <div className="w-8 h-8 flex items-center justify-center overflow-hidden shrink-0">
-                            <img src={logoFull} alt="" className="w-full h-full object-contain" />
+                            <img src={platformSettings?.logoUrl ? getImageUrl(platformSettings.logoUrl) : logoFull} alt="" className="w-full h-full object-contain" />
                         </div>
                         <div className="flex-1 min-w-0">
                             <div className="text-xs font-bold text-text truncate">{user?.name || 'Super Admin'}</div>

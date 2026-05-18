@@ -545,11 +545,13 @@ export default function SABillingPage() {
                 <div className="space-y-3">
                     {/* Search + status */}
                     <div className="flex flex-col sm:flex-row gap-3">
-                        <div className="relative flex-1">
-                            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
+                        <div className="flex-1 flex items-center gap-3">
+                            <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-white border border-border text-text-secondary shrink-0 shadow-sm">
+                                <Search className="w-4.5 h-4.5" />
+                            </div>
                             <input value={search} onChange={e => setSearch(e.target.value)}
                                 placeholder="Search salon, invoice, plan…"
-                                className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-white border border-border text-sm text-text placeholder-text-muted focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary shadow-sm" />
+                                className="flex-1 px-4 py-2.5 rounded-xl bg-white border border-border text-sm text-text placeholder-text-muted focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary shadow-sm" />
                         </div>
                         <CustomDropdown
                             value={statusFilter}
@@ -669,11 +671,13 @@ export default function SABillingPage() {
                 <div className="space-y-3">
                     {/* Search + status */}
                     <div className="flex flex-col sm:flex-row gap-3">
-                        <div className="relative flex-1">
-                            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
+                        <div className="flex-1 flex items-center gap-3">
+                            <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-white border border-border text-text-secondary shrink-0 shadow-sm">
+                                <Search className="w-4.5 h-4.5" />
+                            </div>
                             <input value={search} onChange={e => setSearch(e.target.value)}
                                 placeholder="Search by salon, invoice ID…"
-                                className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-white border border-border text-sm text-text placeholder-text-muted focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary shadow-sm" />
+                                className="flex-1 px-4 py-2.5 rounded-xl bg-white border border-border text-sm text-text placeholder-text-muted focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary shadow-sm" />
                         </div>
                         <CustomDropdown
                             value={statusFilter}

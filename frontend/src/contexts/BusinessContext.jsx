@@ -5,6 +5,7 @@ import { useCustomerAuth } from './CustomerAuthContext';
 import api from '../services/api';
 
 import { toast } from 'react-hot-toast';
+import { getImageUrl } from '../utils/imageUtils';
 
 const BusinessContext = createContext({
     salon: null, outlets: [], staff: [], services: [], categories: [], products: [],
@@ -213,7 +214,7 @@ export function BusinessProvider({ children }) {
                 link.rel = 'icon';
                 document.getElementsByTagName('head')[0].appendChild(link);
             }
-            link.href = platformSettings.faviconUrl;
+            link.href = getImageUrl(platformSettings.faviconUrl);
         }
     }, [platformSettings]);
 

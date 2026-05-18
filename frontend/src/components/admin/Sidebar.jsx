@@ -56,10 +56,11 @@ import {
 
 import { useCMS } from '../../contexts/CMSContext';
 import { useInventory } from '../../contexts/InventoryContext';
+import { getImageUrl } from '../../utils/imageUtils';
 
 export default function Sidebar({ collapsed, setCollapsed, isHovered, setIsHovered, mobileOpen, setMobileOpen }) {
     const { logout, user } = useAuth();
-    const { salon } = useBusiness();
+    const { salon, platformSettings } = useBusiness();
     const { pendingExpertsCount } = useCMS();
     const { stats } = useInventory();
     const lowStockCount = stats?.lowStockCount || 0;
@@ -296,7 +297,7 @@ export default function Sidebar({ collapsed, setCollapsed, isHovered, setIsHover
                 <div className="flex-1 flex items-center justify-center overflow-hidden">
                     <div className="w-45 h-45 flex items-center justify-center shrink-0">
                         <img
-                            src="/new black wapixo logo .png"
+                            src={platformSettings?.logoUrl ? getImageUrl(platformSettings.logoUrl) : "/new black wapixo logo .png"}
                             alt="Logo"
                             className="w-full h-full object-contain"
                         />

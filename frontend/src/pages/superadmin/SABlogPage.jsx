@@ -200,14 +200,16 @@ export default function SABlogPage() {
 
             {/* Toolbar Area */}
             <div className="flex flex-col md:flex-row gap-4">
-                <div className="flex-1 relative group">
-                    <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-text-muted group-focus-within:text-primary transition-colors" size={18} />
+                <div className="flex-1 flex items-center gap-3">
+                    <div className="flex items-center justify-center w-12 h-12 rounded-xl bg-white border border-border text-text-secondary shrink-0 shadow-sm">
+                        <Search className="w-5 h-5" />
+                    </div>
                     <input
                         type="text"
                         placeholder="Search article titles or categories..."
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
-                        className="w-full bg-white border border-border pl-16 pr-6 py-5 text-xs font-bold uppercase tracking-widest outline-none regular-radius focus:ring-1 ring-primary/20 transition-all shadow-sm"
+                        className="flex-1 bg-white border border-border px-6 py-4.5 text-xs font-bold uppercase tracking-widest outline-none regular-radius focus:ring-1 ring-primary/20 transition-all shadow-sm"
                     />
                 </div>
                 <div className="flex bg-white p-2 border border-border regular-radius shadow-sm">
