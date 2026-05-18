@@ -59,22 +59,22 @@ const MOCK_TENANTS = [
 ];
 
 const planColors = {
-    free: 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700',
-    basic: 'bg-blue-50 dark:bg-blue-950/30 text-blue-600 dark:text-blue-400 border-blue-200 dark:border-blue-800',
-    pro: 'bg-primary/10 text-primary border-primary/25',
-    premium: 'bg-primary/10 text-primary border-primary/25',
-    enterprise: 'bg-amber-50 dark:bg-amber-950/30 text-amber-600 dark:text-amber-400 border-amber-200 dark:border-amber-800',
+    free: 'bg-slate-50 text-slate-600 border-slate-200',
+    basic: 'bg-blue-50 text-blue-600 border-blue-200',
+    pro: 'bg-rose-50 text-primary border-primary/20',
+    premium: 'bg-rose-50 text-primary border-primary/20',
+    enterprise: 'bg-amber-50 text-amber-600 border-amber-200',
 };
 const planIcons = { free: null, basic: null, pro: Crown, premium: Crown, enterprise: Crown };
 
 const STATUS_CFG = {
-    active: { label: 'Active', cls: 'bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800', icon: CheckCircle },
-    trial: { label: 'Trial', cls: 'bg-blue-50 dark:bg-blue-950/30 text-blue-600 dark:text-blue-400 border-blue-200 dark:border-blue-800', icon: Clock },
-    expired: { label: 'Ended', cls: 'bg-orange-50 dark:bg-orange-950/30 text-orange-600 dark:text-orange-400 border-orange-200 dark:border-orange-800', icon: AlertTriangle },
-    suspended: { label: 'Paused', cls: 'bg-red-50 dark:bg-red-950/30 text-red-600 dark:text-red-400 border-red-200 dark:border-red-800', icon: XCircle },
-    inactive: { label: 'Inactive', cls: 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 border-slate-200 dark:border-slate-700', icon: null },
-    pending: { label: 'Pending', cls: 'bg-amber-50 dark:bg-amber-950/30 text-amber-600 dark:text-amber-400 border-amber-200 dark:border-amber-800', icon: Clock },
-    rejected: { label: 'Rejected', cls: 'bg-red-100 text-red-700 border-red-200', icon: XCircle },
+    active: { label: 'Active', cls: 'bg-emerald-50 text-emerald-600 border-emerald-200', icon: CheckCircle },
+    trial: { label: 'Trial', cls: 'bg-blue-50 text-blue-600 border-blue-200', icon: Clock },
+    expired: { label: 'Ended', cls: 'bg-orange-50 text-orange-600 border-orange-200', icon: AlertTriangle },
+    suspended: { label: 'Paused', cls: 'bg-red-50 text-red-600 border-red-200', icon: XCircle },
+    inactive: { label: 'Inactive', cls: 'bg-slate-50 text-slate-500 border-slate-200', icon: null },
+    pending: { label: 'Pending', cls: 'bg-amber-50 text-amber-600 border-amber-200', icon: Clock },
+    rejected: { label: 'Rejected', cls: 'bg-red-50 text-red-600 border-red-200', icon: XCircle },
 };
 
 const FILTER_TABS = [
@@ -1060,7 +1060,7 @@ export default function SATenantsPage() {
 
 
             {/* ── Table ── */}
-            <div className="bg-surface rounded-2xl border border-border shadow-sm overflow-hidden">
+            <div className="bg-white rounded-3xl border border-border shadow-sm overflow-hidden">
                 {filtered.length === 0 ? (
                     <div className="text-center py-20">
                         <Building2 className="w-12 h-12 text-text-muted mx-auto mb-3 opacity-40" />
@@ -1071,10 +1071,10 @@ export default function SATenantsPage() {
                     <div className="overflow-x-auto">
                         <table className="w-full">
                             <thead>
-                                <tr className="bg-surface/60 border-b border-border">
-                                    <th className="px-4 py-3 w-10"></th>
+                                <tr className="bg-slate-50/50 border-b border-border">
+                                    <th className="px-4 py-4 w-12"></th>
                                     {['Salon', 'Owner / Email', 'Phone', 'GST', 'City', 'Plan', 'Status', 'Joined', 'Actions'].map(h => (
-                                        <th key={h} className={`text-xs font-semibold text-text-secondary uppercase tracking-wider px-4 py-3 ${h === 'Actions' ? 'text-right' : 'text-left'}`}>
+                                        <th key={h} className={`text-xs font-semibold text-text-secondary uppercase tracking-wider px-4 py-4 ${h === 'Actions' ? 'text-right' : 'text-left'}`}>
                                             {h}
                                         </th>
                                     ))}
@@ -1088,7 +1088,7 @@ export default function SATenantsPage() {
                                         <React.Fragment key={t._id}>
                                             <tr 
                                                 onClick={() => navigate(`/superadmin/tenants/${t._id}`)}
-                                                className={`hover:bg-surface/40 transition-colors group cursor-pointer ${isExpanded ? 'bg-primary/5' : ''}`}
+                                                className={`hover:bg-slate-50/40 transition-colors group cursor-pointer ${isExpanded ? 'bg-primary/5' : ''}`}
                                             >
                                                 {/* Expand Column */}
                                                 <td className="px-4 py-3.5">

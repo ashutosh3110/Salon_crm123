@@ -156,8 +156,8 @@ export default function SADashboardPage() {
     const { isAuthenticated } = useAuth();
     useFirebaseNotifications(isAuthenticated);
 
-    useEffect(() => { 
-        fetchStats(); 
+    useEffect(() => {
+        fetchStats();
         fetchEnquiries();
     }, []);
 
@@ -212,50 +212,7 @@ export default function SADashboardPage() {
                 </div>
                 <div className="flex items-center gap-3">
 
-                    <button
-                        onClick={async () => {
-                            if (sendingTest) return;
-                            console.info('[Dashboard] Triggering Test Push Flow...');
-                            setSendingTest(true);
-                            
-                            try {
-                                // 1. Ensure permission is requested (User Gesture)
-                                const permission = await Notification.requestPermission();
-                                console.log('[Dashboard] Notification Permission Status:', permission);
-
-                                if (permission !== 'granted') {
-                                    toast.error('🚫 Notification permission is required for Push.');
-                                    setSendingTest(false);
-                                    return;
-                                }
-
-                                // 2. Force register/refresh token to ensure backend has current ID
-                                toast.loading('Registering device...', { id: 'fcm-reg' });
-                                const token = await registerToken();
-                                if (!token) {
-                                    toast.error('FCM Registration Failed. Check Console.', { id: 'fcm-reg' });
-                                    setSendingTest(false);
-                                    return;
-                                }
-                                toast.success('Device registered!', { id: 'fcm-reg' });
-
-                                // 3. Trigger the actual backend test push
-                                const res = await mockApi.get('/notifications/test');
-                                console.log('[Dashboard] Test API Response:', res.data);
-                                toast.success(`🚀 Test sent! Check your notification.`);
-                            } catch (e) {
-                                console.error('[Dashboard] Test Flow Failed:', e);
-                                toast.error('❌ Test failed: ' + (e.response?.data?.message || e.message));
-                            } finally {
-                                setSendingTest(false);
-                            }
-                        }}
-                        disabled={sendingTest}
-                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-primary/10 border border-primary/20 text-primary text-xs font-semibold hover:bg-primary hover:text-white transition-all disabled:opacity-50"
-                    >
-                        <Zap className={`w-3.5 h-3.5 ${sendingTest ? 'animate-pulse' : ''}`} /> 
-                        {sendingTest ? 'Sending...' : 'Test Push 2.0'}
-                    </button>
+             
                     <button
                         onClick={() => fetchStats(true)}
                         disabled={refreshing}
@@ -277,7 +234,7 @@ export default function SADashboardPage() {
             <div className="grid lg:grid-cols-3 gap-6">
 
                 {/* Monthly Revenue — AreaChart (spans 2 cols) */}
-                <div 
+                <div
                     onClick={() => navigate('/superadmin/billing')}
                     className="lg:col-span-2 bg-surface rounded-2xl border border-border shadow-sm p-5 group hover:shadow-md transition-all cursor-pointer hover:border-primary/20"
                 >
@@ -315,13 +272,13 @@ export default function SADashboardPage() {
                 </div>
 
                 {/* Plan Distribution — PieChart */}
-                <div 
+                <div
                     onClick={() => navigate('/superadmin/tenants')}
                     className="bg-surface rounded-2xl border border-border shadow-sm p-5 group hover:shadow-md transition-all cursor-pointer hover:border-primary/20"
                 >
-                    <SectionHeader 
-                        title="Most Popular Plans" 
-                        subtitle="Subscription breakdown" 
+                    <SectionHeader
+                        title="Most Popular Plans"
+                        subtitle="Subscription breakdown"
                         action={
                             <Link to="/superadmin/tenants" className="p-1.5 rounded-lg bg-primary/5 text-primary opacity-0 group-hover:opacity-100 transition-all hover:bg-primary hover:text-white">
                                 <ArrowUpRight className="w-3.5 h-3.5" />
@@ -356,7 +313,7 @@ export default function SADashboardPage() {
             <div className="grid lg:grid-cols-2 gap-6">
 
                 {/* New Registrations — BarChart */}
-                <div 
+                <div
                     onClick={() => navigate('/superadmin/tenants')}
                     className="bg-surface rounded-2xl border border-border shadow-sm p-5 group hover:shadow-md transition-all cursor-pointer hover:border-primary/20"
                 >
@@ -392,7 +349,7 @@ export default function SADashboardPage() {
                 </div>
 
                 {/* Churn Rate — LineChart */}
-                <div 
+                <div
                     onClick={() => navigate('/superadmin/tenants?status=expired')}
                     className="bg-surface rounded-2xl border border-border shadow-sm p-5 group hover:shadow-md transition-all cursor-pointer hover:border-primary/20"
                 >
@@ -456,8 +413,8 @@ export default function SADashboardPage() {
                         </thead>
                         <tbody className="divide-y divide-border">
                             {recentTenants.map(t => (
-                                <tr 
-                                    key={t._id} 
+                                <tr
+                                    key={t._id}
                                     onClick={() => navigate(`/superadmin/tenants/${t._id}`)}
                                     className="hover:bg-surface/40 transition-colors group cursor-pointer"
                                 >

@@ -204,6 +204,20 @@ export function BusinessProvider({ children }) {
         }
     }, []);
 
+    // Dynamically synchronize the favicon with platform settings
+    useEffect(() => {
+        if (platformSettings?.faviconUrl) {
+            let link = document.querySelector("link[rel~='icon']");
+            if (!link) {
+                link = document.createElement('link');
+                link.rel = 'icon';
+                document.getElementsByTagName('head')[0].appendChild(link);
+            }
+            link.href = platformSettings.faviconUrl;
+        }
+    }, [platformSettings]);
+
+
     const fetchCustomers = useCallback(async (page = 1, limit = 5) => {
         setCustomersLoading(true);
         try {
