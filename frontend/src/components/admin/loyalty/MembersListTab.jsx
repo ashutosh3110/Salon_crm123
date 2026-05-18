@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import {
     Search,
     Filter,
@@ -13,6 +13,7 @@ import {
     Download,
     Eye,
     X,
+    ChevronDown,
     Star
 } from 'lucide-react';
 import { useAuth } from '../../../contexts/AuthContext';
@@ -31,6 +32,7 @@ export default function MembersListTab() {
     const [page, setPage] = useState(1);
     const [meta, setMeta] = useState({ page: 1, totalPages: 1, total: 0, limit: 20 });
     const [selectedMember, setSelectedMember] = useState(null);
+    const [refreshTrigger, setRefreshTrigger] = useState(0);
 
     // Assignment Modal State
     const [showAssignModal, setShowAssignModal] = useState(false);
@@ -41,6 +43,20 @@ export default function MembersListTab() {
     const [assigning, setAssigning] = useState(false);
     const [errorMessage, setErrorMessage] = useState('');
     const [successMessage, setSuccessMessage] = useState('');
+    const [searchingCustomers, setSearchingCustomers] = useState(false);
+    const [searchResults, setSearchResults] = useState([]);
+    const [showDropdown, setShowDropdown] = useState(false);
+    const dropdownRef = useRef(null);
+
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+                setShowDropdown(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
 
     useEffect(() => {
         const loadMembers = async () => {
@@ -65,7 +81,7 @@ export default function MembersListTab() {
             }
         };
         loadMembers();
-    }, [page, searchTerm, filter, activeOutletId]);
+    }, [page, searchTerm, filter, activeOutletId, refreshTrigger]);
 
     // Load membership plans when assignment modal is shown
     useEffect(() => {
@@ -81,6 +97,33 @@ export default function MembersListTab() {
             fetchPlans();
         }
     }, [showAssignModal]);
+
+    // Dynamic, debounced client query
+    useEffect(() => {
+        if (!searchCustomerTerm || selectedCustomerId) {
+            setSearchResults([]);
+            return;
+        }
+        const delayDebounceFn = setTimeout(async () => {
+            setSearchingCustomers(true);
+            try {
+                const res = await api.get(`/clients`, {
+                    params: {
+                        search: searchCustomerTerm,
+                        limit: 50
+                    }
+                });
+                const list = res.data?.data || (Array.isArray(res.data) ? res.data : []);
+                setSearchResults(list);
+            } catch (err) {
+                console.error('Failed to search customers', err);
+            } finally {
+                setSearchingCustomers(false);
+            }
+        }, 300);
+        
+        return () => clearTimeout(delayDebounceFn);
+    }, [searchCustomerTerm, selectedCustomerId]);
 
     const handleAssignMembership = async (e) => {
         e.preventDefault();
@@ -99,6 +142,7 @@ export default function MembersListTab() {
             if (res.data?.success) {
                 setSuccessMessage('Membership plan assigned successfully!');
                 // Reload list
+                setRefreshTrigger(prev => prev + 1);
                 setPage(1);
                 setTimeout(() => {
                     setShowAssignModal(false);
@@ -140,58 +184,66 @@ export default function MembersListTab() {
 
     return (
         <div className="space-y-6 italic">
-            <div className="flex flex-col lg:flex-row gap-4 justify-between items-start lg:items-center">
-                <div className="relative w-full lg:w-96 group text-left">
-                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-primary transition-colors" />
-                    <input
-                        type="text"
-                        placeholder="Search Members / Phone / Plan..."
-                        value={searchTerm}
-                        onChange={e => { setPage(1); setSearchTerm(e.target.value); }}
-                        className="w-full h-14 bg-surface border border-border/60 pl-12 pr-4 text-sm font-bold text-foreground focus:border-primary outline-none transition-all shadow-sm"
-                    />
-                </div>
-
-                <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-2 lg:pb-0">
-                    {['all', 'active', 'expired'].map((f) => (
-                        <button
-                            key={f}
-                            onClick={() => { setFilter(f); setPage(1); }}
-                            className={`px-6 py-3 border font-black text-[9px] uppercase tracking-[0.2em] transition-all whitespace-nowrap ${filter === f
-                                ? 'bg-primary text-white border-primary shadow-lg shadow-primary/20'
-                                : 'text-text-muted border-border/40 hover:bg-surface-alt'
-                                }`}
-                        >
-                            {f} Members
-                        </button>
-                    ))}
-                    
-                    {/* Outlet Filter */}
-                    <div className="flex items-center gap-2 ml-2 border-l border-border/40 pl-4">
-                        <Filter className="w-3.5 h-3.5 text-text-muted" />
-                        <select
-                            value={activeOutletId || ''}
-                            onChange={(e) => setActiveOutletId(e.target.value || null)}
-                            className="bg-surface border border-border/40 px-4 py-2.5 text-[9px] font-black uppercase tracking-widest outline-none focus:border-primary transition-all min-w-[160px]"
-                        >
-                            <option value="">All Outlets</option>
-                            {outlets.map(o => (
-                                <option key={o._id || o.id} value={o._id || o.id}>
-                                    {o.name}
-                                </option>
-                            ))}
-                        </select>
+            <div className="flex flex-col gap-4">
+                {/* Row 1: Search & Primary Action */}
+                <div className="flex flex-col sm:flex-row gap-4 justify-between items-stretch sm:items-center">
+                    <div className="relative w-full sm:w-96 group text-left">
+                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-primary transition-colors" />
+                        <input
+                            type="text"
+                            placeholder="Search Members / Phone / Plan..."
+                            value={searchTerm}
+                            onChange={e => { setPage(1); setSearchTerm(e.target.value); }}
+                            className="w-full h-14 bg-surface border border-border/60 pl-12 pr-4 text-sm font-bold text-foreground focus:border-primary outline-none transition-all shadow-sm"
+                        />
                     </div>
-                    <button onClick={downloadCsv} className="p-3.5 border border-border/40 text-text-muted hover:text-primary hover:bg-primary/5 hover:border-primary/40 transition-all shadow-sm">
-                        <Download size={18} />
-                    </button>
                     <button
                         onClick={() => setShowAssignModal(true)}
-                        className="px-6 py-3.5 bg-primary text-white border border-primary font-black text-[9px] uppercase tracking-[0.2em] transition-all whitespace-nowrap hover:bg-primary-dark hover:scale-105 active:scale-95 shadow-lg shadow-primary/20 flex items-center gap-2"
+                        className="px-6 h-14 bg-primary text-white border border-primary font-black text-[10px] uppercase tracking-[0.2em] transition-all hover:bg-primary-dark hover:scale-105 active:scale-95 shadow-lg shadow-primary/20 flex items-center justify-center gap-2"
                     >
-                        <ShieldCheck className="w-3.5 h-3.5" />
+                        <ShieldCheck className="w-4 h-4" />
                         Assign Plan
                     </button>
+                </div>
+
+                {/* Row 2: Filter Options */}
+                <div className="flex flex-col lg:flex-row gap-4 justify-between items-stretch lg:items-center border-t border-border/20 pt-4">
+                    <div className="flex flex-wrap items-center gap-2">
+                        {['all', 'active', 'expired'].map((f) => (
+                            <button
+                                key={f}
+                                onClick={() => { setFilter(f); setPage(1); }}
+                                className={`px-5 py-3 border font-black text-[9px] uppercase tracking-[0.2em] transition-all whitespace-nowrap ${filter === f
+                                    ? 'bg-primary text-white border-primary shadow-lg shadow-primary/20'
+                                    : 'text-text-muted border-border/40 hover:bg-surface-alt'
+                                    }`}
+                            >
+                                {f} Members
+                            </button>
+                        ))}
+                    </div>
+                    
+                    <div className="flex items-center gap-2 flex-wrap">
+                        {/* Outlet Filter */}
+                        <div className="flex items-center gap-2 border border-border/40 px-3 py-2 bg-surface">
+                            <Filter className="w-3.5 h-3.5 text-text-muted" />
+                            <select
+                                value={activeOutletId || ''}
+                                onChange={(e) => setActiveOutletId(e.target.value || null)}
+                                className="bg-transparent text-[9px] font-black uppercase tracking-widest outline-none focus:border-transparent transition-all min-w-[160px] text-foreground cursor-pointer"
+                            >
+                                <option value="">All Outlets</option>
+                                {outlets.map(o => (
+                                    <option key={o._id || o.id} value={o._id || o.id} className="bg-surface">
+                                        {o.name}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+                        <button onClick={downloadCsv} className="p-3 border border-border/40 text-text-muted hover:text-primary hover:bg-primary/5 hover:border-primary/40 transition-all shadow-sm flex items-center justify-center bg-surface" title="Download CSV">
+                            <Download size={16} />
+                        </button>
+                    </div>
                 </div>
             </div>
 
@@ -403,53 +455,92 @@ export default function MembersListTab() {
                                 )}
 
                                 {/* Search & Select Customer */}
-                                <div className="relative">
+                                <div className="relative" ref={dropdownRef}>
                                     <label className="text-[10px] font-black text-text-muted uppercase tracking-widest block mb-2">Select Customer</label>
                                     <div className="relative group">
                                         <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-primary transition-colors" />
                                         <input
                                             type="text"
-                                            placeholder="Type customer name or phone..."
+                                            placeholder="Type to search or select customer..."
                                             value={searchCustomerTerm}
-                                            onChange={(e) => setSearchCustomerTerm(e.target.value)}
-                                            className="w-full h-12 bg-surface border border-border/40 pl-12 pr-4 text-xs font-bold text-foreground focus:border-primary outline-none transition-all shadow-sm"
+                                            onFocus={() => setShowDropdown(true)}
+                                            onChange={(e) => {
+                                                setSearchCustomerTerm(e.target.value);
+                                                setSelectedCustomerId('');
+                                                setShowDropdown(true);
+                                            }}
+                                            className="w-full h-12 bg-surface border border-border/40 pl-12 pr-10 text-xs font-bold text-foreground focus:border-primary outline-none transition-all shadow-sm cursor-pointer"
                                         />
-                                        {selectedCustomerId && (
+                                        {selectedCustomerId ? (
                                             <button 
                                                 type="button"
                                                 onClick={() => {
                                                     setSelectedCustomerId('');
                                                     setSearchCustomerTerm('');
+                                                    setShowDropdown(false);
                                                 }}
                                                 className="absolute right-4 top-1/2 -translate-y-1/2 text-text-muted hover:text-primary"
                                             >
                                                 <X size={16} />
                                             </button>
+                                        ) : (
+                                            <button 
+                                                type="button"
+                                                onClick={() => setShowDropdown(!showDropdown)}
+                                                className="absolute right-4 top-1/2 -translate-y-1/2 text-text-muted hover:text-primary"
+                                            >
+                                                <ChevronDown size={16} className={`transition-transform duration-200 ${showDropdown ? 'rotate-180' : ''}`} />
+                                            </button>
                                         )}
                                     </div>
-                                    {searchCustomerTerm && !selectedCustomerId && (
+                                    
+                                    {showDropdown && (
                                         <div className="absolute z-20 w-full mt-1 max-h-48 overflow-y-auto bg-surface border border-border shadow-2xl divide-y divide-border/20">
-                                            {customers
-                                                .filter(c => 
-                                                    (c.name || '').toLowerCase().includes(searchCustomerTerm.toLowerCase()) || 
-                                                    (c.phone || '').includes(searchCustomerTerm)
+                                            {searchCustomerTerm ? (
+                                                searchingCustomers ? (
+                                                    <div className="px-4 py-3 text-xs font-bold text-text-muted italic">Searching customer database...</div>
+                                                ) : searchResults.length === 0 ? (
+                                                    <div className="px-4 py-3 text-xs font-bold text-text-muted italic">No matching customers found.</div>
+                                                ) : (
+                                                    searchResults.map(c => (
+                                                        <button
+                                                            key={c._id || c.id}
+                                                            type="button"
+                                                            onClick={() => {
+                                                                setSelectedCustomerId(c._id || c.id);
+                                                                setSearchCustomerTerm(`${c.name || 'Unknown'} (${c.phone || ''})`);
+                                                                setSearchResults([]);
+                                                                setShowDropdown(false);
+                                                            }}
+                                                            className="w-full text-left px-4 py-3 hover:bg-primary/10 transition-colors text-xs font-black italic flex justify-between items-center"
+                                                        >
+                                                            <span>{c.name || 'Unknown'}</span>
+                                                            <span className="text-[10px] font-bold text-text-muted uppercase tracking-widest">{c.phone || ''}</span>
+                                                        </button>
+                                                    ))
                                                 )
-                                                .slice(0, 10)
-                                                .map(c => (
-                                                    <button
-                                                        key={c._id || c.id}
-                                                        type="button"
-                                                        onClick={() => {
-                                                            setSelectedCustomerId(c._id || c.id);
-                                                            setSearchCustomerTerm(`${c.name || 'Unknown'} (${c.phone || ''})`);
-                                                        }}
-                                                        className="w-full text-left px-4 py-3 hover:bg-primary/10 transition-colors text-xs font-black italic flex justify-between items-center"
-                                                    >
-                                                        <span>{c.name || 'Unknown'}</span>
-                                                        <span className="text-[10px] font-bold text-text-muted uppercase tracking-widest">{c.phone || ''}</span>
-                                                    </button>
-                                                ))
-                                            }
+                                            ) : (
+                                                /* Show preloaded customers when search input is empty */
+                                                customers && customers.length > 0 ? (
+                                                    customers.slice(0, 15).map(c => (
+                                                        <button
+                                                            key={c._id || c.id}
+                                                            type="button"
+                                                            onClick={() => {
+                                                                setSelectedCustomerId(c._id || c.id);
+                                                                setSearchCustomerTerm(`${c.name || 'Unknown'} (${c.phone || ''})`);
+                                                                setShowDropdown(false);
+                                                            }}
+                                                            className="w-full text-left px-4 py-3 hover:bg-primary/10 transition-colors text-xs font-black italic flex justify-between items-center"
+                                                        >
+                                                            <span>{c.name || 'Unknown'}</span>
+                                                            <span className="text-[10px] font-bold text-text-muted uppercase tracking-widest">{c.phone || ''}</span>
+                                                        </button>
+                                                    ))
+                                                ) : (
+                                                    <div className="px-4 py-3 text-xs font-bold text-text-muted italic">No customers loaded. Start typing to search.</div>
+                                                )
+                                            )}
                                         </div>
                                     )}
                                 </div>
