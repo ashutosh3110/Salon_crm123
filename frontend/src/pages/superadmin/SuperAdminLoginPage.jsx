@@ -3,7 +3,6 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Shield, Eye, EyeOff, AlertCircle, Mail, Lock, ArrowRight, Sparkles } from 'lucide-react';
-import WapixoNavbar from '../../components/landing/wapixo/WapixoNavbar';
 
 export default function SuperAdminLoginPage() {
     const [form, setForm] = useState({ email: '', password: '' });
@@ -49,8 +48,6 @@ export default function SuperAdminLoginPage() {
 
     return (
         <div className="min-h-screen bg-[#050505] text-white selection:bg-primary/30 selection:text-white" style={{ fontFamily: "'Inter', sans-serif" }}>
-            <WapixoNavbar />
-
             {/* Background elements */}
             <div className="fixed inset-0 z-0 overflow-hidden pointer-events-none">
                 <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-primary/10 rounded-full blur-[140px]" />
@@ -58,11 +55,11 @@ export default function SuperAdminLoginPage() {
                 <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-[0.03]" />
             </div>
 
-            <main className="relative z-10 flex items-center justify-center p-6 pt-32 min-h-screen">
+            <main className="relative z-10 flex items-center justify-center p-6 min-h-screen">
                 <motion.div
                     initial={{ opacity: 0, scale: 0.95 }}
                     animate={{ opacity: 1, scale: 1 }}
-                    className="w-full max-w-5xl flex flex-col md:flex-row bg-[#0A0A0A] border border-white/5 shadow-[0_0_50px_rgba(0,0,0,0.5)] overflow-hidden rounded-[2rem]"
+                    className="w-full max-w-5xl flex flex-col md:flex-row bg-[#0A0A0A] border border-white/5 shadow-[0_0_80px_rgba(0,0,0,0.6)] overflow-hidden rounded-[2.5rem]"
                 >
                     {/* Visual Section */}
                     <div className="md:w-5/12 bg-[#0F0F0F] relative p-12 flex flex-col items-center justify-between border-r border-white/5">
@@ -75,7 +72,7 @@ export default function SuperAdminLoginPage() {
                                 Manage your salons, users, and platform settings.
                             </p>
 
-                            <div className="hidden md:block relative aspect-[3/4] w-full max-w-[240px] mt-12 overflow-hidden rounded-[2.5rem] border border-white/10 group">
+                            <div className="hidden md:block relative aspect-[3/4] w-full max-w-[240px] mt-12 overflow-hidden rounded-[2.5rem] border border-white/10 group shadow-2xl">
                                 <img
                                     src="https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&q=80&w=1000"
                                     className="w-full h-full object-cover grayscale transition-all duration-700 group-hover:grayscale-0 group-hover:scale-110"
@@ -154,13 +151,13 @@ export default function SuperAdminLoginPage() {
                                 <div className="space-y-6 pt-4">
                                     <button
                                         type="submit" disabled={loading}
-                                        className="w-full h-14 bg-white text-black font-black uppercase tracking-[0.2em] text-[11px] rounded-none hover:bg-primary hover:text-white transition-all duration-500 shadow-xl shadow-white/5 flex items-center justify-center gap-3 disabled:opacity-50"
+                                        className="w-full h-14 bg-white text-black font-black uppercase tracking-[0.2em] text-[11px] rounded-2xl hover:bg-gradient-to-r hover:from-primary hover:to-[#8B1A2D] hover:text-white transition-all duration-500 shadow-xl hover:shadow-primary/25 flex items-center justify-center gap-3 disabled:opacity-50"
                                     >
                                         {loading ? 'Authenticating...' : <><span>Sign In</span><ArrowRight className="w-4 h-4" /></>}
                                     </button>
 
                                     {/* Demo Credentials */}
-                                    <div className="p-6 bg-white/[0.02] border border-white/[0.05] rounded-3xl space-y-4">
+                                    <div className="p-6 bg-white/[0.01] border border-white/[0.04] rounded-3xl space-y-4 backdrop-blur-sm">
                                         <div className="flex items-center gap-2">
                                             <Sparkles className="w-3 h-3 text-primary" />
                                             <span className="text-[10px] font-black uppercase tracking-widest text-primary/60 italic">Quick Setup</span>
@@ -168,7 +165,7 @@ export default function SuperAdminLoginPage() {
                                         <button
                                             type="button"
                                             onClick={() => setForm({ email: 'superadmin@gmail.com', password: '123' })}
-                                            className="w-full flex flex-col items-start p-4 bg-black/40 border border-white/5 hover:border-primary/30 transition-all rounded-2xl group"
+                                            className="w-full flex flex-col items-start p-4 bg-white/[0.02] border border-white/[0.08] hover:border-primary/50 transition-all rounded-2xl group shadow-inner bg-gradient-to-br from-white/[0.01] to-white/[0.03] hover:shadow-primary/5"
                                         >
                                             <span className="text-[8px] font-black uppercase tracking-widest text-white/20 group-hover:text-primary/60 block mb-1">Use Master Account</span>
                                             <span className="text-[11px] font-black text-white/60 group-hover:text-white tracking-widest uppercase">superadmin@gmail.com</span>
