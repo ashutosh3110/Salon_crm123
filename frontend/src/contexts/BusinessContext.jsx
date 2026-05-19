@@ -562,9 +562,9 @@ export function BusinessProvider({ children }) {
     const addCustomer = useCallback(async (d) => {
         try {
             const r = await api.post('/clients', d);
-            setCustomers(p => [r.data, ...p]);
+            setCustomers(p => [r.data.data, ...p]);
             toast.success('Customer registered successfully');
-            return r.data;
+            return r.data.data;
         } catch (err) {
             toast.error(err.response?.data?.message || 'Failed to add customer');
             throw err;
@@ -589,7 +589,7 @@ export function BusinessProvider({ children }) {
             toast.success('Customer data updated');
             return r.data;
         } catch (err) {
-            toast.error('Failed to update customer');
+            toast.error(err.response?.data?.message || 'Failed to update customer');
             throw err;
         }
     }, []);

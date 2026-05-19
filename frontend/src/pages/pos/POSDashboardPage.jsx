@@ -124,7 +124,7 @@ export default function POSDashboardPage() {
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6 border-b border-border pb-6">
                 <div>
                     <h1 className="text-2xl font-black text-text uppercase tracking-tight">POS Dashboard</h1>
-                    <p className="text-[10px] font-black text-text-muted mt-2 uppercase tracking-[0.2em] opacity-60 flex items-center gap-2">
+                    <p className="text-sm font-black text-text-muted mt-2 uppercase tracking-[0.2em] opacity-60 flex items-center gap-2">
                         <span className="flex h-2 w-2 relative">
                             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
                             <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
@@ -140,7 +140,7 @@ export default function POSDashboardPage() {
                         <select
                             value={activeOutletId || ''}
                             onChange={(e) => setActiveOutletId(e.target.value)}
-                            className="pl-9 pr-8 py-3 bg-surface border border-border text-[10px] font-black uppercase tracking-widest outline-none focus:border-primary transition-all cursor-pointer appearance-none min-w-[180px]"
+                            className="pl-9 pr-8 py-3 bg-surface border border-border text-sm font-black uppercase tracking-widest outline-none focus:border-primary transition-all cursor-pointer appearance-none min-w-[180px]"
                         >
                             <option value="">All Outlets</option>
                             {(outlets || []).map(o => (
@@ -157,7 +157,7 @@ export default function POSDashboardPage() {
                     >
                         <RefreshCcw className="w-4 h-4" />
                     </button>
-                    <button onClick={() => navigate('/pos/billing')} className="px-8 py-3 bg-primary text-white font-black text-[10px] uppercase tracking-[0.2em] hover:bg-primary-dark transition-all shadow-xl shadow-primary/20 flex items-center gap-3 active:scale-95">
+                    <button onClick={() => navigate('/pos/billing')} className="px-8 py-3 bg-primary text-white font-black text-sm uppercase tracking-[0.2em] hover:bg-primary-dark transition-all shadow-xl shadow-primary/20 flex items-center gap-3 active:scale-95">
                         <Zap className="w-4 h-4" /> Create Bill
                     </button>
                 </div>
@@ -171,11 +171,11 @@ export default function POSDashboardPage() {
                             <AlertTriangle className="w-6 h-6 text-amber-600" />
                         </div>
                         <div>
-                            <p className="text-[11px] font-black text-amber-800 uppercase tracking-widest">Low Stock Alert</p>
-                            <p className="text-[10px] text-amber-700/70 font-bold uppercase tracking-wider mt-1">{lowStockItems.length} products are low in stock</p>
+                            <p className="text-sm font-black text-amber-800 uppercase tracking-widest">Low Stock Alert</p>
+                            <p className="text-sm text-amber-700/70 font-bold uppercase tracking-wider mt-1">{lowStockItems.length} products are low in stock</p>
                         </div>
                     </div>
-                    <button className="text-[10px] font-black text-amber-800 uppercase tracking-widest hover:underline px-4 py-2 border border-amber-500/20 active:scale-95 transition-all">Check Stock</button>
+                    <button className="text-sm font-black text-amber-800 uppercase tracking-widest hover:underline px-4 py-2 border border-amber-500/20 active:scale-95 transition-all">Check Stock</button>
                 </div>
             )}
 
@@ -187,9 +187,9 @@ export default function POSDashboardPage() {
                         <div className="flex items-center justify-between mb-6 relative z-10 text-left">
                             <div className="flex items-center gap-3 text-left font-black">
                                 <s.icon className="w-4 h-4 text-primary" />
-                                <p className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] text-left">{s.label}</p>
+                                <p className="text-sm font-black text-text-muted uppercase tracking-[0.2em] text-left">{s.label}</p>
                             </div>
-                            <span className={`text-[9px] font-black uppercase tracking-widest px-2 py-0.5 border ${s.positive ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' : 'bg-rose-500/10 text-rose-500 border-rose-500/20'}`}>
+                            <span className={`text-xs font-black uppercase tracking-widest px-2 py-0.5 border ${s.positive ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' : 'bg-rose-500/10 text-rose-500 border-rose-500/20'}`}>
                                 {s.trend}
                             </span>
                         </div>
@@ -205,14 +205,14 @@ export default function POSDashboardPage() {
                 <div className="lg:col-span-2 bg-surface rounded-none border border-border shadow-sm flex flex-col p-8">
                     <div className="flex items-center justify-between mb-10">
                         <div>
-                            <h3 className="text-[11px] font-black text-text tracking-[0.2em] uppercase">Payment Summary</h3>
-                            <p className="text-[10px] text-text-muted font-bold uppercase tracking-widest mt-1">Today's payment collection by method</p>
+                            <h3 className="text-sm font-black text-text tracking-[0.2em] uppercase">Payment Summary</h3>
+                            <p className="text-sm text-text-muted font-bold uppercase tracking-widest mt-1">Today's payment collection by method</p>
                         </div>
                         <div className="flex gap-4">
                             {paymentBreakdown.map(p => (
                                 <div key={p.name} className="flex items-center gap-2">
                                     <div className="w-2.5 h-2.5 rounded-none" style={{ backgroundColor: p.color }} />
-                                    <span className="text-[9px] font-black text-text-muted uppercase">{p.name}</span>
+                                    <span className="text-xs font-black text-text-muted uppercase">{p.name}</span>
                                 </div>
                             ))}
                         </div>
@@ -221,14 +221,14 @@ export default function POSDashboardPage() {
                         <ResponsiveContainer width="100%" height="100%">
                             <BarChart data={paymentBreakdown}>
                                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(var(--border), 0.1)" />
-                                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 10, fontWeight: 900, fill: 'var(--text-muted)' }} />
+                                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 12, fontWeight: 900, fill: 'var(--text-muted)' }} />
                                 <YAxis hide />
                                 <Tooltip
                                     contentStyle={{
                                         backgroundColor: 'var(--surface)',
                                         border: '1px solid var(--border)',
                                         borderRadius: '0px',
-                                        fontSize: '10px',
+                                        fontSize: '12px',
                                         fontWeight: '900',
                                         textTransform: 'uppercase'
                                     }}
@@ -247,7 +247,7 @@ export default function POSDashboardPage() {
                 {/* Right Column: Actions & Distribution */}
                 <div className="space-y-8 text-left font-black">
                     <div className="bg-surface rounded-none border border-border shadow-sm p-8 space-y-8 flex flex-col">
-                        <h3 className="text-[11px] font-black text-text uppercase tracking-[0.2em] border-b border-border pb-4">
+                        <h3 className="text-sm font-black text-text uppercase tracking-[0.2em] border-b border-border pb-4">
                             Collections Split
                         </h3>
                         <div className="h-[220px] w-full relative">
@@ -272,7 +272,7 @@ export default function POSDashboardPage() {
                                             backgroundColor: 'var(--surface)',
                                             border: '1px solid var(--border)',
                                             borderRadius: '0px',
-                                            fontSize: '10px',
+                                            fontSize: '12px',
                                             fontWeight: '900',
                                             textTransform: 'uppercase'
                                         }}
@@ -281,7 +281,7 @@ export default function POSDashboardPage() {
                             </ResponsiveContainer>
                             <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
                                 <p className="text-xl font-black text-text uppercase">₹{Math.round(stats.revenue / 1000)}k</p>
-                                <p className="text-[9px] text-text-muted font-black uppercase">Today Total</p>
+                                <p className="text-xs text-text-muted font-black uppercase">Today Total</p>
                             </div>
                         </div>
                     </div>
@@ -289,7 +289,7 @@ export default function POSDashboardPage() {
                     {/* Quick Access Grid */}
                     <div className="bg-text p-8 rounded-none text-background shadow-2xl relative overflow-hidden group text-left">
                         <div className="relative z-10 space-y-6">
-                            <h3 className="text-[10px] font-black uppercase tracking-[0.3em] opacity-40">Quick Actions</h3>
+                            <h3 className="text-sm font-black uppercase tracking-[0.3em] opacity-40">Quick Actions</h3>
                             <div className="grid grid-cols-2 gap-3">
                                 {quickActions.map((action, i) => (
                                     <button
@@ -298,7 +298,7 @@ export default function POSDashboardPage() {
                                         className="p-5 bg-white/5 hover:bg-primary transition-all border border-white/10 flex flex-col items-center gap-3 active:scale-95 group/btn"
                                     >
                                         <action.icon className="w-5 h-5 text-primary group-hover/btn:text-white" />
-                                        <span className="text-[9px] font-black uppercase tracking-widest text-center group-hover/btn:text-white">{action.label}</span>
+                                        <span className="text-xs font-black uppercase tracking-widest text-center group-hover/btn:text-white">{action.label}</span>
                                     </button>
                                 ))}
                             </div>
@@ -311,12 +311,12 @@ export default function POSDashboardPage() {
             {/* Invoices Table */}
             <div className="bg-surface rounded-none border border-border shadow-sm overflow-hidden flex flex-col text-left">
                 <div className="px-8 py-6 border-b border-border flex items-center justify-between bg-surface-alt/50 text-left">
-                    <h3 className="text-[11px] font-black text-text tracking-[0.2em] uppercase flex items-center gap-3 text-left">
+                    <h3 className="text-sm font-black text-text tracking-[0.2em] uppercase flex items-center gap-3 text-left">
                         <Receipt className="w-4 h-4 text-primary" /> Recent Invoices
                     </h3>
                     <button
                         onClick={() => navigate('/pos/invoices')}
-                        className="text-[10px] font-black text-primary uppercase tracking-[0.2em] flex items-center gap-2 hover:underline"
+                        className="text-sm font-black text-primary uppercase tracking-[0.2em] flex items-center gap-2 hover:underline"
                     >
                         View All <ArrowRight className="w-3.5 h-3.5" />
                     </button>
@@ -324,7 +324,7 @@ export default function POSDashboardPage() {
                 <div className="overflow-x-auto text-left font-black">
                     <table className="w-full text-left min-w-[600px] border-collapse">
                         <thead>
-                            <tr className="bg-surface-alt/80 text-[10px] font-black text-text-muted uppercase tracking-[0.2em] border-b border-border text-left">
+                            <tr className="bg-surface-alt/80 text-sm font-black text-text-muted uppercase tracking-[0.2em] border-b border-border text-left">
                                 <th className="px-8 py-4 text-left">Invoice</th>
                                 <th className="px-8 py-4 text-left">Time</th>
                                 <th className="px-8 py-4 text-left">Customer</th>
@@ -336,11 +336,11 @@ export default function POSDashboardPage() {
                             {invoices.slice(0, 6).map(inv => (
                                 <tr key={inv._id} className="hover:bg-surface-alt/50 transition-colors group text-left">
                                     <td className="px-8 py-4 font-black text-primary uppercase text-xs tracking-tight text-left">{inv.invoiceNumber || '--'}</td>
-                                    <td className="px-8 py-4 text-text-muted text-[10px] font-black uppercase text-left flex items-center gap-2">
+                                    <td className="px-8 py-4 text-text-muted text-sm font-black uppercase text-left flex items-center gap-2">
                                         <Clock className="w-3.5 h-3.5 opacity-40 shrink-0" /> {formatTime(inv.createdAt)}
                                     </td>
-                                    <td className="px-8 py-4 font-black text-text text-[11px] uppercase tracking-tight text-left">{inv.clientId?.name || inv.clientName || 'ANN_GUEST'}</td>
-                                    <td className="px-8 py-4 text-text-muted text-[9px] font-black uppercase tracking-widest text-left">
+                                    <td className="px-8 py-4 font-black text-text text-sm uppercase tracking-tight text-left">{inv.clientId?.name || inv.clientName || 'ANN_GUEST'}</td>
+                                    <td className="px-8 py-4 text-text-muted text-xs font-black uppercase tracking-widest text-left">
                                         {inv.paymentMethod === 'online' ? 'UPI' : (inv.paymentMethod || 'Cash').toUpperCase()}
                                     </td>
                                     <td className="px-8 py-4 text-right font-black text-text tracking-tighter text-sm">₹{Number(inv.total || inv.totalAmount || 0).toLocaleString()}</td>
@@ -356,7 +356,7 @@ export default function POSDashboardPage() {
                 <div className="fixed inset-0 bg-black/80 backdrop-blur-md z-[100] flex items-center justify-center p-4">
                     <div className="bg-surface w-full max-w-lg rounded-none shadow-2xl p-0 border border-border">
                         <div className="flex items-center justify-between p-8 border-b border-border bg-surface-alt">
-                            <h3 className="text-[11px] font-black text-text uppercase tracking-[0.2em] flex items-center gap-3">
+                            <h3 className="text-sm font-black text-text uppercase tracking-[0.2em] flex items-center gap-3">
                                 <Calendar className="w-5 h-5 text-primary" /> Upcoming Appointments
                             </h3>
                             <button onClick={() => setShowAppointments(false)} className="w-10 h-10 flex items-center justify-center border border-border hover:bg-background transition-colors">
@@ -367,23 +367,23 @@ export default function POSDashboardPage() {
                             {appointments.map(app => (
                                 <div key={app._id} className="p-6 bg-surface border border-border flex items-center justify-between group hover:border-primary/60 transition-all text-left">
                                     <div className="flex items-center gap-6 text-left">
-                                        <div className="w-16 h-16 bg-surface-alt border border-border flex flex-col items-center justify-center text-[11px] font-black text-primary leading-tight">
-                                            <span className="opacity-40 text-[8px] mb-1">TIME</span>
+                                        <div className="w-16 h-16 bg-surface-alt border border-border flex flex-col items-center justify-center text-sm font-black text-primary leading-tight">
+                                            <span className="opacity-40 text-xs mb-1">TIME</span>
                                             {app.time}
                                         </div>
                                         <div className="text-left">
                                             <p className="text-sm font-black text-text uppercase tracking-tight text-left">{app.clientName}</p>
-                                            <p className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] mt-1 text-left">{app.service}</p>
+                                            <p className="text-sm font-black text-text-muted uppercase tracking-[0.2em] mt-1 text-left">{app.service}</p>
                                         </div>
                                     </div>
-                                    <button onClick={() => { navigate('/pos/billing'); setShowAppointments(false); }} className="px-6 py-3 bg-primary text-white text-[10px] font-black uppercase tracking-widest shadow-xl shadow-primary/20 opacity-0 group-hover:opacity-100 transition-opacity active:scale-95">
+                                    <button onClick={() => { navigate('/pos/billing'); setShowAppointments(false); }} className="px-6 py-3 bg-primary text-white text-sm font-black uppercase tracking-widest shadow-xl shadow-primary/20 opacity-0 group-hover:opacity-100 transition-opacity active:scale-95">
                                         Start Billing
                                     </button>
                                 </div>
                             ))}
                         </div>
                         <div className="p-8 border-t border-border bg-surface-alt flex justify-end">
-                            <button onClick={() => setShowAppointments(false)} className="px-8 py-3 text-[10px] font-black text-text-muted uppercase tracking-widest hover:text-text">Close</button>
+                            <button onClick={() => setShowAppointments(false)} className="px-8 py-3 text-sm font-black text-text-muted uppercase tracking-widest hover:text-text">Close</button>
                         </div>
                     </div>
                 </div>

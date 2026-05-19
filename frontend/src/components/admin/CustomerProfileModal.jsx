@@ -26,6 +26,7 @@ import { useWallet } from '../../contexts/WalletContext';
 import api from '../../services/api';
 import { maskPhone } from '../../utils/phoneUtils';
 import { getImageUrl } from '../../utils/imageUtils';
+import { toast } from 'react-hot-toast';
 
 export default function CustomerProfileModal({ customer, isOpen, onClose }) {
     const { user } = useAuth();
@@ -71,6 +72,7 @@ export default function CustomerProfileModal({ customer, isOpen, onClose }) {
     if (!isOpen || !customer) return null;
 
     const handleSave = () => {
+        if (editForm?.phone?.length !== 10) return toast.error('Phone number must be exactly 10 digits');
         updateCustomer(customer._id, editForm);
         setIsEditing(false);
     };
@@ -594,6 +596,7 @@ function DetailField({ label, value, icon: Icon, isFullWidth, isEditing, editVal
                 ) : (
                     <input
                         type={type}
+                        {...(type === 'date' && { max: new Date().toISOString().split('T')[0] })}
                         value={editValue}
                         onChange={(e) => onEdit(e.target.value)}
                         className="w-full bg-surface border border-primary/20 px-4 py-3 text-[11px] font-black uppercase outline-none focus:border-primary transition-all"

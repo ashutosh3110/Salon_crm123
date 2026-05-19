@@ -33,7 +33,7 @@ export default function ClientsPage() {
     const [search, setSearch] = useState('');
     const [showModal, setShowModal] = useState(false);
     const [editingClient, setEditingClient] = useState(null);
-    const [form, setForm] = useState({ name: '', email: '', phone: '', gender: 'female', notes: '' });
+    const [form, setForm] = useState({ name: '', email: '', phone: '', gender: 'female', notes: '', dob: '', anniversary: '' });
 
     const fetchClients = async () => {
         try {
@@ -84,6 +84,7 @@ export default function ClientsPage() {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        if (form.phone.length !== 10) return toast.error('Phone number must be exactly 10 digits');
         try {
             if (editingClient) {
                 await api.put(`/clients/${editingClient._id}`, form);
@@ -92,7 +93,7 @@ export default function ClientsPage() {
             }
             setShowModal(false);
             setEditingClient(null);
-            setForm({ name: '', email: '', phone: '', gender: 'female', notes: '' });
+            setForm({ name: '', email: '', phone: '', gender: 'female', notes: '', dob: '', anniversary: '' });
             toast.success(editingClient ? 'Client profile updated' : 'Client profile created');
             fetchClients();
         } catch (err) {
@@ -113,7 +114,7 @@ export default function ClientsPage() {
 
     const openEdit = (client) => {
         setEditingClient(client);
-        setForm({ name: client.name, email: client.email || '', phone: client.phone, gender: client.gender || 'female', notes: client.notes || '' });
+        setForm({ name: client.name, email: client.email || '', phone: client.phone, gender: client.gender || 'female', notes: client.notes || '', dob: client.dob || '', anniversary: client.anniversary || '' });
         setShowModal(true);
     };
 
@@ -132,7 +133,7 @@ export default function ClientsPage() {
                     <p className="text-[10px] font-black text-text-muted mt-2 uppercase tracking-[0.3em] opacity-60 leading-none text-left">System :: identification_matrix_v2.0 // master_database</p>
                 </div>
                 <button
-                    onClick={() => { setEditingClient(null); setForm({ name: '', email: '', phone: '', gender: 'female', notes: '' }); setShowModal(true); }}
+                    onClick={() => { setEditingClient(null); setForm({ name: '', email: '', phone: '', gender: 'female', notes: '', dob: '', anniversary: '' }); setShowModal(true); }}
                     className="w-full lg:w-auto flex items-center justify-center gap-3 bg-primary text-primary-foreground border border-primary px-10 py-4 rounded-none text-[10px] font-black uppercase tracking-[0.2em] shadow-xl shadow-primary/20 hover:bg-primary/90 transition-all font-black"
                 >
                     <Plus className="w-4 h-4" /> Add Profile
@@ -340,6 +341,16 @@ export default function ClientsPage() {
                             <div className="space-y-3 text-left">
                                 <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] pl-1">Electronic Mail</label>
                                 <input type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} className="w-full px-6 py-4 rounded-none bg-surface-alt border border-border text-xs font-black focus:border-primary outline-none transition-all placeholder:text-text-muted/10" placeholder="reach@node.com" />
+                            </div>
+                            <div className="grid grid-cols-2 gap-8 text-left">
+                                <div className="space-y-3 text-left">
+                                    <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] pl-1">Birth Date</label>
+                                    <input type="date" max={new Date().toISOString().split('T')[0]} value={form.dob} onChange={(e) => setForm({ ...form, dob: e.target.value })} className="w-full px-6 py-4 rounded-none bg-surface-alt border border-border text-xs font-black focus:border-primary outline-none transition-all" />
+                                </div>
+                                <div className="space-y-3 text-left">
+                                    <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] pl-1">Anniversary</label>
+                                    <input type="date" max={new Date().toISOString().split('T')[0]} value={form.anniversary} onChange={(e) => setForm({ ...form, anniversary: e.target.value })} className="w-full px-6 py-4 rounded-none bg-surface-alt border border-border text-xs font-black focus:border-primary outline-none transition-all" />
+                                </div>
                             </div>
                             <div className="space-y-3 text-left">
                                 <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] pl-1">Dossier Notes</label>

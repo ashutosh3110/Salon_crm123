@@ -103,6 +103,7 @@ export default function CustomersPage({ tab = 'directory' }) {
 
     const handleAddCustomer = (e) => {
         e.preventDefault();
+        if (newCustomerForm.phone.length !== 10) return toast.error('Phone number must be exactly 10 digits');
         addCustomer({
             ...newCustomerForm,
             totalVisits: 0,
@@ -367,6 +368,7 @@ export default function CustomersPage({ tab = 'directory' }) {
                                             <label className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Birth Date</label>
                                             <input
                                                 type="date"
+                                                max={new Date().toISOString().split('T')[0]}
                                                 value={newCustomerForm.dob}
                                                 onChange={(e) => setNewCustomerForm({ ...newCustomerForm, dob: e.target.value })}
                                                 className="w-full bg-slate-50 border border-slate-200 p-3 text-xs font-black text-slate-900 outline-none rounded-xl focus:border-slate-400 transition-colors"
@@ -376,6 +378,7 @@ export default function CustomersPage({ tab = 'directory' }) {
                                             <label className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Anniversary</label>
                                             <input
                                                 type="date"
+                                                max={new Date().toISOString().split('T')[0]}
                                                 value={newCustomerForm.anniversary}
                                                 onChange={(e) => setNewCustomerForm({ ...newCustomerForm, anniversary: e.target.value })}
                                                 className="w-full bg-slate-50 border border-slate-200 p-3 text-xs font-black text-slate-900 outline-none rounded-xl focus:border-slate-400 transition-colors"

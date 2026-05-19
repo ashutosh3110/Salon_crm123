@@ -84,8 +84,22 @@ exports.createClient = async (req, res) => {
         const salonId = req.user.salonId;
         const { name, phone, email, gender, dob, anniversary, address, loyaltyPoints, walletBalance } = req.body;
 
-        // Check if customer with this phone already exists in this salon
-        const existing = await Customer.findOne({ phone, salonId });
+        // Validation - Phone must be exactly 10 digits
+        if (!phone || String(phone).replace(/\D/g, '').length !== 10) {
+            return res.status(400).json({ success: false, message: 'Phone number must be exactly 10 digits' });
+        }
+
+        // Validation - DOB and Anniversary cannot be in the future
+        const todayStr = new Date().toISOString().split('T')[0];
+        if (dob && dob > todayStr) {
+            return res.status(400).json({ success: false, message: 'Birth date cannot be in the future' });
+        }
+        if (anniversary && anniversary > todayStr) {
+            return res.status(400).json({ success: false, message: 'Anniversary date cannot be in the future' });
+        }
+
+        // Check if customer with this phone already exists globally
+        const existing = await Customer.findOne({ phone });
         if (existing) {
             return res.status(400).json({ success: false, message: 'Client already exists with this phone number' });
         }
@@ -115,6 +129,9 @@ exports.createClient = async (req, res) => {
         });
     } catch (err) {
         console.error('Create client error:', err);
+        if (err.code === 11000 || (err.message && err.message.includes('E11000'))) {
+            return res.status(400).json({ success: false, message: 'Client already exists with this phone number' });
+        }
         res.status(500).json({ success: false, message: err.message || 'Server Error' });
     }
 };
@@ -124,6 +141,22 @@ exports.createClient = async (req, res) => {
 // @access  Private
 exports.updateClient = async (req, res) => {
     try {
+        const { phone, dob, anniversary } = req.body;
+
+        // Validation - Phone must be exactly 10 digits
+        if (phone && String(phone).replace(/\D/g, '').length !== 10) {
+            return res.status(400).json({ success: false, message: 'Phone number must be exactly 10 digits' });
+        }
+
+        // Validation - DOB and Anniversary cannot be in the future
+        const todayStr = new Date().toISOString().split('T')[0];
+        if (dob && dob > todayStr) {
+            return res.status(400).json({ success: false, message: 'Birth date cannot be in the future' });
+        }
+        if (anniversary && anniversary > todayStr) {
+            return res.status(400).json({ success: false, message: 'Anniversary date cannot be in the future' });
+        }
+
         let client = await Customer.findOne({
             _id: req.params.id,
             salonId: req.user.salonId
@@ -131,6 +164,13 @@ exports.updateClient = async (req, res) => {
 
         if (!client) {
             return res.status(404).json({ success: false, message: 'Client not found' });
+        }
+
+        if (phone && phone !== client.phone) {
+            const existingPhone = await Customer.findOne({ phone });
+            if (existingPhone) {
+                return res.status(400).json({ success: false, message: 'Client already exists with this phone number' });
+            }
         }
 
         const updatedClient = await Customer.findByIdAndUpdate(req.params.id, req.body, {
@@ -143,7 +183,11 @@ exports.updateClient = async (req, res) => {
             data: updatedClient
         });
     } catch (err) {
-        res.status(500).json({ success: false, message: 'Server Error' });
+        console.error('Update client error:', err);
+        if (err.code === 11000 || (err.message && err.message.includes('E11000'))) {
+            return res.status(400).json({ success: false, message: 'Client already exists with this phone number' });
+        }
+        res.status(500).json({ success: false, message: err.message || 'Server Error' });
     }
 };
 
@@ -234,6 +278,9 @@ exports.bulkImport = async (req, res) => {
         });
     } catch (err) {
         console.error('Bulk import error:', err);
+        if (err.code === 11000 || (err.message && err.message.includes('E11000'))) {
+            return res.status(400).json({ success: false, message: 'Duplicate phone numbers detected during bulk import' });
+        }
         res.status(500).json({ success: false, message: err.message || 'Server Error' });
     }
 };

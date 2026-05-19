@@ -138,7 +138,7 @@ const pdfStyles = StyleSheet.create({
 });
 
 
-const POSReceiptPDF = ({ invoice, salon }) => {
+export const POSReceiptPDF = ({ invoice, salon }) => {
     const createdAt = new Date(invoice.createdAt);
 
     const dateStr = createdAt.toLocaleDateString('en-GB', {
