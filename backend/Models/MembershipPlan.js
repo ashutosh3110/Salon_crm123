@@ -43,6 +43,15 @@ const membershipPlanSchema = new mongoose.Schema({
         enum: ['percentage', 'flat'],
         default: 'percentage'
     },
+    taxType: {
+        type: String,
+        enum: ['including', 'excluding'],
+        default: 'excluding'
+    },
+    taxRate: {
+        type: Number,
+        default: 0
+    },
     color: {
         type: String,
         default: '#C8956C'

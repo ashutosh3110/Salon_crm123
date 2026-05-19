@@ -14,7 +14,9 @@ import {
     Eye,
     X,
     ChevronDown,
-    Star
+    Star,
+    Printer,
+    FileText
 } from 'lucide-react';
 import { useAuth } from '../../../contexts/AuthContext';
 import { maskPhone } from '../../../utils/phoneUtils';
@@ -40,6 +42,10 @@ export default function MembersListTab() {
     const [selectedCustomerId, setSelectedCustomerId] = useState('');
     const [selectedPlanId, setSelectedPlanId] = useState('');
     const [searchCustomerTerm, setSearchCustomerTerm] = useState('');
+    const [selectedOutletId, setSelectedOutletId] = useState(activeOutletId || '');
+    const [paymentMethod, setPaymentMethod] = useState('cash');
+    const [selectedInvoice, setSelectedInvoice] = useState(null);
+    const [invoiceTab, setInvoiceTab] = useState('standard'); // 'standard' or 'thermal'
     const [assigning, setAssigning] = useState(false);
     const [errorMessage, setErrorMessage] = useState('');
     const [successMessage, setSuccessMessage] = useState('');
@@ -86,6 +92,8 @@ export default function MembersListTab() {
     // Load membership plans when assignment modal is shown
     useEffect(() => {
         if (showAssignModal) {
+            setSelectedOutletId(activeOutletId || '');
+            setPaymentMethod('cash');
             const fetchPlans = async () => {
                 try {
                     const res = await api.get('/loyalty/membership-plans');
@@ -96,7 +104,7 @@ export default function MembersListTab() {
             };
             fetchPlans();
         }
-    }, [showAssignModal]);
+    }, [showAssignModal, activeOutletId]);
 
     // Dynamic, debounced client query
     useEffect(() => {
@@ -137,19 +145,36 @@ export default function MembersListTab() {
         try {
             const res = await api.post('/loyalty/membership/assign', {
                 customerId: selectedCustomerId,
-                planId: selectedPlanId
+                planId: selectedPlanId,
+                outletId: selectedOutletId || undefined,
+                paymentMethod: paymentMethod
             });
             if (res.data?.success) {
                 setSuccessMessage('Membership plan assigned successfully!');
+                const createdInvoiceId = res.data?.data?.invoiceId;
+                
                 // Reload list
                 setRefreshTrigger(prev => prev + 1);
                 setPage(1);
-                setTimeout(() => {
+                
+                setTimeout(async () => {
                     setShowAssignModal(false);
                     setSelectedCustomerId('');
                     setSelectedPlanId('');
                     setSearchCustomerTerm('');
                     setSuccessMessage('');
+                    
+                    if (createdInvoiceId) {
+                        try {
+                            const invRes = await api.get(`/pos/invoices/${createdInvoiceId}`);
+                            if (invRes.data?.success && invRes.data?.data) {
+                                setSelectedInvoice(invRes.data.data);
+                                setInvoiceTab('standard');
+                            }
+                        } catch (invErr) {
+                            console.error('Failed to load invoice for printing:', invErr);
+                        }
+                    }
                 }, 1500);
             } else {
                 setErrorMessage(res.data?.message || 'Failed to assign membership.');
@@ -180,6 +205,22 @@ export default function MembersListTab() {
         a.download = `active-members-page-${page}.csv`;
         a.click();
         URL.revokeObjectURL(url);
+    };
+
+    const fetchAndShowInvoice = async (invoiceId) => {
+        if (!invoiceId) return;
+        try {
+            const res = await api.get(`/pos/invoices/${invoiceId}`);
+            if (res.data?.success && res.data?.data) {
+                setSelectedInvoice(res.data.data);
+                setInvoiceTab('standard');
+            } else {
+                alert('Invoice could not be retrieved.');
+            }
+        } catch (err) {
+            console.error('Error fetching invoice details:', err);
+            alert('Failed to load invoice details.');
+        }
     };
 
     return (
@@ -298,6 +339,15 @@ export default function MembersListTab() {
                                         </td>
                                         <td className="px-6 py-5 text-right">
                                             <div className="flex items-center justify-end gap-2">
+                                                {member.invoiceId && (
+                                                    <button 
+                                                        onClick={() => fetchAndShowInvoice(member.invoiceId)}
+                                                        className="p-2 text-text-muted hover:text-primary hover:bg-primary/5 border border-transparent hover:border-primary/20 transition-all"
+                                                        title="Print Invoice / Bill"
+                                                    >
+                                                        <Printer size={16} />
+                                                    </button>
+                                                )}
                                                 <button 
                                                     onClick={() => setSelectedMember(member)}
                                                     className="p-2 text-text-muted hover:text-primary hover:bg-primary/5 border border-transparent hover:border-primary/20 transition-all"
@@ -321,7 +371,7 @@ export default function MembersListTab() {
             {/* Member Details Modal */}
             <AnimatePresence>
                 {selectedMember && (
-                    <div className="fixed inset-0 z-[1000] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+                    <div className="fixed inset-0 z-[1000] flex items-start justify-center p-4 pt-10 sm:pt-16 bg-black/60 backdrop-blur-sm overflow-y-auto">
                         <motion.div
                             initial={{ opacity: 0, scale: 0.95, y: 20 }}
                             animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -410,7 +460,7 @@ export default function MembersListTab() {
             {/* Assign Membership Plan Modal */}
             <AnimatePresence>
                 {showAssignModal && (
-                    <div className="fixed inset-0 z-[1000] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+                    <div className="fixed inset-0 z-[1000] flex items-start justify-center p-4 pt-10 sm:pt-16 bg-black/60 backdrop-blur-sm overflow-y-auto">
                         <motion.div
                             initial={{ opacity: 0, scale: 0.95, y: 20 }}
                             animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -503,39 +553,37 @@ export default function MembersListTab() {
                                                     <div className="px-4 py-3 text-xs font-bold text-text-muted italic">No matching customers found.</div>
                                                 ) : (
                                                     searchResults.map(c => (
-                                                        <button
+                                                        <div
                                                             key={c._id || c.id}
-                                                            type="button"
                                                             onClick={() => {
                                                                 setSelectedCustomerId(c._id || c.id);
                                                                 setSearchCustomerTerm(`${c.name || 'Unknown'} (${c.phone || ''})`);
                                                                 setSearchResults([]);
                                                                 setShowDropdown(false);
                                                             }}
-                                                            className="w-full text-left px-4 py-3 hover:bg-primary/10 transition-colors text-xs font-black italic flex justify-between items-center"
+                                                            className="w-full text-left px-4 py-3 hover:bg-primary/10 transition-colors text-xs font-black italic flex justify-between items-center cursor-pointer"
                                                         >
                                                             <span>{c.name || 'Unknown'}</span>
                                                             <span className="text-[10px] font-bold text-text-muted uppercase tracking-widest">{c.phone || ''}</span>
-                                                        </button>
+                                                        </div>
                                                     ))
                                                 )
                                             ) : (
                                                 /* Show preloaded customers when search input is empty */
                                                 customers && customers.length > 0 ? (
                                                     customers.slice(0, 15).map(c => (
-                                                        <button
+                                                        <div
                                                             key={c._id || c.id}
-                                                            type="button"
                                                             onClick={() => {
                                                                 setSelectedCustomerId(c._id || c.id);
                                                                 setSearchCustomerTerm(`${c.name || 'Unknown'} (${c.phone || ''})`);
                                                                 setShowDropdown(false);
                                                             }}
-                                                            className="w-full text-left px-4 py-3 hover:bg-primary/10 transition-colors text-xs font-black italic flex justify-between items-center"
+                                                            className="w-full text-left px-4 py-3 hover:bg-primary/10 transition-colors text-xs font-black italic flex justify-between items-center cursor-pointer"
                                                         >
                                                             <span>{c.name || 'Unknown'}</span>
                                                             <span className="text-[10px] font-bold text-text-muted uppercase tracking-widest">{c.phone || ''}</span>
-                                                        </button>
+                                                        </div>
                                                     ))
                                                 ) : (
                                                     <div className="px-4 py-3 text-xs font-bold text-text-muted italic">No customers loaded. Start typing to search.</div>
@@ -551,16 +599,92 @@ export default function MembersListTab() {
                                     <select
                                         value={selectedPlanId}
                                         onChange={(e) => setSelectedPlanId(e.target.value)}
-                                        className="w-full h-12 bg-surface border border-border/40 px-4 text-xs font-bold text-foreground focus:border-primary outline-none transition-all shadow-sm"
+                                        className="w-full h-12 bg-surface border border-border/40 px-4 text-xs font-bold text-foreground focus:border-primary outline-none transition-all shadow-sm rounded-none"
                                     >
                                         <option value="">-- Choose a Plan --</option>
                                         {plans.map(p => (
                                             <option key={p._id || p.id} value={p._id || p.id}>
-                                                {p.name} - ₹{p.price} ({p.duration} Days)
+                                                {p.name} - ₹{p.price} ({p.duration} Days) — {p.taxType === 'including' ? 'Incl.' : 'Excl.'} {p.taxRate}% GST
                                             </option>
                                         ))}
                                     </select>
                                 </div>
+
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    {/* Select Outlet */}
+                                    <div>
+                                        <label className="text-[10px] font-black text-text-muted uppercase tracking-widest block mb-2">Select Outlet</label>
+                                        <select
+                                            value={selectedOutletId}
+                                            onChange={(e) => setSelectedOutletId(e.target.value)}
+                                            className="w-full h-12 bg-surface border border-border/40 px-4 text-xs font-bold text-foreground focus:border-primary outline-none transition-all shadow-sm rounded-none"
+                                        >
+                                            <option value="">-- Choose Outlet --</option>
+                                            {outlets.map(o => (
+                                                <option key={o._id || o.id} value={o._id || o.id}>
+                                                    {o.name}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    </div>
+
+                                    {/* Select Payment Method */}
+                                    <div>
+                                        <label className="text-[10px] font-black text-text-muted uppercase tracking-widest block mb-2">Payment Method</label>
+                                        <select
+                                            value={paymentMethod}
+                                            onChange={(e) => setPaymentMethod(e.target.value)}
+                                            className="w-full h-12 bg-surface border border-border/40 px-4 text-xs font-bold text-foreground focus:border-primary outline-none transition-all shadow-sm rounded-none"
+                                        >
+                                            <option value="cash">Cash</option>
+                                            <option value="card">Card</option>
+                                            <option value="online">UPI / Online</option>
+                                            <option value="wallet">Wallet Balance</option>
+                                            <option value="unpaid">Unpaid (Add to Due)</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                {/* Detailed Tax & Price Breakdown */}
+                                {selectedPlanId && (() => {
+                                    const selectedPlan = plans.find(p => String(p._id || p.id) === String(selectedPlanId));
+                                    if (!selectedPlan) return null;
+
+                                    const basePrice = Number(selectedPlan.price || 0);
+                                    const taxRate = Number(selectedPlan.taxRate || 0);
+                                    let calculatedBase = 0;
+                                    let calculatedTax = 0;
+                                    let calculatedTotal = 0;
+
+                                    if (selectedPlan.taxType === 'including') {
+                                        calculatedTotal = basePrice;
+                                        calculatedBase = basePrice / (1 + taxRate / 100);
+                                        calculatedTax = calculatedTotal - calculatedBase;
+                                    } else {
+                                        calculatedBase = basePrice;
+                                        calculatedTax = basePrice * (taxRate / 100);
+                                        calculatedTotal = basePrice + calculatedTax;
+                                    }
+
+                                    return (
+                                        <div className="p-4 bg-surface-alt border border-border/40 space-y-2 mt-4 italic">
+                                            <div className="text-[9px] font-black text-text-muted uppercase tracking-widest">Plan Cost & Tax Ledger</div>
+                                            <div className="flex justify-between text-xs font-black">
+                                                <span className="text-text-muted uppercase">Base Price:</span>
+                                                <span>₹{calculatedBase.toFixed(2)}</span>
+                                            </div>
+                                            <div className="flex justify-between text-xs font-black text-primary">
+                                                <span className="uppercase">GST ({taxRate}%):</span>
+                                                <span>{selectedPlan.taxType === 'including' ? 'INCLUDED' : '+'} ₹{calculatedTax.toFixed(2)}</span>
+                                            </div>
+                                            <div className="h-[1px] bg-border/40 my-1" />
+                                            <div className="flex justify-between text-sm font-black text-foreground">
+                                                <span className="uppercase">Total Amount Payable:</span>
+                                                <span>₹{calculatedTotal.toFixed(2)}</span>
+                                            </div>
+                                        </div>
+                                    );
+                                })()}
 
                                 {/* Modal Footer / Actions */}
                                 <div className="bg-surface-alt border-t border-border/40 -mx-8 -mb-8 px-8 py-4 flex justify-end gap-3">
@@ -587,6 +711,251 @@ export default function MembersListTab() {
                                     </button>
                                 </div>
                             </form>
+                        </motion.div>
+                    </div>
+                )}
+            </AnimatePresence>
+
+            {/* Invoice Preview Modal (Standard/Thermal) */}
+            <AnimatePresence>
+                {selectedInvoice && (
+                    <div className="fixed inset-0 z-[1000] flex items-start justify-center p-4 pt-10 sm:pt-16 bg-black/60 backdrop-blur-sm overflow-y-auto no-print">
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                            animate={{ opacity: 1, scale: 1, y: 0 }}
+                            exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                            className="bg-surface border border-border w-full max-w-2xl overflow-hidden shadow-2xl rounded-none font-sans"
+                        >
+                            {/* Modal Header */}
+                            <div className="bg-surface-alt border-b border-border/40 px-6 py-4 flex items-center justify-between">
+                                <div className="flex items-center gap-3">
+                                    <FileText className="w-5 h-5 text-primary" />
+                                    <h3 className="text-sm font-black uppercase tracking-widest italic">Invoice Billing Ledger</h3>
+                                </div>
+                                <button onClick={() => setSelectedInvoice(null)} className="text-text-muted hover:text-primary transition-colors">
+                                    <X size={20} />
+                                </button>
+                            </div>
+
+                            {/* Format Switcher Tab Bar */}
+                            <div className="flex border-b border-border/30 bg-surface-alt p-1">
+                                <button
+                                    onClick={() => setInvoiceTab('standard')}
+                                    className={`flex-1 py-3 text-center text-[10px] font-black uppercase tracking-widest transition-all ${
+                                        invoiceTab === 'standard'
+                                            ? 'bg-white text-primary border border-border/40 font-extrabold shadow-sm'
+                                            : 'text-text-muted hover:text-foreground'
+                                    }`}
+                                >
+                                    Standard Invoice (A4)
+                                </button>
+                                <button
+                                    onClick={() => setInvoiceTab('thermal')}
+                                    className={`flex-1 py-3 text-center text-[10px] font-black uppercase tracking-widest transition-all ${
+                                        invoiceTab === 'thermal'
+                                            ? 'bg-white text-primary border border-border/40 font-extrabold shadow-sm'
+                                            : 'text-text-muted hover:text-foreground'
+                                    }`}
+                                >
+                                    Thermal POS Receipt (80mm)
+                                </button>
+                            </div>
+
+                            {/* Modal Body / Invoice Sheet */}
+                            <div className="p-8 max-h-[60vh] overflow-y-auto bg-surface-alt/20 flex justify-center">
+                                {invoiceTab === 'standard' ? (
+                                    /* Standard A4 Styled Invoice Sheet */
+                                    <div id="invoice-print-area" className="w-full bg-white border border-border/40 shadow-inner p-8 text-black text-left font-mono text-[11px] leading-relaxed select-text print:border-0 print:shadow-none print:p-0 print:m-0 print:w-full">
+                                        <div className="flex justify-between items-start border-b border-black/80 pb-6 mb-6">
+                                            <div>
+                                                <h1 className="text-xl font-black uppercase tracking-tight text-black">{selectedInvoice.salonId?.brandName || 'SALON LEDGER'}</h1>
+                                                <p className="text-[9px] font-bold text-gray-500 uppercase tracking-widest mt-1">Official Invoice & Subscription Manifest</p>
+                                                <p className="text-[9px] text-gray-500 mt-1">{selectedInvoice.outletId?.name || 'Main Branch'}</p>
+                                            </div>
+                                            <div className="text-right">
+                                                <h2 className="text-md font-black uppercase italic text-primary">{selectedInvoice.invoiceNumber || 'INV-TEMP'}</h2>
+                                                <p className="text-[9px] text-gray-500 uppercase tracking-wider mt-1">Date: {new Date(selectedInvoice.createdAt).toLocaleString('en-IN')}</p>
+                                            </div>
+                                        </div>
+
+                                        <div className="grid grid-cols-2 gap-6 mb-6 text-[10px]">
+                                            <div className="space-y-1">
+                                                <div className="font-black text-gray-500 uppercase tracking-widest">Billed To</div>
+                                                <div className="font-extrabold text-sm">{selectedInvoice.clientId?.name || 'Walk-in Customer'}</div>
+                                                <div>Phone: {selectedInvoice.clientId?.phone || '-'}</div>
+                                                {selectedInvoice.clientId?.email && <div>Email: {selectedInvoice.clientId?.email}</div>}
+                                            </div>
+                                            <div className="space-y-1 text-right">
+                                                <div className="font-black text-gray-500 uppercase tracking-widest">Transaction details</div>
+                                                <div>Payment Method: <span className="font-extrabold uppercase">{selectedInvoice.paymentMethod || 'CASH'}</span></div>
+                                                <div>Status: <span className="font-extrabold uppercase text-emerald-600">{selectedInvoice.paymentStatus || 'PAID'}</span></div>
+                                                {selectedInvoice.staffId && <div>Billed By: <span className="font-extrabold uppercase">{selectedInvoice.staffId.name || selectedInvoice.staffId}</span></div>}
+                                            </div>
+                                        </div>
+
+                                        <table className="w-full border-collapse mb-6 text-[10px]">
+                                            <thead>
+                                                <tr className="border-y border-black font-black uppercase tracking-wider text-left bg-gray-50">
+                                                    <th className="py-2.5 px-2">Description</th>
+                                                    <th className="py-2.5 px-2 text-right">Qty</th>
+                                                    <th className="py-2.5 px-2 text-right">Rate</th>
+                                                    <th className="py-2.5 px-2 text-right">Total</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody className="divide-y divide-gray-200">
+                                                {selectedInvoice.items?.map((item, idx) => (
+                                                    <tr key={idx}>
+                                                        <td className="py-3 px-2 font-extrabold text-black uppercase">{item.name || 'Membership Subscription Plan'}</td>
+                                                        <td className="py-3 px-2 text-right">{item.quantity || 1}</td>
+                                                        <td className="py-3 px-2 text-right">₹{(item.price || 0).toLocaleString('en-IN')}</td>
+                                                        <td className="py-3 px-2 text-right font-extrabold">₹{((item.price || 0) * (item.quantity || 1)).toLocaleString('en-IN')}</td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
+
+                                        <div className="w-full flex justify-end">
+                                            <div className="w-72 space-y-2 border-t border-black/20 pt-4 text-[10px]">
+                                                <div className="flex justify-between">
+                                                    <span className="text-gray-500 uppercase">Subtotal:</span>
+                                                    <span className="font-bold">₹{(selectedInvoice.subtotal || 0).toLocaleString('en-IN')}</span>
+                                                </div>
+                                                <div className="flex justify-between">
+                                                    <span className="text-gray-500 uppercase">Base Amount:</span>
+                                                    <span className="font-bold">₹{(selectedInvoice.baseAmount || 0).toLocaleString('en-IN')}</span>
+                                                </div>
+                                                <div className="flex justify-between text-primary">
+                                                    <span className="uppercase">CGST (9%):</span>
+                                                    <span>₹{(selectedInvoice.cgst || 0).toLocaleString('en-IN')}</span>
+                                                </div>
+                                                <div className="flex justify-between text-primary">
+                                                    <span className="uppercase">SGST (9%):</span>
+                                                    <span>₹{(selectedInvoice.sgst || 0).toLocaleString('en-IN')}</span>
+                                                </div>
+                                                {selectedInvoice.discount > 0 && (
+                                                    <div className="flex justify-between text-rose-500">
+                                                        <span className="uppercase">Discount:</span>
+                                                        <span>-₹{(selectedInvoice.discount || 0).toLocaleString('en-IN')}</span>
+                                                    </div>
+                                                )}
+                                                <div className="h-[1px] bg-black/40 my-2" />
+                                                <div className="flex justify-between text-sm font-black text-black">
+                                                    <span>TOTAL AMOUNT:</span>
+                                                    <span>₹{(selectedInvoice.total || 0).toLocaleString('en-IN')}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div className="mt-12 pt-6 border-t border-gray-200 text-[8px] text-center text-gray-400 uppercase tracking-widest">
+                                            *** THIS IS A COMPUTER GENERATED INVOICE. THANK YOU FOR YOUR BUSINESS! ***
+                                        </div>
+                                    </div>
+                                ) : (
+                                    /* POS Thermal Receipt 80mm Styled Sheet */
+                                    <div id="invoice-print-area" className="w-[300px] bg-white border border-dashed border-gray-400 shadow-md p-6 text-black text-left font-mono text-[10px] leading-relaxed select-text print:border-0 print:shadow-none print:p-0 print:m-0 print:w-full">
+                                        <div className="text-center space-y-1 pb-4 border-b border-dashed border-black">
+                                            <h1 className="text-md font-black uppercase tracking-tighter text-black">{selectedInvoice.salonId?.brandName || 'SALON LEDGER'}</h1>
+                                            <p className="text-[8px] uppercase tracking-widest text-gray-500">RECEIPT MANIFEST</p>
+                                            <p className="text-[8px] text-gray-500 leading-none">{selectedInvoice.outletId?.name || 'Main Branch'}</p>
+                                        </div>
+
+                                        <div className="py-4 space-y-1 text-[8px] border-b border-dashed border-black/40">
+                                            <div>REC NO : <span className="font-bold">{selectedInvoice.invoiceNumber || 'INV-TEMP'}</span></div>
+                                            <div>DATE   : <span>{new Date(selectedInvoice.createdAt).toLocaleString('en-IN')}</span></div>
+                                            <div>CLIENT : <span className="font-bold uppercase">{selectedInvoice.clientId?.name || 'Walk-in'}</span></div>
+                                            <div>PHONE  : <span>{selectedInvoice.clientId?.phone || '-'}</span></div>
+                                            <div>METHOD : <span className="font-bold uppercase">{selectedInvoice.paymentMethod || 'CASH'}</span></div>
+                                            {selectedInvoice.staffId && <div>STAFF  : <span className="font-bold uppercase">{selectedInvoice.staffId.name || selectedInvoice.staffId}</span></div>}
+                                        </div>
+
+                                        <div className="py-4 border-b border-dashed border-black/40 text-[9px]">
+                                            <div className="flex justify-between font-black uppercase tracking-tight mb-2">
+                                                <span>ITEM DESCRIPTION</span>
+                                                <span>TOTAL</span>
+                                            </div>
+                                            {selectedInvoice.items?.map((item, idx) => (
+                                                <div key={idx} className="flex justify-between items-start">
+                                                    <span className="uppercase font-bold max-w-[200px]">{item.name || 'Membership Plan'} x{item.quantity || 1}</span>
+                                                    <span>₹{((item.price || 0) * (item.quantity || 1)).toLocaleString('en-IN')}</span>
+                                                </div>
+                                            ))}
+                                        </div>
+
+                                        <div className="py-4 space-y-1.5 text-[8px]">
+                                            <div className="flex justify-between">
+                                                <span>SUBTOTAL:</span>
+                                                <span>₹{(selectedInvoice.subtotal || 0).toLocaleString('en-IN')}</span>
+                                            </div>
+                                            <div className="flex justify-between">
+                                                <span>TAX (GST):</span>
+                                                <span>₹{((selectedInvoice.cgst || 0) + (selectedInvoice.sgst || 0)).toLocaleString('en-IN')}</span>
+                                            </div>
+                                            {selectedInvoice.discount > 0 && (
+                                                <div className="flex justify-between text-rose-600">
+                                                    <span>DISCOUNT:</span>
+                                                    <span>-₹{(selectedInvoice.discount || 0).toLocaleString('en-IN')}</span>
+                                                </div>
+                                            )}
+                                            <div className="border-t border-dashed border-black/30 my-1" />
+                                            <div className="flex justify-between text-xs font-black text-black">
+                                                <span>TOTAL PAYABLE:</span>
+                                                <span>₹{(selectedInvoice.total || 0).toLocaleString('en-IN')}</span>
+                                            </div>
+                                        </div>
+
+                                        <div className="text-center pt-4 border-t border-dashed border-black text-[8px] uppercase tracking-tighter">
+                                            *** THANKS FOR VISITING US ***
+                                            <br />
+                                            HAVE A GREAT DAY!
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Modal Footer / Actions */}
+                            <div className="bg-surface-alt border-t border-border/40 px-6 py-4 flex justify-end gap-3 text-right">
+                                <button
+                                    onClick={() => setSelectedInvoice(null)}
+                                    className="px-6 py-2.5 border border-border/40 text-[10px] font-black uppercase tracking-[0.2em] hover:bg-surface transition-all"
+                                >
+                                    Close
+                                </button>
+                                <button
+                                    onClick={() => {
+                                        const style = document.createElement('style');
+                                        style.id = 'print-style-helper';
+                                        style.innerHTML = `
+                                            @media print {
+                                                body * {
+                                                    visibility: hidden !important;
+                                                }
+                                                #invoice-print-area, #invoice-print-area * {
+                                                    visibility: visible !important;
+                                                }
+                                                #invoice-print-area {
+                                                    position: absolute !important;
+                                                    left: 0 !important;
+                                                    top: 0 !important;
+                                                    width: 100% !important;
+                                                    border: none !important;
+                                                    box-shadow: none !important;
+                                                    padding: 0 !important;
+                                                    margin: 0 !important;
+                                                }
+                                            }
+                                        `;
+                                        document.head.appendChild(style);
+                                        window.print();
+                                        setTimeout(() => {
+                                            const helper = document.getElementById('print-style-helper');
+                                            if (helper) helper.remove();
+                                        }, 1000);
+                                    }}
+                                    className="px-6 py-2.5 bg-primary text-white text-[10px] font-black uppercase tracking-[0.2em] hover:bg-primary-dark transition-all flex items-center gap-2"
+                                >
+                                    <Printer className="w-4 h-4" /> Print Receipt
+                                </button>
+                            </div>
                         </motion.div>
                     </div>
                 )}

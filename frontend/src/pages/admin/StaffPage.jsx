@@ -476,7 +476,11 @@ export default function StaffPage() {
             {/* Shift Modal - High Density Refinement */}
             {showModal && (
                 <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 overflow-y-auto" onClick={() => setShowModal(false)}>
-                    <div className="bg-white w-full max-w-md shadow-2xl relative border-2 border-text flex flex-col my-auto max-h-[95vh]" onClick={(e) => e.stopPropagation()}>
+                    <form 
+                        onSubmit={handleSubmit}
+                        className="bg-white w-full max-w-md shadow-2xl relative border-2 border-text flex flex-col my-auto max-h-[95vh] overflow-hidden" 
+                        onClick={(e) => e.stopPropagation()}
+                    >
                         {/* Modal Header */}
                         <div className="flex items-center gap-4 p-6 pb-4 border-b border-border shrink-0">
                             <div className="w-10 h-10 bg-text text-white flex items-center justify-center">
@@ -488,14 +492,13 @@ export default function StaffPage() {
                                 </h2>
                                 <p className="text-[8px] font-black text-text-muted uppercase tracking-[0.3em] mt-1">New Staff Registration</p>
                             </div>
-                            <button onClick={() => setShowModal(false)} className="ml-auto p-1 hover:bg-surface transition-colors">
+                            <button type="button" onClick={() => setShowModal(false)} className="ml-auto p-1 hover:bg-surface transition-colors">
                                 <XCircle className="w-5 h-5 text-text-muted" />
                             </button>
                         </div>
 
-                        <form onSubmit={handleSubmit} className="flex flex-col flex-1 overflow-hidden">
-                            <div className="p-6 space-y-4 overflow-y-auto max-h-[calc(95vh-160px)] custom-scrollbar">
-                                <div className="grid grid-cols-2 gap-3 pb-4">
+                        <div className="p-6 space-y-4 overflow-y-auto flex-1 custom-scrollbar">
+                            <div className="grid grid-cols-2 gap-3 pb-4">
                                 <div className="col-span-2 space-y-1">
                                     <div className="flex justify-between items-end mb-1">
                                         <label className="text-[9px] font-black text-text-muted uppercase tracking-widest font-mono">Profile Photo</label>
@@ -698,8 +701,8 @@ export default function StaffPage() {
                                                         <Clock className="w-3.5 h-3.5 text-primary" />
                                                         <p className="text-[10px] font-black text-primary uppercase tracking-[0.2em] font-mono">Staff Breaks (Lunch/Tea)</p>
                                                     </div>
-                                                    <button 
-                                                        type="button" 
+                                                    <div 
+                                                        role="button" 
                                                         onClick={() => {
                                                             const currentBreaks = form.availability?.breaks || [];
                                                             setForm({
@@ -710,10 +713,10 @@ export default function StaffPage() {
                                                                 }
                                                             });
                                                         }}
-                                                        className="text-[8px] font-black text-primary border border-primary/20 px-2 py-1 hover:bg-primary/5 transition-all"
+                                                        className="text-[8px] font-black text-primary border border-primary/20 px-2 py-1 hover:bg-primary/5 transition-all cursor-pointer"
                                                     >
                                                         + ADD BREAK
-                                                    </button>
+                                                    </div>
                                                 </div>
 
                                                 <div className="space-y-2">
@@ -756,16 +759,16 @@ export default function StaffPage() {
                                                                         className="bg-surface px-2 py-1 border border-border text-[9px] font-black outline-none font-mono" 
                                                                     />
                                                                 </div>
-                                                                <button 
-                                                                    type="button" 
+                                                                <div 
+                                                                    role="button" 
                                                                     onClick={() => {
                                                                         const newBreaks = form.availability.breaks.filter((_, i) => i !== idx);
                                                                         setForm({ ...form, availability: { ...form.availability, breaks: newBreaks } });
                                                                     }}
-                                                                    className="p-1 text-rose-500 hover:bg-rose-50 transition-colors opacity-0 group-hover/break:opacity-100"
+                                                                    className="p-1 text-rose-500 hover:bg-rose-50 transition-colors opacity-0 group-hover/break:opacity-100 cursor-pointer"
                                                                 >
                                                                     <Trash2 size={10} />
-                                                                </button>
+                                                                </div>
                                                             </div>
                                                         ))
                                                     )}
@@ -775,20 +778,20 @@ export default function StaffPage() {
                                             <div className="flex items-center justify-between mb-4">
                                                 <p className="text-[10px] font-black text-primary uppercase tracking-[0.2em] font-mono">Work Schedule & Availability</p>
                                                 <div className="flex bg-surface-alt p-1 rounded-none border border-border">
-                                                    <button 
-                                                        type="button"
+                                                    <div 
+                                                        role="button"
                                                         onClick={() => setForm({ ...form, availability: { ...form.availability, mode: 'same' } })}
-                                                        className={`px-3 py-1 text-[8px] font-black uppercase tracking-tighter transition-all ${form.availability?.mode === 'same' ? 'bg-text text-white' : 'text-text-muted hover:text-text'}`}
+                                                        className={`px-3 py-1 text-[8px] font-black uppercase tracking-tighter transition-all cursor-pointer ${form.availability?.mode === 'same' ? 'bg-text text-white' : 'text-text-muted hover:text-text'}`}
                                                     >
                                                         Same for all
-                                                    </button>
-                                                    <button 
-                                                        type="button"
+                                                    </div>
+                                                    <div 
+                                                        role="button"
                                                         onClick={() => setForm({ ...form, availability: { ...form.availability, mode: 'different' } })}
-                                                        className={`px-3 py-1 text-[8px] font-black uppercase tracking-tighter transition-all ${form.availability?.mode === 'different' ? 'bg-text text-white' : 'text-text-muted hover:text-text'}`}
+                                                        className={`px-3 py-1 text-[8px] font-black uppercase tracking-tighter transition-all cursor-pointer ${form.availability?.mode === 'different' ? 'bg-text text-white' : 'text-text-muted hover:text-text'}`}
                                                     >
                                                         Different Days
-                                                    </button>
+                                                    </div>
                                                 </div>
                                             </div>
 
@@ -833,28 +836,27 @@ export default function StaffPage() {
                             </div>
                         </div>
 
-                            <div className="flex gap-3 p-6 border-t border-border bg-surface-alt/10 shrink-0">
-                                <button
-                                    type="button"
-                                    onClick={() => setShowModal(false)}
-                                    className="flex-1 py-3 text-[9px] font-black uppercase tracking-widest text-text-muted hover:bg-surface-alt transition-colors font-mono"
-                                >
-                                    Cancel
-                                </button>
-                                <button
-                                    type="submit"
-                                    disabled={loading}
-                                    className="flex-1 bg-text text-white py-3 shadow-lg flex items-center justify-center gap-2 hover:bg-primary transition-all active:scale-95 disabled:opacity-30"
-                                >
-                                    {loading ? (
-                                        <div className="w-4 h-4 border-2 border-white/30 border-t-white animate-spin" />
-                                    ) : (
-                                        <span className="text-[10px] font-bold uppercase tracking-[0.2em]">{editing ? 'Save Changes' : 'Add Member'}</span>
-                                    )}
-                                </button>
+                        <div className="flex gap-3 p-6 border-t border-slate-200 bg-surface-alt/10 shrink-0">
+                            <div
+                                role="button"
+                                onClick={() => setShowModal(false)}
+                                className="flex-1 py-3 text-[9px] font-black uppercase tracking-widest text-text-muted hover:bg-surface-alt transition-colors font-mono cursor-pointer text-center bg-white border border-slate-200 flex items-center justify-center"
+                            >
+                                Cancel
                             </div>
-                        </form>
-                    </div>
+                            <button
+                                type="submit"
+                                disabled={loading}
+                                className="flex-1 bg-text text-white py-3 shadow-lg flex items-center justify-center gap-2 hover:bg-primary transition-all active:scale-95 disabled:opacity-30"
+                            >
+                                {loading ? (
+                                    <div className="w-4 h-4 border-2 border-white/30 border-t-white animate-spin" />
+                                ) : (
+                                    <span className="text-[10px] font-bold uppercase tracking-[0.2em]">{editing ? 'Save Changes' : 'Add Member'}</span>
+                                )}
+                            </button>
+                        </div>
+                    </form>
                 </div>
             )}
         </div>

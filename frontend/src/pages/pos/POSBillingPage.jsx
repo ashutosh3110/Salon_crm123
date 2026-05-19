@@ -2343,7 +2343,10 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
         const item = newQCart[idx];
         const prevType = item.membershipDiscountType !== undefined 
             ? item.membershipDiscountType 
-            : (qActiveMembership?.planId?.serviceDiscountType || 'percentage');
+            : (item.type === 'service' 
+                ? (qActiveMembership?.planId?.serviceDiscountType || 'percentage') 
+                : (qActiveMembership?.planId?.productDiscountType || 'percentage')
+              );
         
         let finalValue = Number(value) || 0;
         
@@ -2882,7 +2885,7 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                                                     </div>
                                                 )}
                                             </div>
-                                            {item.type === 'service' && (
+                                            {(item.type === 'service' || item.type === 'product') && (
                                                 <div className="mt-2 flex items-center gap-1.5 bg-slate-50 border border-slate-200 rounded-xl p-1.5 transition-all w-fit">
                                                     <Sparkles className="w-2.5 h-2.5 text-slate-500 animate-pulse" />
                                                     <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">
@@ -2893,9 +2896,23 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                                                     <div className="flex items-center bg-white border border-slate-200 rounded-lg overflow-hidden h-5">
                                                         <button 
                                                             type="button"
-                                                            onClick={() => updateQItemMembershipDiscount(idx, 'percentage', item.membershipDiscountValue !== undefined ? item.membershipDiscountValue : (qActiveMembership?.planId?.serviceDiscountType === 'fixed' ? qActiveMembership.planId.serviceDiscountValue : (qActiveMembership?.planId?.serviceDiscountValue || 0)))}
+                                                            onClick={() => {
+                                                                const fallbackType = item.type === 'service' 
+                                                                    ? (qActiveMembership?.planId?.serviceDiscountType || 'percentage') 
+                                                                    : (qActiveMembership?.planId?.productDiscountType || 'percentage');
+                                                                const fallbackValue = item.type === 'service'
+                                                                    ? (qActiveMembership?.planId?.serviceDiscountType === 'fixed' ? qActiveMembership.planId.serviceDiscountValue : (qActiveMembership?.planId?.serviceDiscountValue || 0))
+                                                                    : (qActiveMembership?.planId?.productDiscountType === 'fixed' ? qActiveMembership.planId.productDiscountValue : (qActiveMembership?.planId?.productDiscountValue || 0));
+                                                                updateQItemMembershipDiscount(idx, 'percentage', item.membershipDiscountValue !== undefined ? item.membershipDiscountValue : fallbackValue);
+                                                            }}
                                                             className={`px-1.5 text-[10px] font-bold h-full flex items-center ${
-                                                                (item.membershipDiscountType !== undefined ? item.membershipDiscountType : (qActiveMembership?.planId?.serviceDiscountType || 'percentage')) === 'percentage' 
+                                                                (item.membershipDiscountType !== undefined 
+                                                                    ? item.membershipDiscountType 
+                                                                    : (item.type === 'service' 
+                                                                        ? (qActiveMembership?.planId?.serviceDiscountType || 'percentage') 
+                                                                        : (qActiveMembership?.planId?.productDiscountType || 'percentage')
+                                                                      )
+                                                                ) === 'percentage' 
                                                                     ? 'bg-slate-800 text-white' 
                                                                     : 'text-slate-400 hover:bg-slate-50'
                                                             }`}
@@ -2904,9 +2921,23 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                                                         </button>
                                                         <button 
                                                             type="button"
-                                                            onClick={() => updateQItemMembershipDiscount(idx, 'fixed', item.membershipDiscountValue !== undefined ? item.membershipDiscountValue : (qActiveMembership?.planId?.serviceDiscountType === 'fixed' ? qActiveMembership.planId.serviceDiscountValue : (qActiveMembership?.planId?.serviceDiscountValue || 0)))}
+                                                            onClick={() => {
+                                                                const fallbackType = item.type === 'service' 
+                                                                    ? (qActiveMembership?.planId?.serviceDiscountType || 'percentage') 
+                                                                    : (qActiveMembership?.planId?.productDiscountType || 'percentage');
+                                                                const fallbackValue = item.type === 'service'
+                                                                    ? (qActiveMembership?.planId?.serviceDiscountType === 'fixed' ? qActiveMembership.planId.serviceDiscountValue : (qActiveMembership?.planId?.serviceDiscountValue || 0))
+                                                                    : (qActiveMembership?.planId?.productDiscountType === 'fixed' ? qActiveMembership.planId.productDiscountValue : (qActiveMembership?.planId?.productDiscountValue || 0));
+                                                                updateQItemMembershipDiscount(idx, 'fixed', item.membershipDiscountValue !== undefined ? item.membershipDiscountValue : fallbackValue);
+                                                            }}
                                                             className={`px-1.5 text-[10px] font-bold h-full flex items-center ${
-                                                                (item.membershipDiscountType !== undefined ? item.membershipDiscountType : (qActiveMembership?.planId?.serviceDiscountType || 'percentage')) === 'fixed' 
+                                                                (item.membershipDiscountType !== undefined 
+                                                                    ? item.membershipDiscountType 
+                                                                    : (item.type === 'service' 
+                                                                        ? (qActiveMembership?.planId?.serviceDiscountType || 'percentage') 
+                                                                        : (qActiveMembership?.planId?.productDiscountType || 'percentage')
+                                                                      )
+                                                                ) === 'fixed' 
                                                                     ? 'bg-slate-800 text-white' 
                                                                     : 'text-slate-400 hover:bg-slate-50'
                                                             }`}
@@ -2914,33 +2945,57 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                                                             ₹
                                                         </button>
                                                     </div>
-
+ 
                                                     {/* Numeric Input */}
                                                     <input 
                                                         type="number" 
                                                         min="0"
                                                         max={
-                                                            (item.membershipDiscountType !== undefined ? item.membershipDiscountType : (qActiveMembership?.planId?.serviceDiscountType || 'percentage')) === 'percentage' 
+                                                            (item.membershipDiscountType !== undefined 
+                                                                ? item.membershipDiscountType 
+                                                                : (item.type === 'service' 
+                                                                    ? (qActiveMembership?.planId?.serviceDiscountType || 'percentage') 
+                                                                    : (qActiveMembership?.planId?.productDiscountType || 'percentage')
+                                                                  )
+                                                            ) === 'percentage' 
                                                                 ? '100' 
                                                                 : String(item.price)
                                                         }
                                                         value={
                                                             item.membershipDiscountValue !== undefined 
                                                                 ? item.membershipDiscountValue 
-                                                                : (qActiveMembership?.planId?.serviceDiscountValue || 0)
+                                                                : (item.type === 'service' 
+                                                                    ? (qActiveMembership?.planId?.serviceDiscountValue || 0)
+                                                                    : (qActiveMembership?.planId?.productDiscountValue || 0)
+                                                                  )
                                                         }
                                                         onChange={(e) => {
                                                             const val = Math.max(0, Number(e.target.value) || 0);
                                                             const currentType = item.membershipDiscountType !== undefined 
                                                                 ? item.membershipDiscountType 
-                                                                : (qActiveMembership?.planId?.serviceDiscountType || 'percentage');
+                                                                : (item.type === 'service' 
+                                                                    ? (qActiveMembership?.planId?.serviceDiscountType || 'percentage') 
+                                                                    : (qActiveMembership?.planId?.productDiscountType || 'percentage')
+                                                                  );
                                                             updateQItemMembershipDiscount(idx, currentType, val);
                                                         }}
                                                         className="w-10 bg-white border border-slate-200 rounded-lg text-[10px] font-bold text-center h-5 focus:outline-none focus:border-slate-400 text-slate-800" 
                                                     /> 
                                                     {(() => { 
-                                                        const currentType = item.membershipDiscountType !== undefined ? item.membershipDiscountType : (qActiveMembership?.planId?.serviceDiscountType || 'percentage'); 
-                                                        const currentValue = Number(item.membershipDiscountValue !== undefined ? item.membershipDiscountValue : (qActiveMembership?.planId?.serviceDiscountValue || 0)); 
+                                                        const currentType = item.membershipDiscountType !== undefined 
+                                                            ? item.membershipDiscountType 
+                                                            : (item.type === 'service' 
+                                                                ? (qActiveMembership?.planId?.serviceDiscountType || 'percentage') 
+                                                                : (qActiveMembership?.planId?.productDiscountType || 'percentage')
+                                                              ); 
+                                                        const currentValue = Number(
+                                                            item.membershipDiscountValue !== undefined 
+                                                                ? item.membershipDiscountValue 
+                                                                : (item.type === 'service' 
+                                                                    ? (qActiveMembership?.planId?.serviceDiscountValue || 0) 
+                                                                    : (qActiveMembership?.planId?.productDiscountValue || 0)
+                                                                  )
+                                                        ); 
                                                         const appliedRupeeDiscount = currentType === 'percentage' ? (Number(item.price) * Number(item.quantity) * currentValue) / 100 : currentValue * Number(item.quantity); 
                                                         if (appliedRupeeDiscount > 0) { 
                                                             return ( 

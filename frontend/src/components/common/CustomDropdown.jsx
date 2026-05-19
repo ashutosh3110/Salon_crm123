@@ -1,11 +1,18 @@
 import { useState, useRef, useEffect } from 'react';
 import { ChevronDown, Check } from 'lucide-react';
 
-export default function CustomDropdown({ options, value, onChange, label, className = '', placeholder = 'Select...' }) {
+export default function CustomDropdown({ options = [], value, onChange, label, className = '', placeholder = 'Select...' }) {
     const [isOpen, setIsOpen] = useState(false);
     const dropdownRef = useRef(null);
 
-    const selectedOption = options.find(opt => opt.value === value) || null;
+    const normalizedOptions = (options || []).map(opt => {
+        if (typeof opt === 'string' || typeof opt === 'number') {
+            return { label: String(opt), value: opt };
+        }
+        return opt;
+    });
+
+    const selectedOption = normalizedOptions.find(opt => opt.value === value) || null;
 
     useEffect(() => {
         const handleClickOutside = (event) => {
@@ -57,7 +64,7 @@ export default function CustomDropdown({ options, value, onChange, label, classN
                     <div className="h-0.5 w-full bg-gradient-to-r from-primary via-primary/60 to-transparent" />
 
                     <div className="py-1 max-h-56 overflow-y-auto">
-                        {options.map((opt, idx) => {
+                        {normalizedOptions.map((opt, idx) => {
                             const isSelected = value === opt.value;
                             return (
                                 <button

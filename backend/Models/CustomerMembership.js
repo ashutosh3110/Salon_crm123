@@ -31,6 +31,10 @@ const customerMembershipSchema = new mongoose.Schema({
     },
     paymentId: String,
     orderId: String,
+    invoiceId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Invoice'
+    },
     amount: Number
 }, {
     timestamps: true

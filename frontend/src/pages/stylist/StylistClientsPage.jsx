@@ -365,77 +365,86 @@ export default function StylistClientsPage() {
 
             <AnimatePresence>
                 {showEnrollModal && (
-                    <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
-                        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setShowEnrollModal(false)} className="absolute inset-0 bg-black/80 backdrop-blur-md" />
+                    <div className="fixed inset-0 z-[110] bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-300" onClick={() => setShowEnrollModal(false)}>
                         <motion.div
                             initial={{ opacity: 0, scale: 0.95 }}
                             animate={{ opacity: 1, scale: 1 }}
                             exit={{ opacity: 0, scale: 0.95 }}
-                            className="bg-surface w-full max-w-lg rounded-none border border-border shadow-2xl relative p-10 overflow-hidden"
+                            className="bg-white rounded-3xl w-full max-w-md shadow-2xl border border-slate-200/50 overflow-y-auto max-h-[90vh] hide-scrollbar"
+                            onClick={(e) => e.stopPropagation()}
                         >
-                            <div className="absolute top-0 right-0 p-10 opacity-5 -translate-y-4 translate-x-4">
-                                <UserPlus className="w-32 h-32 text-primary" />
-                            </div>
-                            <div className="flex items-center justify-between mb-10 relative z-10">
-                                <div>
-                                    <h2 className="text-xl font-black text-text uppercase tracking-tight !font-sans">Register client</h2>
-                                    <p className={`${csText} text-primary mt-1 tracking-widest !text-primary`}>Creates salon-wide client record</p>
-                                </div>
-                                <button type="button" onClick={() => setShowEnrollModal(false)} className="w-10 h-10 border border-border flex items-center justify-center text-text-muted hover:text-text hover:border-text transition-all">
+                            <div className="p-5 bg-white border-b border-slate-100 flex justify-between items-center">
+                                <h4 className="text-[11px] font-black text-slate-900 uppercase flex items-center gap-2 tracking-widest">
+                                    <UserPlus className="w-4 h-4 text-slate-800" /> Register Client
+                                </h4>
+                                <button type="button" onClick={() => setShowEnrollModal(false)} className="text-slate-400 hover:text-rose-500 transition-colors">
                                     <X className="w-5 h-5" />
                                 </button>
                             </div>
-                            <form onSubmit={handleEnroll} className="space-y-6 relative z-10">
-                                <div className="space-y-2">
-                                    <label className={`${csHeading} ml-1`}>Client name</label>
-                                    <input
-                                        required
-                                        type="text"
-                                        value={enrollForm.name}
-                                        onChange={(e) => setEnrollForm((f) => ({ ...f, name: e.target.value }))}
-                                        placeholder="Full name"
-                                        className={`w-full px-5 py-4 bg-background border border-border ${csStrong} !font-sans !text-[11px] tracking-widest focus:border-primary outline-none placeholder:text-text-muted/50`}
-                                    />
-                                </div>
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div className="space-y-2">
-                                        <label className={`${csHeading} ml-1`}>Email</label>
-                                        <input
-                                            type="email"
-                                            value={enrollForm.email}
-                                            onChange={(e) => setEnrollForm((f) => ({ ...f, email: e.target.value }))}
-                                            placeholder="client@email.com"
-                                            className={`w-full px-5 py-4 bg-background border border-border ${csStrong} !font-sans !text-[11px] tracking-widest focus:border-primary outline-none placeholder:text-text-muted/50`}
-                                        />
-                                    </div>
-                                    <div className="space-y-2">
-                                        <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] ml-1">Mobile</label>
+
+                            <form onSubmit={handleEnroll}>
+                                <div className="p-6 space-y-4 text-left">
+                                    <div className="space-y-1.5">
+                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Client Name</label>
                                         <input
                                             required
-                                            type="tel"
-                                            value={enrollForm.phone}
-                                            onChange={(e) => setEnrollForm((f) => ({ ...f, phone: e.target.value }))}
-                                            placeholder="+91 ..."
-                                            className="w-full px-5 py-4 bg-background border border-border text-[11px] font-black uppercase tracking-widest focus:border-primary outline-none"
+                                            type="text"
+                                            value={enrollForm.name}
+                                            onChange={(e) => setEnrollForm((f) => ({ ...f, name: e.target.value }))}
+                                            placeholder="Full name"
+                                            className="w-full bg-slate-50 border border-slate-200 p-3 text-xs font-black text-slate-900 outline-none rounded-xl placeholder:text-slate-400 focus:border-slate-400 transition-colors uppercase"
+                                        />
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div className="space-y-1.5">
+                                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Email</label>
+                                            <input
+                                                type="email"
+                                                value={enrollForm.email}
+                                                onChange={(e) => setEnrollForm((f) => ({ ...f, email: e.target.value }))}
+                                                placeholder="client@email.com"
+                                                className="w-full bg-slate-50 border border-slate-200 p-3 text-xs font-black text-slate-900 outline-none rounded-xl placeholder:text-slate-400 focus:border-slate-400 transition-colors"
+                                            />
+                                        </div>
+                                        <div className="space-y-1.5">
+                                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Mobile</label>
+                                            <input
+                                                required
+                                                type="text"
+                                                value={enrollForm.phone}
+                                                onChange={(e) => setEnrollForm((f) => ({ ...f, phone: e.target.value.replace(/\D/g, '').slice(0, 10) }))}
+                                                placeholder="10-digit mobile"
+                                                className="w-full bg-slate-50 border border-slate-200 p-3 text-xs font-black text-slate-900 outline-none rounded-xl placeholder:text-slate-400 focus:border-slate-400 transition-colors"
+                                            />
+                                        </div>
+                                    </div>
+                                    <div className="space-y-1.5">
+                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Notes</label>
+                                        <textarea
+                                            value={enrollForm.notes}
+                                            onChange={(e) => setEnrollForm((f) => ({ ...f, notes: e.target.value }))}
+                                            placeholder="Preferences…"
+                                            className="w-full h-24 bg-slate-50 border border-slate-200 p-3.5 text-xs font-black text-slate-800 outline-none rounded-2xl placeholder:text-slate-400 focus:border-slate-400 transition-colors resize-none"
                                         />
                                     </div>
                                 </div>
-                                <div className="space-y-2">
-                                    <label className={`${csHeading} ml-1`}>Notes</label>
-                                    <textarea
-                                        value={enrollForm.notes}
-                                        onChange={(e) => setEnrollForm((f) => ({ ...f, notes: e.target.value }))}
-                                        placeholder="Preferences…"
-                                        className={`w-full px-5 py-4 bg-background border border-border ${csStrong} !font-sans !text-[11px] tracking-widest focus:border-primary outline-none h-24 resize-none placeholder:text-text-muted/50`}
-                                    />
+
+                                <div className="p-6 bg-slate-50 border-t border-slate-100 flex gap-3">
+                                    <button 
+                                        type="button" 
+                                        onClick={() => setShowEnrollModal(false)} 
+                                        className="flex-1 py-3 text-[11px] font-black text-slate-500 uppercase tracking-widest border border-slate-200 rounded-xl bg-white hover:bg-slate-100 transition-all"
+                                    >
+                                        Cancel
+                                    </button>
+                                    <button 
+                                        type="submit" 
+                                        disabled={enrollSubmitting}
+                                        className="flex-1 py-3 text-[11px] font-black text-white uppercase tracking-widest bg-slate-800 hover:bg-slate-900 rounded-xl transition-all shadow-lg shadow-slate-800/10 disabled:opacity-50"
+                                    >
+                                        {enrollSubmitting ? 'Saving…' : 'Save Client'}
+                                    </button>
                                 </div>
-                                <button
-                                    type="submit"
-                                    disabled={enrollSubmitting}
-                                    className="w-full py-5 bg-primary text-white font-black text-[10px] uppercase tracking-[0.3em] shadow-xl shadow-primary/20 hover:bg-primary-dark transition-all disabled:opacity-50"
-                                >
-                                    {enrollSubmitting ? 'Saving…' : 'Save client'}
-                                </button>
                             </form>
                         </motion.div>
                     </div>

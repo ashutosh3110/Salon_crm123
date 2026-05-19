@@ -347,77 +347,63 @@ export default function OutletForm() {
     };
 
     return (
-        <div className="max-w-5xl mx-auto space-y-10 animate-in fade-in slide-in-from-bottom-8 duration-700 pb-20 px-4 md:px-0">
-            {/* ─── Header Section ─────────────────────────────────────────────── */}
+        <div className="max-w-5xl mx-auto space-y-8 animate-reveal pb-20 px-4 md:px-0 text-left">
+            {/* Header Section */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-                <div className="flex items-center gap-6">
+                <div className="flex items-center gap-4">
                     <button
+                        type="button"
                         onClick={() => navigate('/admin/outlets')}
-                        className="group w-12 h-12 rounded-2xl bg-white border border-border flex items-center justify-center text-text-muted hover:text-primary hover:border-primary/30 transition-all shadow-sm hover:shadow-md"
+                        className="group w-11 h-11 rounded-lg bg-white border border-border flex items-center justify-center text-text-muted hover:text-black hover:border-black transition-all shadow-sm"
                     >
-                        <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
+                        <ArrowLeft className="w-5 h-5 group-hover:-translate-x-0.5 transition-transform" />
                     </button>
                     <div className="space-y-1">
                         <div className="flex items-center gap-2">
-                            <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
-                            <span className="text-[10px] font-black text-primary uppercase tracking-[0.3em]">Outlet Configuration</span>
+                            <div className="w-2 h-2 rounded-full bg-black animate-pulse" />
+                            <span className="text-xs font-bold text-text-muted uppercase tracking-[0.2em]">Outlet Configuration</span>
                         </div>
-                        <h1 className="text-4xl font-black text-text tracking-tighter uppercase italic leading-none">
-                            {isEdit ? 'Update' : 'Add New'} <span className="text-text-muted opacity-50">Outlet.</span>
+                        <h1 className="text-3xl font-black text-text uppercase tracking-tight leading-none">
+                            {isEdit ? 'Update' : 'Add New'} <span className="text-text-muted opacity-50">Outlet</span>
                         </h1>
                     </div>
                 </div>
-
-                <div className="flex items-center gap-3">
-                    <div className="hidden sm:flex flex-col items-end mr-4">
-                        <p className="text-[10px] font-black text-text-muted uppercase tracking-widest">Process Status</p>
-                        <p className="text-xs font-bold text-emerald-500 uppercase tracking-widest">Ready to Save</p>
-                    </div>
-                    <button 
-                        onClick={handleSubmit}
-                        disabled={saving}
-                        className="h-14 px-8 rounded-2xl bg-text text-white text-[11px] font-black uppercase tracking-[0.2em] shadow-xl shadow-text/10 hover:bg-primary hover:shadow-primary/20 transition-all flex items-center gap-3 active:scale-95 disabled:opacity-50"
-                    >
-                        {saving ? <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <Save className="w-4 h-4" />}
-                        {isEdit ? 'Save Changes' : 'Create Outlet'}
-                    </button>
-                </div>
             </div>
 
-            {/* ─── Main Form Grid ────────────────────────────────────────────── */}
-            <form onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            {/* Main Form Grid */}
+            <form onSubmit={handleSubmit} className="space-y-8">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 
                 {/* Left Column: Basic Info, Resources, Logic & Timing */}
-                <div className="lg:col-span-2 space-y-8">
+                <div className="lg:col-span-2 space-y-6">
                     
                     {/* Salon Identity Card */}
-                    <div className="relative group overflow-hidden bg-white border border-border rounded-[2.5rem] p-8 shadow-sm hover:shadow-2xl transition-all duration-700">
-                        <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-primary/5 to-transparent rounded-full -translate-y-1/2 translate-x-1/2" />
-                        <div className="relative z-10 space-y-8">
-                            <div className="flex items-center gap-4">
-                                <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center border border-primary/20">
-                                    <Store className="w-6 h-6 text-primary" strokeWidth={1.5} />
+                    <div className="relative overflow-hidden bg-white border border-border rounded-xl p-6 shadow-sm hover:border-black transition-all duration-300">
+                        <div className="space-y-6">
+                            <div className="flex items-center gap-3">
+                                <div className="w-10 h-10 rounded-lg bg-slate-50 border border-border flex items-center justify-center">
+                                    <Store className="w-5 h-5 text-text-muted" />
                                 </div>
                                 <div>
-                                    <h2 className="text-xl font-black text-text tracking-tighter uppercase italic">General Identity</h2>
-                                    <p className="text-[10px] text-text-muted font-bold uppercase tracking-widest">Core brand information for this location</p>
+                                    <h2 className="text-lg font-black text-text uppercase tracking-tight">General Identity</h2>
+                                    <p className="text-xs text-text-muted uppercase tracking-wider">Core brand information for this location</p>
                                 </div>
                             </div>
 
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div className="md:col-span-2 space-y-2">
-                                    <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] ml-2">Outlet Name <span className="text-primary">*</span></label>
+                                    <label className="text-xs font-bold text-text-muted uppercase tracking-wider">Outlet Name <span className="text-rose-500">*</span></label>
                                     <input
                                         name="name"
                                         required
                                         value={form.name}
                                         onChange={handleChange}
                                         placeholder="e.g. Wapixo Salon - Mumbai Main"
-                                        className="w-full px-6 py-4 rounded-2xl bg-slate-50 border border-border text-sm font-bold text-text focus:bg-white focus:ring-4 focus:ring-primary/10 outline-none transition-all"
+                                        className="w-full px-4 py-3 rounded-lg bg-slate-50 border border-border text-sm font-bold text-text focus:bg-white outline-none transition-all"
                                     />
                                 </div>
                                 <div className="space-y-2">
-                                    <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] ml-2">Contact Number <span className="text-primary">*</span></label>
+                                    <label className="text-xs font-bold text-text-muted uppercase tracking-wider">Contact Number <span className="text-rose-500">*</span></label>
                                     <input
                                         name="phone"
                                         required
@@ -426,18 +412,18 @@ export default function OutletForm() {
                                         value={form.phone}
                                         onChange={handleChange}
                                         placeholder="10-digit number"
-                                        className="w-full px-6 py-4 rounded-2xl bg-slate-50 border border-border text-sm font-bold focus:bg-white focus:ring-4 focus:ring-primary/10 outline-none transition-all"
+                                        className="w-full px-4 py-3 rounded-lg bg-slate-50 border border-border text-sm font-bold text-text focus:bg-white outline-none transition-all"
                                     />
                                 </div>
                                 <div className="space-y-2">
-                                    <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] ml-2">Official Email</label>
+                                    <label className="text-xs font-bold text-text-muted uppercase tracking-wider">Official Email</label>
                                     <input
                                         name="email"
                                         type="email"
                                         value={form.email}
                                         onChange={handleChange}
                                         placeholder="outlet@wapixo.com"
-                                        className="w-full px-6 py-4 rounded-2xl bg-slate-50 border border-border text-sm font-bold focus:bg-white focus:ring-4 focus:ring-primary/10 outline-none transition-all"
+                                        className="w-full px-4 py-3 rounded-lg bg-slate-50 border border-border text-sm font-bold text-text focus:bg-white outline-none transition-all"
                                     />
                                 </div>
                             </div>
@@ -445,60 +431,63 @@ export default function OutletForm() {
                     </div>
 
                     {/* Resources Card (Stations) */}
-                    <div className="bg-white border border-border rounded-[2.5rem] p-8 shadow-sm hover:shadow-2xl transition-all duration-700">
-                        <div className="flex items-center justify-between mb-10">
-                            <div className="flex items-center gap-4">
-                                <div className="w-12 h-12 rounded-2xl bg-purple-500/10 flex items-center justify-center border border-purple-500/20">
-                                    <Users className="w-6 h-6 text-purple-500" strokeWidth={1.5} />
+                    <div className="bg-white border border-border rounded-xl p-6 shadow-sm hover:border-black transition-all duration-300">
+                        <div className="flex items-center justify-between mb-6">
+                            <div className="flex items-center gap-3">
+                                <div className="w-10 h-10 rounded-lg bg-slate-50 border border-border flex items-center justify-center">
+                                    <Users className="w-5 h-5 text-text-muted" />
                                 </div>
                                 <div>
-                                    <h2 className="text-xl font-black text-text tracking-tighter uppercase italic">Resource Setup</h2>
-                                    <p className="text-[10px] text-text-muted font-bold uppercase tracking-widest">Chairs and Beds configuration</p>
+                                    <h2 className="text-lg font-black text-text uppercase tracking-tight">Resource Setup</h2>
+                                    <p className="text-xs text-text-muted uppercase tracking-wider">Chairs and Beds configuration</p>
                                 </div>
                             </div>
                             <div className="flex gap-2">
-                                <button type="button" onClick={handleAddChair} className="px-5 py-2.5 bg-primary/10 text-primary text-[10px] font-black uppercase tracking-[0.2em] rounded-xl hover:bg-primary hover:text-white transition-all">
+                                <div role="button" onClick={handleAddChair} className="px-4 py-2 bg-black text-white text-xs font-bold uppercase tracking-wider rounded-lg hover:bg-neutral-800 transition-all cursor-pointer">
                                     + Chair
-                                </button>
-                                <button type="button" onClick={handleAddBed} className="px-5 py-2.5 bg-emerald-500/10 text-emerald-600 text-[10px] font-black uppercase tracking-[0.2em] rounded-xl hover:bg-emerald-500 hover:text-white transition-all">
+                                </div>
+                                <div role="button" onClick={handleAddBed} className="px-4 py-2 bg-neutral-100 text-black text-xs font-bold uppercase tracking-wider border border-border rounded-lg hover:bg-neutral-200 transition-all cursor-pointer">
                                     + Bed
-                                </button>
+                                </div>
                             </div>
                         </div>
 
-                        <div className="space-y-10">
-                            <div className="space-y-6">
+                        <div className="space-y-8">
+                            {/* Chairs Section */}
+                            <div className="space-y-4">
                                 <div className="flex items-center gap-3">
-                                    <span className="text-[10px] font-black text-primary uppercase tracking-[0.3em]">Styling Chairs</span>
-                                    <div className="h-px flex-1 bg-gradient-to-r from-primary/20 to-transparent" />
-                                    <span className="text-[10px] font-bold text-text-muted bg-slate-50 px-3 py-1 rounded-full border border-border">{form.chairs.length} Slots</span>
+                                    <span className="text-xs font-black text-text uppercase tracking-wider">Styling Chairs</span>
+                                    <div className="h-px flex-1 bg-border" />
+                                    <span className="text-xs font-bold text-text-muted bg-slate-50 px-3 py-1 rounded-full border border-border">{form.chairs.length} Slots</span>
                                 </div>
-                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                     {form.chairs.map((chair) => (
-                                        <div key={chair.id} className="relative p-5 bg-slate-50 rounded-2xl border border-border group hover:border-primary/50 hover:bg-white hover:shadow-xl transition-all duration-500">
-                                            <div className="flex items-center gap-4">
-                                                <div className="w-10 h-10 rounded-xl bg-white border border-border flex items-center justify-center text-[10px] font-black text-primary">{chair.id}</div>
-                                                <input value={chair.name} onChange={(e) => handleChairNameChange(chair.id, e.target.value)} className="flex-1 bg-transparent border-none text-sm font-black text-text outline-none uppercase italic" />
-                                                <button type="button" onClick={() => handleRemoveChair(chair.id)} className="p-2 text-rose-500 hover:bg-rose-50 rounded-xl opacity-0 group-hover:opacity-100"><X className="w-4 h-4" /></button>
+                                        <div key={chair.id} className="relative p-4 bg-slate-50 rounded-lg border border-border flex items-center justify-between group hover:border-black hover:bg-white transition-all">
+                                            <div className="flex items-center gap-3 flex-1">
+                                                <div className="w-8 h-8 rounded-lg bg-white border border-border flex items-center justify-center text-xs font-bold text-text-muted">{chair.id}</div>
+                                                <input value={chair.name} onChange={(e) => handleChairNameChange(chair.id, e.target.value)} className="flex-1 bg-transparent border-none text-sm font-bold text-text outline-none uppercase" />
                                             </div>
+                                            <div role="button" onClick={() => handleRemoveChair(chair.id)} className="p-1.5 text-rose-500 hover:bg-rose-50 rounded-lg cursor-pointer"><X className="w-4 h-4" /></div>
                                         </div>
                                     ))}
                                 </div>
                             </div>
-                            <div className="space-y-6">
+                            
+                            {/* Beds Section */}
+                            <div className="space-y-4">
                                 <div className="flex items-center gap-3">
-                                    <span className="text-[10px] font-black text-emerald-600 uppercase tracking-[0.3em]">Service Beds</span>
-                                    <div className="h-px flex-1 bg-gradient-to-r from-emerald-600/20 to-transparent" />
-                                    <span className="text-[10px] font-bold text-text-muted bg-slate-50 px-3 py-1 rounded-full border border-border">{(form.beds || []).length} Slots</span>
+                                    <span className="text-xs font-black text-text uppercase tracking-wider">Service Beds</span>
+                                    <div className="h-px flex-1 bg-border" />
+                                    <span className="text-xs font-bold text-text-muted bg-slate-50 px-3 py-1 rounded-full border border-border">{(form.beds || []).length} Slots</span>
                                 </div>
-                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                     {(form.beds || []).map((bed) => (
-                                        <div key={bed.id} className="relative p-5 bg-slate-50 rounded-2xl border border-border group hover:border-emerald-500/50 hover:bg-white hover:shadow-xl transition-all duration-500">
-                                            <div className="flex items-center gap-4">
-                                                <div className="w-10 h-10 rounded-xl bg-white border border-border flex items-center justify-center text-[10px] font-black text-emerald-600">{bed.id}</div>
-                                                <input value={bed.name} onChange={(e) => handleBedNameChange(bed.id, e.target.value)} className="flex-1 bg-transparent border-none text-sm font-black text-text outline-none uppercase italic" />
-                                                <button type="button" onClick={() => handleRemoveBed(bed.id)} className="p-2 text-rose-500 hover:bg-rose-50 rounded-xl opacity-0 group-hover:opacity-100"><X className="w-4 h-4" /></button>
+                                        <div key={bed.id} className="relative p-4 bg-slate-50 rounded-lg border border-border flex items-center justify-between group hover:border-black hover:bg-white transition-all">
+                                            <div className="flex items-center gap-3 flex-1">
+                                                <div className="w-8 h-8 rounded-lg bg-white border border-border flex items-center justify-center text-xs font-bold text-text-muted">{bed.id}</div>
+                                                <input value={bed.name} onChange={(e) => handleBedNameChange(bed.id, e.target.value)} className="flex-1 bg-transparent border-none text-sm font-bold text-text outline-none uppercase" />
                                             </div>
+                                            <div role="button" onClick={() => handleRemoveBed(bed.id)} className="p-1.5 text-rose-500 hover:bg-rose-50 rounded-lg cursor-pointer"><X className="w-4 h-4" /></div>
                                         </div>
                                     ))}
                                 </div>
@@ -506,58 +495,76 @@ export default function OutletForm() {
                         </div>
                     </div>
 
-                    {/* Operational Logic Card (Moved to Left) */}
-                    <div className="bg-text text-white border border-text rounded-[2.5rem] p-8 shadow-2xl">
-                        <div className="flex items-center gap-3 mb-8">
-                            <div className="p-2 rounded-xl bg-white/10 text-primary">
-                                <Activity className="w-4 h-4" />
+                    {/* Operational Logic Card */}
+                    <div className="bg-white border border-border rounded-xl p-6 shadow-sm hover:border-black transition-all duration-300">
+                        <div className="flex items-center gap-3 mb-6">
+                            <div className="w-10 h-10 rounded-lg bg-slate-50 border border-border flex items-center justify-center">
+                                <Activity className="w-5 h-5 text-text-muted" />
                             </div>
-                            <h2 className="text-[10px] font-black uppercase tracking-[0.3em]">Operational Logic</h2>
+                            <div>
+                                <h2 className="text-lg font-black text-text uppercase tracking-tight">Operational Logic</h2>
+                                <p className="text-xs text-text-muted uppercase tracking-wider">Configure status and services</p>
+                            </div>
                         </div>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                            <div className="space-y-4">
-                                <label className="text-[10px] font-black text-white/40 uppercase tracking-widest">Active Status</label>
-                                <div className="flex p-1.5 bg-white/5 rounded-2xl border border-white/10">
-                                    <button type="button" onClick={() => setForm({ ...form, status: 'active' })} className={`flex-1 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest ${form.status === 'active' ? 'bg-primary text-white shadow-lg' : 'text-white/40'}`}>Live</button>
-                                    <button type="button" onClick={() => setForm({ ...form, status: 'inactive' })} className={`flex-1 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest ${form.status === 'inactive' ? 'bg-rose-500 text-white shadow-lg' : 'text-white/40'}`}>Offline</button>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div className="space-y-2">
+                                <label className="text-xs font-bold text-text-muted uppercase tracking-wider">Active Status</label>
+                                <div className="flex p-1 bg-slate-100 rounded-lg border border-border">
+                                    <div 
+                                        role="button"
+                                        onClick={() => setForm({ ...form, status: 'active' })} 
+                                        className={`flex-1 py-2.5 rounded-lg text-xs font-bold uppercase tracking-wider text-center cursor-pointer transition-all ${form.status === 'active' ? 'bg-black text-white shadow-sm' : 'text-text-muted hover:bg-slate-200'}`}
+                                    >
+                                        Live
+                                    </div>
+                                    <div 
+                                        role="button"
+                                        onClick={() => setForm({ ...form, status: 'inactive' })} 
+                                        className={`flex-1 py-2.5 rounded-lg text-xs font-bold uppercase tracking-wider text-center cursor-pointer transition-all ${form.status === 'inactive' ? 'bg-rose-500 text-white shadow-sm' : 'text-text-muted hover:bg-slate-200'}`}
+                                    >
+                                        Offline
+                                    </div>
                                 </div>
                             </div>
-                            <div className="space-y-4">
+                            <div className="space-y-2">
                                 <div className="flex items-center justify-between">
                                     <div className="flex items-center gap-2">
-                                        <Truck className="w-4 h-4 text-blue-400" />
-                                        <span className="text-[10px] font-black uppercase tracking-widest">Home Delivery</span>
+                                        <Truck className="w-4 h-4 text-text-muted" />
+                                        <span className="text-xs font-bold text-text-muted uppercase tracking-wider">Home Delivery</span>
                                     </div>
-                                    <button type="button" onClick={() => setForm({ ...form, config: { ...form.config, enableDelivery: !form.config?.enableDelivery } })} className={`w-10 h-5 rounded-full relative transition-all ${form.config?.enableDelivery ? 'bg-blue-500' : 'bg-white/20'}`}>
-                                        <div className={`absolute top-1 w-3 h-3 rounded-full bg-white transition-all ${form.config?.enableDelivery ? 'right-1' : 'left-1'}`} />
-                                    </button>
+                                    <div 
+                                        onClick={() => setForm({ ...form, config: { ...form.config, enableDelivery: !form.config?.enableDelivery } })}
+                                        className={`w-12 h-6 rounded-full p-0.5 cursor-pointer transition-all duration-300 flex items-center justify-start ${form.config?.enableDelivery ? 'bg-black border border-black' : 'bg-slate-300 border border-slate-300'}`}
+                                    >
+                                        <div className={`w-5 h-5 rounded-full bg-white shadow-md transform transition-all duration-300 ${form.config?.enableDelivery ? 'translate-x-6' : 'translate-x-0'}`} />
+                                    </div>
                                 </div>
                                 {form.config?.enableDelivery && (
-                                    <input type="number" value={form.config?.deliveryCharge || 0} onChange={(e) => setForm({ ...form, config: { ...form.config, deliveryCharge: Number(e.target.value) } })} placeholder="Fee (₹)" className="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-3 text-sm font-bold outline-none" />
+                                    <input type="number" value={form.config?.deliveryCharge || 0} onChange={(e) => setForm({ ...form, config: { ...form.config, deliveryCharge: Number(e.target.value) } })} placeholder="Fee (₹)" className="w-full bg-slate-50 border border-border rounded-lg px-4 py-3 text-sm font-bold outline-none" />
                                 )}
                             </div>
                         </div>
                     </div>
 
-
-
-                    {/* Shift Dynamics Card (Moved to Left) */}
-                    <div className="bg-slate-50 border border-border rounded-[2.5rem] p-8 overflow-hidden relative group">
-                        <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 blur-3xl rounded-full translate-x-1/3 -translate-y-1/3" />
-                        <div className="relative z-10 space-y-10">
-                            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-                                <div className="flex items-center gap-4">
-                                    <div className="w-12 h-12 rounded-2xl bg-primary text-white flex items-center justify-center shadow-lg shadow-primary/20"><Clock className="w-6 h-6" /></div>
+                    {/* Shift Dynamics Card */}
+                    <div className="bg-white border border-border rounded-xl p-6 shadow-sm hover:border-black transition-all duration-300">
+                        <div className="space-y-6">
+                            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-10 h-10 rounded-lg bg-slate-50 border border-border flex items-center justify-center">
+                                        <Clock className="w-5 h-5 text-text-muted" />
+                                    </div>
                                     <div>
-                                        <h2 className="text-xl font-black text-text tracking-tighter uppercase italic">Shift Dynamics</h2>
-                                        <p className="text-[10px] text-text-muted font-bold uppercase tracking-widest">Global timing rules</p>
+                                        <h2 className="text-lg font-black text-text uppercase tracking-tight">Shift Dynamics</h2>
+                                        <p className="text-xs text-text-muted uppercase tracking-wider">Global timing rules</p>
                                     </div>
                                 </div>
-                                <div className="flex items-center gap-4">
-                                    <select name="openingTime" value={form.openingTime} onChange={handleChange} className="bg-white border border-border rounded-xl px-4 py-2 text-xs font-black text-text outline-none">
+                                <div className="flex items-center gap-3">
+                                    <select name="openingTime" value={form.openingTime} onChange={handleChange} className="bg-white border border-border rounded-lg px-3 py-2 text-xs font-bold text-text outline-none focus:border-black">
                                         {TIME_SLOTS.map(t => <option key={t} value={t}>{t}</option>)}
                                     </select>
-                                    <select name="closingTime" value={form.closingTime} onChange={handleChange} className="bg-white border border-border rounded-xl px-4 py-2 text-xs font-black text-text outline-none">
+                                    <span className="text-xs text-text-muted">to</span>
+                                    <select name="closingTime" value={form.closingTime} onChange={handleChange} className="bg-white border border-border rounded-lg px-3 py-2 text-xs font-bold text-text outline-none focus:border-black">
                                         {TIME_SLOTS.map(t => <option key={t} value={t}>{t}</option>)}
                                     </select>
                                 </div>
@@ -566,10 +573,15 @@ export default function OutletForm() {
                                 {DAYS.map(day => {
                                     const isActive = (form.workingDays || []).includes(day.full);
                                     return (
-                                        <button key={day.full} type="button" onClick={() => handleDayToggle(day.full)} className={`py-4 rounded-2xl flex flex-col items-center gap-2 transition-all ${isActive ? 'bg-text text-white shadow-xl scale-105' : 'bg-white border border-border text-text-muted'}`}>
-                                            <span className={`text-[9px] font-black uppercase tracking-widest ${isActive ? 'text-primary' : ''}`}>{day.label}</span>
-                                            <div className={`w-1.5 h-1.5 rounded-full ${isActive ? 'bg-primary' : 'bg-slate-200'}`} />
-                                        </button>
+                                        <div 
+                                            key={day.full} 
+                                            role="button"
+                                            onClick={() => handleDayToggle(day.full)} 
+                                            className={`py-3 rounded-lg flex flex-col items-center gap-1.5 transition-all cursor-pointer ${isActive ? 'bg-black text-white shadow-sm' : 'bg-slate-50 border border-border text-text-muted hover:bg-slate-200'}`}
+                                        >
+                                            <span className="text-[10px] font-bold uppercase tracking-wider">{day.label}</span>
+                                            <div className={`w-1.5 h-1.5 rounded-full ${isActive ? 'bg-white' : 'bg-slate-300'}`} />
+                                        </div>
                                     );
                                 })}
                             </div>
@@ -578,25 +590,27 @@ export default function OutletForm() {
                 </div>
 
                 {/* Right Column: Visuals & Location */}
-                <div className="space-y-8">
+                <div className="space-y-6">
                     {/* Visual Media Card */}
-                    <div className="bg-white border border-border rounded-[2.5rem] p-8 shadow-sm">
+                    <div className="bg-white border border-border rounded-xl p-6 shadow-sm hover:border-black transition-all duration-300">
                         <div className="flex items-center gap-3 mb-6">
-                            <div className="p-2 rounded-xl bg-primary/10 text-primary"><ImageIcon className="w-4 h-4" /></div>
-                            <h2 className="text-[10px] font-black text-text uppercase tracking-[0.2em]">Visual Gallery</h2>
+                            <div className="w-10 h-10 rounded-lg bg-slate-50 border border-border flex items-center justify-center">
+                                <ImageIcon className="w-5 h-5 text-text-muted" />
+                            </div>
+                            <h2 className="text-lg font-black text-text uppercase tracking-tight">Visual Gallery</h2>
                         </div>
                         <div className="grid grid-cols-2 gap-3">
                             {(form.images || []).map((img, idx) => (
-                                <div key={idx} className="relative aspect-square rounded-2xl overflow-hidden border border-border group shadow-sm">
-                                    <img src={img.startsWith('data:') || img.startsWith('http') ? img : `${import.meta.env.VITE_API_URL}${img}`} alt={`Outlet ${idx}`} className="w-full h-full object-cover group-hover:scale-110 transition-all duration-700" />
-                                    <button type="button" onClick={() => removeImage(idx)} className="absolute top-2 right-2 p-1.5 bg-white/90 rounded-xl text-rose-500 opacity-0 group-hover:opacity-100 transition-all"><X className="w-3 h-3" /></button>
+                                <div key={idx} className="relative aspect-square rounded-lg overflow-hidden border border-border group shadow-sm">
+                                    <img src={img.startsWith('data:') || img.startsWith('http') ? img : `${import.meta.env.VITE_API_URL}${img}`} alt={`Outlet ${idx}`} className="w-full h-full object-cover group-hover:scale-105 transition-all duration-500" />
+                                    <div role="button" onClick={() => removeImage(idx)} className="absolute top-2 right-2 p-1.5 bg-white/90 rounded-lg text-rose-500 opacity-0 group-hover:opacity-100 transition-all cursor-pointer"><X className="w-3.5 h-3.5" /></div>
                                 </div>
                             ))}
                             {(form.images?.length || 0) < 5 && (
-                                <label className="flex flex-col items-center justify-center aspect-square rounded-2xl border-2 border-dashed border-border/60 bg-slate-50 hover:bg-white cursor-pointer group relative overflow-hidden">
-                                    <div className="relative z-10 flex flex-col items-center">
-                                        <div className="w-10 h-10 rounded-full bg-primary/5 text-primary flex items-center justify-center group-hover:scale-110 transition-transform"><Upload className="w-5 h-5" /></div>
-                                        <p className="text-[8px] font-black text-text-muted uppercase tracking-[0.2em] mt-3">Add Media</p>
+                                <label className="flex flex-col items-center justify-center aspect-square rounded-lg border border-dashed border-border bg-slate-50 hover:bg-white cursor-pointer group relative overflow-hidden transition-colors">
+                                    <div className="flex flex-col items-center">
+                                        <div className="w-8 h-8 rounded-full bg-slate-100 text-text-muted flex items-center justify-center group-hover:bg-black group-hover:text-white transition-all"><Upload className="w-4 h-4" /></div>
+                                        <p className="text-[10px] font-bold text-text-muted uppercase tracking-wider mt-2">Add Media</p>
                                     </div>
                                     <input type="file" className="hidden" accept="image/*" multiple onChange={handleImageUpload} />
                                 </label>
@@ -605,53 +619,65 @@ export default function OutletForm() {
                     </div>
 
                     {/* Geography & Map Card */}
-                    <div className="bg-white border border-border rounded-[2.5rem] p-8 shadow-sm">
+                    <div className="bg-white border border-border rounded-xl p-6 shadow-sm hover:border-black transition-all duration-300">
                         <div className="flex items-center justify-between mb-6">
                             <div className="flex items-center gap-3">
-                                <div className="p-2 rounded-xl bg-orange-500/10 text-orange-600"><MapPin className="w-4 h-4" /></div>
-                                <h2 className="text-[10px] font-black text-text uppercase tracking-[0.2em]">Geotagging</h2>
+                                <div className="w-10 h-10 rounded-lg bg-slate-50 border border-border flex items-center justify-center">
+                                    <MapPin className="w-5 h-5 text-text-muted" />
+                                </div>
+                                <h2 className="text-lg font-black text-text uppercase tracking-tight">Geotagging</h2>
                             </div>
-                            <button type="button" onClick={useCurrentLocation} className="text-[8px] font-black text-primary uppercase tracking-widest bg-primary/5 px-3 py-1.5 rounded-xl border border-primary/10 hover:bg-primary hover:text-white transition-all shadow-sm">Auto Fix</button>
+                            <div role="button" onClick={useCurrentLocation} className="text-[10px] font-bold text-black uppercase tracking-wider bg-slate-100 px-3 py-1.5 rounded-lg border border-border hover:bg-black hover:text-white transition-all cursor-pointer">Auto Locate</div>
                         </div>
-                        <div className="space-y-6">
-                            <textarea name="address" required rows="2" value={form.address} onChange={handleChange} placeholder="Address" className="w-full px-5 py-4 rounded-2xl bg-slate-50 border border-border text-sm font-bold text-text focus:bg-white focus:ring-4 focus:ring-primary/10 outline-none transition-all resize-none" />
+                        <div className="space-y-4">
+                            <textarea name="address" required rows="2" value={form.address} onChange={handleChange} placeholder="Full Address" className="w-full px-4 py-3 rounded-lg bg-slate-50 border border-border text-sm font-bold text-text focus:bg-white outline-none transition-all resize-none" />
                             <div className="grid grid-cols-2 gap-3">
-                                <input name="city" required value={form.city} onChange={handleChange} placeholder="City" className="w-full px-5 py-3 rounded-xl bg-slate-50 border border-border text-sm font-bold focus:bg-white outline-none" />
-                                <input name="pincode" required value={form.pincode} onChange={handleChange} placeholder="Pincode" maxLength="6" className="w-full px-5 py-3 rounded-xl bg-slate-50 border border-border text-sm font-bold focus:bg-white outline-none" />
+                                <input name="city" required value={form.city} onChange={handleChange} placeholder="City" className="w-full px-4 py-3 rounded-lg bg-slate-50 border border-border text-sm font-bold focus:bg-white outline-none" />
+                                <input name="pincode" required value={form.pincode} onChange={handleChange} placeholder="Pincode" maxLength="6" className="w-full px-4 py-3 rounded-lg bg-slate-50 border border-border text-sm font-bold focus:bg-white outline-none" />
                             </div>
-                            <div className="relative rounded-[1.5rem] overflow-hidden border border-border h-48 bg-slate-100">
+                            <div className="relative rounded-lg overflow-hidden border border-border h-48 bg-slate-100">
                                 {isLoaded ? (
                                     <GoogleMap mapContainerStyle={{ width: '100%', height: '100%' }} center={form.latitude ? { lat: form.latitude, lng: form.longitude } : center} zoom={15} onClick={onMapClick} options={{ disableDefaultUI: true, zoomControl: true }}>
                                         {(form.latitude && form.longitude) && <MarkerF position={{ lat: form.latitude, lng: form.longitude }} draggable={true} onDragEnd={onMapClick} />}
                                     </GoogleMap>
                                 ) : (
-                                    <div className="flex items-center justify-center h-full text-[10px] font-black text-text-muted uppercase">Loading Map...</div>
+                                    <div className="flex items-center justify-center h-full text-xs font-bold text-text-muted uppercase">Loading Map...</div>
                                 )}
                             </div>
                         </div>
                     </div>
                 </div>
+                </div>
+
+                {/* Bottom Actions Bar */}
+                <div className="flex items-center justify-end gap-4 pt-6 border-t border-slate-200">
+                    <div 
+                        role="button"
+                        onClick={() => navigate('/admin/outlets')}
+                        className="h-12 px-6 rounded-lg border border-slate-200 text-xs font-bold uppercase tracking-wider text-text-muted hover:text-black hover:border-black flex items-center justify-center transition-all cursor-pointer bg-white"
+                    >
+                        Cancel
+                    </div>
+                    <button 
+                        type="submit"
+                        disabled={saving}
+                        className="h-12 px-8 rounded-lg bg-black text-white text-xs font-bold uppercase tracking-wider shadow-lg hover:bg-neutral-800 transition-all flex items-center gap-2 active:scale-95 disabled:opacity-50"
+                    >
+                        {saving ? <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <Save className="w-4 h-4" />}
+                        {isEdit ? 'Save Changes' : 'Create Outlet'}
+                    </button>
+                </div>
             </form>
 
             {error && (
-                <div className="p-6 rounded-[2rem] bg-rose-50 border border-rose-100 flex items-center gap-4 animate-in shake duration-500">
-                    <div className="w-10 h-10 rounded-full bg-rose-500 flex items-center justify-center text-white shrink-0 shadow-lg shadow-rose-500/20"><AlertCircle className="w-6 h-6" /></div>
+                <div className="p-4 rounded-lg bg-rose-50 border border-rose-100 flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-full bg-rose-500 flex items-center justify-center text-white shrink-0"><AlertCircle className="w-5 h-5" /></div>
                     <div>
-                        <p className="text-xs font-black text-rose-500 uppercase tracking-widest">Configuration Error</p>
-                        <p className="text-[11px] font-bold text-rose-500/70">{error}</p>
+                        <p className="text-xs font-bold text-rose-500 uppercase tracking-wider">Configuration Error</p>
+                        <p className="text-xs text-rose-500/80">{error}</p>
                     </div>
                 </div>
             )}
-
-            <div className="flex items-center justify-center pt-10">
-                <div className="h-px flex-1 bg-gradient-to-r from-transparent via-border to-transparent" />
-                <div className="px-10 flex items-center gap-2">
-                    <div className="w-2 h-2 rounded-full bg-primary/20" />
-                    <div className="w-2 h-2 rounded-full bg-primary/40" />
-                    <div className="w-2 h-2 rounded-full bg-primary/60" />
-                </div>
-                <div className="h-px flex-1 bg-gradient-to-r from-transparent via-border to-transparent" />
-            </div>
         </div>
     );
 }

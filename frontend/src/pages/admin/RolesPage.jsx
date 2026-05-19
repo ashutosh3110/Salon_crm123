@@ -255,7 +255,8 @@ export default function RolesPage() {
             {showModal && createPortal(
                 <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm transition-all overflow-hidden" onClick={() => setShowModal(false)}>
                     
-                    <div 
+                    <form 
+                        onSubmit={handleSubmit}
                         className="relative bg-white shadow-[0_40px_100px_-20px_rgba(0,0,0,0.4)] w-full max-w-2xl flex flex-col animate-reveal rounded-none border-2 border-text max-h-[90vh] overflow-hidden" 
                         onClick={(e) => e.stopPropagation()}
                     >
@@ -274,6 +275,7 @@ export default function RolesPage() {
                                 </div>
                             </div>
                             <button 
+                                type="button"
                                 onClick={() => setShowModal(false)}
                                 className="p-2 text-text-muted hover:text-rose-500 transition-colors"
                             >
@@ -282,93 +284,91 @@ export default function RolesPage() {
                         </div>
 
                         {/* Form Content */}
-                        <form onSubmit={handleSubmit} className="flex flex-col flex-1 overflow-hidden">
-                            <div className="flex-1 overflow-y-auto p-8 space-y-8 custom-scrollbar text-left font-mono">
-                                
-                                {/* Basic Info */}
-                                <div className="grid grid-cols-1 gap-6">
-                                    <div className="space-y-2 text-left">
-                                        <label className="text-[10px] font-black text-text-muted uppercase tracking-widest font-mono">Role Name</label>
-                                        <input
-                                            required
-                                            value={form.name}
-                                            onChange={(e) => setForm({...form, name: e.target.value})}
-                                            placeholder="Enter role name"
-                                            className="w-full px-4 py-3 bg-surface-alt border border-border text-sm font-black tracking-widest focus:border-text outline-none transition-all placeholder:text-text-muted/40 rounded-none italic shadow-inner"
-                                        />
-                                    </div>
-                                    <div className="space-y-2 text-left">
-                                        <label className="text-[10px] font-black text-text-muted uppercase tracking-widest font-mono">Role Description</label>
-                                        <textarea
-                                            value={form.description}
-                                            onChange={(e) => setForm({...form, description: e.target.value})}
-                                            placeholder="What is this role for?"
-                                            rows={2}
-                                            className="w-full px-4 py-3 bg-surface-alt border border-border text-sm font-black tracking-widest focus:border-text outline-none transition-all placeholder:text-text-muted/40 rounded-none italic shadow-inner resize-none"
-                                        />
-                                    </div>
+                        <div className="flex-1 overflow-y-auto p-8 space-y-8 custom-scrollbar text-left font-mono">
+                            
+                            {/* Basic Info */}
+                            <div className="grid grid-cols-1 gap-6">
+                                <div className="space-y-2 text-left">
+                                    <label className="text-[10px] font-black text-text-muted uppercase tracking-widest font-mono">Role Name</label>
+                                    <input
+                                        required
+                                        value={form.name}
+                                        onChange={(e) => setForm({...form, name: e.target.value})}
+                                        placeholder="Enter role name"
+                                        className="w-full px-4 py-3 bg-surface-alt border border-border text-sm font-black tracking-widest focus:border-text outline-none transition-all placeholder:text-text-muted/40 rounded-none italic shadow-inner"
+                                    />
                                 </div>
-
-                                {/* Permissions Matrix */}
-                                <div className="space-y-4 pt-6 border-t border-border">
-                                    <div className="flex items-center justify-between mb-2">
-                                        <h3 className="text-[11px] font-black text-text uppercase tracking-widest italic font-mono">Assign Permissions</h3>
-                                        <span className="text-[9px] font-black text-primary uppercase italic"> {form.permissions.length} Selected</span>
-                                    </div>
-
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                        {AVAILABLE_PERMISSIONS.map((perm) => (
-                                            <button
-                                                key={perm.id}
-                                                type="button"
-                                                onClick={() => togglePermission(perm.id)}
-                                                className={`flex items-center gap-3 p-3 transition-all text-left border ${form.permissions.includes(perm.id) 
-                                                    ? 'bg-white border-2 border-primary shadow-md' 
-                                                    : 'bg-surface-alt border-border hover:bg-white hover:border-text-muted'
-                                                }`}
-                                            >
-                                                <div className={`p-2 transition-all ${form.permissions.includes(perm.id) ? 'bg-primary text-white' : 'bg-white text-text-muted border border-border'}`}>
-                                                    <perm.icon className="w-4 h-4" />
-                                                </div>
-                                                <div className="flex-1 min-w-0 pr-2">
-                                                    <p className={`text-[10px] font-black uppercase tracking-widest leading-none mb-1 ${form.permissions.includes(perm.id) ? 'text-primary' : 'text-text'}`}>{perm.label}</p>
-                                                    <p className="text-[8px] font-bold text-text-muted uppercase tracking-wider leading-none opacity-40 italic">{perm.description}</p>
-                                                </div>
-                                            </button>
-                                        ))}
-                                    </div>
+                                <div className="space-y-2 text-left">
+                                    <label className="text-[10px] font-black text-text-muted uppercase tracking-widest font-mono">Role Description</label>
+                                    <textarea
+                                        value={form.description}
+                                        onChange={(e) => setForm({...form, description: e.target.value})}
+                                        placeholder="What is this role for?"
+                                        rows={2}
+                                        className="w-full px-4 py-3 bg-surface-alt border border-border text-sm font-black tracking-widest focus:border-text outline-none transition-all placeholder:text-text-muted/40 rounded-none italic shadow-inner resize-none"
+                                    />
                                 </div>
                             </div>
 
-                            {/* Actions */}
-                            <div className="px-8 py-6 border-t-2 border-text bg-white flex flex-col sm:flex-row items-center justify-between gap-4">
-                                <div className="flex items-center gap-2">
-                                    <div className="w-16 h-1 bg-surface-alt border border-border">
-                                        <div 
-                                            className="h-full bg-primary transition-all duration-500" 
-                                            style={{ width: `${(form.permissions.length / AVAILABLE_PERMISSIONS.length) * 100}%` }}
-                                        />
-                                    </div>
-                                    <span className="text-[8px] font-black text-text-muted uppercase italic tracking-widest">Progress</span>
+                            {/* Permissions Matrix */}
+                            <div className="space-y-4 pt-6 border-t border-border">
+                                <div className="flex items-center justify-between mb-2">
+                                    <h3 className="text-[11px] font-black text-text uppercase tracking-widest italic font-mono">Assign Permissions</h3>
+                                    <span className="text-[9px] font-black text-primary uppercase italic"> {form.permissions.length} Selected</span>
                                 </div>
-                                <div className="flex gap-3 w-full sm:w-auto">
-                                    <button
-                                        type="button"
-                                        onClick={() => setShowModal(false)}
-                                        className="flex-1 sm:flex-none px-8 py-3 bg-surface-alt text-text-muted text-[10px] font-black uppercase tracking-widest border border-border hover:bg-slate-100 transition-all italic font-mono"
-                                    >
-                                        Cancel
-                                    </button>
-                                    <button
-                                        type="submit"
-                                        className="flex-1 sm:flex-none px-12 py-3 bg-text text-white text-[10px] font-black uppercase tracking-widest shadow-xl hover:bg-primary transition-all active:scale-[0.98] italic font-mono"
-                                    >
-                                        {editingRole ? 'Update Role' : 'Create Role'}
-                                    </button>
+
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                    {AVAILABLE_PERMISSIONS.map((perm) => (
+                                        <div
+                                            key={perm.id}
+                                            role="button"
+                                            onClick={() => togglePermission(perm.id)}
+                                            className={`flex items-center gap-3 p-3 transition-all text-left border cursor-pointer ${form.permissions.includes(perm.id) 
+                                                ? 'bg-white border-2 border-primary shadow-md' 
+                                                : 'bg-surface-alt border-border hover:bg-white hover:border-text-muted'
+                                            }`}
+                                        >
+                                            <div className={`p-2 transition-all ${form.permissions.includes(perm.id) ? 'bg-primary text-white' : 'bg-white text-text-muted border border-border'}`}>
+                                                <perm.icon className="w-4 h-4" />
+                                            </div>
+                                            <div className="flex-1 min-w-0 pr-2">
+                                                <p className={`text-[10px] font-black uppercase tracking-widest leading-none mb-1 ${form.permissions.includes(perm.id) ? 'text-primary' : 'text-text'}`}>{perm.label}</p>
+                                                <p className="text-[8px] font-bold text-text-muted uppercase tracking-wider leading-none opacity-40 italic">{perm.description}</p>
+                                            </div>
+                                        </div>
+                                    ))}
                                 </div>
                             </div>
-                        </form>
-                    </div>
+                        </div>
+
+                        {/* Actions */}
+                        <div className="px-8 py-6 border-t-2 border-text bg-white flex flex-col sm:flex-row items-center justify-between gap-4">
+                            <div className="flex items-center gap-2">
+                                <div className="w-16 h-1 bg-surface-alt border border-border">
+                                    <div 
+                                        className="h-full bg-primary transition-all duration-500" 
+                                        style={{ width: `${(form.permissions.length / AVAILABLE_PERMISSIONS.length) * 100}%` }}
+                                    />
+                                </div>
+                                <span className="text-[8px] font-black text-text-muted uppercase italic tracking-widest">Progress</span>
+                            </div>
+                            <div className="flex gap-3 w-full sm:w-auto">
+                                <div
+                                    role="button"
+                                    onClick={() => setShowModal(false)}
+                                    className="flex-1 sm:flex-none px-8 py-3 bg-surface-alt text-text-muted text-[10px] font-black uppercase tracking-widest border border-border hover:bg-slate-100 transition-all italic font-mono cursor-pointer text-center"
+                                >
+                                    Cancel
+                                </div>
+                                <button
+                                    type="submit"
+                                    className="flex-1 sm:flex-none px-12 py-3 bg-text text-white text-[10px] font-black uppercase tracking-widest shadow-xl hover:bg-primary transition-all active:scale-[0.98] italic font-mono"
+                                >
+                                    {editingRole ? 'Update Role' : 'Create Role'}
+                                </button>
+                            </div>
+                        </div>
+                    </form>
                 </div>,
                 document.body
             )}

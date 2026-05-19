@@ -170,7 +170,7 @@ export default function BookingsPage() {
                 });
             }
         }
-
+        return result;
     }, [bookings, searchTerm, statusFilter, staffFilter, dateFilter]);
 
     const totalPages = Math.ceil(filteredBookings.length / itemsPerPage);

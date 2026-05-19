@@ -5,6 +5,94 @@ const CustomerMembership = require('../Models/CustomerMembership');
 const Razorpay = require('razorpay');
 const crypto = require('crypto');
 const Setting = require('../Models/Setting');
+const Invoice = require('../Models/Invoice');
+const Outlet = require('../Models/Outlet');
+
+// Helper to create invoice on membership purchase
+const createMembershipInvoice = async ({ salonId, customerId, plan, outletId, paymentMethod, paymentId, isPaid }) => {
+    try {
+        let selectedOutletId = outletId;
+        if (!selectedOutletId) {
+            const defaultOutlet = await Outlet.findOne({ salonId });
+            if (defaultOutlet) {
+                selectedOutletId = defaultOutlet._id;
+            }
+        }
+        if (!selectedOutletId) {
+            console.error('No outlet found for creating membership invoice');
+            return null;
+        }
+
+        const basePrice = Number(plan.price || 0);
+        const taxRate = Number(plan.taxRate || 0);
+        let calculatedBase = 0;
+        let calculatedTax = 0;
+        let calculatedTotal = 0;
+
+        if (plan.taxType === 'including') {
+            calculatedTotal = basePrice;
+            calculatedBase = basePrice / (1 + taxRate / 100);
+            calculatedTax = calculatedTotal - calculatedBase;
+        } else {
+            calculatedBase = basePrice;
+            calculatedTax = basePrice * (taxRate / 100);
+            calculatedTotal = basePrice + calculatedTax;
+        }
+
+        // Generate Invoice Number
+        const salonDoc = await Salon.findByIdAndUpdate(
+            salonId,
+            { $inc: { invoiceCounter: 1 } },
+            { new: true }
+        );
+        const seq = salonDoc?.invoiceCounter || Date.now();
+        const invoiceNumber = `INV-${salonId.toString().slice(-4).toUpperCase()}-${String(seq).padStart(5, '0')}`;
+
+        const invoiceItems = [{
+            type: 'service',
+            itemId: plan._id,
+            name: `${plan.name} Membership Plan`,
+            price: Number(calculatedBase.toFixed(2)),
+            quantity: 1,
+            isInclusiveTax: plan.taxType === 'including',
+            gstPercent: taxRate
+        }];
+
+        const newInvoice = await Invoice.create({
+            invoiceNumber,
+            salonId,
+            outletId: selectedOutletId,
+            customerId,
+            items: invoiceItems,
+            subtotal: Number(calculatedBase.toFixed(2)),
+            discount: 0,
+            membershipDiscount: 0,
+            tax: Number(calculatedTax.toFixed(2)),
+            gstPercent: taxRate,
+            serviceGstPercent: taxRate,
+            includingGst: plan.taxType === 'including',
+            baseAmount: Number(calculatedBase.toFixed(2)),
+            gstAmount: Number(calculatedTax.toFixed(2)),
+            cgst: Number((calculatedTax / 2).toFixed(2)),
+            sgst: Number((calculatedTax / 2).toFixed(2)),
+            total: Number(calculatedTotal.toFixed(2)),
+            paymentMethod: paymentMethod || 'cash',
+            paymentStatus: isPaid ? 'paid' : 'pending',
+            payments: isPaid ? [{
+                method: paymentMethod || 'cash',
+                amount: Number(calculatedTotal.toFixed(2)),
+                transactionId: paymentId,
+                date: new Date()
+            }] : [],
+            dueAmount: isPaid ? 0 : Number(calculatedTotal.toFixed(2))
+        });
+
+        return newInvoice;
+    } catch (err) {
+        console.error('Error in createMembershipInvoice helper:', err);
+        return null;
+    }
+};
 
 // Initialize Razorpay
 let razorpay;
@@ -248,6 +336,19 @@ exports.verifyMembershipPayment = async (req, res) => {
         const expiryDate = new Date();
         expiryDate.setDate(expiryDate.getDate() + (plan.duration || 30));
 
+        const Customer = require('../Models/Customer');
+        const customer = await Customer.findById(req.user._id);
+
+        const invoice = await createMembershipInvoice({
+            salonId: plan.salonId,
+            customerId: req.user._id,
+            plan,
+            outletId: customer?.lastOutletId || null,
+            paymentMethod: 'online',
+            paymentId: razorpay_payment_id,
+            isPaid: true
+        });
+
         // Create or Update membership
         const membership = await CustomerMembership.findOneAndUpdate(
             { customerId: req.user._id, salonId: plan.salonId },
@@ -257,7 +358,8 @@ exports.verifyMembershipPayment = async (req, res) => {
                 expiryDate,
                 orderId: razorpay_order_id,
                 paymentId: razorpay_payment_id,
-                amount: plan.price + Math.round(plan.price * ((globalSettings?.serviceGst || 18) / 100))
+                invoiceId: invoice?._id || null,
+                amount: invoice?.total || plan.price
             },
             { upsert: true, new: true }
         );
@@ -403,6 +505,16 @@ exports.buyMembershipWithWallet = async (req, res) => {
             status: 'COMPLETED'
         });
 
+        const invoice = await createMembershipInvoice({
+            salonId: plan.salonId,
+            customerId: req.user._id,
+            plan,
+            outletId: customer.lastOutletId || null,
+            paymentMethod: 'wallet',
+            paymentId: `wallet_${Date.now()}`,
+            isPaid: true
+        });
+
         // Activate membership
         const expiryDate = new Date();
         expiryDate.setDate(expiryDate.getDate() + (plan.duration || 30));
@@ -413,8 +525,9 @@ exports.buyMembershipWithWallet = async (req, res) => {
                 planId,
                 status: 'active',
                 expiryDate,
-                amount: totalWithTax,
-                paymentId: `wallet_${Date.now()}`
+                amount: invoice?.total || totalWithTax,
+                paymentId: `wallet_${Date.now()}`,
+                invoiceId: invoice?._id || null
             },
             { upsert: true, new: true }
         );
@@ -501,7 +614,7 @@ exports.buyMembershipWithWallet = async (req, res) => {
 // @access  Private (Admin/Manager)
 exports.assignMembershipDirect = async (req, res) => {
     try {
-        const { customerId, planId } = req.body;
+        const { customerId, planId, outletId, paymentMethod = 'cash' } = req.body;
         const salonId = req.user.salonId;
 
         if (!customerId || !planId) {
@@ -519,6 +632,17 @@ exports.assignMembershipDirect = async (req, res) => {
             return res.status(404).json({ success: false, message: 'Customer not found' });
         }
 
+        // Create the invoice
+        const invoice = await createMembershipInvoice({
+            salonId,
+            customerId,
+            plan,
+            outletId,
+            paymentMethod,
+            paymentId: `admin_assigned_${Date.now()}`,
+            isPaid: paymentMethod !== 'unpaid'
+        });
+
         // Calculate expiry date
         const expiryDate = new Date();
         expiryDate.setDate(expiryDate.getDate() + (plan.duration || 30));
@@ -530,11 +654,24 @@ exports.assignMembershipDirect = async (req, res) => {
                 planId,
                 status: 'active',
                 expiryDate,
-                amount: plan.price, // Admin assignment records the plan price
-                paymentId: `admin_assigned_${Date.now()}`
+                amount: invoice?.total || plan.price,
+                paymentId: `admin_assigned_${Date.now()}`,
+                invoiceId: invoice?._id || null
             },
             { upsert: true, new: true }
         );
+
+        // Update Customer Stats
+        customer.totalVisits = (customer.totalVisits || 0) + 1;
+        customer.totalSpend = (customer.totalSpend || 0) + (invoice?.total || plan.price);
+        customer.lastVisit = new Date();
+        if (outletId) {
+            customer.lastOutletId = outletId;
+        }
+        if (paymentMethod === 'unpaid') {
+            customer.dueAmount = (customer.dueAmount || 0) + (invoice?.total || plan.price);
+        }
+        await customer.save();
 
         // Send Push Notification & WhatsApp to customer
         try {

@@ -56,7 +56,7 @@ export default function POSLayout() {
             />
 
             <div
-                className={`transition-all duration-300 ${collapsed ? 'md:ml-[68px]' : 'md:ml-60'}`}
+                className={`transition-all duration-300 ${collapsed ? 'md:ml-[72px]' : 'md:ml-[270px]'}`}
             >
                 <POSTopbar onMenuClick={() => setMobileOpen(true)} />
 

@@ -326,70 +326,78 @@ export default function CustomersPage({ tab = 'directory' }) {
 
                 {/* Add Customer Modal */}
                 {showAddModal && (
-                    <div className="fixed inset-0 bg-background/80 backdrop-blur-md z-[200] flex items-start justify-center p-4 pt-10 animate-in fade-in duration-300" onClick={() => setShowAddModal(false)}>
-                        <div className="bg-surface rounded-none w-full max-w-lg p-5 shadow-2xl relative overflow-y-auto max-h-[90vh] animate-in slide-in-from-top-4 duration-300 border border-border hide-scrollbar" onClick={(e) => e.stopPropagation()}>
-                            <div className="flex items-center gap-3 mb-4 pb-3 border-b border-border">
-                                <div className="w-10 h-10 rounded-none bg-primary text-white flex items-center justify-center">
-                                    <UserPlus className="w-5 h-5" />
-                                </div>
-                                <div>
-                                    <h2 className="text-sm font-black text-text uppercase tracking-widest leading-none">Add Customer</h2>
-                                    <p className="text-[7px] font-black text-text-secondary uppercase tracking-[0.2em] mt-1 opacity-50">Quick entry system</p>
-                                </div>
+                    <div className="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-[200] flex items-center justify-center p-4 animate-in fade-in duration-300" onClick={() => setShowAddModal(false)}>
+                        <div className="bg-white rounded-3xl w-full max-w-md shadow-2xl relative overflow-y-auto max-h-[90vh] hide-scrollbar animate-in slide-in-from-top-4 duration-300 border border-slate-200/50" onClick={(e) => e.stopPropagation()}>
+                            <div className="p-5 bg-white border-b border-slate-100 flex justify-between items-center">
+                                <h4 className="text-[11px] font-black text-slate-900 uppercase flex items-center gap-2 tracking-widest">
+                                    <UserPlus className="w-4 h-4 text-slate-800" /> Add Customer
+                                </h4>
+                                <button type="button" onClick={() => setShowAddModal(false)} className="text-slate-400 hover:text-rose-500 transition-colors"><X className="w-5 h-5" /></button>
                             </div>
 
-                            <form onSubmit={handleAddCustomer} className="space-y-6">
-                                <div className="space-y-5">
+                            <form onSubmit={handleAddCustomer}>
+                                <div className="p-6 space-y-4">
                                     <div className="space-y-1.5">
-                                        <label className="text-[9px] font-black text-text-muted uppercase tracking-widest">Customer Name</label>
+                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Customer Name</label>
                                         <input
                                             type="text"
                                             required
-                                            placeholder="E.G. ADITYA SHARMA"
+                                            placeholder="e.g. John Doe"
                                             value={newCustomerForm.name}
                                             onChange={(e) => setNewCustomerForm({ ...newCustomerForm, name: e.target.value.replace(/[^a-zA-Z\s]/g, '') })}
-                                            className="w-full px-4 py-2.5 rounded-none bg-surface-alt border border-border text-xs font-bold outline-none focus:bg-surface focus:border-primary transition-all uppercase"
+                                            className="w-full bg-slate-50 border border-slate-200 p-3 text-xs font-black text-slate-900 outline-none rounded-xl placeholder:text-slate-400 focus:border-slate-400 transition-colors uppercase"
                                         />
                                     </div>
                                     <div className="space-y-1.5">
-                                        <label className="text-[9px] font-black text-text-muted uppercase tracking-widest">Phone Number</label>
+                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Phone Number</label>
                                         <input
                                             type="tel"
                                             required
-                                            placeholder="+91 00000 00000"
+                                            placeholder="10-digit mobile"
                                             value={newCustomerForm.phone}
                                             onChange={(e) => {
                                                 const val = e.target.value.replace(/\D/g, '');
                                                 if (val.length <= 10) setNewCustomerForm({ ...newCustomerForm, phone: val });
                                             }}
-                                            className="w-full px-4 py-2.5 rounded-none bg-surface-alt border border-border text-xs font-bold outline-none focus:bg-surface focus:border-primary transition-all"
+                                            className="w-full bg-slate-50 border border-slate-200 p-3 text-xs font-black text-slate-900 outline-none rounded-xl placeholder:text-slate-400 focus:border-slate-400 transition-colors"
                                         />
                                     </div>
                                     <div className="grid grid-cols-2 gap-4">
                                         <div className="space-y-1.5">
-                                            <label className="text-[9px] font-black text-text-muted uppercase tracking-widest">Birth Date</label>
+                                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Birth Date</label>
                                             <input
                                                 type="date"
                                                 value={newCustomerForm.dob}
                                                 onChange={(e) => setNewCustomerForm({ ...newCustomerForm, dob: e.target.value })}
-                                                className="w-full px-4 py-2.5 rounded-none bg-surface-alt border border-border text-xs font-bold outline-none focus:bg-surface focus:border-primary transition-all"
+                                                className="w-full bg-slate-50 border border-slate-200 p-3 text-xs font-black text-slate-900 outline-none rounded-xl focus:border-slate-400 transition-colors"
                                             />
                                         </div>
                                         <div className="space-y-1.5">
-                                            <label className="text-[9px] font-black text-text-muted uppercase tracking-widest">Anniversary</label>
+                                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Anniversary</label>
                                             <input
                                                 type="date"
                                                 value={newCustomerForm.anniversary}
                                                 onChange={(e) => setNewCustomerForm({ ...newCustomerForm, anniversary: e.target.value })}
-                                                className="w-full px-4 py-2.5 rounded-none bg-surface-alt border border-border text-xs font-bold outline-none focus:bg-surface focus:border-primary transition-all"
+                                                className="w-full bg-slate-50 border border-slate-200 p-3 text-xs font-black text-slate-900 outline-none rounded-xl focus:border-slate-400 transition-colors"
                                             />
                                         </div>
                                     </div>
                                 </div>
 
-                                <div className="flex gap-3 pt-4">
-                                    <button type="button" onClick={() => setShowAddModal(false)} className="flex-1 py-3 rounded-none border border-border text-[9px] font-black uppercase tracking-widest text-text-muted hover:bg-surface-alt transition-all">Cancel</button>
-                                    <button type="submit" className="flex-1 bg-primary text-primary-foreground py-3 rounded-none shadow-xl shadow-primary/20 text-[9px] font-black uppercase tracking-widest hover:brightness-110 transition-all">Add Customer</button>
+                                <div className="p-6 bg-slate-50 border-t border-slate-100 flex gap-3">
+                                    <button 
+                                        type="button" 
+                                        onClick={() => setShowAddModal(false)} 
+                                        className="flex-1 py-3 text-[11px] font-black text-slate-500 uppercase tracking-widest border border-slate-200 rounded-xl bg-white hover:bg-slate-100 transition-all"
+                                    >
+                                        Cancel
+                                    </button>
+                                    <button 
+                                        type="submit" 
+                                        className="flex-1 py-3 text-[11px] font-black text-white uppercase tracking-widest bg-slate-800 hover:bg-slate-900 rounded-xl transition-all shadow-lg shadow-slate-800/10"
+                                    >
+                                        Add Customer
+                                    </button>
                                 </div>
                             </form>
                         </div>
@@ -399,32 +407,41 @@ export default function CustomersPage({ tab = 'directory' }) {
 
             {/* Manual WhatsApp Message Modal */}
             {whatsappModal.isOpen && (
-                <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-[250] flex items-center justify-center p-4 animate-in fade-in duration-300">
-                    <div className="bg-surface rounded-none w-full max-w-lg p-8 shadow-2xl border border-border animate-in zoom-in-95 duration-200">
-                        <div className="flex items-center gap-4 mb-6 pb-4 border-b border-border">
-                            <div className="w-12 h-12 bg-emerald-500 text-primary-foreground flex items-center justify-center font-black">
-                                <MessageSquare className="w-6 h-6" />
+                <div className="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-[250] flex items-center justify-center p-4 animate-in fade-in duration-300" onClick={() => setWhatsappModal({ ...whatsappModal, isOpen: false })}>
+                    <div className="bg-white rounded-3xl w-full max-w-md shadow-2xl border border-slate-200/50 overflow-y-auto max-h-[90vh] hide-scrollbar animate-in zoom-in-95 duration-200" onClick={(e) => e.stopPropagation()}>
+                        <div className="p-5 bg-white border-b border-slate-100 flex justify-between items-center">
+                            <h4 className="text-[11px] font-black text-slate-900 uppercase flex items-center gap-2 tracking-widest">
+                                <MessageSquare className="w-4 h-4 text-emerald-500" /> Send WhatsApp Message
+                            </h4>
+                            <button type="button" onClick={() => setWhatsappModal({ ...whatsappModal, isOpen: false })} className="text-slate-400 hover:text-rose-500 transition-colors"><X className="w-5 h-5" /></button>
+                        </div>
+
+                        <div className="p-6 space-y-4">
+                            <div className="flex items-center gap-3 bg-slate-50 border border-slate-200/60 p-3 rounded-2xl">
+                                <div className="w-8 h-8 rounded-xl bg-slate-200 text-slate-700 flex items-center justify-center font-black text-[10px] uppercase">
+                                    {whatsappModal.customer?.name?.charAt(0) || '?'}
+                                </div>
+                                <div>
+                                    <p className="text-[11px] font-black text-slate-900 uppercase tracking-wider">{whatsappModal.customer?.name}</p>
+                                    <p className="text-[9px] font-bold text-slate-400 font-mono">{whatsappModal.customer?.phone}</p>
+                                </div>
                             </div>
-                            <div>
-                                <h3 className="text-sm font-black text-text uppercase tracking-widest">Send WhatsApp Message</h3>
-                                <p className="text-[10px] font-bold text-text-muted uppercase mt-0.5">To: {whatsappModal.customer?.name}</p>
+
+                            <div className="space-y-1.5">
+                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Your Message</label>
+                                <textarea
+                                    value={whatsappModal.message}
+                                    onChange={(e) => setWhatsappModal({ ...whatsappModal, message: e.target.value })}
+                                    className="w-full h-32 bg-slate-50 border border-slate-200 p-3.5 text-xs font-black text-slate-800 outline-none rounded-2xl placeholder:text-slate-400 focus:border-slate-400 transition-colors resize-none"
+                                    placeholder="Write your personalized message here..."
+                                />
                             </div>
                         </div>
 
-                        <div className="space-y-4">
-                            <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Your Message</label>
-                            <textarea
-                                value={whatsappModal.message}
-                                onChange={(e) => setWhatsappModal({ ...whatsappModal, message: e.target.value })}
-                                className="w-full h-40 px-5 py-4 bg-surface-alt border border-border text-xs font-bold focus:bg-surface focus:border-emerald-500 outline-none transition-all resize-none"
-                                placeholder="Write your personalized message here..."
-                            />
-                        </div>
-
-                        <div className="flex gap-4 mt-8">
+                        <div className="p-6 bg-slate-50 border-t border-slate-100 flex gap-3">
                             <button
                                 onClick={() => setWhatsappModal({ ...whatsappModal, isOpen: false })}
-                                className="flex-1 py-4 border border-border text-[10px] font-black uppercase tracking-widest hover:bg-surface transition-all"
+                                className="flex-1 py-3 text-[11px] font-black text-slate-500 uppercase tracking-widest border border-slate-200 rounded-xl bg-white hover:bg-slate-100 transition-all"
                             >
                                 Cancel
                             </button>
@@ -434,7 +451,7 @@ export default function CustomersPage({ tab = 'directory' }) {
                                     window.open(`https://wa.me/${phone}?text=${encodeURIComponent(whatsappModal.message)}`, '_blank');
                                     setWhatsappModal({ ...whatsappModal, isOpen: false });
                                 }}
-                                className="flex-1 bg-emerald-500 text-primary-foreground py-4 text-[10px] font-black uppercase tracking-widest hover:brightness-110 transition-all"
+                                className="flex-1 bg-emerald-50 text-primary-foreground py-3 text-[10px] font-black uppercase tracking-widest hover:brightness-110 transition-all"
                             >
                                 Send
                             </button>

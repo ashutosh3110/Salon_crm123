@@ -4,11 +4,19 @@ import Sidebar from '../components/admin/Sidebar';
 import Topbar from '../components/admin/Topbar';
 
 export default function AdminLayout() {
-    const [collapsed, setCollapsed] = useState(true);
+    const [collapsed, setCollapsed] = useState(() => {
+        const saved = localStorage.getItem('admin_sidebar_collapsed');
+        return saved !== null ? JSON.parse(saved) : false;
+    });
     const [isHovered, setIsHovered] = useState(false);
     const [mobileOpen, setMobileOpen] = useState(false);
 
-    const effectiveCollapsed = collapsed && !isHovered;
+    const handleSetCollapsed = (value) => {
+        setCollapsed(value);
+        localStorage.setItem('admin_sidebar_collapsed', JSON.stringify(value));
+    };
+
+    const effectiveCollapsed = collapsed;
 
     return (
         <div className="min-h-screen bg-surface admin-panel">
@@ -18,20 +26,26 @@ export default function AdminLayout() {
                 .admin-panel {
                     --primary: #b85c5c !important;
                     --primary-foreground: #ffffff !important;
-                    --font-serif: 'Poppins', 'Inter', sans-serif !important;
+                    --font-serif: 'Inter', sans-serif !important;
                     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+                    font-size: 17px !important;
                     background-color: #faf9f9 !important;
                     color: #1e293b !important;
                 }
                 
                 .admin-panel *,
                 .admin-panel *::before,
-                .admin-panel *::after {
+                .admin-panel *::after,
+                [role="dialog"] *,
+                [role="menu"] *,
+                [role="tooltip"] *,
+                .fixed.inset-0 * {
                     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+                    font-style: normal !important;
                     letter-spacing: -0.01em;
                 }
 
-                /* --- Headers & Titles (Completely Sans-Serif, Poppins, Clean, Uniform & Flat) --- */
+                /* --- Headers & Titles (Completely Sans-Serif, Inter, Clean, Uniform & Flat) --- */
                 .admin-panel h1, 
                 .admin-panel h2, 
                 .admin-panel h3, 
@@ -40,55 +54,80 @@ export default function AdminLayout() {
                 .admin-panel h6,
                 .admin-panel .font-serif,
                 .admin-panel [class*="font-serif"],
+                .admin-panel .font-mono,
+                .admin-panel [class*="font-mono"],
                 .admin-panel .italic,
-                .admin-panel [class*="italic"] {
-                    font-family: 'Poppins', 'Inter', sans-serif !important;
-                    font-weight: 700 !important;
+                .admin-panel [class*="italic"],
+                [role="dialog"] h1,
+                [role="dialog"] h2,
+                [role="dialog"] h3,
+                [role="dialog"] h4,
+                [role="dialog"] h5,
+                [role="dialog"] h6 {
+                    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+                    font-weight: 800 !important;
                     font-style: normal !important; /* Force standard, clean, non-cursive upright text */
                     letter-spacing: -0.02em !important;
                     color: #0f172a !important;
                 }
 
                 /* --- Global Font Size Scale Amplifiers (Slightly larger & crisp) --- */
-                .admin-panel .text-\[10px\] {
-                    font-size: 12.5px !important;
+                .admin-panel .text-\\[7px\\],
+                .admin-panel .text-\\[8px\\],
+                .admin-panel .text-\\[9px\\],
+                [role="dialog"] .text-\\[7px\\],
+                [role="dialog"] .text-\\[8px\\],
+                [role="dialog"] .text-\\[9px\\],
+                .fixed.inset-0 .text-\\[7px\\],
+                .fixed.inset-0 .text-\\[8px\\],
+                .fixed.inset-0 .text-\\[9px\\] {
+                    font-size: 13.5px !important;
+                    letter-spacing: 0.03em !important;
+                    font-weight: 700 !important;
+                }
+                .admin-panel .text-\\[10px\\],
+                [role="dialog"] .text-\\[10px\\],
+                .fixed.inset-0 .text-\\[10px\\] {
+                    font-size: 15px !important;
                     letter-spacing: 0.02em !important;
                     font-weight: 600 !important;
                 }
-                .admin-panel .text-\[11px\] {
-                    font-size: 13.5px !important;
+                .admin-panel .text-\\[11px\\],
+                [role="dialog"] .text-\\[11px\\],
+                .fixed.inset-0 .text-\\[11px\\] {
+                    font-size: 16px !important;
                     letter-spacing: 0.01em !important;
                     font-weight: 500 !important;
                 }
                 .admin-panel .text-xs {
-                    font-size: 0.875rem !important; /* ~14px instead of 12px */
-                    line-height: 1.35rem !important;
+                    font-size: 1rem !important; /* 16px instead of 14px */
+                    line-height: 1.5rem !important;
                 }
                 .admin-panel .text-sm {
-                    font-size: 0.975rem !important; /* ~15.6px instead of 14px */
-                    line-height: 1.55rem !important;
+                    font-size: 1.1rem !important; /* ~17.6px instead of 15.6px */
+                    line-height: 1.7rem !important;
                 }
                 .admin-panel .text-base {
-                    font-size: 1.125rem !important; /* 18px instead of 16px */
-                    line-height: 1.75rem !important;
+                    font-size: 1.22rem !important; /* ~19.5px instead of 18px */
+                    line-height: 1.9rem !important;
                 }
                 .admin-panel .text-lg {
-                    font-size: 1.25rem !important; /* 20px instead of 18px */
-                    line-height: 1.875rem !important;
+                    font-size: 1.38rem !important; /* ~22px instead of 20px */
+                    line-height: 2.05rem !important;
                 }
                 .admin-panel .text-xl {
-                    font-size: 1.5rem !important; /* 24px instead of 20px */
-                    line-height: 2rem !important;
+                    font-size: 1.63rem !important; /* ~26px instead of 24px */
+                    line-height: 2.25rem !important;
                 }
                 .admin-panel .text-2xl {
-                    font-size: 1.875rem !important; /* 30px instead of 24px */
-                    line-height: 2.25rem !important;
+                    font-size: 2rem !important; /* ~32px instead of 30px */
+                    line-height: 2.4rem !important;
                     font-weight: 800 !important;
                     letter-spacing: -0.025em !important;
                 }
                 .admin-panel .text-3xl {
-                    font-size: 2.25rem !important;
-                    line-height: 2.5rem !important;
+                    font-size: 2.45rem !important; /* ~39.2px instead of 36px */
+                    line-height: 2.75rem !important;
                     font-weight: 900 !important;
                     letter-spacing: -0.03em !important;
                 }
@@ -202,6 +241,26 @@ export default function AdminLayout() {
                     transition: all 0.2s ease-in-out !important;
                     box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05) !important;
                 }
+                .admin-panel select {
+                    padding-top: 0.45rem !important;
+                    padding-bottom: 0.45rem !important;
+                }
+                .admin-panel input.pl-12,
+                .admin-panel select.pl-12 {
+                    padding-left: 3rem !important;
+                }
+                .admin-panel input.pl-14,
+                .admin-panel select.pl-14 {
+                    padding-left: 3.5rem !important;
+                }
+                .admin-panel input.pl-16,
+                .admin-panel select.pl-16 {
+                    padding-left: 4rem !important;
+                }
+                .admin-panel input.pl-10,
+                .admin-panel select.pl-10 {
+                    padding-left: 2.5rem !important;
+                }
                 .admin-panel input:focus, 
                 .admin-panel select:focus, 
                 .admin-panel textarea:focus {
@@ -250,10 +309,10 @@ export default function AdminLayout() {
                 .admin-panel button[class*="bg-primary"],
                 .admin-panel .inline-flex[class*="bg-primary"],
                 .admin-panel button:has(svg.lucide-plus) {
-                    background: linear-gradient(135deg, #c36d6d 0%, #b85c5c 100%) !important;
+                    background: #000000 !important;
                     color: #ffffff !important;
-                    border: 1px solid #b85c5c !important;
-                    box-shadow: 0 4px 10px rgba(184, 92, 92, 0.15) !important;
+                    border: 1px solid #000000 !important;
+                    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1) !important;
                 }
                 .admin-panel button.bg-primary:hover,
                 .admin-panel a.bg-primary:hover,
@@ -262,8 +321,9 @@ export default function AdminLayout() {
                 .admin-panel button[class*="bg-primary"]:hover,
                 .admin-panel .inline-flex[class*="bg-primary"]:hover,
                 .admin-panel button:has(svg.lucide-plus):hover {
-                    background: linear-gradient(135deg, #b85c5c 0%, #a24b4b 100%) !important;
-                    box-shadow: 0 6px 14px rgba(184, 92, 92, 0.3) !important;
+                    background: #262626 !important;
+                    border-color: #262626 !important;
+                    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.15), 0 4px 6px -4px rgba(0, 0, 0, 0.15) !important;
                     transform: translateY(-1.5px) !important;
                 }
                 .admin-panel button.bg-primary:active,
@@ -271,30 +331,35 @@ export default function AdminLayout() {
                 .admin-panel .bg-primary:active,
                 .admin-panel button[type="submit"]:active,
                 .admin-panel button[class*="bg-primary"]:active,
-                .admin-panel .inline-flex[class*="bg-primary"]:active {
+                .admin-panel button.bg-primary:not(aside *):active,
+                .admin-panel a.bg-primary:not(aside *):active,
+                .admin-panel .bg-primary:not(aside *):active,
+                .admin-panel button[type="submit"]:not(aside *):active,
+                .admin-panel button[class*="bg-primary"]:not(aside *):active,
+                .admin-panel .inline-flex[class*="bg-primary"]:not(aside *):active {
                     transform: translateY(0.5px) scale(0.97) !important;
-                    box-shadow: 0 2px 6px rgba(184, 92, 92, 0.15) !important;
+                    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1) !important;
                 }
 
                 /* Target Secondary, Outline & Text Buttons */
-                .admin-panel button.bg-secondary,
-                .admin-panel button.border,
-                .admin-panel a.border,
-                .admin-panel button[class*="border-"],
-                .admin-panel [class*="border-border"] button,
-                .admin-panel button:has(svg.lucide-eye),
-                .admin-panel button:has(svg.lucide-edit) {
+                .admin-panel button.bg-secondary:not(aside *),
+                .admin-panel button.border:not(aside *),
+                .admin-panel a.border:not(aside *),
+                .admin-panel button[class*="border-"]:not(aside *),
+                .admin-panel [class*="border-border"] button:not(aside *):not(.bg-primary):not([class*="bg-primary"]),
+                .admin-panel button:has(svg.lucide-eye):not(aside *),
+                .admin-panel button:has(svg.lucide-edit):not(aside *) {
                     background-color: #ffffff !important;
                     border: 1px solid #cbd5e1 !important;
                     color: #334155 !important;
                     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04) !important;
                 }
-                .admin-panel button.bg-secondary:hover,
-                .admin-panel button.border:hover,
-                .admin-panel a.border:hover,
-                .admin-panel button[class*="border-"]:hover,
-                .admin-panel button:has(svg.lucide-eye):hover,
-                .admin-panel button:has(svg.lucide-edit):hover {
+                .admin-panel button.bg-secondary:not(aside *):hover,
+                .admin-panel button.border:not(aside *):hover,
+                .admin-panel a.border:not(aside *):hover,
+                .admin-panel button[class*="border-"]:not(aside *):hover,
+                .admin-panel button:has(svg.lucide-eye):not(aside *):hover,
+                .admin-panel button:has(svg.lucide-edit):not(aside *):hover {
                     background-color: #f8fafc !important;
                     border-color: #94a3b8 !important;
                     color: #0f172a !important;
@@ -302,42 +367,33 @@ export default function AdminLayout() {
                     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05) !important;
                 }
                 
-                .dark .admin-panel button.bg-secondary,
-                .dark .admin-panel button.border,
-                .dark .admin-panel a.border,
-                .dark .admin-panel button[class*="border-"],
-                .dark .admin-panel button:has(svg.lucide-eye),
-                .dark .admin-panel button:has(svg.lucide-edit) {
+                .dark .admin-panel button.bg-secondary:not(aside *),
+                .dark .admin-panel button.border:not(aside *),
+                .dark .admin-panel a.border:not(aside *),
+                .dark .admin-panel button[class*="border-"]:not(aside *),
+                .dark .admin-panel button:has(svg.lucide-eye):not(aside *),
+                .dark .admin-panel button:has(svg.lucide-edit):not(aside *) {
                     background-color: #1e293b !important;
                     border-color: rgba(255, 255, 255, 0.12) !important;
                     color: #cbd5e1 !important;
                 }
-                .dark .admin-panel button.bg-secondary:hover,
-                .dark .admin-panel button.border:hover,
-                .dark .admin-panel a.border:hover,
-                .dark .admin-panel button[class*="border-"]:hover,
-                .dark .admin-panel button:has(svg.lucide-eye):hover,
-                .dark .admin-panel button:has(svg.lucide-edit):hover {
+                .dark .admin-panel button.bg-secondary:not(aside *):hover,
+                .dark .admin-panel button.border:not(aside *):hover,
+                .dark .admin-panel a.border:not(aside *):hover,
+                .dark .admin-panel button[class*="border-"]:not(aside *):hover,
+                .dark .admin-panel button:has(svg.lucide-eye):not(aside *):hover,
+                .dark .admin-panel button:has(svg.lucide-edit):not(aside *):hover {
                     background-color: #121826 !important;
                     border-color: rgba(255, 255, 255, 0.25) !important;
                     color: #ffffff !important;
                 }
 
-                /* --- Sidebar & Navigation Items --- */
-                .admin-panel aside a {
-                    font-size: 0.95rem !important;
-                    font-weight: 600 !important;
-                    padding: 0.75rem 1rem !important;
-                }
-                .admin-panel aside a svg {
-                    width: 1.25rem !important;
-                    height: 1.25rem !important;
-                }
+
 
                 /* --- Custom Styled Premium Pagination Footer --- */
                 .admin-panel [class*="bg-surface-alt/50"],
                 .admin-panel .bg-surface-alt\/50,
-                .admin-panel [class*="border-t"][class*="px-6"][class*="py-4"] {
+                .admin-panel [class*="border-t"]:not(aside) {
                     background-color: #f8fafc !important;
                     border-top: 1px solid #e2e8f0 !important;
                     padding: 1.25rem 1.5rem !important;
@@ -351,9 +407,9 @@ export default function AdminLayout() {
                 }
                 
                 /* Pagination Buttons inside Footer */
-                .admin-panel [class*="bg-surface-alt/50"] button,
-                .admin-panel .bg-surface-alt\/50 button,
-                .admin-panel [class*="border-t"] button {
+                .admin-panel [class*="bg-surface-alt/50"] button:not(aside *),
+                .admin-panel .bg-surface-alt\/50 button:not(aside *),
+                .admin-panel [class*="border-t"] button:not(aside *) {
                     background-color: #ffffff !important;
                     border: 1px solid #cbd5e1 !important;
                     padding: 0.5rem 1.25rem !important;
@@ -366,17 +422,17 @@ export default function AdminLayout() {
                     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04) !important;
                     transition: all 0.2s ease-in-out !important;
                 }
-                .admin-panel [class*="bg-surface-alt/50"] button:hover,
-                .admin-panel .bg-surface-alt\/50 button:hover,
-                .admin-panel [class*="border-t"] button:hover {
+                .admin-panel [class*="bg-surface-alt/50"] button:not(aside *):hover,
+                .admin-panel .bg-surface-alt\/50 button:not(aside *):hover,
+                .admin-panel [class*="border-t"] button:not(aside *):hover {
                     border-color: #b85c5c !important;
                     color: #b85c5c !important;
                     background-color: rgba(184, 92, 92, 0.05) !important;
                     transform: translateY(-1px) !important;
                 }
-                .admin-panel [class*="bg-surface-alt/50"] button:disabled,
-                .admin-panel .bg-surface-alt\/50 button:disabled,
-                .admin-panel [class*="border-t"] button:disabled {
+                .admin-panel [class*="bg-surface-alt/50"] button:not(aside *):disabled,
+                .admin-panel .bg-surface-alt\/50 button:not(aside *):disabled,
+                .admin-panel [class*="border-t"] button:not(aside *):disabled {
                     opacity: 0.3 !important;
                     transform: none !important;
                     border-color: #cbd5e1 !important;
@@ -384,23 +440,23 @@ export default function AdminLayout() {
                     background-color: #f1f5f9 !important;
                 }
                 
-                .dark .admin-panel [class*="bg-surface-alt/50"] button,
-                .dark .admin-panel .bg-surface-alt\/50 button,
-                .dark .admin-panel [class*="border-t"] button {
+                .dark .admin-panel [class*="bg-surface-alt/50"] button:not(aside *),
+                .dark .admin-panel .bg-surface-alt\/50 button:not(aside *),
+                .dark .admin-panel [class*="border-t"] button:not(aside *) {
                     background-color: #1e293b !important;
                     border-color: rgba(255, 255, 255, 0.12) !important;
                     color: #cbd5e1 !important;
                 }
-                .dark .admin-panel [class*="bg-surface-alt/50"] button:hover,
-                .dark .admin-panel .bg-surface-alt\/50 button:hover,
-                .dark .admin-panel [class*="border-t"] button:hover {
+                .dark .admin-panel [class*="bg-surface-alt/50"] button:not(aside *):hover,
+                .dark .admin-panel .bg-surface-alt\/50 button:not(aside *):hover,
+                .dark .admin-panel [class*="border-t"] button:not(aside *):hover {
                     border-color: #b85c5c !important;
                     color: #b85c5c !important;
                     background-color: rgba(184, 92, 92, 0.15) !important;
                 }
-                .dark .admin-panel [class*="bg-surface-alt/50"] button:disabled,
-                .dark .admin-panel .bg-surface-alt\/50 button:disabled,
-                .dark .admin-panel [class*="border-t"] button:disabled {
+                .dark .admin-panel [class*="bg-surface-alt/50"] button:not(aside *):disabled,
+                .dark .admin-panel .bg-surface-alt\/50 button:not(aside *):disabled,
+                .dark .admin-panel [class*="border-t"] button:not(aside *):disabled {
                     opacity: 0.25 !important;
                     background-color: #121826 !important;
                     color: #64748b !important;
@@ -580,24 +636,7 @@ export default function AdminLayout() {
                     border-color: rgba(255, 255, 255, 0.08) !important;
                 }
 
-                /* --- Navigation elements --- */
-                .dark .admin-panel aside a {
-                    color: #cbd5e1 !important;
-                }
-                .dark .admin-panel aside a:hover {
-                    background-color: #121826 !important; /* dark body bg on hover */
-                    color: #ffffff !important;
-                }
-                .dark .admin-panel aside a.active,
-                .dark .admin-panel aside a[class*="bg-primary"] {
-                    background-color: rgba(184, 92, 92, 0.15) !important;
-                    color: #b85c5c !important;
-                }
-                .admin-panel aside a.active,
-                .admin-panel aside a[class*="bg-primary"] {
-                    background-color: rgba(184, 92, 92, 0.1) !important;
-                    color: #b85c5c !important;
-                }
+
 
                 /* --- Spacious & Beautiful Tables in Dark Mode --- */
                 .dark .admin-panel table th {
@@ -639,7 +678,7 @@ export default function AdminLayout() {
 
             <Sidebar
                 collapsed={collapsed}
-                setCollapsed={setCollapsed}
+                setCollapsed={handleSetCollapsed}
                 isHovered={isHovered}
                 setIsHovered={setIsHovered}
                 mobileOpen={mobileOpen}
@@ -648,7 +687,7 @@ export default function AdminLayout() {
 
             {/* Main content area */}
             <div
-                className={`transition-all duration-300 ${effectiveCollapsed ? 'lg:ml-[68px]' : 'lg:ml-64'
+                className={`transition-all duration-300 ${effectiveCollapsed ? 'lg:ml-[72px]' : 'lg:ml-[270px]'
                     }`}
             >
                 <Topbar onMenuClick={() => setMobileOpen(true)} />

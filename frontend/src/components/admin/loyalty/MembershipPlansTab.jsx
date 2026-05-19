@@ -43,6 +43,8 @@ export default function MembershipPlansTab() {
                     serviceDiscountType: p.serviceDiscountType || 'percentage',
                     productDiscountValue: p.productDiscountValue || 0,
                     productDiscountType: p.productDiscountType || 'percentage',
+                    taxType: p.taxType || 'excluding',
+                    taxRate: p.taxRate !== undefined ? p.taxRate : 0,
                     color: p.color || '#A0A0A0',
                     gradient: p.gradient || 'linear-gradient(135deg, #1A1A1A 0%, #333 100%)',
                     isActive: p.isActive !== false,
@@ -168,6 +170,9 @@ function MembershipCard({ plan, onEdit, onDelete, onToggle }) {
                         <span className="text-2xl font-black text-foreground italic">₹{plan.price}</span>
                         <span className="text-[10px] font-black text-text-muted uppercase tracking-widest">/ {plan.duration} Days</span>
                     </div>
+                    <div className="text-[8px] font-black text-text-muted uppercase tracking-[0.15em] leading-none mt-1 opacity-70">
+                        {plan.taxType === 'including' ? `INCL. ${plan.taxRate}% GST` : `EXCL. ${plan.taxRate}% GST`}
+                    </div>
                 </div>
                 <div className="space-y-3 mb-8">
                     {plan.benefits.slice(0, 4).map((benefit, i) => (
@@ -200,18 +205,29 @@ function MembershipCard({ plan, onEdit, onDelete, onToggle }) {
 }
 
 function PlanModal({ plan, serviceOptions = [], onClose, onSave }) {
-    const [formData, setFormData] = useState(plan || { 
-        name: '', 
-        price: '', 
-        duration: 30, 
-        benefits: [''], 
-        serviceDiscountValue: 0,
-        serviceDiscountType: 'percentage',
-        productDiscountValue: 0,
-        productDiscountType: 'percentage',
-        icon: 'star', 
-        gradient: 'linear-gradient(135deg, #1A1A1A 0%, #333 100%)', 
-        isPopular: false 
+    const [formData, setFormData] = useState(() => {
+        if (plan) {
+            return {
+                ...plan,
+                taxType: plan.taxType || 'excluding',
+                taxRate: plan.taxRate !== undefined ? plan.taxRate : 0
+            };
+        }
+        return { 
+            name: '', 
+            price: '', 
+            duration: 30, 
+            benefits: [''], 
+            serviceDiscountValue: 0,
+            serviceDiscountType: 'percentage',
+            productDiscountValue: 0,
+            productDiscountType: 'percentage',
+            taxType: 'excluding',
+            taxRate: 0,
+            icon: 'star', 
+            gradient: 'linear-gradient(135deg, #1A1A1A 0%, #333 100%)', 
+            isPopular: false 
+        };
     });
 
     const handleBenefitChange = (index, value) => {
@@ -220,53 +236,199 @@ function PlanModal({ plan, serviceOptions = [], onClose, onSave }) {
         setFormData({ ...formData, benefits: newBenefits });
     };
 
+    // Calculate tax breakdown
+    const basePrice = Number(formData.price || 0);
+    const taxRate = Number(formData.taxRate || 0);
+    let calculatedBase = 0;
+    let calculatedTax = 0;
+    let calculatedTotal = 0;
+
+    if (formData.taxType === 'including') {
+        calculatedTotal = basePrice;
+        calculatedBase = basePrice / (1 + taxRate / 100);
+        calculatedTax = calculatedTotal - calculatedBase;
+    } else {
+        calculatedBase = basePrice;
+        calculatedTax = basePrice * (taxRate / 100);
+        calculatedTotal = basePrice + calculatedTax;
+    }
+
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
-            <motion.div initial={{ opacity: 0, scale: 0.9, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} className="relative bg-surface border border-border/40 w-full max-w-lg overflow-hidden text-left">
-                <div className="px-6 py-5 border-b border-border/40 flex justify-between items-center bg-surface-alt">
-                    <h2 className="text-xl font-black text-foreground uppercase italic tracking-tighter">
-                        {plan ? 'EDIT PLAN' : 'CREATE NEW PLAN'}
+        <div className="fixed inset-0 z-50 flex items-start justify-center p-4 pt-10 sm:pt-16 bg-black/85 backdrop-blur-md overflow-y-auto">
+            <motion.div 
+                initial={{ opacity: 0, scale: 0.9, y: 20 }} 
+                animate={{ opacity: 1, scale: 1, y: 0 }} 
+                className="relative bg-surface border border-border/40 w-full max-w-lg shadow-2xl rounded-none flex flex-col overflow-hidden text-left"
+            >
+                {/* Modal Header */}
+                <div className="px-6 py-5 border-b border-border/40 flex justify-between items-center bg-surface-alt shrink-0">
+                    <h2 className="text-sm font-black text-foreground uppercase tracking-widest italic">
+                        {plan ? 'EDIT MEMBERSHIP PLAN' : 'CREATE MEMBERSHIP PLAN'}
                     </h2>
-                    <button onClick={onClose} className="p-2 hover:bg-primary/10 text-text-muted hover:text-primary transition-all"><X size={20} /></button>
+                    <button 
+                        onClick={onClose} 
+                        className="p-2 border border-border/40 hover:bg-primary hover:text-white hover:border-primary text-text-muted transition-all rounded-none"
+                    >
+                        <X size={16} />
+                    </button>
                 </div>
 
-                <div className="p-6 max-h-[75vh] overflow-y-auto no-scrollbar space-y-6 italic">
+                {/* Modal Body */}
+                <div className="p-6 flex-1 overflow-y-auto no-scrollbar space-y-6 italic max-h-[65vh]">
+                    {/* Basic Info */}
                     <div className="grid grid-cols-2 gap-4">
-                        <div className="space-y-1.5"><label className="text-[9px] font-black text-text-muted uppercase tracking-widest">PLAN NAME</label><input className="w-full h-10 bg-surface-alt border border-border/60 px-3 text-xs font-black" value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} /></div>
-                        <div className="space-y-1.5"><label className="text-[9px] font-black text-text-muted uppercase tracking-widest">PRICE (₹)</label><input type="number" className="w-full h-10 bg-surface-alt border border-border/60 px-3 text-xs font-black" value={formData.price} onChange={e => setFormData({ ...formData, price: e.target.value })} /></div>
+                        <div className="space-y-2">
+                            <label className="text-[9px] font-black text-text-muted uppercase tracking-widest block">PLAN NAME</label>
+                            <input 
+                                className="w-full h-11 bg-surface-alt border border-border/60 px-3 text-xs font-black" 
+                                value={formData.name} 
+                                onChange={e => setFormData({ ...formData, name: e.target.value })} 
+                                placeholder="E.G. GOLD MEMBER"
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <label className="text-[9px] font-black text-text-muted uppercase tracking-widest block">PRICE (₹)</label>
+                            <input 
+                                type="number" 
+                                className="w-full h-11 bg-surface-alt border border-border/60 px-3 text-xs font-black" 
+                                value={formData.price} 
+                                onChange={e => setFormData({ ...formData, price: e.target.value })} 
+                                placeholder="0.00"
+                            />
+                        </div>
                     </div>
 
+                    {/* Validity & Icon */}
                     <div className="grid grid-cols-2 gap-4">
-                        <div className="space-y-1.5"><label className="text-[9px] font-black text-text-muted uppercase tracking-widest">VALIDITY (DAYS)</label><input type="number" className="w-full h-10 bg-surface-alt border border-border/60 px-3 text-xs font-black" value={formData.duration} onChange={e => setFormData({ ...formData, duration: e.target.value })} /></div>
-                        <div className="space-y-1.5"><label className="text-[9px] font-black text-text-muted uppercase tracking-widest">PLAN ICON</label><select className="w-full h-10 bg-surface-alt border border-border/60 px-3 text-xs font-black" value={formData.icon} onChange={e => setFormData({ ...formData, icon: e.target.value })}><option value="star">Star</option><option value="crown">Crown</option><option value="gem">Gem</option></select></div>
+                        <div className="space-y-2">
+                            <label className="text-[9px] font-black text-text-muted uppercase tracking-widest block">VALIDITY (DAYS)</label>
+                            <input 
+                                type="number" 
+                                className="w-full h-11 bg-surface-alt border border-border/60 px-3 text-xs font-black" 
+                                value={formData.duration} 
+                                onChange={e => setFormData({ ...formData, duration: e.target.value })} 
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <label className="text-[9px] font-black text-text-muted uppercase tracking-widest block">PLAN ICON</label>
+                            <select 
+                                className="w-full h-11 bg-surface-alt border border-border/60 px-3 text-xs font-black uppercase tracking-wider" 
+                                value={formData.icon} 
+                                onChange={e => setFormData({ ...formData, icon: e.target.value })}
+                            >
+                                <option value="star">Star</option>
+                                <option value="crown">Crown</option>
+                                <option value="gem">Gem</option>
+                            </select>
+                        </div>
                     </div>
 
-                    <div className="space-y-3">
-                        <div className="flex justify-between items-center"><label className="text-[9px] font-black text-text-muted uppercase tracking-widest">PLAN BENEFITS</label><button onClick={() => setFormData({ ...formData, benefits: [...formData.benefits, ''] })} className="text-[8px] font-black text-primary uppercase tracking-widest">+ ADD BENEFIT</button></div>
+                    {/* Tax configuration section (GST) */}
+                    <div className="space-y-3 pt-4 border-t border-border/20">
+                        <label className="text-[9px] font-black text-text-muted uppercase tracking-widest block">Tax Configuration (GST)</label>
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                                <span className="text-[8px] font-bold text-text-muted uppercase tracking-widest block">Tax Type</span>
+                                <div className="grid grid-cols-2 gap-1 bg-surface-alt border border-border/40 p-1">
+                                    <button
+                                        type="button"
+                                        onClick={() => setFormData({ ...formData, taxType: 'excluding' })}
+                                        className={`py-2 px-1 font-black text-[9px] uppercase tracking-widest transition-all text-center rounded-none ${formData.taxType === 'excluding' ? 'bg-primary text-white' : 'text-text-muted hover:bg-surface'}`}
+                                    >
+                                        Excl.
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => setFormData({ ...formData, taxType: 'including' })}
+                                        className={`py-2 px-1 font-black text-[9px] uppercase tracking-widest transition-all text-center rounded-none ${formData.taxType === 'including' ? 'bg-primary text-white' : 'text-text-muted hover:bg-surface'}`}
+                                    >
+                                        Incl.
+                                    </button>
+                                </div>
+                            </div>
+                            <div className="space-y-2">
+                                <span className="text-[8px] font-bold text-text-muted uppercase tracking-widest block">GST Rate</span>
+                                <select
+                                    className="w-full h-11 bg-surface-alt border border-border/40 px-3 text-xs font-black uppercase tracking-widest"
+                                    value={formData.taxRate}
+                                    onChange={e => setFormData({ ...formData, taxRate: Number(e.target.value) })}
+                                >
+                                    <option value="0">0% (EXEMPT)</option>
+                                    <option value="5">5% GST</option>
+                                    <option value="12">12% GST</option>
+                                    <option value="18">18% GST</option>
+                                    <option value="28">28% GST</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        {/* Live Billing breakdown summary */}
+                        <div className="p-4 bg-surface-alt border border-border/40 space-y-2">
+                            <div className="text-[9px] font-black text-text-muted uppercase tracking-widest">Pricing & GST Breakdown</div>
+                            <div className="flex justify-between text-xs font-black">
+                                <span className="text-text-muted uppercase">Base Price:</span>
+                                <span>₹{calculatedBase.toFixed(2)}</span>
+                            </div>
+                            <div className="flex justify-between text-xs font-black text-primary">
+                                <span className="uppercase">GST ({taxRate}%):</span>
+                                <span>{formData.taxType === 'including' ? 'INCLUDED' : '+'} ₹{calculatedTax.toFixed(2)}</span>
+                            </div>
+                            <div className="h-[1px] bg-border/40 my-1" />
+                            <div className="flex justify-between text-sm font-black text-foreground">
+                                <span className="uppercase">Net Payable Amount:</span>
+                                <span>₹{calculatedTotal.toFixed(2)}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Benefits Section */}
+                    <div className="space-y-3 pt-4 border-t border-border/20">
+                        <div className="flex justify-between items-center">
+                            <label className="text-[9px] font-black text-text-muted uppercase tracking-widest">PLAN BENEFITS</label>
+                            <button 
+                                type="button"
+                                onClick={() => setFormData({ ...formData, benefits: [...formData.benefits, ''] })} 
+                                className="text-[8px] font-black text-primary uppercase tracking-widest hover:underline"
+                            >
+                                + ADD BENEFIT
+                            </button>
+                        </div>
                         <div className="space-y-2">
                             {formData.benefits.map((b, i) => (
                                 <div key={i} className="flex gap-2">
-                                    <input value={b} onChange={e => handleBenefitChange(i, e.target.value)} className="flex-1 h-9 bg-surface-alt border border-border/60 px-3 text-[11px] font-black italic" placeholder="E.g. 10% Off on Haircuts" />
-                                    <button onClick={() => setFormData({ ...formData, benefits: formData.benefits.filter((_, idx) => idx !== i) })} className="px-2.5 text-rose-500 border border-border/40"><X size={12} /></button>
+                                    <input 
+                                        value={b} 
+                                        onChange={e => handleBenefitChange(i, e.target.value)} 
+                                        className="flex-1 h-10 bg-surface-alt border border-border/60 px-3 text-[11px] font-black italic" 
+                                        placeholder="E.G. 10% OFF ON HAIRCUTS" 
+                                    />
+                                    <button 
+                                        type="button"
+                                        onClick={() => setFormData({ ...formData, benefits: formData.benefits.filter((_, idx) => idx !== i) })} 
+                                        className="px-3 text-rose-500 border border-border/40 hover:bg-rose-500/10 hover:border-rose-500 transition-colors"
+                                    >
+                                        <X size={14} />
+                                    </button>
                                 </div>
                             ))}
                         </div>
                     </div>
 
-                    <div className="grid grid-cols-1 gap-4 pt-4 border-t border-border/20">
+                    {/* Service & Product Discounts */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t border-border/20">
                         {/* Service Discount */}
-                        <div className="space-y-3">
+                        <div className="space-y-2">
                             <label className="text-[9px] font-black text-text-muted uppercase tracking-widest">Service Benefits (All Services)</label>
                             <div className="flex gap-2">
                                 <input 
                                     type="number" 
-                                    className="flex-1 h-10 bg-surface-alt border border-border/60 px-3 text-xs font-black" 
+                                    className="flex-1 h-11 bg-surface-alt border border-border/60 px-3 text-xs font-black" 
                                     placeholder="Value"
                                     value={formData.serviceDiscountValue} 
-                                    onChange={e => setFormData({ ...formData, serviceDiscountValue: e.target.value })} 
+                                    onChange={e => setFormData({ ...formData, serviceDiscountValue: Number(e.target.value) })} 
                                 />
                                 <select 
-                                    className="w-24 h-10 bg-surface-alt border border-border/60 px-2 text-[9px] font-black uppercase tracking-tighter"
+                                    className="w-24 h-11 bg-surface-alt border border-border/60 px-2 text-[9px] font-black uppercase tracking-tighter"
                                     value={formData.serviceDiscountType}
                                     onChange={e => setFormData({ ...formData, serviceDiscountType: e.target.value })}
                                 >
@@ -277,18 +439,18 @@ function PlanModal({ plan, serviceOptions = [], onClose, onSave }) {
                         </div>
 
                         {/* Product Discount */}
-                        <div className="space-y-3">
-                            <label className="text-[9px] font-black text-text-muted uppercase tracking-widest">Product Benefits</label>
+                        <div className="space-y-2">
+                            <label className="text-[9px] font-black text-text-muted uppercase tracking-widest">Product Benefits (All Products)</label>
                             <div className="flex gap-2">
                                 <input 
                                     type="number" 
-                                    className="flex-1 h-10 bg-surface-alt border border-border/60 px-3 text-xs font-black" 
+                                    className="flex-1 h-11 bg-surface-alt border border-border/60 px-3 text-xs font-black" 
                                     placeholder="Value"
                                     value={formData.productDiscountValue} 
-                                    onChange={e => setFormData({ ...formData, productDiscountValue: e.target.value })} 
+                                    onChange={e => setFormData({ ...formData, productDiscountValue: Number(e.target.value) })} 
                                 />
                                 <select 
-                                    className="w-24 h-10 bg-surface-alt border border-border/60 px-2 text-[9px] font-black uppercase tracking-tighter"
+                                    className="w-24 h-11 bg-surface-alt border border-border/60 px-2 text-[9px] font-black uppercase tracking-tighter"
                                     value={formData.productDiscountType}
                                     onChange={e => setFormData({ ...formData, productDiscountType: e.target.value })}
                                 >
@@ -300,9 +462,13 @@ function PlanModal({ plan, serviceOptions = [], onClose, onSave }) {
                     </div>
                 </div>
 
-                <div className="p-6 border-t border-border/40 bg-surface-alt">
-                    <button onClick={() => onSave(formData)} className="w-full py-4 bg-text text-white font-black text-[10px] uppercase tracking-widest shadow-xl flex items-center justify-center gap-3">
-                        SAVE PLAN <Save size={14} />
+                {/* Modal Footer */}
+                <div className="p-6 border-t border-border/40 bg-surface-alt shrink-0">
+                    <button 
+                        onClick={() => onSave(formData)} 
+                        className="w-full py-4 bg-text text-white font-black text-[10px] uppercase tracking-widest hover:bg-primary hover:text-white transition-all shadow-xl flex items-center justify-center gap-3"
+                    >
+                        SAVE MEMBERSHIP PLAN <Save size={14} />
                     </button>
                 </div>
             </motion.div>

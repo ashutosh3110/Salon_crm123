@@ -290,6 +290,7 @@ exports.getLoyaltyMembers = async (req, res) => {
 
         // Fetch memberships matching the status criteria and populate customer and plan details
         let memberships = await CustomerMembership.find(membershipQuery)
+            .sort({ createdAt: -1 })
             .populate({
                 path: 'customerId',
                 match: search ? {
@@ -328,7 +329,8 @@ exports.getLoyaltyMembers = async (req, res) => {
                 loyaltyStatus: loyaltyStatus,
                 loyaltyExpiry: m.expiryDate ? new Date(m.expiryDate).toLocaleDateString('en-IN') : 'NEVER',
                 createdAt: m.createdAt,
-                updatedAt: m.updatedAt
+                updatedAt: m.updatedAt,
+                invoiceId: m.invoiceId || null
             };
         });
 

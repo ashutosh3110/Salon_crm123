@@ -18,7 +18,9 @@ import {
     Users,
     Phone,
     Mail,
-    Smartphone
+    Smartphone,
+    X,
+    UserPlus
 } from 'lucide-react';
 import { useBusiness } from '../../contexts/BusinessContext';
 import { useAuth } from '../../contexts/AuthContext';
@@ -804,60 +806,69 @@ export default function NewBookingPage() {
 
                 {/* Customer Registration Modal */}
                 {showCustomerModal && (
-                    <div className="fixed inset-0 bg-black/80 backdrop-blur-xl z-[200] flex items-center justify-center p-6">
-                        <div className="bg-surface w-full max-w-lg border-2 border-text shadow-2xl animate-reveal">
-                            <div className="p-8 border-b border-border flex justify-between items-center bg-surface-alt">
-                                <div>
-                                    <h3 className="text-xl font-black text-text uppercase italic tracking-tighter font-mono">Add Customer</h3>
-                                    <p className="text-[10px] font-black text-text-muted uppercase tracking-widest mt-1">New client details</p>
-                                </div>
-                                <button onClick={() => setShowCustomerModal(false)} className="p-2 hover:bg-surface transition-all">
-                                    <XCircle className="w-6 h-6 text-text-muted" />
-                                </button>
+                    <div className="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-[200] flex items-center justify-center p-4 animate-in fade-in duration-300" onClick={() => setShowCustomerModal(false)}>
+                        <div className="bg-white rounded-3xl w-full max-w-md shadow-2xl relative overflow-y-auto max-h-[90vh] hide-scrollbar animate-in slide-in-from-top-4 duration-300 border border-slate-200/50" onClick={(e) => e.stopPropagation()}>
+                            <div className="p-5 bg-white border-b border-slate-100 flex justify-between items-center">
+                                <h4 className="text-[11px] font-black text-slate-900 uppercase flex items-center gap-2 tracking-widest">
+                                    <UserPlus className="w-4 h-4 text-slate-800" /> Add Customer
+                                </h4>
+                                <button type="button" onClick={() => setShowCustomerModal(false)} className="text-slate-400 hover:text-rose-500 transition-colors"><X className="w-5 h-5" /></button>
                             </div>
-                            <form onSubmit={handleAddCustomer} className="p-8 space-y-6">
-                                <div className="space-y-2 text-left">
-                                    <label className="text-[10px] font-black text-text uppercase tracking-widest">Name</label>
-                                    <input 
-                                        required
-                                        className="w-full bg-surface-alt border border-border p-4 text-[11px] font-black uppercase tracking-tight outline-none focus:border-primary transition-all"
-                                        placeholder="Enter customer name..."
-                                        value={clientForm.name}
-                                        onChange={(e) => setClientForm({...clientForm, name: e.target.value})}
-                                    />
-                                </div>
-                                <div className="space-y-2 text-left">
-                                    <label className="text-[10px] font-black text-text uppercase tracking-widest">Phone</label>
-                                    <div className="relative">
-                                        <Phone className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
-                                        <input 
+
+                            <form onSubmit={handleAddCustomer}>
+                                <div className="p-6 space-y-4">
+                                    <div className="space-y-1.5 text-left">
+                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Customer Name</label>
+                                        <input
+                                            type="text"
                                             required
-                                            className="w-full bg-surface-alt border border-border p-4 pl-12 text-[11px] font-black uppercase tracking-tight outline-none focus:border-primary transition-all"
-                                            placeholder="Enter phone..."
-                                            value={clientForm.phone}
-                                            onChange={(e) => setClientForm({...clientForm, phone: e.target.value})}
+                                            placeholder="e.g. John Doe"
+                                            value={clientForm.name}
+                                            onChange={(e) => setClientForm({...clientForm, name: e.target.value})}
+                                            className="w-full bg-slate-50 border border-slate-200 p-3 text-xs font-black text-slate-900 outline-none rounded-xl placeholder:text-slate-400 focus:border-slate-400 transition-colors uppercase"
                                         />
                                     </div>
-                                </div>
-                                <div className="space-y-2 text-left">
-                                    <label className="text-[10px] font-black text-text uppercase tracking-widest">Email (Optional)</label>
-                                    <div className="relative">
-                                        <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
-                                        <input 
+                                    <div className="space-y-1.5 text-left">
+                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Phone Number</label>
+                                        <input
+                                            type="tel"
+                                            required
+                                            placeholder="10-digit mobile"
+                                            value={clientForm.phone}
+                                            onChange={(e) => {
+                                                const val = e.target.value.replace(/\D/g, '');
+                                                if (val.length <= 10) setClientForm({...clientForm, phone: val});
+                                            }}
+                                            className="w-full bg-slate-50 border border-slate-200 p-3 text-xs font-black text-slate-900 outline-none rounded-xl placeholder:text-slate-400 focus:border-slate-400 transition-colors"
+                                        />
+                                    </div>
+                                    <div className="space-y-1.5 text-left">
+                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Email (Optional)</label>
+                                        <input
                                             type="email"
-                                            className="w-full bg-surface-alt border border-border p-4 pl-12 text-[11px] font-black uppercase tracking-tight outline-none focus:border-primary transition-all"
-                                            placeholder="Enter email..."
+                                            placeholder="e.g. email@example.com"
                                             value={clientForm.email}
                                             onChange={(e) => setClientForm({...clientForm, email: e.target.value})}
+                                            className="w-full bg-slate-50 border border-slate-200 p-3 text-xs font-black text-slate-900 outline-none rounded-xl placeholder:text-slate-400 focus:border-slate-400 transition-colors"
                                         />
                                     </div>
                                 </div>
-                                <button 
-                                    type="submit"
-                                    className="w-full py-5 bg-text text-white text-[11px] font-black uppercase tracking-[0.4em] hover:bg-primary transition-all shadow-xl shadow-primary/10 flex items-center justify-center gap-4 italic"
-                                >
-                                    Save & Continue <Zap className="w-4 h-4 text-primary" />
-                                </button>
+
+                                <div className="p-6 bg-slate-50 border-t border-slate-100 flex gap-3">
+                                    <button 
+                                        type="button" 
+                                        onClick={() => setShowCustomerModal(false)} 
+                                        className="flex-1 py-3 text-[11px] font-black text-slate-500 uppercase tracking-widest border border-slate-200 rounded-xl bg-white hover:bg-slate-100 transition-all"
+                                    >
+                                        Cancel
+                                    </button>
+                                    <button 
+                                        type="submit" 
+                                        className="flex-1 py-3 text-[11px] font-black text-white uppercase tracking-widest bg-slate-800 hover:bg-slate-900 rounded-xl transition-all shadow-lg shadow-slate-800/10"
+                                    >
+                                        Save & Continue
+                                    </button>
+                                </div>
                             </form>
                         </div>
                     </div>

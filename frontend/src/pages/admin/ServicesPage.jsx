@@ -220,6 +220,29 @@ export default function ServicesPage({ tab = 'list' }) {
                 </div>
             </div>
 
+            {/* Stats Row */}
+            {activeTab === 'list' && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 animate-in fade-in slide-in-from-top-4 duration-300">
+                    {stats.map((stat, i) => (
+                        <div key={i} className="bg-white p-6 border border-border shadow-sm group hover:shadow-xl transition-all relative overflow-hidden rounded-2xl">
+                            <div className={`absolute -right-4 -top-4 w-16 h-16 bg-primary/5 rounded-full blur-2xl group-hover:bg-primary/10 transition-all`} />
+                            <div className="relative z-10 flex flex-col gap-3">
+                                <div className="flex items-center justify-between">
+                                    <stat.icon className="w-5 h-5 text-text-muted group-hover:text-primary transition-colors" />
+                                    <div className="w-1.5 h-1.5 rounded-full bg-primary/20 group-hover:bg-primary animate-pulse" />
+                                </div>
+                                <div>
+                                    <p className="text-[9px] font-black text-text-muted uppercase tracking-widest leading-none mb-1">{stat.label}</p>
+                                    <h3 className="text-2xl font-black text-text tracking-tighter uppercase">
+                                        {typeof stat.value === 'string' ? stat.value : <AnimatedCounter value={stat.value} />}
+                                    </h3>
+                                </div>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            )}
+
             {/* Toolbar */}
             {activeTab === 'list' && (
                 <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 bg-white p-4 rounded-2xl border border-border shadow-sm">
@@ -335,7 +358,7 @@ export default function ServicesPage({ tab = 'list' }) {
 
             {/* Outlet Filter */}
             {activeTab === 'list' && (
-                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 bg-white/50 p-4 border border-border/40">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 bg-white/50 p-4 border border-border/40 rounded-2xl">
                     <div className="flex items-center gap-3">
                         <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
                             <Layers className="w-4 h-4" />
@@ -358,36 +381,13 @@ export default function ServicesPage({ tab = 'list' }) {
                     />
 
                     {selectedOutletId !== 'all' && (
-                        <div className="flex items-center gap-2 px-3 py-1.5 bg-emerald-50 border border-emerald-100 animate-in fade-in slide-in-from-left-2">
+                        <div className="flex items-center gap-2 px-3 py-1.5 bg-emerald-50 border border-emerald-100 animate-in fade-in slide-in-from-left-2 rounded-xl">
                             <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                             <span className="text-[9px] font-black text-emerald-700 uppercase tracking-widest italic">
                                 Showing specific + common services
                             </span>
                         </div>
                     )}
-                </div>
-            )}
-
-            {/* Stats Row */}
-            {activeTab === 'list' && (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                    {stats.map((stat, i) => (
-                        <div key={i} className="bg-white p-6 border border-border shadow-sm group hover:shadow-xl transition-all relative overflow-hidden">
-                            <div className={`absolute -right-4 -top-4 w-16 h-16 bg-primary/5 rounded-full blur-2xl group-hover:bg-primary/10 transition-all`} />
-                            <div className="relative z-10 flex flex-col gap-3">
-                                <div className="flex items-center justify-between">
-                                    <stat.icon className="w-5 h-5 text-text-muted group-hover:text-primary transition-colors" />
-                                    <div className="w-1.5 h-1.5 rounded-full bg-primary/20 group-hover:bg-primary animate-pulse" />
-                                </div>
-                                <div>
-                                    <p className="text-[9px] font-black text-text-muted uppercase tracking-widest leading-none mb-1">{stat.label}</p>
-                                    <h3 className="text-2xl font-black text-text tracking-tighter uppercase">
-                                        {typeof stat.value === 'string' ? stat.value : <AnimatedCounter value={stat.value} />}
-                                    </h3>
-                                </div>
-                            </div>
-                        </div>
-                    ))}
                 </div>
             )}
 

@@ -356,3 +356,24 @@ exports.sendInvoiceEmail = async (req, res) => {
         res.status(500).json({ success: false, message: 'Server Error' });
     }
 };
+
+// @desc    Get single invoice by ID
+// @route   GET /api/pos/invoices/:id
+// @access  Private
+exports.getInvoice = async (req, res) => {
+    try {
+        const invoice = await Invoice.findById(req.params.id)
+            .populate('customerId', 'name phone email')
+            .populate('outletId', 'name')
+            .populate('items.stylistIds', 'name');
+
+        if (!invoice) {
+            return res.status(404).json({ success: false, message: 'Invoice not found' });
+        }
+
+        res.json({ success: true, data: invoice });
+    } catch (err) {
+        console.error('Get single invoice error:', err);
+        res.status(500).json({ success: false, message: 'Server Error' });
+    }
+};
