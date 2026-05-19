@@ -2864,138 +2864,153 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                                     <div className="flex justify-between items-start">
                                         <div className="flex-1 pr-10">
                                             <p className="text-base md:text-lg font-black text-slate-900 uppercase leading-tight line-clamp-1">{item.name}</p>
-                                            <div className="flex flex-wrap lg:flex-nowrap items-center gap-1 mt-2 w-full">
-                                                <p className="text-sm md:text-base font-black text-emerald-600 font-mono shrink-0">₹{item.price}</p>
-                                                <span className={`text-[10px] font-black px-1.5 py-0.5 rounded border uppercase tracking-wider shrink-0 ${(item.isInclusiveTax === true || String(item.isInclusiveTax) === 'true' || (item.isInclusiveTax === undefined && fiscal?.inclusiveTax))
-                                                    ? 'bg-emerald-50 border-emerald-200 text-emerald-600'
-                                                    : 'bg-slate-50 border-slate-200 text-slate-400'
-                                                    }`}>
-                                                    {(item.isInclusiveTax === true || String(item.isInclusiveTax) === 'true' || (item.isInclusiveTax === undefined && fiscal?.inclusiveTax)) ? 'Incl' : 'Excl'}
-                                                </span>
-                                                {item.type === 'service' && (
-                                                    <div className="flex items-center bg-slate-50 border border-slate-200 rounded-lg h-7 overflow-hidden shadow-sm shrink-0">
-                                                        <button onClick={() => updateQQty(idx, -1)} className="px-2 hover:bg-slate-200 text-slate-500 transition-colors"><Minus className="w-3 h-3" /></button>
-                                                        <span className="px-2 text-xs font-bold text-slate-800 border-x border-slate-200 flex items-center h-full bg-white">{item.quantity}</span>
-                                                        <button onClick={() => updateQQty(idx, 1)} className="px-2 hover:bg-slate-200 text-slate-500 transition-colors"><Plus className="w-3 h-3" /></button>
+                                            <div className="flex flex-nowrap items-end gap-2 mt-2 w-full overflow-x-auto scrollbar-none">
+                                                <div className="flex flex-col items-start shrink-0 mb-0.5">
+                                                    <span className="text-xs font-black text-slate-500 uppercase tracking-wider mb-0.5">Price</span>
+                                                    <p className="text-sm md:text-base font-black text-emerald-600 font-mono h-7 flex items-center">₹{item.price}</p>
+                                                </div>
+
+                                                <div className="flex flex-col items-start shrink-0 mb-0.5">
+                                                    <span className="text-xs font-black text-slate-500 uppercase tracking-wider mb-0.5">Tax</span>
+                                                    <span className={`text-[10px] font-black px-1.5 py-0.5 rounded border uppercase tracking-wider h-7 flex items-center ${(item.isInclusiveTax === true || String(item.isInclusiveTax) === 'true' || (item.isInclusiveTax === undefined && fiscal?.inclusiveTax))
+                                                        ? 'bg-emerald-50 border-emerald-200 text-emerald-600'
+                                                        : 'bg-slate-50 border-slate-200 text-slate-400'
+                                                        }`}>
+                                                        {(item.isInclusiveTax === true || String(item.isInclusiveTax) === 'true' || (item.isInclusiveTax === undefined && fiscal?.inclusiveTax)) ? 'Incl' : 'Excl'}
+                                                    </span>
+                                                </div>
+
+                                                {(item.type === 'service' || item.type === 'product') && (
+                                                    <div className="flex flex-col items-start shrink-0">
+                                                        <span className="text-xs font-black text-slate-500 uppercase tracking-wider pl-1 mb-0.5">Qty</span>
+                                                        <div className="flex items-center bg-slate-50 border border-slate-200 rounded-lg h-7 overflow-hidden shadow-sm shrink-0">
+                                                            <button onClick={() => updateQQty(idx, -1)} className="px-2 hover:bg-slate-200 text-slate-500 transition-colors"><Minus className="w-3 h-3" /></button>
+                                                            <span style={{ fontWeight: 900 }} className="px-2 text-xs font-black text-slate-800 border-x border-slate-200 flex items-center h-full bg-white">{item.quantity}</span>
+                                                            <button onClick={() => updateQQty(idx, 1)} className="px-2 hover:bg-slate-200 text-slate-500 transition-colors"><Plus className="w-3 h-3" /></button>
+                                                        </div>
                                                     </div>
                                                 )}
                                                 
                                                 {(item.type === 'service' || item.type === 'product') && (
-                                                    <div className="flex items-center gap-0.5 bg-slate-50 border border-slate-200 rounded-lg p-0.5 transition-all shadow-sm shrink-0">
-                                                        <Sparkles className="w-3 h-3 text-slate-500 animate-pulse ml-0.5" />
+                                                    <div className="flex flex-col items-start shrink-0">
+                                                        <span className="text-xs font-black text-slate-500 uppercase tracking-wider pl-1 mb-0.5">Discount</span>
+                                                        <div className="flex items-center gap-0.5 bg-slate-50 border border-slate-200 rounded-lg p-0.5 transition-all shadow-sm shrink-0">
+                                                            <Sparkles className="w-3 h-3 text-slate-500 animate-pulse ml-0.5" />
 
-                                                        {/* Toggle between % and ₹ */}
-                                                        <div className="flex items-center bg-white border border-slate-200 rounded overflow-hidden h-7">
-                                                            <button
-                                                                type="button"
-                                                                onClick={() => {
-                                                                    const fallbackType = item.type === 'service'
-                                                                        ? (qActiveMembership?.planId?.serviceDiscountType || 'percentage')
-                                                                        : (qActiveMembership?.planId?.productDiscountType || 'percentage');
-                                                                    const fallbackValue = item.type === 'service'
-                                                                        ? (qActiveMembership?.planId?.serviceDiscountType === 'fixed' ? qActiveMembership.planId.serviceDiscountValue : (qActiveMembership?.planId?.serviceDiscountValue || 0))
-                                                                        : (qActiveMembership?.planId?.productDiscountType === 'fixed' ? qActiveMembership.planId.productDiscountValue : (qActiveMembership?.planId?.productDiscountValue || 0));
-                                                                    updateQItemMembershipDiscount(idx, 'percentage', item.membershipDiscountValue !== undefined ? item.membershipDiscountValue : fallbackValue);
-                                                                }}
-                                                                className={`px-1 text-xs font-black h-full flex items-center ${(item.membershipDiscountType !== undefined
-                                                                    ? item.membershipDiscountType
-                                                                    : (item.type === 'service'
-                                                                        ? (qActiveMembership?.planId?.serviceDiscountType || 'percentage')
-                                                                        : (qActiveMembership?.planId?.productDiscountType || 'percentage')
-                                                                    )
-                                                                ) === 'percentage'
-                                                                    ? 'bg-slate-800 text-white'
-                                                                    : 'text-slate-400 hover:bg-slate-50'
-                                                                    }`}
-                                                            >
-                                                                %
-                                                            </button>
-                                                            <button
-                                                                type="button"
-                                                                onClick={() => {
-                                                                    const fallbackType = item.type === 'service'
-                                                                        ? (qActiveMembership?.planId?.serviceDiscountType || 'percentage')
-                                                                        : (qActiveMembership?.planId?.productDiscountType || 'percentage');
-                                                                    const fallbackValue = item.type === 'service'
-                                                                        ? (qActiveMembership?.planId?.serviceDiscountType === 'fixed' ? qActiveMembership.planId.serviceDiscountValue : (qActiveMembership?.planId?.serviceDiscountValue || 0))
-                                                                        : (qActiveMembership?.planId?.productDiscountType === 'fixed' ? qActiveMembership.planId.productDiscountValue : (qActiveMembership?.planId?.productDiscountValue || 0));
-                                                                    updateQItemMembershipDiscount(idx, 'fixed', item.membershipDiscountValue !== undefined ? item.membershipDiscountValue : fallbackValue);
-                                                                }}
-                                                                className={`px-1 text-xs font-black h-full flex items-center ${(item.membershipDiscountType !== undefined
-                                                                    ? item.membershipDiscountType
-                                                                    : (item.type === 'service'
-                                                                        ? (qActiveMembership?.planId?.serviceDiscountType || 'percentage')
-                                                                        : (qActiveMembership?.planId?.productDiscountType || 'percentage')
-                                                                    )
-                                                                ) === 'fixed'
-                                                                    ? 'bg-slate-800 text-white'
-                                                                    : 'text-slate-400 hover:bg-slate-50'
-                                                                    }`}
-                                                            >
-                                                                ₹
-                                                            </button>
-                                                        </div>
+                                                            {/* Toggle between % and ₹ */}
+                                                            <div className="flex items-center bg-white border border-slate-200 rounded overflow-hidden h-7">
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={() => {
+                                                                        const fallbackType = item.type === 'service'
+                                                                            ? (qActiveMembership?.planId?.serviceDiscountType || 'percentage')
+                                                                            : (qActiveMembership?.planId?.productDiscountType || 'percentage');
+                                                                        const fallbackValue = item.type === 'service'
+                                                                            ? (qActiveMembership?.planId?.serviceDiscountType === 'fixed' ? qActiveMembership.planId.serviceDiscountValue : (qActiveMembership?.planId?.serviceDiscountValue || 0))
+                                                                            : (qActiveMembership?.planId?.productDiscountType === 'fixed' ? qActiveMembership.planId.productDiscountValue : (qActiveMembership?.planId?.productDiscountValue || 0));
+                                                                        updateQItemMembershipDiscount(idx, 'percentage', item.membershipDiscountValue !== undefined ? item.membershipDiscountValue : fallbackValue);
+                                                                    }}
+                                                                    className={`px-1 text-xs font-black h-full flex items-center ${(item.membershipDiscountType !== undefined
+                                                                        ? item.membershipDiscountType
+                                                                        : (item.type === 'service'
+                                                                            ? (qActiveMembership?.planId?.serviceDiscountType || 'percentage')
+                                                                            : (qActiveMembership?.planId?.productDiscountType || 'percentage')
+                                                                        )
+                                                                    ) === 'percentage'
+                                                                        ? 'bg-slate-800 text-white'
+                                                                        : 'text-slate-400 hover:bg-slate-50'
+                                                                        }`}
+                                                                >
+                                                                    %
+                                                                </button>
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={() => {
+                                                                        const fallbackType = item.type === 'service'
+                                                                            ? (qActiveMembership?.planId?.serviceDiscountType || 'percentage')
+                                                                            : (qActiveMembership?.planId?.productDiscountType || 'percentage');
+                                                                        const fallbackValue = item.type === 'service'
+                                                                            ? (qActiveMembership?.planId?.serviceDiscountType === 'fixed' ? qActiveMembership.planId.serviceDiscountValue : (qActiveMembership?.planId?.serviceDiscountValue || 0))
+                                                                            : (qActiveMembership?.planId?.productDiscountType === 'fixed' ? qActiveMembership.planId.productDiscountValue : (qActiveMembership?.planId?.productDiscountValue || 0));
+                                                                        updateQItemMembershipDiscount(idx, 'fixed', item.membershipDiscountValue !== undefined ? item.membershipDiscountValue : fallbackValue);
+                                                                    }}
+                                                                    className={`px-1 text-xs font-black h-full flex items-center ${(item.membershipDiscountType !== undefined
+                                                                        ? item.membershipDiscountType
+                                                                        : (item.type === 'service'
+                                                                            ? (qActiveMembership?.planId?.serviceDiscountType || 'percentage')
+                                                                            : (qActiveMembership?.planId?.productDiscountType || 'percentage')
+                                                                        )
+                                                                    ) === 'fixed'
+                                                                        ? 'bg-slate-800 text-white'
+                                                                        : 'text-slate-400 hover:bg-slate-50'
+                                                                        }`}
+                                                                >
+                                                                    ₹
+                                                                </button>
+                                                            </div>
 
-                                                        {/* Numeric Input */}
-                                                        <input
-                                                            type="number"
-                                                            min="0"
-                                                            max={
-                                                                (item.membershipDiscountType !== undefined
-                                                                    ? item.membershipDiscountType
-                                                                    : (item.type === 'service'
-                                                                        ? (qActiveMembership?.planId?.serviceDiscountType || 'percentage')
-                                                                        : (qActiveMembership?.planId?.productDiscountType || 'percentage')
-                                                                    )
-                                                                ) === 'percentage'
-                                                                    ? '100'
-                                                                    : String(item.price)
-                                                            }
-                                                            value={
-                                                                item.membershipDiscountValue !== undefined
-                                                                    ? item.membershipDiscountValue
-                                                                    : (item.type === 'service'
-                                                                        ? (qActiveMembership?.planId?.serviceDiscountValue || 0)
-                                                                        : (qActiveMembership?.planId?.productDiscountValue || 0)
-                                                                    )
-                                                            }
-                                                            onChange={(e) => {
-                                                                const val = Math.max(0, Number(e.target.value) || 0);
+                                                            {/* Numeric Input */}
+                                                            <input
+                                                                type="number"
+                                                                min="0"
+                                                                max={
+                                                                    (item.membershipDiscountType !== undefined
+                                                                        ? item.membershipDiscountType
+                                                                        : (item.type === 'service'
+                                                                            ? (qActiveMembership?.planId?.serviceDiscountType || 'percentage')
+                                                                            : (qActiveMembership?.planId?.productDiscountType || 'percentage')
+                                                                        )
+                                                                    ) === 'percentage'
+                                                                        ? '100'
+                                                                        : String(item.price)
+                                                                }
+                                                                value={
+                                                                    item.membershipDiscountValue !== undefined
+                                                                        ? item.membershipDiscountValue
+                                                                        : (item.type === 'service'
+                                                                            ? (qActiveMembership?.planId?.serviceDiscountValue || 0)
+                                                                            : (qActiveMembership?.planId?.productDiscountValue || 0)
+                                                                        )
+                                                                }
+                                                                onChange={(e) => {
+                                                                    const val = Math.max(0, Number(e.target.value) || 0);
+                                                                    const currentType = item.membershipDiscountType !== undefined
+                                                                        ? item.membershipDiscountType
+                                                                        : (item.type === 'service'
+                                                                            ? (qActiveMembership?.planId?.serviceDiscountType || 'percentage')
+                                                                            : (qActiveMembership?.planId?.productDiscountType || 'percentage')
+                                                                        );
+                                                                    updateQItemMembershipDiscount(idx, currentType, val);
+                                                                }}
+                                                                style={{ fontWeight: 900 }}
+                                                                className="w-10 bg-white border border-slate-350 rounded text-xs font-black text-center h-7 focus:outline-none focus:border-slate-500 text-slate-800 shrink-0"
+                                                            />
+                                                            {(() => {
                                                                 const currentType = item.membershipDiscountType !== undefined
                                                                     ? item.membershipDiscountType
                                                                     : (item.type === 'service'
                                                                         ? (qActiveMembership?.planId?.serviceDiscountType || 'percentage')
                                                                         : (qActiveMembership?.planId?.productDiscountType || 'percentage')
                                                                     );
-                                                                updateQItemMembershipDiscount(idx, currentType, val);
-                                                            }}
-                                                            className="w-10 bg-white border border-slate-350 rounded text-xs font-extrabold text-center h-7 focus:outline-none focus:border-slate-500 text-slate-800 shrink-0"
-                                                        />
-                                                        {(() => {
-                                                            const currentType = item.membershipDiscountType !== undefined
-                                                                ? item.membershipDiscountType
-                                                                : (item.type === 'service'
-                                                                    ? (qActiveMembership?.planId?.serviceDiscountType || 'percentage')
-                                                                    : (qActiveMembership?.planId?.productDiscountType || 'percentage')
+                                                                const currentValue = Number(
+                                                                    item.membershipDiscountValue !== undefined
+                                                                        ? item.membershipDiscountValue
+                                                                        : (item.type === 'service'
+                                                                            ? (qActiveMembership?.planId?.serviceDiscountValue || 0)
+                                                                            : (qActiveMembership?.planId?.productDiscountValue || 0)
+                                                                        )
                                                                 );
-                                                            const currentValue = Number(
-                                                                item.membershipDiscountValue !== undefined
-                                                                    ? item.membershipDiscountValue
-                                                                    : (item.type === 'service'
-                                                                        ? (qActiveMembership?.planId?.serviceDiscountValue || 0)
-                                                                        : (qActiveMembership?.planId?.productDiscountValue || 0)
-                                                                    )
-                                                            );
-                                                            const appliedRupeeDiscount = currentType === 'percentage' ? (Number(item.price) * Number(item.quantity) * currentValue) / 100 : currentValue * Number(item.quantity);
-                                                            if (appliedRupeeDiscount > 0) {
-                                                                return (
-                                                                    <span className="text-[10px] font-black text-emerald-600 font-mono bg-emerald-50 border border-emerald-100 px-1 py-0.5 rounded flex items-center shrink-0 ml-0.5 animate-in zoom-in-95">
-                                                                        -₹{appliedRupeeDiscount.toFixed(0)}
-                                                                    </span>
-                                                                );
-                                                            }
-                                                            return null;
-                                                        })()}
+                                                                const appliedRupeeDiscount = currentType === 'percentage' ? (Number(item.price) * Number(item.quantity) * currentValue) / 100 : currentValue;
+                                                                if (appliedRupeeDiscount > 0) {
+                                                                    return (
+                                                                        <span className="text-xs font-black text-emerald-600 font-mono bg-emerald-50 border border-emerald-100 px-1 py-0.5 rounded flex items-center shrink-0 ml-0.5 animate-in zoom-in-95">
+                                                                            -₹{appliedRupeeDiscount.toFixed(0)}
+                                                                        </span>
+                                                                    );
+                                                                }
+                                                                return null;
+                                                            })()}
+                                                        </div>
                                                     </div>
                                                 )}
                                             </div>
@@ -3005,7 +3020,7 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                                         </button>
                                     </div>
 
-                                    {item.type === 'service' ? (
+                                    {item.type === 'service' && (
                                         <div className={`p-2.5 rounded-xl border ${(!item.staffIds || item.staffIds.length === 0) ? 'bg-amber-50 border-amber-200' : 'bg-white border-slate-100 shadow-sm'}`}>
                                             <label className={`text-xs font-semibold uppercase tracking-wider flex items-center gap-1.5 mb-2 ${(!item.staffIds || item.staffIds.length === 0) ? 'text-amber-600' : 'text-slate-400'}`}>
                                                 <Sparkles className="w-2.5 h-2.5" /> Assign Stylists
@@ -3088,38 +3103,6 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                                                         </motion.div>
                                                     )}
                                                 </AnimatePresence>
-                                            </div>
-                                        </div>
-                                    ) : (
-                                        <div className="p-2.5 rounded-xl border border-slate-100 bg-white shadow-sm">
-                                            <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider flex items-center gap-1.5 mb-2">
-                                                <ShoppingCart className="w-2.5 h-2.5 text-primary" /> Edit Quantity
-                                            </label>
-                                            <div className="flex items-center gap-3">
-                                                <div className="flex-1 flex items-center bg-slate-50 border border-slate-200 rounded-xl h-10 overflow-hidden">
-                                                    <button
-                                                        onClick={(e) => { e.stopPropagation(); updateQQty(idx, -1); }}
-                                                        className="px-4 hover:bg-slate-200 text-slate-400 transition-colors h-full border-r border-slate-200"
-                                                    >
-                                                        <Minus className="w-4 h-4" />
-                                                    </button>
-                                                    <input
-                                                        type="number"
-                                                        className="flex-1 bg-white text-center text-sm font-semibold text-slate-900 outline-none h-full"
-                                                        value={item.quantity}
-                                                        onChange={(e) => {
-                                                            const val = parseInt(e.target.value) || 1;
-                                                            updateQQty(idx, val - item.quantity);
-                                                        }}
-                                                        onClick={(e) => e.stopPropagation()}
-                                                    />
-                                                    <button
-                                                        onClick={(e) => { e.stopPropagation(); updateQQty(idx, 1); }}
-                                                        className="px-4 hover:bg-slate-200 text-slate-400 transition-colors h-full border-l border-slate-200"
-                                                    >
-                                                        <Plus className="w-4 h-4" />
-                                                    </button>
-                                                </div>
                                             </div>
                                         </div>
                                     )}
@@ -3233,15 +3216,27 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                             {qClient && qClientWalletBalance > 0 && (
                                 <div className="bg-emerald-50/50 border border-emerald-100/80 p-2 rounded-xl focus-within:border-emerald-500 focus-within:bg-white focus-within:shadow-[0_4px_12px_rgba(16,185,129,0.04)] transition-all shadow-sm group hover:border-emerald-200">
                                     <label className="text-[10px] font-bold text-emerald-600 uppercase tracking-wider block mb-0.5">Wallet (₹{qClientWalletBalance.toFixed(0)})</label>
-                                    <div className="flex items-center gap-1.5">
-                                        <Wallet className="w-4 h-4 text-emerald-500 shrink-0" />
-                                        <input
-                                            type="number"
-                                            className="w-full bg-transparent text-sm font-bold text-emerald-600 outline-none font-mono"
-                                            value={qRedeemWallet || ''}
-                                            onChange={(e) => setQRedeemWallet(Math.min(qClientWalletBalance, Math.min(totals.totalWithPrevDue, Number(e.target.value))))}
-                                            placeholder="0"
-                                        />
+                                    <div className="flex items-center justify-between gap-1.5">
+                                        <div className="flex items-center gap-1.5 flex-1 min-w-0">
+                                            <Wallet className="w-4 h-4 text-emerald-500 shrink-0" />
+                                            <input
+                                                type="number"
+                                                className="w-full bg-transparent text-sm font-bold text-emerald-600 outline-none font-mono"
+                                                value={qRedeemWallet || ''}
+                                                onChange={(e) => setQRedeemWallet(Math.min(qClientWalletBalance, Math.min(totals.totalWithPrevDue, Number(e.target.value))))}
+                                                placeholder="0"
+                                            />
+                                        </div>
+                                        <button
+                                            type="button"
+                                            onClick={() => {
+                                                const maxRedeemable = Math.min(qClientWalletBalance, totals.totalWithPrevDue);
+                                                setQRedeemWallet(maxRedeemable);
+                                            }}
+                                            className="text-[9px] font-black text-emerald-700 bg-emerald-100 hover:bg-emerald-200 px-1.5 py-1 rounded-md uppercase tracking-wider transition-colors shrink-0 shadow-sm"
+                                        >
+                                            USE WALLET
+                                        </button>
                                     </div>
                                 </div>
                             )}
@@ -3269,16 +3264,7 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                                 </div>
                             )}
 
-                            {/* Wallet recommendation */}
-                            {qClient && qClientWalletBalance > 0 && qRedeemWallet === 0 && dueAmount > 0 && (
-                                <button
-                                    onClick={() => setQRedeemWallet(Math.min(qClientWalletBalance, dueAmount))}
-                                    className="w-full mb-2 bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 py-1.5 px-2 rounded-xl text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-1 transition-all animate-bounce border border-emerald-500/10"
-                                >
-                                    <Wallet className="w-3 h-3 text-emerald-400" />
-                                    <span>Use wallet (₹{Math.min(qClientWalletBalance, dueAmount).toFixed(0)})?</span>
-                                </button>
-                            )}
+                                
 
                             {/* Overpaid feedback */}
                             {(() => {
@@ -3297,7 +3283,7 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
 
                             {totals.redeemWallet > 0 && (
                                 <div className="text-center mb-2">
-                                    <span className="text-xs font-semibold text-emerald-400 uppercase tracking-wider leading-none bg-emerald-500/10 px-2 py-0.5 rounded-lg border border-emerald-500/10">Wallet Used: -₹{totals.redeemWallet.toFixed(2)}</span>
+                                    {/* <span className="text-xs font-semibold text-emerald-400 uppercase tracking-wider leading-none bg-emerald-500/10 px-2 py-0.5 rounded-lg border border-emerald-500/10">Wallet Used: -₹{totals.redeemWallet.toFixed(2)}</span> */}
                                 </div>
                             )}
 

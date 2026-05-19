@@ -82,7 +82,7 @@ export function calculateTotals({
             if (discType === 'percentage') {
                 totalMembershipDiscount += (itemPrice * qty * discVal) / 100;
             } else {
-                totalMembershipDiscount += discVal * qty;
+                totalMembershipDiscount += discVal;
             }
         } else {
             totalGrossAmount += itemPrice * qty;
@@ -92,7 +92,7 @@ export function calculateTotals({
                 if (discType === 'percentage') {
                     totalMembershipDiscount += (itemPrice * qty * discVal) / 100;
                 } else {
-                    totalMembershipDiscount += discVal * qty;
+                    totalMembershipDiscount += discVal;
                 }
             } else if (activeMembership && activeMembership.planId) {
                 const plan = activeMembership.planId;
@@ -100,13 +100,13 @@ export function calculateTotals({
                     if (plan.serviceDiscountType === 'percentage') {
                         totalMembershipDiscount += (itemPrice * qty * (Number(plan.serviceDiscountValue) || 0)) / 100;
                     } else {
-                        totalMembershipDiscount += (Number(plan.serviceDiscountValue) || 0) * qty;
+                        totalMembershipDiscount += (Number(plan.serviceDiscountValue) || 0);
                     }
                 } else if (item.type === 'product') {
                     if (plan.productDiscountType === 'percentage') {
                         totalMembershipDiscount += (itemPrice * qty * (Number(plan.productDiscountValue) || 0)) / 100;
                     } else {
-                        totalMembershipDiscount += (Number(plan.productDiscountValue) || 0) * qty;
+                        totalMembershipDiscount += (Number(plan.productDiscountValue) || 0);
                     }
                 }
             }

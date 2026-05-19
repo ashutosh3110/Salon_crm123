@@ -395,8 +395,13 @@ export default function Sidebar({ collapsed, setCollapsed, isHovered, setIsHover
                                                 transition={{ duration: 0.2, ease: 'easeOut' }}
                                                 className="overflow-hidden ml-7 pl-4 relative space-y-1 mt-1 before:absolute before:left-0 before:top-0 before:bottom-0 before:w-px before:bg-[#e2e8f0]"
                                             >
-                                                {item.subItems.map((sub) => {
-                                                    const isSubActive = location.pathname === sub.path || location.pathname.startsWith(sub.path + '/');
+                                                 {item.subItems.map((sub) => {
+                                                     const isSubActive = (location.pathname === sub.path || location.pathname.startsWith(sub.path + '/')) &&
+                                                         !item.subItems.some(sibling => 
+                                                             sibling.path !== sub.path && 
+                                                             sibling.path.length > sub.path.length && 
+                                                             (location.pathname === sibling.path || location.pathname.startsWith(sibling.path + '/'))
+                                                         );
                                                     return (
                                                         <NavLink
                                                             key={sub.path}
