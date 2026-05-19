@@ -40,6 +40,7 @@ export default function MembersListTab() {
     const [showAssignModal, setShowAssignModal] = useState(false);
     const [plans, setPlans] = useState([]);
     const [selectedCustomerId, setSelectedCustomerId] = useState('');
+    const [selectedCustomer, setSelectedCustomer] = useState(null);
     const [selectedPlanId, setSelectedPlanId] = useState('');
     const [searchCustomerTerm, setSearchCustomerTerm] = useState('');
     const [selectedOutletId, setSelectedOutletId] = useState(activeOutletId || '');
@@ -139,6 +140,18 @@ export default function MembersListTab() {
             setErrorMessage('Please select both a customer and a plan.');
             return;
         }
+        if (paymentMethod === 'wallet' && selectedCustomer) {
+            const selectedPlan = plans.find(p => String(p._id || p.id) === String(selectedPlanId));
+            if (selectedPlan) {
+                const basePrice = Number(selectedPlan.price || 0);
+                const taxRate = Number(selectedPlan.taxRate || 0);
+                const calculatedTotal = selectedPlan.taxType === 'including' ? basePrice : basePrice + (basePrice * taxRate) / 100;
+                if ((selectedCustomer.walletBalance || 0) < calculatedTotal) {
+                    setErrorMessage('Insufficient wallet balance to assign this plan.');
+                    return;
+                }
+            }
+        }
         setAssigning(true);
         setErrorMessage('');
         setSuccessMessage('');
@@ -160,6 +173,7 @@ export default function MembersListTab() {
                 setTimeout(async () => {
                     setShowAssignModal(false);
                     setSelectedCustomerId('');
+                    setSelectedCustomer(null);
                     setSelectedPlanId('');
                     setSearchCustomerTerm('');
                     setSuccessMessage('');
@@ -477,6 +491,7 @@ export default function MembersListTab() {
                                     onClick={() => {
                                         setShowAssignModal(false);
                                         setSelectedCustomerId('');
+                                        setSelectedCustomer(null);
                                         setSelectedPlanId('');
                                         setSearchCustomerTerm('');
                                         setErrorMessage('');
@@ -517,6 +532,7 @@ export default function MembersListTab() {
                                             onChange={(e) => {
                                                 setSearchCustomerTerm(e.target.value);
                                                 setSelectedCustomerId('');
+                                                setSelectedCustomer(null);
                                                 setShowDropdown(true);
                                             }}
                                             className="w-full h-12 bg-surface border border-border/40 pl-12 pr-10 text-xs font-bold text-foreground focus:border-primary outline-none transition-all shadow-sm cursor-pointer"
@@ -526,6 +542,7 @@ export default function MembersListTab() {
                                                 type="button"
                                                 onClick={() => {
                                                     setSelectedCustomerId('');
+                                                    setSelectedCustomer(null);
                                                     setSearchCustomerTerm('');
                                                     setShowDropdown(false);
                                                 }}
@@ -557,6 +574,7 @@ export default function MembersListTab() {
                                                             key={c._id || c.id}
                                                             onClick={() => {
                                                                 setSelectedCustomerId(c._id || c.id);
+                                                                setSelectedCustomer(c);
                                                                 setSearchCustomerTerm(`${c.name || 'Unknown'} (${c.phone || ''})`);
                                                                 setSearchResults([]);
                                                                 setShowDropdown(false);
@@ -576,6 +594,7 @@ export default function MembersListTab() {
                                                             key={c._id || c.id}
                                                             onClick={() => {
                                                                 setSelectedCustomerId(c._id || c.id);
+                                                                setSelectedCustomer(c);
                                                                 setSearchCustomerTerm(`${c.name || 'Unknown'} (${c.phone || ''})`);
                                                                 setShowDropdown(false);
                                                             }}
@@ -640,10 +659,59 @@ export default function MembersListTab() {
                                             <option value="card">Card</option>
                                             <option value="online">UPI / Online</option>
                                             <option value="wallet">Wallet Balance</option>
-                                            <option value="unpaid">Unpaid (Add to Due)</option>
                                         </select>
                                     </div>
                                 </div>
+
+                                {paymentMethod === 'wallet' && (
+                                    selectedCustomer ? (
+                                        <div className="p-4 bg-emerald-500/10 border border-emerald-500/30 text-emerald-600 flex items-center justify-between rounded-none animate-in fade-in slide-in-from-top-2 duration-200">
+                                            <div className="flex items-center gap-2.5">
+                                                <div className="w-9 h-9 rounded-full bg-emerald-500/20 flex items-center justify-center">
+                                                    <Star className="w-5 h-5 text-emerald-600" fill="currentColor" />
+                                                </div>
+                                                <div>
+                                                    <span className="text-[10px] font-black uppercase tracking-wider block">Wallet Balance</span>
+                                                    <span className="text-[10px] font-medium text-emerald-700/80">Available funds in customer's account</span>
+                                                </div>
+                                            </div>
+                                            <div className="text-xl font-black font-mono">
+                                                ₹{(selectedCustomer.walletBalance || 0).toFixed(2)}
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        <div className="p-4 bg-amber-500/10 border border-amber-500/30 text-amber-600 flex items-center gap-2.5 rounded-none animate-in fade-in slide-in-from-top-2 duration-200">
+                                            <AlertCircle className="w-5 h-5 text-amber-500 shrink-0" />
+                                            <span className="text-xs font-bold uppercase tracking-wider">Please select a customer first to view wallet balance.</span>
+                                        </div>
+                                    )
+                                )}
+
+                                {(() => {
+                                    if (paymentMethod !== 'wallet' || !selectedCustomer || !selectedPlanId) return null;
+                                    const selectedPlan = plans.find(p => String(p._id || p.id) === String(selectedPlanId));
+                                    if (!selectedPlan) return null;
+                                    
+                                    const basePrice = Number(selectedPlan.price || 0);
+                                    const taxRate = Number(selectedPlan.taxRate || 0);
+                                    let calculatedTotal = 0;
+                                    if (selectedPlan.taxType === 'including') {
+                                        calculatedTotal = basePrice;
+                                    } else {
+                                        calculatedTotal = basePrice + (basePrice * taxRate) / 100;
+                                    }
+
+                                    const isWalletInsufficient = (selectedCustomer.walletBalance || 0) < calculatedTotal;
+                                    if (isWalletInsufficient) {
+                                        return (
+                                            <div className="p-4 bg-rose-500/10 border border-rose-500/30 text-rose-500 text-xs font-bold flex items-center gap-2 animate-in fade-in slide-in-from-top-2 duration-200">
+                                                <AlertCircle className="w-4 h-4 shrink-0" />
+                                                <span>Insufficient Wallet Balance. Plan cost: ₹{calculatedTotal.toFixed(2)}, Wallet: ₹{(selectedCustomer.walletBalance || 0).toFixed(2)}.</span>
+                                            </div>
+                                        );
+                                    }
+                                    return null;
+                                })()}
 
                                 {/* Detailed Tax & Price Breakdown */}
                                 {selectedPlanId && (() => {
@@ -682,6 +750,15 @@ export default function MembersListTab() {
                                                 <span className="uppercase">Total Amount Payable:</span>
                                                 <span>₹{calculatedTotal.toFixed(2)}</span>
                                             </div>
+                                            {paymentMethod === 'wallet' && selectedCustomer && (
+                                                <>
+                                                    <div className="h-[1px] bg-border/40 my-1 border-dashed" />
+                                                    <div className="flex justify-between text-xs font-black text-emerald-600 animate-pulse">
+                                                        <span className="uppercase">Est. Wallet After Purchase:</span>
+                                                        <span>₹{Math.max(0, (selectedCustomer.walletBalance || 0) - calculatedTotal).toFixed(2)}</span>
+                                                    </div>
+                                                </>
+                                            )}
                                         </div>
                                     );
                                 })()}
@@ -693,6 +770,7 @@ export default function MembersListTab() {
                                         onClick={() => {
                                             setShowAssignModal(false);
                                             setSelectedCustomerId('');
+                                            setSelectedCustomer(null);
                                             setSelectedPlanId('');
                                             setSearchCustomerTerm('');
                                             setErrorMessage('');
@@ -704,7 +782,17 @@ export default function MembersListTab() {
                                     </button>
                                     <button 
                                         type="submit"
-                                        disabled={assigning}
+                                        disabled={
+                                            assigning || 
+                                            (paymentMethod === 'wallet' && selectedCustomer && (() => {
+                                                const selectedPlan = plans.find(p => String(p._id || p.id) === String(selectedPlanId));
+                                                if (!selectedPlan) return false;
+                                                const basePrice = Number(selectedPlan.price || 0);
+                                                const taxRate = Number(selectedPlan.taxRate || 0);
+                                                const calculatedTotal = selectedPlan.taxType === 'including' ? basePrice : basePrice + (basePrice * taxRate) / 100;
+                                                return (selectedCustomer.walletBalance || 0) < calculatedTotal;
+                                            })())
+                                        }
                                         className="px-6 py-2.5 bg-primary text-white text-[10px] font-black uppercase tracking-[0.2em] hover:bg-primary-dark transition-all disabled:opacity-50 flex items-center gap-2"
                                     >
                                         {assigning ? 'Activating...' : 'Activate Subscription'}
