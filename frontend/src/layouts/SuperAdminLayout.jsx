@@ -12,11 +12,11 @@ export default function SuperAdminLayout() {
 
             {/* ── Global premium typography & spacious design overrides for Super Admin panel ── */}
             <style>{`
-                @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&family=Outfit:wght@400;500;600;700;800;900&display=swap');
+                @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
 
                 /* --- Global Theme & Font Assignment --- */
                 .sa-panel {
-                    font-family: 'Poppins', 'Outfit', sans-serif !important;
+                    font-family: 'Inter', sans-serif !important;
                     background-color: #faf9f9 !important;
                     color: #1e293b !important;
                 }
@@ -24,7 +24,7 @@ export default function SuperAdminLayout() {
                 .sa-panel *,
                 .sa-panel *::before,
                 .sa-panel *::after {
-                    font-family: 'Poppins', 'Outfit', sans-serif !important;
+                    font-family: 'Inter', sans-serif !important;
                     letter-spacing: -0.01em;
                     font-style: normal !important; /* Strictly forbid cursive & italics */
                 }
@@ -40,7 +40,7 @@ export default function SuperAdminLayout() {
                 .sa-panel [class*="font-serif"],
                 .sa-panel .italic,
                 .sa-panel [class*="italic"] {
-                    font-family: 'Poppins', 'Outfit', sans-serif !important;
+                    font-family: 'Inter', sans-serif !important;
                     font-weight: 800 !important;
                     font-style: normal !important;
                     letter-spacing: -0.025em !important;

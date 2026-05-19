@@ -304,13 +304,13 @@ function MarketingHubContent() {
             {/* Campaign Modal */}
             <AnimatePresence>
                 {isCampaignModalOpen && (
-                    <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
-                        <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => !isSending && setIsCampaignModalOpen(false)} />
+                    <div className="fixed inset-0 z-[200] flex items-start justify-center p-4 pt-10 sm:pt-16 overflow-y-auto">
+                        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm" onClick={() => !isSending && setIsCampaignModalOpen(false)} />
                         <motion.div
                             initial={{ opacity: 0, scale: 0.95, y: 20 }}
                             animate={{ opacity: 1, scale: 1, y: 0 }}
                             exit={{ opacity: 0, scale: 0.95, y: 20 }}
-                            className="bg-white rounded-[2rem] border border-border w-full max-w-2xl shadow-2xl relative overflow-hidden flex flex-col md:flex-row max-h-[85vh]"
+                            className="bg-white rounded-[2rem] border border-border w-full max-w-lg shadow-2xl relative overflow-hidden flex flex-col max-h-[90vh] md:max-h-[85vh]"
                         >
                             {/* Form Side */}
                             <div className="flex-1 flex flex-col min-h-0">
@@ -320,13 +320,17 @@ function MarketingHubContent() {
                                         <p className="text-[8px] text-text-muted font-bold uppercase tracking-widest mt-1">Fill details and send instantly</p>
                                     </div>
                                     {!isSending && (
-                                        <button onClick={() => setIsCampaignModalOpen(false)} className="p-2 hover:bg-surface rounded-full transition-colors">
+                                        <div 
+                                            role="button"
+                                            onClick={() => setIsCampaignModalOpen(false)} 
+                                            className="p-2 hover:bg-surface rounded-full transition-colors cursor-pointer flex items-center justify-center"
+                                        >
                                             <XCircle className="w-6 h-6 text-text-muted" />
-                                        </button>
+                                        </div>
                                     )}
                                 </div>
 
-                                <div className="p-5 space-y-4 flex-1">
+                                <div className="p-5 space-y-4 flex-1 overflow-y-auto no-scrollbar">
                                     {isSending ? (
                                         <div className="py-12 flex flex-col items-center text-center space-y-8">
                                             <div className="relative w-32 h-32 flex items-center justify-center">
@@ -430,43 +434,6 @@ function MarketingHubContent() {
                                     </button>
                                 </div>
                             </div>
-
-                            {/* Preview Side (Only for Notification) */}
-                            <div className="hidden md:flex w-64 bg-slate-900 flex-col items-center justify-center p-5 relative overflow-hidden border-l border-border">
-                                <div className="absolute top-0 left-0 w-full h-full opacity-10 pointer-events-none">
-                                    <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-primary rounded-full blur-[100px]" />
-                                    <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-primary rounded-full blur-[100px]" />
-                                </div>
-                                
-                                <div className="w-full aspect-[9/16] bg-black rounded-[2.5rem] border-4 border-slate-800 shadow-2xl relative p-4 flex flex-col overflow-hidden">
-                                    <div className="w-12 h-1 bg-slate-800 rounded-full mx-auto mb-6 shrink-0" />
-                                    
-                                    <motion.div 
-                                        initial={{ y: 20, opacity: 0 }}
-                                        animate={{ y: 0, opacity: 1 }}
-                                        key={campaignForm.name + campaignForm.message}
-                                        className="bg-white/10 backdrop-blur-md rounded-2xl p-3 text-left border border-white/10"
-                                    >
-                                        <div className="flex items-center gap-2 mb-1">
-                                            <div className={`w-4 h-4 rounded flex items-center justify-center ${activeTab === 'whatsapp' ? 'bg-emerald-500' : 'bg-primary'}`}>
-                                                {activeTab === 'whatsapp' ? <MessageSquare size={8} className="text-white" /> : <Bell size={8} className="text-white" />}
-                                            </div>
-                                            <span className="text-[6px] font-black text-white uppercase tracking-widest">{activeTab === 'whatsapp' ? 'WhatsApp' : 'Salon App'}</span>
-                                        </div>
-                                        <h4 className="text-[8px] font-black text-white truncate">{campaignForm.name || 'Title...'}</h4>
-                                        <p className="text-[7px] text-white/60 line-clamp-3 mt-0.5 leading-tight">{campaignForm.message || 'Message preview will appear here...'}</p>
-                                    </motion.div>
-                                    
-                                    <div className="mt-auto flex justify-center pb-2">
-                                        <div className="w-20 h-1 bg-white/20 rounded-full" />
-                                    </div>
-                                </div>
-                                
-                                <div className="mt-6 text-center">
-                                    <h3 className="text-white text-xs font-black uppercase tracking-tight">Live Preview</h3>
-                                    <p className="text-white/40 text-[8px] font-bold uppercase tracking-widest mt-1">Mobile View</p>
-                                </div>
-                            </div>
                         </motion.div>
                     </div>
                 )}
@@ -517,14 +484,14 @@ function ContactListModal({ isOpen, onClose, selectionMode = false, selectedIds 
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 z-[300] flex items-center justify-center p-4">
-            <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
+        <div className="fixed inset-0 z-[300] flex items-start justify-center p-4 pt-10 sm:pt-16 overflow-y-auto">
+            <div className="fixed inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
             <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="bg-white rounded-[2rem] w-full max-w-2xl max-h-[80vh] shadow-2xl relative overflow-hidden flex flex-col">
                 <div className="px-8 py-6 border-b border-border flex items-center justify-between">
                     <h3 className="text-xl font-black text-text uppercase tracking-tight">Select Contacts</h3>
                     <input type="text" placeholder="Search..." value={search} onChange={e => setSearch(e.target.value)} className="px-4 py-2 border border-border rounded-xl text-sm w-48" />
                 </div>
-                <div className="flex-1 p-6">
+                <div className="flex-1 p-6 overflow-y-auto no-scrollbar">
                     <table className="w-full">
                         <thead>
                             <tr className="text-left text-[10px] font-black text-text-muted uppercase tracking-widest border-b border-border">

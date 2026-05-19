@@ -22,12 +22,12 @@ export default function POSLayout() {
         <div className="min-h-screen bg-background admin-panel">
             {/* Global sharp-edge override for POS panel */}
             <style>{`
-                @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+                @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
                 
                 .admin-panel *,
                 .admin-panel *::before,
                 .admin-panel *::after {
-                    font-family: 'Outfit', 'Inter', 'Open Sans', sans-serif;
+                    font-family: 'Inter', sans-serif;
                 }
                 .admin-panel h1, 
                 .admin-panel h2, 
@@ -39,11 +39,11 @@ export default function POSLayout() {
                 .admin-panel [class*="font-serif"],
                 .admin-panel .italic,
                 .admin-panel [class*="italic"] {
-                    font-family: 'Outfit', 'Inter', 'Open Sans', sans-serif !important;
+                    font-family: 'Inter', sans-serif !important;
                     font-style: normal !important; /* Force standard, clean, non-cursive upright text */
                 }
                 .admin-panel .font-sans {
-                    font-family: 'Outfit', 'Inter', 'Open Sans', sans-serif !important;
+                    font-family: 'Inter', sans-serif !important;
                 }
             `}</style>
             <Sidebar

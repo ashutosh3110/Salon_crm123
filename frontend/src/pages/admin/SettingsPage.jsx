@@ -3,7 +3,7 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
 import { useAuth } from '../../contexts/AuthContext';
 import { useBusiness } from '../../contexts/BusinessContext';
-import { MapPin, Camera, Upload, User as UserIcon, FileText, Plus, X, GripVertical, ChevronUp, ChevronDown } from 'lucide-react';
+import { Camera, Upload, User as UserIcon, FileText, Plus, X, GripVertical, ChevronUp, ChevronDown } from 'lucide-react';
 import PasswordField from '../../components/common/PasswordField';
 import { getImageUrl } from '../../utils/imageUtils';
 import { useRef } from 'react';
@@ -72,7 +72,7 @@ export default function SettingsPage() {
 
     /* Referral settings removed - managed globally by Super Admin */
 
-    const [locationForm, setLocationForm] = useState({ latitude: '', longitude: '' });
+
     const [notifications, setNotifications] = useState({ ...DEFAULT_NOTIFICATIONS });
     const [termsList, setTermsList] = useState([]);
     const [newTerm, setNewTerm] = useState('');
@@ -113,12 +113,7 @@ export default function SettingsPage() {
             } else {
                 setNotifications({ ...DEFAULT_NOTIFICATIONS });
             }
-            if (salon.latitude != null && salon.longitude != null) {
-                setLocationForm({
-                    latitude: String(salon.latitude),
-                    longitude: String(salon.longitude),
-                });
-            }
+
             // Load terms & conditions
             setTermsList(Array.isArray(salon.termsAndConditions) ? [...salon.termsAndConditions] : []);
         }
@@ -246,25 +241,6 @@ export default function SettingsPage() {
         }
     };
 
-    const handleLocationSubmit = async (e) => {
-        e.preventDefault();
-        const lat = parseFloat(locationForm.latitude);
-        const lng = parseFloat(locationForm.longitude);
-        if (Number.isNaN(lat) || Number.isNaN(lng) || lat < -90 || lat > 90 || lng < -180 || lng > 180) {
-            toast.error('Please enter valid latitude (-90 to 90) and longitude (-180 to 180).');
-            return;
-        }
-        setIsSaving(true);
-        try {
-            await updateSalon({ latitude: lat, longitude: lng });
-            await fetchSalon?.();
-            toast.success('Salon location updated. Customers nearby can find your salon.');
-        } catch (error) {
-            toast.error(error?.message || 'Failed to update location');
-        } finally {
-            setIsSaving(false);
-        }
-    };
 
     const handleNotificationsSave = async (e) => {
         e.preventDefault();
@@ -320,22 +296,6 @@ export default function SettingsPage() {
         }
     };
 
-    const useMyLocation = () => {
-        if (!navigator.geolocation) {
-            toast.error('Geolocation is not supported by your browser.');
-            return;
-        }
-        navigator.geolocation.getCurrentPosition(
-            (pos) => {
-                setLocationForm({
-                    latitude: pos.coords.latitude.toFixed(6),
-                    longitude: pos.coords.longitude.toFixed(6),
-                });
-            },
-            () => toast.error('Could not get your location. Please enter manually.'),
-            { enableHighAccuracy: true, timeout: 30000, maximumAge: 0 }
-        );
-    };
 
     const tabClass = (id) =>
         `px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-widest transition-all border ${
@@ -646,50 +606,7 @@ export default function SettingsPage() {
                                 </div>
                             </form>
 
-                            <div className="pt-4 border-t border-border">
-                                <h3 className="text-sm font-bold text-text mb-4 flex items-center gap-2">
-                                    <MapPin size={16} className="text-primary" /> Salon location (nearby search)
-                                </h3>
-                                <p className="text-xs text-text-muted mb-4">
-                                    Latitude & longitude are saved on your salon. Used for customer app nearby discovery.
-                                </p>
-                                <form onSubmit={handleLocationSubmit} className="flex flex-wrap items-end gap-4">
-                                    <div className="space-y-1 flex-1 min-w-[120px]">
-                                        <label className="text-[10px] font-black text-text-muted uppercase tracking-widest">Latitude</label>
-                                        <input
-                                            type="text"
-                                            placeholder="e.g. 28.6139"
-                                            value={locationForm.latitude}
-                                            onChange={(e) => setLocationForm({ ...locationForm, latitude: e.target.value })}
-                                            className="w-full px-4 py-2.5 rounded-xl border border-border text-sm font-semibold focus:border-primary outline-none bg-surface-alt/50"
-                                        />
-                                    </div>
-                                    <div className="space-y-1 flex-1 min-w-[120px]">
-                                        <label className="text-[10px] font-black text-text-muted uppercase tracking-widest">Longitude</label>
-                                        <input
-                                            type="text"
-                                            placeholder="e.g. 77.2090"
-                                            value={locationForm.longitude}
-                                            onChange={(e) => setLocationForm({ ...locationForm, longitude: e.target.value })}
-                                            className="w-full px-4 py-2.5 rounded-xl border border-border text-sm font-semibold focus:border-primary outline-none bg-surface-alt/50"
-                                        />
-                                    </div>
-                                    <button
-                                        type="button"
-                                        onClick={useMyLocation}
-                                        className="px-4 py-2.5 rounded-xl border border-border text-xs font-bold hover:bg-surface-alt/50 transition-colors"
-                                    >
-                                        Use my location
-                                    </button>
-                                    <button
-                                        type="submit"
-                                        disabled={isSaving}
-                                        className="px-6 py-2.5 bg-primary text-primary-foreground rounded-xl font-bold text-xs uppercase tracking-widest disabled:opacity-50"
-                                    >
-                                        Save location
-                                    </button>
-                                </form>
-                            </div>
+
                         </div>
                     )}
 

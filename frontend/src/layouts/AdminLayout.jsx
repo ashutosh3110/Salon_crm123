@@ -139,7 +139,7 @@ export default function AdminLayout() {
                     width: 100% !important;
                 }
                 .admin-panel table th {
-                    font-family: 'Poppins', 'Inter', sans-serif !important;
+                    font-family: 'Inter', sans-serif !important;
                     font-size: 0.825rem !important; /* ~13.2px */
                     font-weight: 700 !important;
                     text-transform: uppercase !important;
@@ -295,7 +295,7 @@ export default function AdminLayout() {
                 .admin-panel .inline-flex,
                 .admin-panel a[class*="bg-primary"],
                 .admin-panel button[class*="bg-primary"] {
-                    font-family: 'Poppins', 'Inter', sans-serif !important;
+                    font-family: 'Inter', sans-serif !important;
                     font-weight: 600 !important;
                     border-radius: 0.75rem !important;
                     transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;

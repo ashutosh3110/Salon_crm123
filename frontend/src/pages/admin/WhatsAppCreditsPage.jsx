@@ -121,29 +121,29 @@ export default function WhatsAppCreditsPage() {
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 {/* Balance Card */}
                 <div className="lg:col-span-1 space-y-6">
-                    <div className="bg-slate-900 rounded-[2.5rem] p-8 text-white relative overflow-hidden group">
-                        <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 blur-3xl rounded-full translate-x-1/2 -translate-y-1/2 group-hover:scale-150 transition-transform duration-700" />
+                    <div className="bg-white rounded-[2.5rem] p-8 text-slate-900 border border-slate-200 relative overflow-hidden group shadow-sm">
+                        <div className="absolute top-0 right-0 w-32 h-32 bg-slate-50 blur-3xl rounded-full translate-x-1/2 -translate-y-1/2 group-hover:scale-150 transition-transform duration-700" />
                         <div className="relative z-10 space-y-8">
                                 <div className="flex items-center justify-between">
-                                <div className="w-12 h-12 rounded-2xl bg-white/10 flex items-center justify-center border border-white/20">
-                                    <MessageSquare className="w-6 h-6 text-white" />
+                                <div className="w-12 h-12 rounded-2xl bg-slate-50 flex items-center justify-center border border-slate-100 text-slate-600">
+                                    <MessageSquare className="w-6 h-6" />
                                 </div>
-                                <div className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border ${salon?.whatsappSettings?.whatsappCredits > 500 ? 'bg-emerald-500/20 border-emerald-500/30 text-emerald-400' : 'bg-rose-500/20 border-rose-500/30 text-rose-400 animate-pulse'}`}>
+                                <div className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border ${salon?.whatsappSettings?.whatsappCredits > 500 ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-600' : 'bg-rose-500/10 border-rose-500/20 text-rose-600 animate-pulse'}`}>
                                     {salon?.whatsappSettings?.whatsappCredits > 500 ? 'Active' : 'Low Balance'}
                                 </div>
                             </div>
                             
                             <div className="space-y-1">
-                                <p className="text-[10px] font-bold text-white/50 uppercase tracking-[0.2em]">Salon Balance</p>
+                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]">Salon Balance</p>
                                 <div className="flex items-baseline gap-2">
-                                    <h2 className="text-6xl font-black italic tracking-tighter">{salon?.whatsappSettings?.whatsappCredits || 0}</h2>
-                                    <span className="text-sm font-bold text-white/40 uppercase">Msgs</span>
+                                    <h2 className="text-6xl font-black italic tracking-tighter text-slate-900">{salon?.whatsappSettings?.whatsappCredits || 0}</h2>
+                                    <span className="text-sm font-bold text-slate-400 uppercase">Msgs</span>
                                 </div>
                             </div>
 
-                            <div className="pt-6 border-t border-white/10 flex items-center justify-end">
-                                <div className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center border border-white/10">
-                                    <TrendingUp className="w-4 h-4 text-emerald-400" />
+                            <div className="pt-6 border-t border-slate-100 flex items-center justify-end">
+                                <div className="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center border border-slate-100">
+                                    <TrendingUp className="w-4 h-4 text-emerald-500" />
                                 </div>
                             </div>
                         </div>

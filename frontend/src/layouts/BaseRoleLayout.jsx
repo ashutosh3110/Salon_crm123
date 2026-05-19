@@ -43,13 +43,13 @@ export default function BaseRoleLayout({ SidebarComponent, title, accentColor = 
             {/* Global clean typography override for entire panel to match premium Poppins/Inter design system */}
             <style>{`
                 .admin-panel {
-                    --font-serif: 'Poppins', 'Inter', sans-serif !important;
-                    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+                    --font-serif: 'Inter', sans-serif !important;
+                    font-family: 'Inter', sans-serif !important;
                 }
                 .admin-panel *,
                 .admin-panel *::before,
                 .admin-panel *::after {
-                    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+                    font-family: 'Inter', sans-serif !important;
                 }
                 .admin-panel button.bg-primary,
                 .admin-panel a.bg-primary {
@@ -65,7 +65,7 @@ export default function BaseRoleLayout({ SidebarComponent, title, accentColor = 
                 .admin-panel [class*="font-serif"],
                 .admin-panel .italic,
                 .admin-panel [class*="italic"] {
-                    font-family: 'Poppins', 'Inter', sans-serif !important;
+                    font-family: 'Inter', sans-serif !important;
                     font-style: normal !important; /* Force standard, clean, non-cursive upright text */
                     font-weight: 700 !important;
                 }

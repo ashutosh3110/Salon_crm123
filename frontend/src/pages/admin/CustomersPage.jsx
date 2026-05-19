@@ -49,25 +49,25 @@ const hideScrollbarStyle = `
 export default function CustomersPage({ tab = 'directory' }) {
     const navigate = useNavigate();
     const { user } = useAuth();
-    const { 
-        customers: rawCustomers, 
-        customersMetadata, 
+    const {
+        customers: rawCustomers,
+        customersMetadata,
         globalStats,
-        addCustomer, 
-        updateCustomer, 
-        deleteCustomer, 
+        addCustomer,
+        updateCustomer,
+        deleteCustomer,
         fetchCustomers,
-        bulkImportCustomers 
+        bulkImportCustomers
     } = useBusiness();
-    
+
     const [currentPage, setCurrentPage] = useState(1);
-    
+
     useEffect(() => {
-        fetchCustomers(currentPage, 5);
+        fetchCustomers(currentPage, 10);
     }, [fetchCustomers, currentPage]);
 
 
-    
+
     // Safety Fix: Ensuring customers is always an array for filtering
     const customers = Array.isArray(rawCustomers) ? rawCustomers : (rawCustomers?.results || rawCustomers?.data || []);
 
@@ -191,7 +191,7 @@ export default function CustomersPage({ tab = 'directory' }) {
                         <h1 className="text-3xl sm:text-4xl font-black text-text uppercase tracking-tighter leading-none">Customers</h1>
                         <p className="text-[10px] font-black text-text-muted mt-3 uppercase tracking-[0.3em] opacity-60 leading-none">Intelligence Hub • CRM • Wallet Matrix</p>
                     </div>
-                    
+
                     <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
                         {/* Secondary Actions Group */}
                         <div className="flex items-center bg-surface border border-border p-1 shadow-sm">
@@ -254,7 +254,7 @@ export default function CustomersPage({ tab = 'directory' }) {
                             Wallets
                             {activeTab === 'wallets' && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary" />}
                         </button>
-                       
+
                         <button onClick={() => navigate('/admin/crm/feedback')} className={`px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] border-r border-border transition-all whitespace-nowrap relative ${activeTab === 'feedback' ? 'bg-surface text-primary' : 'text-text-muted hover:text-text'}`}>
                             Feedback
                             {activeTab === 'feedback' && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary" />}
@@ -273,14 +273,14 @@ export default function CustomersPage({ tab = 'directory' }) {
                                 onDelete={deleteCustomer}
                                 onUpdate={updateCustomer}
                             />
-                            
+
                             {/* Pagination Controls */}
                             <div className="px-8 py-6 border-t border-border bg-surface-alt/10 flex items-center justify-between">
                                 <div className="text-[10px] font-black text-text-muted uppercase tracking-widest">
                                     Displaying {customers.length} of {customersMetadata.totalCount} customers
                                 </div>
                                 <div className="flex items-center gap-3">
-                                    <button 
+                                    <button
                                         onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
                                         disabled={currentPage === 1}
                                         className="px-6 py-3 border border-border bg-surface text-[10px] font-black uppercase tracking-widest disabled:opacity-30 hover:bg-surface-alt transition-all"
@@ -290,7 +290,7 @@ export default function CustomersPage({ tab = 'directory' }) {
                                     <div className="px-4 text-xs font-black">
                                         Page {currentPage} of {customersMetadata.totalPages || 1}
                                     </div>
-                                    <button 
+                                    <button
                                         onClick={() => setCurrentPage(p => Math.min(customersMetadata.totalPages || 1, p + 1))}
                                         disabled={currentPage >= (customersMetadata.totalPages || 1)}
                                         className="px-6 py-3 border border-border bg-surface text-[10px] font-black uppercase tracking-widest disabled:opacity-30 hover:bg-surface-alt transition-all"
@@ -304,9 +304,9 @@ export default function CustomersPage({ tab = 'directory' }) {
 
 
                     {activeTab === 'wallets' && (
-                        <WalletMonitor 
-                            customers={customers} 
-                            onCustomerClick={setSelectedCustomer} 
+                        <WalletMonitor
+                            customers={customers}
+                            onCustomerClick={setSelectedCustomer}
                             customersMetadata={customersMetadata}
                             currentPage={currentPage}
                             onPageChange={setCurrentPage}
@@ -385,15 +385,15 @@ export default function CustomersPage({ tab = 'directory' }) {
                                 </div>
 
                                 <div className="p-6 bg-slate-50 border-t border-slate-100 flex gap-3">
-                                    <button 
-                                        type="button" 
-                                        onClick={() => setShowAddModal(false)} 
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowAddModal(false)}
                                         className="flex-1 py-3 text-[11px] font-black text-slate-500 uppercase tracking-widest border border-slate-200 rounded-xl bg-white hover:bg-slate-100 transition-all"
                                     >
                                         Cancel
                                     </button>
-                                    <button 
-                                        type="submit" 
+                                    <button
+                                        type="submit"
                                         className="flex-1 py-3 text-[11px] font-black text-white uppercase tracking-widest bg-slate-800 hover:bg-slate-900 rounded-xl transition-all shadow-lg shadow-slate-800/10"
                                     >
                                         Add Customer
@@ -512,7 +512,7 @@ function WalletMonitor({ customers, onCustomerClick, customersMetadata, currentP
 
     return (
         <div className="p-8 space-y-8 animate-reveal">
-         
+
 
             {activeSubTab === 'directory' && (
                 <>
@@ -521,41 +521,38 @@ function WalletMonitor({ customers, onCustomerClick, customersMetadata, currentP
                             <div className="flex flex-wrap items-center gap-4">
                                 <div className="flex flex-col md:flex-row gap-2 flex-1">
                                     <div className="relative group">
-                                        <label className="absolute -top-2 left-3 bg-surface px-2 text-[8px] font-black text-primary uppercase tracking-widest z-10 transition-all group-focus-within:text-primary">Direct Recharge</label>
-                                        <input 
-                                            type="number" 
-                                            placeholder="ENTER AMOUNT (₹)" 
+                                        <input
+                                            type="number"
+                                            placeholder="ENTER AMOUNT (₹)"
                                             disabled={selectedIds.length === 0}
-                                            value={bulkAmount} 
-                                            onChange={e => setBulkAmount(e.target.value)} 
-                                            className="w-full md:w-48 p-4 bg-surface-alt border border-border font-black text-[10px] outline-none focus:border-primary transition-all disabled:opacity-30"
+                                            value={bulkAmount}
+                                            onChange={e => setBulkAmount(e.target.value)}
+                                            className="w-full md:w-48 !p-3 bg-surface-alt border border-border font-black !text-[10px] !leading-none outline-none focus:border-primary transition-all disabled:opacity-70 !h-11"
                                         />
                                     </div>
                                     <div className="relative group">
-                                        <label className="absolute -top-2 left-3 bg-surface px-2 text-[8px] font-black text-text-muted uppercase tracking-widest z-10">Add Remarks</label>
-                                        <input 
-                                            type="text" 
-                                            placeholder="E.G. FESTIVAL PROMO" 
+                                        <input
+                                            type="text"
+                                            placeholder="E.G. FESTIVAL PROMO"
                                             disabled={selectedIds.length === 0}
-                                            value={bulkNote} 
-                                            onChange={e => setBulkNote(e.target.value)} 
-                                            className="w-full md:w-64 p-4 bg-surface-alt border border-border font-black text-[10px] uppercase outline-none focus:border-primary transition-all disabled:opacity-30"
+                                            value={bulkNote}
+                                            onChange={e => setBulkNote(e.target.value)}
+                                            className="w-full md:w-64 !p-3 bg-surface-alt border border-border font-black !text-[10px] uppercase !leading-none outline-none focus:border-primary transition-all disabled:opacity-70 !h-11"
                                         />
                                     </div>
                                     <div className="relative group">
-                                        <label className="absolute -top-2 left-3 bg-surface px-2 text-[8px] font-black text-text-muted uppercase tracking-widest z-10 transition-all group-focus-within:text-primary">Expiry Date (Optional)</label>
-                                        <input 
-                                            type="date" 
+                                        <input
+                                            type="date"
                                             disabled={selectedIds.length === 0}
-                                            value={bulkExpiry} 
+                                            value={bulkExpiry}
                                             min={new Date().toISOString().split('T')[0]}
-                                            onChange={e => setBulkExpiry(e.target.value)} 
-                                            className="w-full md:w-44 p-4 bg-surface-alt border border-border font-black text-[10px] outline-none focus:border-primary transition-all disabled:opacity-30"
+                                            onChange={e => setBulkExpiry(e.target.value)}
+                                            className="w-full md:w-44 !p-3 bg-surface-alt border border-border font-black !text-[10px] !leading-none outline-none focus:border-primary transition-all disabled:opacity-70 !h-11"
                                         />
                                     </div>
                                 </div>
-                                <button 
-                                    onClick={() => handleBulkRecharge()} 
+                                <button
+                                    onClick={() => handleBulkRecharge()}
                                     disabled={isProcessing || !bulkAmount || selectedIds.length === 0}
                                     className="bg-primary text-white px-10 py-4 text-[10px] font-black uppercase tracking-widest shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-95 disabled:opacity-50 disabled:scale-100 transition-all whitespace-nowrap"
                                 >
@@ -575,11 +572,11 @@ function WalletMonitor({ customers, onCustomerClick, customersMetadata, currentP
                                     <th className="p-4 w-24">
                                         <div className="flex flex-col gap-1">
                                             <div className="flex items-center gap-2">
-                                                <input 
-                                                    type="checkbox" 
+                                                <input
+                                                    type="checkbox"
                                                     className="w-4 h-4 accent-primary cursor-pointer"
-                                                    onChange={(e) => handleSelectAll(e.target.checked)} 
-                                                    checked={selectedIds.length === customersMetadata.totalCount && customersMetadata.totalCount > 0} 
+                                                    onChange={(e) => handleSelectAll(e.target.checked)}
+                                                    checked={selectedIds.length === customersMetadata.totalCount && customersMetadata.totalCount > 0}
                                                     disabled={isSelectingAll}
                                                 />
                                                 <span className="text-[8px] font-black uppercase tracking-[0.2em]">All</span>
@@ -619,7 +616,7 @@ function WalletMonitor({ customers, onCustomerClick, customersMetadata, currentP
                                 Displaying {customers.length} of {customersMetadata.totalCount} wallets
                             </div>
                             <div className="flex items-center gap-3">
-                                <button 
+                                <button
                                     onClick={() => onPageChange(p => Math.max(1, p - 1))}
                                     disabled={currentPage === 1}
                                     className="px-6 py-3 border border-border bg-surface text-[10px] font-black uppercase tracking-widest disabled:opacity-30 hover:bg-surface-alt transition-all"
@@ -629,7 +626,7 @@ function WalletMonitor({ customers, onCustomerClick, customersMetadata, currentP
                                 <div className="px-4 text-xs font-black">
                                     Page {currentPage} of {customersMetadata.totalPages || 1}
                                 </div>
-                                <button 
+                                <button
                                     onClick={() => onPageChange(p => Math.min(customersMetadata.totalPages || 1, p + 1))}
                                     disabled={currentPage >= (customersMetadata.totalPages || 1)}
                                     className="px-6 py-3 border border-border bg-surface text-[10px] font-black uppercase tracking-widest disabled:opacity-30 hover:bg-surface-alt transition-all"
@@ -703,8 +700,8 @@ function KPICard({ title, value, icon: Icon, color, trend }) {
 
 function CustomerDirectory({ customers, onCustomerClick, onDelete, onUpdate }) {
     const [searchTerm, setSearchTerm] = useState('');
-    const filtered = customers.filter(c => 
-        (c.name && c.name.toLowerCase().includes(searchTerm.toLowerCase())) || 
+    const filtered = customers.filter(c =>
+        (c.name && c.name.toLowerCase().includes(searchTerm.toLowerCase())) ||
         (c.phone && c.phone.replace(/\D/g, '').includes(searchTerm.replace(/\D/g, '')))
     );
 
@@ -760,29 +757,29 @@ function CustomerDirectory({ customers, onCustomerClick, onDelete, onUpdate }) {
                                 </td>
                                 <td className="px-4 py-3 text-sm font-bold text-text">₹{(c.totalSpend ?? 0).toLocaleString()}</td>
                                 <td className="px-4 py-3 text-right flex items-center justify-end gap-2">
-                                    <button 
-                                        onClick={e => { e.stopPropagation(); onUpdate(c._id, { status: c.status === 'active' ? 'inactive' : 'active' }); }} 
+                                    <button
+                                        onClick={e => { e.stopPropagation(); onUpdate(c._id, { status: c.status === 'active' ? 'inactive' : 'active' }); }}
                                         className={`p-2.5 border transition-all ${c.status === 'inactive' ? 'bg-rose-500 text-white border-rose-500' : 'text-text-muted hover:text-rose-500 border-border'}`}
                                         title={c.status === 'active' ? "Deactivate Customer" : "Activate Customer"}
                                     >
                                         <ShieldAlert className="w-4 h-4" />
                                     </button>
-                                    <button 
-                                        onClick={e => { e.stopPropagation(); onUpdate(c._id, { isVIP: !c.isVIP }); }} 
+                                    <button
+                                        onClick={e => { e.stopPropagation(); onUpdate(c._id, { isVIP: !c.isVIP }); }}
                                         className={`p-2.5 border transition-all ${c.isVIP ? 'bg-amber-500 text-white border-amber-500' : 'text-text-muted hover:text-amber-500 border-border'}`}
                                         title={c.isVIP ? "Remove VIP Status" : "Mark as VIP"}
                                     >
                                         <Star className={`w-4 h-4 ${c.isVIP ? 'fill-current' : ''}`} />
                                     </button>
-                                    <button 
-                                        onClick={e => { e.stopPropagation(); onCustomerClick(c); }} 
+                                    <button
+                                        onClick={e => { e.stopPropagation(); onCustomerClick(c); }}
                                         className="p-2.5 text-text-muted hover:text-primary border border-border transition-all"
                                         title="View Profile"
                                     >
                                         <Eye className="w-4 h-4" />
                                     </button>
-                                    <button 
-                                        onClick={e => { e.stopPropagation(); if(confirm('Are you sure you want to delete this customer?')) onDelete(c._id); }} 
+                                    <button
+                                        onClick={e => { e.stopPropagation(); if (confirm('Are you sure you want to delete this customer?')) onDelete(c._id); }}
                                         className="p-2.5 text-text-muted hover:text-rose-500 border border-border transition-all"
                                         title="Delete Customer"
                                     >

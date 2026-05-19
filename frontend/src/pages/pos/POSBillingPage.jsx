@@ -574,7 +574,7 @@ export default function POSBillingPage() {
         const mainTotalLiability = totals.total - totals.redeemWallet + (includePreviousDue ? Number(selectedClient?.dueAmount || 0) : 0);
         const overpaidDiff = Math.round((mainPaidAmount - mainTotalLiability) * 100) / 100;
         if (overpaidDiff > 0) {
-            toast(`Info: Total payment exceeds total liability by ₹${overpaidDiff.toFixed(2)}`, { 
+            toast(`Info: Total payment exceeds total liability by ₹${overpaidDiff.toFixed(2)}`, {
                 id: 'main-overpaid-toast',
                 icon: 'ℹ️',
                 duration: 2000
@@ -1315,14 +1315,14 @@ export default function POSBillingPage() {
 
                     <div className="border-t border-dashed border-black pt-2 space-y-1">
                         <div className="flex justify-between"><span>Subtotal</span><span>₹{successInvoice?.totals?.subtotal?.toFixed(2) || '0.00'}</span></div>
-                        
+
                         <div className="flex justify-between"><span>Base Amount</span><span>₹{successInvoice?.totals?.baseAmount?.toFixed(2) || '0.00'}</span></div>
                         {successInvoice?.totals?.cgst > 0 && (
                             <div className="flex justify-between">
                                 <span>
-                                    CGST {successInvoice?.items?.every(i => i.type === 'service') ? `(${(successInvoice?.totals?.serviceGstRate || 5) / 2}%)` : 
-                                          successInvoice?.items?.every(i => i.type === 'product') ? `(${(successInvoice?.totals?.productGstRate || 10) / 2}%)` : 
-                                          successInvoice?.totals?.serviceGstRate === successInvoice?.totals?.productGstRate ? `(${(successInvoice?.totals?.serviceGstRate || 5) / 2}%)` : ''}
+                                    CGST {successInvoice?.items?.every(i => i.type === 'service') ? `(${(successInvoice?.totals?.serviceGstRate || 5) / 2}%)` :
+                                        successInvoice?.items?.every(i => i.type === 'product') ? `(${(successInvoice?.totals?.productGstRate || 10) / 2}%)` :
+                                            successInvoice?.totals?.serviceGstRate === successInvoice?.totals?.productGstRate ? `(${(successInvoice?.totals?.serviceGstRate || 5) / 2}%)` : ''}
                                 </span>
                                 <span>₹{successInvoice.totals.cgst.toFixed(2)}</span>
                             </div>
@@ -1330,9 +1330,9 @@ export default function POSBillingPage() {
                         {successInvoice?.totals?.sgst > 0 && (
                             <div className="flex justify-between">
                                 <span>
-                                    SGST {successInvoice?.items?.every(i => i.type === 'service') ? `(${(successInvoice?.totals?.serviceGstRate || 5) / 2}%)` : 
-                                          successInvoice?.items?.every(i => i.type === 'product') ? `(${(successInvoice?.totals?.productGstRate || 10) / 2}%)` : 
-                                          successInvoice?.totals?.serviceGstRate === successInvoice?.totals?.productGstRate ? `(${(successInvoice?.totals?.serviceGstRate || 5) / 2}%)` : ''}
+                                    SGST {successInvoice?.items?.every(i => i.type === 'service') ? `(${(successInvoice?.totals?.serviceGstRate || 5) / 2}%)` :
+                                        successInvoice?.items?.every(i => i.type === 'product') ? `(${(successInvoice?.totals?.productGstRate || 10) / 2}%)` :
+                                            successInvoice?.totals?.serviceGstRate === successInvoice?.totals?.productGstRate ? `(${(successInvoice?.totals?.serviceGstRate || 5) / 2}%)` : ''}
                                 </span>
                                 <span>₹{successInvoice.totals.sgst.toFixed(2)}</span>
                             </div>
@@ -1440,19 +1440,19 @@ export default function POSBillingPage() {
             <div className="flex lg:hidden border-b border-border bg-surface shrink-0">
                 <button
                     onClick={() => setMobileView('items')}
-                    className={`flex-1 py-3 text-[11px] font-black uppercase tracking-widest flex items-center justify-center gap-2 transition-all ${mobileView === 'items' ? 'text-primary border-b-2 border-primary' : 'text-text-muted'
+                    className={`flex-1 py-3 text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 transition-all ${mobileView === 'items' ? 'text-primary border-b-2 border-primary' : 'text-text-muted'
                         }`}
                 >
                     <Scissors className="w-3.5 h-3.5" /> Services & Products
                 </button>
                 <button
                     onClick={() => setMobileView('cart')}
-                    className={`flex-1 py-3 text-[11px] font-black uppercase tracking-widest flex items-center justify-center gap-2 transition-all relative ${mobileView === 'cart' ? 'text-primary border-b-2 border-primary' : 'text-text-muted'
+                    className={`flex-1 py-3 text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 transition-all relative ${mobileView === 'cart' ? 'text-primary border-b-2 border-primary' : 'text-text-muted'
                         }`}
                 >
                     <ShoppingCart className="w-3.5 h-3.5" /> Cart
                     {cart.length > 0 && (
-                        <span className="absolute top-2 right-6 bg-primary text-white text-[9px] font-black w-4 h-4 rounded-full flex items-center justify-center">
+                        <span className="absolute top-2 right-6 bg-primary text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center">
                             {cart.length}
                         </span>
                     )}
@@ -1461,13 +1461,13 @@ export default function POSBillingPage() {
 
             {/* Main Header with Return Option */}
             <div className="flex items-center justify-between px-4 py-2 bg-surface-alt border-b border-border mb-2">
-                <h1 className="text-sm font-black uppercase tracking-widest text-primary flex items-center gap-2">
+                <h1 className="text-sm font-bold uppercase tracking-wider text-primary flex items-center gap-2">
                     <CreditCard className="w-4 h-4" /> POS Terminal
                 </h1>
                 <div className="flex gap-2">
                     <button
                         onClick={() => setShowQuickInvoice(true)}
-                        className="px-4 py-1.5 bg-emerald-600 text-white text-[10px] font-black uppercase tracking-widest flex items-center gap-2 hover:bg-emerald-700 active:scale-95 transition-all shadow-lg shadow-emerald-500/20"
+                        className="px-4 py-1.5 bg-emerald-600 text-white text-xs font-semibold uppercase tracking-wider flex items-center gap-2 hover:bg-emerald-700 active:scale-95 transition-all shadow-lg shadow-emerald-500/20 rounded-lg"
                     >
                         <Plus className="w-3.5 h-3.5" /> Quick Invoice
                     </button>
@@ -1487,7 +1487,7 @@ export default function POSBillingPage() {
                                 ref={searchInputRef}
                                 type="text"
                                 placeholder={isBarcodeMode ? "Scan Barcode Now..." : "Search Items or Barcode..."}
-                                className={`w-full pl-10 pr-12 py-3 border bg-background text-text outline-none text-sm font-black shadow-sm transition-all placeholder:text-text-muted/50 rounded-lg ${isBarcodeMode ? 'border-primary ring-2 ring-primary/20' : 'border-border focus:border-primary focus:ring-2 focus:ring-primary/10'
+                                className={`w-full pl-10 pr-12 py-3 border bg-background text-text outline-none text-sm font-bold shadow-sm transition-all placeholder:text-text-muted/50 rounded-lg ${isBarcodeMode ? 'border-primary ring-2 ring-primary/20' : 'border-border focus:border-primary focus:ring-2 focus:ring-primary/10'
                                     }`}
                                 value={searchItem}
                                 autoFocus
@@ -1504,14 +1504,14 @@ export default function POSBillingPage() {
                                     initial={{ opacity: 0, y: 10, scale: 0.9 }}
                                     animate={{ opacity: 1, y: 0, scale: 1 }}
                                     exit={{ opacity: 0, scale: 0.9 }}
-                                    className="fixed bottom-24 left-1/2 -translate-x-1/2 z-[100] bg-emerald-500 text-white px-6 py-3 shadow-2xl flex items-center gap-3 border border-emerald-400"
+                                    className="fixed bottom-24 left-1/2 -translate-x-1/2 z-[100] bg-emerald-500 text-white px-6 py-3 shadow-2xl flex items-center gap-3 border border-emerald-400 rounded-xl"
                                 >
                                     <div className="bg-white/20 p-1 rounded-full">
                                         <Check className="w-4 h-4" />
                                     </div>
                                     <div>
-                                        <p className="text-[10px] font-black uppercase tracking-widest opacity-80">Added to Cart</p>
-                                        <p className="text-sm font-black truncate max-w-[200px]">{lastScannedItem.name}</p>
+                                        <p className="text-xs font-semibold uppercase tracking-wider opacity-80">Added to Cart</p>
+                                        <p className="text-sm font-bold truncate max-w-[200px]">{lastScannedItem.name}</p>
                                     </div>
                                 </motion.div>
                             )}
@@ -1521,21 +1521,21 @@ export default function POSBillingPage() {
                                     initial={{ opacity: 0, y: 10 }}
                                     animate={{ opacity: 1, y: 0 }}
                                     exit={{ opacity: 0 }}
-                                    className="absolute top-full left-0 right-0 mt-2 z-50 bg-rose-500 text-white px-4 py-2 text-[10px] font-black uppercase tracking-widest text-center animate-pulse"
+                                    className="absolute top-full left-0 right-0 mt-2 z-50 bg-rose-500 text-white px-4 py-2 text-xs font-semibold uppercase tracking-wider text-center animate-pulse rounded-lg"
                                 >
                                     {scanError}
                                 </motion.div>
                             )}
                         </AnimatePresence>
 
-                        <div className="flex bg-surface-alt p-1 border border-border">
+                        <div className="flex bg-surface-alt p-1 border border-border rounded-lg">
                             <button
                                 onClick={() => {
                                     setActiveTab('services');
                                     setServiceMode('bookings');
                                     setSelectedCategory('All');
                                 }}
-                                className={`px-4 py-1.5 text-xs font-bold uppercase tracking-wider ${activeTab === 'services' && serviceMode === 'bookings' ? 'bg-background text-primary shadow-sm' : 'text-text-secondary'}`}
+                                className={`px-4 py-1.5 text-xs font-semibold uppercase tracking-wider rounded-md ${activeTab === 'services' && serviceMode === 'bookings' ? 'bg-background text-primary shadow-sm' : 'text-text-secondary'}`}
                             >Completed Bookings</button>
                             <button
                                 onClick={() => {
@@ -1543,16 +1543,14 @@ export default function POSBillingPage() {
                                     setServiceMode('orders');
                                     setSelectedCategory('All');
                                 }}
-                                className={`px-4 py-1.5 text-xs font-bold uppercase tracking-wider ${activeTab === 'services' && serviceMode === 'orders' ? 'bg-background text-primary shadow-sm' : 'text-text-secondary'}`}
+                                className={`px-4 py-1.5 text-xs font-semibold uppercase tracking-wider rounded-md ${activeTab === 'services' && serviceMode === 'orders' ? 'bg-background text-primary shadow-sm' : 'text-text-secondary'}`}
                             >Completed Orders</button>
                         </div>
                     </div>
 
-
-
                     <div className="flex-1 overflow-y-auto grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3 pr-2 scrollbar-thin">
                         {filteredItems.map(item => {
-                            const isSelected = item.isAppointment 
+                            const isSelected = item.isAppointment
                                 ? selectedBookingIds.includes(item._id)
                                 : item.isOrder
                                     ? selectedOrderIds.includes(item._id)
@@ -1565,23 +1563,23 @@ export default function POSBillingPage() {
                                         }`}
                                 >
                                     {isSelected ? (
-                                        <div className="absolute top-0 right-0 bg-primary text-white text-[8px] font-black px-2.5 py-1 uppercase tracking-wider rounded-tr-xl rounded-bl-xl shadow-sm">
+                                        <div className="absolute top-0 right-0 bg-primary/10 text-primary text-[10px] font-bold px-2.5 py-1 uppercase tracking-wider rounded-tr-xl rounded-bl-xl shadow-sm">
                                             In Cart
                                         </div>
                                     ) : (
                                         <div className="absolute top-0 right-0 p-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                            <span className="text-[10px] font-black text-text-muted group-hover:text-primary transition-colors">ADD</span>
+                                            <span className="text-xs font-bold text-text-muted group-hover:text-primary transition-colors">ADD</span>
                                         </div>
                                     )}
                                     <div className="w-full">
                                         <div className="flex items-center justify-between gap-2 mb-1 w-full">
-                                            <h4 className="text-xs font-extrabold text-text line-clamp-1 uppercase tracking-tight leading-tight">{item.name}</h4>
-                                            <span className={`text-[7px] font-black px-1.5 py-0.5 rounded-md uppercase ${item.isInclusiveTax ? 'bg-emerald-500/10 text-emerald-600' : 'bg-slate-100 text-slate-500'}`}>
+                                            <h4 className="text-xs font-bold text-text line-clamp-1 uppercase tracking-tight leading-tight">{item.name}</h4>
+                                            <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded-md uppercase ${item.isInclusiveTax ? 'bg-emerald-500/10 text-emerald-600' : 'bg-slate-100 text-slate-500'}`}>
                                                 {item.isInclusiveTax ? 'Incl' : 'Excl'}
                                             </span>
                                         </div>
                                         <div className="flex items-baseline gap-1">
-                                            <p className="text-sm font-black text-primary">₹{item.price}</p>
+                                            <p className="text-sm font-bold text-primary">₹{item.price}</p>
                                         </div>
                                         {item.barcode && (
                                             <p className="text-[8px] font-mono text-text-muted/60 mt-0.5 truncate">{item.barcode}</p>
@@ -1598,7 +1596,7 @@ export default function POSBillingPage() {
 
                         {/* HEADER */}
                         <div className="px-3 py-2 border-b border-border flex items-center justify-between">
-                            <h2 className="text-xs font-black uppercase tracking-widest">
+                            <h2 className="text-xs font-bold uppercase tracking-wider text-slate-800">
                                 Billing Cart
                             </h2>
 
@@ -1614,13 +1612,13 @@ export default function POSBillingPage() {
                             <div className="grid grid-cols-2 gap-2">
                                 {/* CLIENT */}
                                 <div className="border border-border rounded-xl p-2 bg-background relative overflow-hidden">
-                                    <p className="text-[9px] font-black uppercase text-text-muted mb-1">Client</p>
+                                    <p className="text-[10px] font-semibold uppercase text-text-muted mb-1">Client</p>
                                     {selectedClient ? (
                                         <>
-                                            <p className="text-xs font-black truncate">{selectedClient.name}</p>
-                                            <p className="text-[10px] text-text-muted font-bold truncate">{maskPhone(selectedClient.phone, user?.role)}</p>
+                                            <p className="text-xs font-bold truncate">{selectedClient.name}</p>
+                                            <p className="text-[10px] text-text-muted font-semibold truncate">{maskPhone(selectedClient.phone, user?.role)}</p>
                                             {activeMembership && (
-                                                <div className="absolute top-0 right-0 bg-emerald-500 text-white text-[7px] font-black px-1.5 py-0.5 uppercase tracking-tighter rounded-bl-lg">
+                                                <div className="absolute top-0 right-0 bg-emerald-500 text-white text-[8px] font-bold px-1.5 py-0.5 uppercase tracking-tighter rounded-bl-lg">
                                                     VIP Member
                                                 </div>
                                             )}
@@ -1632,10 +1630,10 @@ export default function POSBillingPage() {
 
                                 {/* OUTLET */}
                                 <div className="border border-border rounded-xl p-2 bg-background relative">
-                                    <p className="text-[9px] font-black uppercase text-text-muted mb-1">Outlet</p>
+                                    <p className="text-[10px] font-semibold uppercase text-text-muted mb-1">Outlet</p>
                                     <button
                                         onClick={() => !(appointmentId || orderId) && setShowOutletPickerMain(!showOutletPickerMain)}
-                                        className={`w-full flex items-center justify-between text-xs font-black ${(appointmentId || orderId) ? 'opacity-80 cursor-not-allowed' : ''}`}
+                                        className={`w-full flex items-center justify-between text-xs font-bold ${(appointmentId || orderId) ? 'opacity-80 cursor-not-allowed' : ''}`}
                                     >
                                         <span className="truncate">
                                             {(() => {
@@ -1661,7 +1659,7 @@ export default function POSBillingPage() {
                                                     <button
                                                         key={o._id}
                                                         onClick={() => { setActiveOutletId(o._id); setShowOutletPickerMain(false); }}
-                                                        className={`w-full text-left px-3 py-2 text-[10px] font-black uppercase border-b border-border/50 last:border-0 hover:bg-slate-50 transition-colors ${String(o._id) === String(activeOutletId) ? 'text-primary bg-primary/5' : 'text-slate-800'}`}
+                                                        className={`w-full text-left px-3 py-2 text-[10px] font-bold uppercase border-b border-border/50 last:border-0 hover:bg-slate-50 transition-colors ${String(o._id) === String(activeOutletId) ? 'text-primary bg-primary/5' : 'text-slate-800'}`}
                                                     >
                                                         {o.name}
                                                     </button>
@@ -1677,73 +1675,71 @@ export default function POSBillingPage() {
                                 {cart.length === 0 ? (
                                     <div className="py-8 text-center opacity-40 border border-dashed border-border rounded-xl">
                                         <ShoppingCart className="w-6 h-6 mx-auto mb-1" />
-                                        <p className="text-[10px] font-black uppercase">Empty Cart</p>
+                                        <p className="text-xs font-bold uppercase tracking-wider">Empty Cart</p>
                                     </div>
                                 ) : (
                                     cart.map((item, idx) => (
                                         <div key={idx} className="flex items-center gap-2 border border-border rounded-lg px-2 py-2 bg-surface-alt">
                                             <div className="flex-1 min-w-0">
-                                                <p className="text-[11px] font-black truncate">{item.name}</p>
+                                                <p className="text-xs font-bold truncate">{item.name}</p>
                                                 <div className="flex flex-col">
-                                                    <p className="text-[11px] font-black text-primary leading-none">₹{(item.price * item.quantity).toFixed(2)}</p>
+                                                    <p className="text-xs font-bold text-primary leading-none mt-1">₹{(item.price * item.quantity).toFixed(2)}</p>
                                                     {(item.isInclusiveTax === true || String(item.isInclusiveTax) === 'true' || (item.isInclusiveTax === undefined && fiscal.inclusiveTax)) && (
-                                                        <span className="text-[7px] font-black uppercase text-emerald-600 mt-1">INCLUDING GST</span>
+                                                        <span className="text-[9px] font-semibold uppercase text-emerald-600 mt-1">INCLUDING GST</span>
                                                     )}
                                                     {item.type === 'service' && (
                                                         <div className="mt-1.5 flex items-center gap-1 bg-primary/5 border border-primary/10 rounded-lg p-1 transition-all w-fit">
                                                             <Sparkles className="w-2.5 h-2.5 text-primary animate-pulse" />
-                                                            <span className="text-[7.5px] font-black text-primary uppercase tracking-wider">
+                                                            <span className="text-[10px] font-semibold text-primary uppercase tracking-wider">
                                                                 {activeMembership ? 'Mem. Disc:' : 'Discount:'}
                                                             </span>
-                                                            
+
                                                             {/* Toggle between % and ₹ */}
                                                             <div className="flex items-center bg-white border border-primary/10 rounded-md overflow-hidden h-4">
-                                                                <button 
+                                                                <button
                                                                     type="button"
                                                                     onClick={() => updateItemMembershipDiscount(idx, 'percentage', item.membershipDiscountValue !== undefined ? item.membershipDiscountValue : (activeMembership?.planId?.serviceDiscountType === 'fixed' ? activeMembership.planId.serviceDiscountValue : (activeMembership?.planId?.serviceDiscountValue || 0)))}
-                                                                    className={`px-1 text-[7.5px] font-black h-full flex items-center ${
-                                                                        (item.membershipDiscountType !== undefined ? item.membershipDiscountType : (activeMembership?.planId?.serviceDiscountType || 'percentage')) === 'percentage' 
-                                                                            ? 'bg-primary text-white' 
-                                                                            : 'text-slate-400 hover:bg-slate-50'
-                                                                    }`}
+                                                                    className={`px-1 text-[9px] font-bold h-full flex items-center ${(item.membershipDiscountType !== undefined ? item.membershipDiscountType : (activeMembership?.planId?.serviceDiscountType || 'percentage')) === 'percentage'
+                                                                        ? 'bg-primary text-white'
+                                                                        : 'text-slate-400 hover:bg-slate-50'
+                                                                        }`}
                                                                 >
                                                                     %
                                                                 </button>
-                                                                <button 
+                                                                <button
                                                                     type="button"
                                                                     onClick={() => updateItemMembershipDiscount(idx, 'fixed', item.membershipDiscountValue !== undefined ? item.membershipDiscountValue : (activeMembership?.planId?.serviceDiscountType === 'fixed' ? activeMembership.planId.serviceDiscountValue : (activeMembership?.planId?.serviceDiscountValue || 0)))}
-                                                                    className={`px-1 text-[7.5px] font-black h-full flex items-center ${
-                                                                        (item.membershipDiscountType !== undefined ? item.membershipDiscountType : (activeMembership?.planId?.serviceDiscountType || 'percentage')) === 'fixed' 
-                                                                            ? 'bg-primary text-white' 
-                                                                            : 'text-slate-400 hover:bg-slate-50'
-                                                                    }`}
+                                                                    className={`px-1 text-[9px] font-bold h-full flex items-center ${(item.membershipDiscountType !== undefined ? item.membershipDiscountType : (activeMembership?.planId?.serviceDiscountType || 'percentage')) === 'fixed'
+                                                                        ? 'bg-primary text-white'
+                                                                        : 'text-slate-400 hover:bg-slate-50'
+                                                                        }`}
                                                                 >
                                                                     ₹
                                                                 </button>
                                                             </div>
 
                                                             {/* Numeric Input */}
-                                                            <input 
-                                                                type="number" 
+                                                            <input
+                                                                type="number"
                                                                 min="0"
                                                                 max={
-                                                                    (item.membershipDiscountType !== undefined ? item.membershipDiscountType : (activeMembership?.planId?.serviceDiscountType || 'percentage')) === 'percentage' 
-                                                                        ? '100' 
+                                                                    (item.membershipDiscountType !== undefined ? item.membershipDiscountType : (activeMembership?.planId?.serviceDiscountType || 'percentage')) === 'percentage'
+                                                                        ? '100'
                                                                         : String(item.price)
                                                                 }
                                                                 value={
-                                                                    item.membershipDiscountValue !== undefined 
-                                                                        ? item.membershipDiscountValue 
+                                                                    item.membershipDiscountValue !== undefined
+                                                                        ? item.membershipDiscountValue
                                                                         : (activeMembership?.planId?.serviceDiscountValue || 0)
                                                                 }
                                                                 onChange={(e) => {
                                                                     const val = Math.max(0, Number(e.target.value) || 0);
-                                                                    const currentType = item.membershipDiscountType !== undefined 
-                                                                        ? item.membershipDiscountType 
+                                                                    const currentType = item.membershipDiscountType !== undefined
+                                                                        ? item.membershipDiscountType
                                                                         : (activeMembership?.planId?.serviceDiscountType || 'percentage');
                                                                     updateItemMembershipDiscount(idx, currentType, val);
                                                                 }}
-                                                                className="w-10 bg-white border border-primary/10 rounded-md text-[8px] font-black text-center h-4 focus:outline-none focus:border-primary/50 text-slate-800"
+                                                                className="w-10 bg-white border border-primary/10 rounded-md text-[10px] font-bold text-center h-4 focus:outline-none focus:border-primary/50 text-slate-800"
                                                             />
                                                         </div>
                                                     )}
@@ -1751,20 +1747,20 @@ export default function POSBillingPage() {
                                             </div>
                                             <div className="flex items-center border border-border rounded-lg overflow-hidden h-7">
                                                 <button onClick={() => updateQty(idx, -1)} className="w-6 h-full flex items-center justify-center hover:bg-border/30"><Minus className="w-3 h-3" /></button>
-                                                <span className="px-2 text-[10px] font-black">{item.quantity}</span>
+                                                <span className="px-2 text-[10px] font-bold">{item.quantity}</span>
                                                 <button onClick={() => updateQty(idx, 1)} className="w-6 h-full flex items-center justify-center hover:bg-border/30"><Plus className="w-3 h-3" /></button>
                                             </div>
                                             <button onClick={() => removeItem(idx)} className="text-rose-500 hover:bg-rose-50 p-1 rounded-md transition-colors"><X className="w-3 h-3" /></button>
                                         </div>
                                     ))
-                                )}
+                                 )}
                             </div>
 
                             {/* PAYMENT SECTION */}
                             <div className="border border-border rounded-xl bg-background p-2 space-y-2 relative overflow-hidden">
                                 <div className="flex items-center justify-between px-1 mb-1">
-                                    <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Payment Method</span>
-                                    <label className="flex items-center gap-1.5 text-[9px] font-black text-primary cursor-pointer hover:opacity-80 transition-all bg-primary/5 px-2 py-1 rounded-lg border border-primary/10">
+                                    <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Payment Method</span>
+                                    <label className="flex items-center gap-1.5 text-xs font-semibold text-primary cursor-pointer hover:opacity-80 transition-all bg-primary/5 px-2 py-1 rounded-lg border border-primary/10">
                                         <input
                                             type="checkbox"
                                             checked={isManualPayment}
@@ -1790,7 +1786,7 @@ export default function POSBillingPage() {
                                             <select
                                                 value={p.method}
                                                 onChange={(e) => updatePayment(i, "method", e.target.value)}
-                                                className="flex-1 h-8 rounded-lg border border-border px-2 text-[10px] font-black outline-none focus:border-primary transition-all uppercase"
+                                                className="flex-1 h-8 rounded-lg border border-border px-2 text-[10px] font-bold outline-none focus:border-primary transition-all uppercase"
                                             >
                                                 <option value="cash">CASH</option>
                                                 <option value="online">ONLINE</option>
@@ -1802,7 +1798,7 @@ export default function POSBillingPage() {
                                                     data-payment-idx={i}
                                                     value={p.amount}
                                                     onChange={(e) => updatePayment(i, "amount", Number(e.target.value))}
-                                                    className="w-28 h-8 rounded-lg border border-border px-2 text-right text-[11px] font-black outline-none focus:border-primary transition-all pr-8"
+                                                    className="w-28 h-8 rounded-lg border border-border px-2 text-right text-xs font-bold outline-none focus:border-primary transition-all pr-8"
                                                 />
                                                 <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[8px] font-bold text-slate-400">₹</span>
                                             </div>
@@ -1817,7 +1813,7 @@ export default function POSBillingPage() {
                                         {payments.length === 1 && totals.total > p.amount && (
                                             <div className="flex items-center gap-1.5 px-2 py-1 bg-rose-50 border border-rose-100 rounded-lg">
                                                 <div className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse" />
-                                                <span className="text-[9px] font-black text-rose-600 uppercase tracking-tighter">
+                                                <span className="text-xs font-semibold text-rose-600 uppercase tracking-tight">
                                                     ₹{(totals.total - p.amount).toFixed(2)} will be marked as Due
                                                 </span>
                                             </div>
@@ -1828,7 +1824,7 @@ export default function POSBillingPage() {
                                 {payments.reduce((s, p) => s + p.amount, 0) < totals.total && (
                                     <button
                                         onClick={addPaymentMethod}
-                                        className="w-full h-8 border border-dashed border-primary/40 bg-primary/5 rounded-lg text-[9px] font-black text-primary hover:bg-primary/10 transition-colors flex items-center justify-center gap-1.5 uppercase tracking-widest mt-1"
+                                        className="w-full h-8 border border-dashed border-primary/40 bg-primary/5 rounded-lg text-xs font-semibold text-primary hover:bg-primary/10 transition-colors flex items-center justify-center gap-1.5 uppercase tracking-wider mt-1"
                                     >
                                         <Plus className="w-3 h-3" /> Split Payment
                                     </button>
@@ -1848,9 +1844,9 @@ export default function POSBillingPage() {
                                 {totals.cgst > 0 && (
                                     <div className="flex justify-between text-[11px] font-bold mb-1">
                                         <span className="opacity-60">
-                                            CGST {cart.every(i => i.type === 'service') ? `(${(totals.serviceGstRate) / 2}%)` : 
-                                                 cart.every(i => i.type === 'product') ? `(${(totals.productGstRate) / 2}%)` : 
-                                                 totals.serviceGstRate === totals.productGstRate ? `(${(totals.serviceGstRate) / 2}%)` : ''}
+                                            CGST {cart.every(i => i.type === 'service') ? `(${(totals.serviceGstRate) / 2}%)` :
+                                                cart.every(i => i.type === 'product') ? `(${(totals.productGstRate) / 2}%)` :
+                                                    totals.serviceGstRate === totals.productGstRate ? `(${(totals.serviceGstRate) / 2}%)` : ''}
                                         </span>
                                         <div className="flex gap-1 text-right">
                                             {totals.cgst > totals.cgstExcl && <span className="text-emerald-400/80 font-normal">(Included)</span>}
@@ -1862,9 +1858,9 @@ export default function POSBillingPage() {
                                 {totals.sgst > 0 && (
                                     <div className="flex justify-between text-[11px] font-bold mb-1">
                                         <span className="opacity-60">
-                                            SGST {cart.every(i => i.type === 'service') ? `(${(totals.serviceGstRate) / 2}%)` : 
-                                                 cart.every(i => i.type === 'product') ? `(${(totals.productGstRate) / 2}%)` : 
-                                                 totals.serviceGstRate === totals.productGstRate ? `(${(totals.serviceGstRate) / 2}%)` : ''}
+                                            SGST {cart.every(i => i.type === 'service') ? `(${(totals.serviceGstRate) / 2}%)` :
+                                                cart.every(i => i.type === 'product') ? `(${(totals.productGstRate) / 2}%)` :
+                                                    totals.serviceGstRate === totals.productGstRate ? `(${(totals.serviceGstRate) / 2}%)` : ''}
                                         </span>
                                         <div className="flex gap-1 text-right">
                                             {totals.sgst > totals.sgstExcl && <span className="text-emerald-400/80 font-normal">(Included)</span>}
@@ -1897,8 +1893,8 @@ export default function POSBillingPage() {
                                     </div>
                                 )}
                                 <div className="border-t border-white/10 mt-2 pt-2 flex items-center justify-between">
-                                    <span className="text-sm font-black uppercase tracking-widest text-primary">TOTAL</span>
-                                    <span className="text-2xl font-black tracking-tight">₹{totals.total.toFixed(2)}</span>
+                                    <span className="text-sm font-bold uppercase tracking-wider text-emerald-400">TOTAL</span>
+                                    <span className="text-2xl font-bold tracking-tight">₹{totals.total.toFixed(2)}</span>
                                 </div>
 
                                 {totals.redeemWallet > 0 && (
@@ -1909,14 +1905,14 @@ export default function POSBillingPage() {
                                 )}
 
                                 {totals.total - totals.redeemWallet - payments.reduce((s, p) => s + p.amount, 0) > 0.5 && (
-                                    <div className="flex justify-between text-[10px] font-black text-rose-400 mt-2 bg-rose-500/5 p-2 rounded-lg border border-rose-500/20 animate-pulse">
+                                    <div className="flex justify-between text-xs font-semibold text-rose-400 mt-2 bg-rose-500/5 p-2 rounded-lg border border-rose-500/20 animate-pulse">
                                         <span className="uppercase tracking-widest">Balance Due</span>
                                         <span>₹{(totals.total - totals.redeemWallet - payments.reduce((s, p) => s + p.amount, 0)).toFixed(2)}</span>
                                     </div>
                                 )}
 
                                 {payments.reduce((s, p) => s + p.amount, 0) - (totals.total - totals.redeemWallet) > 0.005 && (
-                                    <div className="flex justify-between text-[10px] font-black text-rose-400 mt-2 bg-rose-500/10 p-2 rounded-lg border border-rose-500/20 animate-pulse">
+                                    <div className="flex justify-between text-xs font-semibold text-rose-400 mt-2 bg-rose-500/10 p-2 rounded-lg border border-rose-500/20 animate-pulse">
                                         <span className="uppercase tracking-widest text-rose-400">Overpaid</span>
                                         <span className="text-rose-400">₹{(payments.reduce((s, p) => s + p.amount, 0) - (totals.total - totals.redeemWallet)).toFixed(2)}</span>
                                     </div>
@@ -1927,14 +1923,14 @@ export default function POSBillingPage() {
                             <div className="grid grid-cols-2 gap-2">
                                 <button
                                     onClick={() => setShowDiscountModal(true)}
-                                    className="h-10 rounded-xl border border-border bg-background text-[10px] font-black uppercase hover:bg-surface-alt transition-colors"
+                                    className="h-10 rounded-xl border border-border bg-background text-xs font-bold uppercase hover:bg-surface-alt transition-colors"
                                 >
                                     Offers
                                 </button>
 
                                 <button
                                     onClick={handleCheckout}
-                                    className="h-10 rounded-xl bg-primary text-white text-[10px] font-black uppercase hover:opacity-90 active:scale-95 transition-all shadow-lg shadow-primary/20"
+                                    className="h-10 rounded-xl bg-primary text-white text-xs font-bold uppercase hover:opacity-90 active:scale-95 transition-all shadow-lg shadow-primary/20"
                                 >
                                     Complete Bill
                                 </button>
@@ -1948,19 +1944,19 @@ export default function POSBillingPage() {
             {/* ─── Modals rendered outside panel flex but inside outer wrapper ─── */}
             {showDiscountModal && (
                 <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-                    <div className="bg-surface w-full max-w-md p-0 animate-in zoom-in-95 duration-200 border border-border shadow-2xl overflow-hidden">
+                    <div className="bg-surface w-full max-w-md p-0 animate-in zoom-in-95 duration-200 border border-border shadow-2xl overflow-hidden rounded-2xl">
                         <div className="flex bg-surface-alt p-4 items-center justify-between border-b border-border">
-                            <h3 className="text-xs font-black uppercase tracking-widest text-text">Applied Offers & Adjustments</h3>
+                            <h3 className="text-xs font-bold uppercase tracking-wider text-text">Applied Offers & Adjustments</h3>
                             <button onClick={() => setShowDiscountModal(false)} className="text-text-muted hover:text-rose-500"><X className="w-5 h-5" /></button>
                         </div>
 
                         <div className="p-6 overflow-y-auto scrollbar-thin max-h-[60vh]">
                             <div className="space-y-6">
                                 <div className="bg-surface-alt p-4 border border-border rounded-xl">
-                                    <label className="text-[10px] font-black text-text-muted uppercase tracking-widest mb-3 block">Flat or Percentage Adjustment</label>
+                                    <label className="text-[10px] font-semibold text-text-muted uppercase tracking-wider mb-3 block">Flat or Percentage Adjustment</label>
                                     <div className="flex border border-border bg-background rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-primary/10 transition-all">
                                         <select
-                                            className="bg-surface-alt border-r border-border text-[10px] font-black p-3 text-text outline-none"
+                                            className="bg-surface-alt border-r border-border text-[10px] font-bold p-3 text-text outline-none"
                                             value={manualDiscount.type}
                                             onChange={(e) => setManualDiscount({ ...manualDiscount, type: e.target.value })}
                                         >
@@ -2299,7 +2295,7 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
             redeemWallet: Math.min(qRedeemWallet || 0, res.currentBillTotal + qCollectedPrevDue)
         };
     }, [qCart, qManualDiscount, fiscal, platformSettings, qRedeemWallet, qActiveMembership, qCollectedPrevDue]);
-    
+
     // Auto-fill cash payment for Quick Invoice unless user has already started typing
     useEffect(() => {
         if (qPayments.cash === 0 && qPayments.online === 0 && totals.total > 0) {
@@ -2314,7 +2310,7 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
         const totalLiability = totals.total + (Number(qClient?.dueAmount) || 0);
         const overpaidDiff = Math.round((paidAmount - totalLiability) * 100) / 100;
         if (overpaidDiff > 0) {
-            toast(`Info: Total payment exceeds total liability by ₹${overpaidDiff.toFixed(2)}`, { 
+            toast(`Info: Total payment exceeds total liability by ₹${overpaidDiff.toFixed(2)}`, {
                 id: 'overpaid-toast',
                 icon: 'ℹ️',
                 duration: 2000
@@ -2341,15 +2337,15 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
     const updateQItemMembershipDiscount = (idx, type, value) => {
         const newQCart = [...qCart];
         const item = newQCart[idx];
-        const prevType = item.membershipDiscountType !== undefined 
-            ? item.membershipDiscountType 
-            : (item.type === 'service' 
-                ? (qActiveMembership?.planId?.serviceDiscountType || 'percentage') 
+        const prevType = item.membershipDiscountType !== undefined
+            ? item.membershipDiscountType
+            : (item.type === 'service'
+                ? (qActiveMembership?.planId?.serviceDiscountType || 'percentage')
                 : (qActiveMembership?.planId?.productDiscountType || 'percentage')
-              );
-        
+            );
+
         let finalValue = Number(value) || 0;
-        
+
         if (prevType !== type) {
             const price = Number(item.price) || 0;
             if (type === 'percentage') {
@@ -2415,7 +2411,7 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
         if (!qClient) return toast.error('Please select a client');
         if (qCart.length === 0) return toast.error('Cart is empty');
         if (qCart.some(item => item.type === 'service' && (!item.staffIds || item.staffIds.length === 0 || item.staffIds.some(sid => !sid)))) return toast.error('Please assign stylists for all services');
-        
+
         const totalLiability = totals.total + (Number(qClient?.dueAmount) || 0);
         if (paidAmount > totalLiability + 1) {
             toast(`Note: You are paying ₹${paidAmount}, which exceeds the total liability of ₹${totalLiability.toFixed(0)}. Excess will be adjusted.`, { icon: 'ℹ️' });
@@ -2432,10 +2428,10 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                 outletId: qOutletId,
                 items: qCart.map(i => {
                     const { staffIds, ...rest } = i;
-                    return { 
-                        ...rest, 
+                    return {
+                        ...rest,
                         gstPercent: i.type === 'service' ? totals.serviceGstRate : totals.productGstRate,
-                        stylistIds: (staffIds || []).filter(Boolean).map(sid => typeof sid === 'object' ? sid?._id : String(sid)) 
+                        stylistIds: (staffIds || []).filter(Boolean).map(sid => typeof sid === 'object' ? sid?._id : String(sid))
                     };
                 }),
                 tax: totals.totalExclusiveTax,
@@ -2506,14 +2502,14 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                             <Sparkles className="w-5 h-5" />
                         </div>
                         <div>
-                            <h2 className="text-xl font-black text-slate-900 uppercase tracking-tighter">Instant POS Billing</h2>
-                            <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-0.5">Quick Invoice Without Appointments</p>
+                            <h2 className="text-xl font-bold text-slate-900 uppercase tracking-tight">Instant POS Billing</h2>
+                            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mt-0.5">Quick Invoice Without Appointments</p>
                         </div>
                     </div>
                     <div className="flex items-center gap-2">
                         <button
                             onClick={() => { setQCart([]); setQClient(null); setQPayments({ cash: 0, online: 0 }); setQManualDiscount({ type: 'fixed', value: 0 }); }}
-                            className="px-4 py-2 text-[10px] font-black text-slate-400 hover:text-rose-500 uppercase tracking-widest transition-colors"
+                            className="px-4 py-2 text-xs font-bold text-slate-400 hover:text-rose-500 uppercase tracking-wider transition-colors"
                         >
                             Reset Form
                         </button>
@@ -2529,8 +2525,8 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                         {/* Top Bar: Compact Outlet & Client */}
                         <div className="p-4 bg-slate-50/50 border-b border-slate-100 grid grid-cols-1 md:grid-cols-2 gap-4 shrink-0">
                             <div className="space-y-1 relative">
-                                <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-1">
-                                    <Building2 className="w-2.5 h-2.5" /> Outlet
+                                <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider flex items-center gap-1">
+                                    <Building2 className="w-3.5 h-3.5 text-slate-500" /> Outlet
                                 </label>
                                 <div className="relative">
                                     <button
@@ -2549,9 +2545,9 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                                                         }
                                                         <div className={`w-full h-full items-center justify-center bg-primary/10 ${img ? 'hidden' : 'flex'}`}><Building2 className="w-3 h-3 text-primary" /></div>
                                                     </div>
-                                                    <span className="text-[11px] font-black uppercase text-slate-900 truncate tracking-tighter">{sel.name}</span>
+                                                    <span className="text-xs font-bold uppercase text-slate-900 truncate">{sel.name}</span>
                                                 </>
-                                            ) : <span className="text-[10px] italic text-slate-400">Select outlet...</span>;
+                                            ) : <span className="text-xs italic text-slate-400">Select outlet...</span>;
                                         })()}
                                         <ChevronDown className={`w-3.5 h-3.5 text-slate-400 ml-auto transition-transform ${showQOutletPicker ? 'rotate-180 text-primary' : ''}`} />
                                     </button>
@@ -2579,8 +2575,8 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                                                             <div className={`w-full h-full items-center justify-center bg-primary/10 ${o.image || o.images?.[0] ? 'hidden' : 'flex'}`}><Building2 className="w-5 h-5 text-primary" /></div>
                                                         </div>
                                                         <div className="flex-1 text-left min-w-0">
-                                                            <p className={`text-[11px] font-black uppercase tracking-tighter truncate ${String(o._id) === String(qOutletId) ? 'text-primary' : 'text-slate-800'}`}>{o.name}</p>
-                                                            {(() => { const a = typeof o.address === 'string' ? o.address : typeof o.address === 'object' && o.address ? [o.address.street, o.address.city].filter(Boolean).join(', ') : [o.location?.street, o.location?.city].filter(s => typeof s === 'string' && s).join(', '); return a ? <p className="text-[8px] font-bold text-slate-400 truncate">{a}</p> : null; })()}
+                                                            <p className="text-xs font-bold uppercase text-slate-800 truncate">{o.name}</p>
+                                                            {(() => { const a = typeof o.address === 'string' ? o.address : typeof o.address === 'object' && o.address ? [o.address.street, o.address.city].filter(Boolean).join(', ') : [o.location?.street, o.location?.city].filter(s => typeof s === 'string' && s).join(', '); return a ? <p className="text-[10px] font-semibold text-slate-400 truncate">{a}</p> : null; })()}
                                                         </div>
                                                         {String(o._id) === String(qOutletId) && <Check className="w-4 h-4 text-primary flex-shrink-0" />}
                                                     </button>
@@ -2592,26 +2588,26 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                             </div>
 
                             <div className="space-y-1 relative">
-                                <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-1">
-                                    <User className="w-2.5 h-2.5" /> Client
+                                <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider flex items-center gap-1">
+                                    <User className="w-3.5 h-3.5 text-slate-500" /> Client
                                 </label>
                                 {qClient ? (
-                                    <div className={`flex items-center justify-between py-1 px-2 rounded-lg border ${Number(qClient.dueAmount || 0) > 0 ? 'bg-amber-50 border-amber-300' : 'bg-emerald-50 border-emerald-200'}`}>
-                                        <div className="flex items-center gap-2 min-w-0 flex-1">
-                                            <div className={`w-6 h-6 flex-shrink-0 text-white flex items-center justify-center font-black rounded text-[9px] ${Number(qClient.dueAmount || 0) > 0 ? 'bg-amber-500' : 'bg-emerald-600'}`}>
+                                    <div className={`flex items-center justify-between py-1.5 px-2.5 rounded-lg border ${Number(qClient.dueAmount || 0) > 0 ? 'bg-amber-50 border-amber-300' : 'bg-emerald-50 border-emerald-200'}`}>
+                                        <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                                            <div className={`w-8 h-8 flex-shrink-0 text-white flex items-center justify-center font-bold rounded-lg text-sm ${Number(qClient.dueAmount || 0) > 0 ? 'bg-amber-500' : 'bg-emerald-600'}`}>
                                                 {qClient?.name?.charAt(0).toUpperCase() || 'U'}
                                             </div>
                                             <div className="min-w-0">
-                                                <p className="text-[10px] font-black text-slate-900 truncate">{qClient.name}</p>
-                                                <div className="flex flex-wrap items-center gap-1 mt-0.5">
+                                                <p className="text-xs font-bold text-slate-900 truncate">{qClient.name}</p>
+                                                <div className="flex flex-wrap items-center gap-1.5 mt-0.5">
                                                     {Number(qClient.dueAmount || 0) > 0 && (
-                                                        <p className="text-[8px] font-black text-amber-600 flex items-center gap-0.5">
-                                                            <AlertTriangle className="w-2.5 h-2.5" /> ₹{Number(qClient.dueAmount).toFixed(0)} pending
+                                                        <p className="text-[10px] font-semibold text-amber-600 flex items-center gap-0.5">
+                                                            <AlertTriangle className="w-3 h-3 text-amber-600" /> ₹{Number(qClient.dueAmount).toFixed(0)} pending
                                                         </p>
                                                     )}
                                                     {qActiveMembership && (
-                                                        <span className="text-[7px] font-black bg-primary text-white px-1.5 py-0.5 rounded-lg uppercase tracking-wider flex items-center gap-1">
-                                                            <Sparkles className="w-2 h-2" /> {qActiveMembership.planId?.name}
+                                                        <span className="text-[9px] font-semibold bg-primary text-white px-2 py-0.5 rounded uppercase tracking-wider flex items-center gap-1">
+                                                            <Sparkles className="w-2.5 h-2.5" /> {qActiveMembership.planId?.name}
                                                         </span>
                                                     )}
                                                 </div>
@@ -2619,15 +2615,15 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                                         </div>
                                         <div className="flex items-center gap-2 flex-shrink-0">
                                             {Number(qClient.dueAmount || 0) > 0 && (
-                                                <div className="flex items-center gap-1 bg-white border border-amber-200 rounded-lg px-2 py-0.5 shadow-sm">
-                                                    <span className="text-[7.5px] font-black text-amber-600 uppercase tracking-tight">Collect:</span>
+                                                <div className="flex items-center gap-1.5 bg-white border border-amber-200 rounded-lg px-2 py-0.5 shadow-sm">
+                                                    <span className="text-[10px] font-bold text-amber-600 uppercase tracking-tight">Collect:</span>
                                                     <div className="relative">
-                                                        <span className="absolute left-1 top-1/2 -translate-y-1/2 text-[8px] font-bold text-amber-500">₹</span>
+                                                        <span className="absolute left-1.5 top-1/2 -translate-y-1/2 text-xs font-bold text-amber-500">₹</span>
                                                         <input
                                                             type="number"
                                                             min="0"
                                                             max={Math.ceil(Number(qClient.dueAmount))}
-                                                            className="w-14 pl-3 bg-transparent text-[10px] font-black text-slate-800 outline-none font-mono text-center h-4"
+                                                            className="w-16 pl-3 bg-transparent text-xs font-bold text-slate-800 outline-none font-mono text-center h-5"
                                                             placeholder="0"
                                                             value={qCollectedPrevDue || ''}
                                                             onChange={(e) => {
@@ -2644,22 +2640,22 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                                                     onClick={() => setQRedeemWallet(qRedeemWallet > 0 ? 0 : Math.min(qClientWalletBalance, totals.totalWithPrevDue))}
                                                     className={`px-2 py-1 rounded-lg border flex flex-col items-center transition-all ${qRedeemWallet > 0 ? 'bg-emerald-500 border-emerald-500 text-white' : 'bg-white border-emerald-200 text-emerald-600 hover:bg-emerald-50'}`}
                                                 >
-                                                    <span className="text-[7px] font-black uppercase leading-none">Wallet</span>
-                                                    <span className="text-[9px] font-black leading-none mt-0.5">₹{qClientWalletBalance.toFixed(0)}</span>
+                                                    <span className="text-[9px] font-bold uppercase leading-none">Wallet</span>
+                                                    <span className="text-xs font-bold leading-none mt-0.5">₹{qClientWalletBalance.toFixed(0)}</span>
                                                 </button>
                                             )}
-                                            <button onClick={() => { setQClient(null); setQCollectedPrevDue(0); }} className="text-slate-400 hover:text-rose-500 p-1 flex-shrink-0"><X className="w-3 h-3" /></button>
+                                            <button onClick={() => { setQClient(null); setQCollectedPrevDue(0); }} className="text-slate-400 hover:text-rose-500 p-1 flex-shrink-0"><X className="w-4 h-4" /></button>
                                         </div>
                                     </div>
                                 ) : (
                                     <div className="relative">
                                         <div className="flex items-center gap-2">
                                             <div className="relative group flex-1">
-                                                <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3 h-3 text-slate-400" />
+                                                <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" />
                                                 <input
                                                     type="text"
                                                     placeholder="Search client..."
-                                                    className="w-full bg-white border border-slate-200 pl-8 pr-2 py-1.5 text-[11px] font-black text-slate-900 outline-none focus:border-primary rounded-lg"
+                                                    className="w-full bg-white border border-slate-200 pl-8 pr-2 py-1.5 text-xs font-medium text-slate-900 outline-none focus:border-primary rounded-lg"
                                                     value={qSearchClient}
                                                     onFocus={() => setShowClientDropdown(true)}
                                                     onChange={(e) => { setQSearchClient(e.target.value); setShowClientDropdown(true); }}
@@ -2667,10 +2663,10 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                                             </div>
                                             <button
                                                 onClick={() => { setShowNewClient(true); setShowClientDropdown(false); }}
-                                                className="bg-primary/10 text-primary p-1.5 rounded-lg hover:bg-primary hover:text-white transition-all shadow-sm"
+                                                className="bg-primary/10 text-primary p-2 rounded-lg hover:bg-primary hover:text-white transition-all shadow-sm"
                                                 title="Quick Add New Client"
                                             >
-                                                <UserPlus className="w-3.5 h-3.5" />
+                                                <UserPlus className="w-4 h-4" />
                                             </button>
                                         </div>
                                         <AnimatePresence>
@@ -2689,18 +2685,18 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                                                                     onClick={() => handleSelectClient(c)}
                                                                     className="w-full p-2.5 text-left hover:bg-slate-50 border-b border-slate-100 last:border-0 flex items-center gap-2.5 group transition-colors"
                                                                 >
-                                                                    <div className={`w-8 h-8 flex-shrink-0 flex items-center justify-center font-black rounded-xl text-[10px] ${Number(c.dueAmount || 0) > 0 ? 'bg-amber-100 text-amber-700' : 'bg-primary/10 text-primary'}`}>{c.name.charAt(0).toUpperCase()}</div>
+                                                                    <div className={`w-8 h-8 flex-shrink-0 flex items-center justify-center font-bold rounded-xl text-xs ${Number(c.dueAmount || 0) > 0 ? 'bg-amber-100 text-amber-700' : 'bg-primary/10 text-primary'}`}>{c.name.charAt(0).toUpperCase()}</div>
                                                                     <div className="flex-1 min-w-0">
-                                                                        <p className="text-[10px] font-black text-slate-900 truncate">{c.name}</p>
+                                                                        <p className="text-xs font-bold text-slate-900 truncate">{c.name}</p>
                                                                         <div className="flex items-center gap-2">
-                                                                            <p className="text-[8px] font-bold text-slate-400">{c.phone}</p>
-                                                                            {Number(c.dueAmount || 0) > 0 && <span className="text-[7px] font-black text-amber-600 bg-amber-50 px-1.5 py-0.5 rounded-lg border border-amber-100">Due ₹{Number(c.dueAmount).toFixed(0)}</span>}
+                                                                            <p className="text-[10px] font-semibold text-slate-400">{c.phone}</p>
+                                                                            {Number(c.dueAmount || 0) > 0 && <span className="text-[9px] font-bold text-amber-600 bg-amber-50 px-2 py-0.5 rounded border border-amber-100">Due ₹{Number(c.dueAmount).toFixed(0)}</span>}
                                                                         </div>
                                                                     </div>
                                                                     {allWallets?.[c._id]?.balance > 0 && (
                                                                         <div className="flex flex-col items-end px-2 py-0.5 bg-emerald-50 border border-emerald-100 rounded-lg shrink-0">
-                                                                            <span className="text-[6px] font-black text-emerald-600 uppercase tracking-widest leading-none">Wallet</span>
-                                                                            <span className="text-[9px] font-black text-emerald-600 leading-none mt-0.5">₹{allWallets[c._id].balance.toFixed(0)}</span>
+                                                                            <span className="text-[9px] font-bold text-emerald-600 uppercase tracking-wider leading-none">Wallet</span>
+                                                                            <span className="text-xs font-bold text-emerald-600 leading-none mt-0.5">₹{allWallets[c._id].balance.toFixed(0)}</span>
                                                                         </div>
                                                                     )}
                                                                 </button>
@@ -2708,12 +2704,12 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                                                         </div>
                                                     ) : (
                                                         <div className="p-4 text-center space-y-2">
-                                                            <p className="text-[9px] font-bold text-slate-400 italic">{qSearchClient ? `No client found for "${qSearchClient}"` : 'Start typing to search...'}</p>
+                                                            <p className="text-xs font-semibold text-slate-400 italic">{qSearchClient ? `No client found for "${qSearchClient}"` : 'Start typing to search...'}</p>
                                                             <button
                                                                 onClick={() => { setShowNewClient(true); setShowClientDropdown(false); }}
-                                                                className="w-full py-2 bg-primary text-white text-[9px] font-black uppercase rounded-xl flex items-center justify-center gap-1.5"
+                                                                className="w-full py-2 bg-primary text-white text-xs font-bold uppercase rounded-xl flex items-center justify-center gap-1.5"
                                                             >
-                                                                <UserPlus className="w-3 h-3" /> Quick Add New Client
+                                                                <UserPlus className="w-3.5 h-3.5" /> Quick Add New Client
                                                             </button>
                                                         </div>
                                                     )}
@@ -2730,13 +2726,13 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                             <div className="flex bg-slate-100 p-1 rounded-xl">
                                 <button
                                     onClick={() => { setQActiveTab('services'); setQSelectedCategory(null); }}
-                                    className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${qActiveTab === 'services' ? 'bg-white text-primary shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
+                                    className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-all ${qActiveTab === 'services' ? 'bg-white text-primary shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
                                 >
                                     <Scissors className="w-3.5 h-3.5" /> Services
                                 </button>
                                 <button
                                     onClick={() => { setQActiveTab('products'); setQSelectedCategory(null); }}
-                                    className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${qActiveTab === 'products' ? 'bg-white text-primary shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
+                                    className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-all ${qActiveTab === 'products' ? 'bg-white text-primary shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
                                 >
                                     <Package className="w-3.5 h-3.5" /> Products
                                 </button>
@@ -2756,11 +2752,11 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                                             <ChevronDown className="w-3.5 h-3.5 rotate-90" />
                                         </button>
                                     )}
-                                    <h3 className="text-[9px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
-                                        {qActiveTab === 'services' ? <Scissors className="w-3 h-3" /> : <Package className="w-3 h-3" />} {qSelectedCategory || (qActiveTab === 'services' ? 'Service Categories' : 'Product Categories')}
+                                    <h3 className="text-xs font-semibold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
+                                        {qActiveTab === 'services' ? <Scissors className="w-3 h-3 text-slate-500" /> : <Package className="w-3 h-3 text-slate-500" />} {qSelectedCategory || (qActiveTab === 'services' ? 'Service Categories' : 'Product Categories')}
                                     </h3>
                                 </div>
-                                <div className="text-[8px] font-bold text-slate-400 bg-slate-100 px-2 py-0.5 rounded uppercase">
+                                <div className="text-[10px] font-semibold text-slate-500 bg-slate-100 px-2 py-0.5 rounded uppercase">
                                     {qSelectedCategory
                                         ? `${(qActiveTab === 'services' ? qFilteredServices : qFilteredProducts).filter(i => qSelectedCategory === 'All' || i.category === qSelectedCategory).length} ${qActiveTab === 'services' ? 'Services' : 'Products'}`
                                         : `${qCategories.length} Categories`
@@ -2795,7 +2791,7 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                                                     <div className="absolute inset-0 bg-black/5 group-hover:bg-black/0 transition-colors" />
                                                 </div>
                                                 <div className="flex-1 flex items-center justify-center p-1.5">
-                                                    <span className="text-[9px] font-black text-slate-800 uppercase tracking-tight text-center leading-tight group-hover:text-primary transition-colors">{cat.name}</span>
+                                                    <span className="text-xs font-bold text-slate-800 uppercase tracking-tight text-center leading-tight group-hover:text-primary transition-colors">{cat.name}</span>
                                                 </div>
                                             </button>
                                         ))}
@@ -2828,9 +2824,9 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                                                             <Plus className="w-3 h-3 text-primary" />
                                                         </div>
                                                     </div>
-                                                    <div className="flex-1 px-2.5 py-2 flex flex-col justify-between">
-                                                        <p className="text-[9px] font-black text-slate-800 group-hover:text-primary transition-colors line-clamp-2 leading-tight">{item.name}</p>
-                                                        <p className="text-[11px] font-black text-emerald-600">₹{item.price}</p>
+                                                    <div className="flex-1 px-2.5 py-2 flex flex-col justify-between text-left">
+                                                        <p className="text-xs font-bold text-slate-800 group-hover:text-primary transition-colors line-clamp-2 leading-tight">{item.name}</p>
+                                                        <p className="text-xs font-bold text-emerald-600">₹{item.price}</p>
                                                     </div>
                                                 </button>
                                             ))}
@@ -2867,144 +2863,141 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                                 <div key={idx} className="bg-white border border-slate-200 p-3 rounded-xl shadow-sm space-y-3 relative">
                                     <div className="flex justify-between items-start">
                                         <div className="flex-1 pr-2">
-                                            <p className="text-xs font-bold text-slate-800 uppercase leading-tight line-clamp-1">{item.name}</p>
+                                            <p className="text-xs md:text-sm font-bold text-slate-800 uppercase leading-tight line-clamp-1">{item.name}</p>
                                             <div className="flex items-center gap-2 mt-0.5">
-                                                <p className="text-xs font-bold text-emerald-600">₹{item.price}</p>
-                                                <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-lg border uppercase tracking-wider ${
-                                                    (item.isInclusiveTax === true || String(item.isInclusiveTax) === 'true' || (item.isInclusiveTax === undefined && fiscal?.inclusiveTax))
-                                                        ? 'bg-emerald-50 border-emerald-200 text-emerald-600' 
-                                                        : 'bg-slate-50 border-slate-200 text-slate-400'
-                                                }`}>
+                                                <p className="text-xs md:text-sm font-bold text-emerald-600">₹{item.price}</p>
+                                                <span className={`text-[10px] md:text-xs font-semibold px-2 py-0.5 rounded border uppercase tracking-wider ${(item.isInclusiveTax === true || String(item.isInclusiveTax) === 'true' || (item.isInclusiveTax === undefined && fiscal?.inclusiveTax))
+                                                    ? 'bg-emerald-50 border-emerald-200 text-emerald-600'
+                                                    : 'bg-slate-50 border-slate-200 text-slate-400'
+                                                    }`}>
                                                     {(item.isInclusiveTax === true || String(item.isInclusiveTax) === 'true' || (item.isInclusiveTax === undefined && fiscal?.inclusiveTax)) ? 'Incl' : 'Excl'}
                                                 </span>
                                                 {item.type === 'service' && (
                                                     <div className="flex items-center bg-slate-50 border border-slate-200 rounded-lg h-6 overflow-hidden ml-2">
-                                                        <button onClick={() => updateQQty(idx, -1)} className="px-1.5 hover:bg-slate-200 text-slate-400 transition-colors"><Minus className="w-2 h-2" /></button>
+                                                        <button onClick={() => updateQQty(idx, -1)} className="px-1.5 hover:bg-slate-200 text-slate-400 transition-colors"><Minus className="w-2.5 h-2.5" /></button>
                                                         <span className="px-2 text-xs font-bold text-slate-800 border-x border-slate-200 flex items-center h-full bg-white">{item.quantity}</span>
-                                                        <button onClick={() => updateQQty(idx, 1)} className="px-1.5 hover:bg-slate-200 text-slate-400 transition-colors"><Plus className="w-2 h-2" /></button>
+                                                        <button onClick={() => updateQQty(idx, 1)} className="px-1.5 hover:bg-slate-200 text-slate-400 transition-colors"><Plus className="w-2.5 h-2.5" /></button>
                                                     </div>
                                                 )}
                                             </div>
                                             {(item.type === 'service' || item.type === 'product') && (
-                                                <div className="mt-2 flex items-center gap-1.5 bg-slate-50 border border-slate-200 rounded-xl p-1.5 transition-all w-fit">
+                                                <div className="mt-2 flex items-center gap-1.5 bg-slate-50 border border-slate-200 rounded-lg p-1 transition-all w-fit">
                                                     <Sparkles className="w-2.5 h-2.5 text-slate-500 animate-pulse" />
-                                                    <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">
+                                                    <span className="text-xs md:text-sm font-semibold text-slate-500 uppercase tracking-wider">
                                                         {qActiveMembership ? 'Mem. Disc:' : 'Discount:'}
                                                     </span>
-                                                    
+
                                                     {/* Toggle between % and ₹ */}
-                                                    <div className="flex items-center bg-white border border-slate-200 rounded-lg overflow-hidden h-5">
-                                                        <button 
+                                                    <div className="flex items-center bg-white border border-slate-200 rounded overflow-hidden h-5">
+                                                        <button
                                                             type="button"
                                                             onClick={() => {
-                                                                const fallbackType = item.type === 'service' 
-                                                                    ? (qActiveMembership?.planId?.serviceDiscountType || 'percentage') 
+                                                                const fallbackType = item.type === 'service'
+                                                                    ? (qActiveMembership?.planId?.serviceDiscountType || 'percentage')
                                                                     : (qActiveMembership?.planId?.productDiscountType || 'percentage');
                                                                 const fallbackValue = item.type === 'service'
                                                                     ? (qActiveMembership?.planId?.serviceDiscountType === 'fixed' ? qActiveMembership.planId.serviceDiscountValue : (qActiveMembership?.planId?.serviceDiscountValue || 0))
                                                                     : (qActiveMembership?.planId?.productDiscountType === 'fixed' ? qActiveMembership.planId.productDiscountValue : (qActiveMembership?.planId?.productDiscountValue || 0));
                                                                 updateQItemMembershipDiscount(idx, 'percentage', item.membershipDiscountValue !== undefined ? item.membershipDiscountValue : fallbackValue);
                                                             }}
-                                                            className={`px-1.5 text-[10px] font-bold h-full flex items-center ${
-                                                                (item.membershipDiscountType !== undefined 
-                                                                    ? item.membershipDiscountType 
-                                                                    : (item.type === 'service' 
-                                                                        ? (qActiveMembership?.planId?.serviceDiscountType || 'percentage') 
-                                                                        : (qActiveMembership?.planId?.productDiscountType || 'percentage')
-                                                                      )
-                                                                ) === 'percentage' 
-                                                                    ? 'bg-slate-800 text-white' 
-                                                                    : 'text-slate-400 hover:bg-slate-50'
-                                                            }`}
+                                                            className={`px-1 text-xs font-bold h-full flex items-center ${(item.membershipDiscountType !== undefined
+                                                                ? item.membershipDiscountType
+                                                                : (item.type === 'service'
+                                                                    ? (qActiveMembership?.planId?.serviceDiscountType || 'percentage')
+                                                                    : (qActiveMembership?.planId?.productDiscountType || 'percentage')
+                                                                )
+                                                            ) === 'percentage'
+                                                                ? 'bg-slate-800 text-white'
+                                                                : 'text-slate-400 hover:bg-slate-50'
+                                                                }`}
                                                         >
                                                             %
                                                         </button>
-                                                        <button 
+                                                        <button
                                                             type="button"
                                                             onClick={() => {
-                                                                const fallbackType = item.type === 'service' 
-                                                                    ? (qActiveMembership?.planId?.serviceDiscountType || 'percentage') 
+                                                                const fallbackType = item.type === 'service'
+                                                                    ? (qActiveMembership?.planId?.serviceDiscountType || 'percentage')
                                                                     : (qActiveMembership?.planId?.productDiscountType || 'percentage');
                                                                 const fallbackValue = item.type === 'service'
                                                                     ? (qActiveMembership?.planId?.serviceDiscountType === 'fixed' ? qActiveMembership.planId.serviceDiscountValue : (qActiveMembership?.planId?.serviceDiscountValue || 0))
                                                                     : (qActiveMembership?.planId?.productDiscountType === 'fixed' ? qActiveMembership.planId.productDiscountValue : (qActiveMembership?.planId?.productDiscountValue || 0));
                                                                 updateQItemMembershipDiscount(idx, 'fixed', item.membershipDiscountValue !== undefined ? item.membershipDiscountValue : fallbackValue);
                                                             }}
-                                                            className={`px-1.5 text-[10px] font-bold h-full flex items-center ${
-                                                                (item.membershipDiscountType !== undefined 
-                                                                    ? item.membershipDiscountType 
-                                                                    : (item.type === 'service' 
-                                                                        ? (qActiveMembership?.planId?.serviceDiscountType || 'percentage') 
-                                                                        : (qActiveMembership?.planId?.productDiscountType || 'percentage')
-                                                                      )
-                                                                ) === 'fixed' 
-                                                                    ? 'bg-slate-800 text-white' 
-                                                                    : 'text-slate-400 hover:bg-slate-50'
-                                                            }`}
+                                                            className={`px-1 text-xs font-bold h-full flex items-center ${(item.membershipDiscountType !== undefined
+                                                                ? item.membershipDiscountType
+                                                                : (item.type === 'service'
+                                                                    ? (qActiveMembership?.planId?.serviceDiscountType || 'percentage')
+                                                                    : (qActiveMembership?.planId?.productDiscountType || 'percentage')
+                                                                )
+                                                            ) === 'fixed'
+                                                                ? 'bg-slate-800 text-white'
+                                                                : 'text-slate-400 hover:bg-slate-50'
+                                                                }`}
                                                         >
                                                             ₹
                                                         </button>
                                                     </div>
- 
+
                                                     {/* Numeric Input */}
-                                                    <input 
-                                                        type="number" 
+                                                    <input
+                                                        type="number"
                                                         min="0"
                                                         max={
-                                                            (item.membershipDiscountType !== undefined 
-                                                                ? item.membershipDiscountType 
-                                                                : (item.type === 'service' 
-                                                                    ? (qActiveMembership?.planId?.serviceDiscountType || 'percentage') 
+                                                            (item.membershipDiscountType !== undefined
+                                                                ? item.membershipDiscountType
+                                                                : (item.type === 'service'
+                                                                    ? (qActiveMembership?.planId?.serviceDiscountType || 'percentage')
                                                                     : (qActiveMembership?.planId?.productDiscountType || 'percentage')
-                                                                  )
-                                                            ) === 'percentage' 
-                                                                ? '100' 
+                                                                )
+                                                            ) === 'percentage'
+                                                                ? '100'
                                                                 : String(item.price)
                                                         }
                                                         value={
-                                                            item.membershipDiscountValue !== undefined 
-                                                                ? item.membershipDiscountValue 
-                                                                : (item.type === 'service' 
+                                                            item.membershipDiscountValue !== undefined
+                                                                ? item.membershipDiscountValue
+                                                                : (item.type === 'service'
                                                                     ? (qActiveMembership?.planId?.serviceDiscountValue || 0)
                                                                     : (qActiveMembership?.planId?.productDiscountValue || 0)
-                                                                  )
+                                                                )
                                                         }
                                                         onChange={(e) => {
                                                             const val = Math.max(0, Number(e.target.value) || 0);
-                                                            const currentType = item.membershipDiscountType !== undefined 
-                                                                ? item.membershipDiscountType 
-                                                                : (item.type === 'service' 
-                                                                    ? (qActiveMembership?.planId?.serviceDiscountType || 'percentage') 
+                                                            const currentType = item.membershipDiscountType !== undefined
+                                                                ? item.membershipDiscountType
+                                                                : (item.type === 'service'
+                                                                    ? (qActiveMembership?.planId?.serviceDiscountType || 'percentage')
                                                                     : (qActiveMembership?.planId?.productDiscountType || 'percentage')
-                                                                  );
+                                                                );
                                                             updateQItemMembershipDiscount(idx, currentType, val);
                                                         }}
-                                                        className="w-10 bg-white border border-slate-200 rounded-lg text-[10px] font-bold text-center h-5 focus:outline-none focus:border-slate-400 text-slate-800" 
-                                                    /> 
-                                                    {(() => { 
-                                                        const currentType = item.membershipDiscountType !== undefined 
-                                                            ? item.membershipDiscountType 
-                                                            : (item.type === 'service' 
-                                                                ? (qActiveMembership?.planId?.serviceDiscountType || 'percentage') 
+                                                        className="w-12 bg-white border border-slate-200 rounded text-xs font-medium text-center h-6 focus:outline-none focus:border-slate-400 text-slate-800"
+                                                    />
+                                                    {(() => {
+                                                        const currentType = item.membershipDiscountType !== undefined
+                                                            ? item.membershipDiscountType
+                                                            : (item.type === 'service'
+                                                                ? (qActiveMembership?.planId?.serviceDiscountType || 'percentage')
                                                                 : (qActiveMembership?.planId?.productDiscountType || 'percentage')
-                                                              ); 
+                                                            );
                                                         const currentValue = Number(
-                                                            item.membershipDiscountValue !== undefined 
-                                                                ? item.membershipDiscountValue 
-                                                                : (item.type === 'service' 
-                                                                    ? (qActiveMembership?.planId?.serviceDiscountValue || 0) 
+                                                            item.membershipDiscountValue !== undefined
+                                                                ? item.membershipDiscountValue
+                                                                : (item.type === 'service'
+                                                                    ? (qActiveMembership?.planId?.serviceDiscountValue || 0)
                                                                     : (qActiveMembership?.planId?.productDiscountValue || 0)
-                                                                  )
-                                                        ); 
-                                                        const appliedRupeeDiscount = currentType === 'percentage' ? (Number(item.price) * Number(item.quantity) * currentValue) / 100 : currentValue * Number(item.quantity); 
-                                                        if (appliedRupeeDiscount > 0) { 
-                                                            return ( 
-                                                                <span className="text-[10px] font-bold text-emerald-600 font-mono bg-emerald-50 border border-emerald-100 px-1.5 py-0.5 rounded-lg flex items-center shrink-0 ml-1.5 animate-in zoom-in-95"> 
-                                                                    -₹{appliedRupeeDiscount.toFixed(0)} 
-                                                                </span> 
-                                                            ); 
-                                                        } 
-                                                        return null; 
+                                                                )
+                                                        );
+                                                        const appliedRupeeDiscount = currentType === 'percentage' ? (Number(item.price) * Number(item.quantity) * currentValue) / 100 : currentValue * Number(item.quantity);
+                                                        if (appliedRupeeDiscount > 0) {
+                                                            return (
+                                                                <span className="text-xs font-bold text-emerald-600 font-mono bg-emerald-50 border border-emerald-100 px-2 py-0.5 rounded flex items-center shrink-0 ml-1 animate-in zoom-in-95">
+                                                                    -₹{appliedRupeeDiscount.toFixed(0)}
+                                                                </span>
+                                                            );
+                                                        }
+                                                        return null;
                                                     })()}
                                                 </div>
                                             )}
@@ -3015,21 +3008,21 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                                     </div>
 
                                     {item.type === 'service' ? (
-                                        <div className={`p-2.5 rounded-2xl border ${(!item.staffIds || item.staffIds.length === 0) ? 'bg-amber-50 border-amber-200' : 'bg-white border-slate-100 shadow-sm'}`}>
-                                            <label className={`text-[10px] font-bold uppercase tracking-wider flex items-center gap-1.5 mb-2 ${(!item.staffIds || item.staffIds.length === 0) ? 'text-amber-600' : 'text-slate-400'}`}>
+                                        <div className={`p-2.5 rounded-xl border ${(!item.staffIds || item.staffIds.length === 0) ? 'bg-amber-50 border-amber-200' : 'bg-white border-slate-100 shadow-sm'}`}>
+                                            <label className={`text-xs font-semibold uppercase tracking-wider flex items-center gap-1.5 mb-2 ${(!item.staffIds || item.staffIds.length === 0) ? 'text-amber-600' : 'text-slate-400'}`}>
                                                 <Sparkles className="w-2.5 h-2.5" /> Assign Stylists
                                             </label>
 
                                             <div className="relative">
                                                 <div
-                                                    className="min-h-[42px] bg-slate-50/50 border border-slate-200 rounded-xl p-1.5 flex flex-wrap gap-1.5 cursor-pointer hover:border-primary/50 transition-all"
+                                                    className="min-h-[40px] bg-slate-50/50 border border-slate-200 rounded-xl p-1.5 flex flex-wrap gap-1.5 cursor-pointer hover:border-primary/50 transition-all"
                                                     onClick={() => setOpenStaffIdx(openStaffIdx === idx ? null : idx)}
                                                 >
                                                     {(item.staffIds || []).length > 0 ? (
                                                         item.staffIds.map(sId => {
                                                             const s = staff.find(st => String(st._id) === String(sId));
                                                             return (
-                                                                <div key={sId} className="bg-primary text-white text-xs font-semibold pl-2 pr-1 py-1 rounded-lg flex items-center gap-1.5 shadow-sm shadow-primary/20 animate-in zoom-in-95">
+                                                                <div key={sId} className="bg-primary text-white text-xs font-semibold pl-2 pr-1.5 py-1 rounded flex items-center gap-1.5 shadow-sm shadow-primary/20 animate-in zoom-in-95">
                                                                     <span className="uppercase">{s?.name || 'Stylist'}</span>
                                                                     <button
                                                                         onClick={(e) => { e.stopPropagation(); toggleStaffInItem(idx, sId); }}
@@ -3041,7 +3034,7 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                                                             );
                                                         })
                                                     ) : (
-                                                        <span className="text-xs font-medium text-slate-500 italic flex items-center px-2 py-1">Select stylists...</span>
+                                                        <span className="text-xs font-bold text-slate-500 italic flex items-center px-2 py-1">Select stylists...</span>
                                                     )}
                                                     <div className="ml-auto px-1 flex items-center text-slate-300">
                                                         <ChevronDown className={`w-4 h-4 transition-transform ${openStaffIdx === idx ? 'rotate-180 text-primary' : ''}`} />
@@ -3057,13 +3050,13 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                                                             className="absolute top-full left-0 right-0 z-[100] mt-2 bg-white border border-slate-200 shadow-2xl rounded-2xl overflow-hidden flex flex-col"
                                                         >
                                                             <div className="p-2 border-b border-slate-50 bg-slate-50/30">
-                                                                <div className="relative">
+                                                                 <div className="relative">
                                                                     <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3 h-3 text-slate-400" />
                                                                     <input
                                                                         autoFocus
                                                                         type="text"
                                                                         placeholder="Search stylist..."
-                                                                        className="w-full bg-white border border-slate-200 pl-8 pr-3 py-1.5 text-[10px] font-semibold text-slate-900 outline-none rounded-lg focus:border-primary transition-all shadow-sm"
+                                                                        className="w-full bg-white border border-slate-200 pl-8 pr-3 py-1.5 text-xs font-bold text-slate-900 outline-none rounded-lg focus:border-primary transition-all shadow-sm"
                                                                         value={staffSearch}
                                                                         onChange={(e) => setStaffSearch(e.target.value)}
                                                                         onClick={(e) => e.stopPropagation()}
@@ -3080,18 +3073,18 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                                                                                 onClick={(e) => { e.stopPropagation(); toggleStaffInItem(idx, s._id); }}
                                                                                 className={`w-full p-2.5 text-left flex items-center gap-3 hover:bg-slate-50 border-b border-slate-50 last:border-0 transition-colors ${isSelected ? 'bg-primary/5' : ''}`}
                                                                             >
-                                                                                <div className={`w-7 h-7 rounded-lg flex items-center justify-center font-semibold text-[9px] transition-all ${isSelected ? 'bg-primary text-white' : 'bg-slate-100 text-slate-500'}`}>
+                                                                                <div className={`w-8 h-8 rounded-lg flex items-center justify-center font-bold text-xs transition-all ${isSelected ? 'bg-primary text-white' : 'bg-slate-100 text-slate-500'}`}>
                                                                                     {isSelected ? <Check className="w-4 h-4" /> : s.name.charAt(0).toUpperCase()}
                                                                                 </div>
                                                                                 <div className="flex-1">
-                                                                                    <p className={`text-[10px] font-semibold uppercase tracking-tight ${isSelected ? 'text-primary' : 'text-slate-700'}`}>{s.name}</p>
-                                                                                    <p className="text-[8px] font-medium text-slate-400 uppercase tracking-widest italic">{s.role || 'Staff'}</p>
+                                                                                    <p className={`text-xs font-bold uppercase tracking-tight ${isSelected ? 'text-primary' : 'text-slate-700'}`}>{s.name}</p>
+                                                                                    <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider italic">{s.role || 'Staff'}</p>
                                                                                 </div>
                                                                             </button>
                                                                         );
                                                                     })
                                                                 ) : (
-                                                                    <div className="p-6 text-center text-slate-400 italic text-[9px] font-semibold uppercase tracking-widest">No staff found</div>
+                                                                    <div className="p-6 text-center text-slate-400 italic text-xs font-bold uppercase tracking-wider">No staff found</div>
                                                                 )}
                                                             </div>
                                                         </motion.div>
@@ -3100,8 +3093,8 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                                             </div>
                                         </div>
                                     ) : (
-                                        <div className="p-2.5 rounded-2xl border border-slate-100 bg-white shadow-sm">
-                                            <label className="text-[8px] font-semibold text-slate-400 uppercase tracking-widest flex items-center gap-1.5 mb-2">
+                                        <div className="p-2.5 rounded-xl border border-slate-100 bg-white shadow-sm">
+                                            <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider flex items-center gap-1.5 mb-2">
                                                 <ShoppingCart className="w-2.5 h-2.5 text-primary" /> Edit Quantity
                                             </label>
                                             <div className="flex items-center gap-3">
@@ -3139,55 +3132,55 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                 </div>{/* End flex body */}
 
                 {/* Bottom Billing Row */}
-                <div className="flex-shrink-0 bg-white border-t border-slate-200 shadow-[0_-8px_30px_rgba(0,0,0,0.08)] z-20">
-                    <div className="max-w-7xl mx-auto px-4 py-3 lg:px-6 lg:py-4 flex flex-col sm:flex-row flex-wrap lg:flex-nowrap items-center justify-between gap-4 lg:gap-6">
+                <div className="flex-shrink-0 bg-white border-t border-slate-200 shadow-[0_-8px_30px_rgba(0,0,0,0.08)] z-20 w-full overflow-hidden">
+                    <div className="w-full px-3 py-3 flex items-center justify-between gap-3 overflow-x-auto whitespace-nowrap scrollbar-thin">
                         {/* Totals Breakdown */}
-                        <div className="flex flex-wrap items-center gap-4 lg:gap-8 px-2 lg:px-4 border-b sm:border-b-0 sm:border-r border-slate-100 py-2 w-full sm:w-auto justify-between sm:justify-start">
-                            <div className="flex flex-col">
-                                <span className="text-[9px] font-semibold text-slate-400 uppercase tracking-[0.1em]">Subtotal</span>
-                                <span className="text-[14px] font-semibold text-slate-900 font-mono">₹{totals.subtotal.toFixed(2)}</span>
+                        <div className="flex items-center gap-4 px-2 shrink-0">
+                            <div className="flex flex-col shrink-0">
+                                <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Subtotal</span>
+                                <span className="text-sm md:text-base font-bold text-slate-800 font-mono">₹{totals.subtotal.toFixed(2)}</span>
                             </div>
                             {totals.cgst > 0 && (
-                                <div className="flex flex-col">
-                                    <span className="text-[9px] font-semibold text-slate-400 uppercase tracking-[0.1em]">
-                                        CGST {qCart.every(i => i.type === 'service') ? `(${(totals.serviceGstRate) / 2}%)` : 
-                                              qCart.every(i => i.type === 'product') ? `(${(totals.productGstRate) / 2}%)` : 
-                                              totals.serviceGstRate === totals.productGstRate ? `(${(totals.serviceGstRate) / 2}%)` : ''}
+                                <div className="flex flex-col shrink-0">
+                                    <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
+                                        CGST {qCart.every(i => i.type === 'service') ? `(${(totals.serviceGstRate) / 2}%)` :
+                                            qCart.every(i => i.type === 'product') ? `(${(totals.productGstRate) / 2}%)` :
+                                                totals.serviceGstRate === totals.productGstRate ? `(${(totals.serviceGstRate) / 2}%)` : ''}
                                     </span>
-                                    <span className="text-[14px] font-semibold text-slate-900 font-mono">
-                                        {totals.cgst > totals.cgstExcl && <span className="text-emerald-600 text-[9px] align-top mr-1">(INCL)</span>}
+                                    <span className="text-sm md:text-base font-bold text-slate-800 font-mono">
+                                        {totals.cgst > totals.cgstExcl && <span className="text-emerald-600 text-xs font-bold align-top mr-1">(INCL)</span>}
                                         ₹{totals.cgst.toFixed(2)}
                                     </span>
                                 </div>
                             )}
                             {totals.sgst > 0 && (
-                                <div className="flex flex-col">
-                                    <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">
-                                        SGST {qCart.every(i => i.type === 'service') ? `(${(totals.serviceGstRate) / 2}%)` : 
-                                              qCart.every(i => i.type === 'product') ? `(${(totals.productGstRate) / 2}%)` : 
-                                              totals.serviceGstRate === totals.productGstRate ? `(${(totals.serviceGstRate) / 2}%)` : ''}
+                                <div className="flex flex-col shrink-0">
+                                    <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
+                                        SGST {qCart.every(i => i.type === 'service') ? `(${(totals.serviceGstRate) / 2}%)` :
+                                            qCart.every(i => i.type === 'product') ? `(${(totals.productGstRate) / 2}%)` :
+                                                totals.serviceGstRate === totals.productGstRate ? `(${(totals.serviceGstRate) / 2}%)` : ''}
                                     </span>
-                                    <span className="text-sm font-bold text-slate-800 font-mono">
-                                        {totals.sgst > totals.sgstExcl && <span className="text-emerald-600 text-[9px] align-top mr-1">(INCL)</span>}
+                                    <span className="text-sm md:text-base font-bold text-slate-800 font-mono">
+                                        {totals.sgst > totals.sgstExcl && <span className="text-emerald-600 text-xs font-bold align-top mr-1">(INCL)</span>}
                                         ₹{totals.sgst.toFixed(2)}
                                     </span>
                                 </div>
                             )}
                             {totals.igst > 0 && (
-                                <div className="flex flex-col">
-                                    <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">IGST {totals.serviceGstRate === totals.productGstRate ? `(${totals.serviceGstRate}%)` : ''}</span>
-                                    <span className="text-sm font-bold text-slate-800 font-mono">
-                                        {totals.igst > totals.totalExclusiveTax && <span className="text-emerald-600 text-[9px] align-top mr-1">(INCL)</span>}
+                                <div className="flex flex-col shrink-0">
+                                    <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">IGST {totals.serviceGstRate === totals.productGstRate ? `(${totals.serviceGstRate}%)` : ''}</span>
+                                    <span className="text-sm md:text-base font-bold text-slate-800 font-mono">
+                                        {totals.igst > totals.totalExclusiveTax && <span className="text-emerald-600 text-xs font-bold align-top mr-1">(INCL)</span>}
                                         ₹{totals.igst.toFixed(2)}
                                     </span>
                                 </div>
                             )}
-                            <div className="flex flex-col">
-                                <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Discount</span>
-                                <div className="flex items-center bg-rose-50 rounded-lg border border-rose-100 overflow-hidden">
+                            <div className="flex flex-col shrink-0">
+                                <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Discount</span>
+                                <div className="flex items-center bg-rose-50/50 rounded-lg border border-rose-100/80 overflow-hidden">
                                     <button
                                         onClick={() => setQManualDiscount(prev => ({ ...prev, type: prev.type === 'fixed' ? 'percentage' : 'fixed' }))}
-                                        className="px-2 py-1.5 bg-rose-100 text-rose-600 text-xs font-bold border-r border-rose-200 hover:bg-rose-200 transition-colors"
+                                        className="px-2 py-1 bg-rose-100/70 text-rose-600 text-xs font-bold border-r border-rose-200/50 hover:bg-rose-200/80 transition-colors"
                                     >
                                         {qManualDiscount.type === 'fixed' ? '₹' : '%'}
                                     </button>
@@ -3201,49 +3194,52 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                                 </div>
                             </div>
                             {totals.membershipDiscount > 0 && (
-                                <div className="flex flex-col">
-                                    <span className="text-[10px] font-bold text-primary uppercase tracking-wider">Mem. Disc</span>
-                                    <span className="text-sm font-bold text-primary font-mono">-₹{totals.membershipDiscount.toFixed(2)}</span>
+                                <div className="flex flex-col shrink-0">
+                                    <span className="text-xs font-semibold text-primary uppercase tracking-wider">Mem. Disc</span>
+                                    <span className="text-sm md:text-base font-bold text-primary font-mono">-₹{totals.membershipDiscount.toFixed(2)}</span>
                                 </div>
                             )}
                             {qClient && Number(qClient.dueAmount || 0) > 0 && (
-                                <div className="flex flex-col">
-                                    <span className="text-[10px] font-bold text-amber-500 uppercase tracking-wider">Prev. Due</span>
-                                    <span className="text-sm font-bold text-amber-600 font-mono">₹{Number(qClient.dueAmount).toFixed(2)}</span>
+                                <div className="flex flex-col shrink-0">
+                                    <span className="text-xs font-semibold text-amber-500 uppercase tracking-wider">Prev. Due</span>
+                                    <span className="text-sm md:text-base font-bold text-amber-600 font-mono">₹{Number(qClient.dueAmount).toFixed(2)}</span>
                                 </div>
                             )}
                             {qCollectedPrevDue > 0 && (
-                                <div className="flex flex-col">
-                                    <span className="text-[10px] font-bold text-emerald-500 uppercase tracking-wider">Due Paid</span>
-                                    <span className="text-sm font-bold text-emerald-600 font-mono">+₹{qCollectedPrevDue.toFixed(2)}</span>
+                                <div className="flex flex-col shrink-0">
+                                    <span className="text-xs font-semibold text-emerald-500 uppercase tracking-wider">Due Paid</span>
+                                    <span className="text-sm md:text-base font-bold text-emerald-600 font-mono">+₹{qCollectedPrevDue.toFixed(2)}</span>
                                 </div>
                             )}
                         </div>
 
+                        {/* Modern vertical separator */}
+                        <div className="w-[1px] h-8 bg-slate-200 self-center shrink-0" />
+
                         {/* Payment Inputs Row */}
-                        <div className="flex-1 flex flex-row flex-wrap items-center gap-3 w-full sm:w-auto min-w-[300px]">
-                            <div className="flex-1 min-w-[140px] bg-slate-50 border border-slate-200 p-2.5 rounded-2xl focus-within:border-primary/50 focus-within:bg-white transition-all shadow-sm group">
-                                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1 group-focus-within:text-primary">Cash Payment</label>
-                                <div className="flex items-center gap-2">
-                                    <Banknote className="w-4 h-4 text-emerald-500" />
-                                    <input type="number" className="w-full bg-transparent text-[15px] font-bold text-slate-800 outline-none font-mono" value={qPayments.cash || ''} onChange={(e) => setQPayments({ ...qPayments, cash: Number(e.target.value) })} placeholder="0" />
+                        <div className={`grid gap-2 shrink-0 ${qClient && qClientWalletBalance > 0 ? 'w-[420px] grid-cols-3' : 'w-[280px] grid-cols-2'}`}>
+                            <div className="bg-slate-50/60 border border-slate-200/80 p-2 rounded-xl focus-within:border-emerald-500/50 focus-within:bg-white focus-within:shadow-[0_4px_12px_rgba(16,185,129,0.04)] transition-all shadow-sm group hover:border-slate-300">
+                                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-0.5 group-focus-within:text-emerald-600">Cash Payment</label>
+                                <div className="flex items-center gap-1.5">
+                                    <Banknote className="w-4 h-4 text-emerald-500 shrink-0" />
+                                    <input type="number" className="w-full bg-transparent text-sm font-bold text-slate-800 outline-none font-mono" value={qPayments.cash || ''} onChange={(e) => setQPayments({ ...qPayments, cash: Number(e.target.value) })} placeholder="0" />
                                 </div>
                             </div>
-                            <div className="flex-1 min-w-[140px] bg-slate-50 border border-slate-200 p-2.5 rounded-2xl focus-within:border-primary/50 focus-within:bg-white transition-all shadow-sm group">
-                                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1 group-focus-within:text-blue-500">Online/UPI</label>
-                                <div className="flex items-center gap-2">
-                                    <Smartphone className="w-4 h-4 text-blue-500" />
-                                    <input type="number" className="w-full bg-transparent text-[15px] font-bold text-slate-800 outline-none font-mono" value={qPayments.online || ''} onChange={(e) => setQPayments({ ...qPayments, online: Number(e.target.value) })} placeholder="0" />
+                            <div className="bg-slate-50/60 border border-slate-200/80 p-2 rounded-xl focus-within:border-blue-500/50 focus-within:bg-white focus-within:shadow-[0_4px_12px_rgba(59,130,246,0.04)] transition-all shadow-sm group hover:border-slate-300">
+                                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-0.5 group-focus-within:text-blue-500">Online/UPI</label>
+                                <div className="flex items-center gap-1.5">
+                                    <Smartphone className="w-4 h-4 text-blue-500 shrink-0" />
+                                    <input type="number" className="w-full bg-transparent text-sm font-bold text-slate-800 outline-none font-mono" value={qPayments.online || ''} onChange={(e) => setQPayments({ ...qPayments, online: Number(e.target.value) })} placeholder="0" />
                                 </div>
                             </div>
                             {qClient && qClientWalletBalance > 0 && (
-                                <div className="flex-1 min-w-[140px] bg-emerald-50 border border-emerald-100 p-2.5 rounded-2xl focus-within:border-emerald-500 focus-within:bg-white transition-all shadow-sm group">
-                                    <label className="text-[10px] font-bold text-emerald-600 uppercase tracking-wider block mb-1">Wallet Use (Bal: ₹{qClientWalletBalance.toFixed(0)})</label>
-                                    <div className="flex items-center gap-2">
-                                        <Wallet className="w-4 h-4 text-emerald-500" />
+                                <div className="bg-emerald-50/50 border border-emerald-100/80 p-2 rounded-xl focus-within:border-emerald-500 focus-within:bg-white focus-within:shadow-[0_4px_12px_rgba(16,185,129,0.04)] transition-all shadow-sm group hover:border-emerald-200">
+                                    <label className="text-[10px] font-bold text-emerald-600 uppercase tracking-wider block mb-0.5">Wallet (₹{qClientWalletBalance.toFixed(0)})</label>
+                                    <div className="flex items-center gap-1.5">
+                                        <Wallet className="w-4 h-4 text-emerald-500 shrink-0" />
                                         <input
                                             type="number"
-                                            className="w-full bg-transparent text-[15px] font-bold text-emerald-600 outline-none font-mono"
+                                            className="w-full bg-transparent text-sm font-bold text-emerald-600 outline-none font-mono"
                                             value={qRedeemWallet || ''}
                                             onChange={(e) => setQRedeemWallet(Math.min(qClientWalletBalance, Math.min(totals.totalWithPrevDue, Number(e.target.value))))}
                                             placeholder="0"
@@ -3254,24 +3250,24 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                         </div>
 
                         {/* Grand Total & Finalize Unified Checkout Card */}
-                        <div className="flex flex-col bg-slate-900 text-white rounded-2xl p-3 shadow-xl shadow-slate-900/20 shrink-0 min-w-[280px]">
+                        <div className="flex flex-col bg-gradient-to-br from-slate-900 via-slate-950 to-slate-900 text-white rounded-2xl p-3 shadow-xl border border-slate-800 shrink-0 w-[260px]">
                             {/* Top row: Net Bill & Total to Pay */}
                             <div className="flex items-center justify-between border-b border-white/10 pb-2 mb-2">
                                 <div className="flex flex-col items-start pr-3">
-                                    <span className="text-[10px] font-bold uppercase tracking-wider text-white/40 leading-none">Net Bill</span>
-                                    <span className="text-sm font-bold font-mono text-white leading-none mt-1">₹{totals.total.toFixed(2)}</span>
+                                    <span className="text-xs font-medium uppercase tracking-wider text-white/40 leading-none">Net Bill</span>
+                                    <span className="text-sm md:text-base font-bold font-mono text-white leading-none mt-1">₹{totals.total.toFixed(2)}</span>
                                 </div>
                                 <div className="flex flex-col items-end">
-                                    <span className="text-[10px] font-bold uppercase tracking-wider text-white/50 leading-none">Total to Pay</span>
-                                    <span className="text-xl font-bold font-mono leading-none mt-1">₹{totals.totalWithPrevDue.toFixed(2)}</span>
+                                    <span className="text-xs font-medium uppercase tracking-wider text-white/50 leading-none">Total to Pay</span>
+                                    <span className="text-xl md:text-2xl font-bold font-mono leading-none mt-1">₹{totals.totalWithPrevDue.toFixed(2)}</span>
                                 </div>
                             </div>
-                            
+
                             {/* Badges/Info Row (Compact) */}
                             {Math.round(dueAmount * 100) / 100 > 0 && (
                                 <div className="flex items-center justify-center bg-rose-500/10 border border-rose-500/20 px-2 py-1 rounded-xl gap-1 mb-2">
                                     <AlertTriangle className="w-3 h-3 text-rose-400" />
-                                    <span className="text-[10px] font-bold text-rose-400 uppercase tracking-wider">This bill due: ₹{dueAmount.toFixed(2)}</span>
+                                    <span className="text-xs font-medium text-rose-400 uppercase tracking-wider">This bill due: ₹{dueAmount.toFixed(2)}</span>
                                 </div>
                             )}
 
@@ -3279,7 +3275,7 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                             {qClient && qClientWalletBalance > 0 && qRedeemWallet === 0 && dueAmount > 0 && (
                                 <button
                                     onClick={() => setQRedeemWallet(Math.min(qClientWalletBalance, dueAmount))}
-                                    className="w-full mb-2 bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 py-1.5 px-2 rounded-xl text-[10px] font-bold uppercase tracking-wider flex items-center justify-center gap-1 transition-all animate-bounce border border-emerald-500/10"
+                                    className="w-full mb-2 bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 py-1.5 px-2 rounded-xl text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-1 transition-all animate-bounce border border-emerald-500/10"
                                 >
                                     <Wallet className="w-3 h-3 text-emerald-400" />
                                     <span>Use wallet (₹{Math.min(qClientWalletBalance, dueAmount).toFixed(0)})?</span>
@@ -3294,7 +3290,7 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                                     return (
                                         <div className="flex items-center justify-center bg-rose-500/10 border border-rose-500/20 px-2 py-1 rounded-xl gap-1 mb-2 animate-pulse">
                                             <AlertTriangle className="w-3 h-3 text-rose-400" />
-                                            <span className="text-[10px] font-bold text-rose-400 uppercase tracking-wider">Overpaid: ₹{overpaidDiff.toFixed(2)}</span>
+                                            <span className="text-xs font-medium text-rose-400 uppercase tracking-wider">Overpaid: ₹{overpaidDiff.toFixed(2)}</span>
                                         </div>
                                     );
                                 }
@@ -3303,7 +3299,7 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
 
                             {totals.redeemWallet > 0 && (
                                 <div className="text-center mb-2">
-                                    <span className="text-[10px] font-bold text-emerald-400 uppercase tracking-wider leading-none bg-emerald-500/10 px-2 py-0.5 rounded-lg border border-emerald-500/10">Wallet Used: -₹{totals.redeemWallet.toFixed(2)}</span>
+                                    <span className="text-xs font-semibold text-emerald-400 uppercase tracking-wider leading-none bg-emerald-500/10 px-2 py-0.5 rounded-lg border border-emerald-500/10">Wallet Used: -₹{totals.redeemWallet.toFixed(2)}</span>
                                 </div>
                             )}
 
@@ -3311,7 +3307,7 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                             <button
                                 onClick={handleConfirm}
                                 disabled={isProcessing || qCart.length === 0}
-                                className="w-full py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-black text-[11px] uppercase tracking-[0.25em] transition-all rounded-xl disabled:opacity-50 flex items-center justify-center gap-2 shadow-lg shadow-emerald-600/20 relative overflow-hidden group"
+                                className="w-full py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs md:text-sm uppercase tracking-wider transition-all rounded-xl disabled:opacity-50 flex items-center justify-center gap-2 shadow-lg shadow-emerald-600/20 relative overflow-hidden group"
                             >
                                 <div className="absolute top-0 left-0 w-full h-full bg-white/10 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700" />
                                 {isProcessing ? <Loader2 className="w-4 h-4 animate-spin" /> : (
@@ -3343,46 +3339,46 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                         >
                             {/* Warning Header */}
                             <div className="bg-gradient-to-r from-amber-500 to-orange-500 p-5 flex items-center gap-4">
-                                <div className="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center flex-shrink-0">
-                                    <AlertTriangle className="w-7 h-7 text-white" />
+                                <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center flex-shrink-0">
+                                    <AlertTriangle className="w-6 h-6 text-white" />
                                 </div>
                                 <div>
-                                    <h4 className="text-white font-black text-[14px] uppercase tracking-tight">Outstanding Due Alert</h4>
-                                    <p className="text-amber-100 text-[10px] font-bold uppercase tracking-widest mt-0.5">Previous balance detected</p>
+                                    <h4 className="text-white font-bold text-sm uppercase tracking-tight">Outstanding Due Alert</h4>
+                                    <p className="text-amber-100 text-xs font-semibold uppercase tracking-wider mt-0.5">Previous balance detected</p>
                                 </div>
                             </div>
 
                             {/* Content */}
                             <div className="p-6 space-y-4">
-                                <div className="flex items-center gap-4 bg-amber-50 border border-amber-100 p-4 rounded-2xl">
-                                    <div className="w-12 h-12 bg-amber-500 text-white font-black rounded-xl flex items-center justify-center text-lg flex-shrink-0">
+                                <div className="flex items-center gap-4 bg-amber-50 border border-amber-100 p-4 rounded-xl">
+                                    <div className="w-12 h-12 bg-amber-500 text-white font-bold rounded-lg flex items-center justify-center text-lg flex-shrink-0">
                                         {pendingClientSelect.name.charAt(0).toUpperCase()}
                                     </div>
                                     <div>
-                                        <p className="text-[13px] font-black text-slate-900 uppercase tracking-tight">{pendingClientSelect.name}</p>
-                                        <p className="text-[10px] font-bold text-slate-500 font-mono">{pendingClientSelect.phone}</p>
+                                        <p className="text-xs md:text-sm font-bold text-slate-900 uppercase tracking-tight">{pendingClientSelect.name}</p>
+                                        <p className="text-xs font-semibold text-slate-500 font-mono mt-0.5">{pendingClientSelect.phone}</p>
                                     </div>
                                     <div className="ml-auto text-right">
-                                        <p className="text-[8px] font-black text-amber-500 uppercase tracking-widest">Owes</p>
-                                        <p className="text-[22px] font-black text-amber-600 font-mono italic">₹{clientPrevDue.toFixed(0)}</p>
+                                        <p className="text-xs font-semibold text-amber-500 uppercase tracking-wider">Owes</p>
+                                        <p className="text-xl font-bold text-amber-600 font-mono italic mt-0.5">₹{clientPrevDue.toFixed(0)}</p>
                                     </div>
                                 </div>
 
-                                <p className="text-[11px] font-bold text-slate-500 text-center leading-relaxed">
+                                <p className="text-xs font-bold text-slate-500 text-center leading-relaxed">
                                     This client has a pending outstanding balance from a previous visit. You may collect it now along with this bill or proceed and add to their running dues.
                                 </p>
 
                                 {/* Quick Collect Option */}
                                 <div className="bg-emerald-50 border border-emerald-200 p-3 rounded-xl">
-                                    <p className="text-[8px] font-black text-emerald-600 uppercase tracking-widest mb-2 flex items-center gap-1">
-                                        <CheckCircle2 className="w-3 h-3" /> Quick collect previous due now
+                                    <p className="text-xs font-semibold text-emerald-600 uppercase tracking-wider mb-2 flex items-center gap-1">
+                                        <CheckCircle2 className="w-3 h-3 text-emerald-600" /> Quick collect previous due now
                                     </p>
                                     <div className="flex items-center gap-2">
                                         <Banknote className="w-4 h-4 text-emerald-500 flex-shrink-0" />
                                         <input
                                             type="number"
                                             placeholder={`Up to ₹${clientPrevDue.toFixed(0)}`}
-                                            className="flex-1 bg-white border border-emerald-200 px-3 py-2 text-[13px] font-black text-slate-900 outline-none rounded-lg focus:border-emerald-500 transition-all font-mono"
+                                            className="flex-1 bg-white border border-emerald-200 px-3 py-2 text-xs md:text-sm font-bold text-slate-900 outline-none rounded-lg focus:border-emerald-500 transition-all font-mono"
                                             value={qCollectedPrevDue || ''}
                                             onChange={(e) => setQCollectedPrevDue(Math.min(Math.ceil(clientPrevDue), Number(e.target.value)))}
                                             max={Math.ceil(clientPrevDue)}
@@ -3395,7 +3391,7 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                             <div className="p-5 bg-slate-50 border-t border-slate-100 flex gap-3">
                                 <button
                                     onClick={() => { setShowDueWarning(false); setPendingClientSelect(null); }}
-                                    className="flex-1 py-3 text-[11px] font-black text-slate-500 uppercase tracking-widest border border-slate-200 rounded-xl hover:bg-slate-100 transition-all"
+                                    className="flex-1 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider border border-slate-200 rounded-xl hover:bg-slate-100 transition-all"
                                 >
                                     Cancel
                                 </button>
@@ -3405,7 +3401,7 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                                         setShowDueWarning(false);
                                         setPendingClientSelect(null);
                                     }}
-                                    className="flex-1 py-3 text-[11px] font-black text-white uppercase tracking-widest bg-emerald-600 hover:bg-emerald-700 rounded-xl transition-all shadow-lg shadow-emerald-500/20"
+                                    className="flex-1 py-3 text-xs font-bold text-white uppercase tracking-wider bg-emerald-600 hover:bg-emerald-700 rounded-xl transition-all shadow-lg shadow-emerald-500/20"
                                 >
                                     Collect & Proceed
                                 </button>
@@ -3431,30 +3427,30 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                             className="bg-white w-full max-w-sm rounded-2xl shadow-2xl border border-slate-200 overflow-hidden"
                         >
                             <div className="p-5 bg-slate-50 border-b border-slate-200 flex justify-between items-center">
-                                <h4 className="text-[11px] font-black text-slate-900 uppercase flex items-center gap-2">
+                                <h4 className="text-xs font-bold text-slate-900 uppercase flex items-center gap-2">
                                     <UserPlus className="w-4 h-4 text-primary" /> New Quick Client
                                 </h4>
                                 <button type="button" onClick={() => setShowNewClient(false)} className="text-slate-400 hover:text-rose-500"><X className="w-5 h-5" /></button>
                             </div>
                             <div className="p-6 space-y-4">
                                 <div className="space-y-1.5">
-                                    <label className="text-[10px] font-black text-slate-400 uppercase">Customer Name</label>
+                                    <label className="text-xs font-semibold text-slate-500 uppercase">Customer Name</label>
                                     <input
                                         required
                                         type="text"
                                         placeholder="e.g. John Doe"
-                                        className="w-full bg-slate-50 border border-slate-200 p-3 text-xs font-black text-slate-900 outline-none rounded-xl"
+                                        className="w-full bg-slate-50 border border-slate-200 p-3 text-xs font-bold text-slate-900 outline-none rounded-xl"
                                         value={newClientForm.name}
                                         onChange={(e) => setNewClientForm({ ...newClientForm, name: e.target.value })}
                                     />
                                 </div>
                                 <div className="space-y-1.5">
-                                    <label className="text-[10px] font-black text-slate-400 uppercase">Contact Number</label>
+                                    <label className="text-xs font-semibold text-slate-500 uppercase">Contact Number</label>
                                     <input
                                         required
                                         type="tel"
                                         placeholder="10-digit mobile"
-                                        className="w-full bg-slate-50 border border-slate-200 p-3 text-xs font-black text-slate-900 outline-none rounded-xl"
+                                        className="w-full bg-slate-50 border border-slate-200 p-3 text-xs font-bold text-slate-900 outline-none rounded-xl"
                                         value={newClientForm.phone}
                                         onChange={(e) => setNewClientForm({ ...newClientForm, phone: e.target.value.replace(/\D/g, '').slice(0, 10) })}
                                     />
@@ -3464,7 +3460,7 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                                 <button
                                     type="submit"
                                     disabled={isSubmittingClient}
-                                    className="w-full py-3 bg-primary text-white font-black text-[11px] uppercase rounded-xl shadow-lg shadow-primary/20 hover:opacity-90 disabled:opacity-50"
+                                    className="w-full py-3 bg-primary text-white font-bold text-xs uppercase tracking-wider rounded-xl shadow-lg shadow-primary/20 hover:opacity-90 disabled:opacity-50"
                                 >
                                     {isSubmittingClient ? 'Creating...' : 'Create & Select'}
                                 </button>
