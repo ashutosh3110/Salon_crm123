@@ -2864,8 +2864,8 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                                     <div className="flex justify-between items-start">
                                         <div className="flex-1 pr-2">
                                             <p className="text-xs md:text-sm font-bold text-slate-800 uppercase leading-tight line-clamp-1">{item.name}</p>
-                                            <div className="flex items-center gap-2 mt-0.5">
-                                                <p className="text-xs md:text-sm font-bold text-emerald-600">₹{item.price}</p>
+                                            <div className="flex flex-wrap items-center gap-2 mt-1.5">
+                                                <p className="text-xs md:text-sm font-bold text-emerald-600 font-mono">₹{item.price}</p>
                                                 <span className={`text-[10px] md:text-xs font-semibold px-2 py-0.5 rounded border uppercase tracking-wider ${(item.isInclusiveTax === true || String(item.isInclusiveTax) === 'true' || (item.isInclusiveTax === undefined && fiscal?.inclusiveTax))
                                                     ? 'bg-emerald-50 border-emerald-200 text-emerald-600'
                                                     : 'bg-slate-50 border-slate-200 text-slate-400'
@@ -2873,136 +2873,137 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                                                     {(item.isInclusiveTax === true || String(item.isInclusiveTax) === 'true' || (item.isInclusiveTax === undefined && fiscal?.inclusiveTax)) ? 'Incl' : 'Excl'}
                                                 </span>
                                                 {item.type === 'service' && (
-                                                    <div className="flex items-center bg-slate-50 border border-slate-200 rounded-lg h-6 overflow-hidden ml-2">
+                                                    <div className="flex items-center bg-slate-50 border border-slate-200 rounded-lg h-6 overflow-hidden">
                                                         <button onClick={() => updateQQty(idx, -1)} className="px-1.5 hover:bg-slate-200 text-slate-400 transition-colors"><Minus className="w-2.5 h-2.5" /></button>
                                                         <span className="px-2 text-xs font-bold text-slate-800 border-x border-slate-200 flex items-center h-full bg-white">{item.quantity}</span>
                                                         <button onClick={() => updateQQty(idx, 1)} className="px-1.5 hover:bg-slate-200 text-slate-400 transition-colors"><Plus className="w-2.5 h-2.5" /></button>
                                                     </div>
                                                 )}
-                                            </div>
-                                            {(item.type === 'service' || item.type === 'product') && (
-                                                <div className="mt-2 flex items-center gap-1.5 bg-slate-50 border border-slate-200 rounded-lg p-1 transition-all w-fit">
-                                                    <Sparkles className="w-2.5 h-2.5 text-slate-500 animate-pulse" />
-                                                    <span className="text-xs md:text-sm font-semibold text-slate-500 uppercase tracking-wider">
-                                                        {qActiveMembership ? 'Mem. Disc:' : 'Discount:'}
-                                                    </span>
+                                                
+                                                {(item.type === 'service' || item.type === 'product') && (
+                                                    <div className="flex items-center gap-1 bg-slate-50 border border-slate-200 rounded-lg p-0.5 transition-all">
+                                                        <Sparkles className="w-2.5 h-2.5 text-slate-500 animate-pulse ml-1" />
+                                                        <span className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider">
+                                                            {qActiveMembership ? 'Mem:' : 'Disc:'}
+                                                        </span>
 
-                                                    {/* Toggle between % and ₹ */}
-                                                    <div className="flex items-center bg-white border border-slate-200 rounded overflow-hidden h-5">
-                                                        <button
-                                                            type="button"
-                                                            onClick={() => {
-                                                                const fallbackType = item.type === 'service'
-                                                                    ? (qActiveMembership?.planId?.serviceDiscountType || 'percentage')
-                                                                    : (qActiveMembership?.planId?.productDiscountType || 'percentage');
-                                                                const fallbackValue = item.type === 'service'
-                                                                    ? (qActiveMembership?.planId?.serviceDiscountType === 'fixed' ? qActiveMembership.planId.serviceDiscountValue : (qActiveMembership?.planId?.serviceDiscountValue || 0))
-                                                                    : (qActiveMembership?.planId?.productDiscountType === 'fixed' ? qActiveMembership.planId.productDiscountValue : (qActiveMembership?.planId?.productDiscountValue || 0));
-                                                                updateQItemMembershipDiscount(idx, 'percentage', item.membershipDiscountValue !== undefined ? item.membershipDiscountValue : fallbackValue);
-                                                            }}
-                                                            className={`px-1 text-xs font-bold h-full flex items-center ${(item.membershipDiscountType !== undefined
-                                                                ? item.membershipDiscountType
-                                                                : (item.type === 'service'
-                                                                    ? (qActiveMembership?.planId?.serviceDiscountType || 'percentage')
-                                                                    : (qActiveMembership?.planId?.productDiscountType || 'percentage')
-                                                                )
-                                                            ) === 'percentage'
-                                                                ? 'bg-slate-800 text-white'
-                                                                : 'text-slate-400 hover:bg-slate-50'
-                                                                }`}
-                                                        >
-                                                            %
-                                                        </button>
-                                                        <button
-                                                            type="button"
-                                                            onClick={() => {
-                                                                const fallbackType = item.type === 'service'
-                                                                    ? (qActiveMembership?.planId?.serviceDiscountType || 'percentage')
-                                                                    : (qActiveMembership?.planId?.productDiscountType || 'percentage');
-                                                                const fallbackValue = item.type === 'service'
-                                                                    ? (qActiveMembership?.planId?.serviceDiscountType === 'fixed' ? qActiveMembership.planId.serviceDiscountValue : (qActiveMembership?.planId?.serviceDiscountValue || 0))
-                                                                    : (qActiveMembership?.planId?.productDiscountType === 'fixed' ? qActiveMembership.planId.productDiscountValue : (qActiveMembership?.planId?.productDiscountValue || 0));
-                                                                updateQItemMembershipDiscount(idx, 'fixed', item.membershipDiscountValue !== undefined ? item.membershipDiscountValue : fallbackValue);
-                                                            }}
-                                                            className={`px-1 text-xs font-bold h-full flex items-center ${(item.membershipDiscountType !== undefined
-                                                                ? item.membershipDiscountType
-                                                                : (item.type === 'service'
-                                                                    ? (qActiveMembership?.planId?.serviceDiscountType || 'percentage')
-                                                                    : (qActiveMembership?.planId?.productDiscountType || 'percentage')
-                                                                )
-                                                            ) === 'fixed'
-                                                                ? 'bg-slate-800 text-white'
-                                                                : 'text-slate-400 hover:bg-slate-50'
-                                                                }`}
-                                                        >
-                                                            ₹
-                                                        </button>
-                                                    </div>
+                                                        {/* Toggle between % and ₹ */}
+                                                        <div className="flex items-center bg-white border border-slate-200 rounded overflow-hidden h-5">
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => {
+                                                                    const fallbackType = item.type === 'service'
+                                                                        ? (qActiveMembership?.planId?.serviceDiscountType || 'percentage')
+                                                                        : (qActiveMembership?.planId?.productDiscountType || 'percentage');
+                                                                    const fallbackValue = item.type === 'service'
+                                                                        ? (qActiveMembership?.planId?.serviceDiscountType === 'fixed' ? qActiveMembership.planId.serviceDiscountValue : (qActiveMembership?.planId?.serviceDiscountValue || 0))
+                                                                        : (qActiveMembership?.planId?.productDiscountType === 'fixed' ? qActiveMembership.planId.productDiscountValue : (qActiveMembership?.planId?.productDiscountValue || 0));
+                                                                    updateQItemMembershipDiscount(idx, 'percentage', item.membershipDiscountValue !== undefined ? item.membershipDiscountValue : fallbackValue);
+                                                                }}
+                                                                className={`px-1 text-xs font-bold h-full flex items-center ${(item.membershipDiscountType !== undefined
+                                                                    ? item.membershipDiscountType
+                                                                    : (item.type === 'service'
+                                                                        ? (qActiveMembership?.planId?.serviceDiscountType || 'percentage')
+                                                                        : (qActiveMembership?.planId?.productDiscountType || 'percentage')
+                                                                    )
+                                                                ) === 'percentage'
+                                                                    ? 'bg-slate-800 text-white'
+                                                                    : 'text-slate-400 hover:bg-slate-50'
+                                                                    }`}
+                                                            >
+                                                                %
+                                                            </button>
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => {
+                                                                    const fallbackType = item.type === 'service'
+                                                                        ? (qActiveMembership?.planId?.serviceDiscountType || 'percentage')
+                                                                        : (qActiveMembership?.planId?.productDiscountType || 'percentage');
+                                                                    const fallbackValue = item.type === 'service'
+                                                                        ? (qActiveMembership?.planId?.serviceDiscountType === 'fixed' ? qActiveMembership.planId.serviceDiscountValue : (qActiveMembership?.planId?.serviceDiscountValue || 0))
+                                                                        : (qActiveMembership?.planId?.productDiscountType === 'fixed' ? qActiveMembership.planId.productDiscountValue : (qActiveMembership?.planId?.productDiscountValue || 0));
+                                                                    updateQItemMembershipDiscount(idx, 'fixed', item.membershipDiscountValue !== undefined ? item.membershipDiscountValue : fallbackValue);
+                                                                }}
+                                                                className={`px-1 text-xs font-bold h-full flex items-center ${(item.membershipDiscountType !== undefined
+                                                                    ? item.membershipDiscountType
+                                                                    : (item.type === 'service'
+                                                                        ? (qActiveMembership?.planId?.serviceDiscountType || 'percentage')
+                                                                        : (qActiveMembership?.planId?.productDiscountType || 'percentage')
+                                                                    )
+                                                                ) === 'fixed'
+                                                                    ? 'bg-slate-800 text-white'
+                                                                    : 'text-slate-400 hover:bg-slate-50'
+                                                                    }`}
+                                                            >
+                                                                ₹
+                                                            </button>
+                                                        </div>
 
-                                                    {/* Numeric Input */}
-                                                    <input
-                                                        type="number"
-                                                        min="0"
-                                                        max={
-                                                            (item.membershipDiscountType !== undefined
-                                                                ? item.membershipDiscountType
-                                                                : (item.type === 'service'
-                                                                    ? (qActiveMembership?.planId?.serviceDiscountType || 'percentage')
-                                                                    : (qActiveMembership?.planId?.productDiscountType || 'percentage')
-                                                                )
-                                                            ) === 'percentage'
-                                                                ? '100'
-                                                                : String(item.price)
-                                                        }
-                                                        value={
-                                                            item.membershipDiscountValue !== undefined
-                                                                ? item.membershipDiscountValue
-                                                                : (item.type === 'service'
-                                                                    ? (qActiveMembership?.planId?.serviceDiscountValue || 0)
-                                                                    : (qActiveMembership?.planId?.productDiscountValue || 0)
-                                                                )
-                                                        }
-                                                        onChange={(e) => {
-                                                            const val = Math.max(0, Number(e.target.value) || 0);
+                                                        {/* Numeric Input */}
+                                                        <input
+                                                            type="number"
+                                                            min="0"
+                                                            max={
+                                                                (item.membershipDiscountType !== undefined
+                                                                    ? item.membershipDiscountType
+                                                                    : (item.type === 'service'
+                                                                        ? (qActiveMembership?.planId?.serviceDiscountType || 'percentage')
+                                                                        : (qActiveMembership?.planId?.productDiscountType || 'percentage')
+                                                                    )
+                                                                ) === 'percentage'
+                                                                    ? '100'
+                                                                    : String(item.price)
+                                                            }
+                                                            value={
+                                                                item.membershipDiscountValue !== undefined
+                                                                    ? item.membershipDiscountValue
+                                                                    : (item.type === 'service'
+                                                                        ? (qActiveMembership?.planId?.serviceDiscountValue || 0)
+                                                                        : (qActiveMembership?.planId?.productDiscountValue || 0)
+                                                                    )
+                                                            }
+                                                            onChange={(e) => {
+                                                                const val = Math.max(0, Number(e.target.value) || 0);
+                                                                const currentType = item.membershipDiscountType !== undefined
+                                                                    ? item.membershipDiscountType
+                                                                    : (item.type === 'service'
+                                                                        ? (qActiveMembership?.planId?.serviceDiscountType || 'percentage')
+                                                                        : (qActiveMembership?.planId?.productDiscountType || 'percentage')
+                                                                    );
+                                                                updateQItemMembershipDiscount(idx, currentType, val);
+                                                            }}
+                                                            className="w-10 bg-white border border-slate-200 rounded text-xs font-medium text-center h-5 focus:outline-none focus:border-slate-400 text-slate-800"
+                                                        />
+                                                        {(() => {
                                                             const currentType = item.membershipDiscountType !== undefined
                                                                 ? item.membershipDiscountType
                                                                 : (item.type === 'service'
                                                                     ? (qActiveMembership?.planId?.serviceDiscountType || 'percentage')
                                                                     : (qActiveMembership?.planId?.productDiscountType || 'percentage')
                                                                 );
-                                                            updateQItemMembershipDiscount(idx, currentType, val);
-                                                        }}
-                                                        className="w-12 bg-white border border-slate-200 rounded text-xs font-medium text-center h-6 focus:outline-none focus:border-slate-400 text-slate-800"
-                                                    />
-                                                    {(() => {
-                                                        const currentType = item.membershipDiscountType !== undefined
-                                                            ? item.membershipDiscountType
-                                                            : (item.type === 'service'
-                                                                ? (qActiveMembership?.planId?.serviceDiscountType || 'percentage')
-                                                                : (qActiveMembership?.planId?.productDiscountType || 'percentage')
+                                                            const currentValue = Number(
+                                                                item.membershipDiscountValue !== undefined
+                                                                    ? item.membershipDiscountValue
+                                                                    : (item.type === 'service'
+                                                                        ? (qActiveMembership?.planId?.serviceDiscountValue || 0)
+                                                                        : (qActiveMembership?.planId?.productDiscountValue || 0)
+                                                                    )
                                                             );
-                                                        const currentValue = Number(
-                                                            item.membershipDiscountValue !== undefined
-                                                                ? item.membershipDiscountValue
-                                                                : (item.type === 'service'
-                                                                    ? (qActiveMembership?.planId?.serviceDiscountValue || 0)
-                                                                    : (qActiveMembership?.planId?.productDiscountValue || 0)
-                                                                )
-                                                        );
-                                                        const appliedRupeeDiscount = currentType === 'percentage' ? (Number(item.price) * Number(item.quantity) * currentValue) / 100 : currentValue * Number(item.quantity);
-                                                        if (appliedRupeeDiscount > 0) {
-                                                            return (
-                                                                <span className="text-xs font-bold text-emerald-600 font-mono bg-emerald-50 border border-emerald-100 px-2 py-0.5 rounded flex items-center shrink-0 ml-1 animate-in zoom-in-95">
-                                                                    -₹{appliedRupeeDiscount.toFixed(0)}
-                                                                </span>
-                                                            );
-                                                        }
-                                                        return null;
-                                                    })()}
-                                                </div>
-                                            )}
+                                                            const appliedRupeeDiscount = currentType === 'percentage' ? (Number(item.price) * Number(item.quantity) * currentValue) / 100 : currentValue * Number(item.quantity);
+                                                            if (appliedRupeeDiscount > 0) {
+                                                                return (
+                                                                    <span className="text-[10px] font-bold text-emerald-600 font-mono bg-emerald-50 border border-emerald-100 px-1 py-0.5 rounded flex items-center shrink-0 ml-0.5 animate-in zoom-in-95">
+                                                                        -₹{appliedRupeeDiscount.toFixed(0)}
+                                                                    </span>
+                                                                );
+                                                            }
+                                                            return null;
+                                                        })()}
+                                                    </div>
+                                                )}
+                                            </div>
                                         </div>
-                                        <button onClick={() => setQCart(qCart.filter((_, i) => i !== idx))} className="p-1.5 bg-rose-50 hover:bg-rose-500 text-rose-500 hover:text-white rounded-lg transition-all shadow-sm border border-rose-100 hover:border-rose-500 flex items-center justify-center group" title="Delete item">
+                                        <button onClick={() => setQCart(qCart.filter((_, i) => i !== idx))} className="p-1.5 bg-rose-50 hover:bg-rose-500 text-rose-500 hover:text-white rounded-lg transition-all shadow-sm border border-rose-100 hover:border-rose-500 flex items-center justify-center group shrink-0" title="Delete item">
                                             <Trash2 className="w-3.5 h-3.5 transition-transform duration-200 group-hover:scale-110" />
                                         </button>
                                     </div>
