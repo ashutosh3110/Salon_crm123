@@ -359,18 +359,18 @@ export default function Sidebar({ collapsed, setCollapsed, isHovered, setIsHover
                                     <button
                                         onClick={() => !isLocked && toggleExpand(item.label)}
                                         title={effectiveCollapsed ? item.label : undefined}
-                                        className={`flex items-center justify-between w-full rounded-2xl text-[15px] font-medium transition-all duration-200 ease-out group relative cursor-pointer
+                                        className={`flex items-center justify-between w-full rounded-2xl text-[15px] font-bold transition-all duration-200 ease-out group relative cursor-pointer
                                             ${effectiveCollapsed ? 'justify-center h-11 w-11 mx-auto' : 'px-4 py-3 gap-3'}
                                             ${active
-                                                ? 'bg-[#f8fafc] text-[#0f172a] shadow-sm border border-[#e2e8f0]'
-                                                : 'border border-transparent text-[#64748b] hover:bg-[#f8fafc] hover:text-[#0f172a]'
+                                                ? 'bg-[#B4912B] text-white shadow-sm border border-[#B4912B]'
+                                                : 'border border-transparent text-[#64748b] hover:bg-[#B4912B]/10 hover:text-[#B4912B]'
                                             } ${isLocked ? 'opacity-40 grayscale !pointer-events-none !cursor-not-allowed !select-none' : ''}`}
                                     >
                                         <div className="flex items-center gap-3">
                                             <item.icon
-                                                className={`w-5 h-5 shrink-0 ${active ? 'text-[#0f172a]' : 'text-[#64748b] group-hover:text-[#0f172a]'}`}
+                                                className={`w-5 h-5 shrink-0 ${active ? 'text-white' : 'text-[#64748b] group-hover:text-[#B4912B]'}`}
                                             />
-                                            {!effectiveCollapsed && <span className="whitespace-nowrap">{item.label}</span>}
+                                            {!effectiveCollapsed && <span className="whitespace-nowrap font-bold">{item.label}</span>}
                                         </div>
                                         {!effectiveCollapsed && (
                                             <div className="flex items-center gap-1.5">
@@ -402,13 +402,13 @@ export default function Sidebar({ collapsed, setCollapsed, isHovered, setIsHover
                                                             key={sub.path}
                                                             to={isLocked ? '#' : sub.path}
                                                             onClick={(e) => { if (isLocked) e.preventDefault(); else setMobileOpen(false); }}
-                                                            className={`flex items-center justify-between py-2.5 px-4 rounded-xl text-[13px] font-semibold transition-all duration-200 relative
+                                                            className={`flex items-center justify-between py-2.5 px-4 rounded-xl text-[13px] font-bold transition-all duration-200 relative
                                                                 ${isSubActive
-                                                                    ? 'bg-[#f1f5f9] text-[#0f172a]'
-                                                                    : 'text-[#64748b] hover:text-[#0f172a] hover:bg-[#f8fafc]'
+                                                                    ? 'bg-[#B4912B] text-white shadow-sm'
+                                                                    : 'text-[#64748b] hover:text-[#B4912B] hover:bg-[#B4912B]/10'
                                                                 } ${isLocked ? 'opacity-40 grayscale !pointer-events-none !cursor-not-allowed !select-none' : ''}`}
                                                         >
-                                                            <span>{sub.label}</span>
+                                                            <span className="font-bold">{sub.label}</span>
                                                             {!isLocked && sub.badge && (
                                                                 <span className={`px-1.5 py-0.5 rounded-md text-[9px] text-white font-semibold ${sub.badge.color}`}>
                                                                     {sub.badge.count}
@@ -429,11 +429,11 @@ export default function Sidebar({ collapsed, setCollapsed, isHovered, setIsHover
                                     title={effectiveCollapsed ? item.label : undefined}
                                     className={({ isActive: isItemActive }) => {
                                         const currentActive = isItemActive && !isLocked;
-                                        return `flex items-center rounded-2xl text-[15px] font-medium transition-all duration-200 ease-out group relative
+                                        return `flex items-center rounded-2xl text-[15px] font-bold transition-all duration-200 ease-out group relative
                                             ${effectiveCollapsed ? 'justify-center h-11 w-11 mx-auto' : 'px-4 py-3 gap-3'}
                                             ${currentActive
-                                                ? 'bg-[#f8fafc] text-[#0f172a] shadow-sm border border-[#e2e8f0]'
-                                                : 'border border-transparent text-[#64748b] hover:bg-[#f8fafc] hover:text-[#0f172a]'
+                                                ? 'bg-[#B4912B] text-white shadow-sm border border-[#B4912B]'
+                                                : 'border border-transparent text-[#64748b] hover:bg-[#B4912B]/10 hover:text-[#B4912B]'
                                             } ${isLocked ? 'opacity-40 grayscale !pointer-events-none !cursor-not-allowed !select-none' : ''}`;
                                     }}
                                 >
@@ -442,11 +442,11 @@ export default function Sidebar({ collapsed, setCollapsed, isHovered, setIsHover
                                         return (
                                             <>
                                                 <item.icon
-                                                    className={`w-5 h-5 shrink-0 ${currentActive ? 'text-[#0f172a]' : 'text-[#64748b] group-hover:text-[#0f172a]'}`}
+                                                    className={`w-5 h-5 shrink-0 ${currentActive ? 'text-white' : 'text-[#64748b] group-hover:text-[#B4912B]'}`}
                                                 />
                                                 {!effectiveCollapsed && (
                                                     <div className="flex items-center justify-between flex-1">
-                                                        <span className="whitespace-nowrap">{item.label}</span>
+                                                        <span className="whitespace-nowrap font-bold">{item.label}</span>
                                                         {isLocked && <Lock className="w-3 h-3 text-text-muted/60" />}
                                                     </div>
                                                 )}
@@ -486,12 +486,12 @@ export default function Sidebar({ collapsed, setCollapsed, isHovered, setIsHover
             <div className={`border-t border-[#e2e8f0] ${effectiveCollapsed ? 'p-2' : 'px-4 py-3'}`}>
                 <button
                     onClick={logout}
-                    className={`flex items-center rounded-2xl text-[15px] font-medium text-[#64748b] hover:bg-red-50 hover:text-red-600 transition-all duration-200 group cursor-pointer border-0
+                    className={`flex items-center rounded-2xl text-[15px] font-bold text-[#64748b] hover:bg-red-50 hover:text-red-600 transition-all duration-200 group cursor-pointer border-0
                         ${effectiveCollapsed ? 'justify-center h-11 w-11 mx-auto relative' : 'w-full px-4 py-3 gap-3'}`}
                     title={effectiveCollapsed ? 'Logout' : undefined}
                 >
                     <LogOut className="shrink-0 w-5 h-5 text-[#64748b] group-hover:text-red-600 transition-colors" />
-                    {!effectiveCollapsed && <span className="animate-in fade-in slide-in-from-left-2 duration-300">Logout</span>}
+                    {!effectiveCollapsed && <span className="animate-in fade-in slide-in-from-left-2 duration-300 font-bold">Logout</span>}
                     {effectiveCollapsed && (
                         <div className="absolute left-[52px] px-2.5 py-1.5 rounded-lg bg-slate-900 dark:bg-surface-alt text-white text-[11px] whitespace-nowrap opacity-0 group-hover:opacity-100 pointer-events-none z-[100] shadow-xl transition-opacity border border-slate-700 dark:border-border">
                             Logout

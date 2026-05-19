@@ -2860,35 +2860,32 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                                     <p className="text-xs font-bold uppercase tracking-wider">Select services to begin</p>
                                 </div>
                             ) : qCart.map((item, idx) => (
-                                <div key={idx} className="bg-white border border-slate-200 p-3 rounded-xl shadow-sm space-y-3 relative">
+                                <div key={idx} className="bg-white border border-slate-200 p-4 rounded-xl shadow-sm space-y-3 relative">
                                     <div className="flex justify-between items-start">
-                                        <div className="flex-1 pr-2">
-                                            <p className="text-xs md:text-sm font-bold text-slate-800 uppercase leading-tight line-clamp-1">{item.name}</p>
-                                            <div className="flex flex-wrap items-center gap-2 mt-1.5">
-                                                <p className="text-xs md:text-sm font-bold text-emerald-600 font-mono">₹{item.price}</p>
-                                                <span className={`text-[10px] md:text-xs font-semibold px-2 py-0.5 rounded border uppercase tracking-wider ${(item.isInclusiveTax === true || String(item.isInclusiveTax) === 'true' || (item.isInclusiveTax === undefined && fiscal?.inclusiveTax))
+                                        <div className="flex-1 pr-10">
+                                            <p className="text-base md:text-lg font-black text-slate-900 uppercase leading-tight line-clamp-1">{item.name}</p>
+                                            <div className="flex flex-wrap lg:flex-nowrap items-center gap-1 mt-2 w-full">
+                                                <p className="text-sm md:text-base font-black text-emerald-600 font-mono shrink-0">₹{item.price}</p>
+                                                <span className={`text-[10px] font-black px-1.5 py-0.5 rounded border uppercase tracking-wider shrink-0 ${(item.isInclusiveTax === true || String(item.isInclusiveTax) === 'true' || (item.isInclusiveTax === undefined && fiscal?.inclusiveTax))
                                                     ? 'bg-emerald-50 border-emerald-200 text-emerald-600'
                                                     : 'bg-slate-50 border-slate-200 text-slate-400'
                                                     }`}>
                                                     {(item.isInclusiveTax === true || String(item.isInclusiveTax) === 'true' || (item.isInclusiveTax === undefined && fiscal?.inclusiveTax)) ? 'Incl' : 'Excl'}
                                                 </span>
                                                 {item.type === 'service' && (
-                                                    <div className="flex items-center bg-slate-50 border border-slate-200 rounded-lg h-6 overflow-hidden">
-                                                        <button onClick={() => updateQQty(idx, -1)} className="px-1.5 hover:bg-slate-200 text-slate-400 transition-colors"><Minus className="w-2.5 h-2.5" /></button>
+                                                    <div className="flex items-center bg-slate-50 border border-slate-200 rounded-lg h-7 overflow-hidden shadow-sm shrink-0">
+                                                        <button onClick={() => updateQQty(idx, -1)} className="px-2 hover:bg-slate-200 text-slate-500 transition-colors"><Minus className="w-3 h-3" /></button>
                                                         <span className="px-2 text-xs font-bold text-slate-800 border-x border-slate-200 flex items-center h-full bg-white">{item.quantity}</span>
-                                                        <button onClick={() => updateQQty(idx, 1)} className="px-1.5 hover:bg-slate-200 text-slate-400 transition-colors"><Plus className="w-2.5 h-2.5" /></button>
+                                                        <button onClick={() => updateQQty(idx, 1)} className="px-2 hover:bg-slate-200 text-slate-500 transition-colors"><Plus className="w-3 h-3" /></button>
                                                     </div>
                                                 )}
                                                 
                                                 {(item.type === 'service' || item.type === 'product') && (
-                                                    <div className="flex items-center gap-1 bg-slate-50 border border-slate-200 rounded-lg p-0.5 transition-all">
-                                                        <Sparkles className="w-2.5 h-2.5 text-slate-500 animate-pulse ml-1" />
-                                                        <span className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider">
-                                                            {qActiveMembership ? 'Mem:' : 'Disc:'}
-                                                        </span>
+                                                    <div className="flex items-center gap-0.5 bg-slate-50 border border-slate-200 rounded-lg p-0.5 transition-all shadow-sm shrink-0">
+                                                        <Sparkles className="w-3 h-3 text-slate-500 animate-pulse ml-0.5" />
 
                                                         {/* Toggle between % and ₹ */}
-                                                        <div className="flex items-center bg-white border border-slate-200 rounded overflow-hidden h-5">
+                                                        <div className="flex items-center bg-white border border-slate-200 rounded overflow-hidden h-7">
                                                             <button
                                                                 type="button"
                                                                 onClick={() => {
@@ -2900,7 +2897,7 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                                                                         : (qActiveMembership?.planId?.productDiscountType === 'fixed' ? qActiveMembership.planId.productDiscountValue : (qActiveMembership?.planId?.productDiscountValue || 0));
                                                                     updateQItemMembershipDiscount(idx, 'percentage', item.membershipDiscountValue !== undefined ? item.membershipDiscountValue : fallbackValue);
                                                                 }}
-                                                                className={`px-1 text-xs font-bold h-full flex items-center ${(item.membershipDiscountType !== undefined
+                                                                className={`px-1 text-xs font-black h-full flex items-center ${(item.membershipDiscountType !== undefined
                                                                     ? item.membershipDiscountType
                                                                     : (item.type === 'service'
                                                                         ? (qActiveMembership?.planId?.serviceDiscountType || 'percentage')
@@ -2924,7 +2921,7 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                                                                         : (qActiveMembership?.planId?.productDiscountType === 'fixed' ? qActiveMembership.planId.productDiscountValue : (qActiveMembership?.planId?.productDiscountValue || 0));
                                                                     updateQItemMembershipDiscount(idx, 'fixed', item.membershipDiscountValue !== undefined ? item.membershipDiscountValue : fallbackValue);
                                                                 }}
-                                                                className={`px-1 text-xs font-bold h-full flex items-center ${(item.membershipDiscountType !== undefined
+                                                                className={`px-1 text-xs font-black h-full flex items-center ${(item.membershipDiscountType !== undefined
                                                                     ? item.membershipDiscountType
                                                                     : (item.type === 'service'
                                                                         ? (qActiveMembership?.planId?.serviceDiscountType || 'percentage')
@@ -2972,7 +2969,7 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                                                                     );
                                                                 updateQItemMembershipDiscount(idx, currentType, val);
                                                             }}
-                                                            className="w-10 bg-white border border-slate-200 rounded text-xs font-medium text-center h-5 focus:outline-none focus:border-slate-400 text-slate-800"
+                                                            className="w-10 bg-white border border-slate-350 rounded text-xs font-extrabold text-center h-7 focus:outline-none focus:border-slate-500 text-slate-800 shrink-0"
                                                         />
                                                         {(() => {
                                                             const currentType = item.membershipDiscountType !== undefined
@@ -2992,7 +2989,7 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                                                             const appliedRupeeDiscount = currentType === 'percentage' ? (Number(item.price) * Number(item.quantity) * currentValue) / 100 : currentValue * Number(item.quantity);
                                                             if (appliedRupeeDiscount > 0) {
                                                                 return (
-                                                                    <span className="text-[10px] font-bold text-emerald-600 font-mono bg-emerald-50 border border-emerald-100 px-1 py-0.5 rounded flex items-center shrink-0 ml-0.5 animate-in zoom-in-95">
+                                                                    <span className="text-[10px] font-black text-emerald-600 font-mono bg-emerald-50 border border-emerald-100 px-1 py-0.5 rounded flex items-center shrink-0 ml-0.5 animate-in zoom-in-95">
                                                                         -₹{appliedRupeeDiscount.toFixed(0)}
                                                                     </span>
                                                                 );
@@ -3003,7 +3000,7 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                                                 )}
                                             </div>
                                         </div>
-                                        <button onClick={() => setQCart(qCart.filter((_, i) => i !== idx))} className="p-1.5 bg-rose-50 hover:bg-rose-500 text-rose-500 hover:text-white rounded-lg transition-all shadow-sm border border-rose-100 hover:border-rose-500 flex items-center justify-center group shrink-0" title="Delete item">
+                                        <button onClick={() => setQCart(qCart.filter((_, i) => i !== idx))} className="absolute top-5 right-5 p-1.5 bg-rose-50 hover:bg-rose-500 text-rose-500 hover:text-white rounded-full transition-all shadow-sm border border-rose-100 hover:border-rose-500 flex items-center justify-center group shrink-0" title="Delete item">
                                             <Trash2 className="w-3.5 h-3.5 transition-transform duration-200 group-hover:scale-110" />
                                         </button>
                                     </div>
