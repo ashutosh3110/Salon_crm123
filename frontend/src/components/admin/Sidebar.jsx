@@ -149,6 +149,9 @@ export default function Sidebar({ collapsed, setCollapsed, isHovered, setIsHover
                 category: 'Operations',
                 subItems: [
                     { label: 'Dashboard', icon: LayoutDashboard, path: '/admin/finance/dashboard' },
+                    { label: 'Transactions', icon: ArrowDownUp, path: '/admin/finance/transactions' },
+                    { label: 'Cash Book', icon: Wallet, path: '/admin/finance/cash-book' },
+                    { label: 'Bank Book', icon: CreditCard, path: '/admin/finance/bank-book' },
                     { label: 'Expenses', icon: DollarSign, path: '/admin/finance/expenses' },
                     { label: 'Sales Reports', icon: FileText, path: '/admin/finance/reports' },
                     { label: 'Day Closing', icon: Lock, path: '/admin/finance/eod' },

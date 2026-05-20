@@ -25,12 +25,18 @@ const {
     getEODSummary,
     getEODHistory,
     closeEOD,
-    getGSTSummary
+    getGSTSummary,
+    getTransactions,
+    addTransaction
 } = require('../Controllers/financeController');
 
 // All routes are protected and for admin/manager
 router.use(protect);
 router.use(authorize('admin', 'manager', 'superadmin'));
+
+// General Transactions
+router.get('/transactions', getTransactions);
+router.post('/transactions', addTransaction);
 
 // Suppliers
 router.get('/suppliers', getSuppliers);

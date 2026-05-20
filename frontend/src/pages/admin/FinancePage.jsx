@@ -25,6 +25,8 @@ import FinanceDashboard from '../../components/admin/finance/FinanceDashboard';
 import ExpenseTracker from '../../components/admin/finance/ExpenseTracker';
 import SalesReports from '../../components/admin/finance/SalesReports';
 import EndOfDay from '../../components/admin/finance/EndOfDay';
+import Transactions from '../../components/admin/finance/Transactions';
+import CashAndBank from '../../components/admin/finance/CashAndBank';
 
 const CHART_COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'];
 
@@ -299,6 +301,9 @@ export default function FinancePage({ tab = 'dashboard' }) {
                         onRetry={loadFinance}
                     />
                 )}
+                {activeTab === 'transactions' && <Transactions />}
+                {activeTab === 'cash-book' && <CashAndBank type="cash" />}
+                {activeTab === 'bank-book' && <CashAndBank type="bank" />}
                 {activeTab === 'expenses' && <ExpenseTracker />}
                 {activeTab === 'reports' && <SalesReports />}
                 {activeTab === 'eod' && <EndOfDay />}

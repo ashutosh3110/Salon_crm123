@@ -335,11 +335,26 @@ exports.getFinanceSummary = async (req, res) => {
         const now = new Date();
         const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
         
-        // 1. Transactions and Balances
+        // Fetch POS invoices and ledger transactions
+        const invoices = await Invoice.find({ salonId, status: { $ne: 'cancelled' } });
         const transactions = await FinanceTransaction.find({ salonId }).sort({ date: -1 });
         
+        // 1. Transactions and Balances
         let cashInHand = 0;
         let bankBalance = 0;
+
+        // Add POS payments
+        invoices.forEach(inv => {
+            (inv.payments || []).forEach(p => {
+                if (p.method === 'cash') {
+                    cashInHand += (p.amount || 0);
+                } else if (['card', 'upi', 'online', 'bank_transfer', 'cheque'].includes(p.method)) {
+                    bankBalance += (p.amount || 0);
+                }
+            });
+        });
+
+        // Add ledger transactions
         transactions.forEach(t => {
             const amt = t.type === 'income' ? t.amount : -t.amount;
             if (t.accountType === 'cash') cashInHand += amt;
@@ -348,7 +363,16 @@ exports.getFinanceSummary = async (req, res) => {
 
         // 2. KPIs (MTD)
         const monthlyTransactions = transactions.filter(t => t.date >= startOfMonth);
-        const grossInflow = monthlyTransactions.filter(t => t.type === 'income').reduce((s, t) => s + t.amount, 0);
+        
+        const mtdInvoices = invoices.filter(inv => inv.createdAt >= startOfMonth);
+        let mtdSales = 0;
+        mtdInvoices.forEach(inv => {
+            (inv.payments || []).forEach(p => {
+                mtdSales += (p.amount || 0);
+            });
+        });
+
+        const grossInflow = mtdSales + monthlyTransactions.filter(t => t.type === 'income').reduce((s, t) => s + t.amount, 0);
         const totalExpenses = monthlyTransactions.filter(t => t.type === 'expense').reduce((s, t) => s + t.amount, 0);
 
         // 3. Monthly Trend (Last 12 Months)
@@ -359,9 +383,18 @@ exports.getFinanceSummary = async (req, res) => {
             const mEnd = new Date(d.getFullYear(), d.getMonth() + 1, 0);
             
             const monthTx = transactions.filter(t => t.date >= mStart && t.date <= mEnd);
+            const monthInvoices = invoices.filter(inv => inv.createdAt >= mStart && inv.createdAt <= mEnd);
+            
+            let monthSales = 0;
+            monthInvoices.forEach(inv => {
+                (inv.payments || []).forEach(p => {
+                    monthSales += (p.amount || 0);
+                });
+            });
+
             monthlyTrend.push({
                 name: d.toLocaleString('default', { month: 'short' }),
-                revenue: monthTx.filter(t => t.type === 'income').reduce((s, t) => s + t.amount, 0),
+                revenue: monthSales + monthTx.filter(t => t.type === 'income').reduce((s, t) => s + t.amount, 0),
                 expense: monthTx.filter(t => t.type === 'expense').reduce((s, t) => s + t.amount, 0)
             });
         }
@@ -384,7 +417,7 @@ exports.getFinanceSummary = async (req, res) => {
             label: t.description,
             amount: t.amount,
             type: t.type,
-            staff: 'System', // Can be updated to populate user
+            staff: 'System',
             at: t.date
         }));
 
@@ -392,13 +425,13 @@ exports.getFinanceSummary = async (req, res) => {
             success: true,
             data: {
                 cashPosition: {
-                    openingCash: 0, // Could pull from last EOD
+                    openingCash: cashInHand, // Actual cash in hand position
                     bankBalance
                 },
                 kpis: {
                     grossInflow,
                     totalExpenses,
-                    supplierPurchasesMtd: 0, // Calculate from invoices
+                    supplierPurchasesMtd: 0,
                     pendingRefunds: 0,
                     netLiquidity: grossInflow - totalExpenses
                 },
@@ -552,20 +585,88 @@ exports.getCashBank = async (req, res) => {
         const start = new Date(date); start.setHours(0, 0, 0, 0);
         const end = new Date(date); end.setHours(23, 59, 59, 999);
 
-        const invoices = await Invoice.find({ salonId, createdAt: { $gte: start, $lte: end } });
-        const expenses = await Expense.find({ salonId, date: { $gte: start, $lte: end } });
+        // Fetch opening cash/bank from the latest EndOfDay record before today
+        const prevEod = await EndOfDay.findOne({
+            salonId,
+            date: { $lt: start }
+        }).sort({ date: -1 });
 
-        const cashSales = invoices.filter(i => i.paymentMethod === 'cash').reduce((s, i) => s + (i.total || 0), 0);
-        const bankSales = invoices.filter(i => i.paymentMethod !== 'cash').reduce((s, i) => s + (i.total || 0), 0);
-        const cashExpenses = expenses.filter(e => e.paymentMethod === 'cash').reduce((s, e) => s + (e.amount || 0), 0);
-        const bankExpenses = expenses.filter(e => e.paymentMethod !== 'cash').reduce((s, e) => s + (e.amount || 0), 0);
+        const openingCash = prevEod ? prevEod.actualCash : 0;
+        const openingBank = prevEod ? (prevEod.actualBank || 0) : 0;
+
+        // Fetch POS invoices
+        const invoices = await Invoice.find({ salonId, createdAt: { $gte: start, $lte: end }, status: { $ne: 'cancelled' } });
+        let cashSales = 0;
+        let bankSales = 0;
+        invoices.forEach(i => {
+            (i.payments || []).forEach(p => {
+                if (p.method === 'cash') {
+                    cashSales += (p.amount || 0);
+                } else if (['card', 'upi', 'online', 'bank_transfer', 'cheque'].includes(p.method)) {
+                    bankSales += (p.amount || 0);
+                }
+            });
+        });
+
+        // Fetch other ledger transactions
+        const transactions = await FinanceTransaction.find({ salonId, date: { $gte: start, $lte: end } });
+        let otherCashIncome = 0;
+        let otherBankIncome = 0;
+        let cashExpenses = 0;
+        let bankExpenses = 0;
+
+        transactions.forEach(t => {
+            if (t.type === 'income') {
+                if (t.accountType === 'cash') {
+                    otherCashIncome += t.amount;
+                } else {
+                    otherBankIncome += t.amount;
+                }
+            } else if (t.type === 'expense') {
+                if (t.accountType === 'cash') {
+                    cashExpenses += t.amount;
+                } else {
+                    bankExpenses += t.amount;
+                }
+            }
+        });
+
+        const totalCashIncome = cashSales + otherCashIncome;
+        const totalBankIncome = bankSales + otherBankIncome;
+
+        const expectedCash = openingCash + totalCashIncome - cashExpenses;
+        const expectedBank = openingBank + totalBankIncome - bankExpenses;
+
+        // Find saved EOD for this day (can be draft pending or closed)
+        const saved = await EndOfDay.findOne({ salonId, date: { $gte: start, $lte: end } });
 
         res.json({
             success: true,
             data: {
-                cash: { opening: 0, sales: cashSales, expenses: cashExpenses, net: cashSales - cashExpenses },
-                bank: { opening: 0, sales: bankSales, expenses: bankExpenses, net: bankSales - bankExpenses },
-                saved: null
+                cash: {
+                    opening: openingCash,
+                    sales: totalCashIncome,
+                    expenses: cashExpenses,
+                    net: expectedCash
+                },
+                bank: {
+                    opening: openingBank,
+                    sales: totalBankIncome,
+                    expenses: bankExpenses,
+                    net: expectedBank
+                },
+                saved: saved ? {
+                    actualCash: saved.actualCash,
+                    actualBank: saved.actualBank,
+                    notes: saved.notes,
+                    status: saved.status
+                } : null,
+                meta: {
+                    invoiceCashLabel: `POS Cash (₹${cashSales.toLocaleString('en-IN')}) + Other Cash Inflows (₹${otherCashIncome.toLocaleString('en-IN')})`,
+                    invoiceBankLabel: `POS Online (₹${bankSales.toLocaleString('en-IN')}) + Other Bank Inflows (₹${otherBankIncome.toLocaleString('en-IN')})`,
+                    expenseCashLabel: `Cash Outflows (₹${cashExpenses.toLocaleString('en-IN')})`,
+                    expenseBankLabel: `Bank Outflows (₹${bankExpenses.toLocaleString('en-IN')})`
+                }
             }
         });
     } catch (err) {
@@ -575,7 +676,84 @@ exports.getCashBank = async (req, res) => {
 
 exports.reconcileCashBank = async (req, res) => {
     try {
-        res.json({ success: true, data: { ...req.body, reconciled: true } });
+        const salonId = req.user.salonId;
+        const { businessDate, actualCash, actualBank, notes, locked } = req.body;
+
+        const date = businessDate ? new Date(businessDate) : new Date();
+        const start = new Date(date); start.setHours(0, 0, 0, 0);
+        const end = new Date(date); end.setHours(23, 59, 59, 999);
+
+        // Fetch opening cash/bank from the latest EndOfDay record before today
+        const prevEod = await EndOfDay.findOne({
+            salonId,
+            date: { $lt: start }
+        }).sort({ date: -1 });
+
+        const openingCash = prevEod ? prevEod.actualCash : 0;
+        const openingBank = prevEod ? (prevEod.actualBank || 0) : 0;
+
+        // Fetch POS invoices
+        const invoices = await Invoice.find({ salonId, createdAt: { $gte: start, $lte: end }, status: { $ne: 'cancelled' } });
+        let cashSales = 0;
+        let bankSales = 0;
+        invoices.forEach(i => {
+            (i.payments || []).forEach(p => {
+                if (p.method === 'cash') cashSales += (p.amount || 0);
+                else if (['card', 'upi', 'online', 'bank_transfer', 'cheque'].includes(p.method)) bankSales += (p.amount || 0);
+            });
+        });
+
+        // Fetch other ledger transactions
+        const transactions = await FinanceTransaction.find({ salonId, date: { $gte: start, $lte: end } });
+        let otherCashIncome = 0;
+        let otherBankIncome = 0;
+        let cashExpenses = 0;
+        let bankExpenses = 0;
+
+        transactions.forEach(t => {
+            if (t.type === 'income') {
+                if (t.accountType === 'cash') otherCashIncome += t.amount;
+                else otherBankIncome += t.amount;
+            } else if (t.type === 'expense') {
+                if (t.accountType === 'cash') cashExpenses += t.amount;
+                else bankExpenses += t.amount;
+            }
+        });
+
+        const totalCashIncome = cashSales + otherCashIncome;
+        const totalBankIncome = bankSales + otherBankIncome;
+
+        const expectedCash = openingCash + totalCashIncome - cashExpenses;
+        const expectedBank = openingBank + totalBankIncome - bankExpenses;
+
+        const discrepancy = actualCash - expectedCash;
+        const bankDiscrepancy = actualBank - expectedBank;
+
+        // Save or update EndOfDay report
+        const report = await EndOfDay.findOneAndUpdate(
+            { salonId, date: { $gte: start, $lte: end } },
+            {
+                openingCash,
+                totalCashIncome,
+                totalCashExpense: cashExpenses,
+                totalBankIncome,
+                totalBankExpense: bankExpenses,
+                expectedCash,
+                actualCash,
+                discrepancy,
+                openingBank,
+                expectedBank,
+                actualBank,
+                bankDiscrepancy,
+                status: locked ? 'closed' : 'pending',
+                notes,
+                performedBy: req.user._id,
+                date: start
+            },
+            { upsert: true, new: true }
+        );
+
+        res.json({ success: true, data: report });
     } catch (err) {
         res.status(500).json({ success: false, message: err.message });
     }
@@ -591,5 +769,136 @@ exports.submitEOD = async (req, res) => {
         res.status(201).json({ success: true, data: report });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
+    }
+};
+
+exports.getTransactions = async (req, res) => {
+    try {
+        const salonId = req.user.salonId;
+        const { type, accountType, category, startDate, endDate, page = 1, limit = 50 } = req.query;
+        
+        const query = { salonId };
+        if (type) query.type = type;
+        if (accountType) query.accountType = accountType;
+        if (category) query.category = category;
+        if (startDate || endDate) {
+            query.date = {};
+            if (startDate) query.date.$gte = new Date(startDate);
+            if (endDate) {
+                const end = new Date(endDate);
+                end.setHours(23, 59, 59, 999);
+                query.date.$lte = end;
+            }
+        }
+        
+        const skip = (parseInt(page) - 1) * parseInt(limit);
+        const [transactions, total] = await Promise.all([
+            FinanceTransaction.find(query).sort({ date: -1 }).skip(skip).limit(parseInt(limit)),
+            FinanceTransaction.countDocuments(query)
+        ]);
+        
+        res.json({
+            success: true,
+            data: {
+                results: transactions,
+                total,
+                page: parseInt(page),
+                pages: Math.ceil(total / parseInt(limit))
+            }
+        });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+};
+
+exports.addTransaction = async (req, res) => {
+    try {
+        const salonId = req.user.salonId;
+        const {
+            type,
+            category,
+            amount,
+            accountType,
+            paymentMethod,
+            description,
+            date = new Date()
+        } = req.body;
+
+        if (!amount || amount <= 0) {
+            return res.status(400).json({ success: false, message: 'Amount must be greater than 0' });
+        }
+
+        const txnDate = new Date(date);
+
+        if (category === 'Bank Deposit') {
+            // Cash -> Bank transfer
+            const txn1 = await FinanceTransaction.create({
+                salonId,
+                date: txnDate,
+                type: 'expense',
+                category: 'Bank Deposit',
+                amount,
+                paymentMethod: 'cash',
+                accountType: 'cash',
+                description: description || 'Cash deposit to Bank',
+                performedBy: req.user._id
+            });
+            const txn2 = await FinanceTransaction.create({
+                salonId,
+                date: txnDate,
+                type: 'income',
+                category: 'Bank Deposit',
+                amount,
+                paymentMethod: 'bank_transfer',
+                accountType: 'bank',
+                description: description || 'Cash deposit to Bank',
+                performedBy: req.user._id
+            });
+            return res.status(201).json({ success: true, data: [txn1, txn2] });
+        }
+
+        if (category === 'Bank Withdrawal') {
+            // Bank -> Cash transfer
+            const txn1 = await FinanceTransaction.create({
+                salonId,
+                date: txnDate,
+                type: 'expense',
+                category: 'Bank Withdrawal',
+                amount,
+                paymentMethod: 'bank_transfer',
+                accountType: 'bank',
+                description: description || 'Cash withdrawal from Bank',
+                performedBy: req.user._id
+            });
+            const txn2 = await FinanceTransaction.create({
+                salonId,
+                date: txnDate,
+                type: 'income',
+                category: 'Bank Withdrawal',
+                amount,
+                paymentMethod: 'cash',
+                accountType: 'cash',
+                description: description || 'Cash withdrawal from Bank',
+                performedBy: req.user._id
+            });
+            return res.status(201).json({ success: true, data: [txn1, txn2] });
+        }
+
+        // Standard single transaction
+        const txn = await FinanceTransaction.create({
+            salonId,
+            date: txnDate,
+            type,
+            category: category || (type === 'income' ? 'Other Income' : 'Other Expense'),
+            amount,
+            paymentMethod: paymentMethod || (accountType === 'cash' ? 'cash' : 'upi'),
+            accountType,
+            description,
+            performedBy: req.user._id
+        });
+
+        res.status(201).json({ success: true, data: txn });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
     }
 };

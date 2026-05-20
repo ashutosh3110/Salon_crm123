@@ -6,7 +6,7 @@ function todayIso() {
     return new Date().toISOString().split('T')[0];
 }
 
-export default function CashAndBank() {
+export default function CashAndBank({ type = 'cash' }) {
     const [businessDate, setBusinessDate] = useState(todayIso);
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
@@ -167,7 +167,11 @@ export default function CashAndBank() {
                             <h3 className="text-sm font-bold text-text uppercase tracking-widest">Cash Summary</h3>
                         </div>
 
-                        <div className="bg-white border border-border rounded-3xl overflow-hidden shadow-sm">
+                        <div className={`bg-white border rounded-3xl overflow-hidden shadow-sm transition-all duration-300 ${
+                            type === 'cash' 
+                                ? 'border-orange-500 ring-4 ring-orange-500/10 scale-[1.01]' 
+                                : 'border-border opacity-90'
+                        }`}>
                             <div className="p-6 space-y-4 bg-surface/30">
                                 <SummaryRow label="Opening cash" value={system.cash.opening} />
                                 <SummaryRow
@@ -202,9 +206,10 @@ export default function CashAndBank() {
                                         <input
                                             type="number"
                                             value={actualCash}
+                                            disabled={payload?.saved?.status === 'closed'}
                                             onChange={(e) => setActualCash(e.target.value)}
                                             placeholder="Counted amount"
-                                            className="w-full pl-8 pr-4 py-3 bg-surface border border-border rounded-xl text-sm font-bold focus:outline-none focus:ring-2 focus:ring-orange-500/10 transition-all"
+                                            className="w-full pl-8 pr-4 py-3 bg-surface border border-border rounded-xl text-sm font-bold focus:outline-none focus:ring-2 focus:ring-orange-500/10 transition-all disabled:opacity-75 disabled:cursor-not-allowed"
                                         />
                                     </div>
                                 </div>
@@ -240,7 +245,11 @@ export default function CashAndBank() {
                             <h3 className="text-sm font-bold text-text uppercase tracking-widest">Bank Summary</h3>
                         </div>
 
-                        <div className="bg-white border border-border rounded-3xl overflow-hidden shadow-sm">
+                        <div className={`bg-white border rounded-3xl overflow-hidden shadow-sm transition-all duration-300 ${
+                            type === 'bank' 
+                                ? 'border-blue-500 ring-4 ring-blue-500/10 scale-[1.01]' 
+                                : 'border-border opacity-90'
+                        }`}>
                             <div className="p-6 space-y-4 bg-surface/30">
                                 <SummaryRow label="Opening bank" value={system.bank.opening} />
                                 <SummaryRow
@@ -275,9 +284,10 @@ export default function CashAndBank() {
                                         <input
                                             type="number"
                                             value={actualBank}
+                                            disabled={payload?.saved?.status === 'closed'}
                                             onChange={(e) => setActualBank(e.target.value)}
                                             placeholder="Current bank total"
-                                            className="w-full pl-8 pr-4 py-3 bg-surface border border-border rounded-xl text-sm font-bold focus:outline-none focus:ring-2 focus:ring-blue-500/10 transition-all"
+                                            className="w-full pl-8 pr-4 py-3 bg-surface border border-border rounded-xl text-sm font-bold focus:outline-none focus:ring-2 focus:ring-blue-500/10 transition-all disabled:opacity-75 disabled:cursor-not-allowed"
                                         />
                                     </div>
                                 </div>
@@ -313,40 +323,48 @@ export default function CashAndBank() {
 
                         <textarea
                             value={notes}
+                            disabled={payload?.saved?.status === 'closed'}
                             onChange={(e) => setNotes(e.target.value)}
                             placeholder="Difference ki wajah, reference, notes…"
-                            className="w-full p-4 bg-white border border-border rounded-2xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary/10 transition-all resize-none"
+                            className="w-full p-4 bg-white border border-border rounded-2xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary/10 transition-all resize-none disabled:opacity-75"
                             rows={3}
                         />
 
-                        <div className="flex flex-col md:flex-row gap-4">
-                            <button
-                                type="button"
-                                onClick={load}
-                                disabled={loading}
-                                className="flex-1 flex items-center justify-center gap-2 px-6 py-4 rounded-2xl border border-border text-sm font-bold text-text-secondary hover:bg-white transition-all"
-                            >
-                                <RefreshCcw className="w-4 h-4" />
-                                Re-calculate
-                            </button>
-                            <button
-                                type="button"
-                                disabled={saving || actualCash === '' || actualBank === ''}
-                                onClick={() => handleSave(false)}
-                                className="flex-1 flex items-center justify-center gap-2 px-6 py-4 rounded-2xl border border-primary text-primary text-sm font-bold hover:bg-primary/5 transition-all disabled:opacity-50"
-                            >
-                                Save draft
-                            </button>
-                            <button
-                                type="button"
-                                disabled={saving || actualCash === '' || actualBank === ''}
-                                onClick={() => handleSave(true)}
-                                className="flex-[2] flex items-center justify-center gap-2 px-6 py-4 rounded-2xl bg-emerald-600 text-white text-sm font-bold hover:shadow-lg hover:shadow-emerald-600/30 transition-all disabled:opacity-50"
-                            >
-                                <Lock className="w-4 h-4" />
-                                Approve & lock day
-                            </button>
-                        </div>
+                        {payload?.saved?.status === 'closed' ? (
+                            <div className="p-4 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-2xl flex items-center justify-center gap-2 text-sm font-bold animate-fadeIn">
+                                <Lock className="w-4.5 h-4.5" />
+                                Yeh business day approved aur locked hai. Reconciliation me badlav nahi kiya ja sakta.
+                            </div>
+                        ) : (
+                            <div className="flex flex-col md:flex-row gap-4">
+                                <button
+                                    type="button"
+                                    onClick={load}
+                                    disabled={loading}
+                                    className="flex-1 flex items-center justify-center gap-2 px-6 py-4 rounded-2xl border border-border text-sm font-bold text-text-secondary hover:bg-white transition-all"
+                                >
+                                    <RefreshCcw className="w-4 h-4" />
+                                    Re-calculate
+                                </button>
+                                <button
+                                    type="button"
+                                    disabled={saving || actualCash === '' || actualBank === ''}
+                                    onClick={() => handleSave(false)}
+                                    className="flex-1 flex items-center justify-center gap-2 px-6 py-4 rounded-2xl border border-primary text-primary text-sm font-bold hover:bg-primary/5 transition-all disabled:opacity-50"
+                                >
+                                    Save draft
+                                </button>
+                                <button
+                                    type="button"
+                                    disabled={saving || actualCash === '' || actualBank === ''}
+                                    onClick={() => handleSave(true)}
+                                    className="flex-[2] flex items-center justify-center gap-2 px-6 py-4 rounded-2xl bg-emerald-600 text-white text-sm font-bold hover:shadow-lg hover:shadow-emerald-600/30 transition-all disabled:opacity-50"
+                                >
+                                    <Lock className="w-4 h-4" />
+                                    Approve & lock day
+                                </button>
+                            </div>
+                        )}
                     </div>
                 </div>
             )}

@@ -417,6 +417,9 @@ function App() {
                             <Route element={<ProtectedRoute feature="finance" permission="finance" />}>
                                 <Route path="/admin/finance" element={<FinancePage tab="dashboard" />} />
                                 <Route path="/admin/finance/dashboard" element={<FinancePage tab="dashboard" />} />
+                                <Route path="/admin/finance/transactions" element={<FinancePage tab="transactions" />} />
+                                <Route path="/admin/finance/cash-book" element={<FinancePage tab="cash-book" />} />
+                                <Route path="/admin/finance/bank-book" element={<FinancePage tab="bank-book" />} />
                                 <Route path="/admin/finance/expenses" element={<FinancePage tab="expenses" />} />
                                 <Route path="/admin/finance/reports" element={<FinancePage tab="reports" />} />
                                 <Route path="/admin/finance/eod" element={<FinancePage tab="eod" />} />

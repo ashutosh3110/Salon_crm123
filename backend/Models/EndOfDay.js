@@ -42,6 +42,22 @@ const endOfDaySchema = new mongoose.Schema({
         type: Number, // actualCash - expectedCash
         default: 0
     },
+    openingBank: {
+        type: Number,
+        default: 0
+    },
+    expectedBank: {
+        type: Number,
+        default: 0
+    },
+    actualBank: {
+        type: Number,
+        default: 0
+    },
+    bankDiscrepancy: {
+        type: Number, // actualBank - expectedBank
+        default: 0
+    },
     status: {
         type: String,
         enum: ['pending', 'closed'],
