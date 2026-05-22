@@ -132,7 +132,7 @@ export default function EndOfDay() {
                         </p>
                     </div>
                     <div className="flex flex-wrap gap-3 items-center">
-                        <label className="flex items-center gap-2 px-4 py-2 bg-white border border-border rounded-xl text-xs font-bold text-text-secondary shadow-sm">
+                        <label className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-800 border border-border rounded-xl text-xs font-bold text-text-secondary shadow-sm">
                             <Calendar className="w-3.5 h-3.5" />
                             <input
                                 type="date"
@@ -145,7 +145,7 @@ export default function EndOfDay() {
                             type="button"
                             onClick={load}
                             disabled={loading}
-                            className="flex items-center gap-2 px-4 py-2 border border-border rounded-xl text-xs font-bold hover:bg-white disabled:opacity-50"
+                            className="flex items-center gap-2 px-4 py-2 border border-border rounded-xl text-xs font-bold hover:bg-white dark:hover:bg-slate-800 disabled:opacity-50 text-text"
                         >
                             <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
                             Refresh
@@ -153,8 +153,8 @@ export default function EndOfDay() {
                         <div
                             className={`flex items-center gap-2 px-4 py-2 rounded-xl shadow-sm text-xs font-bold ${
                                 dayClosed
-                                    ? 'bg-emerald-50 border border-emerald-200 text-emerald-700'
-                                    : 'bg-rose-50 border border-rose-100 text-rose-600'
+                                    ? 'bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-700 text-emerald-700 dark:text-emerald-400'
+                                    : 'bg-rose-50 dark:bg-rose-900/20 border border-rose-100 dark:border-rose-800 text-rose-600 dark:text-rose-400'
                             }`}
                         >
                             <Info className="w-3.5 h-3.5" />
@@ -165,7 +165,7 @@ export default function EndOfDay() {
             </div>
 
             {error ? (
-                <div className="mx-8 mt-6 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-bold text-rose-800">
+                <div className="mx-8 mt-6 rounded-xl border border-rose-200 dark:border-rose-800 bg-rose-50 dark:bg-rose-900/20 px-4 py-3 text-sm font-bold text-rose-800 dark:text-rose-300">
                     {error}
                 </div>
             ) : null}
@@ -175,7 +175,7 @@ export default function EndOfDay() {
             ) : (
                 <div className="p-8 space-y-8 max-w-5xl mx-auto w-full">
                     {closure ? (
-                        <div className="rounded-2xl border border-emerald-200 bg-emerald-50/80 px-4 py-3 text-sm text-emerald-900">
+                        <div className="rounded-2xl border border-emerald-200 dark:border-emerald-700 bg-emerald-50/80 dark:bg-emerald-900/20 px-4 py-3 text-sm text-emerald-900 dark:text-emerald-300">
                             <span className="font-bold">Closed </span>
                             {closure.closedAt
                                 ? new Date(closure.closedAt).toLocaleString('en-IN')
@@ -230,7 +230,7 @@ export default function EndOfDay() {
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                        <div className="bg-white border border-border rounded-3xl p-8 space-y-6 shadow-sm">
+                        <div className="bg-white dark:bg-slate-800 border border-border rounded-3xl p-8 space-y-6 shadow-sm">
                             <h3 className="text-xs font-bold text-text uppercase tracking-widest flex items-center gap-2">
                                 <PieChart className="w-4 h-4 text-primary" />
                                 Payment method breakup
@@ -242,7 +242,7 @@ export default function EndOfDay() {
                             </div>
                         </div>
 
-                        <div className="bg-white border border-border rounded-3xl p-8 space-y-6 shadow-sm">
+                        <div className="bg-white dark:bg-slate-800 border border-border rounded-3xl p-8 space-y-6 shadow-sm">
                             <h3 className="text-xs font-bold text-text uppercase tracking-widest flex items-center gap-2">
                                 <ShieldCheck className="w-4 h-4 text-emerald-600" />
                                 Reconciliation hints
@@ -318,44 +318,44 @@ export default function EndOfDay() {
                         )}
                     </div>
 
-                    <div className="bg-rose-50 border-2 border-rose-100 rounded-[32px] p-10 flex flex-col items-center text-center gap-6 shadow-xl shadow-rose-100/50">
+                    <div className="bg-rose-50 dark:bg-rose-900/20 border-2 border-rose-100 dark:border-rose-800 rounded-[32px] p-10 flex flex-col items-center text-center gap-6 shadow-xl shadow-rose-100/50">
                         <div className="w-20 h-20 bg-rose-600 rounded-full flex items-center justify-center text-white shadow-lg shadow-rose-200">
                             <Lock className="w-10 h-10" />
                         </div>
                         <div className="space-y-2">
-                            <h3 className="text-2xl font-bold text-rose-900 tracking-tight">Perform daily closure</h3>
-                            <p className="text-sm text-rose-700 font-medium max-w-md mx-auto">
+                            <h3 className="text-2xl font-bold text-rose-900 dark:text-rose-200 tracking-tight">Perform daily closure</h3>
+                            <p className="text-sm text-rose-700 dark:text-rose-300 font-medium max-w-md mx-auto">
                                 Din bhar ka cash aur difference verify karein.
                             </p>
                         </div>
 
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full max-w-md">
                             <div className="text-left space-y-1">
-                                <label className="text-[10px] font-black uppercase text-rose-900 ml-1">Opening Cash (Subah ka cash)</label>
+                                <label className="text-[10px] font-black uppercase text-rose-900 dark:text-rose-300 ml-1">Opening Cash (Subah ka cash)</label>
                                 <input
                                     type="number"
                                     value={openingCash}
                                     onChange={(e) => setOpeningCash(e.target.value)}
                                     placeholder="0"
                                     disabled={dayClosed}
-                                    className="w-full p-4 rounded-2xl border border-rose-200 text-sm bg-white disabled:opacity-50"
+                                    className="w-full p-4 rounded-2xl border border-rose-200 dark:border-rose-800 text-sm bg-white dark:bg-slate-800 text-text disabled:opacity-50"
                                 />
                             </div>
                             <div className="text-left space-y-1">
-                                <label className="text-[10px] font-black uppercase text-rose-900 ml-1">Actual Cash (Drawer me kitna hai)</label>
+                                <label className="text-[10px] font-black uppercase text-rose-900 dark:text-rose-300 ml-1">Actual Cash (Drawer me kitna hai)</label>
                                 <input
                                     type="number"
                                     value={actualCash}
                                     onChange={(e) => setActualCash(e.target.value)}
                                     placeholder="0"
                                     disabled={dayClosed}
-                                    className="w-full p-4 rounded-2xl border border-rose-200 text-sm bg-white disabled:opacity-50 font-black text-rose-600"
+                                    className="w-full p-4 rounded-2xl border border-rose-200 dark:border-rose-800 text-sm bg-white dark:bg-slate-800 text-text disabled:opacity-50 font-black text-rose-600"
                                 />
                             </div>
                         </div>
 
                         {!dayClosed && actualCash && (
-                            <div className="p-4 rounded-2xl bg-white border border-rose-100 w-full max-w-md">
+                            <div className="p-4 rounded-2xl bg-white dark:bg-slate-800 border border-rose-100 dark:border-rose-800 w-full max-w-md">
                                 <div className="flex justify-between items-center text-[11px] font-black uppercase">
                                     <span className="text-text-muted">Difference (Variance)</span>
                                     <span className={Number(actualCash) - ((m?.netCashEstimate || 0) + Number(openingCash)) >= 0 ? 'text-emerald-600' : 'text-rose-600'}>
@@ -370,7 +370,7 @@ export default function EndOfDay() {
                             onChange={(e) => setNotes(e.target.value)}
                             placeholder="Optional notes (shift, variance, reference…)"
                             disabled={dayClosed}
-                            className="w-full max-w-md p-4 rounded-2xl border border-rose-200 text-sm bg-white disabled:opacity-50"
+                            className="w-full max-w-md p-4 rounded-2xl border border-rose-200 dark:border-rose-800 text-sm bg-white dark:bg-slate-800 text-text disabled:opacity-50"
                             rows={2}
                         />
                         <div className="flex flex-col sm:flex-row gap-4 w-full justify-center max-w-lg">
@@ -378,7 +378,7 @@ export default function EndOfDay() {
                                 type="button"
                                 onClick={downloadReport}
                                 disabled={!data}
-                                className="px-8 py-4 bg-white border border-rose-200 rounded-2xl text-sm font-bold text-rose-600 hover:bg-rose-100 transition-all shadow-sm disabled:opacity-50"
+                                className="px-8 py-4 bg-white dark:bg-slate-800 border border-rose-200 dark:border-rose-700 rounded-2xl text-sm font-bold text-rose-600 hover:bg-rose-100 dark:hover:bg-rose-900/30 transition-all shadow-sm disabled:opacity-50"
                             >
                                 <Download className="w-4 h-4 inline-block mr-2" />
                                 EOD report (JSON)

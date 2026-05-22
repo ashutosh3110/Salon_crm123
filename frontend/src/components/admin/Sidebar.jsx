@@ -288,7 +288,7 @@ export default function Sidebar({ collapsed, setCollapsed, isHovered, setIsHover
     };
 
     const sidebarContent = (
-        <div className="sidebar-container flex flex-col h-full bg-[#ffffff] border-r border-[#e2e8f0] transition-all duration-300" style={{ backdropFilter: 'blur(20px)', boxShadow: '0 0 0 1px rgba(0,0,0,0.04)' }}>
+        <div className="sidebar-container flex flex-col h-full bg-white dark:bg-slate-900 border-r border-[#e2e8f0] dark:border-slate-700/50 transition-all duration-300" style={{ backdropFilter: 'blur(20px)', boxShadow: '0 0 0 1px rgba(0,0,0,0.04)' }}>
             <style>{`
                 .custom-scrollbar::-webkit-scrollbar {
                     width: 4px;
@@ -310,7 +310,7 @@ export default function Sidebar({ collapsed, setCollapsed, isHovered, setIsHover
 
 
             {/* Logo */}
-            <div className="flex items-center justify-between h-20 px-6 border-b border-[#e2e8f0]">
+            <div className="flex items-center justify-between h-20 px-6 border-b border-[#e2e8f0] dark:border-slate-700/50">
                 <div className="flex-1 flex items-center justify-center overflow-hidden">
                     <div className={`${effectiveCollapsed ? 'h-8 w-8' : 'h-16 w-56'} flex items-center justify-center shrink-0`}>
                         <img
@@ -416,7 +416,7 @@ export default function Sidebar({ collapsed, setCollapsed, isHovered, setIsHover
                                                             className={`flex items-center justify-between py-2.5 px-4 rounded-xl text-[13px] font-bold transition-all duration-200 relative
                                                                 ${isSubActive
                                                                     ? 'bg-[#B4912B] text-white shadow-sm'
-                                                                    : 'text-[#64748b] hover:text-[#B4912B] hover:bg-[#B4912B]/10'
+                                                                    : 'text-[#64748b] dark:text-slate-400 hover:text-[#B4912B] hover:bg-[#B4912B]/10'
                                                                 } ${isLocked ? 'opacity-40 grayscale !pointer-events-none !cursor-not-allowed !select-none' : ''}`}
                                                         >
                                                             <span className="font-bold">{sub.label}</span>
@@ -444,7 +444,7 @@ export default function Sidebar({ collapsed, setCollapsed, isHovered, setIsHover
                                             ${effectiveCollapsed ? 'justify-center h-11 w-11 mx-auto' : 'px-4 py-3 gap-3'}
                                             ${currentActive
                                                 ? 'bg-[#B4912B] text-white shadow-sm border border-[#B4912B]'
-                                                : 'border border-transparent text-[#64748b] hover:bg-[#B4912B]/10 hover:text-[#B4912B]'
+                                                : 'border border-transparent text-[#64748b] dark:text-slate-400 hover:bg-[#B4912B]/10 hover:text-[#B4912B] dark:hover:text-[#C5A23C]'
                                             } ${isLocked ? 'opacity-40 grayscale !pointer-events-none !cursor-not-allowed !select-none' : ''}`;
                                     }}
                                 >
@@ -494,14 +494,14 @@ export default function Sidebar({ collapsed, setCollapsed, isHovered, setIsHover
             )}
 
             {/* Logout */}
-            <div className={`border-t border-[#e2e8f0] ${effectiveCollapsed ? 'p-2' : 'px-4 py-3'}`}>
+            <div className={`border-t border-[#e2e8f0] dark:border-slate-700/50 ${effectiveCollapsed ? 'p-2' : 'px-4 py-3'}`}>
                 <button
                     onClick={logout}
-                    className={`flex items-center rounded-2xl text-[15px] font-bold text-[#64748b] hover:bg-red-50 hover:text-red-600 transition-all duration-200 group cursor-pointer border-0
+                    className={`flex items-center rounded-2xl text-[15px] font-bold text-[#64748b] dark:text-slate-400 hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-600 transition-all duration-200 group cursor-pointer border-0
                         ${effectiveCollapsed ? 'justify-center h-11 w-11 mx-auto relative' : 'w-full px-4 py-3 gap-3'}`}
                     title={effectiveCollapsed ? 'Logout' : undefined}
                 >
-                    <LogOut className="shrink-0 w-5 h-5 text-[#64748b] group-hover:text-red-600 transition-colors" />
+                    <LogOut className="shrink-0 w-5 h-5 text-[#64748b] dark:text-slate-400 group-hover:text-red-600 transition-colors" />
                     {!effectiveCollapsed && <span className="animate-in fade-in slide-in-from-left-2 duration-300 font-bold">Logout</span>}
                     {effectiveCollapsed && (
                         <div className="absolute left-[52px] px-2.5 py-1.5 rounded-lg bg-slate-900 dark:bg-surface-alt text-white text-[11px] whitespace-nowrap opacity-0 group-hover:opacity-100 pointer-events-none z-[100] shadow-xl transition-opacity border border-slate-700 dark:border-border">
