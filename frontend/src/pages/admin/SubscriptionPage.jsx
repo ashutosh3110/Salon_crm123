@@ -30,7 +30,7 @@ const ICON_MAP = {
 const PLAN_COLORS = {
     slate: 'from-slate-500 to-slate-700',
     blue: 'from-blue-500 to-indigo-600',
-    primary: 'from-primary to-[#8B1A2D]',
+    primary: 'from-primary to-[#8B6F23]',
     amber: 'from-amber-500 to-orange-600'
 };
 

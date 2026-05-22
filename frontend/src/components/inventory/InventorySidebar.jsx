@@ -1,6 +1,7 @@
 import { NavLink, useLocation } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
+import { useTheme } from '../../contexts/ThemeContext';
 import {
     LayoutDashboard, Package, ShoppingBag, BarChart2,
     Settings, LogOut, ChevronLeft, ChevronRight, X, AlertTriangle, List, Truck, History, ShoppingCart, ArrowLeftRight
@@ -18,6 +19,8 @@ const menuItems = [
 
 export default function InventorySidebar({ collapsed, setCollapsed, mobileOpen, setMobileOpen, isHovered, setIsHovered }) {
     const { logout } = useAuth();
+    const { theme } = useTheme();
+    const logoSrc = theme === 'dark' ? "/new wapixo logo .png" : "/new black wapixo logo .png";
     const location = useLocation();
     const [isLgUp, setIsLgUp] = useState(typeof window !== 'undefined' ? window.innerWidth >= 1024 : true);
 
@@ -44,7 +47,7 @@ export default function InventorySidebar({ collapsed, setCollapsed, mobileOpen, 
                 <div className="flex-1 flex items-center justify-center overflow-hidden">
                     <div className="w-45 h-45 flex items-center justify-center shrink-0">
                         <img
-                            src="/new black wapixo logo .png"
+                            src={logoSrc}
                             alt="Logo"
                             className="w-full h-full object-contain"
                         />

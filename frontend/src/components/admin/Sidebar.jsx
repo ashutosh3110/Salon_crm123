@@ -60,10 +60,13 @@ import { useCMS } from '../../contexts/CMSContext';
 import { useInventory } from '../../contexts/InventoryContext';
 import { getImageUrl } from '../../utils/imageUtils';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useTheme } from '../../contexts/ThemeContext';
 
 export default function Sidebar({ collapsed, setCollapsed, isHovered, setIsHovered, mobileOpen, setMobileOpen }) {
     const { logout, user } = useAuth();
     const { salon, platformSettings } = useBusiness();
+    const { theme } = useTheme();
+    const logoSrc = theme === 'dark' ? "/new wapixo logo .png" : "/new black wapixo logo .png";
     const { pendingExpertsCount } = useCMS();
     const { stats } = useInventory();
     const lowStockCount = stats?.lowStockCount || 0;
@@ -311,7 +314,7 @@ export default function Sidebar({ collapsed, setCollapsed, isHovered, setIsHover
                 <div className="flex-1 flex items-center justify-center overflow-hidden">
                     <div className={`${effectiveCollapsed ? 'h-8 w-8' : 'h-16 w-56'} flex items-center justify-center shrink-0`}>
                         <img
-                            src={platformSettings?.logoUrl ? getImageUrl(platformSettings.logoUrl) : "/new black wapixo logo .png"}
+                            src={logoSrc}
                             alt="Logo"
                             className={`w-full h-full object-contain ${effectiveCollapsed ? '' : 'scale-150'}`}
                         />
@@ -479,7 +482,7 @@ export default function Sidebar({ collapsed, setCollapsed, isHovered, setIsHover
                 <div className="px-4 pb-4 animate-in fade-in duration-300">
                     <div className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl bg-[#f8fafc] border border-[#e2e8f0] shadow-sm">
                         <div className="w-8 h-8 flex items-center justify-center overflow-hidden shrink-0">
-                            <img src={salon?.logoUrl ? getImageUrl(salon.logoUrl) : "/new black wapixo logo .png"} alt="" className="w-full h-full object-contain" />
+                            <img src={salon?.logoUrl ? getImageUrl(salon.logoUrl) : logoSrc} alt="" className="w-full h-full object-contain" />
                         </div>
                         <div className="flex-1 min-w-0">
                             <div className="text-xs font-bold text-[#0f172a] truncate">{user?.name || salon?.name || 'Admin'}</div>

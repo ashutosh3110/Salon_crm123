@@ -298,7 +298,7 @@ export default function ForgotPasswordPage() {
                                                         containerClassName="border-b-2 transition-all duration-300"
                                                         style={{ borderColor: 'var(--wapixo-border)' }}
                                                         inputClassName="w-full pl-7 py-3 bg-transparent text-sm focus:outline-none font-medium"
-                                                        buttonClassName="hover:text-[#B85C5C]"
+                                                        buttonClassName="hover:text-[#B4912B]"
                                                         inputStyle={{ color: 'var(--wapixo-text)', border: 'none' }}
                                                     >
                                                         <KeyRound className="absolute left-0 top-1/2 -translate-y-1/2 w-4 h-4 ml-0.5" style={{ color: 'var(--wapixo-text-muted)', opacity: 0.4 }} />
@@ -323,7 +323,7 @@ export default function ForgotPasswordPage() {
                                                         containerClassName="border-b-2 transition-all duration-300"
                                                         style={{ borderColor: 'var(--wapixo-border)' }}
                                                         inputClassName="w-full pl-7 py-3 bg-transparent text-sm focus:outline-none font-medium"
-                                                        buttonClassName="hover:text-[#B85C5C]"
+                                                        buttonClassName="hover:text-[#B4912B]"
                                                         inputStyle={{ color: 'var(--wapixo-text)', border: 'none' }}
                                                     >
                                                         <Lock className="absolute left-0 top-1/2 -translate-y-1/2 w-4 h-4 ml-0.5" style={{ color: 'var(--wapixo-text-muted)', opacity: 0.4 }} />

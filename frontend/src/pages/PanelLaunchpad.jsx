@@ -87,7 +87,7 @@ const PANELS = [
         path: '/superadmin',
         icon: ShieldCheck,
         desc: 'SaaS platform management & tenants.',
-        color: '#B85C5C',
+        color: '#B4912B',
         role: 'superadmin'
     }
 ];
@@ -100,12 +100,12 @@ export default function PanelLaunchpad() {
     const logoSrc = theme === 'dark' ? '/new wapixo logo .png' : '/new black wapixo logo .png';
 
     return (
-        <div className="min-h-screen selection:bg-[#B85C5C]/30" style={{ background: 'var(--wapixo-bg)', color: 'var(--wapixo-text)', fontFamily: "'Inter', sans-serif" }}>
+        <div className="min-h-screen selection:bg-[#B4912B]/30" style={{ background: 'var(--wapixo-bg)', color: 'var(--wapixo-text)', fontFamily: "'Inter', sans-serif" }}>
             {/* Ambient background blur */}
             <div className="fixed inset-0 overflow-hidden pointer-events-none">
                 <div 
                     className="absolute top-[-10%] right-[-10%] w-[500px] h-[500px] blur-[120px] rounded-full"
-                    style={{ background: theme === 'dark' ? 'rgba(184, 92, 92, 0.08)' : 'rgba(184, 92, 92, 0.05)' }}
+                    style={{ background: theme === 'dark' ? 'rgba(180, 145, 43, 0.08)' : 'rgba(180, 145, 43, 0.05)' }}
                 />
                 <div 
                     className="absolute bottom-[-10%] left-[-10%] w-[500px] h-[500px] blur-[120px] rounded-full"
@@ -119,7 +119,7 @@ export default function PanelLaunchpad() {
                     animate={{ opacity: 1, x: 0 }}
                     className="flex-1 flex items-center gap-2"
                 >
-                    <span className="text-[10px] font-black uppercase tracking-[0.4em]" style={{ color: '#B85C5C' }}>Portals Selection</span>
+                    <span className="text-[10px] font-black uppercase tracking-[0.4em]" style={{ color: '#B4912B' }}>Portals Selection</span>
                 </motion.div>
 
                 <motion.div
@@ -169,7 +169,7 @@ export default function PanelLaunchpad() {
                     className="text-4xl md:text-5xl font-black italic tracking-tighter"
                     style={{ color: 'var(--wapixo-text)' }}
                 >
-                    System <span style={{ color: '#B85C5C' }}>Access.</span>
+                    System <span style={{ color: '#B4912B' }}>Access.</span>
                 </motion.h1>
                 <motion.p
                     initial={{ opacity: 0 }}
@@ -204,7 +204,7 @@ export default function PanelLaunchpad() {
                             <div className="relative h-full border rounded-[1.8rem] p-6 transition-all group-hover:shadow-2xl overflow-hidden" 
                                  style={{ 
                                      background: 'var(--wapixo-bg-alt)', 
-                                     borderColor: isUserRole ? '#B85C5C' : 'var(--wapixo-border)',
+                                     borderColor: isUserRole ? '#B4912B' : 'var(--wapixo-border)',
                                      boxShadow: theme === 'dark' ? 'none' : '0 10px 30px rgba(0,0,0,0.02)'
                                  }}
                             >
@@ -221,18 +221,18 @@ export default function PanelLaunchpad() {
                                         <panel.icon size={24} />
                                     </div>
                                     <span className="text-[8px] font-black uppercase tracking-[0.2em] px-3 py-1 rounded-full" 
-                                          style={{ background: isUserRole ? '#B85C5C' : 'var(--wapixo-border)', color: isUserRole ? 'white' : 'var(--wapixo-text-muted)' }}>
+                                          style={{ background: isUserRole ? '#B4912B' : 'var(--wapixo-border)', color: isUserRole ? 'white' : 'var(--wapixo-text-muted)' }}>
                                         {isUserRole ? 'Verified' : panel.role.replace('_', ' ')}
                                     </span>
                                 </div>
 
-                                <h2 className="text-xl font-bold mb-2 group-hover:text-[#B85C5C] transition-colors" style={{ color: 'var(--wapixo-text)' }}>{panel.name}</h2>
+                                <h2 className="text-xl font-bold mb-2 group-hover:text-[#B4912B] transition-colors" style={{ color: 'var(--wapixo-text)' }}>{panel.name}</h2>
                                 <p className="text-[12px] leading-relaxed mb-6 font-medium line-clamp-2" style={{ color: 'var(--wapixo-text-muted)' }}>
                                     {panel.desc}
                                 </p>
 
                                 <div className="flex items-center gap-2 font-black text-[9px] uppercase tracking-[0.1em] transform translate-x-[-10px] opacity-0 group-hover:translate-x-0 group-hover:opacity-100 transition-all duration-300"
-                                     style={{ color: '#B85C5C' }}>
+                                     style={{ color: '#B4912B' }}>
                                     Initialize Session <ArrowRight size={12} />
                                 </div>
                             </div>

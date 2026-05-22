@@ -586,3 +586,229 @@
     border: 1px solid var(--border);
   }
 }
+
+/* --- CustomDropdown Styling --- */
+/* Light Mode */
+html:not(.dark) .custom-dropdown-trigger {
+    background-color: #ffffff !important;
+    color: #000000 !important;
+    border-color: #cbd5e1 !important;
+}
+html:not(.dark) .custom-dropdown-panel {
+    background-color: #ffffff !important;
+    border-color: #e2e8f0 !important;
+}
+html:not(.dark) .custom-dropdown-option {
+    color: #000000 !important;
+}
+html:not(.dark) .custom-dropdown-option:hover {
+    background-color: #f1f5f9 !important;
+    color: #000000 !important;
+}
+
+/* Dark Mode */
+.dark .custom-dropdown-trigger {
+    background-color: #1e293b !important;
+    color: #f8fafc !important;
+    border-color: rgba(255, 255, 255, 0.12) !important;
+}
+.dark .custom-dropdown-panel {
+    background-color: #1e293b !important;
+    border-color: rgba(255, 255, 255, 0.12) !important;
+}
+.dark .custom-dropdown-option {
+    color: #cbd5e1 !important;
+}
+.dark .custom-dropdown-option:hover {
+    background-color: #121826 !important;
+    color: #ffffff !important;
+}
+
+/* --- Global Light Mode High-Contrast Solid Black Text Overrides --- */
+html:not(.dark) .admin-panel,
+html:not(.dark) .admin-panel .text-text,
+html:not(.dark) .admin-panel h1,
+html:not(.dark) .admin-panel h2,
+html:not(.dark) .admin-panel h3,
+html:not(.dark) .admin-panel h4,
+html:not(.dark) .admin-panel h5,
+html:not(.dark) .admin-panel h6,
+html:not(.dark) .admin-panel label,
+html:not(.dark) .admin-panel table th,
+html:not(.dark) .admin-panel table td,
+html:not(.dark) .admin-panel input,
+html:not(.dark) .admin-panel select,
+html:not(.dark) .admin-panel textarea,
+html:not(.dark) .admin-panel p,
+html:not(.dark) .admin-panel td,
+html:not(.dark) .admin-panel th,
+html:not(.dark) .admin-panel option,
+html:not(.dark) .sa-panel,
+html:not(.dark) .sa-panel .text-text,
+html:not(.dark) .sa-panel h1,
+html:not(.dark) .sa-panel h2,
+html:not(.dark) .sa-panel h3,
+html:not(.dark) .sa-panel h4,
+html:not(.dark) .sa-panel h5,
+html:not(.dark) .sa-panel h6,
+html:not(.dark) .sa-panel label,
+html:not(.dark) .sa-panel table th,
+html:not(.dark) .sa-panel table td,
+html:not(.dark) .sa-panel input,
+html:not(.dark) .sa-panel select,
+html:not(.dark) .sa-panel textarea,
+html:not(.dark) .sa-panel p,
+html:not(.dark) .sa-panel td,
+html:not(.dark) .sa-panel th,
+html:not(.dark) .sa-panel option {
+    color: #000000 !important;
+}
+
+html:not(.dark) .admin-panel span:not([class*="text-green"]):not([class*="text-emerald"]):not([class*="text-red"]):not([class*="text-rose"]):not([class*="text-amber"]):not([class*="text-yellow"]):not([class*="text-blue"]):not([class*="text-indigo"]):not([class*="text-violet"]):not([class*="text-orange"]):not([class*="text-primary"]):not([class*="recharts"]):not([class*="recharts-"]),
+html:not(.dark) .admin-panel div:not([class*="text-green"]):not([class*="text-emerald"]):not([class*="text-red"]):not([class*="text-rose"]):not([class*="text-amber"]):not([class*="text-yellow"]):not([class*="text-blue"]):not([class*="text-indigo"]):not([class*="text-violet"]):not([class*="text-orange"]):not([class*="text-primary"]):not([class*="recharts"]):not([class*="recharts-"]),
+html:not(.dark) .admin-panel button:not(.bg-primary):not([class*="bg-primary"]):not([class*="text-green"]):not([class*="text-red"]):not([class*="text-emerald"]):not([class*="text-rose"]):not([class*="text-primary"]),
+html:not(.dark) .admin-panel a:not(.bg-primary):not([class*="bg-primary"]):not([class*="text-green"]):not([class*="text-red"]):not([class*="text-emerald"]):not([class*="text-rose"]):not([class*="text-primary"]),
+html:not(.dark) .sa-panel span:not([class*="text-green"]):not([class*="text-emerald"]):not([class*="text-red"]):not([class*="text-rose"]):not([class*="text-amber"]):not([class*="text-yellow"]):not([class*="text-blue"]):not([class*="text-indigo"]):not([class*="text-violet"]):not([class*="text-orange"]):not([class*="text-primary"]):not([class*="recharts"]):not([class*="recharts-"]),
+html:not(.dark) .sa-panel div:not([class*="text-green"]):not([class*="text-emerald"]):not([class*="text-red"]):not([class*="text-rose"]):not([class*="text-amber"]):not([class*="text-yellow"]):not([class*="text-blue"]):not([class*="text-indigo"]):not([class*="text-violet"]):not([class*="text-orange"]):not([class*="text-primary"]):not([class*="recharts"]):not([class*="recharts-"]),
+html:not(.dark) .sa-panel button:not(.bg-primary):not([class*="bg-primary"]):not([class*="text-green"]):not([class*="text-red"]):not([class*="text-emerald"]):not([class*="text-rose"]):not([class*="text-primary"]),
+html:not(.dark) .sa-panel a:not(.bg-primary):not([class*="bg-primary"]):not([class*="text-green"]):not([class*="text-red"]):not([class*="text-emerald"]):not([class*="text-rose"]):not([class*="text-primary"]) {
+    color: #000000 !important;
+}
+
+/* --- Dark Mode Primary Buttons Visibility --- */
+.dark .admin-panel button.bg-primary,
+.dark .admin-panel a.bg-primary,
+.dark .admin-panel .bg-primary,
+.dark .admin-panel button[type="submit"],
+.dark .admin-panel button[class*="bg-primary"],
+.dark .admin-panel .inline-flex[class*="bg-primary"],
+.dark .admin-panel button:has(svg.lucide-plus),
+.dark .admin-panel button:has(.lucide-plus),
+.dark .sa-panel button.bg-primary,
+.dark .sa-panel a.bg-primary,
+.dark .sa-panel .bg-primary,
+.dark .sa-panel button[type="submit"],
+.dark .sa-panel button[class*="bg-primary"],
+.dark .sa-panel .inline-flex[class*="bg-primary"],
+.dark .sa-panel button:has(svg.lucide-plus),
+.dark .sa-panel button:has(.lucide-plus) {
+    background: #B4912B !important;
+    color: #ffffff !important;
+    border: 1px solid #B4912B !important;
+}
+.dark .admin-panel button.bg-primary:hover,
+.dark .admin-panel a.bg-primary:hover,
+.dark .admin-panel .bg-primary:hover,
+.dark .admin-panel button[type="submit"]:hover,
+.dark .admin-panel button[class*="bg-primary"]:hover,
+.dark .admin-panel .inline-flex[class*="bg-primary"]:hover,
+.dark .admin-panel button:has(svg.lucide-plus):hover,
+.dark .admin-panel button:has(.lucide-plus):hover,
+.dark .sa-panel button.bg-primary:hover,
+.dark .sa-panel a.bg-primary:hover,
+.dark .sa-panel .bg-primary:hover,
+.dark .sa-panel button[type="submit"]:hover,
+.dark .sa-panel button[class*="bg-primary"]:hover,
+.dark .sa-panel .inline-flex[class*="bg-primary"]:hover,
+.dark .sa-panel button:has(svg.lucide-plus):hover,
+.dark .sa-panel button:has(.lucide-plus):hover {
+    background: #C5A23C !important;
+    border-color: #C5A23C !important;
+}
+
+/* --- Dark Mode Secondary/Outline Buttons Visibility --- */
+.dark .admin-panel button.bg-secondary:not(aside *),
+.dark .admin-panel button.border:not(aside *),
+.dark .admin-panel a.border:not(aside *),
+.dark .admin-panel button[class*="border-"]:not(aside *),
+.dark .admin-panel button[class*="bg-white"]:not(aside *),
+.dark .admin-panel button.bg-white:not(aside *),
+.dark .admin-panel button:has(svg.lucide-eye):not(aside *),
+.dark .admin-panel button:has(svg.lucide-edit):not(aside *),
+.dark .admin-panel button:has(svg.lucide-trash):not(aside *),
+.dark .admin-panel button:has(svg.lucide-plus):not(.bg-primary):not([class*="bg-primary"]):not(aside *),
+.dark .admin-panel [class*="border-border"] button:not(aside *):not(.bg-primary):not([class*="bg-primary"]),
+.dark .sa-panel button.bg-secondary:not(aside *),
+.dark .sa-panel button.border:not(aside *),
+.dark .sa-panel a.border:not(aside *),
+.dark .sa-panel button[class*="border-"]:not(aside *),
+.dark .sa-panel button[class*="bg-white"]:not(aside *),
+.dark .sa-panel button.bg-white:not(aside *),
+.dark .sa-panel button:has(svg.lucide-eye):not(aside *),
+.dark .sa-panel button:has(svg.lucide-edit):not(aside *),
+.dark .sa-panel button:has(svg.lucide-trash):not(aside *),
+.dark .sa-panel button:has(svg.lucide-plus):not(.bg-primary):not([class*="bg-primary"]):not(aside *),
+.dark .sa-panel [class*="border-border"] button:not(aside *):not(.bg-primary):not([class*="bg-primary"]) {
+    background-color: #1e293b !important;
+    border-color: rgba(255, 255, 255, 0.12) !important;
+    color: #cbd5e1 !important;
+}
+
+.dark .admin-panel button.bg-secondary:not(aside *):hover,
+.dark .admin-panel button.border:not(aside *):hover,
+.dark .admin-panel a.border:not(aside *):hover,
+.dark .admin-panel button[class*="border-"]:not(aside *):hover,
+.dark .admin-panel button[class*="bg-white"]:not(aside *):hover,
+.dark .admin-panel button.bg-white:not(aside *):hover,
+.dark .admin-panel button:has(svg.lucide-eye):not(aside *):hover,
+.dark .admin-panel button:has(svg.lucide-edit):not(aside *):hover,
+.dark .admin-panel button:has(svg.lucide-trash):not(aside *):hover,
+.dark .sa-panel button.bg-secondary:not(aside *):hover,
+.dark .sa-panel button.border:not(aside *):hover,
+.dark .sa-panel a.border:not(aside *):hover,
+.dark .sa-panel button[class*="border-"]:not(aside *):hover,
+.dark .sa-panel button[class*="bg-white"]:not(aside *):hover,
+.dark .sa-panel button.bg-white:not(aside *):hover,
+.dark .sa-panel button:has(svg.lucide-eye):not(aside *):hover,
+.dark .sa-panel button:has(svg.lucide-edit):not(aside *):hover,
+.dark .sa-panel button:has(svg.lucide-trash):not(aside *):hover {
+    background-color: #121826 !important;
+    border-color: rgba(255, 255, 255, 0.25) !important;
+    color: #ffffff !important;
+}
+
+/* Ensure all child elements (like icons and text) inside dark mode buttons have high contrast colors */
+.dark .admin-panel button.bg-secondary:not(aside *) *,
+.dark .admin-panel button.border:not(aside *) *,
+.dark .admin-panel a.border:not(aside *) *,
+.dark .admin-panel button[class*="border-"]:not(aside *) *,
+.dark .admin-panel button[class*="bg-white"]:not(aside *) *,
+.dark .admin-panel button.bg-white:not(aside *) *,
+.dark .admin-panel [class*="border-border"] button:not(aside *) *,
+.dark .sa-panel button.bg-secondary:not(aside *) *,
+.dark .sa-panel button.border:not(aside *) *,
+.dark .sa-panel a.border:not(aside *) *,
+.dark .sa-panel button[class*="border-"]:not(aside *) *,
+.dark .sa-panel button[class*="bg-white"]:not(aside *) *,
+.dark .sa-panel button.bg-white:not(aside *) *,
+.dark .sa-panel [class*="border-border"] button:not(aside *) * {
+    color: #cbd5e1 !important;
+}
+
+.dark .admin-panel button.bg-secondary:not(aside *):hover *,
+.dark .admin-panel button.border:not(aside *):hover *,
+.dark .admin-panel a.border:not(aside *):hover *,
+.dark .admin-panel button[class*="border-"]:not(aside *):hover *,
+.dark .admin-panel button[class*="bg-white"]:not(aside *):hover *,
+.dark .admin-panel button.bg-white:not(aside *):hover *,
+.dark .sa-panel button.bg-secondary:not(aside *):hover *,
+.dark .sa-panel button.border:not(aside *):hover *,
+.dark .sa-panel a.border:not(aside *):hover *,
+.dark .sa-panel button[class*="border-"]:not(aside *):hover *,
+.dark .sa-panel button[class*="bg-white"]:not(aside *):hover *,
+.dark .sa-panel button.bg-white:not(aside *):hover * {
+    color: #ffffff !important;
+}
+
+/* =============================================
+   📐 ADMIN PANEL — Square Corners Everywhere
+   Cards, buttons, inputs — no more rounded corners
+   (rounded-full preserved for pills/dots/avatars)
+   ============================================= */
+.admin-panel *:not([class*="rounded-full"]):not(input[type="checkbox"]):not(input[type="radio"]) {
+    border-radius: 0 !important;
+}
+.admin-panel .rounded-full,
+.admin-panel [class*="rounded-full"] {
+    border-radius: 9999px !important;
+}

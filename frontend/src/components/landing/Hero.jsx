@@ -465,7 +465,7 @@ function FeaturesShowcase({ cardVariants }) {
                             animate={{ y: 0, opacity: 1 }}
                             className="absolute bottom-10 left-1/2 -translate-x-1/2 w-[85%] bg-white rounded-2xl p-6 shadow-2xl flex flex-col items-center text-center z-20 border border-black/5"
                         >
-                            <div className="w-12 h-12 bg-[#B85C5C] rounded-xl flex items-center justify-center mb-3 shadow-lg shadow-[#B85C5C]/20">
+                            <div className="w-12 h-12 bg-[#B4912B] rounded-xl flex items-center justify-center mb-3 shadow-lg shadow-[#B4912B]/20">
                                 {(() => {
                                     const Icon = showcases[index].icon;
                                     return <Icon className="w-6 h-6 text-white" />;
@@ -487,7 +487,7 @@ function FeaturesShowcase({ cardVariants }) {
                         onClick={() => setIndex(i)}
                         className="group text-left relative py-2 outline-none"
                     >
-                        <span className={`block text-[10px] font-black uppercase tracking-[0.2em] transition-all duration-300 ${index === i ? 'text-[#B85C5C] scale-105' : 'text-text-muted/40 group-hover:text-text-muted/60'
+                        <span className={`block text-[10px] font-black uppercase tracking-[0.2em] transition-all duration-300 ${index === i ? 'text-[#B4912B] scale-105' : 'text-text-muted/40 group-hover:text-text-muted/60'
                             }`}>
                             {s.title.split(' ')[0]}
                             <span className="block text-[14px] mt-0.5">{s.title.split(' ').slice(1).join(' ')}</span>
@@ -497,7 +497,7 @@ function FeaturesShowcase({ cardVariants }) {
                         {index === i && (
                             <motion.div
                                 layoutId="activeFeature"
-                                className="absolute -bottom-1 md:-bottom-auto md:-left-6 top-auto md:top-1/2 -translate-y-0 md:-translate-y-1/2 w-full md:w-1.5 h-0.5 md:h-full bg-[#B85C5C] rounded-full"
+                                className="absolute -bottom-1 md:-bottom-auto md:-left-6 top-auto md:top-1/2 -translate-y-0 md:-translate-y-1/2 w-full md:w-1.5 h-0.5 md:h-full bg-[#B4912B] rounded-full"
                             />
                         )}
                     </button>
@@ -529,7 +529,7 @@ function ContactPreview({ cardVariants }) {
             className="w-full max-w-4xl mx-auto bg-white shadow-2xl overflow-hidden flex flex-col md:flex-row min-h-[auto] md:min-h-[450px] border border-black/5"
         >
             {/* Left Content — Maroon Branding */}
-            <div className="w-full md:w-[45%] bg-[#B85C5C] p-10 md:p-8 flex flex-col justify-center text-white relative overflow-hidden">
+            <div className="w-full md:w-[45%] bg-[#B4912B] p-10 md:p-8 flex flex-col justify-center text-white relative overflow-hidden">
                 <div className="relative z-10 space-y-8">
                     <h2 className="text-xl font-black uppercase tracking-[0.25em] mb-4 whitespace-nowrap">Contact Us</h2>
 
@@ -573,7 +573,7 @@ function ContactPreview({ cardVariants }) {
             {/* Right Content — Form Simulation */}
             <div className="flex-1 p-10 bg-white flex flex-col justify-center">
                 <div className="mb-8">
-                    <h3 className="text-3xl font-serif italic text-[#B85C5C]">Get in Touch</h3>
+                    <h3 className="text-3xl font-serif italic text-[#B4912B]">Get in Touch</h3>
                     <p className="text-[13px] text-text-secondary mt-1 font-medium">Feel free to drop us a line below!</p>
                 </div>
 
@@ -586,7 +586,7 @@ function ContactPreview({ cardVariants }) {
                         Typing your message here...
                     </div>
 
-                    <button className="w-fit flex items-center gap-3 px-8 py-3 bg-[#B85C5C] text-white rounded-none shadow-lg shadow-[#B85C5C]/20 hover:scale-105 transition-transform font-black text-[10px] uppercase tracking-[0.2em]">
+                    <button className="w-fit flex items-center gap-3 px-8 py-3 bg-[#B4912B] text-white rounded-none shadow-lg shadow-[#B4912B]/20 hover:scale-105 transition-transform font-black text-[10px] uppercase tracking-[0.2em]">
                         <Send className="w-3 h-3" />
                         Send
                     </button>

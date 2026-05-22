@@ -167,7 +167,7 @@ export default function SAAnalyticsPage() {
 
     const { kpis, growth, planDistribution, geoDistribution } = data;
 
-    const COLORS = ['#B85C5C', '#E2A8A8', '#94a3b8', '#64748b', '#475569'];
+    const COLORS = ['#B4912B', '#DFCE9D', '#94a3b8', '#64748b', '#475569'];
 
     return (
         <div className="space-y-6 pb-8">
@@ -251,7 +251,7 @@ export default function SAAnalyticsPage() {
 
             {/* ── KPI cards ── */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                <MetricCard label="Total Salons" value={kpis.totalSalons} sub={`${kpis.activeSalons} Active accounts`} icon={Building2} gradient="from-primary to-[#8B1A2D]" shadow="shadow-primary/20" />
+                <MetricCard label="Total Salons" value={kpis.totalSalons} sub={`${kpis.activeSalons} Active accounts`} icon={Building2} gradient="from-primary to-[#8B6F23]" shadow="shadow-primary/20" />
                 <MetricCard label="Monthly Revenue" value={fmtINR(kpis.mrr)} sub="Recurring income this month" icon={DollarSign} gradient="from-emerald-500 to-teal-600" shadow="shadow-emerald-500/20" />
                 <MetricCard label="Yearly Forecast" value={fmtINR(kpis.arr)} sub="Projected annual revenue" icon={TrendingUp} gradient="from-blue-500 to-indigo-600" shadow="shadow-blue-500/20" />
                 <MetricCard label="Lifetime Revenue" value={fmtINR(kpis.totalRevenue)} sub="Total income since launch" icon={BarChart2} gradient="from-amber-500 to-orange-600" shadow="shadow-amber-500/20" />
@@ -265,15 +265,15 @@ export default function SAAnalyticsPage() {
                             <AreaChart data={growth.mrrTrend} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
                                 <defs>
                                     <linearGradient id="colorRev" x1="0" y1="0" x2="0" y2="1">
-                                        <stop offset="5%" stopColor="#B85C5C" stopOpacity={0.3} />
-                                        <stop offset="95%" stopColor="#B85C5C" stopOpacity={0} />
+                                        <stop offset="5%" stopColor="#B4912B" stopOpacity={0.3} />
+                                        <stop offset="95%" stopColor="#B4912B" stopOpacity={0} />
                                     </linearGradient>
                                 </defs>
                                 <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
                                 <XAxis dataKey="month" tickFormatter={formatXAxis} tick={{ fontSize: 11, fill: '#94a3b8' }} axisLine={false} tickLine={false} />
                                 <YAxis tick={{ fontSize: 11, fill: '#94a3b8' }} axisLine={false} tickLine={false} tickFormatter={v => `₹${(v / 1000).toFixed(0)}k`} />
                                 <Tooltip content={<CustomTooltip />} />
-                                <Area type="monotone" dataKey="revenue" name="Revenue" stroke="#B85C5C" strokeWidth={3} fillOpacity={1} fill="url(#colorRev)" />
+                                <Area type="monotone" dataKey="revenue" name="Revenue" stroke="#B4912B" strokeWidth={3} fillOpacity={1} fill="url(#colorRev)" />
                             </AreaChart>
                         </ResponsiveContainer>
                     </div>

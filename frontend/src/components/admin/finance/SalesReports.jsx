@@ -209,7 +209,7 @@ export default function SalesReports() {
                                         fontWeight: '900'
                                     }}
                                 />
-                                <Bar dataKey="value" fill="#8B1A2D" radius={[4, 4, 0, 0]} barSize={30} />
+                                <Bar dataKey="value" fill="#8B6F23" radius={[4, 4, 0, 0]} barSize={30} />
                             </BarChart>
                         </ResponsiveContainer>
                     </div>

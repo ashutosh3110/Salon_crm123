@@ -216,13 +216,13 @@ export default function SATenantDetailPage() {
                     <div className="absolute bottom-[-20%] right-[-10%] w-[50%] h-[100%] bg-indigo-500/5 blur-[100px] rounded-full animate-pulse" />
                 </div>
 
-                <div className="h-1.5 bg-gradient-to-r from-primary via-indigo-600 to-[#8B1A2D]" />
+                <div className="h-1.5 bg-gradient-to-r from-primary via-indigo-600 to-[#8B6F23]" />
                 
                 <div className="p-8 flex flex-col lg:flex-row lg:items-center gap-8 relative z-10">
                     {/* Avatar with Glow */}
                     <div className="relative shrink-0">
                         <div className="absolute inset-0 bg-primary/20 blur-xl rounded-full" />
-                        <div className="w-20 h-20 rounded-[2rem] bg-gradient-to-br from-primary to-[#8B1A2D] flex items-center justify-center text-3xl font-black text-white shadow-2xl shadow-primary/40 relative">
+                        <div className="w-20 h-20 rounded-[2rem] bg-gradient-to-br from-primary to-[#8B6F23] flex items-center justify-center text-3xl font-black text-white shadow-2xl shadow-primary/40 relative">
                             {selectedTenant.name[0].toUpperCase()}
                         </div>
                     </div>

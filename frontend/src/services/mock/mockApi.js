@@ -556,7 +556,7 @@ export const mockGet = async (url) => {
                 planDist: [
                     { name: 'Free', value: 45, color: '#94a3b8' },
                     { name: 'Basic', value: 68, color: '#3b82f6' },
-                    { name: 'Pro', value: 32, color: '#B85C5C' },
+                    { name: 'Pro', value: 32, color: '#B4912B' },
                     { name: 'Enterprise', value: 9, color: '#f59e0b' }
                 ],
                 geoDist: [

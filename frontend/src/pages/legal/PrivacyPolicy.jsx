@@ -33,7 +33,7 @@ export default function PrivacyPolicy() {
         <LegalLayout title={title}>
             {loading ? (
                 <div style={{ display: 'flex', justifyContent: 'center', padding: '40px' }}>
-                    <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-[#B85C5C]"></div>
+                    <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-[#B4912B]"></div>
                 </div>
             ) : content ? (
                 <div dangerouslySetInnerHTML={{ __html: content }} />

@@ -157,7 +157,7 @@ export default function SABlogPage() {
     });
 
     return (
-        <div className="space-y-6 pb-20 sa-panel min-h-screen bg-[#fafafa]">
+        <div className="space-y-6 pb-20">
             {/* Toast feedback */}
             <AnimatePresence>
                 {toast && (
@@ -322,7 +322,7 @@ export default function SABlogPage() {
                             animate={{ opacity: 1, scale: 1, y: 0 }} 
                             exit={{ opacity: 0, scale: 0.96, y: 30 }} 
                             transition={{ type: "spring", duration: 0.5 }}
-                            className="relative bg-[#fafafa] w-full max-w-3xl h-[92vh] overflow-hidden flex flex-col shadow-2xl rounded-3xl border border-border"
+                            className="relative bg-surface w-full max-w-3xl h-[92vh] overflow-hidden flex flex-col shadow-2xl rounded-3xl border border-border"
                         >
 
                             {/* Modal Header */}

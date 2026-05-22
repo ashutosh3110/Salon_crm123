@@ -269,7 +269,7 @@ function PlanModal({ plan, onClose, onSave, saving }) {
                         Cancel
                     </button>
                     <button onClick={() => onSave(form)} disabled={saving || !form.name}
-                        className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-primary to-[#8B1A2D] text-white text-[11px] font-black uppercase tracking-widest shadow-lg shadow-primary/20 hover:brightness-110 active:scale-95 transition-all disabled:opacity-50">
+                        className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-primary to-[#8B6F23] text-white text-[11px] font-black uppercase tracking-widest shadow-lg shadow-primary/20 hover:brightness-110 active:scale-95 transition-all disabled:opacity-50">
                         {saving ? 'Saving...' : plan?._id ? 'Update Plan' : 'Create Plan'}
                     </button>
                 </div>
@@ -408,7 +408,7 @@ export default function SAPlansPage() {
                 
                 <button 
                     onClick={() => setModal({})}
-                    className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-gradient-to-r from-primary to-[#8B1A2D] text-white text-xs font-black uppercase tracking-wider hover:brightness-110 shadow-lg shadow-primary/20 transition-all active:scale-[0.98]"
+                    className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-gradient-to-r from-primary to-[#8B6F23] text-white text-xs font-black uppercase tracking-wider hover:brightness-110 shadow-lg shadow-primary/20 transition-all active:scale-[0.98]"
                 >
                     <Plus className="w-4 h-4" /> 
                     <span>Create New Plan</span>

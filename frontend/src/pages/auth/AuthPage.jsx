@@ -144,7 +144,7 @@ export default function AuthPage() {
     }, []);
 
     return (
-        <div className="min-h-screen new-theme selection:bg-[#B85C5C]/30" style={{ fontFamily: "'Inter', sans-serif", background: 'var(--wapixo-bg)', color: 'var(--wapixo-text)' }}>
+        <div className="min-h-screen new-theme selection:bg-[#B4912B]/30" style={{ fontFamily: "'Inter', sans-serif", background: 'var(--wapixo-bg)', color: 'var(--wapixo-text)' }}>
             <WapixoNavbar />
 
             {/* Background elements */}
@@ -269,7 +269,7 @@ export default function AuthPage() {
                                                         containerClassName="border-b-2 transition-all duration-300"
                                                         style={{ borderColor: 'var(--wapixo-border)' }}
                                                         inputClassName="w-full pl-8 py-3 bg-transparent text-sm focus:outline-none font-medium"
-                                                        buttonClassName="hover:text-[#B85C5C]"
+                                                        buttonClassName="hover:text-[#B4912B]"
                                                         inputStyle={{ color: 'var(--wapixo-text)', border: 'none' }}
                                                     >
                                                         <Lock className="absolute left-0 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: 'var(--wapixo-text-muted)', opacity: 0.4 }} />

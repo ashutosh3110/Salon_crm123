@@ -151,7 +151,7 @@ export default function SuperAdminLoginPage() {
                                 <div className="space-y-6 pt-4">
                                     <button
                                         type="submit" disabled={loading}
-                                        className="w-full h-14 bg-white text-black font-black uppercase tracking-[0.2em] text-[11px] rounded-2xl hover:bg-gradient-to-r hover:from-primary hover:to-[#8B1A2D] hover:text-white transition-all duration-500 shadow-xl hover:shadow-primary/25 flex items-center justify-center gap-3 disabled:opacity-50"
+                                        className="w-full h-14 bg-white text-black font-black uppercase tracking-[0.2em] text-[11px] rounded-2xl hover:bg-gradient-to-r hover:from-primary hover:to-[#8B6F23] hover:text-white transition-all duration-500 shadow-xl hover:shadow-primary/25 flex items-center justify-center gap-3 disabled:opacity-50"
                                     >
                                         {loading ? 'Authenticating...' : <><span>Sign In</span><ArrowRight className="w-4 h-4" /></>}
                                     </button>

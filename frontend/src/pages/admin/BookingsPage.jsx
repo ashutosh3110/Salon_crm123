@@ -324,7 +324,7 @@ export default function BookingsPage() {
                             <BarChart data={sourceData}>
                                 <Bar dataKey="count" fill="var(--primary)" radius={0}>
                                     {sourceData.map((entry, index) => (
-                                        <Cell key={`cell-${index}`} fill={index % 2 === 0 ? 'var(--primary)' : '#8B1A2D'} />
+                                        <Cell key={`cell-${index}`} fill={index % 2 === 0 ? 'var(--primary)' : '#8B6F23'} />
                                     ))}
                                 </Bar>
                                 <Tooltip contentStyle={{ backgroundColor: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '0px', fontSize: '9px', fontWeight: '900', textTransform: 'uppercase' }} cursor={{ fill: 'transparent' }} />

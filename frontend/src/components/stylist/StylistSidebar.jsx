@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
+import { useTheme } from '../../contexts/ThemeContext';
 import * as Icons from 'lucide-react';
 import {
     ChevronLeft, ChevronRight, X, ChevronDown, LogOut, User, Shield, Info
@@ -19,6 +20,8 @@ const menuItems = stylistMenuData.map(item => ({
 
 export default function StylistSidebar({ collapsed, setCollapsed, mobileOpen, setMobileOpen, isHovered, setIsHovered }) {
     const { logout, user } = useAuth();
+    const { theme } = useTheme();
+    const logoSrc = theme === 'dark' ? "/new wapixo logo .png" : "/new black wapixo logo .png";
     const location = useLocation();
     const [expandedItem, setExpandedItem] = useState(null);
     const [isLgUp, setIsLgUp] = useState(typeof window !== 'undefined' ? window.innerWidth >= 1024 : true);
@@ -71,7 +74,7 @@ export default function StylistSidebar({ collapsed, setCollapsed, mobileOpen, se
                 <div className="flex-1 flex items-center justify-center overflow-hidden">
                     <div className="w-45 h-45 flex items-center justify-center shrink-0">
                         <img
-                            src="/new black wapixo logo .png"
+                            src={logoSrc}
                             alt="Salon"
                             className="w-full h-full object-contain"
                         />

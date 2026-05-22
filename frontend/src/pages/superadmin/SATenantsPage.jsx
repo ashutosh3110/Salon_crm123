@@ -573,7 +573,7 @@ function SalonModal({ mode, tenant, onClose, onSave, saving }) {
                         Cancel
                     </button>
                     <button onClick={() => onSave(form)} disabled={saving || !form.name || !form.ownerName || !form.email}
-                        className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-primary to-[#8B1A2D] text-primary-foreground text-sm font-bold hover:brightness-110 disabled:opacity-50 transition-all shadow-lg shadow-primary/20">
+                        className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-primary to-[#8B6F23] text-primary-foreground text-sm font-bold hover:brightness-110 disabled:opacity-50 transition-all shadow-lg shadow-primary/20">
                         {saving ? 'Saving…' : mode === 'create' ? 'Create Salon' : 'Save Changes'}
                     </button>
                 </div>
@@ -996,7 +996,7 @@ export default function SATenantsPage() {
                     </button>
                     <button
                         onClick={() => setModal({ mode: 'create' })}
-                        className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-primary to-[#8B1A2D] text-primary-foreground text-sm font-bold hover:brightness-110 transition-all shadow-lg shadow-primary/25 active:scale-[0.98]">
+                        className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-primary to-[#8B6F23] text-primary-foreground text-sm font-bold hover:brightness-110 transition-all shadow-lg shadow-primary/25 active:scale-[0.98]">
                         <Plus className="w-4 h-4" /> Create Salon
                     </button>
                 </div>

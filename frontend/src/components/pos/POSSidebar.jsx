@@ -16,6 +16,7 @@ import {
     ArrowLeft
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
+import { useTheme } from '../../contexts/ThemeContext';
 
 const menuItems = [
     { label: 'New Bill', icon: Zap, path: '/pos/billing', accent: true },
@@ -30,6 +31,8 @@ export default function POSSidebar({ collapsed, setCollapsed, mobileOpen, setMob
     const location = useLocation();
     const navigate = useNavigate();
     const { getExitPath } = useAuth();
+    const { theme } = useTheme();
+    const logoSrc = theme === 'dark' ? "/new wapixo logo .png" : "/new black wapixo logo .png";
     const [isMdUp, setIsMdUp] = useState(typeof window !== 'undefined' ? window.innerWidth >= 768 : true);
 
     useEffect(() => {
@@ -68,7 +71,7 @@ export default function POSSidebar({ collapsed, setCollapsed, mobileOpen, setMob
                 <div className="flex-1 flex items-center justify-center overflow-hidden">
                     <div className="w-45 h-45 flex items-center justify-center shrink-0">
                         <img
-                            src="/new black wapixo logo .png"
+                            src={logoSrc}
                             alt="Logo"
                             className="w-full h-full object-contain"
                         />

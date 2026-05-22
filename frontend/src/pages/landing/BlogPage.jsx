@@ -19,9 +19,15 @@ export default function BlogPage() {
         const fetchPosts = async () => {
             try {
                 const { data } = await api.get('/blogs?status=published');
-                setPosts(data);
+                if (Array.isArray(data)) {
+                    setPosts(data);
+                } else {
+                    console.error('Expected array for blogs, received:', data);
+                    setPosts([]);
+                }
             } catch (err) {
                 console.error('Failed to fetch journal feed:', err);
+                setPosts([]);
             } finally {
                 setLoading(false);
             }

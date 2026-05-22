@@ -24,11 +24,11 @@ export default function CustomDropdown({
         : 'w-full px-4 py-3 rounded-xl bg-white border border-border text-text text-sm focus:outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all shadow-sm active:scale-[0.99]';
 
     return (
-        <div ref={ref} className={`relative ${variant === 'form' ? 'w-full' : 'inline-block'}`}>
+        <div ref={ref} className={`relative custom-dropdown-container ${variant === 'form' ? 'w-full' : 'inline-block'}`}>
             <button
                 type="button"
                 onClick={() => setOpen(!open)}
-                className={`${baseCls} flex items-center justify-between gap-3 min-w-[160px] ${className} ${open ? 'border-primary ring-4 ring-primary/10' : ''}`}
+                className={`custom-dropdown-trigger ${baseCls} flex items-center justify-between gap-3 min-w-[160px] ${className} ${open ? 'border-primary ring-4 ring-primary/10' : ''}`}
             >
                 <div className="flex items-center gap-2.5 truncate">
                     {selected?.icon && (
@@ -44,7 +44,7 @@ export default function CustomDropdown({
             </button>
 
             {open && (
-                <div className="absolute z-[100] mt-2 w-full min-w-[200px] bg-white/95 backdrop-blur-xl border border-border rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.15)] py-1.5 animate-in fade-in zoom-in-95 slide-in-from-top-2 duration-300 origin-top overflow-hidden ring-1 ring-black/5">
+                <div className="custom-dropdown-panel absolute z-[100] mt-2 w-full min-w-[200px] bg-white/95 backdrop-blur-xl border border-border rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.15)] py-1.5 animate-in fade-in zoom-in-95 slide-in-from-top-2 duration-300 origin-top overflow-hidden ring-1 ring-black/5">
                     <div className="max-h-[280px] overflow-y-auto custom-scrollbar">
                         {options.map((opt, i) => (
                             <button
@@ -54,7 +54,7 @@ export default function CustomDropdown({
                                     onChange(opt.value || opt.key);
                                     setOpen(false);
                                 }}
-                                className={`w-full flex items-center gap-3 px-3 py-2.5 text-xs font-bold transition-all
+                                className={`custom-dropdown-option w-full flex items-center gap-3 px-3 py-2.5 text-xs font-bold transition-all
                                     ${value === (opt.value || opt.key)
                                         ? 'text-primary bg-primary/5 mx-1.5 w-[calc(100%-12px)] rounded-xl'
                                         : 'text-text-secondary hover:text-primary hover:bg-surface mx-1.5 w-[calc(100%-12px)] rounded-xl'}

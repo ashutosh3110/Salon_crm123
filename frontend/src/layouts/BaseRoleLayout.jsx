@@ -40,37 +40,252 @@ export default function BaseRoleLayout({ SidebarComponent, title, accentColor = 
             className="min-h-screen bg-background flex text-text transition-colors duration-300 admin-panel overflow-x-hidden"
             style={{ '--accent-color': activeAccentColor }}
         >
-            {/* Global clean typography override for entire panel to match premium Poppins/Inter design system */}
+            {/* Global clean typography, premium layout overrides & bulletproof accessibility rules for all roles */}
             <style>{`
-                .admin-panel {
-                    --font-serif: 'Inter', sans-serif !important;
+                /* --- Global Theme & Font Assignment --- */
+                html:not(.dark) .admin-panel {
                     font-family: 'Inter', sans-serif !important;
+                    background-color: #faf9f9 !important;
+                    color: #000000 !important;
                 }
+                
                 .admin-panel *,
                 .admin-panel *::before,
-                .admin-panel *::after {
-                    font-family: 'Inter', sans-serif !important;
+                .admin-panel *::after,
+                [role="dialog"] *,
+                [role="menu"] *,
+                [role="tooltip"] *,
+                .fixed.inset-0 * {
+                    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+                    font-style: normal !important;
+                    letter-spacing: -0.01em;
                 }
-                .admin-panel button.bg-primary,
-                .admin-panel a.bg-primary {
-                    color: var(--primary-foreground) !important;
+
+                /* --- Headers & Titles (Completely Clean & Standard) --- */
+                html:not(.dark) .admin-panel h1, 
+                html:not(.dark) .admin-panel h2, 
+                html:not(.dark) .admin-panel h3, 
+                html:not(.dark) .admin-panel h4, 
+                html:not(.dark) .admin-panel h5, 
+                html:not(.dark) .admin-panel h6,
+                html:not(.dark) .admin-panel .font-serif,
+                html:not(.dark) .admin-panel [class*="font-serif"],
+                html:not(.dark) .admin-panel .italic,
+                html:not(.dark) .admin-panel [class*="italic"],
+                html:not(.dark) [role="dialog"] h1,
+                html:not(.dark) [role="dialog"] h2,
+                html:not(.dark) [role="dialog"] h3,
+                html:not(.dark) [role="dialog"] h4,
+                html:not(.dark) [role="dialog"] h5,
+                html:not(.dark) [role="dialog"] h6 {
+                    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+                    font-weight: 800 !important;
+                    font-style: normal !important;
+                    color: #000000 !important;
                 }
-                .admin-panel h1, 
-                .admin-panel h2, 
-                .admin-panel h3, 
-                .admin-panel h4, 
-                .admin-panel h5, 
-                .admin-panel h6,
-                .admin-panel .font-serif,
-                .admin-panel [class*="font-serif"],
-                .admin-panel .italic,
-                .admin-panel [class*="italic"] {
+
+                /* --- Spacious & Beautiful Tables --- */
+                html:not(.dark) .admin-panel table {
+                    border-collapse: separate !important;
+                    border-spacing: 0 !important;
+                    width: 100% !important;
+                }
+                html:not(.dark) .admin-panel table th {
                     font-family: 'Inter', sans-serif !important;
-                    font-style: normal !important; /* Force standard, clean, non-cursive upright text */
+                    font-size: 0.825rem !important;
                     font-weight: 700 !important;
+                    text-transform: uppercase !important;
+                    letter-spacing: 0.08em !important;
+                    color: #000000 !important;
+                    background-color: #f8fafc !important;
+                    padding: 1.2rem 1.5rem !important;
+                    border-bottom: 2px solid #e2e8f0 !important;
+                    text-align: left;
                 }
-                .admin-panel .font-sans {
+                html:not(.dark) .admin-panel table td {
+                    font-size: 0.95rem !important;
+                    padding: 1.35rem 1.5rem !important;
+                    color: #000000 !important;
+                    border-bottom: 1px solid #f1f5f9 !important;
+                    vertical-align: middle !important;
+                    line-height: 1.5 !important;
+                }
+                html:not(.dark) .admin-panel table tr {
+                    transition: all 0.2s ease-in-out !important;
+                }
+                html:not(.dark) .admin-panel table tr:hover td {
+                    background-color: #f8fafc !important;
+                }
+
+                /* --- Form Controls, Inputs & Labels --- */
+                html:not(.dark) .admin-panel label {
+                    font-size: 0.85rem !important;
+                    font-weight: 600 !important;
+                    color: #000000 !important;
+                    margin-bottom: 0.5rem !important;
+                    display: inline-block !important;
+                }
+                html:not(.dark) .admin-panel input, 
+                html:not(.dark) .admin-panel select, 
+                html:not(.dark) .admin-panel textarea {
+                    font-size: 0.975rem !important;
+                    font-weight: 400 !important;
+                    padding: 0.75rem 1rem !important;
+                    border-radius: 0.75rem !important;
+                    border: 1px solid #cbd5e1 !important;
+                    color: #000000 !important;
+                    background-color: #ffffff !important;
+                    transition: all 0.2s ease-in-out !important;
+                    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05) !important;
+                }
+                html:not(.dark) .admin-panel input:focus, 
+                html:not(.dark) .admin-panel select:focus, 
+                html:not(.dark) .admin-panel textarea:focus {
+                    border-color: var(--accent-color, #B4912B) !important;
+                    box-shadow: 0 0 0 4px rgba(180, 145, 43, 0.12) !important;
+                    outline: none !important;
+                }
+
+                /* --- Premium Cards --- */
+                html:not(.dark) .admin-panel .bg-surface,
+                html:not(.dark) .admin-panel .bg-white {
+                    background-color: #ffffff !important;
+                    border: 1px solid #f1f5f9 !important;
+                    border-radius: 1.25rem !important;
+                    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.03), 0 2px 4px -2px rgba(0, 0, 0, 0.03) !important;
+                }
+
+                /* --- Dynamic & Premium Buttons --- */
+                .admin-panel button,
+                .admin-panel .inline-flex,
+                .admin-panel a[class*="bg-primary"],
+                .admin-panel button[class*="bg-primary"] {
                     font-family: 'Inter', sans-serif !important;
+                    font-weight: 600 !important;
+                    border-radius: 0.75rem !important;
+                    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+                }
+
+                /* Primary Buttons Dynamic Hover & Accent Styling */
+                .admin-panel button.bg-primary,
+                .admin-panel a.bg-primary,
+                .admin-panel .bg-primary,
+                .admin-panel button[type="submit"],
+                .admin-panel button[class*="bg-primary"],
+                .admin-panel .inline-flex[class*="bg-primary"],
+                .admin-panel button:has(svg.lucide-plus) {
+                    background: var(--accent-color, #000000) !important;
+                    color: #ffffff !important;
+                    border: 1px solid var(--accent-color, #000000) !important;
+                    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1) !important;
+                }
+                .admin-panel button.bg-primary:hover,
+                .admin-panel a.bg-primary:hover,
+                .admin-panel .bg-primary:hover,
+                .admin-panel button[type="submit"]:hover,
+                .admin-panel button[class*="bg-primary"]:hover,
+                .admin-panel .inline-flex[class*="bg-primary"]:hover,
+                .admin-panel button:has(svg.lucide-plus):hover {
+                    opacity: 0.9 !important;
+                    transform: translateY(-1.5px) !important;
+                }
+
+                /* Target Light Mode Secondary, Outline & Text Buttons */
+                html:not(.dark) .admin-panel button.bg-secondary:not(aside *),
+                html:not(.dark) .admin-panel button.border:not(aside *),
+                html:not(.dark) .admin-panel a.border:not(aside *),
+                html:not(.dark) .admin-panel button[class*="border-"]:not(aside *),
+                html:not(.dark) .admin-panel button[class*="bg-white"]:not(aside *),
+                html:not(.dark) .admin-panel button.bg-white:not(aside *),
+                html:not(.dark) .admin-panel [class*="border-border"] button:not(aside *):not(.bg-primary):not([class*="bg-primary"]),
+                html:not(.dark) .admin-panel button:has(svg.lucide-eye):not(aside *),
+                html:not(.dark) .admin-panel button:has(svg.lucide-edit):not(aside *) {
+                    background-color: #ffffff !important;
+                    border: 1px solid #cbd5e1 !important;
+                    color: #000000 !important;
+                    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04) !important;
+                }
+                html:not(.dark) .admin-panel button.bg-secondary:not(aside *):hover,
+                html:not(.dark) .admin-panel button.border:not(aside *):hover,
+                html:not(.dark) .admin-panel a.border:not(aside *):hover,
+                html:not(.dark) .admin-panel button[class*="border-"]:not(aside *):hover,
+                html:not(.dark) .admin-panel button[class*="bg-white"]:not(aside *):hover,
+                html:not(.dark) .admin-panel button.bg-white:not(aside *):hover,
+                html:not(.dark) .admin-panel [class*="border-border"] button:not(aside *):not(.bg-primary):not([class*="bg-primary"]):hover,
+                html:not(.dark) .admin-panel button:has(svg.lucide-eye):not(aside *):hover,
+                html:not(.dark) .admin-panel button:has(svg.lucide-edit):not(aside *):hover {
+                    background-color: #f8fafc !important;
+                    border-color: #94a3b8 !important;
+                    color: #0f172a !important;
+                    transform: translateY(-1px) !important;
+                }
+
+                /* ==========================================
+                   🎨 PREMIUM DARK MODE OVERRIDES
+                   ========================================== */
+                .dark .admin-panel {
+                    background-color: #121826 !important;
+                    color: #cbd5e1 !important;
+                }
+                .dark .admin-panel .bg-white,
+                .dark .admin-panel .bg-surface,
+                .dark .admin-panel .bg-background,
+                .dark .admin-panel .bg-slate-50,
+                .dark .admin-panel [class*="bg-white"],
+                .dark .admin-panel [class*="bg-surface"],
+                .dark .admin-panel [class*="bg-background"],
+                .dark .admin-panel [class*="bg-slate-50"] {
+                    background-color: #1e293b !important;
+                }
+                .dark .admin-panel input, 
+                .dark .admin-panel select, 
+                .dark .admin-panel textarea {
+                    background-color: #1e293b !important;
+                    border-color: rgba(255, 255, 255, 0.12) !important;
+                    color: #ffffff !important;
+                }
+                .dark .admin-panel label {
+                    color: #94a3b8 !important;
+                }
+                .dark .admin-panel table th {
+                    background-color: #121826 !important;
+                    border-bottom: 2px solid rgba(255, 255, 255, 0.08) !important;
+                    color: #94a3b8 !important;
+                }
+                .dark .admin-panel table td {
+                    color: #cbd5e1 !important;
+                    border-bottom: 1px solid rgba(255, 255, 255, 0.04) !important;
+                }
+                .dark .admin-panel table tr:hover td {
+                    background-color: #121826 !important;
+                }
+
+                /* Secondary/Outline Buttons in Dark Mode */
+                .dark .admin-panel button.bg-secondary:not(aside *),
+                .dark .admin-panel button.border:not(aside *),
+                .dark .admin-panel a.border:not(aside *),
+                .dark .admin-panel button[class*="border-"]:not(aside *),
+                .dark .admin-panel button[class*="bg-white"]:not(aside *),
+                .dark .admin-panel button.bg-white:not(aside *),
+                .dark .admin-panel [class*="border-border"] button:not(aside *):not(.bg-primary):not([class*="bg-primary"]),
+                .dark .admin-panel button:has(svg.lucide-eye):not(aside *),
+                .dark .admin-panel button:has(svg.lucide-edit):not(aside *),
+                .dark .admin-panel button:has(svg.lucide-trash):not(aside *),
+                .dark .admin-panel button:has(svg.lucide-plus):not(.bg-primary):not([class*="bg-primary"]):not(aside *) {
+                    background-color: #1e293b !important;
+                    border-color: rgba(255, 255, 255, 0.12) !important;
+                    color: #cbd5e1 !important;
+                }
+                .dark .admin-panel button.bg-secondary:not(aside *):hover,
+                .dark .admin-panel button.border:not(aside *):hover,
+                .dark .admin-panel a.border:not(aside *):hover,
+                .dark .admin-panel button[class*="border-"]:not(aside *):hover,
+                .dark .admin-panel button[class*="bg-white"]:not(aside *):hover,
+                .dark .admin-panel button.bg-white:not(aside *):hover,
+                .dark .admin-panel [class*="border-border"] button:not(aside *):not(.bg-primary):not([class*="bg-primary"]):hover {
+                    background-color: #121826 !important;
+                    border-color: rgba(255, 255, 255, 0.25) !important;
+                    color: #ffffff !important;
                 }
             `}</style>
             {/* Sidebar */}

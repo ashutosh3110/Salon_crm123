@@ -112,7 +112,7 @@ export default function DashboardPage() {
                             <AreaChart data={revenueData}>
                                 <CartesianGrid strokeDasharray="3 3" vertical={false} strokeOpacity={0.1} />
                                 <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 10, fontWeight: 900 }} />
-                                <Area type="monotone" dataKey="revenue" stroke="#8B1A2D" strokeWidth={3} fill="#8B1A2D" fillOpacity={0.1} />
+                                <Area type="monotone" dataKey="revenue" stroke="#8B6F23" strokeWidth={3} fill="#8B6F23" fillOpacity={0.1} />
                                 <Tooltip />
                             </AreaChart>
                         </ResponsiveContainer>

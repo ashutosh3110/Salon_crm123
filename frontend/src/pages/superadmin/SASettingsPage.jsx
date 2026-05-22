@@ -350,7 +350,7 @@ export default function SASettingsPage() {
             </div>
 
             {/* ── Avatar + Quick Info Banner ── */}
-            <div className="bg-[#8B1A2D] rounded-2xl p-6 flex flex-col sm:flex-row items-center sm:items-start gap-5 shadow-xl shadow-[#8B1A2D]/20">
+            <div className="bg-[#8B6F23] rounded-2xl p-6 flex flex-col sm:flex-row items-center sm:items-start gap-5 shadow-xl shadow-[#8B6F23]/20">
                 {/* Avatar circle */}
                 <div className="shrink-0">
                     <div className="w-20 h-20 rounded-2xl bg-white/10 border border-white/20 flex items-center justify-center text-white text-3xl font-black shadow-lg">
@@ -398,7 +398,7 @@ export default function SASettingsPage() {
                         <button
                             onClick={handleSaveProfile}
                             disabled={savingProfile}
-                            className="w-full flex items-center justify-center gap-2 py-2.5 px-5 rounded-xl bg-gradient-to-r from-primary to-[#8B1A2D] text-white text-sm font-bold hover:brightness-110 disabled:opacity-60 transition-all shadow-lg shadow-primary/20 active:scale-[0.98]"
+                            className="w-full flex items-center justify-center gap-2 py-2.5 px-5 rounded-xl bg-gradient-to-r from-primary to-[#8B6F23] text-white text-sm font-bold hover:brightness-110 disabled:opacity-60 transition-all shadow-lg shadow-primary/20 active:scale-[0.98]"
                         >
                             {savingProfile
                                 ? <><span className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" /> Saving…</>

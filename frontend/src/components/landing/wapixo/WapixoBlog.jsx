@@ -15,15 +15,21 @@ export default function WapixoBlog() {
         const fetchPosts = async () => {
             try {
                 const { data } = await api.get('/blogs?isFeatured=true&status=published');
-                setPosts(data.slice(0, 3));
+                if (Array.isArray(data)) {
+                    setPosts(data.slice(0, 3));
+                } else {
+                    console.error('Expected array for blogs, received:', data);
+                    setPosts([]);
+                }
             } catch (err) {
                 console.error('Failed to fetch featured blogs:', err);
+                setPosts([]);
             }
         };
         fetchPosts();
     }, []);
 
-    if (posts.length === 0) return null;
+    if (!Array.isArray(posts) || posts.length === 0) return null;
 
     return (
         <section style={{ padding: '100px 1.5rem', maxWidth: '1200px', margin: '0 auto', background: 'var(--wapixo-bg)' }}>

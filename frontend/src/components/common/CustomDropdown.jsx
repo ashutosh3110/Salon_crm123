@@ -25,7 +25,7 @@ export default function CustomDropdown({ options = [], value, onChange, label, c
     }, []);
 
     return (
-        <div className={`relative ${className}`} ref={dropdownRef}>
+        <div className={`relative custom-dropdown-container ${className}`} ref={dropdownRef}>
             {label && (
                 <label className="block text-[10px] font-black text-text-muted uppercase tracking-[0.15em] mb-1.5">
                     {label}
@@ -36,7 +36,7 @@ export default function CustomDropdown({ options = [], value, onChange, label, c
             <button
                 type="button"
                 onClick={() => setIsOpen(!isOpen)}
-                className={`w-full flex items-center justify-between gap-3 px-4 py-2.5 bg-white border transition-all duration-200 text-left
+                className={`custom-dropdown-trigger w-full flex items-center justify-between gap-3 px-4 py-2.5 bg-white border transition-all duration-200 text-left
                     ${isOpen
                         ? 'border-primary shadow-[0_0_0_3px_rgba(var(--color-primary-rgb,99,102,241),0.12)]'
                         : 'border-border hover:border-primary/40 shadow-sm hover:shadow-md'
@@ -54,7 +54,7 @@ export default function CustomDropdown({ options = [], value, onChange, label, c
             {/* Dropdown Panel */}
             {isOpen && (
                 <div
-                    className="absolute z-[999] w-full mt-1 bg-white overflow-hidden"
+                    className="custom-dropdown-panel absolute z-[999] w-full mt-1 bg-white overflow-hidden"
                     style={{
                         border: '1px solid #e5e7eb',
                         boxShadow: '0 8px 30px rgba(0,0,0,0.10), 0 2px 8px rgba(0,0,0,0.06)',
@@ -74,7 +74,7 @@ export default function CustomDropdown({ options = [], value, onChange, label, c
                                         onChange(opt.value);
                                         setIsOpen(false);
                                     }}
-                                    className={`w-full flex items-center justify-between px-4 py-2.5 text-left transition-colors duration-150 group
+                                    className={`custom-dropdown-option w-full flex items-center justify-between px-4 py-2.5 text-left transition-colors duration-150 group
                                         ${isSelected
                                             ? 'bg-primary/5 text-primary'
                                             : 'text-text-secondary hover:bg-surface-alt hover:text-text'

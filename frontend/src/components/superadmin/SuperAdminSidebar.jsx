@@ -3,7 +3,7 @@ import { NavLink, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { useBusiness } from '../../contexts/BusinessContext';
 import { getImageUrl } from '../../utils/imageUtils';
-import logoFull from '/new black wapixo logo .png';
+import { useTheme } from '../../contexts/ThemeContext';
 import {
     LayoutDashboard, Building2, Receipt, Settings,
     LogOut, ChevronLeft, ChevronRight, X,
@@ -84,6 +84,8 @@ const menuItems = [
 export default function SuperAdminSidebar({ collapsed, setCollapsed, mobileOpen, setMobileOpen }) {
     const { logout, user } = useAuth();
     const { platformSettings } = useBusiness();
+    const { theme } = useTheme();
+    const logoSrc = theme === 'dark' ? "/new wapixo logo .png" : "/new black wapixo logo .png";
     const location = useLocation();
     const [isLgUp, setIsLgUp] = useState(typeof window !== 'undefined' ? window.innerWidth >= 1024 : true);
 
@@ -124,7 +126,7 @@ export default function SuperAdminSidebar({ collapsed, setCollapsed, mobileOpen,
                 <div className="flex-1 flex items-center justify-center overflow-hidden">
                     <div className="w-45 h-45 flex items-center justify-center shrink-0">
                         <img
-                            src={platformSettings?.logoUrl ? getImageUrl(platformSettings.logoUrl) : "/new black wapixo logo .png"}
+                            src={logoSrc}
                             alt="Logo"
                             className="w-full h-full object-contain"
                         />
@@ -195,7 +197,7 @@ export default function SuperAdminSidebar({ collapsed, setCollapsed, mobileOpen,
                 <div className="px-3 pb-3 animate-in fade-in duration-300">
                     <div className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl bg-surface border border-border">
                         <div className="w-8 h-8 flex items-center justify-center overflow-hidden shrink-0">
-                            <img src={platformSettings?.logoUrl ? getImageUrl(platformSettings.logoUrl) : logoFull} alt="" className="w-full h-full object-contain" />
+                            <img src={logoSrc} alt="" className="w-full h-full object-contain" />
                         </div>
                         <div className="flex-1 min-w-0">
                             <div className="text-xs font-bold text-text truncate">{user?.name || 'Super Admin'}</div>
@@ -229,7 +231,7 @@ export default function SuperAdminSidebar({ collapsed, setCollapsed, mobileOpen,
     return (
         <>
             {/* Desktop Sidebar */}
-            <aside className={`hidden lg:block fixed top-0 left-0 h-screen bg-background border-r border-border z-30 transition-all duration-300 ${effectiveCollapsed ? 'w-[68px]' : 'w-60'}`}>
+            <aside className={`hidden lg:block fixed top-0 left-0 h-screen bg-background border-r border-border z-30 transition-all duration-300 ${effectiveCollapsed ? 'w-[68px]' : 'w-64'}`}>
                 {sidebarContent}
             </aside>
 
@@ -242,7 +244,7 @@ export default function SuperAdminSidebar({ collapsed, setCollapsed, mobileOpen,
             )}
 
             {/* Mobile sidebar */}
-            <aside className={`lg:hidden fixed top-0 left-0 h-screen w-60 bg-background border-r border-border z-50 transition-transform duration-300 ${mobileOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+            <aside className={`lg:hidden fixed top-0 left-0 h-screen w-64 bg-background border-r border-border z-50 transition-transform duration-300 ${mobileOpen ? 'translate-x-0' : '-translate-x-full'}`}>
                 {sidebarContent}
             </aside>
         </>

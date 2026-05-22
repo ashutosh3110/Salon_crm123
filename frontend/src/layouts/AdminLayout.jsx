@@ -23,14 +23,14 @@ export default function AdminLayout() {
             {/* ── Global premium typography & spacious design overrides for Admin panel ── */}
             <style>{`
                 /* --- Global Theme, Colors & Font Assignment --- */
-                .admin-panel {
-                    --primary: #b85c5c !important;
+                html:not(.dark) .admin-panel {
+                    --primary: #B4912B !important;
                     --primary-foreground: #ffffff !important;
                     --font-serif: 'Inter', sans-serif !important;
                     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
                     font-size: 17px !important;
                     background-color: #faf9f9 !important;
-                    color: #1e293b !important;
+                    color: #000000 !important;
                 }
                 
                 .admin-panel *,
@@ -45,30 +45,30 @@ export default function AdminLayout() {
                     letter-spacing: -0.01em;
                 }
 
-                /* --- Headers & Titles (Completely Sans-Serif, Inter, Clean, Uniform & Flat) --- */
-                .admin-panel h1, 
-                .admin-panel h2, 
-                .admin-panel h3, 
-                .admin-panel h4, 
-                .admin-panel h5, 
-                .admin-panel h6,
-                .admin-panel .font-serif,
-                .admin-panel [class*="font-serif"],
-                .admin-panel .font-mono,
-                .admin-panel [class*="font-mono"],
-                .admin-panel .italic,
-                .admin-panel [class*="italic"],
-                [role="dialog"] h1,
-                [role="dialog"] h2,
-                [role="dialog"] h3,
-                [role="dialog"] h4,
-                [role="dialog"] h5,
-                [role="dialog"] h6 {
+                                /* --- Headers & Titles (Completely Sans-Serif, Inter, Clean, Uniform & Flat) --- */
+                html:not(.dark) .admin-panel h1, 
+                html:not(.dark) .admin-panel h2, 
+                html:not(.dark) .admin-panel h3, 
+                html:not(.dark) .admin-panel h4, 
+                html:not(.dark) .admin-panel h5, 
+                html:not(.dark) .admin-panel h6,
+                html:not(.dark) .admin-panel .font-serif,
+                html:not(.dark) .admin-panel [class*="font-serif"],
+                html:not(.dark) .admin-panel .font-mono,
+                html:not(.dark) .admin-panel [class*="font-mono"],
+                html:not(.dark) .admin-panel .italic,
+                html:not(.dark) .admin-panel [class*="italic"],
+                html:not(.dark) [role="dialog"] h1,
+                html:not(.dark) [role="dialog"] h2,
+                html:not(.dark) [role="dialog"] h3,
+                html:not(.dark) [role="dialog"] h4,
+                html:not(.dark) [role="dialog"] h5,
+                html:not(.dark) [role="dialog"] h6 {
                     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
                     font-weight: 800 !important;
                     font-style: normal !important; /* Force standard, clean, non-cursive upright text */
                     letter-spacing: -0.02em !important;
-                    color: #0f172a !important;
+                    color: #000000 !important;
                 }
 
                 /* --- Global Font Size Scale Amplifiers (Slightly larger & crisp) --- */
@@ -132,36 +132,36 @@ export default function AdminLayout() {
                     letter-spacing: -0.03em !important;
                 }
 
-                /* --- Spacious & Beautiful Tables --- */
-                .admin-panel table {
+                                /* --- Spacious & Beautiful Tables --- */
+                html:not(.dark) .admin-panel table {
                     border-collapse: separate !important;
                     border-spacing: 0 !important;
                     width: 100% !important;
                 }
-                .admin-panel table th {
+                html:not(.dark) .admin-panel table th {
                     font-family: 'Inter', sans-serif !important;
                     font-size: 0.825rem !important; /* ~13.2px */
                     font-weight: 700 !important;
                     text-transform: uppercase !important;
                     letter-spacing: 0.08em !important;
-                    color: #475569 !important; /* slate-600 */
+                    color: #000000 !important; /* solid black */
                     background-color: #f8fafc !important; /* slate-50 */
                     padding: 1.2rem 1.5rem !important;
                     border-bottom: 2px solid #e2e8f0 !important;
                     text-align: left;
                 }
-                .admin-panel table td {
+                html:not(.dark) .admin-panel table td {
                     font-size: 0.95rem !important; /* ~15.2px */
                     padding: 1.35rem 1.5rem !important; /* Elegant spacious cell padding */
-                    color: #334155 !important; /* slate-700 */
+                    color: #000000 !important; /* solid black */
                     border-bottom: 1px solid #f1f5f9 !important;
                     vertical-align: middle !important;
                     line-height: 1.5 !important;
                 }
-                .admin-panel table tr {
+                html:not(.dark) .admin-panel table tr {
                     transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
                 }
-                .admin-panel table tr:hover td {
+                html:not(.dark) .admin-panel table tr:hover td {
                     background-color: #f8fafc !important; /* Subtle hover state */
                 }
                 
@@ -179,9 +179,9 @@ export default function AdminLayout() {
                 }
 
                 /* --- Premium Elevated Table Container Wrappers --- */
-                .admin-panel .overflow-x-auto,
-                .admin-panel .table-responsive,
-                .admin-panel [class*="overflow-x-auto"] {
+                html:not(.dark) .admin-panel .overflow-x-auto,
+                html:not(.dark) .admin-panel .table-responsive,
+                html:not(.dark) .admin-panel [class*="overflow-x-auto"] {
                     border-radius: 1.25rem !important;
                     border: 1px solid #e2e8f0 !important;
                     background-color: #ffffff !important;
@@ -220,52 +220,52 @@ export default function AdminLayout() {
                     background-color: rgba(255, 255, 255, 0.15) !important;
                 }
 
-                /* --- Form Controls, Inputs & Labels --- */
-                .admin-panel label {
+                                /* --- Form Controls, Inputs & Labels --- */
+                html:not(.dark) .admin-panel label {
                     font-size: 0.85rem !important; /* ~13.6px */
                     font-weight: 600 !important;
-                    color: #475569 !important; /* slate-600 */
+                    color: #000000 !important; /* solid black */
                     margin-bottom: 0.5rem !important;
                     display: inline-block !important;
                 }
-                .admin-panel input, 
-                .admin-panel select, 
-                .admin-panel textarea {
+                html:not(.dark) .admin-panel input, 
+                html:not(.dark) .admin-panel select, 
+                html:not(.dark) .admin-panel textarea {
                     font-size: 0.975rem !important;
                     font-weight: 400 !important;
                     padding: 0.75rem 1rem !important; /* Roomy, clickable fields */
                     border-radius: 0.75rem !important; /* Soft premium rounded corners */
                     border: 1px solid #cbd5e1 !important;
-                    color: #1e293b !important;
+                    color: #000000 !important; /* solid black */
                     background-color: #ffffff !important;
                     transition: all 0.2s ease-in-out !important;
                     box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05) !important;
                 }
-                .admin-panel select {
+                html:not(.dark) .admin-panel select {
                     padding-top: 0.45rem !important;
                     padding-bottom: 0.45rem !important;
                 }
-                .admin-panel input.pl-12,
-                .admin-panel select.pl-12 {
+                html:not(.dark) .admin-panel input.pl-12,
+                html:not(.dark) .admin-panel select.pl-12 {
                     padding-left: 3rem !important;
                 }
-                .admin-panel input.pl-14,
-                .admin-panel select.pl-14 {
+                html:not(.dark) .admin-panel input.pl-14,
+                html:not(.dark) .admin-panel select.pl-14 {
                     padding-left: 3.5rem !important;
                 }
-                .admin-panel input.pl-16,
-                .admin-panel select.pl-16 {
+                html:not(.dark) .admin-panel input.pl-16,
+                html:not(.dark) .admin-panel select.pl-16 {
                     padding-left: 4rem !important;
                 }
-                .admin-panel input.pl-10,
-                .admin-panel select.pl-10 {
+                html:not(.dark) .admin-panel input.pl-10,
+                html:not(.dark) .admin-panel select.pl-10 {
                     padding-left: 2.5rem !important;
                 }
-                .admin-panel input:focus, 
-                .admin-panel select:focus, 
-                .admin-panel textarea:focus {
-                    border-color: #b85c5c !important; /* Crimson theme accent */
-                    box-shadow: 0 0 0 4px rgba(184, 92, 92, 0.12) !important;
+                html:not(.dark) .admin-panel input:focus, 
+                html:not(.dark) .admin-panel select:focus, 
+                html:not(.dark) .admin-panel textarea:focus {
+                    border-color: #B4912B !important; /* Gold theme accent */
+                    box-shadow: 0 0 0 4px rgba(180, 145, 43, 0.12) !important;
                     outline: none !important;
                 }
                 .dark .admin-panel input, 
@@ -277,8 +277,8 @@ export default function AdminLayout() {
                 }
 
                 /* --- Premium Cards --- */
-                .admin-panel .bg-surface,
-                .admin-panel .bg-white {
+                html:not(.dark) .admin-panel .bg-surface,
+                html:not(.dark) .admin-panel .bg-white {
                     background-color: #ffffff !important;
                     border: 1px solid #f1f5f9 !important;
                     border-radius: 1.25rem !important;
@@ -341,25 +341,30 @@ export default function AdminLayout() {
                     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1) !important;
                 }
 
-                /* Target Secondary, Outline & Text Buttons */
-                .admin-panel button.bg-secondary:not(aside *),
-                .admin-panel button.border:not(aside *),
-                .admin-panel a.border:not(aside *),
-                .admin-panel button[class*="border-"]:not(aside *),
-                .admin-panel [class*="border-border"] button:not(aside *):not(.bg-primary):not([class*="bg-primary"]),
-                .admin-panel button:has(svg.lucide-eye):not(aside *),
-                .admin-panel button:has(svg.lucide-edit):not(aside *) {
+                                /* Target Secondary, Outline & Text Buttons */
+                html:not(.dark) .admin-panel button.bg-secondary:not(aside *),
+                html:not(.dark) .admin-panel button.border:not(aside *),
+                html:not(.dark) .admin-panel a.border:not(aside *),
+                html:not(.dark) .admin-panel button[class*="border-"]:not(aside *),
+                html:not(.dark) .admin-panel button[class*="bg-white"]:not(aside *),
+                html:not(.dark) .admin-panel button.bg-white:not(aside *),
+                html:not(.dark) .admin-panel [class*="border-border"] button:not(aside *):not(.bg-primary):not([class*="bg-primary"]),
+                html:not(.dark) .admin-panel button:has(svg.lucide-eye):not(aside *),
+                html:not(.dark) .admin-panel button:has(svg.lucide-edit):not(aside *) {
                     background-color: #ffffff !important;
                     border: 1px solid #cbd5e1 !important;
-                    color: #334155 !important;
+                    color: #000000 !important; /* solid black */
                     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04) !important;
                 }
-                .admin-panel button.bg-secondary:not(aside *):hover,
-                .admin-panel button.border:not(aside *):hover,
-                .admin-panel a.border:not(aside *):hover,
-                .admin-panel button[class*="border-"]:not(aside *):hover,
-                .admin-panel button:has(svg.lucide-eye):not(aside *):hover,
-                .admin-panel button:has(svg.lucide-edit):not(aside *):hover {
+                html:not(.dark) .admin-panel button.bg-secondary:not(aside *):hover,
+                html:not(.dark) .admin-panel button.border:not(aside *):hover,
+                html:not(.dark) .admin-panel a.border:not(aside *):hover,
+                html:not(.dark) .admin-panel button[class*="border-"]:not(aside *):hover,
+                html:not(.dark) .admin-panel button[class*="bg-white"]:not(aside *):hover,
+                html:not(.dark) .admin-panel button.bg-white:not(aside *):hover,
+                html:not(.dark) .admin-panel [class*="border-border"] button:not(aside *):not(.bg-primary):not([class*="bg-primary"]):hover,
+                html:not(.dark) .admin-panel button:has(svg.lucide-eye):not(aside *):hover,
+                html:not(.dark) .admin-panel button:has(svg.lucide-edit):not(aside *):hover {
                     background-color: #f8fafc !important;
                     border-color: #94a3b8 !important;
                     color: #0f172a !important;
@@ -371,18 +376,27 @@ export default function AdminLayout() {
                 .dark .admin-panel button.border:not(aside *),
                 .dark .admin-panel a.border:not(aside *),
                 .dark .admin-panel button[class*="border-"]:not(aside *),
+                .dark .admin-panel button[class*="bg-white"]:not(aside *),
+                .dark .admin-panel button.bg-white:not(aside *),
+                .dark .admin-panel [class*="border-border"] button:not(aside *):not(.bg-primary):not([class*="bg-primary"]),
                 .dark .admin-panel button:has(svg.lucide-eye):not(aside *),
-                .dark .admin-panel button:has(svg.lucide-edit):not(aside *) {
+                .dark .admin-panel button:has(svg.lucide-edit):not(aside *),
+                .dark .admin-panel button:has(svg.lucide-trash):not(aside *),
+                .dark .admin-panel button:has(svg.lucide-plus):not(.bg-primary):not([class*="bg-primary"]):not(aside *) {
                     background-color: #1e293b !important;
                     border-color: rgba(255, 255, 255, 0.12) !important;
                     color: #cbd5e1 !important;
                 }
                 .dark .admin-panel button.bg-secondary:not(aside *):hover,
+                .dark .dark .admin-panel button.bg-white:not(aside *):hover,
                 .dark .admin-panel button.border:not(aside *):hover,
                 .dark .admin-panel a.border:not(aside *):hover,
                 .dark .admin-panel button[class*="border-"]:not(aside *):hover,
+                .dark .admin-panel button[class*="bg-white"]:not(aside *):hover,
+                .dark .admin-panel [class*="border-border"] button:not(aside *):not(.bg-primary):not([class*="bg-primary"]):hover,
                 .dark .admin-panel button:has(svg.lucide-eye):not(aside *):hover,
-                .dark .admin-panel button:has(svg.lucide-edit):not(aside *):hover {
+                .dark .admin-panel button:has(svg.lucide-edit):not(aside *):hover,
+                .dark .admin-panel button:has(svg.lucide-trash):not(aside *):hover {
                     background-color: #121826 !important;
                     border-color: rgba(255, 255, 255, 0.25) !important;
                     color: #ffffff !important;
@@ -391,9 +405,9 @@ export default function AdminLayout() {
 
 
                 /* --- Custom Styled Premium Pagination Footer --- */
-                .admin-panel [class*="bg-surface-alt/50"],
-                .admin-panel .bg-surface-alt\/50,
-                .admin-panel [class*="border-t"]:not(aside) {
+                html:not(.dark) .admin-panel [class*="bg-surface-alt/50"],
+                html:not(.dark) .admin-panel .bg-surface-alt\/50,
+                html:not(.dark) .admin-panel [class*="border-t"]:not(aside) {
                     background-color: #f8fafc !important;
                     border-top: 1px solid #e2e8f0 !important;
                     padding: 1.25rem 1.5rem !important;
@@ -407,9 +421,9 @@ export default function AdminLayout() {
                 }
                 
                 /* Pagination Buttons inside Footer */
-                .admin-panel [class*="bg-surface-alt/50"] button:not(aside *),
-                .admin-panel .bg-surface-alt\/50 button:not(aside *),
-                .admin-panel [class*="border-t"] button:not(aside *) {
+                html:not(.dark) .admin-panel [class*="bg-surface-alt/50"] button:not(aside *),
+                html:not(.dark) .admin-panel .bg-surface-alt\/50 button:not(aside *),
+                html:not(.dark) .admin-panel [class*="border-t"] button:not(aside *) {
                     background-color: #ffffff !important;
                     border: 1px solid #cbd5e1 !important;
                     padding: 0.5rem 1.25rem !important;
@@ -418,21 +432,21 @@ export default function AdminLayout() {
                     font-weight: 700 !important;
                     text-transform: uppercase !important;
                     letter-spacing: 0.05em !important;
-                    color: #475569 !important;
+                    color: #000000 !important; /* solid black */
                     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04) !important;
                     transition: all 0.2s ease-in-out !important;
                 }
-                .admin-panel [class*="bg-surface-alt/50"] button:not(aside *):hover,
-                .admin-panel .bg-surface-alt\/50 button:not(aside *):hover,
-                .admin-panel [class*="border-t"] button:not(aside *):hover {
-                    border-color: #b85c5c !important;
-                    color: #b85c5c !important;
-                    background-color: rgba(184, 92, 92, 0.05) !important;
+                html:not(.dark) .admin-panel [class*="bg-surface-alt/50"] button:not(aside *):hover,
+                html:not(.dark) .admin-panel .bg-surface-alt\/50 button:not(aside *):hover,
+                html:not(.dark) .admin-panel [class*="border-t"] button:not(aside *):hover {
+                    border-color: #B4912B !important;
+                    color: #B4912B !important;
+                    background-color: rgba(180, 145, 43, 0.05) !important;
                     transform: translateY(-1px) !important;
                 }
-                .admin-panel [class*="bg-surface-alt/50"] button:not(aside *):disabled,
-                .admin-panel .bg-surface-alt\/50 button:not(aside *):disabled,
-                .admin-panel [class*="border-t"] button:not(aside *):disabled {
+                html:not(.dark) .admin-panel [class*="bg-surface-alt/50"] button:not(aside *):disabled,
+                html:not(.dark) .admin-panel .bg-surface-alt\/50 button:not(aside *):disabled,
+                html:not(.dark) .admin-panel [class*="border-t"] button:not(aside *):disabled {
                     opacity: 0.3 !important;
                     transform: none !important;
                     border-color: #cbd5e1 !important;
@@ -450,9 +464,9 @@ export default function AdminLayout() {
                 .dark .admin-panel [class*="bg-surface-alt/50"] button:not(aside *):hover,
                 .dark .admin-panel .bg-surface-alt\/50 button:not(aside *):hover,
                 .dark .admin-panel [class*="border-t"] button:not(aside *):hover {
-                    border-color: #b85c5c !important;
-                    color: #b85c5c !important;
-                    background-color: rgba(184, 92, 92, 0.15) !important;
+                    border-color: #B4912B !important;
+                    color: #B4912B !important;
+                    background-color: rgba(180, 145, 43, 0.15) !important;
                 }
                 .dark .admin-panel [class*="bg-surface-alt/50"] button:not(aside *):disabled,
                 .dark .admin-panel .bg-surface-alt\/50 button:not(aside *):disabled,
@@ -490,8 +504,10 @@ export default function AdminLayout() {
                    ========================================== */
                 /* Restore brand primary color inside Admin Panel instead of shadcn silver override */
                 .dark .admin-panel {
-                    --primary: #b85c5c !important;
+                    --primary: #B4912B !important;
                     --primary-foreground: #ffffff !important;
+                    background-color: #121826 !important;
+                    color: #cbd5e1 !important;
                 }
 
                 /* Robust background overrides in Dark Mode */
@@ -659,8 +675,8 @@ export default function AdminLayout() {
                 .dark .admin-panel input:focus, 
                 .dark .admin-panel select:focus, 
                 .dark .admin-panel textarea:focus {
-                    border-color: #b85c5c !important;
-                    box-shadow: 0 0 0 4px rgba(184, 92, 92, 0.25) !important;
+                    border-color: #B4912B !important;
+                    box-shadow: 0 0 0 4px rgba(180, 145, 43, 0.25) !important;
                 }
 
                 /* --- SVG and Recharts Ticks & Lines in Dark Mode --- */
@@ -671,8 +687,76 @@ export default function AdminLayout() {
                 .dark .admin-panel .recharts-text {
                     fill: #94a3b8 !important;
                 }
-                .dark .admin-panel .recharts-legend-item-text {
+                                .dark .admin-panel .recharts-legend-item-text {
                     color: #cbd5e1 !important;
+                }
+
+                /* --- CustomDropdown Theme overrides --- */
+                .dark .custom-dropdown-trigger {
+                    background-color: #1e293b !important;
+                    color: #f8fafc !important;
+                    border-color: rgba(255, 255, 255, 0.12) !important;
+                }
+                .dark .custom-dropdown-panel {
+                    background-color: #1e293b !important;
+                    border-color: rgba(255, 255, 255, 0.12) !important;
+                }
+                .dark .custom-dropdown-option {
+                    color: #cbd5e1 !important;
+                }
+                .dark .custom-dropdown-option:hover {
+                    background-color: #121826 !important;
+                    color: #ffffff !important;
+                }
+
+                /* --- Primary Buttons in Dark Mode --- */
+                .dark .admin-panel button.bg-primary,
+                .dark .admin-panel a.bg-primary,
+                .dark .admin-panel .bg-primary,
+                .dark .admin-panel button[type="submit"],
+                .dark .admin-panel button[class*="bg-primary"],
+                .dark .admin-panel .inline-flex[class*="bg-primary"],
+                .dark .admin-panel button:has(svg.lucide-plus) {
+                    background: #B4912B !important;
+                    color: #ffffff !important;
+                    border: 1px solid #B4912B !important;
+                }
+                .dark .admin-panel button.bg-primary:hover,
+                .dark .admin-panel a.bg-primary:hover,
+                .dark .admin-panel .bg-primary:hover,
+                .dark .admin-panel button[type="submit"]:hover,
+                .dark .admin-panel button[class*="bg-primary"]:hover,
+                .dark .admin-panel .inline-flex[class*="bg-primary"]:hover,
+                .dark .admin-panel button:has(svg.lucide-plus):hover {
+                    background: #C5A23C !important;
+                    border-color: #C5A23C !important;
+                }
+
+                /* --- Secondary/Outline Buttons in Dark Mode --- */
+                .dark .admin-panel button.bg-secondary:not(aside *),
+                .dark .admin-panel button.border:not(aside *),
+                .dark .admin-panel a.border:not(aside *),
+                .dark .admin-panel button[class*="border-"]:not(aside *),
+                .dark .admin-panel button:has(svg.lucide-eye):not(aside *),
+                .dark .admin-panel button:has(svg.lucide-edit):not(aside *),
+                .dark .admin-panel button:has(svg.lucide-trash):not(aside *),
+                .dark .admin-panel button:has(svg.lucide-plus):not(.bg-primary):not([class*="bg-primary"]):not(aside *),
+                .dark .admin-panel [class*="border-border"] button:not(aside *):not(.bg-primary):not([class*="bg-primary"]) {
+                    background-color: #1e293b !important;
+                    border-color: rgba(255, 255, 255, 0.12) !important;
+                    color: #cbd5e1 !important;
+                }
+                .dark .admin-panel button.bg-secondary:not(aside *):hover,
+                .dark .admin-panel button.border:not(aside *):hover,
+                .dark .admin-panel a.border:not(aside *):hover,
+                .dark .admin-panel button[class*="border-"]:not(aside *):hover,
+                .dark .admin-panel button:has(svg.lucide-eye):not(aside *):hover,
+                .dark .admin-panel button:has(svg.lucide-edit):not(aside *):hover,
+                .dark .admin-panel button:has(svg.lucide-trash):not(aside *):hover,
+                .dark .admin-panel [class*="border-border"] button:not(aside *):not(.bg-primary):not([class*="bg-primary"]):hover {
+                    background-color: #121826 !important;
+                    border-color: rgba(255, 255, 255, 0.25) !important;
+                    color: #ffffff !important;
                 }
             `}</style>
 

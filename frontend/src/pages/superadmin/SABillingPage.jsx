@@ -150,7 +150,7 @@ function InvoiceModal({ onClose, onSend }) {
                 <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-border">
                     <button onClick={onClose} className="px-4 py-2.5 rounded-xl text-sm font-semibold text-text-secondary hover:bg-surface transition-all">Cancel</button>
                     <button onClick={() => onSend(form)} disabled={!form.tenantId || !form.amount}
-                        className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-primary to-[#8B1A2D] text-white text-sm font-bold hover:brightness-110 disabled:opacity-50 shadow-lg shadow-primary/20 transition-all flex items-center gap-2">
+                        className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-primary to-[#8B6F23] text-white text-sm font-bold hover:brightness-110 disabled:opacity-50 shadow-lg shadow-primary/20 transition-all flex items-center gap-2">
                         <Send className="w-4 h-4" /> Send Invoice
                     </button>
                 </div>
@@ -774,15 +774,15 @@ export default function SABillingPage() {
                             <AreaChart data={monthlyRevenue} margin={{ top: 5, right: 5, left: 0, bottom: 0 }}>
                                 <defs>
                                     <linearGradient id="revGrad2" x1="0" y1="0" x2="0" y2="1">
-                                        <stop offset="5%" stopColor="#B85C5C" stopOpacity={0.25} />
-                                        <stop offset="95%" stopColor="#B85C5C" stopOpacity={0} />
+                                        <stop offset="5%" stopColor="#B4912B" stopOpacity={0.25} />
+                                        <stop offset="95%" stopColor="#B4912B" stopOpacity={0} />
                                     </linearGradient>
                                 </defs>
                                 <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
                                 <XAxis dataKey="month" tick={{ fontSize: 11, fill: '#94a3b8' }} axisLine={false} tickLine={false} />
                                 <YAxis tick={{ fontSize: 11, fill: '#94a3b8' }} axisLine={false} tickLine={false} tickFormatter={v => `₹${(v / 1000).toFixed(0)}k`} />
                                 <Tooltip content={<CustomTooltip prefix="₹" />} />
-                                <Area type="monotone" dataKey="revenue" name="Revenue" stroke="#B85C5C" strokeWidth={2.5} fill="url(#revGrad2)" dot={{ r: 4, fill: '#B85C5C', stroke: '#fff', strokeWidth: 2 }} activeDot={{ r: 6 }} />
+                                <Area type="monotone" dataKey="revenue" name="Revenue" stroke="#B4912B" strokeWidth={2.5} fill="url(#revGrad2)" dot={{ r: 4, fill: '#B4912B', stroke: '#fff', strokeWidth: 2 }} activeDot={{ r: 6 }} />
                             </AreaChart>
                         </ResponsiveContainer>
                     </div>
@@ -796,7 +796,7 @@ export default function SABillingPage() {
                             <p className="text-xs text-text-muted mb-4">Current month breakdown</p>
                             <div className="space-y-3">
                                 {planDistribution.map((p, idx) => {
-                                    const COLORS = ['#B85C5C', '#E2A8A8', '#94a3b8', '#64748b'];
+                                    const COLORS = ['#B4912B', '#DFCE9D', '#94a3b8', '#64748b'];
                                     const maxRev = Math.max(...planDistribution.map(x => x.revenue));
                                     const pct = maxRev > 0 ? (p.revenue / maxRev) * 100 : 0;
                                     const color = COLORS[idx % COLORS.length];

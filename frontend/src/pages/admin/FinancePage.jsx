@@ -251,7 +251,7 @@ export default function FinancePage({ tab = 'dashboard' }) {
                             <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
                                 <BarChart data={flowData}>
                                     <Bar dataKey="inflow" fill="var(--primary)" radius={0} />
-                                    <Bar dataKey="outflow" fill="#8B1A2D" radius={0} />
+                                    <Bar dataKey="outflow" fill="#8B6F23" radius={0} />
                                     <Tooltip
                                         contentStyle={{
                                             backgroundColor: 'var(--surface)',

@@ -239,7 +239,7 @@ export default function SADashboardPage() {
     const planDataMapping = [
         { name: 'Free', key: 'none', color: '#94a3b8' },
         { name: 'Basic', key: 'basic', color: '#3b82f6' },
-        { name: 'Pro', key: 'pro', color: '#B85C5C' },
+        { name: 'Pro', key: 'pro', color: '#B4912B' },
         { name: 'Enterprise', key: 'enterprise', color: '#f59e0b' },
     ];
 
@@ -253,7 +253,7 @@ export default function SADashboardPage() {
     const salonsWithoutPlan = currentPlanDist.find(p => p.name === 'Free')?.value || 0;
 
     const metricCards = [
-        { label: 'Total Registered', value: kpi.totalSalons, icon: Building2, gradient: 'from-primary to-[#8B1A2D]', shadow: 'shadow-primary/20', to: '/superadmin/tenants', textColor: 'text-primary' },
+        { label: 'Total Registered', value: kpi.totalSalons, icon: Building2, gradient: 'from-primary to-[#8B6F23]', shadow: 'shadow-primary/20', to: '/superadmin/tenants', textColor: 'text-primary' },
         { label: 'Active Salons', value: kpi.activeSubs, icon: CheckCircle2, gradient: 'from-emerald-500 to-teal-600', shadow: 'shadow-emerald-500/20', to: '/superadmin/tenants?status=active', textColor: 'text-emerald-600 dark:text-emerald-400' },
         { label: 'Pending Approval', value: kpi.pendingSalons, icon: Clock, gradient: 'from-blue-500 to-indigo-600', shadow: 'shadow-blue-500/20', to: '/superadmin/tenants?status=pending', textColor: 'text-blue-600 dark:text-blue-400' },
         { label: 'Salons With Plan', value: salonsWithPlan, icon: Crown, gradient: 'from-amber-500 to-orange-600', shadow: 'shadow-amber-500/20', to: '/superadmin/tenants?plan=subscribed', textColor: 'text-amber-600 dark:text-amber-400' },
@@ -391,8 +391,8 @@ export default function SADashboardPage() {
                         <AreaChart data={analytics?.mrrTrend || []} margin={{ top: 5, right: 5, left: 0, bottom: 0 }}>
                             <defs>
                                 <linearGradient id="revGrad" x1="0" y1="0" x2="0" y2="1">
-                                    <stop offset="5%" stopColor="#B85C5C" stopOpacity={0.25} />
-                                    <stop offset="95%" stopColor="#B85C5C" stopOpacity={0} />
+                                    <stop offset="5%" stopColor="#B4912B" stopOpacity={0.25} />
+                                    <stop offset="95%" stopColor="#B4912B" stopOpacity={0} />
                                 </linearGradient>
                             </defs>
                             <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
@@ -401,7 +401,7 @@ export default function SADashboardPage() {
                                 tickFormatter={v => `₹${(v / 1000).toFixed(0)}k`} />
                             <Tooltip content={<CustomTooltip prefix="₹" />} />
                             <Legend wrapperStyle={{ fontSize: 11 }} />
-                            <Area type="monotone" dataKey="mrr" name="This Period" stroke="#B85C5C" strokeWidth={2.5} fill="url(#revGrad)" dot={{ r: 4, fill: '#B85C5C', stroke: '#fff', strokeWidth: 2 }} activeDot={{ r: 6 }} />
+                            <Area type="monotone" dataKey="mrr" name="This Period" stroke="#B4912B" strokeWidth={2.5} fill="url(#revGrad)" dot={{ r: 4, fill: '#B4912B', stroke: '#fff', strokeWidth: 2 }} activeDot={{ r: 6 }} />
                         </AreaChart>
                     </ResponsiveContainer>
                 </div>
@@ -470,8 +470,8 @@ export default function SADashboardPage() {
                         <BarChart data={analytics?.salonGrowth || []} margin={{ top: 5, right: 5, left: -20, bottom: 0 }} barSize={28}>
                             <defs>
                                 <linearGradient id="barGrad" x1="0" y1="0" x2="0" y2="1">
-                                    <stop offset="0%" stopColor="#B85C5C" />
-                                    <stop offset="100%" stopColor="#8B1A2D" />
+                                    <stop offset="0%" stopColor="#B4912B" />
+                                    <stop offset="100%" stopColor="#8B6F23" />
                                 </linearGradient>
                             </defs>
                             <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
