@@ -279,21 +279,27 @@ export default function CustomerProfileModal({ customer, isOpen, onClose }) {
                 </div>
 
                 {/* Sub-KPIs Bar */}
-                <div className="grid grid-cols-4 divide-x divide-border border-b border-border bg-white">
+                <div className="grid grid-cols-2 md:grid-cols-5 divide-x divide-border border-b border-border bg-white">
                     <ProfileMetric
                         label="LIFETIME YIELD"
-                        value={`₹${(customer?.spend ?? 0).toLocaleString()}`}
+                        value={`₹${(customer?.totalSpend ?? customer?.spend ?? 0).toLocaleString()}`}
                         icon={DollarSign}
                         color="green"
                     />
                     <ProfileMetric
                         label="WALLET BALANCE"
-                        value={`₹${(walletData?.balance ?? 0).toLocaleString()}`}
+                        value={`₹${(walletData?.balance ?? customer?.walletBalance ?? 0).toLocaleString()}`}
                         icon={Wallet}
                         color="yellow"
                     />
-                    <ProfileMetric label="TOTAL MATRIX VISITS" value={customer.totalVisits} icon={History} color="blue" />
-                    <ProfileMetric label="CORE PREFERENCE" value={customer.preferredService} icon={Tag} color="purple" />
+                    <ProfileMetric
+                        label="OUTSTANDING DUE"
+                        value={`₹${(customer?.dueAmount ?? 0).toLocaleString()}`}
+                        icon={ShieldAlert}
+                        color="red"
+                    />
+                    <ProfileMetric label="TOTAL MATRIX VISITS" value={customer.totalVisits || 0} icon={History} color="blue" />
+                    <ProfileMetric label="CORE PREFERENCE" value={customer.preferredService || 'None'} icon={Tag} color="purple" />
                 </div>
 
                 {/* Content Tabs */}
@@ -493,7 +499,8 @@ function ProfileMetric({ label, value, icon: Icon, color }) {
         green: 'text-emerald-500',
         blue: 'text-blue-500',
         yellow: 'text-amber-500',
-        purple: 'text-purple-500'
+        purple: 'text-purple-500',
+        red: 'text-rose-500'
     };
     return (
         <div className="px-5 py-2 space-y-0.5">

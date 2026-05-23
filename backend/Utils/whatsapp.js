@@ -9,6 +9,7 @@ const axios = require('axios');
  */
 exports.sendWhatsAppTemplate = async (to, templateName, parameters = [], headerUrl = null) => {
     try {
+        console.log(`[WhatsApp-Template] Initiated sending. To: ${to}, Template: ${templateName}, Params: ${JSON.stringify(parameters)}, HeaderUrl: ${headerUrl}`);
         const token = process.env.WHATSAPP_CLOUD_TOKEN;
         const phoneId = process.env.WHATSAPP_CLOUD_PHONE_NUMBER_ID;
         const languageCode = process.env.WHATSAPP_TEMPLATE_LANGUAGE || 'en';
@@ -16,13 +17,13 @@ exports.sendWhatsAppTemplate = async (to, templateName, parameters = [], headerU
         if (!token || !phoneId) {
             // Fallback to Wapixo if Meta credentials missing
             if (process.env.WAPIXO_ACCESS_TOKEN && process.env.WAPIXO_VENDOR_UID) {
+                console.log('[WhatsApp-Template] Meta Cloud API credentials missing. Falling back to Wapixo...');
                 return exports.sendWapixoTemplate(to, templateName, parameters, headerUrl);
             }
-            console.error('WhatsApp credentials missing in .env');
+            console.error('[WhatsApp-Template] WhatsApp credentials missing in .env');
             return { success: false, message: 'WhatsApp credentials missing' };
         }
 
-        // ... (phone cleaning code)
         let cleanTo = to.replace(/[^0-9]/g, '');
         if (cleanTo.length === 10) cleanTo = '91' + cleanTo;
 
@@ -64,8 +65,12 @@ exports.sendWhatsAppTemplate = async (to, templateName, parameters = [], headerU
             }
         };
 
+        const targetUrl = `https://graph.facebook.com/v19.0/${phoneId}/messages`;
+        console.log(`[WhatsApp-Template] Sending request to URL: ${targetUrl}`);
+        console.log('[WhatsApp-Template] Payload:', JSON.stringify(payload, null, 2));
+
         const response = await axios.post(
-            `https://graph.facebook.com/v19.0/${phoneId}/messages`,
+            targetUrl,
             payload,
             {
                 headers: {
@@ -75,10 +80,10 @@ exports.sendWhatsAppTemplate = async (to, templateName, parameters = [], headerU
             }
         );
 
-        console.log('WhatsApp API Response:', JSON.stringify(response.data, null, 2));
+        console.log('[WhatsApp-Template] API Success Response:', JSON.stringify(response.data, null, 2));
         return { success: true, data: response.data };
     } catch (error) {
-        console.error("WhatsApp API Error:", error.response?.data || error.message);
+        console.error("[WhatsApp-Template] API Error:", error.response?.data || error.message);
         return { 
             success: false, 
             message: error.response?.data?.error?.message || error.message,
@@ -94,15 +99,17 @@ exports.sendWhatsAppTemplate = async (to, templateName, parameters = [], headerU
  */
 exports.sendWhatsAppMessage = async (to, message) => {
     try {
+        console.log(`[WhatsApp-Message] Initiated sending. To: ${to}, Message: ${message}`);
         const token = process.env.WHATSAPP_CLOUD_TOKEN;
         const phoneId = process.env.WHATSAPP_CLOUD_PHONE_NUMBER_ID;
 
         if (!token || !phoneId) {
             // Fallback to Wapixo if Meta credentials missing
             if (process.env.WAPIXO_ACCESS_TOKEN && process.env.WAPIXO_VENDOR_UID) {
+                console.log('[WhatsApp-Message] Meta Cloud API credentials missing. Falling back to Wapixo...');
                 return exports.sendWapixoMessage(to, message);
             }
-            console.error('WhatsApp credentials missing in .env');
+            console.error('[WhatsApp-Message] WhatsApp credentials missing in .env');
             return { success: false, message: 'WhatsApp credentials missing' };
         }
 
@@ -123,8 +130,12 @@ exports.sendWhatsAppMessage = async (to, message) => {
             }
         };
 
+        const targetUrl = `https://graph.facebook.com/v19.0/${phoneId}/messages`;
+        console.log(`[WhatsApp-Message] Sending request to URL: ${targetUrl}`);
+        console.log('[WhatsApp-Message] Payload:', JSON.stringify(payload, null, 2));
+
         const response = await axios.post(
-            `https://graph.facebook.com/v19.0/${phoneId}/messages`,
+            targetUrl,
             payload,
             {
                 headers: {
@@ -134,9 +145,10 @@ exports.sendWhatsAppMessage = async (to, message) => {
             }
         );
 
+        console.log('[WhatsApp-Message] API Success Response:', JSON.stringify(response.data, null, 2));
         return { success: true, data: response.data };
     } catch (error) {
-        console.error("WhatsApp API Text Error:", error.response?.data || error.message);
+        console.error("[WhatsApp-Message] API Error:", error.response?.data || error.message);
         return { 
             success: false, 
             message: error.response?.data?.error?.message || error.message,
@@ -154,13 +166,14 @@ exports.sendWhatsAppMessage = async (to, message) => {
  */
 exports.sendWapixoTemplate = async (to, templateName, parameters = [], headerUrl = null) => {
     try {
+        console.log(`[Wapixo-Template] Initiated sending. To: ${to}, Template: ${templateName}, Params: ${JSON.stringify(parameters)}, HeaderUrl: ${headerUrl}`);
         const vendorUid = process.env.WAPIXO_VENDOR_UID;
         const accessToken = process.env.WAPIXO_ACCESS_TOKEN;
         const baseUrl = process.env.WAPIXO_API_BASE_URL || 'https://wa.wapixo.com/api';
         const languageCode = process.env.WHATSAPP_TEMPLATE_LANGUAGE || 'en';
 
         if (!vendorUid || !accessToken) {
-            console.error('Wapixo credentials missing in .env');
+            console.error('[Wapixo-Template] Wapixo credentials missing in .env');
             return { success: false, message: 'Wapixo credentials missing' };
         }
 
@@ -189,10 +202,12 @@ exports.sendWapixoTemplate = async (to, templateName, parameters = [], headerUrl
         // Wapixo requires message_body even for templates in some versions
         payload.message_body = `Template: ${templateName}`;
 
-        console.log('Sending Wapixo Template Payload:', JSON.stringify(payload, null, 2));
+        const targetUrl = `${baseUrl}/${vendorUid}/contact/send-template-message?token=${accessToken}`;
+        console.log(`[Wapixo-Template] Sending request to URL: ${baseUrl}/${vendorUid}/contact/send-template-message?token=${accessToken.substring(0, 5)}...`);
+        console.log('[Wapixo-Template] Payload:', JSON.stringify(payload, null, 2));
 
         const response = await axios.post(
-            `${baseUrl}/${vendorUid}/contact/send-template-message?token=${accessToken}`,
+            targetUrl,
             payload,
             {
                 headers: {
@@ -201,10 +216,10 @@ exports.sendWapixoTemplate = async (to, templateName, parameters = [], headerUrl
             }
         );
 
-        console.log('Wapixo API Response:', JSON.stringify(response.data, null, 2));
+        console.log('[Wapixo-Template] API Success Response:', JSON.stringify(response.data, null, 2));
         return { success: true, data: response.data };
     } catch (error) {
-        console.error("Wapixo API Error:", error.response?.data || error.message);
+        console.error("[Wapixo-Template] API Error:", error.response?.data || error.message);
         return { 
             success: false, 
             message: error.response?.data?.message || error.message,
@@ -220,12 +235,13 @@ exports.sendWapixoTemplate = async (to, templateName, parameters = [], headerUrl
  */
 exports.sendWapixoMessage = async (to, message) => {
     try {
+        console.log(`[Wapixo-Message] Initiated sending. To: ${to}, Message: ${message}`);
         const vendorUid = process.env.WAPIXO_VENDOR_UID;
         const accessToken = process.env.WAPIXO_ACCESS_TOKEN;
         const baseUrl = process.env.WAPIXO_API_BASE_URL || 'https://wa.wapixo.com/api';
 
         if (!vendorUid || !accessToken) {
-            console.error('Wapixo credentials missing in .env');
+            console.error('[Wapixo-Message] Wapixo credentials missing in .env');
             return { success: false, message: 'Wapixo credentials missing' };
         }
 
@@ -240,8 +256,12 @@ exports.sendWapixoMessage = async (to, message) => {
             message_body: message
         };
 
+        const targetUrl = `${baseUrl}/${vendorUid}/contact/send-message?token=${accessToken}`;
+        console.log(`[Wapixo-Message] Sending request to URL: ${baseUrl}/${vendorUid}/contact/send-message?token=${accessToken.substring(0, 5)}...`);
+        console.log('[Wapixo-Message] Payload:', JSON.stringify(payload, null, 2));
+
         const response = await axios.post(
-            `${baseUrl}/${vendorUid}/contact/send-message?token=${accessToken}`,
+            targetUrl,
             payload,
             {
                 headers: {
@@ -250,9 +270,10 @@ exports.sendWapixoMessage = async (to, message) => {
             }
         );
 
+        console.log('[Wapixo-Message] API Success Response:', JSON.stringify(response.data, null, 2));
         return { success: true, data: response.data };
     } catch (error) {
-        console.error("Wapixo API Text Error:", error.response?.data || error.message);
+        console.error("[Wapixo-Message] API Error:", error.response?.data || error.message);
         return { 
             success: false, 
             message: error.response?.data?.message || error.message,

@@ -384,6 +384,7 @@ function App() {
                                 <Route path="/admin/crm/segments" element={<CustomersPage tab="segments" />} />
                                 <Route path="/admin/crm/feedback" element={<CustomersPage tab="feedback" />} />
                                 <Route path="/admin/crm/reengage" element={<CustomersPage tab="reengage" />} />
+                                <Route path="/admin/crm/payment-reminders" element={<CustomersPage tab="payment-reminders" />} />
                                 <Route path="/admin/crm" element={<CustomersPage tab="directory" />} />
                             </Route>
                             <Route path="/admin/clients" element={<ClientsPage />} />

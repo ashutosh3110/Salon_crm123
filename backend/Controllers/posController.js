@@ -32,7 +32,8 @@ exports.checkout = async (req, res) => {
             membershipDiscount = 0,
             previousDueCollected = 0,
             bookingId,
-            orderId
+            orderId,
+            createdAt
         } = req.body;
 
         const salonId = req.user.salonId;
@@ -108,7 +109,11 @@ exports.checkout = async (req, res) => {
             cgst: roundTo2(cgst),
             sgst: roundTo2(sgst),
             total: roundTo2(total),
-            payments: payments.map(p => ({ ...p, amount: roundTo2(p.amount) })),
+            payments: payments.map(p => ({ 
+                ...p, 
+                amount: roundTo2(p.amount),
+                date: createdAt ? new Date(createdAt) : new Date()
+            })),
             dueAmount: roundTo2(dueAmount),
             paymentStatus: dueAmount > 0 ? (paidAmount + useWalletAmount > 0 ? 'partially_paid' : 'pending') : 'paid',
             loyaltyPointsRedeemed: useLoyaltyPoints,
@@ -116,7 +121,8 @@ exports.checkout = async (req, res) => {
             walletRedeemed: useWalletAmount,
             previousDueCollected: (Number(previousDueCollected) || 0) > 0 ? Number(previousDueCollected) : Math.max(0, (paidAmount + useWalletAmount) - total),
             bookingId,
-            orderId
+            orderId,
+            createdAt: createdAt ? new Date(createdAt) : new Date()
         });
 
         // 5. Update Customer Profile
@@ -126,7 +132,7 @@ exports.checkout = async (req, res) => {
             
             // Use wallet helper to spend balance if applicable
             if (useWalletAmount > 0) {
-                await spendWallet(clientId, useWalletAmount, `Payment for POS Invoice #${invoiceNumber}`);
+                await spendWallet(clientId, useWalletAmount, `Payment for POS Invoice #${invoiceNumber}`, createdAt);
             }
 
             const totalReceived = (Number(useWalletAmount) || 0) + (Number(paidAmount) || 0);
@@ -137,7 +143,7 @@ exports.checkout = async (req, res) => {
             
             customer.totalVisits = (customer.totalVisits || 0) + 1;
             customer.totalSpend = (customer.totalSpend || 0) + total;
-            customer.lastVisit = new Date();
+            customer.lastVisit = createdAt ? new Date(createdAt) : new Date();
             customer.lastOutletId = outletId;
 
             await customer.save();
@@ -148,7 +154,8 @@ exports.checkout = async (req, res) => {
                     salonId,
                     amount: earnedPoints,
                     type: 'EARN',
-                    description: `Earned from POS Invoice #${invoiceNumber}`
+                    description: `Earned from POS Invoice #${invoiceNumber}`,
+                    createdAt: createdAt ? new Date(createdAt) : new Date()
                 });
             }
         }
@@ -289,25 +296,49 @@ exports.getDashboard = async (req, res) => {
 exports.sendInvoiceWhatsApp = async (req, res) => {
     try {
         const { id } = req.params;
+        console.log(`[POS-Controller] sendInvoiceWhatsApp initiated for Invoice ID: ${id}`);
         const invoice = await Invoice.findById(id).populate('customerId');
-        if (!invoice) return res.status(404).json({ success: false, message: 'Invoice not found' });
+        if (!invoice) {
+            console.warn(`[POS-Controller] sendInvoiceWhatsApp: Invoice not found for ID: ${id}`);
+            return res.status(404).json({ success: false, message: 'Invoice not found' });
+        }
 
         const phone = invoice.customerId?.phone;
-        if (!phone) return res.status(400).json({ success: false, message: 'Customer phone not found' });
-        if (!req.file) return res.status(400).json({ success: false, message: 'No PDF file provided' });
+        if (!phone) {
+            console.warn(`[POS-Controller] sendInvoiceWhatsApp: Customer phone not found for Invoice: ${invoice.invoiceNumber}`);
+            return res.status(400).json({ success: false, message: 'Customer phone not found' });
+        }
+        if (!req.file) {
+            console.warn(`[POS-Controller] sendInvoiceWhatsApp: No PDF file uploaded for Invoice: ${invoice.invoiceNumber}`);
+            return res.status(400).json({ success: false, message: 'No PDF file provided' });
+        }
+        
+        console.log(`[POS-Controller] sendInvoiceWhatsApp: File received. Name: ${req.file.originalname}, Size: ${req.file.size} bytes, Path: ${req.file.path}`);
 
         const protocol = req.protocol;
         const host = req.get('host');
         const baseUrl = process.env.BACKEND_URL || `${protocol}://${host}`;
-        const fileUrl = `${baseUrl}/${req.file.path.replace(/\\/g, '/')}`;
+        let fileUrl = `${baseUrl}/${req.file.path.replace(/\\/g, '/')}`;
+        console.log(`[POS-Controller] sendInvoiceWhatsApp: Generated PDF URL: ${fileUrl}`);
+
+        // Developer-friendly fallback for local testing
+        if (fileUrl.includes('localhost') || fileUrl.includes('127.0.0.1')) {
+            console.warn(`[POS-Controller] WARNING: Localhost URL detected for WhatsApp document header. Public Meta/Wapixo servers cannot fetch files from localhost.`);
+            console.warn(`[POS-Controller] Falling back to a public sample PDF for testing delivery...`);
+            fileUrl = 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf';
+        }
 
         const { sendWapixoTemplate, checkAndDeductWhatsAppCredit } = require('../Utils/whatsapp');
         const canSend = await checkAndDeductWhatsAppCredit(invoice.outletId || invoice.salonId);
-        if (!canSend) return res.status(400).json({ success: false, message: 'Insufficient credits' });
+        if (!canSend) {
+            console.warn(`[POS-Controller] sendInvoiceWhatsApp: checkAndDeductWhatsAppCredit returned false (insufficient credits) for Invoice: ${invoice.invoiceNumber}`);
+            return res.status(400).json({ success: false, message: 'Insufficient credits' });
+        }
 
         const salon = await Salon.findById(invoice.salonId);
         const brandName = salon?.businessName || salon?.name || 'Our Salon';
 
+        console.log(`[POS-Controller] sendInvoiceWhatsApp: Dispatching to sendWapixoTemplate. Phone: ${phone}, Template: ${process.env.WHATSAPP_TEMPLATE_INVOICE || 'customer_invoice_template'}`);
         const result = await sendWapixoTemplate(
             phone,
             process.env.WHATSAPP_TEMPLATE_INVOICE || 'customer_invoice_template',
@@ -315,10 +346,17 @@ exports.sendInvoiceWhatsApp = async (req, res) => {
             fileUrl
         );
 
-        if (result.success) res.json({ success: true, message: 'WhatsApp sent' });
-        else res.status(500).json({ success: false, message: result.message });
+        console.log(`[POS-Controller] sendInvoiceWhatsApp: Wapixo result is:`, JSON.stringify(result, null, 2));
+
+        if (result.success) {
+            console.log(`[POS-Controller] sendInvoiceWhatsApp: WhatsApp sent successfully for Invoice: ${invoice.invoiceNumber}`);
+            res.json({ success: true, message: 'WhatsApp sent' });
+        } else {
+            console.error(`[POS-Controller] sendInvoiceWhatsApp: sendWapixoTemplate failed:`, result.message);
+            res.status(500).json({ success: false, message: result.message });
+        }
     } catch (err) {
-        console.error('WhatsApp Error:', err);
+        console.error('[POS-Controller] sendInvoiceWhatsApp Error:', err);
         res.status(500).json({ success: false, message: err.message });
     }
 };

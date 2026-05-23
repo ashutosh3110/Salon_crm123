@@ -38,7 +38,7 @@ exports.addCredit = async (customerId, salonId, amount, description, expiryDate 
  * @param {number} amount 
  * @param {string} description 
  */
-exports.spendWallet = async (customerId, amount, description) => {
+exports.spendWallet = async (customerId, amount, description, createdAt = null) => {
     const numericAmount = Number(amount);
     if (numericAmount <= 0) return null;
 
@@ -83,7 +83,8 @@ exports.spendWallet = async (customerId, amount, description) => {
         amount: numericAmount,
         type: 'DEBIT',
         description,
-        status: 'COMPLETED'
+        status: 'COMPLETED',
+        createdAt: createdAt ? new Date(createdAt) : new Date()
     });
 
     return debitTx;

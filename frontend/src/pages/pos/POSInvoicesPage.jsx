@@ -665,19 +665,25 @@ export default function POSInvoicesPage() {
         const phone = inv.customerId?.phone;
         if (!phone) return toast('Customer phone not found', { icon: 'ℹ️' });
 
+        console.log(`[Frontend-POSInvoicesPage] sendWhatsAppBill initiated for Invoice: ${inv.invoiceNumber}, Phone: ${phone}`);
         setIsSendingWhatsApp(inv._id);
         try {
             // 1. Generate PDF blob (using POS receipt for WhatsApp)
             const blob = await pdf(<POSReceiptPDF invoice={inv} salon={salon} />).toBlob();
+            console.log(`[Frontend-POSInvoicesPage] Generated POS receipt PDF blob size: ${blob.size} bytes`);
 
             // 2. Prepare Form Data
             const formData = new FormData();
             formData.append('pdf', blob, `Invoice_${inv.invoiceNumber}.pdf`);
 
             // 3. Call API
-            const response = await api.post(`/pos/invoices/${inv._id}/send-whatsapp`, formData, {
+            const requestUrl = `/pos/invoices/${inv._id}/send-whatsapp`;
+            console.log(`[Frontend-POSInvoicesPage] Sending POST request to ${requestUrl}`);
+            const response = await api.post(requestUrl, formData, {
                 headers: { 'Content-Type': 'multipart/form-data' }
             });
+
+            console.log(`[Frontend-POSInvoicesPage] API Response:`, response.data);
 
             if (response.data.success) {
                 toast.success('Invoice sent on WhatsApp!');
@@ -685,7 +691,7 @@ export default function POSInvoicesPage() {
                 toast.error(response.data.message || 'Failed to send WhatsApp');
             }
         } catch (error) {
-            console.error('WhatsApp Error:', error);
+            console.error('[Frontend-POSInvoicesPage] WhatsApp Error:', error);
             toast.error(error.response?.data?.message || 'Error sending WhatsApp invoice');
         } finally {
             setIsSendingWhatsApp(null);

@@ -116,6 +116,7 @@ export default function Sidebar({ collapsed, setCollapsed, isHovered, setIsHover
                     { label: 'POS Dashboard', icon: LayoutDashboard, path: '/pos' },
                     { label: 'New Bill', icon: Zap, path: '/pos/billing' },
                     { label: 'Invoices & Payments', icon: FileText, path: '/pos/invoices' },
+                    { label: 'Payment Reminders', icon: MessageSquare, path: '/admin/crm/payment-reminders' },
                 ]
             },
             {

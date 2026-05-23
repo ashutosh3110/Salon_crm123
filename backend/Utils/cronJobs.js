@@ -3,7 +3,7 @@ const Salon = require('../Models/Salon');
 const User = require('../Models/User');
 const Booking = require('../Models/Booking');
 const Customer = require('../Models/Customer');
-const { sendWapixoTemplate, checkAndDeductWhatsAppCredit } = require('./whatsapp');
+const { sendWapixoTemplate, checkAndDeductWhatsAppCredit, sendWhatsAppMessage } = require('./whatsapp');
 const { addLoyaltyPoints } = require('./loyalty');
 const { sendNotification } = require('./notification');
 
@@ -203,7 +203,80 @@ const initCronJobs = () => {
         }
     });
 
-    console.log('Cron Jobs Initialized: Subscription (00:00), Reminders (09:00), Celebrations (08:00)');
+    // 4. Automated Payment Reminders (Daily at 10:00 AM)
+    cron.schedule('0 10 * * *', async () => {
+        console.log('Running daily automated payment reminders...');
+        try {
+            // Find all active salons with auto reminder enabled
+            const activeSalons = await Salon.find({
+                'whatsappSettings.autoPaymentReminder': true,
+                isActive: true
+            });
+
+            console.log(`[Auto-Reminder] Found ${activeSalons.length} salons with auto payment reminders enabled.`);
+
+            for (const salon of activeSalons) {
+                const intervalDays = salon.whatsappSettings.paymentReminderIntervalDays || 7;
+                const cutoffDate = new Date();
+                cutoffDate.setDate(cutoffDate.getDate() - intervalDays);
+
+                // Find customers of this salon with dueAmount > 0 who haven't been reminded recently
+                const customers = await Customer.find({
+                    salonId: salon._id,
+                    dueAmount: { $gt: 0 },
+                    $or: [
+                        { lastPaymentReminderSentAt: { $exists: false } },
+                        { lastPaymentReminderSentAt: null },
+                        { lastPaymentReminderSentAt: { $lte: cutoffDate } }
+                    ]
+                });
+
+                console.log(`[Auto-Reminder] Salon: ${salon.name} (${salon._id}) - Found ${customers.length} due customers to remind.`);
+
+                for (const customer of customers) {
+                    if (!customer.phone) continue;
+
+                    // Deduct credit first (payment reminder is a WhatsApp notification)
+                    const canSend = await checkAndDeductWhatsAppCredit(salon._id);
+                    if (!canSend) {
+                        console.log(`[Auto-Reminder] Skipping customer ${customer.name} - Insufficient credits or notifications disabled for salon ${salon.name}`);
+                        continue;
+                    }
+
+                    // Prepare reminder template or message
+                    const templateName = process.env.WHATSAPP_TEMPLATE_PAYMENT_REMINDER || 'payment_reminder';
+                    const salonName = salon.businessName || salon.name || 'Wapixo';
+                    
+                    // Send using Wapixo template if WHATSAPP_TEMPLATE_PAYMENT_REMINDER is defined in process.env, otherwise fallback to plain message
+                    let sendResult;
+                    if (process.env.WHATSAPP_TEMPLATE_PAYMENT_REMINDER) {
+                        // Template parameters: [Customer Name, Dues Amount, Salon Name]
+                        sendResult = await sendWapixoTemplate(customer.phone, templateName, [
+                            customer.name,
+                            String(customer.dueAmount),
+                            salonName
+                        ]);
+                    } else {
+                        // Fallback to sending plain text message
+                        const msg = `Dear ${customer.name}, this is a friendly reminder that you have a pending payment of ₹${customer.dueAmount} outstanding at ${salonName}. Please settle this at your earliest convenience. Thank you!`;
+                        sendResult = await sendWhatsAppMessage(customer.phone, msg);
+                    }
+
+                    console.log(`[Auto-Reminder] Dispatched to ${customer.name} (${customer.phone}). Result:`, sendResult);
+
+                    if (sendResult.success) {
+                        customer.paymentReminderCount = (customer.paymentReminderCount || 0) + 1;
+                        customer.lastPaymentReminderSentAt = new Date();
+                        await customer.save();
+                    }
+                }
+            }
+        } catch (err) {
+            console.error('Error in auto payment reminder cron:', err);
+        }
+    });
+
+    console.log('Cron Jobs Initialized: Subscription (00:00), Reminders (09:00), Celebrations (08:00), Payment Reminders (10:00)');
 };
 
 module.exports = initCronJobs;

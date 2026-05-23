@@ -85,7 +85,9 @@ const salonSchema = new mongoose.Schema({
     fcmTokenMobile: [String],
     whatsappSettings: {
         whatsappNotifications: { type: Boolean, default: true },
-        whatsappCredits: { type: Number, default: 0 }
+        whatsappCredits: { type: Number, default: 0 },
+        autoPaymentReminder: { type: Boolean, default: false },
+        paymentReminderIntervalDays: { type: Number, default: 7 }
     },
     termsAndConditions: {
         type: [String],
