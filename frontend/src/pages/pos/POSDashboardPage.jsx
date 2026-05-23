@@ -220,19 +220,19 @@ export default function POSDashboardPage() {
                     <div className="h-[300px] w-full">
                         <ResponsiveContainer width="100%" height="100%">
                             <BarChart data={paymentBreakdown}>
-                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(var(--border), 0.1)" />
-                                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 12, fontWeight: 900, fill: 'var(--text-muted)' }} />
+                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--color-border)" opacity={0.3} />
+                                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 12, fontWeight: 900, fill: 'var(--color-text-muted)' }} />
                                 <YAxis hide />
                                 <Tooltip
                                     contentStyle={{
-                                        backgroundColor: 'var(--surface)',
-                                        border: '1px solid var(--border)',
+                                        backgroundColor: 'var(--card)',
+                                        border: '1px solid var(--color-border)',
                                         borderRadius: '0px',
                                         fontSize: '12px',
                                         fontWeight: '900',
                                         textTransform: 'uppercase'
                                     }}
-                                    cursor={{ fill: 'rgba(var(--primary), 0.05)' }}
+                                    cursor={{ fill: 'rgba(180, 145, 43, 0.08)' }}
                                 />
                                 <Bar dataKey="value" barSize={40}>
                                     {paymentBreakdown.map((entry, index) => (
@@ -269,8 +269,8 @@ export default function POSDashboardPage() {
                                     </Pie>
                                     <Tooltip
                                         contentStyle={{
-                                            backgroundColor: 'var(--surface)',
-                                            border: '1px solid var(--border)',
+                                            backgroundColor: 'var(--card)',
+                                            border: '1px solid var(--color-border)',
                                             borderRadius: '0px',
                                             fontSize: '12px',
                                             fontWeight: '900',

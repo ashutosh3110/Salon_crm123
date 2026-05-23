@@ -758,6 +758,435 @@ export default function AdminLayout() {
                     border-color: rgba(255, 255, 255, 0.25) !important;
                     color: #ffffff !important;
                 }
+
+                /* ==========================================
+                   📐 COMPREHENSIVE SPACE COMPRESSION OVERRIDES
+                   (No font size changes — only spacing)
+                   ========================================== */
+                /* Compress main viewport margin */
+                .admin-panel main {
+                    padding: 0.75rem !important;
+                }
+                @media (min-width: 640px) {
+                    .admin-panel main {
+                        padding: 1rem !important;
+                    }
+                }
+
+                /* Compact, Clean & Premium Table Cells */
+                .admin-panel table th {
+                    padding: 0.5rem 0.75rem !important;
+                }
+                .admin-panel table td {
+                    padding: 0.625rem 0.75rem !important;
+                }
+
+                /* Compress standard padding utilities */
+                .admin-panel .p-10 { padding: 1.25rem !important; }
+                .admin-panel .p-8 { padding: 1rem !important; }
+                .admin-panel .p-6 { padding: 0.75rem !important; }
+                .admin-panel .p-5 { padding: 0.625rem !important; }
+                .admin-panel .p-4 { padding: 0.5rem !important; }
+
+                .admin-panel .px-10 { padding-left: 1.25rem !important; padding-right: 1.25rem !important; }
+                .admin-panel .px-8 { padding-left: 1rem !important; padding-right: 1rem !important; }
+                .admin-panel .px-6 { padding-left: 0.75rem !important; padding-right: 0.75rem !important; }
+                .admin-panel .px-5 { padding-left: 0.625rem !important; padding-right: 0.625rem !important; }
+                .admin-panel .px-4 { padding-left: 0.5rem !important; padding-right: 0.5rem !important; }
+
+                .admin-panel .py-12 { padding-top: 1.5rem !important; padding-bottom: 1.5rem !important; }
+                .admin-panel .py-10 { padding-top: 1.25rem !important; padding-bottom: 1.25rem !important; }
+                .admin-panel .py-8 { padding-top: 1rem !important; padding-bottom: 1rem !important; }
+                .admin-panel .py-6 { padding-top: 0.75rem !important; padding-bottom: 0.75rem !important; }
+                .admin-panel .py-5 { padding-top: 0.625rem !important; padding-bottom: 0.625rem !important; }
+                .admin-panel .py-4 { padding-top: 0.5rem !important; padding-bottom: 0.5rem !important; }
+                .admin-panel .py-3\.5 { padding-top: 0.45rem !important; padding-bottom: 0.45rem !important; }
+
+                .admin-panel .pt-12 { padding-top: 1.5rem !important; }
+                .admin-panel .pt-10 { padding-top: 1.25rem !important; }
+                .admin-panel .pt-8 { padding-top: 1rem !important; }
+                .admin-panel .pt-6 { padding-top: 0.75rem !important; }
+                .admin-panel .pt-5 { padding-top: 0.625rem !important; }
+
+                .admin-panel .pb-12 { padding-bottom: 1.5rem !important; }
+                .admin-panel .pb-10 { padding-bottom: 1.25rem !important; }
+                .admin-panel .pb-8 { padding-bottom: 1rem !important; }
+                .admin-panel .pb-6 { padding-bottom: 0.75rem !important; }
+                .admin-panel .pb-5 { padding-bottom: 0.625rem !important; }
+
+                .admin-panel .pl-12 { padding-left: 1.5rem !important; }
+
+                /* Compress margin utilities */
+                .admin-panel .mt-10 { margin-top: 1.25rem !important; }
+                .admin-panel .mt-8 { margin-top: 1rem !important; }
+                .admin-panel .mt-6 { margin-top: 0.75rem !important; }
+                .admin-panel .mt-5 { margin-top: 0.625rem !important; }
+                .admin-panel .mt-4 { margin-top: 0.5rem !important; }
+
+                .admin-panel .mb-10 { margin-bottom: 1.25rem !important; }
+                .admin-panel .mb-8 { margin-bottom: 1rem !important; }
+                .admin-panel .mb-6 { margin-bottom: 0.75rem !important; }
+                .admin-panel .mb-5 { margin-bottom: 0.625rem !important; }
+                .admin-panel .mb-4 { margin-bottom: 0.5rem !important; }
+
+                .admin-panel .mx-10 { margin-left: 1.25rem !important; margin-right: 1.25rem !important; }
+                .admin-panel .mx-8 { margin-left: 1rem !important; margin-right: 1rem !important; }
+                .admin-panel .mx-6 { margin-left: 0.75rem !important; margin-right: 0.75rem !important; }
+                .admin-panel .mx-5 { margin-left: 0.625rem !important; margin-right: 0.625rem !important; }
+                .admin-panel .mx-4 { margin-left: 0.5rem !important; margin-right: 0.5rem !important; }
+
+                .admin-panel .my-10 { margin-top: 1.25rem !important; margin-bottom: 1.25rem !important; }
+                .admin-panel .my-8 { margin-top: 1rem !important; margin-bottom: 1rem !important; }
+                .admin-panel .my-6 { margin-top: 0.75rem !important; margin-bottom: 0.75rem !important; }
+                .admin-panel .my-5 { margin-top: 0.625rem !important; margin-bottom: 0.625rem !important; }
+                .admin-panel .my-4 { margin-top: 0.5rem !important; margin-bottom: 0.5rem !important; }
+
+                /* Compress vertical layout stack spacing */
+                .admin-panel .space-y-8 > :not([hidden]) ~ :not([hidden]) {
+                    margin-top: 1rem !important;
+                }
+                .admin-panel .space-y-6 > :not([hidden]) ~ :not([hidden]) {
+                    margin-top: 0.75rem !important;
+                }
+                .admin-panel .space-y-5 > :not([hidden]) ~ :not([hidden]) {
+                    margin-top: 0.6rem !important;
+                }
+                .admin-panel .space-y-4 > :not([hidden]) ~ :not([hidden]) {
+                    margin-top: 0.5rem !important;
+                }
+                .admin-panel .space-y-3 > :not([hidden]) ~ :not([hidden]) {
+                    margin-top: 0.4rem !important;
+                }
+                .admin-panel .space-y-2 > :not([hidden]) ~ :not([hidden]) {
+                    margin-top: 0.3rem !important;
+                }
+                .admin-panel .space-y-1 > :not([hidden]) ~ :not([hidden]) {
+                    margin-top: 0.2rem !important;
+                }
+
+                /* Compress grid & flex gaps */
+                .admin-panel .gap-10 { gap: 1.25rem !important; }
+                .admin-panel .gap-8 { gap: 1rem !important; }
+                .admin-panel .gap-6 { gap: 0.75rem !important; }
+                .admin-panel .gap-5 { gap: 0.6rem !important; }
+                .admin-panel .gap-4 { gap: 0.5rem !important; }
+                .admin-panel .gap-3 { gap: 0.4rem !important; }
+                .admin-panel .gap-2 { gap: 0.3rem !important; }
+
+                /* Compress sidebar nav items */
+                .admin-panel aside nav a {
+                    padding: 0.35rem 0.75rem !important;
+                }
+                .admin-panel aside nav a svg {
+                    width: 1.1rem !important;
+                    height: 1.1rem !important;
+                }
+
+                /* Hide sidebar scrollbar */
+                .admin-panel aside nav::-webkit-scrollbar {
+                    display: none !important;
+                }
+                .admin-panel aside nav {
+                    -ms-overflow-style: none !important;
+                    scrollbar-width: none !important;
+                }
+
+                /* Compress sidebar logo area */
+                .admin-panel aside .h-20 {
+                    height: 3.5rem !important;
+                }
+
+                /* Compress topbar */
+                .admin-panel header.h-16 {
+                    height: 3rem !important;
+                }
+
+                /* Compress card wrapper spacing (full specificity to override existing !important rules) */
+                html:not(.dark) .admin-panel .overflow-x-auto,
+                html:not(.dark) .admin-panel .table-responsive,
+                html:not(.dark) .admin-panel [class*="overflow-x-auto"] {
+                    margin-bottom: 0.75rem !important;
+                }
+                .dark .admin-panel .overflow-x-auto,
+                .dark .admin-panel .table-responsive,
+                .dark .admin-panel [class*="overflow-x-auto"] {
+                    margin-bottom: 0.75rem !important;
+                }
+
+                /* Compress pagination footer */
+                .admin-panel [class*="bg-surface-alt/50"],
+                .admin-panel .bg-surface-alt\/50,
+                .admin-panel [class*="border-t"]:not(aside) {
+                    padding: 0.75rem 1rem !important;
+                }
+
+                /* ==========================================
+                   🔥 EMERGENCY VISIBILITY FIXES
+                   Protect buttons with text-white / text-primary-foreground on dark backgrounds
+                   (Fix for light mode color: #000000 override)
+                   ========================================== */
+                /* text-primary-foreground ALWAYS stays white in light mode (it's for btn text on dark bg) */
+                html:not(.dark) .admin-panel .text-primary-foreground {
+                    color: #ffffff !important;
+                }
+                html:not(.dark) .admin-panel .text-primary-foreground svg,
+                html:not(.dark) .admin-panel .text-primary-foreground path {
+                    color: #ffffff !important;
+                    fill: #ffffff !important;
+                }
+
+                /* Any button with text-white on a dark background must stay white */
+                html:not(.dark) .admin-panel button.text-white,
+                html:not(.dark) .admin-panel a.text-white,
+                html:not(.dark) .admin-panel .inline-flex.text-white,
+                html:not(.dark) .admin-panel [class*="text-white"].inline-flex,
+                html:not(.dark) .admin-panel button:has(.lucide-plus).text-white,
+                html:not(.dark) .admin-panel button.bg-black.text-white,
+                html:not(.dark) .admin-panel button[class*="bg-black"].text-white,
+                html:not(.dark) .admin-panel button.bg-text.text-white,
+                html:not(.dark) .admin-panel button[class*="bg-text"].text-white,
+                html:not(.dark) .admin-panel a.bg-black.text-white,
+                html:not(.dark) .admin-panel a[class*="bg-black"].text-white,
+                /* Also protect child icons inside these buttons */
+                html:not(.dark) .admin-panel button.text-white svg,
+                html:not(.dark) .admin-panel a.text-white svg,
+                html:not(.dark) .admin-panel button.text-white path,
+                html:not(.dark) .admin-panel a.text-white path {
+                    color: #ffffff !important;
+                }
+
+                /* Fix any button with bg-primary/bg-black that has white text but the text gets overridden */
+                html:not(.dark) .admin-panel .bg-primary.text-white,
+                html:not(.dark) .admin-panel [class*="bg-primary"].text-white,
+                html:not(.dark) .admin-panel .bg-neutral-800.text-white,
+                html:not(.dark) .admin-panel [class*="bg-neutral-"].text-white {
+                    color: #ffffff !important;
+                }
+
+                /* Ensure text-white elements inside surface cards stay white */
+                html:not(.dark) .admin-panel .text-white {
+                    color: #ffffff !important;
+                }
+
+                /* === PROTECT ALL DARK-BG BUTTONS WITH WHITE TEXT === */
+                /* These are commonly used in HR pages (attendance, payroll, performance) and other admin pages */
+                /* Note: Only dark shades (500+) are targeted — light shades like bg-slate-100 are NOT included */
+                html:not(.dark) .admin-panel button.bg-emerald-500,
+                html:not(.dark) .admin-panel button.bg-rose-500,
+                html:not(.dark) .admin-panel button.bg-amber-500,
+                html:not(.dark) .admin-panel button.bg-violet-500,
+                html:not(.dark) .admin-panel button.bg-slate-900,
+                html:not(.dark) .admin-panel button.bg-slate-800,
+                html:not(.dark) .admin-panel button.bg-slate-700,
+                html:not(.dark) .admin-panel button.bg-text,
+                /* Dark-shade wildcards (500-900 are dark, 50-400 are light — excluded) */
+                html:not(.dark) .admin-panel button[class*="bg-emerald-6"],
+                html:not(.dark) .admin-panel button[class*="bg-emerald-7"],
+                html:not(.dark) .admin-panel button[class*="bg-emerald-8"],
+                html:not(.dark) .admin-panel button[class*="bg-emerald-9"],
+                html:not(.dark) .admin-panel button[class*="bg-rose-6"],
+                html:not(.dark) .admin-panel button[class*="bg-rose-7"],
+                html:not(.dark) .admin-panel button[class*="bg-rose-8"],
+                html:not(.dark) .admin-panel button[class*="bg-rose-9"],
+                html:not(.dark) .admin-panel button[class*="bg-amber-6"],
+                html:not(.dark) .admin-panel button[class*="bg-amber-7"],
+                html:not(.dark) .admin-panel button[class*="bg-amber-8"],
+                html:not(.dark) .admin-panel button[class*="bg-amber-9"],
+                html:not(.dark) .admin-panel button[class*="bg-violet-6"],
+                html:not(.dark) .admin-panel button[class*="bg-violet-7"],
+                html:not(.dark) .admin-panel button[class*="bg-violet-8"],
+                html:not(.dark) .admin-panel button[class*="bg-violet-9"],
+                html:not(.dark) .admin-panel button[class*="bg-slate-7"],
+                html:not(.dark) .admin-panel button[class*="bg-slate-8"],
+                html:not(.dark) .admin-panel button[class*="bg-slate-9"],
+                html:not(.dark) .admin-panel button[class*="bg-neutral-7"],
+                html:not(.dark) .admin-panel button[class*="bg-neutral-8"],
+                html:not(.dark) .admin-panel button[class*="bg-neutral-9"],
+                html:not(.dark) .admin-panel button[class*="bg-text"],
+                /* Anchor tags used as buttons */
+                html:not(.dark) .admin-panel a.bg-slate-900,
+                html:not(.dark) .admin-panel a[class*="bg-slate-7"],
+                html:not(.dark) .admin-panel a[class*="bg-slate-8"],
+                html:not(.dark) .admin-panel a[class*="bg-slate-9"],
+                html:not(.dark) .admin-panel a.bg-emerald-500,
+                html:not(.dark) .admin-panel a.bg-rose-500,
+                html:not(.dark) .admin-panel a.bg-amber-500,
+                html:not(.dark) .admin-panel a.bg-violet-500,
+                html:not(.dark) .admin-panel a.bg-text,
+                html:not(.dark) .admin-panel a[class*="bg-emerald-6"],
+                html:not(.dark) .admin-panel a[class*="bg-emerald-7"],
+                html:not(.dark) .admin-panel a[class*="bg-emerald-8"],
+                html:not(.dark) .admin-panel a[class*="bg-emerald-9"],
+                html:not(.dark) .admin-panel a[class*="bg-rose-6"],
+                html:not(.dark) .admin-panel a[class*="bg-rose-7"],
+                html:not(.dark) .admin-panel a[class*="bg-rose-8"],
+                html:not(.dark) .admin-panel a[class*="bg-rose-9"],
+                html:not(.dark) .admin-panel a[class*="bg-amber-6"],
+                html:not(.dark) .admin-panel a[class*="bg-amber-7"],
+                html:not(.dark) .admin-panel a[class*="bg-amber-8"],
+                html:not(.dark) .admin-panel a[class*="bg-amber-9"],
+                html:not(.dark) .admin-panel a[class*="bg-violet-6"],
+                html:not(.dark) .admin-panel a[class*="bg-violet-7"],
+                html:not(.dark) .admin-panel a[class*="bg-violet-8"],
+                html:not(.dark) .admin-panel a[class*="bg-violet-9"],
+                html:not(.dark) .admin-panel a[class*="bg-text"],
+                /* SVG icons inside these dark-bg buttons */
+                html:not(.dark) .admin-panel button.bg-emerald-500 svg,
+                html:not(.dark) .admin-panel button.bg-rose-500 svg,
+                html:not(.dark) .admin-panel button.bg-amber-500 svg,
+                html:not(.dark) .admin-panel button.bg-violet-500 svg,
+                html:not(.dark) .admin-panel button.bg-slate-900 svg,
+                html:not(.dark) .admin-panel button.bg-slate-800 svg,
+                html:not(.dark) .admin-panel button.bg-slate-700 svg,
+                html:not(.dark) .admin-panel button.bg-text svg {
+                    color: #ffffff !important;
+                }
+
+                /* Dark mode: emerald/rose status text should stay colored */
+                html:not(.dark) .admin-panel .text-emerald-500,
+                html:not(.dark) .admin-panel [class*="text-emerald-400"],
+                html:not(.dark) .admin-panel [class*="text-emerald-600"],
+                html:not(.dark) .admin-panel .text-rose-500,
+                html:not(.dark) .admin-panel [class*="text-rose-400"],
+                html:not(.dark) .admin-panel [class*="text-rose-600"],
+                html:not(.dark) .admin-panel .text-amber-500,
+                html:not(.dark) .admin-panel [class*="text-amber-"],
+                html:not(.dark) .admin-panel .text-primary {
+                    color: inherit !important;
+                }
+
+                /* === PROTECT CHILD ELEMENTS INSIDE DARK-BG BUTTONS === */
+                /* Span and div inside buttons with dark backgrounds get #000000 from index.css span/div overrides */
+                html:not(.dark) .admin-panel button.bg-primary span,
+                html:not(.dark) .admin-panel button.bg-primary div,
+                html:not(.dark) .admin-panel button[class*="bg-primary"] span,
+                html:not(.dark) .admin-panel button[class*="bg-primary"] div,
+                html:not(.dark) .admin-panel button.bg-black span,
+                html:not(.dark) .admin-panel button.bg-black div,
+                html:not(.dark) .admin-panel button[class*="bg-black"] span,
+                html:not(.dark) .admin-panel button[class*="bg-black"] div,
+                html:not(.dark) .admin-panel button.bg-slate-900 span,
+                html:not(.dark) .admin-panel button.bg-slate-900 div,
+                html:not(.dark) .admin-panel button[class*="bg-slate-8"] span,
+                html:not(.dark) .admin-panel button[class*="bg-slate-8"] div,
+                html:not(.dark) .admin-panel button[class*="bg-slate-9"] span,
+                html:not(.dark) .admin-panel button[class*="bg-slate-9"] div,
+                html:not(.dark) .admin-panel button.bg-emerald-500 span,
+                html:not(.dark) .admin-panel button.bg-emerald-500 div,
+                html:not(.dark) .admin-panel button[class*="bg-emerald-5"] span,
+                html:not(.dark) .admin-panel button[class*="bg-emerald-5"] div,
+                html:not(.dark) .admin-panel button[class*="bg-emerald-6"] span,
+                html:not(.dark) .admin-panel button[class*="bg-emerald-6"] div,
+                html:not(.dark) .admin-panel button[class*="bg-emerald-7"] span,
+                html:not(.dark) .admin-panel button[class*="bg-emerald-7"] div,
+                html:not(.dark) .admin-panel button.bg-rose-500 span,
+                html:not(.dark) .admin-panel button.bg-rose-500 div,
+                html:not(.dark) .admin-panel button[class*="bg-rose-5"] span,
+                html:not(.dark) .admin-panel button[class*="bg-rose-5"] div,
+                html:not(.dark) .admin-panel button[class*="bg-rose-6"] span,
+                html:not(.dark) .admin-panel button[class*="bg-rose-6"] div,
+                html:not(.dark) .admin-panel button.bg-amber-500 span,
+                html:not(.dark) .admin-panel button.bg-amber-500 div,
+                html:not(.dark) .admin-panel button[class*="bg-amber-5"] span,
+                html:not(.dark) .admin-panel button[class*="bg-amber-5"] div,
+                html:not(.dark) .admin-panel button[class*="bg-amber-6"] span,
+                html:not(.dark) .admin-panel button[class*="bg-amber-6"] div,
+                html:not(.dark) .admin-panel button.bg-violet-500 span,
+                html:not(.dark) .admin-panel button.bg-violet-500 div,
+                html:not(.dark) .admin-panel button[class*="bg-violet-5"] span,
+                html:not(.dark) .admin-panel button[class*="bg-violet-5"] div,
+                html:not(.dark) .admin-panel button[class*="bg-violet-6"] span,
+                html:not(.dark) .admin-panel button[class*="bg-violet-6"] div,
+                html:not(.dark) .admin-panel button[class*="bg-emerald-8"] span,
+                html:not(.dark) .admin-panel button[class*="bg-emerald-8"] div,
+                html:not(.dark) .admin-panel button[class*="bg-emerald-9"] span,
+                html:not(.dark) .admin-panel button[class*="bg-emerald-9"] div,
+                html:not(.dark) .admin-panel button[class*="bg-rose-7"] span,
+                html:not(.dark) .admin-panel button[class*="bg-rose-7"] div,
+                html:not(.dark) .admin-panel button[class*="bg-rose-8"] span,
+                html:not(.dark) .admin-panel button[class*="bg-rose-8"] div,
+                html:not(.dark) .admin-panel button[class*="bg-rose-9"] span,
+                html:not(.dark) .admin-panel button[class*="bg-rose-9"] div,
+                html:not(.dark) .admin-panel button[class*="bg-amber-7"] span,
+                html:not(.dark) .admin-panel button[class*="bg-amber-7"] div,
+                html:not(.dark) .admin-panel button[class*="bg-amber-8"] span,
+                html:not(.dark) .admin-panel button[class*="bg-amber-8"] div,
+                html:not(.dark) .admin-panel button[class*="bg-amber-9"] span,
+                html:not(.dark) .admin-panel button[class*="bg-amber-9"] div,
+                html:not(.dark) .admin-panel button[class*="bg-violet-7"] span,
+                html:not(.dark) .admin-panel button[class*="bg-violet-7"] div,
+                html:not(.dark) .admin-panel button[class*="bg-violet-8"] span,
+                html:not(.dark) .admin-panel button[class*="bg-violet-8"] div,
+                html:not(.dark) .admin-panel button[class*="bg-violet-9"] span,
+                html:not(.dark) .admin-panel button[class*="bg-violet-9"] div,
+                html:not(.dark) .admin-panel button.bg-text span,
+                html:not(.dark) .admin-panel button.bg-text div,
+                html:not(.dark) .admin-panel button[class*="bg-text"] span,
+                html:not(.dark) .admin-panel button[class*="bg-text"] div,
+                /* Icon SVGs inside dark-bg buttons (broader coverage) */
+                html:not(.dark) .admin-panel button.bg-primary svg,
+                html:not(.dark) .admin-panel button[class*="bg-primary"] svg,
+                html:not(.dark) .admin-panel button.bg-black svg,
+                html:not(.dark) .admin-panel button[class*="bg-black"] svg,
+                html:not(.dark) .admin-panel button.bg-slate-900 svg,
+                html:not(.dark) .admin-panel button[class*="bg-slate-8"] svg,
+                html:not(.dark) .admin-panel button[class*="bg-slate-9"] svg,
+                html:not(.dark) .admin-panel button.bg-emerald-500 svg,
+                html:not(.dark) .admin-panel button[class*="bg-emerald-5"] svg,
+                html:not(.dark) .admin-panel button[class*="bg-emerald-6"] svg,
+                html:not(.dark) .admin-panel button[class*="bg-emerald-7"] svg,
+                html:not(.dark) .admin-panel button[class*="bg-emerald-8"] svg,
+                html:not(.dark) .admin-panel button[class*="bg-emerald-9"] svg,
+                html:not(.dark) .admin-panel button.bg-rose-500 svg,
+                html:not(.dark) .admin-panel button[class*="bg-rose-5"] svg,
+                html:not(.dark) .admin-panel button[class*="bg-rose-6"] svg,
+                html:not(.dark) .admin-panel button[class*="bg-rose-7"] svg,
+                html:not(.dark) .admin-panel button[class*="bg-rose-8"] svg,
+                html:not(.dark) .admin-panel button[class*="bg-rose-9"] svg,
+                html:not(.dark) .admin-panel button.bg-amber-500 svg,
+                html:not(.dark) .admin-panel button[class*="bg-amber-5"] svg,
+                html:not(.dark) .admin-panel button[class*="bg-amber-6"] svg,
+                html:not(.dark) .admin-panel button[class*="bg-amber-7"] svg,
+                html:not(.dark) .admin-panel button[class*="bg-amber-8"] svg,
+                html:not(.dark) .admin-panel button[class*="bg-amber-9"] svg,
+                html:not(.dark) .admin-panel button.bg-violet-500 svg,
+                html:not(.dark) .admin-panel button[class*="bg-violet-5"] svg,
+                html:not(.dark) .admin-panel button[class*="bg-violet-6"] svg,
+                html:not(.dark) .admin-panel button[class*="bg-violet-7"] svg,
+                html:not(.dark) .admin-panel button[class*="bg-violet-8"] svg,
+                html:not(.dark) .admin-panel button[class*="bg-violet-9"] svg,
+                html:not(.dark) .admin-panel button.bg-text svg,
+                html:not(.dark) .admin-panel button[class*="bg-text"] svg,
+                /* Anchor tags as buttons - child protection */
+                html:not(.dark) .admin-panel a.bg-primary span,
+                html:not(.dark) .admin-panel a.bg-primary div,
+                html:not(.dark) .admin-panel a.bg-primary svg,
+                html:not(.dark) .admin-panel a.bg-slate-900 span,
+                html:not(.dark) .admin-panel a.bg-slate-900 div,
+                html:not(.dark) .admin-panel a.bg-slate-900 svg,
+                html:not(.dark) .admin-panel a.bg-emerald-500 span,
+                html:not(.dark) .admin-panel a.bg-emerald-500 div,
+                html:not(.dark) .admin-panel a.bg-emerald-500 svg,
+                html:not(.dark) .admin-panel a.bg-rose-500 span,
+                html:not(.dark) .admin-panel a.bg-rose-500 div,
+                html:not(.dark) .admin-panel a.bg-rose-500 svg,
+                html:not(.dark) .admin-panel a.bg-amber-500 span,
+                html:not(.dark) .admin-panel a.bg-amber-500 div,
+                html:not(.dark) .admin-panel a.bg-amber-500 svg,
+                html:not(.dark) .admin-panel a.bg-violet-500 span,
+                html:not(.dark) .admin-panel a.bg-violet-500 div,
+                html:not(.dark) .admin-panel a.bg-violet-500 svg,
+                html:not(.dark) .admin-panel a.bg-text span,
+                html:not(.dark) .admin-panel a.bg-text div,
+                html:not(.dark) .admin-panel a.bg-text svg {
+                    color: #ffffff !important;
+                }
+
+                /* Fix dark mode: recharts text fill for axis ticks */
+                .admin-panel .recharts-text tspan {
+                    fill: currentColor !important;
+                }
+
             `}</style>
 
             <Sidebar
