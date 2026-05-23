@@ -2274,7 +2274,7 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
     const [isProcessing, setIsProcessing] = useState(false);
     const [isSubmittingClient, setIsSubmittingClient] = useState(false);
     const [showNewClient, setShowNewClient] = useState(false);
-    const [newClientForm, setNewClientForm] = useState({ name: '', phone: '', dob: '', anniversary: '' });
+    const [newClientForm, setNewClientForm] = useState({ name: '', phone: '', dob: '', anniversary: '', appliedReferralCode: '' });
     const [showClientDropdown, setShowClientDropdown] = useState(false);
     const [openStaffIdx, setOpenStaffIdx] = useState(null);
     const [staffSearch, setStaffSearch] = useState('');
@@ -2549,7 +2549,7 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
             setShowNewClient(false);
             setQSearchClient('');
             setShowClientDropdown(false);
-            setNewClientForm({ name: '', phone: '', dob: '', anniversary: '' });
+            setNewClientForm({ name: '', phone: '', dob: '', anniversary: '', appliedReferralCode: '' });
         } catch (err) {
             // Error handled by BusinessContext
         } finally {
@@ -3630,6 +3630,16 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                                         className="w-full bg-slate-50 border border-slate-200 p-3 text-xs font-bold text-slate-900 outline-none rounded-xl"
                                         value={newClientForm.phone}
                                         onChange={(e) => setNewClientForm({ ...newClientForm, phone: e.target.value.replace(/\D/g, '').slice(0, 10) })}
+                                    />
+                                </div>
+                                <div className="space-y-1.5">
+                                    <label className="text-xs font-semibold text-slate-500 uppercase">Referral Code (Optional)</label>
+                                    <input
+                                        type="text"
+                                        placeholder="e.g. WAP-XXXXXX"
+                                        className="w-full bg-slate-50 border border-slate-200 p-3 text-xs font-bold text-slate-900 outline-none rounded-xl"
+                                        value={newClientForm.appliedReferralCode || ''}
+                                        onChange={(e) => setNewClientForm({ ...newClientForm, appliedReferralCode: e.target.value.toUpperCase().trim() })}
                                     />
                                 </div>
                                 <div className="grid grid-cols-2 gap-4">

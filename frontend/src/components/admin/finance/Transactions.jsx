@@ -169,7 +169,7 @@ export default function Transactions() {
                     <div>
                         <h2 className="text-xl font-bold text-text tracking-tight">Finance Ledger & Transactions</h2>
                         <p className="text-sm text-text-secondary mt-1 font-medium">
-                            Khaata entries, bank deposits, withdrawals aur equity transactions ko manage karein.
+                            Manage cash flow, bank transactions, transfers, and owner investments.
                         </p>
                     </div>
                     <div className="flex gap-3 w-full md:w-auto">
@@ -197,9 +197,9 @@ export default function Transactions() {
                     onChange={(e) => { setFilterType(e.target.value); setPage(1); }}
                     className="px-3 py-1.5 bg-white border border-border rounded-lg text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-primary/10"
                 >
-                    <option value="">All Types (Sabh Tarah)</option>
-                    <option value="income">Inflow (Aamadni)</option>
-                    <option value="expense">Outflow (Kharch)</option>
+                    <option value="">All Types</option>
+                    <option value="income">Income</option>
+                    <option value="expense">Expense</option>
                 </select>
 
                 <select
@@ -207,9 +207,9 @@ export default function Transactions() {
                     onChange={(e) => { setFilterAccount(e.target.value); setPage(1); }}
                     className="px-3 py-1.5 bg-white border border-border rounded-lg text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-primary/10"
                 >
-                    <option value="">All Accounts (Sabh Accounts)</option>
-                    <option value="cash">Cash Ledger</option>
-                    <option value="bank">Bank Statement</option>
+                    <option value="">All Accounts</option>
+                    <option value="cash">Cash</option>
+                    <option value="bank">Bank</option>
                 </select>
 
                 <div className="flex items-center gap-2">
@@ -269,10 +269,10 @@ export default function Transactions() {
                                 <thead>
                                     <tr className="bg-surface/30 border-b border-border text-[10px] font-bold text-text-muted uppercase tracking-wider">
                                         <th className="px-6 py-4">Date</th>
+                                        <th className="px-6 py-4">Type</th>
                                         <th className="px-6 py-4">Category</th>
                                         <th className="px-6 py-4">Account</th>
                                         <th className="px-6 py-4">Payment Method</th>
-                                        <th className="px-6 py-4">Description</th>
                                         <th className="px-6 py-4 text-right">Amount</th>
                                     </tr>
                                 </thead>
@@ -288,21 +288,27 @@ export default function Transactions() {
                                                         year: 'numeric'
                                                     })}
                                                 </td>
-                                                <td className="px-6 py-4 whitespace-nowrap">
-                                                    <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${
-                                                        t.category?.includes('Deposit') || t.category?.includes('Withdrawal')
-                                                            ? 'bg-blue-50 text-blue-700'
-                                                            : isIncome
-                                                            ? 'bg-emerald-50 text-emerald-700'
-                                                            : 'bg-rose-50 text-rose-700'
-                                                    }`}>
-                                                        {isIncome ? (
-                                                            <ArrowUpRight className="w-3 h-3" />
-                                                        ) : (
-                                                            <ArrowDownRight className="w-3 h-3" />
-                                                        )}
-                                                        {t.category}
-                                                    </span>
+                                                <td className="px-6 py-4 whitespace-nowrap font-bold">
+                                                    {t.type === 'transfer' ? (
+                                                        <span className="px-2.5 py-1 rounded-full text-[10px] uppercase bg-blue-50 text-blue-700 border border-blue-200/50">
+                                                            Transfer
+                                                        </span>
+                                                    ) : t.category === 'Owner Investment' || t.category === 'Owner Withdrawal' ? (
+                                                        <span className="px-2.5 py-1 rounded-full text-[10px] uppercase bg-violet-50 text-violet-700 border border-violet-200/50">
+                                                            Invest
+                                                        </span>
+                                                    ) : t.type === 'income' ? (
+                                                        <span className="px-2.5 py-1 rounded-full text-[10px] uppercase bg-emerald-50 text-emerald-700 border border-emerald-200/50">
+                                                            Income
+                                                        </span>
+                                                    ) : (
+                                                        <span className="px-2.5 py-1 rounded-full text-[10px] uppercase bg-rose-50 text-rose-700 border border-rose-200/50">
+                                                            Expense
+                                                        </span>
+                                                    )}
+                                                </td>
+                                                <td className="px-6 py-4 font-bold text-text whitespace-nowrap">
+                                                    {t.category}
                                                 </td>
                                                 <td className="px-6 py-4 capitalize whitespace-nowrap">
                                                     <span className="flex items-center gap-1.5 font-bold">
@@ -311,20 +317,19 @@ export default function Transactions() {
                                                         ) : (
                                                             <CreditCard className="w-3.5 h-3.5 text-blue-500" />
                                                         )}
-                                                        {t.accountType === 'cash' ? 'Cash Ledger' : 'Bank Statement'}
+                                                        {t.accountType === 'cash' ? 'Cash' : 'Bank'}
                                                     </span>
                                                 </td>
                                                 <td className="px-6 py-4 uppercase font-bold whitespace-nowrap">
                                                     {t.paymentMethod?.replace('_', ' ')}
                                                 </td>
-                                                <td className="px-6 py-4 font-normal max-w-xs truncate" title={t.description}>
-                                                    {t.description || '—'}
-                                                </td>
-                                                <td className={`px-6 py-4 text-right font-bold text-sm whitespace-nowrap ${
-                                                    isIncome ? 'text-emerald-600' : 'text-rose-500'
-                                                }`}>
-                                                    {isIncome ? '+' : '-'} ₹{t.amount.toLocaleString('en-IN')}
-                                                </td>
+                                                 <td className="px-6 py-4 text-right whitespace-nowrap">
+                                                     <span className={`font-bold text-sm ${
+                                                         isIncome ? 'text-emerald-600' : 'text-rose-600'
+                                                     }`}>
+                                                         {isIncome ? '+' : '-'} ₹{t.amount.toLocaleString('en-IN')}
+                                                     </span>
+                                                 </td>
                                             </tr>
                                         );
                                     })}
@@ -393,10 +398,10 @@ export default function Transactions() {
                             {/* Mode Selector tabs */}
                             <div className="grid grid-cols-4 gap-2 p-1 bg-surface border border-border rounded-xl">
                                 {[
-                                    { key: 'income', label: 'Inflow' },
-                                    { key: 'expense', label: 'Outflow' },
+                                    { key: 'income', label: 'Income' },
+                                    { key: 'expense', label: 'Expense' },
                                     { key: 'transfer', label: 'Transfer' },
-                                    { key: 'equity', label: 'Equity' }
+                                    { key: 'equity', label: 'Invest' }
                                 ].map((item) => (
                                     <button
                                         key={item.key}
@@ -487,7 +492,7 @@ export default function Transactions() {
                             <div className="grid grid-cols-2 gap-4">
                                 {/* Amount */}
                                 <div className="space-y-1.5">
-                                    <label className="text-[10px] font-bold text-text-muted uppercase tracking-widest ml-1">Amount (Rupaye)</label>
+                                    <label className="text-[10px] font-bold text-text-muted uppercase tracking-widest ml-1">Amount</label>
                                     <div className="relative">
                                         <span className="absolute left-4 top-1/2 -translate-y-1/2 font-bold text-text-muted">₹</span>
                                         <input
@@ -496,7 +501,7 @@ export default function Transactions() {
                                             required
                                             onChange={(e) => setAmount(e.target.value)}
                                             placeholder="1,000"
-                                            className="w-full pl-8 pr-4 py-3 bg-surface border border-border rounded-xl text-sm font-bold focus:outline-none focus:ring-2 focus:ring-primary/10"
+                                            className="w-full pl-10 pr-4 py-3 bg-surface border border-border rounded-xl text-sm font-bold focus:outline-none focus:ring-2 focus:ring-primary/10"
                                         />
                                     </div>
                                 </div>
@@ -514,45 +519,27 @@ export default function Transactions() {
                                 </div>
                             </div>
 
-                            {/* Account and Method (hidden for Transfers) */}
+                            {/* Payment Mode */}
                             {txnMode !== 'transfer' && (
-                                <div className="grid grid-cols-2 gap-4">
-                                    {/* Account Type */}
-                                    <div className="space-y-1.5">
-                                        <label className="text-[10px] font-bold text-text-muted uppercase tracking-widest ml-1">Ledger / Account</label>
-                                        <select
-                                            value={accountType}
-                                            onChange={(e) => {
-                                                setAccountType(e.target.value);
-                                                // Auto match method
-                                                setPaymentMethod(e.target.value === 'cash' ? 'cash' : 'upi');
-                                            }}
-                                            className="w-full p-3 bg-surface border border-border rounded-xl text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-primary/10"
-                                        >
-                                            <option value="cash">Cash Ledger</option>
-                                            <option value="bank">Bank Statement</option>
-                                        </select>
-                                    </div>
-
-                                    {/* Payment Method */}
-                                    <div className="space-y-1.5">
-                                        <label className="text-[10px] font-bold text-text-muted uppercase tracking-widest ml-1">Payment Method</label>
-                                        <select
-                                            value={paymentMethod}
-                                            onChange={(e) => setPaymentMethod(e.target.value)}
-                                            className="w-full p-3 bg-surface border border-border rounded-xl text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-primary/10"
-                                        >
-                                            {accountType === 'cash' ? (
-                                                <option value="cash">Cash</option>
-                                            ) : (
-                                                <>
-                                                    <option value="upi">UPI / QR Code</option>
-                                                    <option value="card">Card Swipe</option>
-                                                    <option value="bank_transfer">Net Banking / Transfer</option>
-                                                </>
-                                            )}
-                                        </select>
-                                    </div>
+                                <div className="space-y-1.5">
+                                    <label className="text-[10px] font-bold text-text-muted uppercase tracking-widest ml-1">Payment Mode</label>
+                                    <select
+                                        value={accountType === 'cash' ? 'cash' : 'online'}
+                                        onChange={(e) => {
+                                            const val = e.target.value;
+                                            if (val === 'cash') {
+                                                setAccountType('cash');
+                                                setPaymentMethod('cash');
+                                            } else {
+                                                setAccountType('bank');
+                                                setPaymentMethod('online');
+                                            }
+                                        }}
+                                        className="w-full p-3 bg-surface border border-border rounded-xl text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-primary/10"
+                                    >
+                                        <option value="cash">Cash</option>
+                                        <option value="online">Online (UPI / QR / Card / Bank Transfer)</option>
+                                    </select>
                                 </div>
                             )}
 
@@ -568,11 +555,11 @@ export default function Transactions() {
 
                             {/* Description */}
                             <div className="space-y-1.5">
-                                <label className="text-[10px] font-bold text-text-muted uppercase tracking-widest ml-1">Description (Vajah / Remarks)</label>
+                                <label className="text-[10px] font-bold text-text-muted uppercase tracking-widest ml-1">Remarks</label>
                                 <textarea
                                     value={description}
                                     onChange={(e) => setDescription(e.target.value)}
-                                    placeholder="Remarks ya payment details darj karein..."
+                                    placeholder="e.g. Rent payment, Electricity bill, Staff salary..."
                                     className="w-full p-3 bg-surface border border-border rounded-xl text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-primary/10 resize-none"
                                     rows={2}
                                 />

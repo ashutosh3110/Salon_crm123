@@ -8,6 +8,8 @@ const EndOfDay = require('../Models/EndOfDay');
 const Booking = require('../Models/Booking');
 const Order = require('../Models/Order');
 
+const { sendWhatsAppMessage, checkAndDeductWhatsAppCredit } = require('../Utils/whatsapp');
+
 // ─── SUPPLIER CONTROLLERS ──────────────────────────────────────────────────
 
 exports.getSuppliers = async (req, res) => {
@@ -21,7 +23,9 @@ exports.getSuppliers = async (req, res) => {
 
 exports.upsertSupplier = async (req, res) => {
     try {
-        const { id, ...data } = req.body;
+        const id = req.params.id || req.body.id;
+        const data = { ...req.body };
+        delete data.id;
         let supplier;
         if (id) {
             supplier = await Supplier.findByIdAndUpdate(id, data, { new: true });
@@ -281,6 +285,20 @@ exports.addSupplierInvoice = async (req, res) => {
             $inc: { currentBalance: -(invoice.totalAmount - invoice.paidAmount) }
         });
 
+        // Send WhatsApp if requested
+        if (req.body.sendWhatsApp && invoice.supplierId) {
+            try {
+                const supplier = await Supplier.findById(invoice.supplierId);
+                if (supplier && supplier.phone) {
+                    const message = `Hello ${supplier.name},\n\nWe have recorded a new Invoice from you:\nInvoice No: ${invoice.invoiceNumber}\nDate: ${new Date(invoice.invoiceDate).toLocaleDateString()}\nTotal Amount: ₹${invoice.totalAmount}\nPaid Amount: ₹${invoice.paidAmount}\nOutstanding Balance: ₹${invoice.totalAmount - invoice.paidAmount}\n\nThank you!\n- Salon Team`;
+                    await checkAndDeductWhatsAppCredit(req.user.salonId).catch(() => {});
+                    await sendWhatsAppMessage(supplier.phone, message).catch(err => console.error('Failed to send WhatsApp:', err));
+                }
+            } catch (err) {
+                console.error('WhatsApp hook failed:', err);
+            }
+        }
+
         res.status(201).json({ success: true, data: invoice });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
@@ -321,6 +339,20 @@ exports.addInvoicePayment = async (req, res) => {
             $inc: { currentBalance: amount } // Reduced the debt
         });
 
+        // Send WhatsApp if requested
+        if (req.body.sendWhatsApp) {
+            try {
+                const supplier = await Supplier.findById(invoice.supplierId);
+                if (supplier && supplier.phone) {
+                    const message = `Hello ${supplier.name},\n\nWe have recorded a payment of ₹${amount} against Invoice No: ${invoice.invoiceNumber}.\nRemaining Outstanding Balance: ₹${invoice.balanceAmount}\n\nThank you!\n- Salon Team`;
+                    await checkAndDeductWhatsAppCredit(req.user.salonId).catch(() => {});
+                    await sendWhatsAppMessage(supplier.phone, message).catch(err => console.error('Failed to send WhatsApp:', err));
+                }
+            } catch (err) {
+                console.error('WhatsApp hook failed:', err);
+            }
+        }
+
         res.status(200).json({ success: true, data: invoice });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
@@ -335,9 +367,14 @@ exports.getFinanceSummary = async (req, res) => {
         const now = new Date();
         const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
         
-        // Fetch POS invoices and ledger transactions
+        // Fetch POS invoices, ledger transactions, and supplier invoices
         const invoices = await Invoice.find({ salonId, status: { $ne: 'cancelled' } });
         const transactions = await FinanceTransaction.find({ salonId }).sort({ date: -1 });
+        const mtdSupplierInvoices = await SupplierInvoice.find({
+            salonId,
+            invoiceDate: { $gte: startOfMonth }
+        });
+        const supplierPurchasesMtd = mtdSupplierInvoices.reduce((sum, inv) => sum + (inv.totalAmount || 0), 0);
         
         // 1. Transactions and Balances
         let cashInHand = 0;
@@ -373,7 +410,14 @@ exports.getFinanceSummary = async (req, res) => {
         });
 
         const grossInflow = mtdSales + monthlyTransactions.filter(t => t.type === 'income').reduce((s, t) => s + t.amount, 0);
-        const totalExpenses = monthlyTransactions.filter(t => t.type === 'expense').reduce((s, t) => s + t.amount, 0);
+        
+        // Filter out transactions related to Supplier Payment to prevent double counting
+        const supplierPaymentsMtd = monthlyTransactions
+            .filter(t => t.type === 'expense' && t.category === 'Supplier Payment')
+            .reduce((s, t) => s + t.amount, 0);
+
+        const totalExpensesRaw = monthlyTransactions.filter(t => t.type === 'expense').reduce((s, t) => s + t.amount, 0);
+        const totalExpenses = totalExpensesRaw - supplierPaymentsMtd;
 
         // 3. Monthly Trend (Last 12 Months)
         const monthlyTrend = [];
@@ -414,7 +458,7 @@ exports.getFinanceSummary = async (req, res) => {
         // 5. Recent Transactions
         const recentTransactions = transactions.slice(0, 5).map(t => ({
             id: t._id,
-            label: t.description,
+            label: t.description || t.category || (t.type === 'income' ? 'Direct Income' : 'Shop Expense'),
             amount: t.amount,
             type: t.type,
             staff: 'System',
@@ -431,9 +475,9 @@ exports.getFinanceSummary = async (req, res) => {
                 kpis: {
                     grossInflow,
                     totalExpenses,
-                    supplierPurchasesMtd: 0,
+                    supplierPurchasesMtd,
                     pendingRefunds: 0,
-                    netLiquidity: grossInflow - totalExpenses
+                    netLiquidity: grossInflow - totalExpenses - supplierPurchasesMtd
                 },
                 monthlyTrend,
                 recentTransactions,
@@ -900,5 +944,427 @@ exports.addTransaction = async (req, res) => {
         res.status(201).json({ success: true, data: txn });
     } catch (err) {
         res.status(500).json({ success: false, message: err.message });
+    }
+};
+
+exports.sendSupplierInvoiceWhatsApp = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const SupplierInvoice = require('../Models/SupplierInvoice');
+        const Supplier = require('../Models/Supplier');
+        const { sendWhatsAppMessage, checkAndDeductWhatsAppCredit } = require('../Utils/whatsapp');
+
+        const invoice = await SupplierInvoice.findById(id).populate('supplierId');
+        if (!invoice) {
+            return res.status(404).json({ success: false, message: 'Invoice not found' });
+        }
+
+        const supplier = invoice.supplierId;
+        if (!supplier || !supplier.phone) {
+            return res.status(400).json({ success: false, message: 'Supplier contact phone number not found' });
+        }
+
+        // Check if outlet has credits and deduct 1
+        const canSendWhatsApp = await checkAndDeductWhatsAppCredit(invoice.salonId);
+        if (!canSendWhatsApp) {
+            return res.status(400).json({ success: false, message: 'Insufficient WhatsApp credits or feature disabled for this outlet' });
+        }
+
+        const formattedDate = new Date(invoice.invoiceDate).toLocaleDateString();
+        const formattedAmount = Number(invoice.totalAmount).toLocaleString('en-IN');
+        const formattedPaid = Number(invoice.paidAmount).toLocaleString('en-IN');
+        const formattedOutstanding = Number(invoice.balanceAmount).toLocaleString('en-IN');
+
+        const message = `*Hello ${supplier.name}!* \n\nHere is the invoice update from our salon. \n\n*Invoice Summary:* \nInvoice No: #${invoice.invoiceNumber}\nDate: ${formattedDate}\nTotal Amount: Rs. ${formattedAmount}\nPaid: Rs. ${formattedPaid}\nOutstanding: Rs. ${formattedOutstanding}\nStatus: *${invoice.status.toUpperCase()}*\n\nThank you!`;
+
+        const result = await sendWhatsAppMessage(supplier.phone, message);
+        if (!result.success) {
+            return res.status(400).json({ success: false, message: result.message || 'Failed to send WhatsApp message via Meta Cloud API' });
+        }
+
+        res.status(200).json({ success: true, message: 'WhatsApp message sent successfully via API' });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
+
+exports.getInvoicePayments = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const FinanceTransaction = require('../Models/FinanceTransaction');
+        
+        const transactions = await FinanceTransaction.find({
+            salonId: req.user.salonId,
+            referenceId: id,
+            referenceType: 'SupplierInvoice'
+        }).sort({ date: 1 });
+
+        res.status(200).json({ success: true, data: transactions });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
+
+exports.getSalesReports = async (req, res) => {
+    try {
+        const salonId = req.user.salonId;
+        const { period = 'monthly', startDate, endDate } = req.query;
+        const mongoose = require('mongoose');
+        const Staff = require('../Models/Staff');
+
+        let start = startDate ? new Date(startDate) : null;
+        let end = endDate ? new Date(endDate) : new Date();
+
+        if (!start) {
+            start = new Date();
+            if (period === 'daily') {
+                start.setDate(start.getDate() - 30); // Last 30 days
+            } else if (period === 'weekly') {
+                start.setDate(start.getDate() - 84); // Last 12 weeks
+            } else if (period === 'yearly') {
+                start.setFullYear(start.getFullYear() - 5); // Last 5 years
+            } else { // monthly (default)
+                start.setFullYear(start.getFullYear() - 1); // Last 12 months
+            }
+        }
+        start.setHours(0, 0, 0, 0);
+        end.setHours(23, 59, 59, 999);
+
+        // Fetch all active invoices in this date range
+        const invoices = await Invoice.find({
+            salonId,
+            status: { $in: ['active', 'refunded'] },
+            createdAt: { $gte: start, $lte: end }
+        }).populate('customerId', 'name').lean();
+
+        // Calculate KPIs
+        let totalSales = 0;
+        let servicesRevenue = 0;
+        let productsRevenue = 0;
+        const invoiceCount = invoices.length;
+
+        invoices.forEach(inv => {
+            totalSales += (inv.total || 0);
+            (inv.items || []).forEach(item => {
+                const itemRevenue = (item.price || 0) * (item.quantity || 1);
+                if (item.type === 'service') {
+                    servicesRevenue += itemRevenue;
+                } else if (item.type === 'product') {
+                    productsRevenue += itemRevenue;
+                }
+            });
+        });
+
+        const averageOrderValue = invoiceCount > 0 ? Math.round(totalSales / invoiceCount) : 0;
+
+        // ── Previous period comparison ──────────────────────────────────────
+        const periodDiff = end.getTime() - start.getTime();
+        const prevPeriodEnd = new Date(start.getTime() - 1);
+        const prevPeriodStart = new Date(prevPeriodEnd.getTime() - periodDiff);
+
+        const prevInvoices = await Invoice.find({
+            salonId,
+            status: { $in: ['active', 'refunded'] },
+            createdAt: { $gte: prevPeriodStart, $lte: prevPeriodEnd }
+        }).lean();
+
+        let prevTotalSales = 0;
+        let prevServicesRevenue = 0;
+        let prevProductsRevenue = 0;
+        prevInvoices.forEach(inv => {
+            prevTotalSales += (inv.total || 0);
+            (inv.items || []).forEach(item => {
+                const itemRevenue = (item.price || 0) * (item.quantity || 1);
+                if (item.type === 'service') prevServicesRevenue += itemRevenue;
+                else if (item.type === 'product') prevProductsRevenue += itemRevenue;
+            });
+        });
+        const prevInvoiceCount = prevInvoices.length;
+        const prevAOV = prevInvoiceCount > 0 ? Math.round(prevTotalSales / prevInvoiceCount) : 0;
+
+        const pctChange = (curr, prev) => {
+            if (prev === 0) return curr > 0 ? 100 : 0;
+            return Math.round(((curr - prev) / prev) * 100);
+        };
+
+        const kpiChanges = {
+            totalSales: pctChange(totalSales, prevTotalSales),
+            servicesRevenue: pctChange(servicesRevenue, prevServicesRevenue),
+            productsRevenue: pctChange(productsRevenue, prevProductsRevenue),
+            averageOrderValue: pctChange(averageOrderValue, prevAOV),
+            invoiceCount: pctChange(invoiceCount, prevInvoiceCount),
+        };
+
+        // Group by Date for Trend
+        const trendMap = new Map();
+        
+        // Populate all buckets with 0 to ensure continuous charts
+        let current = new Date(start);
+        while (current <= end) {
+            let key = '';
+            if (period === 'daily') {
+                key = current.toLocaleDateString('en-US', { day: '2-digit', month: 'short' });
+                trendMap.set(key, { name: key, sales: 0, count: 0 });
+                current.setDate(current.getDate() + 1);
+            } else if (period === 'weekly') {
+                // Get week identifier
+                const oneJan = new Date(current.getFullYear(), 0, 1);
+                const numberOfDays = Math.floor((current - oneJan) / (24 * 60 * 60 * 1000));
+                const weekNum = Math.ceil((current.getDay() + 1 + numberOfDays) / 7);
+                key = `W${weekNum} ${current.getFullYear()}`;
+                trendMap.set(key, { name: key, sales: 0, count: 0 });
+                current.setDate(current.getDate() + 7);
+            } else if (period === 'yearly') {
+                key = current.getFullYear().toString();
+                trendMap.set(key, { name: key, sales: 0, count: 0 });
+                current.setFullYear(current.getFullYear() + 1);
+            } else { // monthly
+                key = current.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+                trendMap.set(key, { name: key, sales: 0, count: 0 });
+                current.setMonth(current.getMonth() + 1);
+            }
+        }
+
+        // Fill buckets with actual data
+        invoices.forEach(inv => {
+            const date = new Date(inv.createdAt);
+            let key = '';
+            if (period === 'daily') {
+                key = date.toLocaleDateString('en-US', { day: '2-digit', month: 'short' });
+            } else if (period === 'weekly') {
+                const oneJan = new Date(date.getFullYear(), 0, 1);
+                const numberOfDays = Math.floor((date - oneJan) / (24 * 60 * 60 * 1000));
+                const weekNum = Math.ceil((date.getDay() + 1 + numberOfDays) / 7);
+                key = `W${weekNum} ${date.getFullYear()}`;
+            } else if (period === 'yearly') {
+                key = date.getFullYear().toString();
+            } else { // monthly
+                key = date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+            }
+
+            if (trendMap.has(key)) {
+                const currentData = trendMap.get(key);
+                currentData.sales += (inv.total || 0);
+                currentData.count += 1;
+                trendMap.set(key, currentData);
+            } else {
+                trendMap.set(key, { name: key, sales: inv.total || 0, count: 1 });
+            }
+        });
+
+        const trend = Array.from(trendMap.values());
+
+        // Top Services & Products
+        const serviceMap = {};
+        const productMap = {};
+        const stylistStats = {};
+
+        invoices.forEach(inv => {
+            (inv.items || []).forEach(item => {
+                const itemRevenue = (item.price || 0) * (item.quantity || 1);
+                if (item.type === 'service') {
+                    serviceMap[item.name] = (serviceMap[item.name] || 0) + itemRevenue;
+                    
+                    if (item.stylistIds && item.stylistIds.length > 0) {
+                        const splitRevenue = itemRevenue / item.stylistIds.length;
+                        item.stylistIds.forEach(idStr => {
+                            const id = idStr.toString();
+                            if (!stylistStats[id]) {
+                                stylistStats[id] = { id, value: 0 };
+                            }
+                            stylistStats[id].value += splitRevenue;
+                        });
+                    }
+                } else if (item.type === 'product') {
+                    productMap[item.name] = (productMap[item.name] || 0) + itemRevenue;
+                }
+            });
+        });
+
+        const services = Object.entries(serviceMap)
+            .map(([name, value]) => ({ name, value }))
+            .sort((a, b) => b.value - a.value)
+            .slice(0, 8);
+
+        const products = Object.entries(productMap)
+            .map(([name, value]) => ({ name, value }))
+            .sort((a, b) => b.value - a.value)
+            .slice(0, 8);
+
+        // Map stylist stats to staff names
+        const staffList = await Staff.find({ salonId }).select('name').lean();
+        const staffMap = {};
+        staffList.forEach(s => {
+            staffMap[s._id.toString()] = s.name;
+        });
+
+        const staff = Object.values(stylistStats)
+            .map(stat => ({
+                name: staffMap[stat.id] || 'Other Staff',
+                value: Math.round(stat.value)
+            }))
+            .sort((a, b) => b.value - a.value)
+            .slice(0, 8);
+
+        // Get recent active invoices (up to 50)
+        const recentInvoices = invoices
+            .slice()
+            .sort((a, b) => b.createdAt - a.createdAt)
+            .slice(0, 50)
+            .map(inv => ({
+                _id: inv._id,
+                invoiceNumber: inv.invoiceNumber,
+                customerName: inv.customerId?.name || 'Guest Customer',
+                total: inv.total,
+                paymentMethod: inv.paymentMethod,
+                createdAt: inv.createdAt,
+                status: inv.status
+            }));
+
+        res.status(200).json({
+            success: true,
+            data: {
+                kpis: {
+                    totalSales,
+                    servicesRevenue,
+                    productsRevenue,
+                    averageOrderValue,
+                    invoiceCount
+                },
+                kpiChanges,
+                trend,
+                services,
+                products,
+                staff,
+                recentInvoices
+            }
+        });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
+
+exports.seedSampleReports = async (req, res) => {
+    try {
+        const salonId = req.user.salonId;
+        const mongoose = require('mongoose');
+        const Staff = require('../Models/Staff');
+        const Customer = require('../Models/Customer');
+        const Outlet = require('../Models/Outlet');
+
+        // Check first outlet
+        let outlet = await Outlet.findOne({ salonId });
+        if (!outlet) {
+            outlet = await Outlet.create({
+                salonId,
+                name: 'Main Branch',
+                phone: '1234567890',
+                address: { street: 'Main Street', city: 'Azamgarh', state: 'UP', pincode: '276001' }
+            });
+        }
+        const outletId = outlet._id;
+
+        // Get or create customers
+        let customers = await Customer.find({ salonId }).limit(6);
+        if (customers.length === 0) {
+            customers = [
+                await Customer.create({ salonId, name: 'Aarav Sharma', phone: '9999999901' }),
+                await Customer.create({ salonId, name: 'Ananya Verma', phone: '9999999902' }),
+                await Customer.create({ salonId, name: 'Kabir Singh', phone: '9999999903' }),
+                await Customer.create({ salonId, name: 'Meera Nair', phone: '9999999904' }),
+                await Customer.create({ salonId, name: 'Rahul Sen', phone: '9999999905' })
+            ];
+        }
+
+        // Get or create staff
+        let staffList = await Staff.find({ salonId, isActive: true });
+        if (staffList.length === 0) {
+            staffList = [
+                await Staff.create({ salonId, name: 'Rehan', role: 'Stylish', email: 'rehan@example.com', password: 'password123' }),
+                await Staff.create({ salonId, name: 'Kajal', role: 'Stylish', email: 'kajal@example.com', password: 'password123' }),
+                await Staff.create({ salonId, name: 'Sarah', role: 'Stylish', email: 'sarah@example.com', password: 'password123' })
+            ];
+        }
+
+        const paymentMethods = ['cash', 'card', 'online', 'wallet'];
+        const serviceNames = ['Haircut & Style', 'Classic Facial', 'Manicure', 'Pedicure', 'Hair Coloring', 'Head Massage', 'Shave & Beard Trim', 'Bridal Makeup'];
+        const productNames = ['Hair Styling Wax', 'Herbal Shampoo', 'Face Scrub', 'Argan Hair Oil', 'Beard Serum', 'Skin Toner'];
+
+        const invoicesToCreate = [];
+
+        // Generate 35 invoices spread across the last 90 days
+        for (let i = 0; i < 35; i++) {
+            const invoiceDate = new Date();
+            invoiceDate.setDate(invoiceDate.getDate() - Math.floor(Math.random() * 90));
+            invoiceDate.setHours(9 + Math.floor(Math.random() * 10), Math.floor(Math.random() * 60));
+
+            const customer = customers[Math.floor(Math.random() * customers.length)];
+            const stylist = staffList[Math.floor(Math.random() * staffList.length)];
+            const paymentMethod = paymentMethods[Math.floor(Math.random() * paymentMethods.length)];
+
+            const items = [];
+            let subtotal = 0;
+            
+            // Add 1-2 services
+            const numServices = 1 + Math.floor(Math.random() * 2);
+            for (let s = 0; s < numServices; s++) {
+                const sName = serviceNames[Math.floor(Math.random() * serviceNames.length)];
+                const price = 200 + Math.floor(Math.random() * 80) * 10;
+                items.push({
+                    type: 'service',
+                    itemId: new mongoose.Types.ObjectId(),
+                    name: sName,
+                    price,
+                    quantity: 1,
+                    stylistIds: [stylist._id]
+                });
+                subtotal += price;
+            }
+
+            // Add 0-1 products
+            if (Math.random() > 0.4) {
+                const pName = productNames[Math.floor(Math.random() * productNames.length)];
+                const price = 150 + Math.floor(Math.random() * 35) * 10;
+                items.push({
+                    type: 'product',
+                    itemId: new mongoose.Types.ObjectId(),
+                    name: pName,
+                    price,
+                    quantity: 1
+                });
+                subtotal += price;
+            }
+
+            const discount = Math.random() > 0.75 ? Math.floor(subtotal * 0.1) : 0;
+            const tax = Math.round((subtotal - discount) * 0.18);
+            const total = subtotal - discount + tax;
+
+            invoicesToCreate.push({
+                invoiceNumber: `INV-${Date.now()}-${i}-${Math.floor(100 + Math.random() * 900)}`,
+                salonId,
+                outletId,
+                customerId: customer._id,
+                items,
+                subtotal,
+                discount,
+                tax,
+                total,
+                paymentMethod,
+                paymentStatus: 'paid',
+                payments: [{
+                    method: paymentMethod,
+                    amount: total,
+                    date: invoiceDate
+                }],
+                status: 'active',
+                createdAt: invoiceDate,
+                updatedAt: invoiceDate
+            });
+        }
+
+        await Invoice.insertMany(invoicesToCreate);
+        res.status(201).json({ success: true, message: `Successfully seeded ${invoicesToCreate.length} sample invoices for testing!` });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
     }
 };

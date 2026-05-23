@@ -82,10 +82,13 @@ export default function CustomersPage({ tab = 'directory' }) {
         dob: '',
         anniversary: '',
         address: '',
-        remarks: ''
+        remarks: '',
+        appliedReferralCode: ''
     });
 
     const activeTab = tab;
+    const hasCrmPermission = user?.role === 'admin' || user?.role === 'superadmin' || user?.permissions?.includes('crm') || user?.permissions?.includes('*');
+    const hasPosPermission = user?.role === 'admin' || user?.role === 'superadmin' || user?.permissions?.includes('pos') || user?.permissions?.includes('*');
 
     useEffect(() => {
         const isAnyModalOpen = showAddModal || !!selectedCustomer || whatsappModal.isOpen;
@@ -114,7 +117,7 @@ export default function CustomersPage({ tab = 'directory' }) {
             tags: [],
             lastVisit: new Date().toISOString()
         });
-        setNewCustomerForm({ name: '', phone: '', preferredService: 'Haircut', dob: '', anniversary: '', address: '', remarks: '' });
+        setNewCustomerForm({ name: '', phone: '', preferredService: 'Haircut', dob: '', anniversary: '', address: '', remarks: '', appliedReferralCode: '' });
         setShowAddModal(false);
     };
 
@@ -248,27 +251,32 @@ export default function CustomersPage({ tab = 'directory' }) {
                 {/* Content Container */}
                 <div className="bg-surface rounded-none border border-border shadow-sm overflow-hidden min-h-[600px]">
                     <div className="flex border-b border-border bg-surface-alt/30 overflow-x-auto no-scrollbar">
-                        <button onClick={() => navigate('/admin/crm/customers')} className={`px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] border-r border-border transition-all whitespace-nowrap relative ${activeTab === 'directory' ? 'bg-surface text-primary' : 'text-text-muted hover:text-text'}`}>
-                            Directory
-                            {activeTab === 'directory' && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary" />}
-                        </button>
-                        <button onClick={() => navigate('/admin/crm/wallets')} className={`px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] border-r border-border transition-all whitespace-nowrap relative ${activeTab === 'wallets' ? 'bg-surface text-primary' : 'text-text-muted hover:text-text'}`}>
-                            Wallets
-                            {activeTab === 'wallets' && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary" />}
-                        </button>
-
-                        <button onClick={() => navigate('/admin/crm/feedback')} className={`px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] border-r border-border transition-all whitespace-nowrap relative ${activeTab === 'feedback' ? 'bg-surface text-primary' : 'text-text-muted hover:text-text'}`}>
-                            Feedback
-                            {activeTab === 'feedback' && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary" />}
-                        </button>
-                        <button onClick={() => navigate('/admin/crm/reengage')} className={`px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] border-r border-border transition-all whitespace-nowrap relative ${activeTab === 'reengage' ? 'bg-surface text-primary' : 'text-text-muted hover:text-text'}`}>
-                            Re-engage
-                            {activeTab === 'reengage' && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary" />}
-                        </button>
-                        <button onClick={() => navigate('/admin/crm/payment-reminders')} className={`px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] border-border transition-all whitespace-nowrap relative ${activeTab === 'payment-reminders' ? 'bg-surface text-primary' : 'text-text-muted hover:text-text'}`}>
-                            Payment Reminders
-                            {activeTab === 'payment-reminders' && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary" />}
-                        </button>
+                        {hasCrmPermission && (
+                            <>
+                                <button onClick={() => navigate('/admin/crm/customers')} className={`px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] border-r border-border transition-all whitespace-nowrap relative ${activeTab === 'directory' ? 'bg-surface text-primary' : 'text-text-muted hover:text-text'}`}>
+                                    Directory
+                                    {activeTab === 'directory' && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary" />}
+                                </button>
+                                <button onClick={() => navigate('/admin/crm/wallets')} className={`px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] border-r border-border transition-all whitespace-nowrap relative ${activeTab === 'wallets' ? 'bg-surface text-primary' : 'text-text-muted hover:text-text'}`}>
+                                    Wallets
+                                    {activeTab === 'wallets' && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary" />}
+                                </button>
+                                <button onClick={() => navigate('/admin/crm/feedback')} className={`px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] border-r border-border transition-all whitespace-nowrap relative ${activeTab === 'feedback' ? 'bg-surface text-primary' : 'text-text-muted hover:text-text'}`}>
+                                    Feedback
+                                    {activeTab === 'feedback' && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary" />}
+                                </button>
+                                <button onClick={() => navigate('/admin/crm/reengage')} className={`px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] border-r border-border transition-all whitespace-nowrap relative ${activeTab === 'reengage' ? 'bg-surface text-primary' : 'text-text-muted hover:text-text'}`}>
+                                    Re-engage
+                                    {activeTab === 'reengage' && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary" />}
+                                </button>
+                            </>
+                        )}
+                        {hasPosPermission && (
+                            <button onClick={() => navigate('/admin/operations/payment-reminders')} className={`px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] border-border transition-all whitespace-nowrap relative ${activeTab === 'payment-reminders' ? 'bg-surface text-primary' : 'text-text-muted hover:text-text'}`}>
+                                Payment Reminders
+                                {activeTab === 'payment-reminders' && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary" />}
+                            </button>
+                        )}
                     </div>
 
                     {activeTab === 'directory' && (
@@ -338,7 +346,6 @@ export default function CustomersPage({ tab = 'directory' }) {
                     onClose={() => setSelectedCustomer(null)}
                 />
 
-<<<<<<< Updated upstream
             </div>
 
                 {/* Add Customer Modal (Portal) */}
@@ -348,20 +355,11 @@ export default function CustomersPage({ tab = 'directory' }) {
                             <div className="p-5 bg-white border-b border-slate-100 flex justify-between items-center">
                                 <h4 className="text-[11px] font-black text-slate-900 uppercase flex items-center gap-2 tracking-widest">
                                     <UserPlus className="w-4 h-4 text-slate-800" /> Add Customer
-=======
-                {/* Add Customer Modal */}
-                {showAddModal && (
-                    <div className="fixed inset-0 bg-black/80 backdrop-blur-md z-[200] flex items-center justify-center p-4 animate-in fade-in duration-300" onClick={() => setShowAddModal(false)}>
-                        <div className="bg-white border-4 border-text w-full max-w-md p-8 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] relative overflow-y-auto max-h-[90vh] hide-scrollbar animate-in zoom-in-95 duration-200" onClick={(e) => e.stopPropagation()}>
-                            <div className="flex justify-between items-center border-b-2 border-text pb-4 mb-6">
-                                <h4 className="text-2xl font-black text-text uppercase tracking-tight italic flex items-center gap-2">
-                                    <UserPlus className="w-5 h-5 text-primary" /> Add Customer
->>>>>>> Stashed changes
                                 </h4>
                                 <button type="button" onClick={() => setShowAddModal(false)} className="p-1 border-2 border-text hover:bg-rose-500 hover:text-white transition-colors"><X className="w-4 h-4" /></button>
                             </div>
 
-                            <form onSubmit={handleAddCustomer}>
+                            <form onSubmit={handleAddCustomer} className="p-6">
                                 <div className="space-y-4">
                                     <div className="space-y-1.5 text-left">
                                         <label className="text-[10px] font-black text-text-muted uppercase tracking-wider">Customer Name</label>
@@ -388,6 +386,16 @@ export default function CustomersPage({ tab = 'directory' }) {
                                             className="w-full bg-surface-alt/5 border-2 border-text p-3 text-xs font-black text-slate-900 outline-none focus:bg-white focus:border-primary transition-all rounded-none"
                                         />
                                     </div>
+                                    <div className="space-y-1.5 text-left">
+                                        <label className="text-[10px] font-black text-text-muted uppercase tracking-wider">Referral Code (Optional)</label>
+                                        <input
+                                            type="text"
+                                            placeholder="e.g. WAP-XXXXXX"
+                                            value={newCustomerForm.appliedReferralCode || ''}
+                                            onChange={(e) => setNewCustomerForm({ ...newCustomerForm, appliedReferralCode: e.target.value.toUpperCase().trim() })}
+                                            className="w-full bg-surface-alt/5 border-2 border-text p-3 text-xs font-black text-slate-900 outline-none focus:bg-white focus:border-primary transition-all uppercase rounded-none"
+                                        />
+                                    </div>
                                     <div className="grid grid-cols-2 gap-4 text-left">
                                         <div className="space-y-1.5">
                                             <label className="text-[10px] font-black text-text-muted uppercase tracking-wider">Birth Date</label>
@@ -412,7 +420,7 @@ export default function CustomersPage({ tab = 'directory' }) {
                                     </div>
                                 </div>
 
-                                <div className="flex gap-4 pt-8">
+                                <div className="flex gap-4 pt-6">
                                     <button
                                         type="button"
                                         onClick={() => setShowAddModal(false)}
@@ -433,7 +441,6 @@ export default function CustomersPage({ tab = 'directory' }) {
                     document.body
                 )}
 
-<<<<<<< Updated upstream
             {/* WhatsApp Message Modal (Portal) */}
             {whatsappModal.isOpen && createPortal(
                 <div className="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-[250] flex items-center justify-center p-4 animate-in fade-in duration-300" onClick={() => setWhatsappModal({ ...whatsappModal, isOpen: false })}>
@@ -441,67 +448,60 @@ export default function CustomersPage({ tab = 'directory' }) {
                         <div className="p-5 bg-white border-b border-slate-100 flex justify-between items-center">
                             <h4 className="text-[11px] font-black text-slate-900 uppercase flex items-center gap-2 tracking-widest">
                                 <MessageSquare className="w-4 h-4 text-emerald-500" /> Send WhatsApp Message
-=======
-            {/* Manual WhatsApp Message Modal */}
-            {whatsappModal.isOpen && (
-                <div className="fixed inset-0 bg-black/80 backdrop-blur-md z-[250] flex items-center justify-center p-4 animate-in fade-in duration-300" onClick={() => setWhatsappModal({ ...whatsappModal, isOpen: false })}>
-                    <div className="bg-white border-4 border-text w-full max-w-md p-8 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] relative overflow-y-auto max-h-[90vh] hide-scrollbar animate-in zoom-in-95 duration-200" onClick={(e) => e.stopPropagation()}>
-                        <div className="flex justify-between items-center border-b-2 border-text pb-4 mb-6">
-                            <h4 className="text-2xl font-black text-text uppercase tracking-tight italic flex items-center gap-2">
-                                <MessageSquare className="w-5 h-5 text-emerald-500" /> WhatsApp Message
->>>>>>> Stashed changes
                             </h4>
                             <button type="button" onClick={() => setWhatsappModal({ ...whatsappModal, isOpen: false })} className="p-1 border-2 border-text hover:bg-rose-500 hover:text-white transition-colors"><X className="w-4 h-4" /></button>
                         </div>
 
-                        <div className="space-y-4">
-                            <div className="flex items-center gap-3 bg-surface-alt/5 border-2 border-text p-4 rounded-none text-left">
-                                <div className="w-10 h-10 bg-text text-white flex items-center justify-center font-black text-xs uppercase rounded-none">
-                                    {whatsappModal.customer?.name?.charAt(0) || '?'}
+                        <div className="p-6 space-y-6">
+                            <div className="space-y-4">
+                                <div className="flex items-center gap-3 bg-surface-alt/5 border-2 border-text p-4 rounded-none text-left">
+                                    <div className="w-10 h-10 bg-text text-white flex items-center justify-center font-black text-xs uppercase rounded-none">
+                                        {whatsappModal.customer?.name?.charAt(0) || '?'}
+                                    </div>
+                                    <div>
+                                        <p className="text-sm font-black text-text uppercase tracking-tight">{whatsappModal.customer?.name}</p>
+                                        <p className="text-[10px] text-text-muted font-bold tracking-widest">{whatsappModal.customer?.phone}</p>
+                                    </div>
                                 </div>
-                                <div>
-                                    <p className="text-sm font-black text-text uppercase tracking-tight">{whatsappModal.customer?.name}</p>
-                                    <p className="text-[10px] text-text-muted font-bold tracking-widest">{whatsappModal.customer?.phone}</p>
+
+                                <div className="space-y-1.5 text-left">
+                                    <label className="text-[10px] font-black text-text-muted uppercase tracking-wider">Your Message</label>
+                                    <textarea
+                                        value={whatsappModal.message}
+                                        onChange={(e) => setWhatsappModal({ ...whatsappModal, message: e.target.value })}
+                                        className="w-full h-32 bg-surface-alt/5 border-2 border-text p-3 text-xs font-black text-slate-800 outline-none rounded-none placeholder:text-slate-400 focus:bg-white focus:border-primary transition-all resize-none"
+                                        placeholder="Write your personalized message here..."
+                                    />
                                 </div>
                             </div>
 
-                            <div className="space-y-1.5 text-left">
-                                <label className="text-[10px] font-black text-text-muted uppercase tracking-wider">Your Message</label>
-                                <textarea
-                                    value={whatsappModal.message}
-                                    onChange={(e) => setWhatsappModal({ ...whatsappModal, message: e.target.value })}
-                                    className="w-full h-32 bg-surface-alt/5 border-2 border-text p-3 text-xs font-black text-slate-800 outline-none rounded-none placeholder:text-slate-400 focus:bg-white focus:border-primary transition-all resize-none"
-                                    placeholder="Write your personalized message here..."
-                                />
-                            </div>
-                        </div>
-
-                        <div className="flex gap-4 pt-8">
-                            <button
-                                onClick={() => setWhatsappModal({ ...whatsappModal, isOpen: false })}
-                                className="flex-1 py-3.5 border-2 border-text font-black text-[10px] uppercase tracking-widest italic bg-white hover:bg-surface-alt/20 transition-all rounded-none text-text-muted"
-                            >
-                                Cancel
-                            </button>
-                            <button
-                                onClick={async () => {
-                                    const phone = whatsappModal.customer.phone.replace(/[^0-9]/g, '');
-                                    window.open(`https://wa.me/${phone}?text=${encodeURIComponent(whatsappModal.message)}`, '_blank');
-                                    if (whatsappModal.isReminder) {
-                                        try {
-                                            await api.patch(`/clients/${whatsappModal.customer._id}/increment-reminder`);
-                                            window.dispatchEvent(new CustomEvent('payment-reminder-sent'));
-                                            fetchCustomers(currentPage, 10);
-                                        } catch (err) {
-                                            console.error('Failed to increment payment reminder:', err);
+                            <div className="flex gap-4">
+                                <button
+                                    onClick={() => setWhatsappModal({ ...whatsappModal, isOpen: false })}
+                                    className="flex-1 py-3.5 border-2 border-text font-black text-[10px] uppercase tracking-widest italic bg-white hover:bg-surface-alt/20 transition-all rounded-none text-text-muted"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    onClick={async () => {
+                                        const phone = whatsappModal.customer.phone.replace(/[^0-9]/g, '');
+                                        window.open(`https://wa.me/${phone}?text=${encodeURIComponent(whatsappModal.message)}`, '_blank');
+                                        if (whatsappModal.isReminder) {
+                                            try {
+                                                await api.patch(`/clients/${whatsappModal.customer._id}/increment-reminder`);
+                                                window.dispatchEvent(new CustomEvent('payment-reminder-sent'));
+                                                fetchCustomers(currentPage, 10);
+                                            } catch (err) {
+                                                console.error('Failed to increment payment reminder:', err);
+                                            }
                                         }
-                                    }
-                                    setWhatsappModal({ ...whatsappModal, isOpen: false });
-                                }}
-                                className="flex-1 bg-text text-white border-2 border-text py-3.5 font-black text-[10px] uppercase tracking-widest italic hover:bg-primary hover:border-primary hover:text-white transition-all rounded-none shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:translate-x-0.5 active:translate-y-0.5 active:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]"
-                            >
-                                Send
-                            </button>
+                                        setWhatsappModal({ ...whatsappModal, isOpen: false });
+                                    }}
+                                    className="flex-1 bg-text text-white border-2 border-text py-3.5 font-black text-[10px] uppercase tracking-widest italic hover:bg-primary hover:border-primary hover:text-white transition-all rounded-none shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:translate-x-0.5 active:translate-y-0.5 active:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]"
+                                >
+                                    Send
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>,

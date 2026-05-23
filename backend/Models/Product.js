@@ -69,6 +69,24 @@ const productSchema = new mongoose.Schema({
         type: Boolean,
         default: false
     },
+    mfgDate: {
+        type: Date,
+        default: null
+    },
+    expiryDate: {
+        type: Date,
+        default: null
+    },
+    hsnCode: {
+        type: String,
+        trim: true,
+        default: ''
+    },
+    supplier: {
+        type: String,
+        trim: true,
+        default: ''
+    },
     status: {
         type: String,
         enum: ['active', 'inactive'],

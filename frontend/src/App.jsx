@@ -135,6 +135,7 @@ const PromotionsPage = lazy(() => import('./pages/admin/PromotionsPage'));
 const InvoicesPage = lazy(() => import('./pages/admin/InvoicesPage'));
 const SettingsPage = lazy(() => import('./pages/admin/SettingsPage'));
 const FinancePage = lazy(() => import('./pages/admin/FinancePage'));
+const SuppliersPage = lazy(() => import('./pages/admin/SuppliersPage'));
 const HRPage = lazy(() => import('./pages/admin/HRPage'));
 const InventoryPage = lazy(() => import('./pages/admin/InventoryPage'));
 const MarketingCMSPage = lazy(() => import('./pages/admin/MarketingCMSPage'));
@@ -384,8 +385,10 @@ function App() {
                                 <Route path="/admin/crm/segments" element={<CustomersPage tab="segments" />} />
                                 <Route path="/admin/crm/feedback" element={<CustomersPage tab="feedback" />} />
                                 <Route path="/admin/crm/reengage" element={<CustomersPage tab="reengage" />} />
-                                <Route path="/admin/crm/payment-reminders" element={<CustomersPage tab="payment-reminders" />} />
                                 <Route path="/admin/crm" element={<CustomersPage tab="directory" />} />
+                            </Route>
+                            <Route element={<ProtectedRoute feature="pos" permission="pos" />}>
+                                <Route path="/admin/operations/payment-reminders" element={<CustomersPage tab="payment-reminders" />} />
                             </Route>
                             <Route path="/admin/clients" element={<ClientsPage />} />
 
@@ -402,6 +405,7 @@ function App() {
                                 <Route path="/admin/inventory" element={<InventoryPage tab="overview" />} />
                                 <Route path="/admin/inventory/overview" element={<InventoryPage tab="overview" />} />
                                 <Route path="/admin/inventory/stock-overview" element={<StockOverviewPage />} />
+                                <Route path="/admin/inventory/transfer" element={<StockTransferPage />} />
                                 <Route path="/admin/inventory/stock-in" element={<InventoryPage tab="stock-in" />} />
                                 <Route path="/admin/inventory/adjustment" element={<InventoryPage tab="adjustment" />} />
                                 <Route path="/admin/inventory/alerts" element={<InventoryPage tab="alerts" />} />
@@ -424,6 +428,13 @@ function App() {
                                 <Route path="/admin/finance/expenses" element={<FinancePage tab="expenses" />} />
                                 <Route path="/admin/finance/reports" element={<FinancePage tab="reports" />} />
                                 <Route path="/admin/finance/eod" element={<FinancePage tab="eod" />} />
+                            </Route>
+
+                            {/* Supplier Routes */}
+                            <Route element={<ProtectedRoute feature="finance" permission="finance" />}>
+                                <Route path="/admin/suppliers" element={<SuppliersPage tab="directory" />} />
+                                <Route path="/admin/suppliers/directory" element={<SuppliersPage tab="directory" />} />
+                                <Route path="/admin/suppliers/invoices" element={<SuppliersPage tab="invoices" />} />
                             </Route>
 
                             {/* HR Routes */}

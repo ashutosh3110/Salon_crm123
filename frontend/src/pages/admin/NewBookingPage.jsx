@@ -155,7 +155,8 @@ export default function NewBookingPage() {
         phone: '',
         email: '',
         dob: '',
-        anniversary: ''
+        anniversary: '',
+        appliedReferralCode: ''
     });
 
     useEffect(() => {
@@ -255,7 +256,7 @@ export default function NewBookingPage() {
             setSelection({...selection, customerId: response.data?.data?._id || response.data?._id});
             setShowCustomerModal(false);
             setStep(6);
-            setClientForm({ name: '', phone: '', email: '', dob: '', anniversary: '' });
+            setClientForm({ name: '', phone: '', email: '', dob: '', anniversary: '', appliedReferralCode: '' });
         } catch (err) {
             toast(err.response?.data?.message || 'Registration failed');
         }
@@ -854,6 +855,16 @@ export default function NewBookingPage() {
                                             value={clientForm.email}
                                             onChange={(e) => setClientForm({...clientForm, email: e.target.value})}
                                             className="w-full bg-slate-50 border border-slate-200 p-3 text-xs font-black text-slate-900 outline-none rounded-xl placeholder:text-slate-400 focus:border-slate-400 transition-colors"
+                                        />
+                                    </div>
+                                    <div className="space-y-1.5 text-left">
+                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Referral Code (Optional)</label>
+                                        <input
+                                            type="text"
+                                            placeholder="e.g. WAP-XXXXXX"
+                                            value={clientForm.appliedReferralCode || ''}
+                                            onChange={(e) => setClientForm({...clientForm, appliedReferralCode: e.target.value.toUpperCase().trim()})}
+                                            className="w-full bg-slate-50 border border-slate-200 p-3 text-xs font-black text-slate-900 outline-none rounded-xl placeholder:text-slate-400 focus:border-slate-400 transition-colors uppercase"
                                         />
                                     </div>
                                     <div className="grid grid-cols-2 gap-4">

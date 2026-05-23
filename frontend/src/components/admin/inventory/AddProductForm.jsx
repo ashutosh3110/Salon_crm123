@@ -29,7 +29,8 @@ import {
     Smartphone,
     Package,
     CloudUpload,
-    ShoppingBag
+    ShoppingBag,
+    CalendarDays
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import CustomSelect from '../common/CustomSelect';
@@ -41,15 +42,21 @@ import api from '../../../services/api';
 
 export default function AddProductForm({ onSave, initialData, onCancel }) {
     const { productCategories, shopCategories, products } = useInventory();
-    const { outlets, platformSettings, suppliers = [] } = useBusiness();
+    const { outlets, platformSettings, suppliers = [], fetchSuppliers } = useBusiness();
     const navigate = useNavigate();
+
+    React.useEffect(() => {
+        if (fetchSuppliers) {
+            fetchSuppliers();
+        }
+    }, [fetchSuppliers]);
     const defaultFormData = {
         name: '',
         brand: '',
         categoryId: '',
         description: '',
         sellingPrice: '',
-        gstPercent: '18',
+        gstPercent: String(platformSettings?.productGst ?? 18),
         hsnCode: '',
         barcode: '',
         sku: '',
@@ -88,7 +95,7 @@ export default function AddProductForm({ onSave, initialData, onCancel }) {
         stock: (initialData?.stock !== undefined && initialData?.stock !== null && !isNaN(initialData.stock)) ? initialData.stock : defaultFormData.stock,
         unit: initialData?.unit || defaultFormData.unit,
         rating: (initialData?.rating !== undefined && initialData?.rating !== null && !isNaN(initialData.rating)) ? initialData.rating : defaultFormData.rating,
-        gstPercent: (initialData?.gstPercent !== undefined && initialData?.gstPercent !== null && !isNaN(initialData.gstPercent)) ? initialData.gstPercent : defaultFormData.gstPercent,
+        gstPercent: (initialData?.gstPercent !== undefined && initialData?.gstPercent !== null && !isNaN(initialData.gstPercent)) ? initialData.gstPercent : (platformSettings?.productGst ? String(platformSettings.productGst) : defaultFormData.gstPercent),
         images: initialData?.images || initialData?.appImage ? [initialData.appImage] : defaultFormData.images
     });
 
@@ -102,9 +109,11 @@ export default function AddProductForm({ onSave, initialData, onCancel }) {
                 sellingPrice: initialData.sellingPrice ?? '',
                 threshold: initialData.threshold ?? initialData.minStock ?? '5',
                 stock: initialData.stock ?? '0',
-                gstPercent: initialData.gstPercent ?? '18',
+                gstPercent: initialData.gstPercent ?? (platformSettings?.productGst ? String(platformSettings.productGst) : '18'),
                 hsnCode: initialData.hsnCode ?? '',
                 brand: initialData.brand ?? '',
+                mfgDate: initialData.mfgDate ?? '',
+                expiryDate: initialData.expiryDate ?? '',
                 images: Array.isArray(initialData.images) ? initialData.images : (initialData.appImage ? [initialData.appImage] : [])
             }));
         }
@@ -236,9 +245,9 @@ export default function AddProductForm({ onSave, initialData, onCancel }) {
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 {/* 1. Core Identity & Pricing */}
-                <div className="bg-surface p-8 border border-border shadow-sm space-y-8 h-full">
+                <div className="bg-surface p-8 border border-border shadow-sm space-y-8 h-full rounded-2xl">
                     <div className="flex items-center gap-3 border-b border-border pb-4">
-                        <div className="w-10 h-10 bg-primary/10 flex items-center justify-center text-primary">
+                        <div className="w-10 h-10 bg-primary/10 flex items-center justify-center text-primary rounded-xl">
                             <FileText className="w-5 h-5" />
                         </div>
                         <div>
@@ -252,7 +261,7 @@ export default function AddProductForm({ onSave, initialData, onCancel }) {
                             <label className="text-[9px] font-black text-text-muted uppercase tracking-[0.2em]">Product Name <span className="text-rose-500">*</span></label>
                             <input
                                 type="text"
-                                className="w-full px-4 py-3 bg-background border border-border text-sm font-black focus:border-primary outline-none transition-all uppercase placeholder:opacity-20"
+                                className="w-full px-4 py-3 bg-background border border-border rounded-lg text-sm font-black focus:border-primary outline-none transition-all uppercase placeholder:opacity-20"
                                 placeholder="e.g. LUXURY_ORGANIC_SHAMPOO"
                                 value={formData.name}
                                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
@@ -264,7 +273,7 @@ export default function AddProductForm({ onSave, initialData, onCancel }) {
                                 <label className="text-[9px] font-black text-text-muted uppercase tracking-[0.2em]">Brand / MFR</label>
                                 <input
                                     type="text"
-                                    className="w-full px-4 py-3 bg-background border border-border text-sm font-black focus:border-primary outline-none transition-all uppercase"
+                                    className="w-full px-4 py-3 bg-background border border-border rounded-lg text-sm font-black focus:border-primary outline-none transition-all uppercase"
                                     placeholder="e.g. LOREAL"
                                     value={formData.brand}
                                     onChange={(e) => setFormData({ ...formData, brand: e.target.value })}
@@ -311,7 +320,7 @@ export default function AddProductForm({ onSave, initialData, onCancel }) {
                                     <span className="absolute left-4 top-1/2 -translate-y-1/2 text-text-muted font-black text-xs">₹</span>
                                     <input
                                         type="number"
-                                        className="w-full pl-8 pr-4 py-3 bg-background border border-border text-sm font-black focus:border-primary outline-none transition-all"
+                                        className="w-full pl-8 pr-4 py-3 bg-background border border-border rounded-lg text-sm font-black focus:border-primary outline-none transition-all"
                                         placeholder="0.00"
                                         value={formData.sellingPrice || ''}
                                         onFocus={(e) => { if (e.target.value === '0') setFormData(prev => ({ ...prev, sellingPrice: '' })); }}
@@ -339,9 +348,9 @@ export default function AddProductForm({ onSave, initialData, onCancel }) {
                 </div>
 
                 {/* 2. Inventory & Logistics */}
-                <div className="bg-surface p-8 border border-border shadow-sm space-y-8 h-full">
+                <div className="bg-surface p-8 border border-border shadow-sm space-y-8 h-full rounded-2xl">
                     <div className="flex items-center gap-3 border-b border-border pb-4">
-                        <div className="w-10 h-10 bg-amber-500/10 flex items-center justify-center text-amber-600">
+                        <div className="w-10 h-10 bg-amber-500/10 flex items-center justify-center text-amber-600 rounded-xl">
                             <Truck className="w-5 h-5" />
                         </div>
                         <div>
@@ -356,7 +365,7 @@ export default function AddProductForm({ onSave, initialData, onCancel }) {
                                 <label className="text-[9px] font-black text-text-muted uppercase tracking-[0.2em]">SKU (Internal Code) *</label>
                                 <input
                                     type="text"
-                                    className="w-full px-4 py-3 bg-background border border-border text-sm font-black focus:border-primary outline-none transition-all uppercase"
+                                    className="w-full px-4 py-3 bg-background border border-border rounded-lg text-sm font-black focus:border-primary outline-none transition-all uppercase"
                                     placeholder="e.g. SKU_001"
                                     value={formData.sku}
                                     onChange={(e) => setFormData({ ...formData, sku: e.target.value })}
@@ -378,7 +387,7 @@ export default function AddProductForm({ onSave, initialData, onCancel }) {
                                 <label className="text-[9px] font-black text-text-muted uppercase tracking-[0.2em]">Initial Qty</label>
                                 <input
                                     type="number"
-                                    className="w-full px-4 py-3 bg-background border border-border text-sm font-black focus:border-primary outline-none transition-all"
+                                    className="w-full px-4 py-3 bg-background border border-border rounded-lg text-sm font-black focus:border-primary outline-none transition-all"
                                     placeholder="0"
                                     value={formData.stock}
                                     onFocus={(e) => { if (e.target.value === '0') setFormData(prev => ({ ...prev, stock: '' })); }}
@@ -392,7 +401,7 @@ export default function AddProductForm({ onSave, initialData, onCancel }) {
                                 <label className="text-[9px] font-black text-text-muted uppercase tracking-[0.2em]">Low Stock Alert (Units)</label>
                                 <input
                                     type="number"
-                                    className="w-full px-4 py-3 bg-background border border-border text-sm font-black focus:border-primary outline-none transition-all text-rose-600"
+                                    className="w-full px-4 py-3 bg-background border border-border rounded-lg text-sm font-black focus:border-primary outline-none transition-all text-rose-600"
                                     placeholder="5"
                                     value={formData.threshold}
                                     onFocus={(e) => { if (e.target.value === '0') setFormData(prev => ({ ...prev, threshold: '' })); }}
@@ -403,20 +412,78 @@ export default function AddProductForm({ onSave, initialData, onCancel }) {
                                 <label className="text-[9px] font-black text-text-muted uppercase tracking-[0.2em]">HSN Code</label>
                                 <input
                                     type="text"
-                                    className="w-full px-4 py-3 bg-background border border-border text-sm font-black focus:border-primary outline-none transition-all uppercase"
+                                    className="w-full px-4 py-3 bg-background border border-border rounded-lg text-sm font-black focus:border-primary outline-none transition-all uppercase"
                                     placeholder="e.g. 3305"
                                     value={formData.hsnCode}
                                     onChange={(e) => setFormData({ ...formData, hsnCode: e.target.value })}
                                 />
                             </div>
                         </div>
+
+                        <div className="space-y-1.5">
+                            <label className="text-[9px] font-black text-text-muted uppercase tracking-[0.2em]">Primary Supplier</label>
+                            <CustomSelect
+                                value={formData.supplier || 'Select Supplier'}
+                                onChange={(val) => setFormData({ ...formData, supplier: val === 'None / Direct' ? '' : val })}
+                                options={['None / Direct', ...supplierNames]}
+                                className="h-[46px] !text-[11px] font-black"
+                            />
+                        </div>
+
+                        {/* Manufacturing & Expiry Dates */}
+                        <div className="pt-2 border-t border-border/50">
+                            <div className="flex items-center gap-2 mb-4">
+                                <CalendarDays className="w-4 h-4 text-amber-500" />
+                                <span className="text-[9px] font-black text-text-muted uppercase tracking-[0.2em]">Product Dates</span>
+                            </div>
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="space-y-1.5">
+                                    <label className="text-[9px] font-black text-text-muted uppercase tracking-[0.2em]">MFG Date</label>
+                                    <div className="relative">
+                                        <input
+                                            type="date"
+                                            className="w-full px-4 py-3 bg-background border border-border rounded-lg text-sm font-bold focus:border-primary outline-none transition-all"
+                                            value={formData.mfgDate ? (typeof formData.mfgDate === 'string' && formData.mfgDate.includes('T') ? formData.mfgDate.split('T')[0] : formData.mfgDate) : ''}
+                                            onChange={(e) => setFormData({ ...formData, mfgDate: e.target.value })}
+                                        />
+                                    </div>
+                                </div>
+                                <div className="space-y-1.5">
+                                    <label className="text-[9px] font-black text-text-muted uppercase tracking-[0.2em]">Expiry Date</label>
+                                    <div className="relative">
+                                        <input
+                                            type="date"
+                                            className={`w-full px-4 py-3 bg-background border rounded-lg text-sm font-bold focus:border-primary outline-none transition-all ${
+                                                formData.expiryDate && new Date(formData.expiryDate) < new Date()
+                                                    ? 'border-rose-400 text-rose-600 bg-rose-50/50'
+                                                    : formData.expiryDate && new Date(formData.expiryDate) < new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+                                                        ? 'border-amber-400 text-amber-600 bg-amber-50/50'
+                                                        : 'border-border'
+                                            }`}
+                                            value={formData.expiryDate ? (typeof formData.expiryDate === 'string' && formData.expiryDate.includes('T') ? formData.expiryDate.split('T')[0] : formData.expiryDate) : ''}
+                                            onChange={(e) => setFormData({ ...formData, expiryDate: e.target.value })}
+                                        />
+                                    </div>
+                                    {formData.expiryDate && new Date(formData.expiryDate) < new Date() && (
+                                        <p className="text-[8px] font-black text-rose-500 uppercase tracking-widest flex items-center gap-1">
+                                            <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse" /> Expired
+                                        </p>
+                                    )}
+                                    {formData.expiryDate && new Date(formData.expiryDate) >= new Date() && new Date(formData.expiryDate) < new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) && (
+                                        <p className="text-[8px] font-black text-amber-500 uppercase tracking-widest flex items-center gap-1">
+                                            <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" /> Expiring Soon
+                                        </p>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
                 {/* 3. Outlet Availability */}
-                <div className="bg-surface p-8 border border-border shadow-sm space-y-6 lg:col-span-2">
+                <div className="bg-surface p-8 border border-border shadow-sm space-y-6 lg:col-span-2 rounded-2xl">
                     <div className="flex items-center gap-3 border-b border-border pb-4">
-                        <div className="w-10 h-10 bg-violet-500/10 flex items-center justify-center text-violet-600">
+                        <div className="w-10 h-10 bg-violet-500/10 flex items-center justify-center text-violet-600 rounded-xl">
                             <Building className="w-5 h-5" />
                         </div>
                         <div>
@@ -482,10 +549,10 @@ export default function AddProductForm({ onSave, initialData, onCancel }) {
                             initial={{ opacity: 0, height: 0 }}
                             animate={{ opacity: 1, height: 'auto' }}
                             exit={{ opacity: 0, height: 0 }}
-                            className="bg-surface p-8 border border-border shadow-sm space-y-6 lg:col-span-2 overflow-hidden"
+                            className="bg-surface p-8 border border-border shadow-sm space-y-6 lg:col-span-2 overflow-hidden rounded-2xl"
                         >
                             <div className="flex items-center gap-3 border-b border-border pb-4">
-                                <div className="w-10 h-10 bg-indigo-500/10 flex items-center justify-center text-indigo-600">
+                                <div className="w-10 h-10 bg-indigo-500/10 flex items-center justify-center text-indigo-600 rounded-xl">
                                     <Smartphone className="w-5 h-5" />
                                 </div>
                                 <div>
@@ -498,7 +565,7 @@ export default function AddProductForm({ onSave, initialData, onCancel }) {
                                 <div className="space-y-1.5 md:col-span-2">
                                     <label className="text-[9px] font-black text-text-muted uppercase tracking-[0.2em]">Shop Description (Detailed)</label>
                                     <textarea
-                                        className="w-full px-4 py-3 bg-background border border-border text-sm font-medium focus:border-primary outline-none transition-all min-h-[100px] resize-none"
+                                        className="w-full px-4 py-3 bg-background border border-border rounded-lg text-sm font-medium focus:border-primary outline-none transition-all min-h-[100px] resize-none"
                                         placeholder="Detailed description for the customer app..."
                                         value={formData.shopDescription}
                                         onChange={(e) => setFormData({ ...formData, shopDescription: e.target.value })}
@@ -509,7 +576,7 @@ export default function AddProductForm({ onSave, initialData, onCancel }) {
                                     <label className="text-[9px] font-black text-text-muted uppercase tracking-[0.2em]">Care Instructions (Pro Tip)</label>
                                     <input
                                         type="text"
-                                        className="w-full px-4 py-3 bg-background border border-border text-sm font-medium focus:border-primary outline-none transition-all"
+                                        className="w-full px-4 py-3 bg-background border border-border rounded-lg text-sm font-medium focus:border-primary outline-none transition-all"
                                         placeholder="e.g. Keep in a cool place"
                                         value={formData.appCare}
                                         onChange={(e) => setFormData({ ...formData, appCare: e.target.value })}
@@ -520,7 +587,7 @@ export default function AddProductForm({ onSave, initialData, onCancel }) {
                                     <label className="text-[9px] font-black text-text-muted uppercase tracking-[0.2em]">Usage Guide (Application)</label>
                                     <input
                                         type="text"
-                                        className="w-full px-4 py-3 bg-background border border-border text-sm font-medium focus:border-primary outline-none transition-all"
+                                        className="w-full px-4 py-3 bg-background border border-border rounded-lg text-sm font-medium focus:border-primary outline-none transition-all"
                                         placeholder="e.g. Apply twice daily"
                                         value={formData.appUsage}
                                         onChange={(e) => setFormData({ ...formData, appUsage: e.target.value })}
@@ -531,7 +598,7 @@ export default function AddProductForm({ onSave, initialData, onCancel }) {
                                     <label className="text-[9px] font-black text-text-muted uppercase tracking-[0.2em]">Formula Type</label>
                                     <input
                                         type="text"
-                                        className="w-full px-4 py-3 bg-background border border-border text-sm font-medium focus:border-primary outline-none transition-all"
+                                        className="w-full px-4 py-3 bg-background border border-border rounded-lg text-sm font-medium focus:border-primary outline-none transition-all"
                                         placeholder="e.g. Premium Ritual"
                                         value={formData.appFormulaType}
                                         onChange={(e) => setFormData({ ...formData, appFormulaType: e.target.value })}
@@ -542,7 +609,7 @@ export default function AddProductForm({ onSave, initialData, onCancel }) {
                                     <label className="text-[9px] font-black text-text-muted uppercase tracking-[0.2em]">Consistency</label>
                                     <input
                                         type="text"
-                                        className="w-full px-4 py-3 bg-background border border-border text-sm font-medium focus:border-primary outline-none transition-all"
+                                        className="w-full px-4 py-3 bg-background border border-border rounded-lg text-sm font-medium focus:border-primary outline-none transition-all"
                                         placeholder="e.g. Creamy / Lightweight"
                                         value={formData.appConsistency}
                                         onChange={(e) => setFormData({ ...formData, appConsistency: e.target.value })}
@@ -553,7 +620,7 @@ export default function AddProductForm({ onSave, initialData, onCancel }) {
                                     <label className="text-[9px] font-black text-text-muted uppercase tracking-[0.2em]">Ritual Status</label>
                                     <input
                                         type="text"
-                                        className="w-full px-4 py-3 bg-background border border-border text-sm font-medium focus:border-primary outline-none transition-all"
+                                        className="w-full px-4 py-3 bg-background border border-border rounded-lg text-sm font-medium focus:border-primary outline-none transition-all"
                                         placeholder="e.g. Dermatologically Tested"
                                         value={formData.appRitualStatus}
                                         onChange={(e) => setFormData({ ...formData, appRitualStatus: e.target.value })}
@@ -564,7 +631,7 @@ export default function AddProductForm({ onSave, initialData, onCancel }) {
                                     <label className="text-[9px] font-black text-text-muted uppercase tracking-[0.2em]">Return Policy</label>
                                     <input
                                         type="text"
-                                        className="w-full px-4 py-3 bg-background border border-border text-sm font-medium focus:border-primary outline-none transition-all"
+                                        className="w-full px-4 py-3 bg-background border border-border rounded-lg text-sm font-medium focus:border-primary outline-none transition-all"
                                         placeholder="Specific return policy for this product"
                                         value={formData.appReturnPolicy}
                                         onChange={(e) => setFormData({ ...formData, appReturnPolicy: e.target.value })}
@@ -574,7 +641,7 @@ export default function AddProductForm({ onSave, initialData, onCancel }) {
                                 <div className="space-y-1.5 md:col-span-2">
                                     <label className="text-[9px] font-black text-text-muted uppercase tracking-[0.2em]">Vendor / Manufacturing Details</label>
                                     <textarea
-                                        className="w-full px-4 py-3 bg-background border border-border text-sm font-medium focus:border-primary outline-none transition-all min-h-[60px] resize-none"
+                                        className="w-full px-4 py-3 bg-background border border-border rounded-lg text-sm font-medium focus:border-primary outline-none transition-all min-h-[60px] resize-none"
                                         placeholder="Produced by..."
                                         value={formData.appVendorDetails}
                                         onChange={(e) => setFormData({ ...formData, appVendorDetails: e.target.value })}
@@ -586,9 +653,9 @@ export default function AddProductForm({ onSave, initialData, onCancel }) {
                 </AnimatePresence>
 
                 {/* 4. Product Assets & Gallery */}
-                <div className="bg-surface p-8 border border-border shadow-sm space-y-6 lg:col-span-2">
+                <div className="bg-surface p-8 border border-border shadow-sm space-y-6 lg:col-span-2 rounded-2xl">
                     <div className="flex items-center gap-3 border-b border-border pb-4">
-                        <div className="w-10 h-10 bg-indigo-500/10 flex items-center justify-center text-indigo-600">
+                        <div className="w-10 h-10 bg-indigo-500/10 flex items-center justify-center text-indigo-600 rounded-xl">
                             <CloudUpload className="w-5 h-5" />
                         </div>
                         <div>

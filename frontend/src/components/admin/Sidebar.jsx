@@ -43,6 +43,7 @@ import {
     Smartphone,
     Crown,
     ArrowDownUp,
+    ArrowLeftRight,
     Globe,
     Send,
     MoreVertical,
@@ -116,7 +117,7 @@ export default function Sidebar({ collapsed, setCollapsed, isHovered, setIsHover
                     { label: 'POS Dashboard', icon: LayoutDashboard, path: '/pos' },
                     { label: 'New Bill', icon: Zap, path: '/pos/billing' },
                     { label: 'Invoices & Payments', icon: FileText, path: '/pos/invoices' },
-                    { label: 'Payment Reminders', icon: MessageSquare, path: '/admin/crm/payment-reminders' },
+                    { label: 'Payment Reminders', icon: MessageSquare, path: '/admin/operations/payment-reminders' },
                 ]
             },
             {
@@ -141,7 +142,20 @@ export default function Sidebar({ collapsed, setCollapsed, isHovered, setIsHover
                     { label: 'Products Management', icon: Box, path: '/admin/inventory/products' },
                     { label: 'Shop Orders', icon: ShoppingBag, path: '/admin/shop-orders' },
                     { label: 'Product Categories', icon: Tag, path: '/admin/inventory/product-categories' },
-                    { label: 'Stock overview', icon: LayoutDashboard, path: '/admin/inventory/stock-overview' },
+                    { label: 'Stock Alerts', icon: LayoutDashboard, path: '/admin/inventory/stock-overview' },
+                    { label: 'Stock Transfer', icon: ArrowLeftRight, path: '/admin/inventory/transfer' },
+                ]
+            },
+            {
+                label: 'Suppliers',
+                icon: Users,
+                path: '/admin/suppliers',
+                permission: 'finance',
+                feature: 'finance',
+                category: 'Operations',
+                subItems: [
+                    { label: 'Supplier Directory', icon: Users, path: '/admin/suppliers/directory' },
+                    { label: 'Supplier Invoices', icon: FileText, path: '/admin/suppliers/invoices' },
                 ]
             },
             {
@@ -154,8 +168,7 @@ export default function Sidebar({ collapsed, setCollapsed, isHovered, setIsHover
                 subItems: [
                     { label: 'Dashboard', icon: LayoutDashboard, path: '/admin/finance/dashboard' },
                     { label: 'Transactions', icon: ArrowDownUp, path: '/admin/finance/transactions' },
-                    { label: 'Cash Book', icon: Wallet, path: '/admin/finance/cash-book' },
-                    { label: 'Bank Book', icon: CreditCard, path: '/admin/finance/bank-book' },
+                    { label: 'Cash & Bank Book', icon: Wallet, path: '/admin/finance/cash-book' },
                     { label: 'Expenses', icon: DollarSign, path: '/admin/finance/expenses' },
                     { label: 'Sales Reports', icon: FileText, path: '/admin/finance/reports' },
                     { label: 'Day Closing', icon: Lock, path: '/admin/finance/eod' },

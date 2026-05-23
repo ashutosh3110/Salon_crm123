@@ -166,6 +166,7 @@ export default function SASettingsPage() {
         defaultTrialDays: 14,
         serviceGst: 18,
         productGst: 12,
+        supplierGst: 18,
         whatsappPricing: {
             pricePerMessage: 0.50,
             minPurchaseQty: 1000
@@ -660,7 +661,7 @@ export default function SASettingsPage() {
                                 <h4 className="text-[10px] font-black text-text-muted uppercase tracking-widest mb-3 flex items-center gap-2">
                                     <DollarSign className="w-3 h-3 text-emerald-600" /> Taxation Settings (GST)
                                 </h4>
-                                <div className="grid sm:grid-cols-3 gap-6">
+                                <div className="grid sm:grid-cols-4 gap-6">
                                     <Field 
                                         label="GST on Services" 
                                         value={platform.serviceGst} 
@@ -677,9 +678,17 @@ export default function SASettingsPage() {
                                         placeholder="12"
                                         suffix={<span className="text-[10px] font-bold text-text-muted mr-3">%</span>}
                                     />
+                                    <Field 
+                                        label="GST on Suppliers" 
+                                        value={platform.supplierGst} 
+                                        onChange={e => setPlat('supplierGst', e.target.value)} 
+                                        type="number"
+                                        placeholder="18"
+                                        suffix={<span className="text-[10px] font-bold text-text-muted mr-3">%</span>}
+                                    />
                                     <div className="flex items-end pb-1.5">
                                         <p className="text-[10px] text-text-muted leading-relaxed">
-                                            Default GST percentages applied to services and retail products across the platform.
+                                            Default GST percentages applied globally to services, retail products, and supplier items.
                                         </p>
                                     </div>
                                 </div>

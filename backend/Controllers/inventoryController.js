@@ -3,6 +3,8 @@ const StockTransaction = require('../Models/StockTransaction');
 const SupplierInvoice = require('../Models/SupplierInvoice');
 const Supplier = require('../Models/Supplier');
 const FinanceTransaction = require('../Models/FinanceTransaction');
+const StockTransfer = require('../Models/StockTransfer');
+const Outlet = require('../Models/Outlet');
 const mongoose = require('mongoose');
 
 // @desc    Update product stock (In/Out/Adjustment)
@@ -211,6 +213,173 @@ exports.getInventorySummary = async (req, res) => {
             data: summary
         });
     } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+};
+
+// @desc    Transfer stock from one branch to another
+// @route   POST /api/inventory/transfer
+exports.transferStock = async (req, res) => {
+    const session = await mongoose.startSession();
+    session.startTransaction();
+    try {
+        const { productId, fromOutletId, toOutletId, quantity, reason, notes } = req.body;
+        const salonId = req.user.salonId;
+
+        if (fromOutletId === toOutletId) {
+            return res.status(400).json({ success: false, message: 'Source and destination branches cannot be the same' });
+        }
+
+        const qty = Math.abs(Number(quantity));
+        if (!qty || qty <= 0) {
+            return res.status(400).json({ success: false, message: 'Invalid quantity provided' });
+        }
+
+        // Fetch Product
+        const product = await Product.findById(productId).session(session);
+        if (!product) {
+            return res.status(404).json({ success: false, message: 'Product not found' });
+        }
+
+        // Fetch Outlets to verify and get names
+        const fromOutlet = await Outlet.findById(fromOutletId).session(session);
+        const toOutlet = await Outlet.findById(toOutletId).session(session);
+        if (!fromOutlet || !toOutlet) {
+            return res.status(404).json({ success: false, message: 'One or both outlets not found' });
+        }
+
+        // Initialize maps if they don't exist
+        if (!product.stockByOutlet) {
+            product.stockByOutlet = new Map();
+        }
+
+        // Check stock levels
+        const fromOutletStock = product.stockByOutlet.get(fromOutletId.toString()) || 0;
+        const toOutletStock = product.stockByOutlet.get(toOutletId.toString()) || 0;
+
+        if (fromOutletStock < qty) {
+            return res.status(400).json({
+                success: false,
+                message: `Insufficient stock in ${fromOutlet.name}. Available: ${fromOutletStock}, Requested: ${qty}`
+            });
+        }
+
+        // Perform stock updates
+        const newFromStock = fromOutletStock - qty;
+        const newToStock = toOutletStock + qty;
+
+        product.stockByOutlet.set(fromOutletId.toString(), newFromStock);
+        product.stockByOutlet.set(toOutletId.toString(), newToStock);
+
+        // Ensure outlets are in outletIds array
+        if (!product.outletIds.includes(fromOutletId)) {
+            product.outletIds.push(fromOutletId);
+        }
+        if (!product.outletIds.includes(toOutletId)) {
+            product.outletIds.push(toOutletId);
+        }
+
+        // Save updated product
+        await product.save({ session });
+
+        // Save Stock Transfer record
+        const transfer = await StockTransfer.create([{
+            salonId,
+            productId,
+            fromOutletId,
+            toOutletId,
+            quantity: qty,
+            reason: reason || 'Stock Balancing',
+            notes: notes || '',
+            performedBy: req.user._id,
+            status: 'COMPLETED'
+        }], { session });
+
+        const transferId = transfer[0]._id;
+
+        // Log Stock Transaction OUT for source branch
+        await StockTransaction.create([{
+            salonId,
+            productId,
+            outletId: fromOutletId,
+            type: 'OUT',
+            quantity: qty,
+            previousStock: fromOutletStock,
+            newStock: newFromStock,
+            reason: 'Branch Transfer',
+            referenceId: transferId.toString(),
+            performedBy: req.user._id,
+            notes: `Transferred to ${toOutlet.name}`
+        }], { session });
+
+        // Log Stock Transaction IN for destination branch
+        await StockTransaction.create([{
+            salonId,
+            productId,
+            outletId: toOutletId,
+            type: 'IN',
+            quantity: qty,
+            previousStock: toOutletStock,
+            newStock: newToStock,
+            reason: 'Branch Transfer',
+            referenceId: transferId.toString(),
+            performedBy: req.user._id,
+            notes: `Transferred from ${fromOutlet.name}`
+        }], { session });
+
+        await session.commitTransaction();
+        session.endSession();
+
+        res.status(201).json({
+            success: true,
+            message: 'Stock transferred successfully',
+            data: transfer[0]
+        });
+
+    } catch (err) {
+        await session.abortTransaction();
+        session.endSession();
+        console.error('Transfer stock error:', err);
+        res.status(500).json({ success: false, message: err.message });
+    }
+};
+
+// @desc    Get all stock transfer history
+// @route   GET /api/inventory/transfers
+exports.getTransferHistory = async (req, res) => {
+    try {
+        const salonId = req.user.salonId;
+        const { productId, fromOutletId, toOutletId, from, to } = req.query;
+
+        let query = { salonId };
+        if (productId) query.productId = productId;
+        if (fromOutletId) query.fromOutletId = fromOutletId;
+        if (toOutletId) query.toOutletId = toOutletId;
+
+        if (from || to) {
+            query.createdAt = {};
+            if (from) query.createdAt.$gte = new Date(from);
+            if (to) {
+                const toDate = new Date(to);
+                toDate.setHours(23, 59, 59, 999);
+                query.createdAt.$lte = toDate;
+            }
+        }
+
+        const transfers = await StockTransfer.find(query)
+            .populate('productId', 'name sku brand')
+            .populate('fromOutletId', 'name')
+            .populate('toOutletId', 'name')
+            .populate('performedBy', 'name')
+            .sort({ createdAt: -1 });
+
+        res.json({
+            success: true,
+            count: transfers.length,
+            data: transfers
+        });
+    } catch (err) {
+        console.error('Get transfer history error:', err);
         res.status(500).json({ success: false, message: err.message });
     }
 };

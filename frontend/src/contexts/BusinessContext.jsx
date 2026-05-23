@@ -39,7 +39,7 @@ const normalizeProduct = (p) => {
         _id: id,
         category: p.categoryId?.name || p.category || 'General',
         categoryId: p.categoryId?._id || p.categoryId || '',
-        images: Array.isArray(p.images) ? p.images : (p.appImage ? [p.appImage] : [])
+        images: Array.isArray(p.images) ? p.images : (p.appImage ? [p.appImage] : (p.image ? [p.image] : []))
     };
 };
 
@@ -51,6 +51,20 @@ const normalizeShopCat = (c) => {
         _id: id, 
         name: c?.name ?? '', 
         image: c?.image || 'https://images.unsplash.com/photo-1596462502278-27bfdc4033c8?q=80&w=1000' 
+    };
+};
+
+const normalizeSupplier = (s) => {
+    if (!s) return null;
+    const id = String(s._id ?? s.id ?? '');
+    return {
+        ...s,
+        id,
+        _id: id,
+        contact: s.contactPerson || '',
+        gstin: s.gstNumber || '',
+        due: Math.abs(s.currentBalance || 0),
+        status: s.status === 'active' ? 'Active' : s.status === 'inactive' ? 'Inactive' : s.status
     };
 };
 
@@ -370,7 +384,8 @@ export function BusinessProvider({ children }) {
     const fetchSuppliers = useCallback(async () => {
         try {
             const r = await api.get('/finance/suppliers');
-            setSuppliers(r.data?.data || r.data || []);
+            const raw = r.data?.data || r.data || [];
+            setSuppliers(Array.isArray(raw) ? raw.map(normalizeSupplier) : []);
         } catch { setSuppliers([]); }
     }, []);
 
@@ -675,8 +690,15 @@ export function BusinessProvider({ children }) {
 
     const addSupplier = useCallback(async (d) => {
         try {
-            const r = await api.post('/finance/suppliers', d);
-            const newSup = r.data.data || r.data;
+            const payload = {
+                ...d,
+                contactPerson: d.contact,
+                gstNumber: d.gstin
+            };
+            delete payload.contact;
+            delete payload.gstin;
+            const r = await api.post('/finance/suppliers', payload);
+            const newSup = normalizeSupplier(r.data.data || r.data);
             setSuppliers(p => [newSup, ...p]);
             toast.success('Supplier added');
             return newSup;
@@ -699,8 +721,15 @@ export function BusinessProvider({ children }) {
 
     const updateSupplier = useCallback(async (id, d) => {
         try {
-            const r = await api.put(`/finance/suppliers/${id}`, d);
-            const updated = r.data.data || r.data;
+            const payload = {
+                ...d,
+                contactPerson: d.contact,
+                gstNumber: d.gstin
+            };
+            delete payload.contact;
+            delete payload.gstin;
+            const r = await api.put(`/finance/suppliers/${id}`, payload);
+            const updated = normalizeSupplier(r.data.data || r.data);
             setSuppliers(p => p.map(s => (s._id === id || s.id === id) ? { ...s, ...updated } : s));
             toast.success('Supplier details updated');
             return updated;

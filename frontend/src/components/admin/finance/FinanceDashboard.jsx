@@ -13,10 +13,6 @@ import {
 function formatInr(n) {
     if (n == null || Number.isNaN(Number(n))) return '₹0';
     const v = Number(n);
-    const abs = Math.abs(v);
-    if (abs >= 1e7) return `₹${(v / 1e7).toFixed(2)}Cr`;
-    if (abs >= 1e5) return `₹${(v / 1e5).toFixed(2)}L`;
-    if (abs >= 1e3) return `₹${(v / 1e3).toFixed(1)}K`;
     return `₹${Math.round(v).toLocaleString('en-IN')}`;
 }
 
@@ -73,7 +69,7 @@ export default function FinanceDashboard({ data, loading, error, onRetry }) {
                     <div className="text-left font-black">
                         <h2 className="text-xl font-black text-text tracking-tight uppercase">Financial Performance Overview</h2>
                         <p className="text-[11px] text-text-secondary mt-1 font-bold uppercase tracking-widest text-left">
-                            Data: <span className="font-mono">GET /invoices/finance-dashboard</span>
+                            Data: <span className="font-mono">GET /finance/dashboard</span>
                         </p>
                     </div>
                     <div className="flex items-center gap-4 bg-white p-4 rounded-none border border-border shadow-sm text-left">
@@ -152,32 +148,7 @@ export default function FinanceDashboard({ data, loading, error, onRetry }) {
                         </div>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-left font-black">
-                        <div className="p-6 bg-white border border-border rounded-none hover:shadow-md transition-all group text-left">
-                            <div className="flex justify-between items-start mb-4 text-left">
-                                <div className="p-3 bg-blue-50 text-blue-600 rounded-none group-hover:scale-110 transition-transform">
-                                    <Users className="w-5 h-5" />
-                                </div>
-                                <ArrowUpRight className="w-4 h-4 text-text-muted" />
-                            </div>
-                            <h4 className="font-black text-text text-sm uppercase tracking-tight text-left">Refunds queue</h4>
-                            <p className="text-[10px] text-text-muted font-black uppercase tracking-widest mt-1 text-left">
-                                {kpis.pendingRefunds ?? 0} PENDING
-                            </p>
-                        </div>
-                        <div className="p-6 bg-white border border-border rounded-none hover:shadow-md transition-all group text-left">
-                            <div className="flex justify-between items-start mb-4 text-left">
-                                <div className="p-3 bg-purple-50 text-purple-600 rounded-none group-hover:scale-110 transition-transform">
-                                    <AlertCircle className="w-5 h-5" />
-                                </div>
-                                <ArrowUpRight className="w-4 h-4 text-text-muted" />
-                            </div>
-                            <h4 className="font-black text-text text-sm uppercase tracking-tight text-left">Liability note</h4>
-                            <p className="text-[10px] text-text-muted font-black uppercase tracking-widest mt-1 text-left line-clamp-2">
-                                {kpis.liabilityHint || '—'}
-                            </p>
-                        </div>
-                    </div>
+
                 </div>
 
                 <div className="space-y-6 text-left font-black">

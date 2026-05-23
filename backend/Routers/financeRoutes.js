@@ -17,6 +17,8 @@ const {
     getSupplierInvoices,
     addSupplierInvoice,
     addInvoicePayment,
+    sendSupplierInvoiceWhatsApp,
+    getInvoicePayments,
     getFinanceSummary,
     getEODReports,
     submitEOD,
@@ -27,7 +29,9 @@ const {
     closeEOD,
     getGSTSummary,
     getTransactions,
-    addTransaction
+    addTransaction,
+    getSalesReports,
+    seedSampleReports
 } = require('../Controllers/financeController');
 
 // All routes are protected and for admin/manager
@@ -41,6 +45,7 @@ router.post('/transactions', addTransaction);
 // Suppliers
 router.get('/suppliers', getSuppliers);
 router.post('/suppliers', upsertSupplier);
+router.put('/suppliers/:id', upsertSupplier);
 router.delete('/suppliers/:id', deleteSupplier);
 
 // Expenses
@@ -60,9 +65,13 @@ router.post('/petty-cash/close', closePettyCashDay);
 router.get('/invoices', getSupplierInvoices);
 router.post('/invoices', addSupplierInvoice);
 router.post('/invoices/payments', addInvoicePayment);
+router.post('/invoices/:id/send-whatsapp', protect, sendSupplierInvoiceWhatsApp);
+router.get('/invoices/:id/payments', protect, getInvoicePayments);
 
 // Summary / Dashboard
 router.get('/summary', getFinanceSummary);
+router.get('/reports', getSalesReports);
+router.post('/reports/seed-samples', seedSampleReports);
 
 // Tax Reports
 router.get('/tax/gst-summary', getGSTSummary);

@@ -2,6 +2,12 @@ const mongoose = require('mongoose');
 const Customer = require('../Models/Customer');
 const { sendWapixoTemplate, checkAndDeductWhatsAppCredit, sendWhatsAppMessage } = require('../Utils/whatsapp');
 const Salon = require('../Models/Salon');
+const LoyaltyTransaction = require('../Models/LoyaltyTransaction');
+const crypto = require('crypto');
+
+const generateReferralCode = () => {
+    return 'WAP-' + crypto.randomBytes(3).toString('hex').toUpperCase();
+};
 
 // @desc    Get all clients (customers) for current salon
 // @route   GET /clients
@@ -82,7 +88,7 @@ exports.getClient = async (req, res) => {
 exports.createClient = async (req, res) => {
     try {
         const salonId = req.user.salonId;
-        const { name, phone, email, gender, dob, anniversary, address, loyaltyPoints, walletBalance } = req.body;
+        const { name, phone, email, gender, dob, anniversary, address, loyaltyPoints, walletBalance, appliedReferralCode } = req.body;
 
         // Validation - Phone must be exactly 10 digits
         if (!phone || String(phone).replace(/\D/g, '').length !== 10) {
@@ -106,8 +112,47 @@ exports.createClient = async (req, res) => {
 
         const client = await Customer.create({
             ...req.body,
+            referralCode: generateReferralCode(),
             salonId
         });
+
+        // Handle Referral Logic
+        if (appliedReferralCode) {
+            const referrer = await Customer.findOne({ referralCode: appliedReferralCode });
+            if (referrer && referrer._id.toString() !== client._id.toString()) {
+                const salon = await Salon.findById(salonId).select('loyaltySetting');
+                const rewards = salon?.loyaltySetting || {};
+                const pointsReferrer = rewards.referralPoints || 200;
+                const pointsReferred = rewards.referredPoints || 100;
+
+                // Award points to Referrer
+                referrer.loyaltyPoints = (referrer.loyaltyPoints || 0) + pointsReferrer;
+                await referrer.save();
+
+                await LoyaltyTransaction.create({
+                    customerId: referrer._id,
+                    salonId,
+                    type: 'CREDIT',
+                    amount: pointsReferrer,
+                    source: 'REFERRAL',
+                    description: `Referral bonus for inviting ${client.phone}`
+                });
+
+                // Award points to New Customer
+                client.loyaltyPoints = (client.loyaltyPoints || 0) + pointsReferred;
+                await client.save();
+
+                await LoyaltyTransaction.create({
+                    customerId: client._id,
+                    salonId,
+                    type: 'CREDIT',
+                    amount: pointsReferred,
+                    source: 'REFERRAL',
+                    description: `Welcome bonus using referral code ${appliedReferralCode}`
+                });
+                console.log(`[Referral] Admin Manual Add Points awarded: Referrer(+${pointsReferrer}), New(+${pointsReferred})`);
+            }
+        }
 
         // Send Welcome WhatsApp Message
         try {

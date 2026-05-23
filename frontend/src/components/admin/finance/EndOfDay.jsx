@@ -79,7 +79,7 @@ export default function EndOfDay() {
         if (dayClosed) return;
         if (!actualCash) return setError('Actual Cash (Drawer count) is required');
         
-        if (!window.confirm('Kya aap sure hain? Close hone ke baad is din ke liye dubara EOD nahi lagega.')) return;
+        if (!window.confirm('Are you sure? Once closed, you cannot run EOD again for this business date.')) return;
         
         const expected = (m?.netCashEstimate || 0) + Number(openingCash || 0);
         const actual = Number(actualCash || 0);
@@ -128,7 +128,7 @@ export default function EndOfDay() {
                             End of Day (EOD) Closure
                         </h2>
                         <p className="text-sm text-text-secondary mt-1 font-medium">
-                            POS sales + ledger expenses se daily snapshot; close par record lock hota hai.
+                            Daily snapshot of POS sales and ledger expenses. Records are locked upon closure.
                         </p>
                     </div>
                     <div className="flex flex-wrap gap-3 items-center">
@@ -193,14 +193,14 @@ export default function EndOfDay() {
                     <div className="p-10 bg-gradient-to-br from-slate-900 to-slate-800 rounded-[40px] text-white shadow-2xl relative overflow-hidden">
                         <div className="relative z-10 grid grid-cols-1 md:grid-cols-3 gap-10">
                             <div className="space-y-2">
-                                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]">
+                                <span className="text-[10px] font-bold text-white/60 uppercase tracking-[0.2em]">
                                     Total daily sales
                                 </span>
-                                <div className="text-4xl font-bold tracking-tighter">{formatInr(m?.totalSales)}</div>
-                                <span className="text-[10px] text-slate-500">{m?.invoiceCount ?? 0} invoices</span>
+                                <div className="text-4xl font-bold tracking-tighter text-white">{formatInr(m?.totalSales)}</div>
+                                <span className="text-[10px] text-white/50">{m?.invoiceCount ?? 0} invoices</span>
                             </div>
                             <div className="space-y-2">
-                                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]">
+                                <span className="text-[10px] font-bold text-white/60 uppercase tracking-[0.2em]">
                                     Daily expenses (ledger)
                                 </span>
                                 <div className="text-4xl font-bold tracking-tighter text-rose-400">
@@ -208,21 +208,21 @@ export default function EndOfDay() {
                                 </div>
                             </div>
                             <div className="space-y-2">
-                                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]">
+                                <span className="text-[10px] font-bold text-white/60 uppercase tracking-[0.2em]">
                                     Net for day
                                 </span>
                                 <div className="text-4xl font-bold tracking-tighter text-emerald-400">
                                     {formatInr(m?.netForDay)}
                                 </div>
-                                <span className="text-[10px] text-slate-500">Sales − expenses</span>
+                                <span className="text-[10px] text-white/50">Sales − expenses</span>
                             </div>
                         </div>
                         <div className="relative z-10 mt-8 pt-6 border-t border-white/10">
-                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                            <span className="text-[10px] font-bold text-white/60 uppercase tracking-widest">
                                 Net cash (estimate)
                             </span>
                             <div className="text-2xl font-bold text-amber-300 mt-1">{formatInr(m?.netCashEstimate)}</div>
-                            <p className="text-[9px] text-slate-500 mt-1 max-w-lg">{data?.meta?.netCashHint}</p>
+                            <p className="text-[9px] text-white/50 mt-1 max-w-lg">{data?.meta?.netCashHint}</p>
                         </div>
                         <div className="absolute top-0 right-0 p-10 opacity-10">
                             <PieChart className="w-48 h-48" />
@@ -282,8 +282,7 @@ export default function EndOfDay() {
                                 </div>
                             </div>
                             <p className="text-[10px] text-text-muted leading-relaxed">
-                                POS invoices / expenses par automated lock abhi enforce nahi hota; EOD record compliance
-                                snapshot ke liye hai.
+                                Automated locking on POS invoices/expenses is not strictly enforced yet. EOD record is for compliance snapshots.
                             </p>
                         </div>
                     </div>
@@ -325,13 +324,13 @@ export default function EndOfDay() {
                         <div className="space-y-2">
                             <h3 className="text-2xl font-bold text-rose-900 dark:text-rose-200 tracking-tight">Perform daily closure</h3>
                             <p className="text-sm text-rose-700 dark:text-rose-300 font-medium max-w-md mx-auto">
-                                Din bhar ka cash aur difference verify karein.
+                                Verify the daily cash drawer total and any variance.
                             </p>
                         </div>
 
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full max-w-md">
                             <div className="text-left space-y-1">
-                                <label className="text-[10px] font-black uppercase text-rose-900 dark:text-rose-300 ml-1">Opening Cash (Subah ka cash)</label>
+                                <label className="text-[10px] font-black uppercase text-rose-900 dark:text-rose-300 ml-1">Opening Cash (Morning drawer balance)</label>
                                 <input
                                     type="number"
                                     value={openingCash}
@@ -342,7 +341,7 @@ export default function EndOfDay() {
                                 />
                             </div>
                             <div className="text-left space-y-1">
-                                <label className="text-[10px] font-black uppercase text-rose-900 dark:text-rose-300 ml-1">Actual Cash (Drawer me kitna hai)</label>
+                                <label className="text-[10px] font-black uppercase text-rose-900 dark:text-rose-300 ml-1">Actual Cash (Counted in drawer)</label>
                                 <input
                                     type="number"
                                     value={actualCash}

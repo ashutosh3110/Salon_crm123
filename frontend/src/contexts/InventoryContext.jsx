@@ -92,6 +92,24 @@ const normalizeShopCat = (c) => {
     return { ...c, id, _id: id, name: c?.name ?? '', image: c?.image || 'https://images.unsplash.com/photo-1596462502278-27bfdc4033c8?q=80&w=1000', sortOrder: Number(c?.sortOrder ?? 0), count: 0 };
 };
 
+const normalizeTransfer = (t) => {
+    const id = t._id || t.id;
+    const dateObj = new Date(t.createdAt || Date.now());
+    const date = dateObj.toLocaleString('en-IN', { dateStyle: 'short', timeStyle: 'short' });
+    return {
+        id,
+        _id: id,
+        productName: t.productId?.name || 'Unknown Product',
+        sku: t.productId?.sku || '',
+        from: t.fromOutletId?._id || t.fromOutletId,
+        to: t.toOutletId?._id || t.toOutletId,
+        qty: t.quantity,
+        reason: t.reason,
+        status: t.status === 'COMPLETED' ? 'Completed' : t.status,
+        date
+    };
+};
+
 export const InventoryProvider = ({ children }) => {
     const { addExpense } = useFinance();
     const { outlets: outletsSnapshot = [], salon, activeSalonId } = useBusiness();
@@ -101,7 +119,7 @@ export const InventoryProvider = ({ children }) => {
     const [products, setProducts] = useState([]);
     const [movements, setMovements] = useState(() => getInitialState('inv_movements', INITIAL_MOVEMENTS));
     const [purchases, setPurchases] = useState(() => getInitialState('inv_purchases', INITIAL_PURCHASES));
-    const [transfers, setTransfers] = useState(() => getInitialState('inv_transfers', INITIAL_TRANSFERS));
+    const [transfers, setTransfers] = useState([]);
     const [outlets, setOutlets] = useState(() => getInitialState('inv_outlets', inventoryData.outlets));
     const [saleRecords, setSaleRecords] = useState(() => getInitialState('inv_sale_records', []));
     const [stockInHistory, setStockInHistory] = useState([]);
@@ -193,6 +211,57 @@ export const InventoryProvider = ({ children }) => {
         }
     };
 
+    const fetchTransfers = useCallback(async () => {
+        try {
+            const salonId = dashboardUser?.salonId || getEffectiveSalonId();
+            if (!salonId) return;
+            const res = await api.get('/inventory/transfers', { params: { salonId } });
+            const rows = res?.data?.data || [];
+            setTransfers(rows.map(normalizeTransfer));
+        } catch (err) {
+            console.error('Fetch transfers failed:', err);
+            setTransfers([]);
+        }
+    }, [dashboardUser, getEffectiveSalonId]);
+
+    const transferStock = async (transferData) => {
+        try {
+            const body = {
+                productId: transferData.productId,
+                fromOutletId: transferData.fromOutletId || transferData.fromOutlet,
+                toOutletId: transferData.toOutletId || transferData.toOutlet,
+                quantity: Number(transferData.quantity || transferData.qty),
+                reason: transferData.reason,
+                notes: transferData.notes || ''
+            };
+
+            // Lookup product ID using SKU if productId is missing
+            if (!body.productId && transferData.sku) {
+                const found = products.find(p => p.sku === transferData.sku);
+                if (found) {
+                    body.productId = found._id || found.id;
+                }
+            }
+
+            if (!body.productId) {
+                throw new Error('Product selection is required');
+            }
+
+            const res = await api.post('/inventory/transfer', body);
+            if (res.data.success) {
+                toast.success(res.data.message || 'Stock transferred successfully');
+                fetchProducts();
+                fetchTransfers();
+                fetchInventorySummary();
+                return { success: true };
+            }
+        } catch (error) {
+            const errorMsg = error.response?.data?.message || error.message || 'Failed to transfer stock';
+            toast.error(errorMsg);
+            return { success: false, error: errorMsg };
+        }
+    };
+
     const lastFetchedRef = useRef({ salonId: null, timestamp: 0 });
 
     useEffect(() => {
@@ -219,10 +288,11 @@ export const InventoryProvider = ({ children }) => {
             if (canFetchPrivate) {
                 fetchStockHistory();
                 fetchInventorySummary();
+                fetchTransfers();
             }
             lastFetchedRef.current = { salonId: currentSalonId, timestamp: now };
         }
-    }, [dashboardUser, isPlanActive, isCustomerAuthenticated, salon?._id, activeSalonId, fetchProducts, fetchShopCategories, fetchProductCategories, fetchStockHistory, fetchInventorySummary]);
+    }, [dashboardUser, isPlanActive, isCustomerAuthenticated, salon?._id, activeSalonId, fetchProducts, fetchShopCategories, fetchProductCategories, fetchStockHistory, fetchInventorySummary, fetchTransfers]);
 
     const toggleProductLike = async (productId) => {
         if (!isCustomerAuthenticated) return;
@@ -315,7 +385,7 @@ export const InventoryProvider = ({ children }) => {
         products, movements, purchases, transfers, outlets: effectiveOutlets, saleRecords, stockHistory, shopCategories, productCategories, supplierInvoices, loading, summary,
         fetchProducts, addProduct, updateProduct, deleteProduct, fetchShopCategories, updateStock, fetchStockHistory, fetchInventorySummary,
         fetchProductCategories, addProductCategory, updateProductCategory, deleteProductCategory,
-        toggleProductLike,
+        toggleProductLike, fetchTransfers, transferStock,
         lowStockItems: products.filter(p => p.stock <= p.minStock),
         stats: { 
             totalProducts: summary.totalProducts || products.length, 

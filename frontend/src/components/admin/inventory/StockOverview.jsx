@@ -4,11 +4,14 @@ import {
     Search,
     MapPin,
     Tag,
-    History,
+
     AlertTriangle,
     CheckCircle2,
     Package,
     RefreshCw,
+    XCircle,
+    ShieldAlert,
+    Boxes,
 } from 'lucide-react';
 
 /**
@@ -100,6 +103,15 @@ export default function StockOverview() {
     const activeSKUs = useMemo(() => new Set(filteredStock.map(s => s.productId)).size, [filteredStock]);
     const activeNodes = useMemo(() => new Set(filteredStock.map(s => s.outletId)).size, [filteredStock]);
 
+    // ── Summary card stats ──
+    const cardStats = useMemo(() => {
+        const totalProducts = filteredStock.length;
+        const inStock = filteredStock.filter(item => item.quantity > item.threshold).length;
+        const outOfStock = filteredStock.filter(item => item.quantity === 0).length;
+        const critical = filteredStock.filter(item => item.quantity > 0 && item.quantity <= item.threshold).length;
+        return { totalProducts, inStock, outOfStock, critical };
+    }, [filteredStock]);
+
     if (!products.length) {
         return (
             <div className="flex flex-col items-center justify-center min-h-[400px] gap-3 text-text-muted">
@@ -131,6 +143,49 @@ export default function StockOverview() {
                     <RefreshCw className="w-3 h-3" />
                     Synchronize Registry
                 </button>
+            </div>
+
+            {/* ── Stock Summary Cards ── */}
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 p-6 border-b border-border/40">
+                {/* Total Products */}
+                <div className="relative overflow-hidden rounded-2xl border border-border/50 bg-gradient-to-br from-blue-500/10 via-surface to-surface p-5 group hover:shadow-lg hover:shadow-blue-500/5 transition-all duration-300">
+                    <div className="absolute top-3 right-3 w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                        <Boxes className="w-5 h-5 text-blue-500" />
+                    </div>
+                    <p className="text-[10px] font-bold text-text-muted uppercase tracking-[0.15em]">Total Products</p>
+                    <p className="text-3xl font-black text-blue-500 mt-1 tracking-tight">{cardStats.totalProducts}</p>
+                    <div className="mt-2 h-1 w-12 rounded-full bg-blue-500/20" />
+                </div>
+
+                {/* In Stock */}
+                <div className="relative overflow-hidden rounded-2xl border border-border/50 bg-gradient-to-br from-emerald-500/10 via-surface to-surface p-5 group hover:shadow-lg hover:shadow-emerald-500/5 transition-all duration-300">
+                    <div className="absolute top-3 right-3 w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                        <CheckCircle2 className="w-5 h-5 text-emerald-500" />
+                    </div>
+                    <p className="text-[10px] font-bold text-text-muted uppercase tracking-[0.15em]">In Stock</p>
+                    <p className="text-3xl font-black text-emerald-500 mt-1 tracking-tight">{cardStats.inStock}</p>
+                    <div className="mt-2 h-1 w-12 rounded-full bg-emerald-500/20" />
+                </div>
+
+                {/* Out of Stock */}
+                <div className="relative overflow-hidden rounded-2xl border border-border/50 bg-gradient-to-br from-rose-500/10 via-surface to-surface p-5 group hover:shadow-lg hover:shadow-rose-500/5 transition-all duration-300">
+                    <div className="absolute top-3 right-3 w-10 h-10 rounded-xl bg-rose-500/10 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                        <XCircle className="w-5 h-5 text-rose-500" />
+                    </div>
+                    <p className="text-[10px] font-bold text-text-muted uppercase tracking-[0.15em]">Out of Stock</p>
+                    <p className="text-3xl font-black text-rose-500 mt-1 tracking-tight">{cardStats.outOfStock}</p>
+                    <div className="mt-2 h-1 w-12 rounded-full bg-rose-500/20" />
+                </div>
+
+                {/* Critical */}
+                <div className="relative overflow-hidden rounded-2xl border border-border/50 bg-gradient-to-br from-amber-500/10 via-surface to-surface p-5 group hover:shadow-lg hover:shadow-amber-500/5 transition-all duration-300">
+                    <div className="absolute top-3 right-3 w-10 h-10 rounded-xl bg-amber-500/10 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                        <ShieldAlert className="w-5 h-5 text-amber-500" />
+                    </div>
+                    <p className="text-[10px] font-bold text-text-muted uppercase tracking-[0.15em]">Critical</p>
+                    <p className="text-3xl font-black text-amber-500 mt-1 tracking-tight">{cardStats.critical}</p>
+                    <div className="mt-2 h-1 w-12 rounded-full bg-amber-500/20" />
+                </div>
             </div>
 
             {/* Filter Header */}
@@ -202,15 +257,13 @@ export default function StockOverview() {
                             <th className="px-6 py-4 text-[10px] font-bold text-text-secondary uppercase tracking-widest bg-surface">
                                 Status
                             </th>
-                            <th className="px-6 py-4 text-[10px] font-bold text-text-secondary uppercase tracking-widest bg-surface text-right">
-                                —
-                            </th>
+
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-border bg-surface text-sm">
                         {lines.length === 0 && !loading && (
                             <tr>
-                                <td colSpan={7} className="px-6 py-12 text-center text-sm text-text-muted">
+                                <td colSpan={6} className="px-6 py-12 text-center text-sm text-text-muted">
                                     No products or no outlets yet. Add outlets and products, then use Stock In to record
                                     quantities.
                                 </td>
@@ -218,7 +271,7 @@ export default function StockOverview() {
                         )}
                         {lines.length > 0 && filteredStock.length === 0 && (
                             <tr>
-                                <td colSpan={7} className="px-6 py-12 text-center text-sm text-text-muted">
+                                <td colSpan={6} className="px-6 py-12 text-center text-sm text-text-muted">
                                     No rows match your filters.
                                 </td>
                             </tr>
@@ -281,15 +334,7 @@ export default function StockOverview() {
                                             </div>
                                         )}
                                     </td>
-                                    <td className="px-6 py-4 text-right">
-                                        <button
-                                            type="button"
-                                            title="History (coming soon)"
-                                            className="p-2 rounded-lg text-text-muted hover:text-primary hover:bg-primary/5 transition-all"
-                                        >
-                                            <History className="w-4 h-4" />
-                                        </button>
-                                    </td>
+
                                 </tr>
                             );
 

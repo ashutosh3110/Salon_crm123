@@ -79,6 +79,10 @@ const settingSchema = new mongoose.Schema({
         type: Number,
         default: 18
     },
+    supplierGst: {
+        type: Number,
+        default: 18
+    },
     whatsappPricing: {
         pricePerMessage: { type: Number, default: 0.50 },
         minPurchaseQty: { type: Number, default: 1000 }

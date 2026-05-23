@@ -47,8 +47,15 @@ export default function ServiceForm({ onSave, onCancel, categories = [], initial
         status: initialData?.status || 'active',
         gender: initialData?.gender || 'both',
         resourceType: initialData?.resourceType || 'chair',
+        gst: initialData?.gst !== undefined && initialData?.gst !== null ? initialData.gst : (platformSettings?.serviceGst ?? 18),
         isInclusiveTax: initialData?.isInclusiveTax || false
     });
+
+    useEffect(() => {
+        if (platformSettings?.serviceGst && formData.gst === undefined && !initialData) {
+            setFormData(prev => ({ ...prev, gst: platformSettings.serviceGst }));
+        }
+    }, [platformSettings, initialData, formData.gst]);
 
     const [imageFile, setImageFile] = useState(null);
 
@@ -113,10 +120,10 @@ export default function ServiceForm({ onSave, onCancel, categories = [], initial
                 }
             });
 
-            // Append specific numeric conversions that backend expects
             submissionData.set('duration', parseInt(formData.duration));
             submissionData.set('price', parseFloat(formData.price));
             submissionData.set('isInclusiveTax', formData.isInclusiveTax);
+            submissionData.set('gst', parseFloat(formData.gst) || 0);
             submissionData.set('commissionValue', parseFloat(formData.commissionValue) || 0);
 
             // Append Image File if new one selected
@@ -336,8 +343,8 @@ export default function ServiceForm({ onSave, onCancel, categories = [], initial
                             <h3 className="text-[9px] font-bold text-text uppercase tracking-widest">2. Time & Pricing</h3>
                         </div>
 
-                        <div className="grid grid-cols-3 gap-2">
-                            <div className="space-y-1 col-span-1">
+                        <div className="grid grid-cols-2 gap-3">
+                            <div className="space-y-1">
                                 <label className="text-[9px] font-bold text-text-muted uppercase tracking-tighter italic">Dur (Min)</label>
                                 <div className="relative">
                                     <Clock className="absolute left-2 top-1/2 -translate-y-1/2 w-3 h-3 text-text-muted" />
@@ -350,7 +357,7 @@ export default function ServiceForm({ onSave, onCancel, categories = [], initial
                                     />
                                 </div>
                             </div>
-                            <div className="space-y-1 col-span-1">
+                            <div className="space-y-1">
                                 <label className="text-[9px] font-bold text-text-muted uppercase tracking-tighter italic">Price</label>
                                 <div className="relative">
                                     <span className="absolute left-2 top-1/2 -translate-y-1/2 text-text-muted font-bold text-[10px]">₹</span>
@@ -363,7 +370,10 @@ export default function ServiceForm({ onSave, onCancel, categories = [], initial
                                     />
                                 </div>
                             </div>
-                            <div className="space-y-1 col-span-1">
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-3 pt-2">
+                            <div className="space-y-1">
                                 <label className="text-[9px] font-bold text-text-muted uppercase tracking-tighter italic">Tax Mode</label>
                                 <select 
                                     className="w-full px-2 py-1.5 rounded-lg bg-surface-alt border border-border text-[9px] font-black uppercase tracking-tighter"
@@ -372,6 +382,18 @@ export default function ServiceForm({ onSave, onCancel, categories = [], initial
                                 >
                                     <option value="excluding">Excluding GST</option>
                                     <option value="including">Including GST</option>
+                                </select>
+                            </div>
+                            <div className="space-y-1">
+                                <label className="text-[9px] font-bold text-text-muted uppercase tracking-tighter italic">GST Rate (%)</label>
+                                <select 
+                                    className="w-full px-2 py-1.5 rounded-lg bg-surface-alt border border-border text-[9px] font-black uppercase tracking-tighter"
+                                    value={formData.gst}
+                                    onChange={(e) => setFormData({ ...formData, gst: Number(e.target.value) })}
+                                >
+                                    {[0, 5, 12, 18, 28, Number(platformSettings?.serviceGst)].filter((r, idx, self) => r !== undefined && r !== null && !isNaN(r) && self.indexOf(r) === idx).sort((a,b)=>a-b).map(rate => (
+                                        <option key={rate} value={rate}>{rate}% {rate === 0 ? 'Exempt' : 'GST'}</option>
+                                    ))}
                                 </select>
                             </div>
                         </div>

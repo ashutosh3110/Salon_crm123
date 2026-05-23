@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import { useInventory } from '../../contexts/InventoryContext';
 import { useBusiness } from '../../contexts/BusinessContext';
+import getImageUrl from '../../utils/imageUtils';
 
 export default function ProductDetailsPage() {
     const { id } = useParams();
@@ -81,7 +82,7 @@ export default function ProductDetailsPage() {
                         <div className="aspect-square bg-surface-alt relative overflow-hidden">
                             {product.images && product.images.length > 0 ? (
                                 <img 
-                                    src={product.images[0]} 
+                                    src={getImageUrl(product.images[0])} 
                                     alt={product.name}
                                     className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                                 />
@@ -99,7 +100,7 @@ export default function ProductDetailsPage() {
                             <div className="p-4 grid grid-cols-4 gap-2 border-t border-border bg-surface-alt/30">
                                 {product.images.slice(1, 5).map((img, idx) => (
                                     <div key={idx} className="aspect-square bg-surface border border-border overflow-hidden">
-                                        <img src={img} className="w-full h-full object-cover opacity-60 hover:opacity-100 transition-opacity cursor-pointer" alt="" />
+                                        <img src={getImageUrl(img)} className="w-full h-full object-cover opacity-60 hover:opacity-100 transition-opacity cursor-pointer" alt="" />
                                     </div>
                                 ))}
                             </div>
@@ -143,8 +144,11 @@ export default function ProductDetailsPage() {
                                 <span className="flex items-center gap-1.5 text-[10px] font-black text-text-muted uppercase tracking-widest border-r border-border pr-4">
                                     <Building2 className="w-3 h-3" /> {product.brand || 'No Brand'}
                                 </span>
-                                <span className="flex items-center gap-1.5 text-[10px] font-black text-text-muted uppercase tracking-widest">
+                                <span className="flex items-center gap-1.5 text-[10px] font-black text-text-muted uppercase tracking-widest border-r border-border pr-4">
                                     <Tag className="w-3 h-3" /> {product.category || 'General'}
+                                </span>
+                                <span className="flex items-center gap-1.5 text-[10px] font-black text-text-muted uppercase tracking-widest">
+                                    <Truck className="w-3.5 h-3.5" /> Supplier: {product.supplier || 'None / Direct'}
                                 </span>
                             </div>
                         </div>

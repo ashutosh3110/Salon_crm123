@@ -112,7 +112,7 @@ function SupplierTable({ suppliers, onEdit, onDelete }) {
                         <th className="px-8 py-4 text-[10px] font-bold text-text-secondary uppercase tracking-widest">Supplier Name</th>
                         <th className="px-8 py-4 text-[10px] font-bold text-text-secondary uppercase tracking-widest">Contact Info</th>
                         <th className="px-8 py-4 text-[10px] font-bold text-text-secondary uppercase tracking-widest">GSTIN</th>
-                        <th className="px-8 py-4 text-[10px] font-bold text-text-secondary uppercase tracking-widest text-right">Outstanding Due</th>
+                        <th className="px-8 py-4 text-[10px] font-bold text-text-secondary uppercase tracking-widest text-center">Outstanding Due</th>
                         <th className="px-8 py-4 text-[10px] font-bold text-text-secondary uppercase tracking-widest">Status</th>
                         <th className="px-8 py-4 text-[10px] font-bold text-text-secondary uppercase tracking-widest text-right">Actions</th>
                     </tr>
@@ -150,7 +150,7 @@ function SupplierTable({ suppliers, onEdit, onDelete }) {
                             <td className="px-8 py-5">
                                 <span className="text-[10px] font-bold text-text-secondary bg-surface px-2 py-1 rounded border border-border">{supplier.gstin}</span>
                             </td>
-                            <td className="px-8 py-5 text-right">
+                            <td className="px-8 py-5 text-center">
                                 <span className={`text-sm font-bold ${supplier.due > 0 ? (supplier.status === 'Overdue' ? 'text-rose-600' : 'text-orange-500') : 'text-emerald-600'}`}>
                                     ₹{(supplier.due || 0).toLocaleString()}
                                 </span>
@@ -165,7 +165,8 @@ function SupplierTable({ suppliers, onEdit, onDelete }) {
                                 <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                                     <button
                                         onClick={() => onEdit(supplier)}
-                                        className="p-2 rounded-lg text-text-muted hover:text-primary hover:bg-primary/5 transition-all"
+                                        className="p-2 rounded-none border border-border bg-white text-text-secondary hover:bg-primary/10 hover:text-primary transition-all"
+                                        title="Edit Profile"
                                     >
                                         <FileText className="w-4 h-4" />
                                     </button>
@@ -173,11 +174,14 @@ function SupplierTable({ suppliers, onEdit, onDelete }) {
                                         type="button"
                                         title="Delete"
                                         onClick={() => onDelete(rowId)}
-                                        className="p-2 rounded-lg text-text-muted hover:text-rose-500 hover:bg-rose-50 transition-all"
+                                        className="p-2 rounded-none border border-border bg-white text-text-secondary hover:bg-rose-500/10 hover:text-rose-500 transition-all"
                                     >
                                         <Trash2 className="w-4 h-4" />
                                     </button>
-                                    <button className="p-2 rounded-lg text-text-muted hover:text-primary hover:bg-primary/5 transition-all">
+                                    <button 
+                                        className="p-2 rounded-none border border-border bg-white text-text-secondary hover:bg-primary/10 hover:text-primary transition-all"
+                                        title="More Actions"
+                                    >
                                         <MoreHorizontal className="w-4 h-4" />
                                     </button>
                                 </div>
