@@ -85,7 +85,7 @@ export default function HRPage({ tab = 'attendance' }) {
                         <button
                             key={t.id}
                             onClick={() => navigate(`/admin/hr/${t.id}`)}
-                            className={`flex items-center gap-3 px-8 py-3 rounded-none text-[10px] font-black uppercase tracking-[0.2em] transition-all duration-500 relative group/tab whitespace-nowrap ${tab === t.id
+                            className={`flex items-center gap-3 px-8 py-3 rounded-none text-xs font-black uppercase tracking-[0.15em] transition-all duration-500 relative group/tab whitespace-nowrap ${tab === t.id
                                 ? 'bg-primary text-primary-foreground shadow-xl shadow-primary/20 scale-100'
                                 : 'text-text-muted hover:text-text hover:bg-surface-alt'
                                 }`}

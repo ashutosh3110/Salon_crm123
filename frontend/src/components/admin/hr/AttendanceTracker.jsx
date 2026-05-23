@@ -351,7 +351,7 @@ export default function AttendanceTracker() {
                         <p className="text-[10px] font-black text-background/60 uppercase tracking-[0.3em]">Quick Actions</p>
                         <h3 className="text-lg font-black mt-2 uppercase tracking-tight">Bulk Status Update</h3>
                     </div>
-                    <button onClick={() => setBulkModal(true)} className="relative z-10 mt-6 flex items-center justify-center gap-3 px-6 py-4 rounded-none bg-white text-text text-[10px] font-black uppercase tracking-[0.2em] hover:bg-primary hover:text-white transition-all active:scale-95">
+                    <button onClick={() => setBulkModal(true)} className="relative z-10 mt-6 flex items-center justify-center gap-3 px-6 py-4 rounded-none bg-white text-text text-xs font-black uppercase tracking-[0.2em] hover:bg-primary hover:text-white transition-all active:scale-95">
                         <Users className="w-4 h-4" /> Open Mark Portal
                     </button>
                     <div className="absolute -bottom-8 -right-8 w-32 h-32 rounded-none bg-white/5 rotate-45" />
@@ -360,7 +360,7 @@ export default function AttendanceTracker() {
 
             {/* View Mode Switcher */}
             <div className="flex items-center gap-1 bg-surface p-1 border border-border w-fit rounded-none shadow-sm">
-                <button onClick={() => setViewMode('daily')} className={`px-6 py-2.5 text-[10px] font-black uppercase tracking-widest transition-all ${viewMode === 'daily' ? 'bg-primary text-white shadow-lg' : 'text-text-muted hover:text-text'}`}>Daily Registry</button>
+                <button onClick={() => setViewMode('daily')}                        className={`px-6 py-2.5 text-xs font-black uppercase tracking-widest transition-all ${viewMode === 'daily' ? 'bg-primary text-white shadow-lg' : 'text-text-muted hover:text-text'}`}>Daily Registry</button>
                 <button onClick={() => setViewMode('summary')} className={`px-6 py-2.5 text-[10px] font-black uppercase tracking-widest transition-all ${viewMode === 'summary' ? 'bg-primary text-white shadow-lg' : 'text-text-muted hover:text-text'}`}>Monthly Summary</button>
             </div>
 
@@ -375,12 +375,12 @@ export default function AttendanceTracker() {
                 <div className="flex items-center gap-2 flex-wrap text-left">
                     {viewMode === 'daily' && ['All', 'pending', 'present', 'absent', 'leave'].map(s => (
                         <button key={s} onClick={() => setActiveStatusFilter(s)}
-                            className={`px-4 py-2 rounded-none text-[9px] font-black uppercase tracking-[0.1em] border transition-all ${activeStatusFilter === s ? 'bg-primary text-white border-primary' : 'bg-surface text-text-muted border-border hover:border-primary'}`}>
+                            className={`px-4 py-2 rounded-none text-xs font-black uppercase tracking-[0.1em] border transition-all ${activeStatusFilter === s ? 'bg-primary text-white border-primary' : 'bg-surface text-text-muted border-border hover:border-primary'}`}>
                             {s === 'All' ? 'Full View' : STATUS_META[s]?.label}
                         </button>
                     ))}
                     <div className="w-[1px] h-6 bg-border mx-2" />
-                    <button onClick={exportCSV} className="flex items-center gap-2 px-4 py-2 rounded-none border border-border text-[9px] font-black uppercase tracking-[0.1em] text-text-muted hover:bg-surface-alt transition-all">
+                    <button onClick={exportCSV} className="flex items-center gap-2 px-4 py-2 rounded-none border border-border text-xs font-black uppercase tracking-[0.1em] text-text-muted hover:bg-surface-alt transition-all">
                         <Download className="w-3.5 h-3.5" /> Export Report
                     </button>
                 </div>
@@ -520,7 +520,7 @@ export default function AttendanceTracker() {
                                     ))}
                                 </div>
 
-                                <button type="submit" className="w-full py-4 bg-primary text-white rounded-none font-black text-[10px] uppercase tracking-[0.2em] shadow-xl shadow-primary/20 hover:scale-[1.02] transition-all">Update Status</button>
+                                <button type="submit" className="w-full py-4 bg-primary text-white rounded-none font-black text-xs uppercase tracking-[0.2em] shadow-xl shadow-primary/20 hover:scale-[1.02] transition-all">Update Status</button>
                             </form>
                         </motion.div>
                     </div>
@@ -538,9 +538,9 @@ export default function AttendanceTracker() {
                             <h3 className="text-xs font-black text-text uppercase tracking-[0.2em]">Mark All Members</h3>
                             <p className="text-[10px] text-text-muted mt-2 mb-8 uppercase font-bold tracking-widest italic leading-relaxed">Choose status to apply to all staff for {selectedDate}</p>
                             <div className="grid grid-cols-1 gap-3">
-                                <button onClick={() => bulkMarkStatus('present')} className="py-4 bg-emerald-500 text-white rounded-none text-[10px] font-black uppercase tracking-[0.2em] shadow-xl shadow-emerald-500/10 hover:scale-[1.02] transition-all">Mark All Present</button>
-                                <button onClick={() => bulkMarkStatus('absent')} className="py-4 bg-rose-500 text-white rounded-none text-[10px] font-black uppercase tracking-[0.2em] shadow-xl shadow-rose-500/10 hover:scale-[1.02] transition-all">Mark All Absent</button>
-                                <button onClick={() => bulkMarkStatus('leave')} className="py-4 bg-violet-500 text-white rounded-none text-[10px] font-black uppercase tracking-[0.2em] shadow-xl shadow-violet-500/10 hover:scale-[1.02] transition-all">Mark All Leave</button>
+                                <button onClick={() => bulkMarkStatus('present')} className="py-4 bg-emerald-500 text-white rounded-none text-xs font-black uppercase tracking-[0.2em] shadow-xl shadow-emerald-500/10 hover:scale-[1.02] transition-all">Mark All Present</button>
+                                <button onClick={() => bulkMarkStatus('absent')} className="py-4 bg-rose-500 text-white rounded-none text-xs font-black uppercase tracking-[0.2em] shadow-xl shadow-rose-500/10 hover:scale-[1.02] transition-all">Mark All Absent</button>
+                                <button onClick={() => bulkMarkStatus('leave')} className="py-4 bg-violet-500 text-white rounded-none text-xs font-black uppercase tracking-[0.2em] shadow-xl shadow-violet-500/10 hover:scale-[1.02] transition-all">Mark All Leave</button>
                             </div>
                         </motion.div>
                     </div>
@@ -562,7 +562,7 @@ export default function AttendanceTracker() {
                                 <textarea required rows={4} placeholder="ENTER LOG DETAIL OR REASON..."
                                     className="w-full px-5 py-4 rounded-none bg-background border border-border text-[11px] font-black uppercase tracking-widest focus:border-primary outline-none resize-none italic"
                                     value={remark} onChange={e => setRemark(e.target.value)} />
-                                <button type="submit" className="w-full py-4 bg-amber-500 text-white rounded-none font-black text-[10px] uppercase tracking-[0.2em] shadow-xl shadow-amber-500/20 hover:scale-[1.02] transition-all">Save Daily Log</button>
+                                <button type="submit" className="w-full py-4 bg-amber-500 text-white rounded-none font-black text-xs uppercase tracking-[0.2em] shadow-xl shadow-amber-500/20 hover:scale-[1.02] transition-all">Save Daily Log</button>
                             </form>
                         </motion.div>
                     </div>

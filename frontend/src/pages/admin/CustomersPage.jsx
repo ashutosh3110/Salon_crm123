@@ -30,6 +30,7 @@ import {
     FileSpreadsheet
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { createPortal } from 'react-dom';
 import * as XLSX from 'xlsx';
 import AnimatedCounter from '../../components/common/AnimatedCounter';
 import CustomerProfileModal from '../../components/admin/CustomerProfileModal';
@@ -325,8 +326,10 @@ export default function CustomersPage({ tab = 'directory' }) {
                     onClose={() => setSelectedCustomer(null)}
                 />
 
-                {/* Add Customer Modal */}
-                {showAddModal && (
+            </div>
+
+                {/* Add Customer Modal (Portal) */}
+                {showAddModal && createPortal(
                     <div className="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-[200] flex items-center justify-center p-4 animate-in fade-in duration-300" onClick={() => setShowAddModal(false)}>
                         <div className="bg-white rounded-3xl w-full max-w-md shadow-2xl relative overflow-y-auto max-h-[90vh] hide-scrollbar animate-in slide-in-from-top-4 duration-300 border border-slate-200/50" onClick={(e) => e.stopPropagation()}>
                             <div className="p-5 bg-white border-b border-slate-100 flex justify-between items-center">
@@ -404,12 +407,12 @@ export default function CustomersPage({ tab = 'directory' }) {
                                 </div>
                             </form>
                         </div>
-                    </div>
+                    </div>,
+                    document.body
                 )}
-            </div>
 
-            {/* Manual WhatsApp Message Modal */}
-            {whatsappModal.isOpen && (
+            {/* WhatsApp Message Modal (Portal) */}
+            {whatsappModal.isOpen && createPortal(
                 <div className="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-[250] flex items-center justify-center p-4 animate-in fade-in duration-300" onClick={() => setWhatsappModal({ ...whatsappModal, isOpen: false })}>
                     <div className="bg-white rounded-3xl w-full max-w-md shadow-2xl border border-slate-200/50 overflow-y-auto max-h-[90vh] hide-scrollbar animate-in zoom-in-95 duration-200" onClick={(e) => e.stopPropagation()}>
                         <div className="p-5 bg-white border-b border-slate-100 flex justify-between items-center">
@@ -460,7 +463,8 @@ export default function CustomersPage({ tab = 'directory' }) {
                             </button>
                         </div>
                     </div>
-                </div>
+                </div>,
+                document.body
             )}
         </>
     );

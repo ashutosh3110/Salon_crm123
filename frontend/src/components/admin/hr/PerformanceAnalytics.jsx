@@ -167,7 +167,7 @@ export default function PerformanceAnalytics() {
                 <div className="flex items-center gap-3">
                     <div className="relative">
                         <button onClick={() => setPeriodOpen(!periodOpen)} 
-                            className="flex items-center gap-3 px-5 py-3.5 bg-surface border border-border rounded-none text-[10px] font-black uppercase tracking-widest hover:border-primary transition-all shadow-xl shadow-primary/5">
+                            className="flex items-center gap-3 px-5 py-3.5 bg-surface border border-border rounded-none text-xs font-black uppercase tracking-widest hover:border-primary transition-all shadow-xl shadow-primary/5">
                             <Calendar className="w-4 h-4 text-primary" /> {period} <ChevronDown className="w-4 h-4 text-text-muted" />
                         </button>
                         <AnimatePresence>
@@ -176,7 +176,7 @@ export default function PerformanceAnalytics() {
                                     className="absolute top-full left-0 mt-2 bg-surface border border-border rounded-none shadow-2xl z-50 w-48 py-2">
                                     {PERIODS.map(p => (
                                         <button key={p} onClick={() => { setPeriod(p); setPeriodOpen(false); }}
-                                            className={`w-full px-6 py-3.5 text-[10px] font-black uppercase text-left tracking-widest hover:bg-surface-alt ${period === p ? 'text-primary' : 'text-text'}`}>
+                                            className={`w-full px-6 py-3.5 text-xs font-black uppercase text-left tracking-widest hover:bg-surface-alt ${period === p ? 'text-primary' : 'text-text'}`}>
                                             {p}
                                         </button>
                                     ))}
@@ -194,7 +194,7 @@ export default function PerformanceAnalytics() {
                     <div className="relative w-48 lg:w-64">
                         <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
                         <input type="text" placeholder="FILTER STAFF..." 
-                            className="w-full pl-12 pr-4 py-3.5 bg-surface border border-border rounded-none text-[10px] font-black uppercase tracking-widest focus:border-primary outline-none"
+                            className="w-full pl-12 pr-4 py-3.5 bg-surface border border-border rounded-none text-xs font-black uppercase tracking-widest focus:border-primary outline-none"
                             value={searchTerm} onChange={e => setSearchTerm(e.target.value)} />
                     </div>
                     <button 
@@ -394,10 +394,10 @@ export default function PerformanceAnalytics() {
                                         value={goalInput} onChange={e => setGoalInput(e.target.value)} autoFocus />
                                 </div>
                                 <div className="flex gap-3 pt-4 font-black">
-                                    <button type="submit" disabled={goalSaving} className="flex-1 py-4 bg-primary text-white rounded-none text-[10px] font-black uppercase tracking-[0.3em] shadow-xl shadow-primary/20 hover:scale-[1.02] active:scale-95 transition-all">
+                                    <button type="submit" disabled={goalSaving} className="flex-1 py-4 bg-primary text-white rounded-none text-xs font-black uppercase tracking-[0.3em] shadow-xl shadow-primary/20 hover:scale-[1.02] active:scale-95 transition-all">
                                         {goalSaving ? 'LOCKING...' : 'SAVE GOAL'}
                                     </button>
-                                    <button type="button" onClick={() => setGoalModal(null)} className="px-6 py-4 border border-border text-[10px] font-black text-text-muted uppercase tracking-widest hover:text-text transition-all">CANCEL</button>
+                                    <button type="button" onClick={() => setGoalModal(null)} className="px-6 py-4 border border-border text-xs font-black text-text-muted uppercase tracking-widest hover:text-text transition-all">CANCEL</button>
                                 </div>
                             </form>
                         </motion.div>

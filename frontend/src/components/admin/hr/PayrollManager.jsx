@@ -324,7 +324,7 @@ export default function PayrollManager() {
                         </select>
                     </div>
                     <button onClick={() => { console.log('Opening Modal'); setIndividualModal(true); }}
-                        className="px-6 py-3.5 bg-primary text-white rounded-none text-[10px] font-black uppercase tracking-[0.2em] shadow-xl shadow-primary/20 hover:scale-[1.02] transition-all">
+                        className="px-6 py-3.5 bg-primary text-white rounded-none text-xs font-black uppercase tracking-[0.2em] shadow-xl shadow-primary/20 hover:scale-[1.02] transition-all">
                         Add Member to Payroll
                     </button>
                 </div>
@@ -488,7 +488,7 @@ export default function PayrollManager() {
                                     <h3 className="text-2xl font-black text-primary tracking-tighter mt-1">₹{Math.round(((individualForm.baseSalary / (individualForm.workingDays || 1)) * individualForm.presentDays) + Number(individualForm.incentive) + Number(individualForm.overtime) - Number(individualForm.pf) - Number(individualForm.tax) - Number(individualForm.otherDeductions)).toLocaleString()}</h3>
                                 </div>
                                 <button onClick={createIndividual} disabled={!individualForm.staffId || loading}
-                                    className="px-10 py-5 bg-primary text-white rounded-none font-black text-[11px] uppercase tracking-[0.2em] shadow-2xl shadow-primary/30 hover:scale-[1.02] disabled:opacity-50 transition-all flex items-center justify-center gap-3">
+                                    className="px-10 py-5 bg-primary text-white rounded-none font-black text-xs uppercase tracking-[0.2em] shadow-2xl shadow-primary/30 hover:scale-[1.02] disabled:opacity-50 transition-all flex items-center justify-center gap-3">
                                     {loading ? 'Processing...' : 'Create Payroll Record'}
                                 </button>
                             </div>
@@ -568,9 +568,9 @@ export default function PayrollManager() {
                                     <h3 className="text-2xl font-black text-primary tracking-tighter mt-1">₹{calculateNet().toLocaleString()}</h3>
                                 </div>
                                 <div className="flex items-center gap-3 font-black">
-                                    <button onClick={() => setShowDetails(null)} className="px-6 py-4 rounded-none text-[10px] font-black uppercase tracking-widest text-text-muted hover:text-text transition-all">Cancel</button>
+                                    <button onClick={() => setShowDetails(null)} className="px-6 py-4 rounded-none text-xs font-black uppercase tracking-widest text-text-muted hover:text-text transition-all">Cancel</button>
                                     <button onClick={saveDetails} disabled={isSaving}
-                                        className="px-8 py-4 bg-primary text-white rounded-none text-[10px] font-black uppercase tracking-[0.2em] shadow-2xl shadow-primary/20 hover:scale-[1.02] active:scale-95 transition-all">
+                                        className="px-8 py-4 bg-primary text-white rounded-none text-xs font-black uppercase tracking-[0.2em] shadow-2xl shadow-primary/20 hover:scale-[1.02] active:scale-95 transition-all">
                                         {isSaving ? 'Processing...' : 'Lock & Save Logs'}
                                     </button>
                                 </div>
