@@ -397,7 +397,7 @@ export default function PerformanceAnalytics() {
                                     <button type="submit" disabled={goalSaving} className="flex-1 py-4 bg-primary text-white rounded-none text-xs font-black uppercase tracking-[0.3em] shadow-xl shadow-primary/20 hover:scale-[1.02] active:scale-95 transition-all">
                                         {goalSaving ? 'LOCKING...' : 'SAVE GOAL'}
                                     </button>
-                                    <button type="button" onClick={() => setGoalModal(null)} className="px-6 py-4 border border-border text-xs font-black text-text-muted uppercase tracking-widest hover:text-text transition-all">CANCEL</button>
+                                    <button type="button" onClick={() => setGoalModal(null)} className="px-6 py-4 border border-border text-xs font-black text-text uppercase tracking-widest hover:text-text transition-all">CANCEL</button>
                                 </div>
                             </form>
                         </motion.div>

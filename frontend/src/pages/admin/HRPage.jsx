@@ -69,37 +69,13 @@ export default function HRPage({ tab = 'attendance' }) {
     return (
         <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
             {/* Header section */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <div className="flex items-center gap-4">
-                    <div className={`p-4 rounded-none ${activeTab.bg.replace('bg-', 'bg-').replace('/10', '/5')} border border-primary/10 shadow-sm transition-transform hover:scale-105`}>
-                        <activeTab.icon className={`w-6 h-6 ${activeTab.color}`} />
-                    </div>
-                    <div>
-                        <h1 className="text-2xl font-black text-text uppercase tracking-tight">{activeTab.label}</h1>
-                        <p className="text-[10px] font-black text-text-muted tracking-wide opacity-80 max-w-xl">{tabHint}</p>
-                    </div>
+            <div className="flex items-center gap-4">
+                <div className={`p-4 rounded-none ${activeTab.bg.replace('bg-', 'bg-').replace('/10', '/5')} border border-primary/10 shadow-sm transition-transform hover:scale-105`}>
+                    <activeTab.icon className={`w-6 h-6 ${activeTab.color}`} />
                 </div>
-
-                <div className="flex items-center gap-2 bg-surface p-1.5 rounded-none border border-border shadow-2xl shadow-primary/5 backdrop-blur-xl overflow-x-auto no-scrollbar max-w-full">
-                    {HR_TABS.map((t) => (
-                        <button
-                            key={t.id}
-                            onClick={() => navigate(`/admin/hr/${t.id}`)}
-                            className={`flex items-center gap-3 px-8 py-3 rounded-none text-xs font-black uppercase tracking-[0.15em] transition-all duration-500 relative group/tab whitespace-nowrap ${tab === t.id
-                                ? 'bg-primary text-primary-foreground shadow-xl shadow-primary/20 scale-100'
-                                : 'text-text-muted hover:text-text hover:bg-surface-alt'
-                                }`}
-                        >
-                            <t.icon className={`w-4 h-4 transition-transform group-hover/tab:scale-110 ${tab === t.id ? 'text-primary-foreground' : 'text-primary/60'}`} />
-                            <span className="inline">{t.label}</span>
-                            {tab === t.id && (
-                                <>
-                                    <div className="absolute -top-[1px] -left-[1px] w-2 h-2 border-t-2 border-l-2 border-white/40" />
-                                    <div className="absolute -bottom-[1px] -right-[1px] w-2 h-2 border-b-2 border-r-2 border-white/40" />
-                                </>
-                            )}
-                        </button>
-                    ))}
+                <div>
+                    <h1 className="text-2xl font-black text-text uppercase tracking-tight">{activeTab.label}</h1>
+                    <p className="text-[10px] font-black text-text-muted tracking-wide opacity-80 max-w-xl">{tabHint}</p>
                 </div>
             </div>
 

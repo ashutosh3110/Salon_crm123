@@ -311,10 +311,10 @@ export default function AttendanceTracker() {
                         <div className="text-left w-full sm:w-auto">
                             <p className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Operational Date</p>
                             <div className="flex items-center gap-3 mt-1 text-left font-black">
-                                <button onClick={() => changeDate(-1)} className="p-1.5 rounded-none hover:bg-surface-alt transition-colors text-text-muted hover:text-text border border-border/20"><ChevronLeft className="w-4 h-4" /></button>
+                                <button onClick={() => changeDate(-1)} className="p-1.5 rounded-none hover:bg-surface-alt transition-colors text-text hover:text-text border border-border/20"><ChevronLeft className="w-4 h-4" /></button>
                                 <input type="date" value={selectedDate} max={new Date().toISOString().split('T')[0]} onChange={e => setSelectedDate(e.target.value)}
                                     className="text-lg font-black text-text bg-transparent border-none p-0 focus:ring-0 cursor-pointer outline-none uppercase" />
-                                <button onClick={() => changeDate(1)} className="p-1.5 rounded-none hover:bg-surface-alt transition-colors text-text-muted hover:text-text border border-border/20"><ChevronRight className="w-4 h-4" /></button>
+                                <button onClick={() => changeDate(1)} className="p-1.5 rounded-none hover:bg-surface-alt transition-colors text-text hover:text-text border border-border/20"><ChevronRight className="w-4 h-4" /></button>
                             </div>
                         </div>
                     </div>
@@ -360,8 +360,8 @@ export default function AttendanceTracker() {
 
             {/* View Mode Switcher */}
             <div className="flex items-center gap-1 bg-surface p-1 border border-border w-fit rounded-none shadow-sm">
-                <button onClick={() => setViewMode('daily')}                        className={`px-6 py-2.5 text-xs font-black uppercase tracking-widest transition-all ${viewMode === 'daily' ? 'bg-primary text-white shadow-lg' : 'text-text-muted hover:text-text'}`}>Daily Registry</button>
-                <button onClick={() => setViewMode('summary')} className={`px-6 py-2.5 text-[10px] font-black uppercase tracking-widest transition-all ${viewMode === 'summary' ? 'bg-primary text-white shadow-lg' : 'text-text-muted hover:text-text'}`}>Monthly Summary</button>
+                <button onClick={() => setViewMode('daily')}                        className={`px-6 py-2.5 text-xs font-black uppercase tracking-widest transition-all ${viewMode === 'daily' ? 'bg-primary text-white shadow-lg' : 'text-text hover:text-text'}`}>Daily Registry</button>
+                <button onClick={() => setViewMode('summary')} className={`px-6 py-2.5 text-[10px] font-black uppercase tracking-widest transition-all ${viewMode === 'summary' ? 'bg-primary text-white shadow-lg' : 'text-text hover:text-text'}`}>Monthly Summary</button>
             </div>
 
             {/* Toolbar */}
@@ -375,12 +375,12 @@ export default function AttendanceTracker() {
                 <div className="flex items-center gap-2 flex-wrap text-left">
                     {viewMode === 'daily' && ['All', 'pending', 'present', 'absent', 'leave'].map(s => (
                         <button key={s} onClick={() => setActiveStatusFilter(s)}
-                            className={`px-4 py-2 rounded-none text-xs font-black uppercase tracking-[0.1em] border transition-all ${activeStatusFilter === s ? 'bg-primary text-white border-primary' : 'bg-surface text-text-muted border-border hover:border-primary'}`}>
+                            className={`px-4 py-2 rounded-none text-xs font-black uppercase tracking-[0.1em] border transition-all ${activeStatusFilter === s ? 'bg-primary text-white border-primary' : 'bg-surface text-text border-border hover:border-primary'}`}>
                             {s === 'All' ? 'Full View' : STATUS_META[s]?.label}
                         </button>
                     ))}
                     <div className="w-[1px] h-6 bg-border mx-2" />
-                    <button onClick={exportCSV} className="flex items-center gap-2 px-4 py-2 rounded-none border border-border text-xs font-black uppercase tracking-[0.1em] text-text-muted hover:bg-surface-alt transition-all">
+                    <button onClick={exportCSV} className="flex items-center gap-2 px-4 py-2 rounded-none border border-border text-xs font-black uppercase tracking-[0.1em] text-text hover:bg-surface-alt transition-all">
                         <Download className="w-3.5 h-3.5" /> Export Report
                     </button>
                 </div>
@@ -508,13 +508,13 @@ export default function AttendanceTracker() {
                                     <h2 className="text-sm font-black text-text uppercase tracking-[0.2em]">Update Status</h2>
                                     <p className="text-[10px] font-black text-primary mt-1 uppercase tracking-widest italic">{changeStatusModal.staff}</p>
                                 </div>
-                                <button onClick={() => setChangeStatusModal(null)} className="w-10 h-10 rounded-none bg-background border border-border flex items-center justify-center text-text-muted hover:text-text hover:border-text transition-all"><X className="w-5 h-5" /></button>
+                                <button onClick={() => setChangeStatusModal(null)} className="w-10 h-10 rounded-none bg-background border border-border flex items-center justify-center text-text hover:text-text hover:border-text transition-all"><X className="w-5 h-5" /></button>
                             </div>
                             <form onSubmit={applyStatusChange} className="space-y-6">
                                 <div className="grid grid-cols-2 gap-3">
                                     {Object.entries(STATUS_META).map(([key, val]) => (
                                         <button key={key} type="button" onClick={() => setNewStatus(key)}
-                                            className={`py-3 px-3 rounded-none text-[10px] font-black uppercase tracking-widest border transition-all ${newStatus === key ? 'bg-primary text-white border-primary shadow-lg shadow-primary/20' : 'bg-surface text-text-muted border-border hover:border-primary'}`}>
+                                            className={`py-3 px-3 rounded-none text-[10px] font-black uppercase tracking-widest border transition-all ${newStatus === key ? 'bg-primary text-white border-primary shadow-lg shadow-primary/20' : 'bg-surface text-text border-border hover:border-primary'}`}>
                                             {val.label}
                                         </button>
                                     ))}
@@ -533,7 +533,7 @@ export default function AttendanceTracker() {
                         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setBulkModal(false)} className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
                         <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }}
                             className="bg-surface w-full max-w-sm rounded-none border border-border shadow-2xl relative p-8 text-center">
-                            <button onClick={() => setBulkModal(false)} className="absolute top-4 right-4 w-9 h-9 rounded-none bg-background border border-border flex items-center justify-center text-text-muted hover:text-text"><X className="w-4 h-4" /></button>
+                            <button onClick={() => setBulkModal(false)} className="absolute top-4 right-4 w-9 h-9 rounded-none bg-background border border-border flex items-center justify-center text-text hover:text-text"><X className="w-4 h-4" /></button>
                             <div className="w-14 h-14 bg-primary/10 rounded-none flex items-center justify-center mx-auto mb-6 border border-primary/20"><Users className="w-6 h-6 text-primary" /></div>
                             <h3 className="text-xs font-black text-text uppercase tracking-[0.2em]">Mark All Members</h3>
                             <p className="text-[10px] text-text-muted mt-2 mb-8 uppercase font-bold tracking-widest italic leading-relaxed">Choose status to apply to all staff for {selectedDate}</p>
@@ -555,7 +555,7 @@ export default function AttendanceTracker() {
                             className="bg-surface w-full max-w-sm rounded-none border border-border shadow-2xl relative p-8">
                             <div className="flex items-center justify-between mb-6">
                                 <h2 className="text-sm font-black text-text uppercase tracking-[0.2em]">Daily Note</h2>
-                                <button onClick={() => setRemarkModal(null)} className="w-10 h-10 rounded-none bg-background border border-border flex items-center justify-center text-text-muted hover:text-text"><X className="w-5 h-5" /></button>
+                                <button onClick={() => setRemarkModal(null)} className="w-10 h-10 rounded-none bg-background border border-border flex items-center justify-center text-text hover:text-text"><X className="w-5 h-5" /></button>
                             </div>
                             <p className="text-[10px] font-black text-primary mb-4 uppercase tracking-widest italic">{remarkModal.staff} · {STATUS_META[remarkModal.status]?.label}</p>
                             <form onSubmit={saveRemark} className="space-y-6">

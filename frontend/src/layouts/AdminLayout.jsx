@@ -874,10 +874,12 @@ export default function AdminLayout() {
                 .admin-panel .gap-2 { gap: 0.3rem !important; }
 
                 /* Compress sidebar nav items */
-                .admin-panel aside nav a {
+                .admin-panel aside nav a,
+                .admin-panel aside nav button {
                     padding: 0.35rem 0.75rem !important;
                 }
-                .admin-panel aside nav a svg {
+                .admin-panel aside nav a svg,
+                .admin-panel aside nav button svg {
                     width: 1.1rem !important;
                     height: 1.1rem !important;
                 }
