@@ -156,13 +156,20 @@ export default function RemindersPage() {
     };
 
     const sendActionHubReminder = async (clientId, ruleId) => {
+        console.log(`[Frontend-RemindersPage] sendActionHubReminder initiated for Client ID: ${clientId}, Rule ID: ${ruleId}`);
         try {
-            const res = await api.post('/reminders-links/service-signals/send-whatsapp', { clientId, ruleId });
+            const requestUrl = '/reminders-links/service-signals/send-whatsapp';
+            console.log(`[Frontend-RemindersPage] Sending POST request to ${requestUrl}`);
+            const res = await api.post(requestUrl, { clientId, ruleId });
+            console.log(`[Frontend-RemindersPage] API Response:`, res.data);
             const waLink = res.data?.waLink;
-            if (waLink) window.open(waLink, '_blank');
+            if (waLink) {
+                console.log(`[Frontend-RemindersPage] Opening WhatsApp link: ${waLink}`);
+                window.open(waLink, '_blank');
+            }
             await loadPendingSignals();
         } catch (e) {
-            console.error('[Reminders] Send service reminder failed:', e);
+            console.error('[Frontend-RemindersPage] Send service reminder failed:', e);
         }
     };
 

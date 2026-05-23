@@ -246,19 +246,25 @@ const autoSendWhatsAppInvoice = async (dbInvoice, salon) => {
         return;
     }
 
+    console.log(`[Frontend-POSBillingPage] autoSendWhatsAppInvoice initiated for Invoice: ${dbInvoice.invoiceNumber}, Phone: ${phone}`);
     const toastId = toast.loading('Sending invoice on WhatsApp...');
     try {
         // 1. Generate PDF blob (using POS receipt for WhatsApp)
         const blob = await pdf(<POSReceiptPDF invoice={dbInvoice} salon={salon} />).toBlob();
+        console.log(`[Frontend-POSBillingPage] Generated POS receipt PDF blob size: ${blob.size} bytes`);
 
         // 2. Prepare Form Data
         const formData = new FormData();
         formData.append('pdf', blob, `Invoice_${dbInvoice.invoiceNumber || 'receipt'}.pdf`);
 
         // 3. Call API to send WhatsApp
-        const response = await api.post(`/pos/invoices/${dbInvoice._id}/send-whatsapp`, formData, {
+        const requestUrl = `/pos/invoices/${dbInvoice._id}/send-whatsapp`;
+        console.log(`[Frontend-POSBillingPage] Sending POST request to ${requestUrl}`);
+        const response = await api.post(requestUrl, formData, {
             headers: { 'Content-Type': 'multipart/form-data' }
         });
+
+        console.log(`[Frontend-POSBillingPage] API Response:`, response.data);
 
         if (response.data.success) {
             toast.success('Invoice sent on WhatsApp automatically!', { id: toastId });
@@ -266,7 +272,7 @@ const autoSendWhatsAppInvoice = async (dbInvoice, salon) => {
             toast.error(response.data.message || 'Failed to send WhatsApp invoice', { id: toastId });
         }
     } catch (error) {
-        console.error('[Auto-WhatsApp] Error sending WhatsApp invoice:', error);
+        console.error('[Frontend-POSBillingPage] Error sending WhatsApp invoice:', error);
         toast.error(error.response?.data?.message || 'Error sending WhatsApp invoice', { id: toastId });
     }
 };
@@ -615,6 +621,10 @@ export default function POSBillingPage() {
         }
     }, [payments, totals.total, totals.redeemWallet, selectedClient?.dueAmount, includePreviousDue]);
 
+
+    useEffect(() => {
+        setIncludePreviousDue(false);
+    }, [selectedClient]);
 
     // ─── App Integration ────────────────────────────────────
     useMemo(() => {
@@ -1061,10 +1071,21 @@ export default function POSBillingPage() {
                     return;
                 }
 
+                const getSelectedPaymentDate = (dateStr) => {
+                    if (!dateStr) return new Date();
+                    const [year, month, day] = dateStr.split('-').map(Number);
+                    const dateObj = new Date();
+                    dateObj.setFullYear(year, month - 1, day);
+                    return dateObj;
+                };
+
+                const actualPaymentDate = getSelectedPaymentDate(paymentDate);
+
                 // Prepare Backend Request Body - Only include valid keys
                 const checkoutPayload = {
                     clientId: selectedClient._id,
                     outletId: String(finalOutletId),
+                    createdAt: actualPaymentDate.toISOString(),
                     items: cart.map(item => {
                         const itemTaxRate = ((item.type === 'service' ? totals.serviceGstRate : totals.productGstRate) / 100);
                         const isItemInclusive = String(item.isInclusiveTax) === 'true' || (item.isInclusiveTax === undefined && fiscal.inclusiveTax);
@@ -1102,6 +1123,7 @@ export default function POSBillingPage() {
                     useWalletAmount: totals.redeemWallet,
                     discount: totals.discount,
                     membershipDiscount: totals.membershipDiscount,
+                    previousDueCollected: includePreviousDue ? Number(selectedClient?.dueAmount || 0) : 0,
                     bookingId: appointmentId,
                     orderId: orderId
                 };
@@ -1116,7 +1138,7 @@ export default function POSBillingPage() {
 
                 const invoiceData = {
                     number: dbInvoice.invoiceNumber || `INV-${Date.now().toString().slice(-4)}`,
-                    date: new Date().toLocaleString('en-IN', {
+                    date: actualPaymentDate.toLocaleString('en-IN', {
                         day: '2-digit', month: '2-digit', year: 'numeric',
                         hour: '2-digit', minute: '2-digit', hour12: true
                     }),
@@ -1275,6 +1297,8 @@ export default function POSBillingPage() {
         setAppointmentId(null);
         setSelectedBookingIds([]);
         setSelectedOrderIds([]);
+        setIncludePreviousDue(false);
+        setPaymentDate(new Date().toISOString().split('T')[0]);
     };
 
     // ─── Keyboard Shortcuts ───────────────────────────────
@@ -1647,6 +1671,11 @@ export default function POSBillingPage() {
                                         <>
                                             <p className="text-xs font-bold truncate">{selectedClient.name}</p>
                                             <p className="text-[10px] text-text-muted font-semibold truncate">{maskPhone(selectedClient.phone, user?.role)}</p>
+                                            {Number(selectedClient.dueAmount || 0) > 0 && (
+                                                <div className="text-[9px] font-bold text-rose-600 flex items-center gap-0.5 mt-0.5 animate-pulse">
+                                                    <AlertTriangle className="w-3 h-3 text-rose-500 shrink-0" /> Dues: ₹{Number(selectedClient.dueAmount).toFixed(0)}
+                                                </div>
+                                            )}
                                             {activeMembership && (
                                                 <div className="absolute top-0 right-0 bg-emerald-500 text-white text-[8px] font-bold px-1.5 py-0.5 uppercase tracking-tighter rounded-bl-lg">
                                                     VIP Member
@@ -1788,6 +1817,15 @@ export default function POSBillingPage() {
 
                             {/* PAYMENT SECTION */}
                             <div className="border border-border rounded-xl bg-background p-2 space-y-2 relative overflow-hidden">
+                                <div className="flex items-center justify-between px-1 border-b border-border/50 pb-2 mb-2">
+                                    <span className="text-[10px] font-black text-text-muted uppercase tracking-wider">Payment Date</span>
+                                    <input
+                                        type="date"
+                                        value={paymentDate}
+                                        onChange={(e) => setPaymentDate(e.target.value)}
+                                        className="bg-surface border border-border text-[11px] font-black uppercase rounded-lg px-2.5 py-1 outline-none text-slate-800 focus:border-primary/50 cursor-pointer"
+                                    />
+                                </div>
                                 <div className="flex items-center justify-between px-1 mb-1">
                                     <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Payment Method</span>
                                     <label className="flex items-center gap-1.5 text-xs font-semibold text-primary cursor-pointer hover:opacity-80 transition-all bg-primary/5 px-2 py-1 rounded-lg border border-primary/10">
@@ -1804,11 +1842,30 @@ export default function POSBillingPage() {
                                                     }, 100);
                                                 }
                                             }}
-                                            className="w-3 h-3 rounded border-primary/20 text-primary focus:ring-primary/20"
+                                            className="w-3 h-3 rounded border-primary/20 text-primary focus:ring-primary/20 cursor-pointer"
                                         />
-                                        <span className="uppercase tracking-tight">Partial Pay</span>
+                                        <span className="uppercase tracking-tight text-text-muted">Partial Pay</span>
                                     </label>
                                 </div>
+                                {selectedClient && Number(selectedClient.dueAmount || 0) > 0 && (
+                                    <div className="flex items-center pb-2 mb-2 border-b border-border/50">
+                                        <label className="flex items-center gap-1.5 cursor-pointer text-[10px] font-black text-rose-600 select-none">
+                                            <input
+                                                type="checkbox"
+                                                checked={includePreviousDue}
+                                                onChange={(e) => {
+                                                    setIncludePreviousDue(e.target.checked);
+                                                    if (!isManualPayment && payments.length === 1) {
+                                                        const extra = e.target.checked ? Number(selectedClient.dueAmount || 0) : 0;
+                                                        setPayments([{ ...payments[0], amount: totals.currentBillTotal + extra }]);
+                                                    }
+                                                }}
+                                                className="w-3 h-3 rounded border-rose-200 text-rose-600 focus:ring-rose-500/20 cursor-pointer"
+                                            />
+                                            <span className="uppercase tracking-tight">Pay Previous Dues (₹{Number(selectedClient.dueAmount).toFixed(0)})</span>
+                                        </label>
+                                    </div>
+                                )}
 
                                 {payments.map((p, i) => (
                                     <div key={i} className="flex flex-col gap-1.5 border-b border-border/50 last:border-0 pb-2 last:pb-0">
@@ -1920,6 +1977,12 @@ export default function POSBillingPage() {
                                     <div className="flex justify-between text-[11px] font-bold mb-1 text-emerald-400">
                                         <span>Membership Disc</span>
                                         <span>-₹{totals.membershipDiscount.toFixed(2)}</span>
+                                    </div>
+                                )}
+                                {includePreviousDue && Number(selectedClient?.dueAmount || 0) > 0 && (
+                                    <div className="flex justify-between text-[11px] font-bold mb-1 text-rose-400 animate-pulse">
+                                        <span>Previous Dues Added</span>
+                                        <span>+₹{Number(selectedClient.dueAmount).toFixed(2)}</span>
                                     </div>
                                 )}
                                 <div className="border-t border-white/10 mt-2 pt-2 flex items-center justify-between">

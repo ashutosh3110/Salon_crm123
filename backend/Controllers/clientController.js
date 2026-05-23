@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 const Customer = require('../Models/Customer');
-const { sendWapixoTemplate } = require('../Utils/whatsapp');
+const { sendWapixoTemplate, checkAndDeductWhatsAppCredit, sendWhatsAppMessage } = require('../Utils/whatsapp');
 const Salon = require('../Models/Salon');
 
 // @desc    Get all clients (customers) for current salon
@@ -282,5 +282,154 @@ exports.bulkImport = async (req, res) => {
             return res.status(400).json({ success: false, message: 'Duplicate phone numbers detected during bulk import' });
         }
         res.status(500).json({ success: false, message: err.message || 'Server Error' });
+    }
+};
+
+// @desc    Get clients with outstanding due amount
+// @route   GET /clients/payment-due
+// @access  Private
+exports.getPaymentDueClients = async (req, res) => {
+    try {
+        const salonId = req.user.salonId;
+        if (!salonId) {
+            return res.status(400).json({ success: false, message: 'Salon ID context missing' });
+        }
+
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 10;
+        const skip = (page - 1) * limit;
+
+        const query = {
+            salonId,
+            dueAmount: { $gt: 0 }
+        };
+
+        if (req.query.outletId) {
+            query.lastOutletId = req.query.outletId;
+        }
+
+        const totalCount = await Customer.countDocuments(query);
+        const clients = await Customer.find(query)
+            .sort({ dueAmount: -1, name: 1 })
+            .skip(skip)
+            .limit(limit);
+
+        res.json({
+            success: true,
+            totalCount,
+            totalPages: Math.ceil(totalCount / limit),
+            currentPage: page,
+            data: clients
+        });
+    } catch (err) {
+        console.error('Get payment due clients error:', err);
+        res.status(500).json({ success: false, message: 'Server Error' });
+    }
+};
+
+// @desc    Increment payment reminder count for a client
+// @route   PATCH /clients/:id/increment-reminder
+// @access  Private
+exports.incrementReminderCount = async (req, res) => {
+    try {
+        const client = await Customer.findOne({
+            _id: req.params.id,
+            salonId: req.user.salonId
+        });
+
+        if (!client) {
+            return res.status(404).json({ success: false, message: 'Client not found' });
+        }
+
+        client.paymentReminderCount = (client.paymentReminderCount || 0) + 1;
+        client.lastPaymentReminderSentAt = new Date();
+        await client.save();
+
+        res.json({
+            success: true,
+            message: 'Reminder count incremented successfully',
+            data: {
+                paymentReminderCount: client.paymentReminderCount,
+                lastPaymentReminderSentAt: client.lastPaymentReminderSentAt
+            }
+        });
+    } catch (err) {
+        console.error('Increment reminder count error:', err);
+        res.status(500).json({ success: false, message: 'Server Error' });
+    }
+};
+
+// @desc    Send manual payment reminder via WhatsApp API
+// @route   POST /clients/:id/send-payment-reminder
+// @access  Private
+exports.sendManualPaymentReminder = async (req, res) => {
+    try {
+        const client = await Customer.findOne({
+            _id: req.params.id,
+            salonId: req.user.salonId
+        });
+
+        if (!client) {
+            return res.status(404).json({ success: false, message: 'Client not found' });
+        }
+
+        if (!client.dueAmount || client.dueAmount <= 0) {
+            return res.status(400).json({ success: false, message: 'Client has no outstanding dues' });
+        }
+
+        const salon = await Salon.findById(req.user.salonId);
+        if (!salon) {
+            return res.status(404).json({ success: false, message: 'Salon not found' });
+        }
+
+        // Deduct WhatsApp credit
+        const canSend = await checkAndDeductWhatsAppCredit(salon._id);
+        if (!canSend) {
+            return res.status(400).json({ 
+                success: false, 
+                message: 'Insufficient WhatsApp credits or WhatsApp notifications disabled for your salon.' 
+            });
+        }
+
+        const templateName = process.env.WHATSAPP_TEMPLATE_PAYMENT_REMINDER || 'payment_reminder';
+        const salonName = salon.businessName || salon.name || 'Wapixo';
+        
+        let sendResult;
+        if (process.env.WHATSAPP_TEMPLATE_PAYMENT_REMINDER) {
+            // Template parameters: [Customer Name, Dues Amount, Salon Name]
+            sendResult = await sendWapixoTemplate(client.phone, templateName, [
+                client.name,
+                String(client.dueAmount),
+                salonName
+            ]);
+        } else {
+            // Fallback to sending plain text message
+            const msg = `Dear ${client.name}, this is a friendly reminder that you have a pending payment of ₹${client.dueAmount} outstanding at ${salonName}. Please settle this at your earliest convenience. Thank you!`;
+            sendResult = await sendWhatsAppMessage(client.phone, msg);
+        }
+
+        if (!sendResult.success) {
+            return res.status(400).json({
+                success: false,
+                message: sendResult.message || 'Failed to send WhatsApp message via API.'
+            });
+        }
+
+        // Increment count and update timestamp
+        client.paymentReminderCount = (client.paymentReminderCount || 0) + 1;
+        client.lastPaymentReminderSentAt = new Date();
+        await client.save();
+
+        res.json({
+            success: true,
+            message: 'Payment reminder sent successfully via WhatsApp API',
+            data: {
+                paymentReminderCount: client.paymentReminderCount,
+                lastPaymentReminderSentAt: client.lastPaymentReminderSentAt
+            }
+        });
+    } catch (err) {
+        console.error('Send manual payment reminder error:', err);
+        res.status(500).json({ success: false, message: 'Server Error' });
     }
 };

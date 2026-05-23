@@ -261,9 +261,13 @@ export default function CustomersPage({ tab = 'directory' }) {
                             Feedback
                             {activeTab === 'feedback' && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary" />}
                         </button>
-                        <button onClick={() => navigate('/admin/crm/reengage')} className={`px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] border-border transition-all whitespace-nowrap relative ${activeTab === 'reengage' ? 'bg-surface text-primary' : 'text-text-muted hover:text-text'}`}>
+                        <button onClick={() => navigate('/admin/crm/reengage')} className={`px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] border-r border-border transition-all whitespace-nowrap relative ${activeTab === 'reengage' ? 'bg-surface text-primary' : 'text-text-muted hover:text-text'}`}>
                             Re-engage
                             {activeTab === 'reengage' && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary" />}
+                        </button>
+                        <button onClick={() => navigate('/admin/crm/payment-reminders')} className={`px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] border-border transition-all whitespace-nowrap relative ${activeTab === 'payment-reminders' ? 'bg-surface text-primary' : 'text-text-muted hover:text-text'}`}>
+                            Payment Reminders
+                            {activeTab === 'payment-reminders' && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary" />}
                         </button>
                     </div>
 
@@ -317,6 +321,14 @@ export default function CustomersPage({ tab = 'directory' }) {
                     {activeTab === 'segments' && <SegmentManager />}
                     {activeTab === 'feedback' && <FeedbackList />}
                     {activeTab === 'reengage' && <ReEngagementTool />}
+                    {activeTab === 'payment-reminders' && (
+                        <PaymentRemindersView
+                            onCustomerClick={setSelectedCustomer}
+                            setWhatsappModal={setWhatsappModal}
+                            fetchCustomers={fetchCustomers}
+                            currentPage={currentPage}
+                        />
+                    )}
                 </div>
 
                 {/* Profile Modal */}
@@ -326,6 +338,7 @@ export default function CustomersPage({ tab = 'directory' }) {
                     onClose={() => setSelectedCustomer(null)}
                 />
 
+<<<<<<< Updated upstream
             </div>
 
                 {/* Add Customer Modal (Portal) */}
@@ -335,25 +348,34 @@ export default function CustomersPage({ tab = 'directory' }) {
                             <div className="p-5 bg-white border-b border-slate-100 flex justify-between items-center">
                                 <h4 className="text-[11px] font-black text-slate-900 uppercase flex items-center gap-2 tracking-widest">
                                     <UserPlus className="w-4 h-4 text-slate-800" /> Add Customer
+=======
+                {/* Add Customer Modal */}
+                {showAddModal && (
+                    <div className="fixed inset-0 bg-black/80 backdrop-blur-md z-[200] flex items-center justify-center p-4 animate-in fade-in duration-300" onClick={() => setShowAddModal(false)}>
+                        <div className="bg-white border-4 border-text w-full max-w-md p-8 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] relative overflow-y-auto max-h-[90vh] hide-scrollbar animate-in zoom-in-95 duration-200" onClick={(e) => e.stopPropagation()}>
+                            <div className="flex justify-between items-center border-b-2 border-text pb-4 mb-6">
+                                <h4 className="text-2xl font-black text-text uppercase tracking-tight italic flex items-center gap-2">
+                                    <UserPlus className="w-5 h-5 text-primary" /> Add Customer
+>>>>>>> Stashed changes
                                 </h4>
-                                <button type="button" onClick={() => setShowAddModal(false)} className="text-slate-400 hover:text-rose-500 transition-colors"><X className="w-5 h-5" /></button>
+                                <button type="button" onClick={() => setShowAddModal(false)} className="p-1 border-2 border-text hover:bg-rose-500 hover:text-white transition-colors"><X className="w-4 h-4" /></button>
                             </div>
 
                             <form onSubmit={handleAddCustomer}>
-                                <div className="p-6 space-y-4">
-                                    <div className="space-y-1.5">
-                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Customer Name</label>
+                                <div className="space-y-4">
+                                    <div className="space-y-1.5 text-left">
+                                        <label className="text-[10px] font-black text-text-muted uppercase tracking-wider">Customer Name</label>
                                         <input
                                             type="text"
                                             required
                                             placeholder="e.g. John Doe"
                                             value={newCustomerForm.name}
                                             onChange={(e) => setNewCustomerForm({ ...newCustomerForm, name: e.target.value.replace(/[^a-zA-Z\s]/g, '') })}
-                                            className="w-full bg-slate-50 border border-slate-200 p-3 text-xs font-black text-slate-900 outline-none rounded-xl placeholder:text-slate-400 focus:border-slate-400 transition-colors uppercase"
+                                            className="w-full bg-surface-alt/5 border-2 border-text p-3 text-xs font-black text-slate-900 outline-none focus:bg-white focus:border-primary transition-all uppercase rounded-none"
                                         />
                                     </div>
-                                    <div className="space-y-1.5">
-                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Phone Number</label>
+                                    <div className="space-y-1.5 text-left">
+                                        <label className="text-[10px] font-black text-text-muted uppercase tracking-wider">Phone Number</label>
                                         <input
                                             type="tel"
                                             required
@@ -363,44 +385,44 @@ export default function CustomersPage({ tab = 'directory' }) {
                                                 const val = e.target.value.replace(/\D/g, '');
                                                 if (val.length <= 10) setNewCustomerForm({ ...newCustomerForm, phone: val });
                                             }}
-                                            className="w-full bg-slate-50 border border-slate-200 p-3 text-xs font-black text-slate-900 outline-none rounded-xl placeholder:text-slate-400 focus:border-slate-400 transition-colors"
+                                            className="w-full bg-surface-alt/5 border-2 border-text p-3 text-xs font-black text-slate-900 outline-none focus:bg-white focus:border-primary transition-all rounded-none"
                                         />
                                     </div>
-                                    <div className="grid grid-cols-2 gap-4">
+                                    <div className="grid grid-cols-2 gap-4 text-left">
                                         <div className="space-y-1.5">
-                                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Birth Date</label>
+                                            <label className="text-[10px] font-black text-text-muted uppercase tracking-wider">Birth Date</label>
                                             <input
                                                 type="date"
                                                 max={new Date().toISOString().split('T')[0]}
                                                 value={newCustomerForm.dob}
                                                 onChange={(e) => setNewCustomerForm({ ...newCustomerForm, dob: e.target.value })}
-                                                className="w-full bg-slate-50 border border-slate-200 p-3 text-xs font-black text-slate-900 outline-none rounded-xl focus:border-slate-400 transition-colors"
+                                                className="w-full bg-surface-alt/5 border-2 border-text p-3 text-xs font-black text-slate-900 outline-none focus:bg-white focus:border-primary transition-all rounded-none"
                                             />
                                         </div>
                                         <div className="space-y-1.5">
-                                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Anniversary</label>
+                                            <label className="text-[10px] font-black text-text-muted uppercase tracking-wider">Anniversary</label>
                                             <input
                                                 type="date"
                                                 max={new Date().toISOString().split('T')[0]}
                                                 value={newCustomerForm.anniversary}
                                                 onChange={(e) => setNewCustomerForm({ ...newCustomerForm, anniversary: e.target.value })}
-                                                className="w-full bg-slate-50 border border-slate-200 p-3 text-xs font-black text-slate-900 outline-none rounded-xl focus:border-slate-400 transition-colors"
+                                                className="w-full bg-surface-alt/5 border-2 border-text p-3 text-xs font-black text-slate-900 outline-none focus:bg-white focus:border-primary transition-all rounded-none"
                                             />
                                         </div>
                                     </div>
                                 </div>
 
-                                <div className="p-6 bg-slate-50 border-t border-slate-100 flex gap-3">
+                                <div className="flex gap-4 pt-8">
                                     <button
                                         type="button"
                                         onClick={() => setShowAddModal(false)}
-                                        className="flex-1 py-3 text-[11px] font-black text-slate-500 uppercase tracking-widest border border-slate-200 rounded-xl bg-white hover:bg-slate-100 transition-all"
+                                        className="flex-1 py-3.5 border-2 border-text font-black text-[10px] uppercase tracking-widest italic bg-white hover:bg-surface-alt/20 transition-all rounded-none text-text-muted"
                                     >
                                         Cancel
                                     </button>
                                     <button
                                         type="submit"
-                                        className="flex-1 py-3 text-[11px] font-black text-white uppercase tracking-widest bg-slate-800 hover:bg-slate-900 rounded-xl transition-all shadow-lg shadow-slate-800/10"
+                                        className="flex-1 bg-text text-white border-2 border-text py-3.5 font-black text-[10px] uppercase tracking-widest italic hover:bg-primary hover:border-primary hover:text-white transition-all rounded-none shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:translate-x-0.5 active:translate-y-0.5 active:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]"
                                     >
                                         Add Customer
                                     </button>
@@ -411,6 +433,7 @@ export default function CustomersPage({ tab = 'directory' }) {
                     document.body
                 )}
 
+<<<<<<< Updated upstream
             {/* WhatsApp Message Modal (Portal) */}
             {whatsappModal.isOpen && createPortal(
                 <div className="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-[250] flex items-center justify-center p-4 animate-in fade-in duration-300" onClick={() => setWhatsappModal({ ...whatsappModal, isOpen: false })}>
@@ -418,46 +441,64 @@ export default function CustomersPage({ tab = 'directory' }) {
                         <div className="p-5 bg-white border-b border-slate-100 flex justify-between items-center">
                             <h4 className="text-[11px] font-black text-slate-900 uppercase flex items-center gap-2 tracking-widest">
                                 <MessageSquare className="w-4 h-4 text-emerald-500" /> Send WhatsApp Message
+=======
+            {/* Manual WhatsApp Message Modal */}
+            {whatsappModal.isOpen && (
+                <div className="fixed inset-0 bg-black/80 backdrop-blur-md z-[250] flex items-center justify-center p-4 animate-in fade-in duration-300" onClick={() => setWhatsappModal({ ...whatsappModal, isOpen: false })}>
+                    <div className="bg-white border-4 border-text w-full max-w-md p-8 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] relative overflow-y-auto max-h-[90vh] hide-scrollbar animate-in zoom-in-95 duration-200" onClick={(e) => e.stopPropagation()}>
+                        <div className="flex justify-between items-center border-b-2 border-text pb-4 mb-6">
+                            <h4 className="text-2xl font-black text-text uppercase tracking-tight italic flex items-center gap-2">
+                                <MessageSquare className="w-5 h-5 text-emerald-500" /> WhatsApp Message
+>>>>>>> Stashed changes
                             </h4>
-                            <button type="button" onClick={() => setWhatsappModal({ ...whatsappModal, isOpen: false })} className="text-slate-400 hover:text-rose-500 transition-colors"><X className="w-5 h-5" /></button>
+                            <button type="button" onClick={() => setWhatsappModal({ ...whatsappModal, isOpen: false })} className="p-1 border-2 border-text hover:bg-rose-500 hover:text-white transition-colors"><X className="w-4 h-4" /></button>
                         </div>
 
-                        <div className="p-6 space-y-4">
-                            <div className="flex items-center gap-3 bg-slate-50 border border-slate-200/60 p-3 rounded-2xl">
-                                <div className="w-8 h-8 rounded-xl bg-slate-200 text-slate-700 flex items-center justify-center font-black text-[10px] uppercase">
+                        <div className="space-y-4">
+                            <div className="flex items-center gap-3 bg-surface-alt/5 border-2 border-text p-4 rounded-none text-left">
+                                <div className="w-10 h-10 bg-text text-white flex items-center justify-center font-black text-xs uppercase rounded-none">
                                     {whatsappModal.customer?.name?.charAt(0) || '?'}
                                 </div>
                                 <div>
-                                    <p className="text-[11px] font-black text-slate-900 uppercase tracking-wider">{whatsappModal.customer?.name}</p>
-                                    <p className="text-[9px] font-bold text-slate-400 font-mono">{whatsappModal.customer?.phone}</p>
+                                    <p className="text-sm font-black text-text uppercase tracking-tight">{whatsappModal.customer?.name}</p>
+                                    <p className="text-[10px] text-text-muted font-bold tracking-widest">{whatsappModal.customer?.phone}</p>
                                 </div>
                             </div>
 
-                            <div className="space-y-1.5">
-                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Your Message</label>
+                            <div className="space-y-1.5 text-left">
+                                <label className="text-[10px] font-black text-text-muted uppercase tracking-wider">Your Message</label>
                                 <textarea
                                     value={whatsappModal.message}
                                     onChange={(e) => setWhatsappModal({ ...whatsappModal, message: e.target.value })}
-                                    className="w-full h-32 bg-slate-50 border border-slate-200 p-3.5 text-xs font-black text-slate-800 outline-none rounded-2xl placeholder:text-slate-400 focus:border-slate-400 transition-colors resize-none"
+                                    className="w-full h-32 bg-surface-alt/5 border-2 border-text p-3 text-xs font-black text-slate-800 outline-none rounded-none placeholder:text-slate-400 focus:bg-white focus:border-primary transition-all resize-none"
                                     placeholder="Write your personalized message here..."
                                 />
                             </div>
                         </div>
 
-                        <div className="p-6 bg-slate-50 border-t border-slate-100 flex gap-3">
+                        <div className="flex gap-4 pt-8">
                             <button
                                 onClick={() => setWhatsappModal({ ...whatsappModal, isOpen: false })}
-                                className="flex-1 py-3 text-[11px] font-black text-slate-500 uppercase tracking-widest border border-slate-200 rounded-xl bg-white hover:bg-slate-100 transition-all"
+                                className="flex-1 py-3.5 border-2 border-text font-black text-[10px] uppercase tracking-widest italic bg-white hover:bg-surface-alt/20 transition-all rounded-none text-text-muted"
                             >
                                 Cancel
                             </button>
                             <button
-                                onClick={() => {
+                                onClick={async () => {
                                     const phone = whatsappModal.customer.phone.replace(/[^0-9]/g, '');
                                     window.open(`https://wa.me/${phone}?text=${encodeURIComponent(whatsappModal.message)}`, '_blank');
+                                    if (whatsappModal.isReminder) {
+                                        try {
+                                            await api.patch(`/clients/${whatsappModal.customer._id}/increment-reminder`);
+                                            window.dispatchEvent(new CustomEvent('payment-reminder-sent'));
+                                            fetchCustomers(currentPage, 10);
+                                        } catch (err) {
+                                            console.error('Failed to increment payment reminder:', err);
+                                        }
+                                    }
                                     setWhatsappModal({ ...whatsappModal, isOpen: false });
                                 }}
-                                className="flex-1 bg-emerald-50 text-primary-foreground py-3 text-[10px] font-black uppercase tracking-widest hover:brightness-110 transition-all"
+                                className="flex-1 bg-text text-white border-2 border-text py-3.5 font-black text-[10px] uppercase tracking-widest italic hover:bg-primary hover:border-primary hover:text-white transition-all rounded-none shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:translate-x-0.5 active:translate-y-0.5 active:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]"
                             >
                                 Send
                             </button>
@@ -755,7 +796,14 @@ function CustomerDirectory({ customers, onCustomerClick, onDelete, onUpdate }) {
                                                 <div className="font-bold text-text group-hover:text-primary transition-colors text-sm">{c.name}</div>
                                                 {c.status === 'inactive' && <span className="text-[8px] bg-rose-500 text-white px-1 font-black">INACTIVE</span>}
                                             </div>
-                                            <div className="text-[10px] text-text-muted font-bold tracking-widest">{c.phone}</div>
+                                            <div className="text-[10px] text-text-muted font-bold tracking-widest flex flex-wrap items-center gap-2">
+                                                <span>{c.phone}</span>
+                                                {Number(c.dueAmount || 0) > 0 && (
+                                                    <span className="text-[9px] font-black text-rose-600 bg-rose-50 border border-rose-100 px-1.5 py-0.5 rounded uppercase tracking-tighter">
+                                                        Due: ₹{Number(c.dueAmount).toFixed(0)}
+                                                    </span>
+                                                )}
+                                            </div>
                                         </div>
                                     </div>
                                 </td>
@@ -797,6 +845,291 @@ function CustomerDirectory({ customers, onCustomerClick, onDelete, onUpdate }) {
                         ))}
                     </tbody>
                 </table>
+            </div>
+        </div>
+    );
+}
+
+function PaymentRemindersView({ onCustomerClick, setWhatsappModal, fetchCustomers, currentPage }) {
+    const { salon, updateSalon, outlets } = useBusiness();
+    const [dueClients, setDueClients] = useState([]);
+    const [dueMetadata, setDueMetadata] = useState({ totalCount: 0, totalPages: 0, currentPage: 1 });
+    const [loading, setLoading] = useState(false);
+    const [page, setPage] = useState(1);
+    const [search, setSearch] = useState('');
+    const [selectedOutlet, setSelectedOutlet] = useState('');
+
+    const [autoReminder, setAutoReminder] = useState(false);
+    const [reminderInterval, setReminderInterval] = useState(7);
+    const [savingSettings, setSavingSettings] = useState(false);
+
+    useEffect(() => {
+        if (salon?.whatsappSettings) {
+            setAutoReminder(!!salon.whatsappSettings.autoPaymentReminder);
+            setReminderInterval(salon.whatsappSettings.paymentReminderIntervalDays || 7);
+        }
+    }, [salon]);
+
+    const handleSaveSettings = async () => {
+        setSavingSettings(true);
+        try {
+            const updatedWhatsappSettings = {
+                ...salon?.whatsappSettings,
+                autoPaymentReminder: autoReminder,
+                paymentReminderIntervalDays: reminderInterval
+            };
+            await updateSalon({ whatsappSettings: updatedWhatsappSettings });
+            toast.success('Auto payment reminder settings updated');
+        } catch (err) {
+            console.error('Failed to update reminder settings:', err);
+            toast.error('Failed to update settings');
+        } finally {
+            setSavingSettings(false);
+        }
+    };
+
+    const fetchDueClients = React.useCallback(async (pageNum = 1, outletId = '') => {
+        setLoading(true);
+        try {
+            const url = `/clients/payment-due?page=${pageNum}&limit=10${outletId ? `&outletId=${outletId}` : ''}`;
+            const res = await api.get(url);
+            if (res.data?.success) {
+                setDueClients(res.data.data || []);
+                setDueMetadata({
+                    totalCount: res.data.totalCount || 0,
+                    totalPages: res.data.totalPages || 0,
+                    currentPage: res.data.currentPage || 1
+                });
+            }
+        } catch (err) {
+            console.error('Failed to fetch payment due clients:', err);
+            setDueClients([]);
+        } finally {
+            setLoading(false);
+        }
+    }, []);
+
+    useEffect(() => {
+        fetchDueClients(page, selectedOutlet);
+    }, [page, selectedOutlet, fetchDueClients]);
+
+    useEffect(() => {
+        const handler = () => {
+            fetchDueClients(page, selectedOutlet);
+        };
+        window.addEventListener('payment-reminder-sent', handler);
+        return () => window.removeEventListener('payment-reminder-sent', handler);
+    }, [page, selectedOutlet, fetchDueClients]);
+
+    const filtered = dueClients.filter(c => 
+        (c.name && c.name.toLowerCase().includes(search.toLowerCase())) ||
+        (c.phone && c.phone.includes(search))
+    );
+
+    const totalOutstanding = dueClients.reduce((acc, c) => acc + (c.dueAmount || 0), 0);
+
+    const handleSendReminder = async (customer) => {
+        const toastId = toast.loading('Sending WhatsApp reminder...');
+        try {
+            const res = await api.post(`/clients/${customer._id}/send-payment-reminder`);
+            if (res.data?.success) {
+                toast.success('Reminder sent successfully via WhatsApp API!', { id: toastId });
+                window.dispatchEvent(new CustomEvent('payment-reminder-sent'));
+            } else {
+                toast.error(res.data?.message || 'Failed to send reminder', { id: toastId });
+            }
+        } catch (err) {
+            console.error('Failed to send payment reminder:', err);
+            toast.error(err.response?.data?.message || 'Error sending reminder', { id: toastId });
+        }
+    };
+
+    const formatDate = (dateStr) => {
+        if (!dateStr) return 'Never';
+        return new Date(dateStr).toLocaleString('en-IN', {
+            day: '2-digit',
+            month: 'short',
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: true
+        });
+    };
+
+    return (
+        <div className="p-8 space-y-6 animate-reveal">
+            {/* KPI Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="bg-surface p-5 border border-border shadow-sm flex flex-col justify-between">
+                    <h3 className="text-text-secondary text-[10px] font-bold uppercase tracking-widest opacity-60">Total Outstanding Customers</h3>
+                    <div className="text-2xl font-black text-text mt-2">{dueMetadata.totalCount}</div>
+                </div>
+                <div className="bg-surface p-5 border border-border shadow-sm flex flex-col justify-between">
+                    <h3 className="text-text-secondary text-[10px] font-bold uppercase tracking-widest opacity-60">Page Dues Total</h3>
+                    <div className="text-2xl font-black text-rose-600 mt-2">₹{totalOutstanding.toLocaleString()}</div>
+                </div>
+                <div className="bg-surface p-5 border border-border shadow-sm flex flex-col justify-between">
+                    <h3 className="text-text-secondary text-[10px] font-bold uppercase tracking-widest opacity-60">Outstanding Dues Status</h3>
+                    <div className="text-[11px] font-black text-emerald-600 uppercase tracking-wider mt-3">Action Required</div>
+                </div>
+            </div>
+
+            {/* Auto Reminder Settings Card */}
+            <div className="bg-surface p-6 border border-border flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+                <div className="space-y-1 text-left">
+                    <h4 className="text-xs font-black uppercase tracking-widest text-text">Automated Payment Reminders</h4>
+                    <p className="text-[11px] font-semibold text-text-muted">Configure the system to send automatic payment reminders to customers with pending balances.</p>
+                </div>
+                <div className="flex flex-wrap items-center gap-6">
+                    <label className="flex items-center gap-3 cursor-pointer select-none">
+                        <input
+                            type="checkbox"
+                            className="w-4 h-4 accent-primary cursor-pointer"
+                            checked={autoReminder}
+                            onChange={(e) => setAutoReminder(e.target.checked)}
+                        />
+                        <span className="text-xs font-black uppercase tracking-wider text-text">Enable Auto Reminders</span>
+                    </label>
+                    {autoReminder && (
+                        <div className="flex items-center gap-2">
+                            <span className="text-[10px] font-black uppercase tracking-wider text-text-muted">Remind Every</span>
+                            <input
+                                type="number"
+                                min="1"
+                                value={reminderInterval}
+                                onChange={(e) => setReminderInterval(Math.max(1, Number(e.target.value) || 1))}
+                                className="w-16 p-2 bg-surface-alt border border-border text-xs font-bold text-center outline-none focus:border-primary"
+                            />
+                            <span className="text-[10px] font-black uppercase tracking-wider text-text-muted">Days</span>
+                        </div>
+                    )}
+                    <button
+                        onClick={handleSaveSettings}
+                        disabled={savingSettings}
+                        className="bg-primary text-primary-foreground hover:bg-primary/95 px-6 py-2.5 text-[9px] font-black uppercase tracking-widest disabled:opacity-50 transition-all shadow-md active:scale-95"
+                    >
+                        {savingSettings ? 'Saving...' : 'Save Settings'}
+                    </button>
+                </div>
+            </div>
+
+            {/* Search Bar & Outlet Filter */}
+            <div className="flex flex-col md:flex-row gap-4">
+                <div className="relative flex-1 group">
+                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
+                    <input
+                        type="text"
+                        placeholder="Search due clients by name or phone..."
+                        value={search}
+                        onChange={(e) => setSearch(e.target.value)}
+                        className="w-full pl-11 pr-4 py-3 bg-surface-alt border border-border text-sm font-bold outline-none"
+                    />
+                </div>
+                {outlets && outlets.length > 0 && (
+                    <select
+                        value={selectedOutlet}
+                        onChange={(e) => {
+                            setSelectedOutlet(e.target.value);
+                            setPage(1);
+                        }}
+                        className="px-4 py-3 bg-surface border border-border text-xs font-black uppercase tracking-widest outline-none min-w-[200px] cursor-pointer"
+                    >
+                        <option value="">All Outlets</option>
+                        {outlets.map(o => (
+                            <option key={o._id || o.id} value={o._id || o.id}>
+                                {o.name}
+                            </option>
+                        ))}
+                    </select>
+                )}
+            </div>
+
+            {/* Table */}
+            <div className="table-responsive border border-border bg-surface">
+                {loading ? (
+                    <div className="text-center py-12 text-xs font-bold text-text-muted uppercase tracking-widest">
+                        Loading unpaid dues...
+                    </div>
+                ) : filtered.length === 0 ? (
+                    <div className="text-center py-12 text-xs font-bold text-text-muted uppercase tracking-widest">
+                        No customers with pending payments found
+                    </div>
+                ) : (
+                    <table className="w-full text-left min-w-[800px]">
+                        <thead className="bg-surface-alt border-b border-border">
+                            <tr>
+                                <th className="p-4 text-[10px] font-black uppercase text-text-muted tracking-widest">Customer Details</th>
+                                <th className="p-4 text-[10px] font-black uppercase text-text-muted tracking-widest text-right">Dues Amount</th>
+                                <th className="p-4 text-[10px] font-black uppercase text-text-muted tracking-widest text-center">Reminders Sent</th>
+                                <th className="p-4 text-[10px] font-black uppercase text-text-muted tracking-widest text-center">Last Reminded</th>
+                                <th className="p-4 text-[10px] font-black uppercase text-text-muted tracking-widest text-right">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-border">
+                            {filtered.map(c => (
+                                <tr key={c._id} className="hover:bg-surface-alt/20 transition-colors">
+                                    <td className="p-4">
+                                        <div className="flex items-center gap-3 cursor-pointer" onClick={() => onCustomerClick(c)}>
+                                            <div className="w-8 h-8 bg-text text-white flex items-center justify-center font-black text-xs">
+                                                {c.name?.charAt(0) || '?'}
+                                            </div>
+                                            <div>
+                                                <p className="text-sm font-black text-text uppercase tracking-tight">{c.name}</p>
+                                                <p className="text-[10px] text-text-muted font-bold tracking-widest">{c.phone}</p>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td className="p-4 text-right font-black text-rose-600">
+                                        ₹{(c.dueAmount || 0).toLocaleString()}
+                                    </td>
+                                    <td className="p-4 text-center font-bold text-xs">
+                                        <span className={`px-2 py-1 text-[10px] font-black border ${c.paymentReminderCount > 0 ? 'bg-amber-500/10 text-amber-600 border-amber-500/20' : 'bg-slate-100 text-slate-400 border-slate-200'}`}>
+                                            {c.paymentReminderCount || 0} Sent
+                                        </span>
+                                    </td>
+                                    <td className="p-4 text-center text-xs font-bold text-text-muted">
+                                        {formatDate(c.lastPaymentReminderSentAt)}
+                                    </td>
+                                    <td className="p-4 text-right">
+                                        <button
+                                            onClick={() => handleSendReminder(c)}
+                                            className="bg-emerald-500 text-white hover:bg-emerald-600 px-6 py-2.5 text-[9px] font-black uppercase tracking-widest flex items-center gap-2 ml-auto shadow-md hover:shadow-lg transition-all"
+                                        >
+                                            <MessageSquare className="w-3.5 h-3.5" /> Send Reminder
+                                        </button>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                )}
+
+                {/* Pagination Controls */}
+                {dueMetadata.totalPages > 1 && (
+                    <div className="px-8 py-6 border-t border-border bg-surface-alt/10 flex items-center justify-between">
+                        <div className="text-[10px] font-black text-text-muted uppercase tracking-widest">
+                            Displaying {filtered.length} of {dueMetadata.totalCount} accounts
+                        </div>
+                        <div className="flex items-center gap-3">
+                            <button
+                                onClick={() => setPage(p => Math.max(1, p - 1))}
+                                disabled={page === 1}
+                                className="px-6 py-3 border border-border bg-surface text-[10px] font-black uppercase tracking-widest disabled:opacity-30 hover:bg-surface-alt transition-all"
+                            >
+                                Prev
+                            </button>
+                            <div className="px-4 text-xs font-black">
+                                Page {page} of {dueMetadata.totalPages || 1}
+                            </div>
+                            <button
+                                onClick={() => setPage(p => Math.min(dueMetadata.totalPages || 1, p + 1))}
+                                disabled={page >= (dueMetadata.totalPages || 1)}
+                                className="px-6 py-3 border border-border bg-surface text-[10px] font-black uppercase tracking-widest disabled:opacity-30 hover:bg-surface-alt transition-all"
+                            >
+                                Next
+                            </button>
+                        </div>
+                    </div>
+                )}
             </div>
         </div>
     );
