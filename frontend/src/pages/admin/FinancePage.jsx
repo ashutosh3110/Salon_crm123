@@ -21,6 +21,7 @@ import {
 } from 'recharts';
 import { Link } from 'react-router-dom';
 import api from '../../services/api';
+import { useBusiness } from '../../contexts/BusinessContext';
 import FinanceDashboard from '../../components/admin/finance/FinanceDashboard';
 import ExpenseTracker from '../../components/admin/finance/ExpenseTracker';
 import SalesReports from '../../components/admin/finance/SalesReports';
@@ -40,15 +41,23 @@ function formatInrShort(n) {
 
 export default function FinancePage({ tab = 'dashboard' }) {
     const activeTab = tab;
+    const { outlets = [], activeOutletId } = useBusiness();
+    const [selectedOutletId, setSelectedOutletId] = useState(() => activeOutletId || 'all');
     const [financeData, setFinanceData] = useState(null);
     const [financeLoading, setFinanceLoading] = useState(true);
     const [financeError, setFinanceError] = useState(null);
+
+    useEffect(() => {
+        if (activeOutletId && selectedOutletId === 'all') {
+            setSelectedOutletId(activeOutletId);
+        }
+    }, [activeOutletId]);
 
     const loadFinance = useCallback(() => {
         setFinanceLoading(true);
         setFinanceError(null);
         api
-            .get('/finance/summary')
+            .get('/finance/summary', { params: { outletId: selectedOutletId } })
             .then((res) => setFinanceData(res.data?.data))
             .catch((e) => {
                 setFinanceError(
@@ -60,7 +69,7 @@ export default function FinancePage({ tab = 'dashboard' }) {
                 setFinanceData(null);
             })
             .finally(() => setFinanceLoading(false));
-    }, []);
+    }, [selectedOutletId]);
 
     useEffect(() => {
         loadFinance();
@@ -106,6 +115,20 @@ export default function FinancePage({ tab = 'dashboard' }) {
                             </p>
                         </div>
                         <div className="flex flex-wrap items-center gap-4 text-left font-black">
+                            {outlets.length > 0 && (
+                                <select
+                                    value={selectedOutletId}
+                                    onChange={(e) => setSelectedOutletId(e.target.value)}
+                                    className="bg-surface border border-border px-6 py-3.5 rounded-none text-[10px] font-black uppercase tracking-[0.2em] text-text hover:border-primary transition-all focus:outline-none focus:border-primary cursor-pointer shadow-sm"
+                                >
+                                    <option value="all">All Outlets</option>
+                                    {outlets.map((o) => (
+                                        <option key={o._id} value={o._id}>
+                                            {o.name}
+                                        </option>
+                                    ))}
+                                </select>
+                            )}
                             <button
                                 type="button"
                                 onClick={loadFinance}
@@ -168,6 +191,22 @@ export default function FinancePage({ tab = 'dashboard' }) {
                             Live Workspace · <span className="font-mono">/finance/{activeTab}</span>
                         </p>
                     </div>
+                    {outlets.length > 0 && (
+                        <div className="flex flex-wrap items-center gap-4 text-left font-black">
+                            <select
+                                value={selectedOutletId}
+                                onChange={(e) => setSelectedOutletId(e.target.value)}
+                                className="bg-surface border border-border px-6 py-3.5 rounded-none text-[10px] font-black uppercase tracking-[0.2em] text-text hover:border-primary transition-all focus:outline-none focus:border-primary cursor-pointer shadow-sm"
+                            >
+                                <option value="all">All Outlets</option>
+                                {outlets.map((o) => (
+                                    <option key={o._id} value={o._id}>
+                                        {o.name}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+                    )}
                 </div>
             )}
 
@@ -197,16 +236,17 @@ export default function FinancePage({ tab = 'dashboard' }) {
                         loading={financeLoading}
                         error={financeError}
                         onRetry={loadFinance}
+                        outletId={selectedOutletId}
                     />
                 )}
-                {activeTab === 'transactions' && <Transactions />}
+                {activeTab === 'transactions' && <Transactions outletId={selectedOutletId} />}
                 {activeTab === 'suppliers' && <SupplierManager />}
                 {activeTab === 'invoices' && <SupplierInvoices />}
-                {activeTab === 'cash-book' && <CashAndBank type="cash" />}
-                {activeTab === 'bank-book' && <CashAndBank type="bank" />}
-                {activeTab === 'expenses' && <ExpenseTracker />}
-                {activeTab === 'reports' && <SalesReports />}
-                {activeTab === 'eod' && <EndOfDay />}
+                {activeTab === 'cash-book' && <CashAndBank type="cash" outletId={selectedOutletId} />}
+                {activeTab === 'bank-book' && <CashAndBank type="bank" outletId={selectedOutletId} />}
+                {activeTab === 'expenses' && <ExpenseTracker outletId={selectedOutletId} />}
+                {activeTab === 'reports' && <SalesReports outletId={selectedOutletId} />}
+                {activeTab === 'eod' && <EndOfDay outletId={selectedOutletId} />}
             </div>
         </div>
     );

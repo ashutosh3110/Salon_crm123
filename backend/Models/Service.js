@@ -25,6 +25,10 @@ const serviceSchema = new mongoose.Schema({
         type: Number,
         required: true
     },
+    loyaltyPoints: {
+        type: Number,
+        default: 0
+    },
     image: String,
     gst: {
         type: Number
@@ -65,6 +69,14 @@ const serviceSchema = new mongoose.Schema({
         type: String,
         enum: ['chair', 'room', 'cabin', 'none'],
         default: 'chair'
+    },
+    isRepeated: {
+        type: Boolean,
+        default: false
+    },
+    reminderDays: {
+        type: Number,
+        default: 30
     },
     likes: {
         type: Number,

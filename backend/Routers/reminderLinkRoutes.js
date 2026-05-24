@@ -6,6 +6,7 @@ const {
     updateRule, 
     addBridalBooking, 
     toggleBridalReminder,
+    deleteBridalBooking,
     getPendingSignals,
     updateSettings
 } = require('../Controllers/reminderLinkController');
@@ -18,6 +19,7 @@ router.post('/rules', addRule);
 router.patch('/rules/:id', updateRule);
 router.post('/bridal-bookings', addBridalBooking);
 router.patch('/bridal-bookings/:bookingId/reminders/:remId/toggle', toggleBridalReminder);
+router.delete('/bridal-bookings/:bookingId', deleteBridalBooking);
 router.get('/service-signals/pending', getPendingSignals);
 router.patch('/settings', updateSettings);
 

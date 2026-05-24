@@ -14,7 +14,7 @@ function todayIso() {
   return new Date().toISOString().split('T')[0];
 }
 
-export default function CashAndBank() {
+export default function CashAndBank({ type, outletId }) {
   const [businessDate, setBusinessDate] = useState(todayIso());
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -30,8 +30,12 @@ export default function CashAndBank() {
     setError('');
 
     try {
+      const params = { date: businessDate };
+      if (outletId && outletId !== 'all') {
+        params.outletId = outletId;
+      }
       const res = await api.get('/finance/cash-bank', {
-        params: { date: businessDate }
+        params
       });
 
       const d = res.data?.data;
@@ -59,7 +63,7 @@ export default function CashAndBank() {
     } finally {
       setLoading(false);
     }
-  }, [businessDate]);
+  }, [businessDate, outletId]);
 
   useEffect(() => {
     load();
@@ -95,7 +99,8 @@ export default function CashAndBank() {
         actualCash: parseFloat(actualCash),
         actualBank: parseFloat(actualBank),
         notes,
-        locked: true
+        locked: true,
+        outletId: (outletId && outletId !== 'all') ? outletId : undefined
       });
 
       await load();

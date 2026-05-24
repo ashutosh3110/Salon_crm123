@@ -3,6 +3,7 @@ const Customer = require('../Models/Customer');
 const WalletTransaction = require('../Models/WalletTransaction');
 const Salon = require('../Models/Salon');
 const LoyaltyTransaction = require('../Models/LoyaltyTransaction');
+const Setting = require('../Models/Setting');
 const { sendWapixoTemplate } = require('../Utils/whatsapp');
 const mongoose = require('mongoose');
 
@@ -22,7 +23,10 @@ exports.createOrder = async (req, res) => {
             deliveryCharge,
             subtotal,
             membershipDiscount,
-            taxAmount
+            taxAmount,
+            promotionId,
+            couponCode,
+            promoDiscount
         } = req.body;
         const customerId = req.user._id;
 
@@ -33,6 +37,29 @@ exports.createOrder = async (req, res) => {
                     success: false,
                     message: 'Street address, city, and zip code are mandatory for home delivery.'
                 });
+            }
+        }
+
+        // Validate coupon usage limit per customer
+        if (couponCode) {
+            const Promotion = require('../Models/Promotion');
+            const promo = await Promotion.findOne({
+                isActive: true,
+                couponCode: couponCode.trim().toUpperCase(),
+                activationMode: 'COUPON',
+                salonId
+            });
+            if (promo && promo.usageLimitPerCustomer) {
+                const code = promo.couponCode;
+                const [bookingsCount, ordersCount, invoicesCount] = await Promise.all([
+                    mongoose.model('Booking').countDocuments({ clientId: customerId, couponCode: code, status: { $ne: 'cancelled' } }),
+                    mongoose.model('Order').countDocuments({ customerId: customerId, couponCode: code, status: { $ne: 'cancelled' } }),
+                    mongoose.model('Invoice').countDocuments({ customerId: customerId, couponCode: code, status: { $ne: 'cancelled' } })
+                ]);
+                const totalCustomerUsage = bookingsCount + ordersCount + invoicesCount;
+                if (totalCustomerUsage >= promo.usageLimitPerCustomer) {
+                    return res.status(400).json({ success: false, message: 'You have already used this coupon code' });
+                }
             }
         }
 
@@ -78,6 +105,9 @@ exports.createOrder = async (req, res) => {
             deliveryCharge: deliveryCharge || 0,
             subtotal: subtotal || totalAmount,
             membershipDiscount: membershipDiscount || 0,
+            promoDiscount: promoDiscount || 0,
+            promotionId: promotionId || undefined,
+            couponCode: couponCode || undefined,
             taxAmount: taxAmount || 0,
             paymentStatus: paymentMethod === 'wallet' ? 'paid' : 'pending',
             timeline: [{
@@ -86,23 +116,51 @@ exports.createOrder = async (req, res) => {
             }]
         });
 
+        // Increment promotion usage count if couponCode is used
+        if (couponCode) {
+            try {
+                const Promotion = require('../Models/Promotion');
+                await Promotion.updateOne(
+                    { couponCode: couponCode.trim().toUpperCase(), salonId },
+                    { $inc: { usageCount: 1 } }
+                );
+            } catch (promoErr) {
+                console.error('[Order-Promo] Error incrementing usage count:', promoErr);
+            }
+        }
+
         // Award Loyalty Points if payment is paid (wallet) or otherwise based on business logic
         if (paymentMethod === 'wallet') {
             try {
-                const salon = await Salon.findById(salonId);
-                if (salon && salon.loyaltySetting && salon.loyaltySetting.active) {
-                    const rate = salon.loyaltySetting.pointsRate || 100;
-                    const points = Math.floor(totalAmount / rate);
-                    if (points > 0) {
-                        await Customer.findByIdAndUpdate(customerId, { $inc: { loyaltyPoints: points } });
-                        await LoyaltyTransaction.create({
-                            customerId,
-                            salonId,
-                            amount: points,
-                            type: 'EARN',
-                            description: `Points earned on Order #${order._id.toString().slice(-6)}`
-                        });
+                let points = 0;
+                let hasProductPoints = false;
+                
+                const Product = require('../Models/Product');
+                for (const item of items) {
+                    const product = await Product.findById(item.productId);
+                    if (product && product.loyaltyPoints) {
+                        points += product.loyaltyPoints * (Number(item.quantity) || 1);
+                        hasProductPoints = true;
                     }
+                }
+                
+                if (!hasProductPoints) {
+                    const settings = await Setting.findOne();
+                    if (settings && settings.loyaltySettings && settings.loyaltySettings.active) {
+                        const rate = settings.loyaltySettings.pointsRate || 100;
+                        points = Math.floor(totalAmount / rate);
+                    }
+                }
+                
+                if (points > 0) {
+                    await Customer.findByIdAndUpdate(customerId, { $inc: { loyaltyPoints: points } });
+                    await LoyaltyTransaction.create({
+                        customerId,
+                        salonId,
+                        amount: points,
+                        type: 'EARN',
+                        description: `Points earned on Order #${order._id.toString().slice(-6)}`
+                    });
                 }
             } catch (le) { console.error('Loyalty Error:', le); }
         }

@@ -93,6 +93,20 @@ const customerSchema = new mongoose.Schema({
         type: Boolean,
         default: false
     },
+    birthdayWishSent: {
+        type: Boolean,
+        default: false
+    },
+    anniversaryWishSent: {
+        type: Boolean,
+        default: false
+    },
+    lastBirthdayWishSentAt: {
+        type: Date
+    },
+    lastAnniversaryWishSentAt: {
+        type: Date
+    },
     fcmTokenWeb: [String],
     fcmTokenMobile: [String],
     likedProducts: [{

@@ -51,13 +51,16 @@ exports.deleteSupplier = async (req, res) => {
 
 exports.getExpenses = async (req, res) => {
     try {
-        const { startDate, endDate, category } = req.query;
+        const { startDate, endDate, category, outletId } = req.query;
         let query = { salonId: req.user.salonId };
         if (startDate && endDate) {
             query.date = { $gte: new Date(startDate), $lte: new Date(endDate) };
         }
         if (category && category !== 'All') {
             query.category = category;
+        }
+        if (outletId && outletId !== 'all') {
+            query.outletId = outletId;
         }
         const expenses = await Expense.find(query).populate('outletId', 'name').sort({ date: -1 });
         res.status(200).json({ success: true, data: expenses });
@@ -77,6 +80,7 @@ exports.addExpense = async (req, res) => {
         // Add to central ledger
         await FinanceTransaction.create({
             salonId: req.user.salonId,
+            outletId: expense.outletId,
             type: 'expense',
             category: 'Operational Expense',
             amount: expense.amount,
@@ -98,18 +102,23 @@ exports.addExpense = async (req, res) => {
 exports.getPettyCashSummary = async (req, res) => {
     try {
         const salonId = req.user.salonId;
+        const { outletId } = req.query;
         const now = new Date();
         const businessDate = now.toISOString().split('T')[0];
 
         // 1. Current Balance
-        const transactions = await FinanceTransaction.find({ salonId, accountType: 'cash' });
+        const transQuery = { salonId, accountType: 'cash' };
+        if (outletId && outletId !== 'all') transQuery.outletId = outletId;
+        const transactions = await FinanceTransaction.find(transQuery);
         let balance = 0;
         transactions.forEach(t => {
             balance += (t.type === 'income' ? t.amount : -t.amount);
         });
 
         // 2. Today's Status
-        const eod = await EndOfDay.findOne({ salonId, date: businessDate });
+        const eodQuery = { salonId, date: businessDate };
+        if (outletId && outletId !== 'all') eodQuery.outletId = outletId;
+        const eod = await EndOfDay.findOne(eodQuery);
         
         res.status(200).json({
             success: true,
@@ -129,10 +138,13 @@ exports.getPettyCashSummary = async (req, res) => {
 
 exports.getPettyCashEntries = async (req, res) => {
     try {
-        const transactions = await FinanceTransaction.find({ 
+        const { outletId } = req.query;
+        const query = { 
             salonId: req.user.salonId, 
             accountType: 'cash' 
-        }).sort({ date: -1 }).limit(100);
+        };
+        if (outletId && outletId !== 'all') query.outletId = outletId;
+        const transactions = await FinanceTransaction.find(query).sort({ date: -1 }).limit(100);
         
         res.status(200).json({ 
             success: true, 
@@ -154,14 +166,17 @@ exports.getPettyCashEntries = async (req, res) => {
 
 exports.getPettyCashClosings = async (req, res) => {
     try {
-        const closings = await EndOfDay.find({ salonId: req.user.salonId }).sort({ date: -1 });
+        const { outletId } = req.query;
+        const query = { salonId: req.user.salonId };
+        if (outletId && outletId !== 'all') query.outletId = outletId;
+        const closings = await EndOfDay.find(query).sort({ date: -1 });
         res.status(200).json({ 
             success: true, 
             data: { results: closings.map(c => ({
                 id: c._id,
                 date: c.date,
-                closingBalance: c.cashInHand,
-                discrepancy: 0,
+                closingBalance: c.cashInHand || c.actualCash || 0,
+                discrepancy: c.discrepancy || 0,
                 denominations: {},
                 verifiedBy: 'Manager',
                 timestamp: c.createdAt
@@ -179,9 +194,10 @@ exports.openPettyCashDay = async (req, res) => {
 
 exports.addPettyCashFund = async (req, res) => {
     try {
-        const { amount, description, source } = req.body;
+        const { amount, description, source, outletId } = req.body;
         const txn = await FinanceTransaction.create({
             salonId: req.user.salonId,
+            outletId,
             type: 'income',
             category: 'Top-Up',
             amount,
@@ -198,9 +214,10 @@ exports.addPettyCashFund = async (req, res) => {
 
 exports.addPettyCashExpense = async (req, res) => {
     try {
-        const { amount, category, description, staff } = req.body;
+        const { amount, category, description, staff, outletId } = req.body;
         const txn = await FinanceTransaction.create({
             salonId: req.user.salonId,
+            outletId,
             type: 'expense',
             category: category || 'Miscellaneous',
             amount,
@@ -217,7 +234,7 @@ exports.addPettyCashExpense = async (req, res) => {
 
 exports.closePettyCashDay = async (req, res) => {
     try {
-        const { denominations, verifiedBy } = req.body;
+        const { denominations, verifiedBy, outletId } = req.body;
         const now = new Date();
         const businessDate = now.toISOString().split('T')[0];
 
@@ -229,8 +246,11 @@ exports.closePettyCashDay = async (req, res) => {
 
         const eod = await EndOfDay.create({
             salonId: req.user.salonId,
+            outletId,
             date: businessDate,
             cashInHand: total,
+            actualCash: total,
+            expectedCash: total,
             bankBalance: 0, // Should be calculated
             totalSales: 0,
             totalExpenses: 0,
@@ -364,16 +384,27 @@ exports.addInvoicePayment = async (req, res) => {
 exports.getFinanceSummary = async (req, res) => {
     try {
         const salonId = req.user.salonId;
+        const { outletId } = req.query;
         const now = new Date();
         const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
         
+        // Build queries
+        const invoiceQuery = { salonId, status: { $ne: 'cancelled' } };
+        const transactionQuery = { salonId };
+        const supplierInvoiceQuery = { salonId, invoiceDate: { $gte: startOfMonth } };
+        const expenseQuery = { salonId };
+
+        if (outletId && outletId !== 'all') {
+            invoiceQuery.outletId = outletId;
+            transactionQuery.outletId = outletId;
+            supplierInvoiceQuery.outletId = outletId;
+            expenseQuery.outletId = outletId;
+        }
+
         // Fetch POS invoices, ledger transactions, and supplier invoices
-        const invoices = await Invoice.find({ salonId, status: { $ne: 'cancelled' } });
-        const transactions = await FinanceTransaction.find({ salonId }).sort({ date: -1 });
-        const mtdSupplierInvoices = await SupplierInvoice.find({
-            salonId,
-            invoiceDate: { $gte: startOfMonth }
-        });
+        const invoices = await Invoice.find(invoiceQuery);
+        const transactions = await FinanceTransaction.find(transactionQuery).sort({ date: -1 });
+        const mtdSupplierInvoices = await SupplierInvoice.find(supplierInvoiceQuery);
         const supplierPurchasesMtd = mtdSupplierInvoices.reduce((sum, inv) => sum + (inv.totalAmount || 0), 0);
         
         // 1. Transactions and Balances
@@ -444,7 +475,7 @@ exports.getFinanceSummary = async (req, res) => {
         }
 
         // 4. Cost Allocation (Top categories)
-        const expenses = await Expense.find({ salonId });
+        const expenses = await Expense.find(expenseQuery);
         const categories = {};
         expenses.forEach(e => {
             categories[e.category] = (categories[e.category] || 0) + e.amount;
@@ -493,7 +524,12 @@ exports.getFinanceSummary = async (req, res) => {
 
 exports.getEODReports = async (req, res) => {
     try {
-        const reports = await EndOfDay.find({ salonId: req.user.salonId }).sort({ date: -1 });
+        const query = { salonId: req.user.salonId };
+        const { outletId } = req.query;
+        if (outletId && outletId !== 'all') {
+            query.outletId = outletId;
+        }
+        const reports = await EndOfDay.find(query).sort({ date: -1 });
         res.status(200).json({ success: true, data: reports });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
@@ -503,28 +539,84 @@ exports.getEODReports = async (req, res) => {
 exports.getEODSummary = async (req, res) => {
     try {
         const salonId = req.user.salonId;
+        const { outletId } = req.query;
         const date = req.query.date ? new Date(req.query.date) : new Date();
         const start = new Date(date); start.setHours(0, 0, 0, 0);
         const end = new Date(date); end.setHours(23, 59, 59, 999);
         
         // Fetch last closed EOD for opening cash
-        const lastEod = await EndOfDay.findOne({ salonId, date: { $lt: start } }).sort({ date: -1 });
+        const lastEodQuery = { salonId, date: { $lt: start } };
+        if (outletId && outletId !== 'all') lastEodQuery.outletId = outletId;
+        const lastEod = await EndOfDay.findOne(lastEodQuery).sort({ date: -1 });
         const openingCash = lastEod?.actualCash || 0;
 
-        const invoices = await Invoice.find({ salonId, createdAt: { $gte: start, $lte: end } });
-        const expenses = await Expense.find({ salonId, date: { $gte: start, $lte: end } });
+        // Exclude cancelled invoices
+        const invoiceQuery = { 
+            salonId, 
+            createdAt: { $gte: start, $lte: end },
+            status: { $ne: 'cancelled' }
+        };
+        if (outletId && outletId !== 'all') invoiceQuery.outletId = outletId;
+        const invoices = await Invoice.find(invoiceQuery);
+
+        // Fetch other ledger transactions for expenses and other cash inflows
+        const transQuery = { 
+            salonId, 
+            date: { $gte: start, $lte: end } 
+        };
+        if (outletId && outletId !== 'all') transQuery.outletId = outletId;
+        const transactions = await FinanceTransaction.find(transQuery);
 
         const totalRevenue = invoices.reduce((s, i) => s + (i.total || 0), 0);
-        const totalExpenses = expenses.reduce((s, e) => s + (e.amount || 0), 0);
-        const cashSales = invoices.filter(i => i.paymentMethod === 'cash').reduce((s, i) => s + (i.total || 0), 0);
-        const cashExpenses = expenses.filter(e => e.paymentMethod === 'cash').reduce((s, e) => s + (e.amount || 0), 0);
-        
-        const cardRevenue = invoices.filter(i => i.paymentMethod === 'card').reduce((s, i) => s + (i.total || 0), 0);
-        const onlineRevenue = invoices.filter(i => i.paymentMethod === 'online' || i.paymentMethod === 'upi').reduce((s, i) => s + (i.total || 0), 0);
+        const totalExpenses = transactions.filter(t => t.type === 'expense').reduce((s, t) => s + (t.amount || 0), 0);
 
-        const netCashEstimate = openingCash + cashSales - cashExpenses;
+        let cashSales = 0;
+        let cardSales = 0;
+        let onlineSales = 0;
 
-        const existingClose = await EndOfDay.findOne({ salonId, date: { $gte: start, $lte: end } });
+        invoices.forEach(i => {
+            if (i.payments && i.payments.length > 0) {
+                i.payments.forEach(p => {
+                    if (p.method === 'cash') {
+                        cashSales += (p.amount || 0);
+                    } else if (p.method === 'card') {
+                        cardSales += (p.amount || 0);
+                    } else if (['online', 'upi', 'bank_transfer', 'cheque'].includes(p.method)) {
+                        onlineSales += (p.amount || 0);
+                    }
+                });
+            } else {
+                if (i.paymentMethod === 'cash') {
+                    cashSales += (i.total || 0);
+                } else if (i.paymentMethod === 'card') {
+                    cardSales += (i.total || 0);
+                } else if (i.paymentMethod === 'online' || i.paymentMethod === 'upi') {
+                    onlineSales += (i.total || 0);
+                }
+            }
+        });
+
+        let cashExpenses = 0;
+        let otherCashIncome = 0;
+
+        transactions.forEach(t => {
+            if (t.type === 'expense') {
+                if (t.accountType === 'cash') {
+                    cashExpenses += t.amount;
+                }
+            } else if (t.type === 'income') {
+                if (t.accountType === 'cash') {
+                    otherCashIncome += t.amount;
+                }
+            }
+        });
+
+        // Net cash estimate includes opening cash + cash sales + other cash ledger inflows - cash expenses
+        const netCashEstimate = openingCash + cashSales + otherCashIncome - cashExpenses;
+
+        const existingCloseQuery = { salonId, date: { $gte: start, $lte: end } };
+        if (outletId && outletId !== 'all') existingCloseQuery.outletId = outletId;
+        const existingClose = await EndOfDay.findOne(existingCloseQuery);
 
         res.json({
             success: true,
@@ -535,8 +627,8 @@ exports.getEODSummary = async (req, res) => {
                     netForDay: totalRevenue - totalExpenses,
                     invoiceCount: invoices.length,
                     cashSales,
-                    cardSales: cardRevenue,
-                    onlineSales: onlineRevenue,
+                    cardSales,
+                    onlineSales,
                     openingCash,
                     netCashEstimate
                 },
@@ -553,8 +645,11 @@ exports.getEODSummary = async (req, res) => {
 exports.getEODHistory = async (req, res) => {
     try {
         const salonId = req.user.salonId;
+        const { outletId } = req.query;
         const limit = parseInt(req.query.limit) || 15;
-        const reports = await EndOfDay.find({ salonId }).sort({ date: -1 }).limit(limit);
+        const query = { salonId };
+        if (outletId && outletId !== 'all') query.outletId = outletId;
+        const reports = await EndOfDay.find(query).sort({ date: -1 }).limit(limit);
         res.json({ success: true, data: { results: reports } });
     } catch (err) {
         res.status(500).json({ success: false, message: err.message });
@@ -564,12 +659,118 @@ exports.getEODHistory = async (req, res) => {
 exports.closeEOD = async (req, res) => {
     try {
         const salonId = req.user.salonId;
-        const report = await EndOfDay.create({
-            ...req.body,
-            salonId,
-            performedBy: req.user._id,
-            date: req.body.businessDate ? new Date(req.body.businessDate) : new Date(),
+        const { businessDate, openingCash, actualCash, notes, outletId } = req.body;
+
+        const date = businessDate ? new Date(businessDate) : new Date();
+        const start = new Date(date); start.setHours(0, 0, 0, 0);
+        const end = new Date(date); end.setHours(23, 59, 59, 999);
+
+        // Fetch POS invoices to aggregate sales
+        const invoiceQuery = { 
+            salonId, 
+            createdAt: { $gte: start, $lte: end },
+            status: { $ne: 'cancelled' }
+        };
+        if (outletId && outletId !== 'all') invoiceQuery.outletId = outletId;
+        const invoices = await Invoice.find(invoiceQuery);
+
+        let cashSales = 0;
+        let cardSales = 0;
+        let onlineSales = 0;
+
+        invoices.forEach(i => {
+            if (i.payments && i.payments.length > 0) {
+                i.payments.forEach(p => {
+                    if (p.method === 'cash') {
+                        cashSales += (p.amount || 0);
+                    } else if (p.method === 'card') {
+                        cardSales += (p.amount || 0);
+                    } else if (['online', 'upi', 'bank_transfer', 'cheque'].includes(p.method)) {
+                        onlineSales += (p.amount || 0);
+                    }
+                });
+            } else {
+                if (i.paymentMethod === 'cash') {
+                    cashSales += (i.total || 0);
+                } else if (i.paymentMethod === 'card') {
+                    cardSales += (i.total || 0);
+                } else if (i.paymentMethod === 'online' || i.paymentMethod === 'upi') {
+                    onlineSales += (i.total || 0);
+                }
+            }
         });
+
+        // Fetch other ledger transactions for expenses and other cash inflows
+        const transQuery = { 
+            salonId, 
+            date: { $gte: start, $lte: end } 
+        };
+        if (outletId && outletId !== 'all') transQuery.outletId = outletId;
+        const transactions = await FinanceTransaction.find(transQuery);
+
+        let otherCashIncome = 0;
+        let otherBankIncome = 0;
+        let cashExpenses = 0;
+        let bankExpenses = 0;
+
+        transactions.forEach(t => {
+            if (t.type === 'income') {
+                if (t.accountType === 'cash') {
+                    otherCashIncome += t.amount;
+                } else {
+                    otherBankIncome += t.amount;
+                }
+            } else if (t.type === 'expense') {
+                if (t.accountType === 'cash') {
+                    cashExpenses += t.amount;
+                } else {
+                    bankExpenses += t.amount;
+                }
+            }
+        });
+
+        const totalCashIncome = cashSales + otherCashIncome;
+        const totalBankIncome = cardSales + onlineSales + otherBankIncome;
+
+        const expectedCash = Number(openingCash || 0) + totalCashIncome - cashExpenses;
+        const discrepancy = Number(actualCash || 0) - expectedCash;
+
+        // Fetch last closed bank for expectedBank calculations if needed (fallback to 0)
+        const lastEodQuery = { salonId, date: { $lt: start } };
+        if (outletId && outletId !== 'all') lastEodQuery.outletId = outletId;
+        const lastEod = await EndOfDay.findOne(lastEodQuery).sort({ date: -1 });
+        const openingBank = lastEod?.actualBank || 0;
+        const expectedBank = openingBank + totalBankIncome - bankExpenses;
+
+        const reportQuery = { salonId, date: { $gte: start, $lte: end } };
+        if (outletId && outletId !== 'all') reportQuery.outletId = outletId;
+
+        const updatePayload = {
+            openingCash: Number(openingCash || 0),
+            totalCashIncome,
+            totalCashExpense: cashExpenses,
+            totalBankIncome,
+            totalBankExpense: bankExpenses,
+            expectedCash,
+            actualCash: Number(actualCash || 0),
+            discrepancy,
+            openingBank,
+            expectedBank,
+            actualBank: expectedBank, // Default to expectedBank as it's not manually counted on this screen
+            bankDiscrepancy: 0,
+            status: 'closed',
+            notes: notes ? notes.trim() : '',
+            performedBy: req.user._id,
+            date: start
+        };
+        if (outletId && outletId !== 'all') updatePayload.outletId = outletId;
+
+        const report = await EndOfDay.findOneAndUpdate(
+            reportQuery,
+            updatePayload,
+            { upsert: true, new: true }
+        );
+
         res.status(201).json({ success: true, data: report });
     } catch (err) {
         res.status(400).json({ success: false, message: err.message });
@@ -625,21 +826,23 @@ exports.getGSTSummary = async (req, res) => {
 exports.getCashBank = async (req, res) => {
     try {
         const salonId = req.user.salonId;
+        const { outletId } = req.query;
         const date = req.query.date ? new Date(req.query.date) : new Date();
         const start = new Date(date); start.setHours(0, 0, 0, 0);
         const end = new Date(date); end.setHours(23, 59, 59, 999);
 
         // Fetch opening cash/bank from the latest EndOfDay record before today
-        const prevEod = await EndOfDay.findOne({
-            salonId,
-            date: { $lt: start }
-        }).sort({ date: -1 });
+        const prevEodQuery = { salonId, date: { $lt: start } };
+        if (outletId && outletId !== 'all') prevEodQuery.outletId = outletId;
+        const prevEod = await EndOfDay.findOne(prevEodQuery).sort({ date: -1 });
 
         const openingCash = prevEod ? prevEod.actualCash : 0;
         const openingBank = prevEod ? (prevEod.actualBank || 0) : 0;
 
         // Fetch POS invoices
-        const invoices = await Invoice.find({ salonId, createdAt: { $gte: start, $lte: end }, status: { $ne: 'cancelled' } });
+        const invoiceQuery = { salonId, createdAt: { $gte: start, $lte: end }, status: { $ne: 'cancelled' } };
+        if (outletId && outletId !== 'all') invoiceQuery.outletId = outletId;
+        const invoices = await Invoice.find(invoiceQuery);
         let cashSales = 0;
         let bankSales = 0;
         invoices.forEach(i => {
@@ -653,7 +856,9 @@ exports.getCashBank = async (req, res) => {
         });
 
         // Fetch other ledger transactions
-        const transactions = await FinanceTransaction.find({ salonId, date: { $gte: start, $lte: end } });
+        const transQuery = { salonId, date: { $gte: start, $lte: end } };
+        if (outletId && outletId !== 'all') transQuery.outletId = outletId;
+        const transactions = await FinanceTransaction.find(transQuery);
         let otherCashIncome = 0;
         let otherBankIncome = 0;
         let cashExpenses = 0;
@@ -682,7 +887,9 @@ exports.getCashBank = async (req, res) => {
         const expectedBank = openingBank + totalBankIncome - bankExpenses;
 
         // Find saved EOD for this day (can be draft pending or closed)
-        const saved = await EndOfDay.findOne({ salonId, date: { $gte: start, $lte: end } });
+        const savedQuery = { salonId, date: { $gte: start, $lte: end } };
+        if (outletId && outletId !== 'all') savedQuery.outletId = outletId;
+        const saved = await EndOfDay.findOne(savedQuery);
 
         res.json({
             success: true,
@@ -721,23 +928,24 @@ exports.getCashBank = async (req, res) => {
 exports.reconcileCashBank = async (req, res) => {
     try {
         const salonId = req.user.salonId;
-        const { businessDate, actualCash, actualBank, notes, locked } = req.body;
+        const { businessDate, actualCash, actualBank, notes, locked, outletId } = req.body;
 
         const date = businessDate ? new Date(businessDate) : new Date();
         const start = new Date(date); start.setHours(0, 0, 0, 0);
         const end = new Date(date); end.setHours(23, 59, 59, 999);
 
         // Fetch opening cash/bank from the latest EndOfDay record before today
-        const prevEod = await EndOfDay.findOne({
-            salonId,
-            date: { $lt: start }
-        }).sort({ date: -1 });
+        const prevEodQuery = { salonId, date: { $lt: start } };
+        if (outletId && outletId !== 'all') prevEodQuery.outletId = outletId;
+        const prevEod = await EndOfDay.findOne(prevEodQuery).sort({ date: -1 });
 
         const openingCash = prevEod ? prevEod.actualCash : 0;
         const openingBank = prevEod ? (prevEod.actualBank || 0) : 0;
 
         // Fetch POS invoices
-        const invoices = await Invoice.find({ salonId, createdAt: { $gte: start, $lte: end }, status: { $ne: 'cancelled' } });
+        const invoiceQuery = { salonId, createdAt: { $gte: start, $lte: end }, status: { $ne: 'cancelled' } };
+        if (outletId && outletId !== 'all') invoiceQuery.outletId = outletId;
+        const invoices = await Invoice.find(invoiceQuery);
         let cashSales = 0;
         let bankSales = 0;
         invoices.forEach(i => {
@@ -748,7 +956,9 @@ exports.reconcileCashBank = async (req, res) => {
         });
 
         // Fetch other ledger transactions
-        const transactions = await FinanceTransaction.find({ salonId, date: { $gte: start, $lte: end } });
+        const transQuery = { salonId, date: { $gte: start, $lte: end } };
+        if (outletId && outletId !== 'all') transQuery.outletId = outletId;
+        const transactions = await FinanceTransaction.find(transQuery);
         let otherCashIncome = 0;
         let otherBankIncome = 0;
         let cashExpenses = 0;
@@ -773,27 +983,33 @@ exports.reconcileCashBank = async (req, res) => {
         const discrepancy = actualCash - expectedCash;
         const bankDiscrepancy = actualBank - expectedBank;
 
+        const reportQuery = { salonId, date: { $gte: start, $lte: end } };
+        if (outletId && outletId !== 'all') reportQuery.outletId = outletId;
+
+        const updatePayload = {
+            openingCash,
+            totalCashIncome,
+            totalCashExpense: cashExpenses,
+            totalBankIncome,
+            totalBankExpense: bankExpenses,
+            expectedCash,
+            actualCash,
+            discrepancy,
+            openingBank,
+            expectedBank,
+            actualBank,
+            bankDiscrepancy,
+            status: locked ? 'closed' : 'pending',
+            notes,
+            performedBy: req.user._id,
+            date: start
+        };
+        if (outletId && outletId !== 'all') updatePayload.outletId = outletId;
+
         // Save or update EndOfDay report
         const report = await EndOfDay.findOneAndUpdate(
-            { salonId, date: { $gte: start, $lte: end } },
-            {
-                openingCash,
-                totalCashIncome,
-                totalCashExpense: cashExpenses,
-                totalBankIncome,
-                totalBankExpense: bankExpenses,
-                expectedCash,
-                actualCash,
-                discrepancy,
-                openingBank,
-                expectedBank,
-                actualBank,
-                bankDiscrepancy,
-                status: locked ? 'closed' : 'pending',
-                notes,
-                performedBy: req.user._id,
-                date: start
-            },
+            reportQuery,
+            updatePayload,
             { upsert: true, new: true }
         );
 
@@ -819,12 +1035,13 @@ exports.submitEOD = async (req, res) => {
 exports.getTransactions = async (req, res) => {
     try {
         const salonId = req.user.salonId;
-        const { type, accountType, category, startDate, endDate, page = 1, limit = 50 } = req.query;
+        const { type, accountType, category, startDate, endDate, outletId, page = 1, limit = 50 } = req.query;
         
         const query = { salonId };
         if (type) query.type = type;
         if (accountType) query.accountType = accountType;
         if (category) query.category = category;
+        if (outletId && outletId !== 'all') query.outletId = outletId;
         if (startDate || endDate) {
             query.date = {};
             if (startDate) query.date.$gte = new Date(startDate);
@@ -865,6 +1082,7 @@ exports.addTransaction = async (req, res) => {
             accountType,
             paymentMethod,
             description,
+            outletId,
             date = new Date()
         } = req.body;
 
@@ -873,11 +1091,13 @@ exports.addTransaction = async (req, res) => {
         }
 
         const txnDate = new Date(date);
+        const cleanOutletId = (outletId && outletId !== 'all') ? outletId : undefined;
 
         if (category === 'Bank Deposit') {
             // Cash -> Bank transfer
             const txn1 = await FinanceTransaction.create({
                 salonId,
+                outletId: cleanOutletId,
                 date: txnDate,
                 type: 'expense',
                 category: 'Bank Deposit',
@@ -889,6 +1109,7 @@ exports.addTransaction = async (req, res) => {
             });
             const txn2 = await FinanceTransaction.create({
                 salonId,
+                outletId: cleanOutletId,
                 date: txnDate,
                 type: 'income',
                 category: 'Bank Deposit',
@@ -905,6 +1126,7 @@ exports.addTransaction = async (req, res) => {
             // Bank -> Cash transfer
             const txn1 = await FinanceTransaction.create({
                 salonId,
+                outletId: cleanOutletId,
                 date: txnDate,
                 type: 'expense',
                 category: 'Bank Withdrawal',
@@ -916,6 +1138,7 @@ exports.addTransaction = async (req, res) => {
             });
             const txn2 = await FinanceTransaction.create({
                 salonId,
+                outletId: cleanOutletId,
                 date: txnDate,
                 type: 'income',
                 category: 'Bank Withdrawal',
@@ -931,6 +1154,7 @@ exports.addTransaction = async (req, res) => {
         // Standard single transaction
         const txn = await FinanceTransaction.create({
             salonId,
+            outletId: cleanOutletId,
             date: txnDate,
             type,
             category: category || (type === 'income' ? 'Other Income' : 'Other Expense'),
@@ -1008,7 +1232,7 @@ exports.getInvoicePayments = async (req, res) => {
 exports.getSalesReports = async (req, res) => {
     try {
         const salonId = req.user.salonId;
-        const { period = 'monthly', startDate, endDate } = req.query;
+        const { period = 'monthly', startDate, endDate, outletId } = req.query;
         const mongoose = require('mongoose');
         const Staff = require('../Models/Staff');
 
@@ -1031,11 +1255,16 @@ exports.getSalesReports = async (req, res) => {
         end.setHours(23, 59, 59, 999);
 
         // Fetch all active invoices in this date range
-        const invoices = await Invoice.find({
+        const invoiceQuery = {
             salonId,
             status: { $in: ['active', 'refunded'] },
             createdAt: { $gte: start, $lte: end }
-        }).populate('customerId', 'name').lean();
+        };
+        if (outletId && outletId !== 'all') {
+            invoiceQuery.outletId = outletId;
+        }
+
+        const invoices = await Invoice.find(invoiceQuery).populate('customerId', 'name').lean();
 
         // Calculate KPIs
         let totalSales = 0;
@@ -1062,11 +1291,16 @@ exports.getSalesReports = async (req, res) => {
         const prevPeriodEnd = new Date(start.getTime() - 1);
         const prevPeriodStart = new Date(prevPeriodEnd.getTime() - periodDiff);
 
-        const prevInvoices = await Invoice.find({
+        const prevInvoiceQuery = {
             salonId,
             status: { $in: ['active', 'refunded'] },
             createdAt: { $gte: prevPeriodStart, $lte: prevPeriodEnd }
-        }).lean();
+        };
+        if (outletId && outletId !== 'all') {
+            prevInvoiceQuery.outletId = outletId;
+        }
+
+        const prevInvoices = await Invoice.find(prevInvoiceQuery).lean();
 
         let prevTotalSales = 0;
         let prevServicesRevenue = 0;

@@ -17,12 +17,14 @@ import {
     Info 
 } from 'lucide-react';
 import api from '../../../services/api';
+import { useBusiness } from '../../../contexts/BusinessContext';
 
 function todayIso() {
     return new Date().toISOString().split('T')[0];
 }
 
-export default function Transactions() {
+export default function Transactions({ outletId }) {
+    const { outlets = [], fetchOutlets } = useBusiness();
     const [transactions, setTransactions] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -50,6 +52,17 @@ export default function Transactions() {
     const [paymentMethod, setPaymentMethod] = useState('cash');
     const [description, setDescription] = useState('');
     const [date, setDate] = useState(todayIso);
+    const [formOutletId, setFormOutletId] = useState(() => (outletId && outletId !== 'all' ? outletId : ''));
+
+    useEffect(() => {
+        if (!outlets?.length && fetchOutlets) fetchOutlets();
+    }, [outlets?.length, fetchOutlets]);
+
+    useEffect(() => {
+        if (outletId && outletId !== 'all') {
+            setFormOutletId(outletId);
+        }
+    }, [outletId]);
 
     // Load categories based on mode
     useEffect(() => {
@@ -83,7 +96,8 @@ export default function Transactions() {
                 accountType: filterAccount || undefined,
                 category: filterCategory || undefined,
                 startDate: filterStart || undefined,
-                endDate: filterEnd || undefined
+                endDate: filterEnd || undefined,
+                outletId: outletId || undefined
             };
             const res = await api.get('/finance/transactions', { params });
             if (res.data?.success) {
@@ -96,11 +110,15 @@ export default function Transactions() {
         } finally {
             setLoading(false);
         }
-    }, [page, filterType, filterAccount, filterCategory, filterStart, filterEnd]);
+    }, [page, filterType, filterAccount, filterCategory, filterStart, filterEnd, outletId]);
 
     useEffect(() => {
         load();
     }, [load]);
+
+    useEffect(() => {
+        setPage(1);
+    }, [outletId]);
 
     const handleSave = async (e) => {
         e.preventDefault();
@@ -133,7 +151,8 @@ export default function Transactions() {
                 accountType,
                 paymentMethod,
                 description: description.trim(),
-                date
+                date,
+                outletId: formOutletId || undefined
             });
 
             setIsOpen(false);
@@ -552,6 +571,23 @@ export default function Transactions() {
                                     </p>
                                 </div>
                             )}
+
+                            {/* Outlet select dropdown */}
+                            <div className="space-y-1.5">
+                                <label className="text-[10px] font-bold text-text-muted uppercase tracking-widest ml-1">Outlet</label>
+                                <select
+                                    value={formOutletId}
+                                    onChange={(e) => setFormOutletId(e.target.value)}
+                                    className="w-full p-3 bg-surface border border-border rounded-xl text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-primary/10"
+                                >
+                                    <option value="">All Outlets / Not Specified</option>
+                                    {outlets.map((o) => (
+                                        <option key={o._id || o.id} value={o._id || o.id}>
+                                            {o.name}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
 
                             {/* Description */}
                             <div className="space-y-1.5">

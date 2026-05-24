@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronLeft, CreditCard, Wallet, MapPin, Truck, CheckCircle, ArrowRight, Zap, Info, BellRing } from 'lucide-react';
+import { ChevronLeft, CreditCard, Wallet, MapPin, Truck, CheckCircle, ArrowRight, Zap, Info, BellRing, Tag } from 'lucide-react';
 import { useCart } from '../../contexts/CartContext';
 import { useCustomerTheme } from '../../contexts/CustomerThemeContext';
 import { useCustomerAuth } from '../../contexts/CustomerAuthContext';
@@ -25,6 +25,11 @@ export default function AppCheckoutPage() {
     }, [platformSettings, fetchPlatformSettings]);
     
     const [step, setStep] = useState(1); // 1: Address, 2: Payment, 3: Success
+
+    const [couponCode, setCouponCode] = useState('');
+    const [promoDiscount, setPromoDiscount] = useState(0);
+    const [appliedPromotion, setAppliedPromotion] = useState(null);
+    const [applyingCoupon, setApplyingCoupon] = useState(false);
 
     useEffect(() => {
         window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
@@ -83,10 +88,10 @@ export default function AppCheckoutPage() {
 
     const tax = useMemo(() => {
         const pGst = Number(platformSettings?.productGst || 12);
-        return (cartTotal - membershipDiscount) * (pGst / 100);
-    }, [cartTotal, membershipDiscount, platformSettings]);
+        return Math.max(0, cartTotal - membershipDiscount - promoDiscount) * (pGst / 100);
+    }, [cartTotal, membershipDiscount, promoDiscount, platformSettings]);
 
-    const finalTotal = Math.max(0, cartTotal - membershipDiscount + deliveryFee + tax);
+    const finalTotal = Math.max(0, cartTotal - membershipDiscount - promoDiscount + deliveryFee + tax);
 
     useEffect(() => {
         if (activeOutlet) {
@@ -110,6 +115,38 @@ export default function AppCheckoutPage() {
         }
     }, [cart.items.length, step, navigate]);
 
+    const handleApplyCoupon = async () => {
+        if (!couponCode.trim()) return;
+        setApplyingCoupon(true);
+        try {
+            const res = await api.post('/promotions/validate-coupon', {
+                couponCode: couponCode.trim().toUpperCase(),
+                outletId: localStorage.getItem('active_outlet_id') || undefined,
+                customerId: customer?._id || undefined,
+                items: cart.items.map(item => ({
+                    type: 'product',
+                    price: item.productId.sellingPrice || item.productId.price,
+                    quantity: item.quantity
+                }))
+            });
+
+            if (res.data.success && res.data.data) {
+                const { promotion, discount } = res.data.data;
+                setAppliedPromotion(promotion);
+                setPromoDiscount(discount);
+                alert(`Coupon "${promotion.name}" applied successfully! Discount: ₹${discount}`);
+                setCouponCode('');
+            } else {
+                alert('Failed to validate coupon');
+            }
+        } catch (err) {
+            const msg = err?.response?.data?.message || err?.message || 'Invalid or expired coupon code';
+            alert(msg);
+        } finally {
+            setApplyingCoupon(false);
+        }
+    };
+
     const handlePlaceOrder = async () => {
         setLoading(true);
         try {
@@ -128,6 +165,9 @@ export default function AppCheckoutPage() {
                 })),
                 subtotal: cartTotal,
                 membershipDiscount: membershipDiscount,
+                promoDiscount: promoDiscount,
+                couponCode: appliedPromotion ? appliedPromotion.couponCode : undefined,
+                promotionId: appliedPromotion ? appliedPromotion._id : undefined,
                 totalAmount: finalTotal,
                 deliveryCharge: deliveryFee,
                 taxAmount: tax,
@@ -257,6 +297,14 @@ export default function AppCheckoutPage() {
                             <span className="text-sm font-black italic tracking-tighter text-[#C8956C]">- ₹{Math.round(membershipDiscount)}</span>
                         </div>
                     )}
+                    {promoDiscount > 0 && (
+                        <div className="flex justify-between items-center mb-1">
+                            <span className="text-[10px] font-black uppercase tracking-widest text-[#C8956C]">
+                                Coupon ({appliedPromotion?.couponCode})
+                            </span>
+                            <span className="text-sm font-black italic tracking-tighter text-[#C8956C]">- ₹{Math.round(promoDiscount)}</span>
+                        </div>
+                    )}
                     <div className="flex justify-between items-center mb-1">
                         <span className="text-[10px] font-black uppercase tracking-widest opacity-40">Delivery Fee</span>
                         <span className="text-sm font-black italic tracking-tighter" style={{ color: deliveryFee > 0 ? colors.text : '#10B981' }}>
@@ -298,6 +346,59 @@ export default function AppCheckoutPage() {
                         ))}
                     </div>
                 </motion.div>
+
+                {/* Coupon Code Section */}
+                {step < 3 && (
+                    <motion.div
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="p-6 rounded-3xl"
+                        style={{ background: colors.card, border: `1.5px solid ${colors.border}` }}
+                    >
+                        <div className="flex items-center gap-3 mb-4">
+                            <Tag size={18} className="text-[#C8956C]" />
+                            <h3 className="text-xs font-black uppercase tracking-widest" style={{ color: colors.text }}>Promo Code / Coupon</h3>
+                        </div>
+
+                        <div className="flex gap-2">
+                            <input
+                                type="text"
+                                placeholder="ENTER COUPON CODE"
+                                value={couponCode}
+                                onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
+                                disabled={appliedPromotion !== null}
+                                className="flex-1 h-12 px-4 rounded-2xl font-bold text-xs outline-none transition-all placeholder:opacity-30 uppercase"
+                                style={{
+                                    background: isLight ? 'rgba(0,0,0,0.03)' : 'rgba(255,255,255,0.03)',
+                                    border: `1px solid ${colors.border}`,
+                                    color: colors.text
+                                }}
+                            />
+                            {appliedPromotion ? (
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        setAppliedPromotion(null);
+                                        setPromoDiscount(0);
+                                        setCouponCode('');
+                                    }}
+                                    className="px-4 h-12 rounded-2xl font-black text-[10px] uppercase tracking-wider text-red-500 border border-red-500/20 bg-red-500/5 transition-all"
+                                >
+                                    Remove
+                                </button>
+                            ) : (
+                                <button
+                                    type="button"
+                                    onClick={handleApplyCoupon}
+                                    disabled={applyingCoupon || !couponCode.trim()}
+                                    className="px-6 h-12 bg-[#C8956C] text-white font-black text-[10px] uppercase tracking-wider rounded-2xl disabled:opacity-50 transition-all shrink-0"
+                                >
+                                    {applyingCoupon ? 'Applying...' : 'Apply'}
+                                </button>
+                            )}
+                        </div>
+                    </motion.div>
+                )}
 
                 {step === 1 ? (
                     <motion.div variants={containerVariants} initial="hidden" animate="show" className="space-y-6">

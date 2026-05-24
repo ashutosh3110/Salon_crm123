@@ -1,7 +1,8 @@
-import { useState, useMemo, useEffect, useCallback, useRef } from 'react';
+import { useState, useMemo, useEffect, useCallback } from 'react';
 import { 
     Calculator, FileText, Download, CheckCircle2, Search, 
-    ChevronDown, Calendar, X, Edit2, Eye, Printer, DollarSign, Clock, Check, Settings 
+    ChevronDown, Calendar, X, Edit2, Eye, Printer, DollarSign, Clock, Check, Settings,
+    Filter, RefreshCw, AlertCircle, MessageCircle
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useBusiness } from '../../../contexts/BusinessContext';
@@ -15,13 +16,19 @@ const STATUS_META = {
 };
 
 export default function PayrollManager() {
-    const { salon, staff, fetchStaff } = useBusiness();
-    useEffect(() => { fetchStaff(); }, []);
+    const { salon, staff, fetchStaff, outlets = [], fetchOutlets } = useBusiness();
+    
+    useEffect(() => { 
+        fetchStaff(); 
+        fetchOutlets();
+    }, [fetchStaff, fetchOutlets]);
+
     const [individualModal, setIndividualModal] = useState(false);
-    const [selectedStaffId, setSelectedStaffId] = useState('');
     const [month, setMonth] = useState(new Date().getMonth() + 1);
     const [year, setYear] = useState(new Date().getFullYear());
     const [records, setRecords] = useState([]);
+    const [filterOutlet, setFilterOutlet] = useState('All');
+    
     const [individualForm, setIndividualForm] = useState({
         staffId: '',
         baseSalary: 0,
@@ -34,11 +41,13 @@ export default function PayrollManager() {
         otherDeductions: 0,
         notes: ''
     });
+    
     const [loading, setLoading] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
     const [toast, setToast] = useState(null);
     const [showDetails, setShowDetails] = useState(null);
     const [isSaving, setIsSaving] = useState(false);
+    const [sendingWhatsApp, setSendingWhatsApp] = useState(null);
     
     const [detailForm, setDetailForm] = useState({
         baseSalary: 0,
@@ -59,6 +68,29 @@ export default function PayrollManager() {
         setTimeout(() => setToast(null), 3000);
     };
 
+    const sendWhatsAppPayroll = async (record) => {
+        const phone = record.staffId?.phone;
+        if (!phone) {
+            showToast('Staff phone number not found');
+            return;
+        }
+
+        setSendingWhatsApp(record._id);
+        try {
+            const res = await api.post(`/hr/payroll/${record._id}/whatsapp`);
+            if (res.data?.success) {
+                showToast('Payslip sent on WhatsApp successfully!');
+            } else {
+                showToast(res.data?.message || 'Failed to send WhatsApp payslip');
+            }
+        } catch (e) {
+            console.error('[PayrollManager] WhatsApp error:', e);
+            showToast(e.response?.data?.message || 'Error sending WhatsApp payslip');
+        } finally {
+            setSendingWhatsApp(null);
+        }
+    };
+
     const loadRecords = useCallback(async () => {
         setLoading(true);
         try {
@@ -74,19 +106,6 @@ export default function PayrollManager() {
     useEffect(() => {
         loadRecords();
     }, [loadRecords]);
-
-    const generateAll = async () => {
-        setLoading(true);
-        try {
-            await api.post('/hr/payroll/generate', { month, year });
-            showToast(`Draft payroll generated for ${month}/${year}`);
-            loadRecords();
-        } catch (e) {
-            showToast('Generation failed');
-        } finally {
-            setLoading(false);
-        }
-    };
 
     const handleEdit = (record) => {
         setShowDetails(record);
@@ -238,7 +257,7 @@ export default function PayrollManager() {
                             <td class="amount" style="color: #10b981">+₹${record.incentive.toLocaleString()}</td>
                         </tr>
                         <tr>
-                            <td>Taxes & Deductions</td>
+                            <td>Deductions</td>
                             <td class="amount">-</td>
                             <td class="amount" style="color: #e11d48">-₹${record.otherDeductions.toLocaleString()}</td>
                         </tr>
@@ -263,315 +282,363 @@ export default function PayrollManager() {
         win.document.close();
     };
 
-    const stats = useMemo(() => {
-        const total = records.reduce((sum, r) => sum + (r.netSalary || 0), 0);
-        const paid = records.filter(r => r.status === 'paid').length;
-        const pending = records.filter(r => r.status !== 'paid').length;
-        return { total, paid, pending };
-    }, [records]);
+    // Extract unique outlets from context and loaded payroll records
+    const uniqueOutlets = useMemo(() => {
+        const set = new Set();
+        (outlets || []).forEach(o => {
+            if (o?.name) set.add(o.name);
+        });
+        records.forEach(r => {
+            const outletName = r.staffId?.outletId?.name;
+            if (outletName) set.add(outletName);
+        });
+        return ['All', ...Array.from(set)];
+    }, [outlets, records]);
 
+    // Apply filters in-memory
     const filtered = useMemo(() => {
         const q = searchTerm.trim().toLowerCase();
-        return records.filter(r => r.staffId?.name?.toLowerCase().includes(q));
-    }, [records, searchTerm]);
+        return records.filter(r => {
+            const matchesSearch = r.staffId?.name?.toLowerCase().includes(q) || r.staffId?.role?.toLowerCase().includes(q);
+            const staffOutletName = r.staffId?.outletId?.name || '—';
+            const matchesOutlet = filterOutlet === 'All' || staffOutletName === filterOutlet;
+            return matchesSearch && matchesOutlet;
+        });
+    }, [records, searchTerm, filterOutlet]);
+
+    // Stats calculated dynamic based on filtered records
+    const stats = useMemo(() => {
+        const total = filtered.reduce((sum, r) => sum + (r.netSalary || 0), 0);
+        const paid = filtered.filter(r => r.status === 'paid').length;
+        const pending = filtered.filter(r => r.status !== 'paid').length;
+        return { total, paid, pending };
+    }, [filtered]);
+
+    // Filter staff list in "Add Member" dropdown by selected outlet
+    const addableStaff = useMemo(() => {
+        const list = Array.isArray(staff) ? staff : [];
+        return list.filter(s => {
+            // Check if already in active payroll records
+            const alreadyIn = records.some(r => (r.staffId?._id === s._id || r.staffId === s._id));
+            if (alreadyIn) return false;
+            
+            // Check if matches active outlet selection
+            if (filterOutlet !== 'All') {
+                return s.outletId?.name === filterOutlet;
+            }
+            return true;
+        });
+    }, [staff, records, filterOutlet]);
+
+    // Export CSV of filtered list
+    const exportCSV = () => {
+        const header = 'Staff,Role,Outlet,Cycle Days,Base Salary,Net Settlement,Status\n';
+        const rows = filtered.map(r => `"${r.staffId?.name}","${r.staffId?.role}","${r.staffId?.outletId?.name || '—'}","${r.presentDays}/${r.workingDays}",${r.baseSalary},${r.netSalary},"${r.status}"`).join('\n');
+        const blob = new Blob([header + rows], { type: 'text/csv' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a'); a.href = url;
+        a.download = `payroll_${month}_${year}.csv`; a.click();
+    };
 
     return (
-        <div className="space-y-6 font-black text-left">
-            {/* Summary Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-left font-black">
-                <div className="bg-surface p-8 rounded-none border border-border shadow-sm flex items-center justify-between group hover:border-primary transition-all text-left">
-                    <div className="text-left">
-                        <p className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Monthly Payout</p>
-                        <h3 className="text-3xl font-black mt-2 text-primary tracking-tighter">₹{stats.total.toLocaleString()}</h3>
+        <div className="space-y-6 text-left bg-slate-50 dark:bg-slate-900 rounded-3xl p-6 border border-slate-200/60 dark:border-slate-800/80 transition-colors">
+            
+            {/* Dynamic Outlet-wise Payout Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700/80 shadow-sm flex items-center justify-between group hover:border-primary transition-all">
+                    <div className="space-y-1">
+                        <p className="text-[10px] font-black text-slate-450 dark:text-slate-500 uppercase tracking-widest">Payout Budget</p>
+                        <h3 className="text-2xl font-black text-slate-850 dark:text-slate-100 tracking-tight">₹{stats.total.toLocaleString()}</h3>
                     </div>
-                    <div className="p-4 bg-primary/10 text-primary border border-primary/20 shrink-0 group-hover:bg-primary group-hover:text-white transition-all">
-                        <DollarSign className="w-6 h-6" />
-                    </div>
-                </div>
-                <div className="bg-surface p-8 rounded-none border border-border shadow-sm flex items-center justify-between group hover:border-emerald-500 transition-all text-left">
-                    <div className="text-left">
-                        <p className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Paid Records</p>
-                        <h3 className="text-3xl font-black mt-2 text-emerald-500 tracking-tighter">{stats.paid}</h3>
-                    </div>
-                    <div className="p-4 bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 shrink-0 group-hover:bg-emerald-500 group-hover:text-white transition-all">
-                        <CheckCircle2 className="w-6 h-6" />
+                    <div className="p-3 bg-primary/10 text-primary border border-primary/20 rounded-xl transition-all group-hover:bg-primary group-hover:text-white">
+                        <DollarSign className="w-5 h-5" />
                     </div>
                 </div>
-                <div className="bg-surface p-8 rounded-none border border-border shadow-sm flex items-center justify-between group hover:border-amber-500 transition-all text-left">
-                    <div className="text-left">
-                        <p className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Awaiting Settlement</p>
-                        <h3 className="text-3xl font-black mt-2 text-amber-500 tracking-tighter">{stats.pending}</h3>
+
+                <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700/80 shadow-sm flex items-center justify-between group hover:border-emerald-500 transition-all">
+                    <div className="space-y-1">
+                        <p className="text-[10px] font-black text-slate-450 dark:text-slate-500 uppercase tracking-widest">Settled Staff</p>
+                        <h3 className="text-2xl font-black text-emerald-600 dark:text-emerald-450 tracking-tight">{stats.paid} Members</h3>
                     </div>
-                    <div className="p-4 bg-amber-500/10 text-amber-500 border border-amber-500/20 shrink-0 group-hover:bg-amber-500 group-hover:text-white transition-all">
-                        <Clock className="w-6 h-6" />
+                    <div className="p-3 bg-emerald-500/10 text-emerald-600 border border-emerald-500/20 rounded-xl transition-all group-hover:bg-emerald-500 group-hover:text-white">
+                        <CheckCircle2 className="w-5 h-5" />
+                    </div>
+                </div>
+
+                <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700/80 shadow-sm flex items-center justify-between group hover:border-amber-500 transition-all">
+                    <div className="space-y-1">
+                        <p className="text-[10px] font-black text-slate-450 dark:text-slate-500 uppercase tracking-widest">Awaiting Settlement</p>
+                        <h3 className="text-2xl font-black text-amber-600 dark:text-amber-400 tracking-tight">{stats.pending} Members</h3>
+                    </div>
+                    <div className="p-3 bg-amber-500/10 text-amber-600 border border-amber-500/20 rounded-xl transition-all group-hover:bg-amber-500 group-hover:text-white">
+                        <Clock className="w-5 h-5" />
                     </div>
                 </div>
             </div>
 
-            {/* Controls */}
-            <div className="bg-surface p-5 rounded-none border border-border shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4 text-left font-black">
-                <div className="flex items-center gap-4 text-left font-black">
-                    <div className="flex items-center bg-background border border-border p-1 rounded-none shadow-inner">
+            {/* Toolbar Panel */}
+            <div className="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-200/65 dark:border-slate-700/80 shadow-sm flex flex-wrap items-center justify-between gap-4 transition-colors">
+                
+                <div className="flex items-center flex-wrap gap-3">
+                    {/* Period selection */}
+                    <div className="flex items-center bg-slate-50 dark:bg-slate-750 border border-slate-200 dark:border-slate-700 rounded-xl px-2.5 py-1.5 shadow-sm text-xs font-bold text-slate-700 dark:text-slate-200 select-none">
+                        <Calendar className="w-4 h-4 mr-2 text-slate-400" />
                         <select value={month} onChange={e => setMonth(Number(e.target.value))}
-                            className="bg-transparent border-none py-2 px-4 text-[10px] font-black uppercase tracking-widest focus:ring-0 outline-none">
+                            className="bg-transparent border-none p-0 pr-6 focus:ring-0 cursor-pointer outline-none font-bold text-slate-700 dark:text-slate-200 text-xs">
                             {['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'].map((m, i) => (
-                                <option key={m} value={i + 1}>{m}</option>
+                                <option key={m} value={i + 1} className="bg-white dark:bg-slate-800">{m}</option>
                             ))}
                         </select>
                         <select value={year} onChange={e => setYear(Number(e.target.value))}
-                            className="bg-transparent border-none py-2 px-4 text-[10px] font-black uppercase tracking-widest focus:ring-0 outline-none border-l border-border/40">
-                            {[2024, 2025, 2026].map(y => <option key={y} value={y}>{y}</option>)}
+                            className="bg-transparent border-none p-0 pr-6 focus:ring-0 cursor-pointer outline-none font-bold text-slate-700 dark:text-slate-200 text-xs border-l border-slate-200/40 pl-2">
+                            {[2024, 2025, 2026, 2027].map(y => <option key={y} value={y} className="bg-white dark:bg-slate-800">{y}</option>)}
                         </select>
                     </div>
-                    <button onClick={() => { console.log('Opening Modal'); setIndividualModal(true); }}
-                        className="px-6 py-3.5 bg-primary text-white rounded-none text-xs font-black uppercase tracking-[0.2em] shadow-xl shadow-primary/20 hover:scale-[1.02] transition-all">
-                        Add Member to Payroll
+
+                    {/* Outlet selection */}
+                    <div className="flex items-center gap-2 bg-slate-50 dark:bg-slate-750 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-1.5 shadow-sm text-xs transition-colors">
+                        <Filter className="w-3.5 h-3.5 text-slate-400" />
+                        <select 
+                            value={filterOutlet} 
+                            onChange={e => setFilterOutlet(e.target.value)}
+                            className="bg-transparent border-none p-0 pr-6 focus:ring-0 cursor-pointer outline-none font-bold text-slate-700 dark:text-slate-200 text-xs"
+                        >
+                            {uniqueOutlets.map(o => (
+                                <option key={o} value={o} className="bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 font-bold">
+                                    {o === 'All' ? 'All Outlets' : o}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+
+                    <button 
+                        onClick={() => setIndividualModal(true)}
+                        className="px-4 py-2 bg-primary hover:bg-primary-dark text-white rounded-xl text-xs font-bold shadow-md hover:shadow-lg hover:shadow-primary/10 active:scale-95 transition-all"
+                    >
+                        Create Pay Slip
                     </button>
                 </div>
-                <div className="relative flex-1 max-w-sm text-left">
-                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
-                    <input type="text" placeholder="Search staff records..."
-                        className="w-full pl-12 pr-4 py-3 rounded-none bg-background border border-border text-[10px] font-black uppercase tracking-widest focus:outline-none focus:border-primary transition-all"
-                        value={searchTerm} onChange={e => setSearchTerm(e.target.value)} />
+
+                <div className="flex items-center gap-3">
+                    <div className="relative w-60">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-450" />
+                        <input 
+                            type="text" 
+                            placeholder="Search employee name..."
+                            className="w-full pl-9 pr-4 py-2 rounded-xl bg-slate-50 dark:bg-slate-750 border border-slate-200 dark:border-slate-700 text-xs font-semibold text-slate-700 dark:text-slate-200 focus:ring-2 focus:ring-primary/10 focus:border-primary outline-none transition-all placeholder-slate-400"
+                            value={searchTerm} 
+                            onChange={e => setSearchTerm(e.target.value)} 
+                        />
+                    </div>
+
+                    <button 
+                        onClick={exportCSV} 
+                        className="flex items-center gap-1.5 px-3 py-2 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-755 text-slate-750 dark:text-slate-200 rounded-xl text-xs font-bold transition-all shadow-sm active:scale-95"
+                    >
+                        <Download className="w-3.5 h-3.5 text-slate-405" />
+                        Export
+                    </button>
                 </div>
             </div>
 
-
-                <div className="bg-surface rounded-none border border-border shadow-sm overflow-hidden text-left font-black table-responsive relative min-h-[300px]">
+            {/* Payroll Sheet Table */}
+            <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200/80 dark:border-slate-700 shadow-sm overflow-hidden relative min-h-[300px] transition-colors">
+                
                 {loading && (
-                    <div className="absolute inset-0 z-10 bg-surface/70 backdrop-blur-[2px] flex items-center justify-center">
-                        <p className="text-[10px] font-black uppercase tracking-[0.3em] text-text-muted animate-pulse italic">Synchronizing Salary Data…</p>
+                    <div className="absolute inset-0 z-10 bg-white/70 dark:bg-slate-800/70 backdrop-blur-[1px] flex items-center justify-center">
+                        <div className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-750 rounded-xl border border-slate-100 dark:border-slate-700 shadow-md">
+                            <RefreshCw className="w-4 h-4 text-primary animate-spin" />
+                            <span className="text-xs font-bold text-slate-500 dark:text-slate-450 uppercase tracking-widest animate-pulse">Syncing Payroll...</span>
+                        </div>
                     </div>
                 )}
-                <table className="w-full text-left font-black">
-                    <thead>
-                        <tr className="bg-surface-alt/50 border-b border-border/40 text-left font-black">
-                            <th className="px-6 py-4 text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Staff Member</th>
-                            <th className="px-6 py-4 text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Cycle Days</th>
-                            <th className="px-6 py-4 text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Base Component</th>
-                            <th className="px-6 py-4 text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Net Settlement</th>
-                            <th className="px-6 py-4 text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Status</th>
-                            <th className="px-6 py-4 text-[10px] font-black text-text-muted uppercase tracking-[0.2em] text-right">Portal Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody className="divide-y divide-border/40 text-left font-black">
-                        {filtered.length === 0 && !loading && (
-                            <tr>
-                                <td colSpan="6" className="px-6 py-20 text-center">
-                                    <FileText className="w-12 h-12 text-border mx-auto mb-4" />
-                                    <p className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">No payroll logs for this cycle.</p>
-                                </td>
-                            </tr>
-                        )}
-                        {filtered.map(record => (
-                            <tr key={record._id} className="hover:bg-surface-alt/20 transition-colors group text-left font-black">
-                                <td className="px-6 py-5 text-left font-black">
-                                    <div className="flex items-center gap-4 text-left">
-                                        <div className="w-10 h-10 rounded-none bg-background border border-border flex items-center justify-center text-text-muted font-black text-[11px] uppercase italic">{record.staffId?.name?.split(' ').map(n => n[0]).join('')}</div>
-                                        <div className="text-left font-black leading-tight">
-                                            <p className="text-xs font-black text-text uppercase tracking-tight">{record.staffId?.name}</p>
-                                            <p className="text-[9px] text-text-muted font-black uppercase tracking-widest mt-1.5 italic">{record.staffId?.role || 'Member'}</p>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td className="px-6 py-5 text-left font-black">
-                                    <div className="flex items-center gap-2 text-[10px] font-black text-text uppercase">
-                                        <span className="text-emerald-500">{record.presentDays}P</span>
-                                        <span className="text-border">/</span>
-                                        <span className="text-text-muted">{record.workingDays}W</span>
-                                    </div>
-                                </td>
-                                <td className="px-6 py-5 text-[11px] font-black text-text uppercase text-left font-black italic">₹{record.baseSalary.toLocaleString()}</td>
-                                <td className="px-6 py-5 text-left font-black">
-                                    <p className="text-sm font-black text-primary tracking-tighter">₹{record.netSalary.toLocaleString()}</p>
-                                </td>
-                                <td className="px-6 py-5 text-left font-black">
-                                    <span className={`px-3 py-1 text-[9px] font-black uppercase tracking-widest border ${STATUS_META[record.status]?.cls || 'bg-surface text-text-muted border-border'}`}>
-                                        {record.status}
-                                    </span>
-                                </td>
-                                <td className="px-6 py-5 text-right font-black">
-                                    <div className="flex items-center justify-end gap-2 font-black">
-                                        <button onClick={() => handleEdit(record)} className="p-2.5 rounded-none bg-background border border-border text-text-muted hover:text-primary hover:border-primary transition-all"><Settings className="w-4 h-4" /></button>
-                                        <button onClick={() => generateSlip(record)} className="p-2.5 rounded-none bg-background border border-border text-text-muted hover:text-emerald-500 hover:border-emerald-500 transition-all"><Printer className="w-4 h-4" /></button>
-                                        {record.status !== 'paid' && (
-                                            <button onClick={() => updateStatus(record._id, 'paid')} className="p-2.5 rounded-none bg-primary text-white hover:bg-primary-alt transition-all shadow-lg shadow-primary/10"><Check className="w-4 h-4" /></button>
-                                        )}
-                                    </div>
-                                </td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
-            </div>
 
+                <div className="overflow-x-auto">
+                    <table className="w-full text-left border-collapse">
+                        <thead>
+                            <tr className="bg-slate-50/50 dark:bg-slate-800/60 border-b border-slate-150 dark:border-slate-750 text-left">
+                                <th className="px-6 py-4 text-[10px] font-extrabold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Employee Details</th>
+                                <th className="px-6 py-4 text-[10px] font-extrabold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Attendance Cycle</th>
+                                <th className="px-6 py-4 text-[10px] font-extrabold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Base Salary</th>
+                                <th className="px-6 py-4 text-[10px] font-extrabold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Net Settlement</th>
+                                <th className="px-6 py-4 text-[10px] font-extrabold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Status</th>
+                                <th className="px-6 py-4 text-[10px] font-extrabold text-slate-400 dark:text-slate-500 uppercase tracking-widest text-right">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-100 dark:divide-slate-750/50">
+                            {filtered.length === 0 && !loading && (
+                                <tr>
+                                    <td colSpan="6" className="px-6 py-16 text-center">
+                                        <FileText className="w-12 h-12 text-slate-200 dark:text-slate-700 mx-auto mb-3" />
+                                        <p className="text-xs font-bold text-slate-400 dark:text-slate-550 uppercase tracking-wider">No payroll logs found for this cycle.</p>
+                                    </td>
+                                </tr>
+                            )}
+                            {filtered.map(record => (
+                                <tr key={record._id} className="hover:bg-slate-50/30 dark:hover:bg-slate-750/30 transition-colors">
+                                    
+                                    <td className="px-6 py-4">
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-9 h-9 rounded-xl bg-slate-100 dark:bg-slate-700 border border-slate-200/50 dark:border-slate-650/40 flex items-center justify-center text-slate-500 dark:text-slate-400 font-extrabold text-xs shrink-0 overflow-hidden shadow-inner">
+                                                {record.staffId?.name?.split(' ').map(n => n[0]).join('').toUpperCase()}
+                                            </div>
+                                            <div className="text-left leading-tight">
+                                                <p className="text-xs font-bold text-slate-800 dark:text-slate-100">{record.staffId?.name}</p>
+                                                <div className="flex items-center gap-1.5 mt-0.5">
+                                                    <span className="text-[10px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wider">{record.staffId?.role || 'Member'}</span>
+                                                    <span className="w-1 h-1 rounded-full bg-slate-300 dark:bg-slate-600" />
+                                                    <span className="text-[9px] text-primary/75 dark:text-primary-light font-extrabold uppercase bg-primary/5 px-1.5 py-0.5 border border-primary/10 rounded">{record.staffId?.outletId?.name || 'No Outlet'}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </td>
+
+                                    <td className="px-6 py-4">
+                                        <div className="flex items-center gap-2 text-xs font-bold text-slate-700 dark:text-slate-250">
+                                            <span className="text-emerald-600 font-extrabold">{record.presentDays} Present</span>
+                                            <span className="text-slate-300 dark:text-slate-650">/</span>
+                                            <span className="text-slate-400 dark:text-slate-500 font-medium">{record.workingDays} working</span>
+                                        </div>
+                                    </td>
+
+                                    <td className="px-6 py-4 text-xs font-bold text-slate-700 dark:text-slate-300">
+                                        ₹{record.baseSalary?.toLocaleString()}
+                                    </td>
+
+                                    <td className="px-6 py-4">
+                                        <p className="text-xs font-black text-primary dark:text-slate-105">₹{record.netSalary?.toLocaleString()}</p>
+                                    </td>
+
+                                    <td className="px-6 py-4">
+                                        <span className={`px-2.5 py-1 text-[9px] font-black uppercase tracking-widest border rounded-lg ${STATUS_META[record.status]?.cls || 'bg-slate-50 text-slate-400 border-slate-200'}`}>
+                                            {record.status}
+                                        </span>
+                                    </td>
+
+                                    <td className="px-6 py-4 text-right">
+                                        <div className="flex items-center justify-end gap-2">
+                                            <button onClick={() => handleEdit(record)} className="p-2 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-400 hover:text-primary hover:border-primary bg-transparent hover:bg-slate-50 dark:hover:bg-slate-750 transition-all" title="Adjust Salary Parameters"><Settings className="w-4 h-4" /></button>
+                                            <button onClick={() => generateSlip(record)} className="p-2 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-400 hover:text-emerald-500 hover:border-emerald-500 bg-transparent hover:bg-slate-50 dark:hover:bg-slate-750 transition-all" title="Print Salary Slip"><Printer className="w-4 h-4" /></button>
+                                            <button 
+                                                onClick={() => sendWhatsAppPayroll(record)} 
+                                                disabled={sendingWhatsApp === record._id}
+                                                className="p-2 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-450 hover:text-emerald-500 hover:border-emerald-500 bg-transparent hover:bg-slate-50 dark:hover:bg-slate-750 transition-all disabled:opacity-50 animate-pulse-slow" 
+                                                title="Send Payslip on WhatsApp"
+                                            >
+                                                {sendingWhatsApp === record._id ? (
+                                                    <RefreshCw className="w-4 h-4 animate-spin text-emerald-500" />
+                                                ) : (
+                                                    <MessageCircle className="w-4 h-4 text-emerald-500" />
+                                                )}
+                                            </button>
+                                            {record.status !== 'paid' && (
+                                                <button onClick={() => updateStatus(record._id, 'paid')} className="p-2 rounded-xl bg-primary hover:bg-primary-dark text-white border border-transparent hover:shadow-lg hover:shadow-primary/10 active:scale-95 transition-all" title="Mark as Paid"><Check className="w-4 h-4" /></button>
+                                            )}
+                                        </div>
+                                    </td>
+
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
+
+                <div className="px-6 py-3 border-t border-slate-150 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/40 flex items-center gap-2 transition-colors">
+                    <AlertCircle className="w-3.5 h-3.5 text-primary shrink-0" />
+                    <p className="text-[10px] text-slate-450 dark:text-slate-500 font-bold uppercase tracking-wider leading-none">
+                        Payroll summary automatically reflects the active month and outlet filter selection.
+                    </p>
+                </div>
+            </div>
 
             {/* Individual Payroll Modal */}
             <AnimatePresence>
                 {individualModal && (
                     <div className="fixed inset-0 z-[999] flex items-center justify-center p-4">
-                        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setIndividualModal(false)} className="absolute inset-0 bg-black/80 backdrop-blur-md" />
-                        <motion.div initial={{ opacity: 0, y: 50 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 50 }}
-                            className="bg-surface w-full max-w-3xl rounded-none border border-border shadow-2xl relative flex flex-col max-h-[95vh]">
-                            <div className="p-8 border-b border-border flex items-center justify-between bg-surface-alt/30">
-                                <h2 className="text-base font-black text-text uppercase tracking-[0.2em]">New Payroll Entry</h2>
-                                <button onClick={() => setIndividualModal(false)} className="w-12 h-12 rounded-none bg-background border border-border flex items-center justify-center text-text-muted hover:text-text transition-all"><X className="w-6 h-6" /></button>
+                        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setIndividualModal(false)} className="absolute inset-0 bg-black/50 backdrop-blur-sm" />
+                        <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }}
+                            className="bg-white dark:bg-slate-800 w-full max-w-xl rounded-3xl border border-slate-200 dark:border-slate-700 shadow-2xl relative flex flex-col max-h-[90vh] transition-all">
+                            
+                            <div className="p-6 border-b border-slate-100 dark:border-slate-700 flex items-center justify-between">
+                                <div>
+                                    <h2 className="text-sm font-extrabold text-slate-850 dark:text-slate-100 tracking-tight">Create Individual Pay Record</h2>
+                                    <p className="text-[10px] text-slate-400 dark:text-slate-500 font-bold uppercase mt-1 tracking-wider">Scoped to {filterOutlet === 'All' ? 'All Outlets' : filterOutlet}</p>
+                                </div>
+                                <button onClick={() => setIndividualModal(false)} className="w-8 h-8 rounded-xl bg-slate-50 dark:bg-slate-750 hover:bg-slate-100 dark:hover:bg-slate-700 border border-slate-200/50 dark:border-slate-700 flex items-center justify-center text-slate-500 dark:text-slate-450 transition-all"><X className="w-4 h-4" /></button>
                             </div>
                             
-                            <div className="p-8 overflow-y-auto custom-scrollbar space-y-8">
+                            <div className="p-6 overflow-y-auto space-y-5 flex-1">
                                 {/* Staff Selection */}
-                                <div className="space-y-3">
-                                    <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Select Staff Member</label>
+                                <div className="space-y-1">
+                                    <label className="text-[10px] font-black text-slate-500 dark:text-slate-450 ml-1 uppercase">Select Staff Member</label>
                                     <select value={individualForm.staffId} onChange={e => {
                                         const s = staff.find(st => st._id === e.target.value);
-                                        setIndividualForm({...individualForm, staffId: e.target.value, baseSalary: s?.salary || 0});
+                                        setIndividualForm({...individualForm, staffId: e.target.value, baseSalary: s?.hrProfile?.baseSalary || 0});
                                     }}
-                                        className="w-full px-5 py-4 rounded-none bg-background border border-border text-xs font-black focus:border-primary outline-none uppercase shadow-inner">
+                                        className="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-slate-750 border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-700 dark:text-slate-200 focus:ring-2 focus:ring-primary/10 focus:border-primary outline-none uppercase cursor-pointer">
                                         <option value="">Choose Staff...</option>
-                                        {staff.filter(s => !records.some(r => (r.staffId?._id === s._id || r.staffId === s._id))).map(s => (
-                                            <option key={s._id} value={s._id}>{s.name} ({s.role})</option>
+                                        {addableStaff.map(s => (
+                                            <option key={s._id} value={s._id} className="bg-white dark:bg-slate-800">
+                                                {s.name} ({s.role}) — {s.outletId?.name || 'No Outlet'}
+                                            </option>
                                         ))}
                                     </select>
                                 </div>
 
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                                    {/* Column 1: Attendance & Base */}
-                                    <div className="space-y-6">
-                                        <h4 className="text-[10px] font-black text-text-muted uppercase tracking-[0.3em] border-l-2 border-primary pl-3 italic font-bold">Attendance & Base</h4>
-                                        <div className="grid grid-cols-2 gap-4">
-                                            <div className="space-y-2">
-                                                <label className="text-[9px] font-black text-text-muted uppercase tracking-widest italic">Base Salary</label>
-                                                <input type="number" value={individualForm.baseSalary} onChange={e => setIndividualForm({...individualForm, baseSalary: Number(e.target.value)})}
-                                                    className="w-full px-4 py-3 rounded-none bg-background border border-border text-xs font-black outline-none focus:border-primary uppercase" />
-                                            </div>
-                                            <div className="space-y-2">
-                                                <label className="text-[9px] font-black text-text-muted uppercase tracking-widest italic">Working Days</label>
-                                                <input type="number" value={individualForm.workingDays} onChange={e => setIndividualForm({...individualForm, workingDays: Number(e.target.value)})}
-                                                    className="w-full px-4 py-3 rounded-none bg-background border border-border text-xs font-black outline-none focus:border-primary uppercase" />
-                                            </div>
-                                            <div className="space-y-2">
-                                                <label className="text-[9px] font-black text-text-muted uppercase tracking-widest italic">Present Count</label>
-                                                <input type="number" step="0.5" value={individualForm.presentDays} onChange={e => setIndividualForm({...individualForm, presentDays: Number(e.target.value)})}
-                                                    className="w-full px-4 py-3 rounded-none bg-background border border-border text-xs font-black outline-none focus:border-primary uppercase" />
-                                            </div>
-                                        </div>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="space-y-1">
+                                        <label className="text-[10px] font-black text-slate-550 dark:text-slate-450 ml-1 uppercase">Base Salary (₹)</label>
+                                        <input type="number" value={individualForm.baseSalary} onChange={e => setIndividualForm({...individualForm, baseSalary: Number(e.target.value)})}
+                                            className="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-slate-750 border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-700 dark:text-slate-200 focus:ring-2 focus:ring-primary/10 focus:border-primary outline-none" />
                                     </div>
-
-                                    {/* Column 2: Earnings & Deductions */}
-                                    <div className="space-y-6">
-                                        <h4 className="text-[10px] font-black text-text-muted uppercase tracking-[0.3em] border-l-2 border-primary pl-3 italic font-bold">Incentives & Deductions</h4>
-                                        <div className="grid grid-cols-2 gap-4">
-                                            <div className="space-y-2">
-                                                <label className="text-[9px] font-black text-emerald-500 uppercase tracking-widest italic">Incentives</label>
-                                                <input type="number" value={individualForm.incentive} onChange={e => setIndividualForm({...individualForm, incentive: Number(e.target.value)})}
-                                                    className="w-full px-4 py-3 rounded-none bg-background border border-border text-xs font-black outline-none focus:border-emerald-500 uppercase" />
-                                            </div>
-                                            <div className="space-y-2">
-                                                <label className="text-[9px] font-black text-rose-500 uppercase tracking-widest italic">Taxes & Deductions</label>
-                                                <input type="number" value={individualForm.otherDeductions} onChange={e => setIndividualForm({...individualForm, otherDeductions: Number(e.target.value)})}
-                                                    className="w-full px-4 py-3 rounded-none bg-background border border-border text-xs font-black outline-none focus:border-rose-500 uppercase" />
-                                            </div>
-                                        </div>
+                                    <div className="space-y-1">
+                                        <label className="text-[10px] font-black text-slate-550 dark:text-slate-450 ml-1 uppercase">Working Days</label>
+                                        <input type="number" value={individualForm.workingDays} onChange={e => setIndividualForm({...individualForm, workingDays: Number(e.target.value)})}
+                                            className="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-slate-750 border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-700 dark:text-slate-200 focus:ring-2 focus:ring-primary/10 focus:border-primary outline-none" />
+                                    </div>
+                                    <div className="space-y-1">
+                                        <label className="text-[10px] font-black text-slate-550 dark:text-slate-450 ml-1 uppercase">Present Days</label>
+                                        <input type="number" step="0.5" value={individualForm.presentDays} onChange={e => setIndividualForm({...individualForm, presentDays: Number(e.target.value)})}
+                                            className="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-slate-750 border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-700 dark:text-slate-200 focus:ring-2 focus:ring-primary/10 focus:border-primary outline-none" />
+                                    </div>
+                                    <div className="space-y-1">
+                                        <label className="text-[10px] font-black text-emerald-600 dark:text-emerald-450 ml-1 uppercase">Incentive (₹)</label>
+                                        <input type="number" value={individualForm.incentive} onChange={e => setIndividualForm({...individualForm, incentive: Number(e.target.value)})}
+                                            className="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-slate-750 border border-slate-200 dark:border-slate-700 text-xs font-bold text-emerald-650 dark:text-emerald-300 focus:ring-2 focus:ring-emerald-500/10 focus:border-emerald-500 outline-none" />
                                     </div>
                                 </div>
 
-                                <div className="space-y-2">
-                                    <label className="text-[9px] font-black text-text-muted uppercase tracking-widest italic">Notes / Remarks</label>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="space-y-1">
+                                        <label className="text-[10px] font-black text-rose-600 dark:text-rose-450 ml-1 uppercase">Deductions (₹)</label>
+                                        <input type="number" value={individualForm.otherDeductions} onChange={e => setIndividualForm({...individualForm, otherDeductions: Number(e.target.value)})}
+                                            className="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-slate-750 border border-slate-200 dark:border-slate-700 text-xs font-bold text-rose-650 dark:text-rose-350 focus:ring-2 focus:ring-rose-500/10 focus:border-rose-500 outline-none" />
+                                    </div>
+                                    <div className="space-y-1">
+                                        <label className="text-[10px] font-black text-slate-550 dark:text-slate-450 ml-1 uppercase">Overtime Pay (₹)</label>
+                                        <input type="number" value={individualForm.overtime} onChange={e => setIndividualForm({...individualForm, overtime: Number(e.target.value)})}
+                                            className="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-slate-750 border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-700 dark:text-slate-200 focus:ring-2 focus:ring-primary/10 focus:border-primary outline-none" />
+                                    </div>
+                                </div>
+
+                                <div className="space-y-1">
+                                    <label className="text-[10px] font-black text-slate-550 dark:text-slate-450 ml-1 uppercase">Notes / Explanations</label>
                                     <textarea rows={2} value={individualForm.notes} onChange={e => setIndividualForm({...individualForm, notes: e.target.value})}
-                                        className="w-full px-4 py-3 rounded-none bg-background border border-border text-[11px] font-black outline-none focus:border-primary resize-none italic uppercase" placeholder="Enter payroll notes..." />
+                                        className="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-slate-750 border border-slate-200 dark:border-slate-700 text-xs font-medium text-slate-700 dark:text-slate-250 focus:ring-2 focus:ring-primary/10 focus:border-primary outline-none resize-none transition-all placeholder-slate-400" placeholder="Type payroll calculations notes..." />
                                 </div>
                             </div>
 
-                            <div className="p-8 border-t border-border bg-surface-alt/30 flex items-center justify-between">
-                                <div className="text-left font-black">
-                                    <p className="text-[9px] font-black text-text-muted uppercase tracking-widest italic leading-none">Net Calculation</p>
-                                    <h3 className="text-2xl font-black text-primary tracking-tighter mt-1">₹{Math.round(((individualForm.baseSalary / (individualForm.workingDays || 1)) * individualForm.presentDays) + Number(individualForm.incentive) + Number(individualForm.overtime) - Number(individualForm.pf) - Number(individualForm.tax) - Number(individualForm.otherDeductions)).toLocaleString()}</h3>
+                            <div className="p-6 border-t border-slate-100 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/40 flex items-center justify-between">
+                                <div className="text-left">
+                                    <p className="text-[9px] font-black text-slate-450 dark:text-slate-500 uppercase">Estimated Settlement</p>
+                                    <h3 className="text-xl font-black text-primary dark:text-slate-100 tracking-tight mt-0.5">₹{Math.round(((individualForm.baseSalary / (individualForm.workingDays || 1)) * individualForm.presentDays) + Number(individualForm.incentive) + Number(individualForm.overtime) - Number(individualForm.pf) - Number(individualForm.tax) - Number(individualForm.otherDeductions)).toLocaleString()}</h3>
                                 </div>
-                                <button onClick={createIndividual} disabled={!individualForm.staffId || loading}
-                                    className="px-10 py-5 bg-primary text-white rounded-none font-black text-xs uppercase tracking-[0.2em] shadow-2xl shadow-primary/30 hover:scale-[1.02] disabled:opacity-50 transition-all flex items-center justify-center gap-3">
-                                    {loading ? 'Processing...' : 'Create Payroll Record'}
-                                </button>
-                            </div>
-                        </motion.div>
-                    </div>
-                )}
-            </AnimatePresence>
-
-            {/* Adjustment Modal */}
-            <AnimatePresence>
-                {showDetails && (
-                    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-                        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setShowDetails(null)} className="absolute inset-0 bg-black/70 backdrop-blur-md" />
-                        <motion.div initial={{ opacity: 0, y: 50 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 50 }}
-                            className="bg-surface w-full max-w-2xl rounded-none border border-border shadow-2xl relative flex flex-col max-h-[90vh]">
-                            
-                            <div className="p-8 border-b border-border flex items-center justify-between bg-surface-alt/30">
-                                <div>
-                                    <h2 className="text-base font-black text-text uppercase tracking-[0.2em]">Salary Portal</h2>
-                                    <p className="text-[10px] font-black text-primary mt-2 uppercase tracking-widest italic">{showDetails.staffId?.name} · {month}/{year}</p>
-                                </div>
-                                <button onClick={() => setShowDetails(null)} className="w-12 h-12 rounded-none bg-background border border-border flex items-center justify-center text-text-muted hover:text-text transition-all"><X className="w-6 h-6" /></button>
-                            </div>
-
-                            <div className="p-8 overflow-y-auto custom-scrollbar flex-1 space-y-8">
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                                    {/* Column 1: Attendance & Base */}
-                                    <div className="space-y-6">
-                                        <h4 className="text-[10px] font-black text-text-muted uppercase tracking-[0.3em] border-l-2 border-primary pl-3 italic font-bold">Attendance & Base</h4>
-                                        <div className="grid grid-cols-2 gap-4">
-                                            <div className="space-y-2">
-                                                <label className="text-[9px] font-black text-text-muted uppercase tracking-widest italic">Base Salary (INR)</label>
-                                                <input type="number" value={detailForm.baseSalary} onChange={e => setDetailForm({...detailForm, baseSalary: Number(e.target.value)})}
-                                                    className="w-full px-4 py-3 rounded-none bg-background border border-border text-xs font-black outline-none focus:border-primary uppercase" />
-                                            </div>
-                                            <div className="space-y-2">
-                                                <label className="text-[9px] font-black text-text-muted uppercase tracking-widest italic">Cycle Days</label>
-                                                <input type="number" value={detailForm.workingDays} onChange={e => setDetailForm({...detailForm, workingDays: Number(e.target.value)})}
-                                                    className="w-full px-4 py-3 rounded-none bg-background border border-border text-xs font-black outline-none focus:border-primary uppercase" />
-                                            </div>
-                                            <div className="space-y-2">
-                                                <label className="text-[9px] font-black text-text-muted uppercase tracking-widest italic">Present Count</label>
-                                                <input type="number" step="0.5" value={detailForm.presentDays} onChange={e => setDetailForm({...detailForm, presentDays: Number(e.target.value)})}
-                                                    className="w-full px-4 py-3 rounded-none bg-background border border-border text-xs font-black outline-none focus:border-primary uppercase" />
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    {/* Column 2: Earnings & Deductions */}
-                                    <div className="space-y-6">
-                                        <h4 className="text-[10px] font-black text-text-muted uppercase tracking-[0.3em] border-l-2 border-emerald-500 pl-3 italic font-bold">Earnings & Deductions</h4>
-                                        <div className="grid grid-cols-2 gap-4">
-                                            <div className="space-y-2">
-                                                <label className="text-[9px] font-black text-emerald-500 uppercase tracking-widest italic">Incentive Pay</label>
-                                                <input type="number" value={detailForm.incentive} onChange={e => setDetailForm({...detailForm, incentive: Number(e.target.value)})}
-                                                    className="w-full px-4 py-3 rounded-none bg-background border border-border text-xs font-black outline-none focus:border-emerald-500 uppercase" />
-                                            </div>
-                                            <div className="space-y-2">
-                                                <label className="text-[9px] font-black text-rose-500 uppercase tracking-widest italic">Taxes & Deductions</label>
-                                                <input type="number" value={detailForm.otherDeductions} onChange={e => setDetailForm({...detailForm, otherDeductions: Number(e.target.value)})}
-                                                    className="w-full px-4 py-3 rounded-none bg-background border border-border text-xs font-black outline-none focus:border-rose-500 uppercase" />
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div className="space-y-2">
-                                    <label className="text-[9px] font-black text-text-muted uppercase tracking-widest italic">Operational Notes</label>
-                                    <textarea rows={2} value={detailForm.notes} onChange={e => setDetailForm({...detailForm, notes: e.target.value})}
-                                        className="w-full px-4 py-3 rounded-none bg-background border border-border text-[11px] font-black outline-none focus:border-primary resize-none italic uppercase" placeholder="Enter reason for adjustments..." />
-                                </div>
-                            </div>
-
-                            <div className="p-8 border-t border-border bg-surface-alt/30 flex items-center justify-between">
-                                <div className="text-left font-black">
-                                    <p className="text-[9px] font-black text-text-muted uppercase tracking-widest italic leading-none">Net Payable Balance</p>
-                                    <h3 className="text-2xl font-black text-primary tracking-tighter mt-1">₹{calculateNet().toLocaleString()}</h3>
-                                </div>
-                                <div className="flex items-center gap-3 font-black">
-                                    <button onClick={() => setShowDetails(null)} className="px-6 py-4 rounded-none text-xs font-black uppercase tracking-widest text-text hover:text-text transition-all">Cancel</button>
-                                    <button onClick={saveDetails} disabled={isSaving}
-                                        className="px-8 py-4 bg-primary text-white rounded-none text-xs font-black uppercase tracking-[0.2em] shadow-2xl shadow-primary/20 hover:scale-[1.02] active:scale-95 transition-all">
-                                        {isSaving ? 'Processing...' : 'Lock & Save Logs'}
+                                <div className="flex gap-2">
+                                    <button type="button" onClick={() => setIndividualModal(false)} className="px-4 py-2.5 bg-slate-150 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-650 text-slate-700 dark:text-slate-200 rounded-xl font-bold text-xs transition-all">Cancel</button>
+                                    <button onClick={createIndividual} disabled={!individualForm.staffId || loading}
+                                        className="px-5 py-2.5 bg-primary hover:bg-primary-dark text-white rounded-xl font-bold text-xs shadow-md disabled:opacity-50 transition-all flex items-center gap-1.5">
+                                        {loading ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Check className="w-3.5 h-3.5" />}
+                                        Save Record
                                     </button>
                                 </div>
                             </div>
@@ -580,17 +647,96 @@ export default function PayrollManager() {
                 )}
             </AnimatePresence>
 
+            {/* Salary Parameter Adjustments Modal */}
+            <AnimatePresence>
+                {showDetails && (
+                    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+                        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setShowDetails(null)} className="absolute inset-0 bg-black/50 backdrop-blur-sm" />
+                        <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }}
+                            className="bg-white dark:bg-slate-800 w-full max-w-xl rounded-3xl border border-slate-200 dark:border-slate-700 shadow-2xl relative flex flex-col max-h-[90vh] transition-all text-left">
+                            
+                            <div className="p-6 border-b border-slate-100 dark:border-slate-700 flex items-center justify-between">
+                                <div>
+                                    <h2 className="text-sm font-extrabold text-slate-850 dark:text-slate-100 tracking-tight">Adjust Pay Slip Parameters</h2>
+                                    <p className="text-[10px] font-bold text-primary uppercase mt-1 tracking-wider">{showDetails.staffId?.name} · {month}/{year}</p>
+                                </div>
+                                <button onClick={() => setShowDetails(null)} className="w-8 h-8 rounded-xl bg-slate-50 dark:bg-slate-750 hover:bg-slate-100 dark:hover:bg-slate-705 border border-slate-200/50 dark:border-slate-700 flex items-center justify-center text-slate-550 dark:text-slate-450 transition-all"><X className="w-4 h-4" /></button>
+                            </div>
+
+                            <div className="p-6 overflow-y-auto space-y-5 flex-1">
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="space-y-1">
+                                        <label className="text-[10px] font-black text-slate-550 dark:text-slate-450 ml-1 uppercase">Base Salary (₹)</label>
+                                        <input type="number" value={detailForm.baseSalary} onChange={e => setDetailForm({...detailForm, baseSalary: Number(e.target.value)})}
+                                            className="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-slate-750 border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-700 dark:text-slate-200 focus:ring-2 focus:ring-primary/10 focus:border-primary outline-none" />
+                                    </div>
+                                    <div className="space-y-1">
+                                        <label className="text-[10px] font-black text-slate-550 dark:text-slate-450 ml-1 uppercase">Working Days</label>
+                                        <input type="number" value={detailForm.workingDays} onChange={e => setDetailForm({...detailForm, workingDays: Number(e.target.value)})}
+                                            className="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-slate-750 border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-700 dark:text-slate-200 focus:ring-2 focus:ring-primary/10 focus:border-primary outline-none" />
+                                    </div>
+                                    <div className="space-y-1">
+                                        <label className="text-[10px] font-black text-slate-550 dark:text-slate-450 ml-1 uppercase">Present Count</label>
+                                        <input type="number" step="0.5" value={detailForm.presentDays} onChange={e => setDetailForm({...detailForm, presentDays: Number(e.target.value)})}
+                                            className="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-slate-750 border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-700 dark:text-slate-200 focus:ring-2 focus:ring-primary/10 focus:border-primary outline-none" />
+                                    </div>
+                                    <div className="space-y-1">
+                                        <label className="text-[10px] font-black text-emerald-600 dark:text-emerald-450 ml-1 uppercase">Incentive (₹)</label>
+                                        <input type="number" value={detailForm.incentive} onChange={e => setDetailForm({...detailForm, incentive: Number(e.target.value)})}
+                                            className="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-slate-750 border border-slate-200 dark:border-slate-700 text-xs font-bold text-emerald-650 dark:text-emerald-300 focus:ring-2 focus:ring-emerald-500/10 focus:border-emerald-500 outline-none" />
+                                    </div>
+                                </div>
+
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="space-y-1">
+                                        <label className="text-[10px] font-black text-rose-600 dark:text-rose-455 ml-1 uppercase">Deductions (₹)</label>
+                                        <input type="number" value={detailForm.otherDeductions} onChange={e => setDetailForm({...detailForm, otherDeductions: Number(e.target.value)})}
+                                            className="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-slate-750 border border-slate-200 dark:border-slate-700 text-xs font-bold text-rose-650 dark:text-rose-350 focus:ring-2 focus:ring-rose-500/10 focus:border-rose-500 outline-none" />
+                                    </div>
+                                    <div className="space-y-1">
+                                        <label className="text-[10px] font-black text-slate-550 dark:text-slate-450 ml-1 uppercase">Overtime (₹)</label>
+                                        <input type="number" value={detailForm.overtime} onChange={e => setDetailForm({...detailForm, overtime: Number(e.target.value)})}
+                                            className="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-slate-750 border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-700 dark:text-slate-200 focus:ring-2 focus:ring-primary/10 focus:border-primary outline-none" />
+                                    </div>
+                                </div>
+
+                                <div className="space-y-1">
+                                    <label className="text-[10px] font-black text-slate-550 dark:text-slate-450 ml-1 uppercase">Adjustments Notes</label>
+                                    <textarea rows={2} value={detailForm.notes} onChange={e => setDetailForm({...detailForm, notes: e.target.value})}
+                                        className="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-slate-750 border border-slate-200 dark:border-slate-700 text-xs font-medium text-slate-700 dark:text-slate-250 focus:ring-2 focus:ring-primary/10 focus:border-primary outline-none resize-none transition-all placeholder-slate-400" placeholder="Type reason for parameters adjustments..." />
+                                </div>
+                            </div>
+
+                            <div className="p-6 border-t border-slate-100 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/40 flex items-center justify-between">
+                                <div className="text-left">
+                                    <p className="text-[9px] font-black text-slate-450 dark:text-slate-550 uppercase">Adjusted Net Payable</p>
+                                    <h3 className="text-xl font-black text-primary dark:text-slate-100 tracking-tight mt-0.5">₹{calculateNet().toLocaleString()}</h3>
+                                </div>
+                                <div className="flex gap-2">
+                                    <button type="button" onClick={() => setShowDetails(null)} className="px-4 py-2.5 bg-slate-150 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-650 text-slate-700 dark:text-slate-200 rounded-xl font-bold text-xs transition-all">Cancel</button>
+                                    <button onClick={saveDetails} disabled={isSaving}
+                                        className="px-5 py-2.5 bg-primary hover:bg-primary-dark text-white rounded-xl font-bold text-xs shadow-md active:scale-95 transition-all flex items-center gap-1.5">
+                                        {isSaving ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Check className="w-3.5 h-3.5" />}
+                                        Save Changes
+                                    </button>
+                                </div>
+                            </div>
+                        </motion.div>
+                    </div>
+                )}
+            </AnimatePresence>
+
+            {/* Notification Toast */}
             <AnimatePresence>
                 {toast && (
-                    <motion.div initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 40 }}
-                        className="fixed bottom-10 left-1/2 -translate-x-1/2 z-[200] flex items-center gap-4 px-8 py-4 bg-text border border-border rounded-none shadow-2xl">
-                        <CheckCircle2 className="w-5 h-5 text-emerald-500 shrink-0" />
-                        <p className="text-[10px] font-black text-background uppercase tracking-[0.2em] font-black italic">{toast}</p>
+                    <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 30 }}
+                        className="fixed bottom-8 left-1/2 -translate-x-1/2 z-[200] flex items-center gap-2.5 px-5 py-3 bg-slate-900 text-white rounded-2xl shadow-xl shadow-slate-950/20 text-xs font-bold tracking-wide select-none"
+                    >
+                        <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+                        <span>{toast}</span>
                     </motion.div>
                 )}
             </AnimatePresence>
-            {/* Individual Payroll Modal */}
-
         </div>
     );
 }

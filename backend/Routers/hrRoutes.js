@@ -15,7 +15,8 @@ const {
     updateLeaveStatus,
     getOverallPerformance,
     updateRoster,
-    deleteShift
+    deleteShift,
+    sendPayrollWhatsApp
 } = require('../Controllers/hrController');
 const { protect, authorize } = require('../Middleware/auth');
 
@@ -37,6 +38,7 @@ router.delete('/shifts/:id', deleteShift);
 router.post('/payroll/generate', generatePayroll);
 router.get('/payroll', getPayroll);
 router.patch('/payroll/:id/status', updatePayrollStatus);
+router.post('/payroll/:id/whatsapp', sendPayrollWhatsApp);
 
 router.get('/leaves', getLeaveRequests);
 router.put('/leaves/:id', updateLeaveStatus);

@@ -446,11 +446,45 @@ export default function POSBillingPage() {
     const [selectedBookingIds, setSelectedBookingIds] = useState([]);
     const [selectedOrderIds, setSelectedOrderIds] = useState([]);
 
+    const [couponCodeInput, setCouponCodeInput] = useState('');
+    const [applyingCoupon, setApplyingCoupon] = useState(false);
+
+    const handleApplyCoupon = async () => {
+        if (!couponCodeInput.trim()) return;
+        setApplyingCoupon(true);
+        try {
+            const res = await api.post('/promotions/validate-coupon', {
+                couponCode: couponCodeInput.trim().toUpperCase(),
+                outletId: activeOutletId || undefined,
+                customerId: selectedClient?._id || undefined,
+                items: cart.map(item => ({
+                    type: item.type, // 'service' or 'product'
+                    price: item.price,
+                    quantity: item.quantity
+                }))
+            });
+
+            if (res.data.success && res.data.data) {
+                const { promotion, discount } = res.data.data;
+                setAppliedPromotion(promotion);
+                toast.success(`Coupon "${promotion.name}" applied successfully! Discount: ₹${discount}`);
+                setCouponCodeInput('');
+            } else {
+                toast.error('Failed to validate coupon');
+            }
+        } catch (err) {
+            const msg = err?.response?.data?.message || err?.message || 'Invalid or expired coupon code';
+            toast.error(msg);
+        } finally {
+            setApplyingCoupon(false);
+        }
+    };
+
     const [newClientForm, setNewClientForm] = useState({ name: '', phone: '', dob: '', anniversary: '' });
 
     // Billing & Payment System Updates
     const [includePreviousDue, setIncludePreviousDue] = useState(false);
-    const [paymentDate, setPaymentDate] = useState(new Date().toISOString().split('T')[0]);
+    const [paymentDate, setPaymentDate] = useState('');
     const [autoSendWhatsApp, setAutoSendWhatsApp] = useState(true);
     const [isWhatsAppSending, setIsWhatsAppSending] = useState(false);
 
@@ -1054,6 +1088,10 @@ export default function POSBillingPage() {
     const handleCheckout = () => {
         if (!selectedClient) return alert('Select a client first');
         if (cart.length === 0) return alert('Cart is empty');
+        if (!paymentDate) {
+            alert('Please select a payment date');
+            return;
+        }
         const paidAmount = payments.reduce((s, p) => s + p.amount, 0);
 
         // Allow partial payment
@@ -1298,7 +1336,7 @@ export default function POSBillingPage() {
         setSelectedBookingIds([]);
         setSelectedOrderIds([]);
         setIncludePreviousDue(false);
-        setPaymentDate(new Date().toISOString().split('T')[0]);
+        setPaymentDate('');
     };
 
     // ─── Keyboard Shortcuts ───────────────────────────────
@@ -1818,12 +1856,13 @@ export default function POSBillingPage() {
                             {/* PAYMENT SECTION */}
                             <div className="border border-border rounded-xl bg-background p-2 space-y-2 relative overflow-hidden">
                                 <div className="flex items-center justify-between px-1 border-b border-border/50 pb-2 mb-2">
-                                    <span className="text-[10px] font-black text-text-muted uppercase tracking-wider">Payment Date</span>
+                                    <span className="text-[10px] font-black text-text-muted uppercase tracking-wider">Payment Date <span className="text-rose-500 font-bold">*</span></span>
                                     <input
                                         type="date"
+                                        required
                                         value={paymentDate}
                                         onChange={(e) => setPaymentDate(e.target.value)}
-                                        className="bg-surface border border-border text-[11px] font-black uppercase rounded-lg px-2.5 py-1 outline-none text-slate-800 focus:border-primary/50 cursor-pointer"
+                                        className={`bg-surface border text-[11px] font-black uppercase rounded-lg px-2.5 py-1 outline-none text-slate-800 focus:border-primary/50 cursor-pointer ${!paymentDate ? 'border-rose-300 bg-rose-50/20' : 'border-border'}`}
                                     />
                                 </div>
                                 <div className="flex items-center justify-between px-1 mb-1">
@@ -2067,6 +2106,43 @@ export default function POSBillingPage() {
                                     </div>
                                 </div>
 
+                                <div className="bg-surface-alt p-4 border border-border rounded-xl">
+                                    <label className="text-[10px] font-semibold text-text-muted uppercase tracking-wider mb-3 block">Coupon Code</label>
+                                    {appliedPromotion ? (
+                                        <div className="flex items-center justify-between p-3 bg-primary/10 border border-primary/20 rounded-lg">
+                                            <div className="text-left">
+                                                <p className="text-xs font-black text-primary uppercase tracking-tight">{appliedPromotion.name}</p>
+                                                <p className="text-[9px] text-text-muted uppercase tracking-wider mt-0.5">Code: {appliedPromotion.couponCode || 'Auto'}</p>
+                                            </div>
+                                            <button
+                                                type="button"
+                                                onClick={() => setAppliedPromotion(null)}
+                                                className="px-3 py-1.5 bg-rose-100 hover:bg-rose-200 text-rose-600 text-[9px] font-black uppercase tracking-widest rounded-md transition-colors"
+                                            >
+                                                Remove
+                                            </button>
+                                        </div>
+                                    ) : (
+                                        <div className="flex border border-border bg-background rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-primary/10 transition-all">
+                                            <input
+                                                type="text"
+                                                placeholder="ENTER COUPON CODE"
+                                                className="flex-1 p-3 text-xs font-black bg-background text-text outline-none uppercase tracking-widest placeholder:opacity-50"
+                                                value={couponCodeInput}
+                                                onChange={(e) => setCouponCodeInput(e.target.value.toUpperCase())}
+                                            />
+                                            <button
+                                                type="button"
+                                                onClick={handleApplyCoupon}
+                                                disabled={applyingCoupon || !couponCodeInput}
+                                                className="bg-primary hover:brightness-110 text-white font-black text-[10px] uppercase tracking-wider px-5 transition-all disabled:opacity-40"
+                                            >
+                                                {applyingCoupon ? 'Checking...' : 'Apply'}
+                                            </button>
+                                        </div>
+                                    )}
+                                </div>
+
                                 {selectedClient && (
                                     <div className="space-y-4">
                                         {/* Wallet Balance */}
@@ -2287,6 +2363,7 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
     const [qCollectedPrevDue, setQCollectedPrevDue] = useState(0);
     const [qRedeemWallet, setQRedeemWallet] = useState(0);
     const [qActiveMembership, setQActiveMembership] = useState(null);
+    const [qPaymentDate, setQPaymentDate] = useState('');
 
 
     useEffect(() => {
@@ -2561,6 +2638,7 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
         if (!qClient) return toast.error('Please select a client');
         if (qCart.length === 0) return toast.error('Cart is empty');
         if (qCart.some(item => item.type === 'service' && (!item.staffIds || item.staffIds.length === 0 || item.staffIds.some(sid => !sid)))) return toast.error('Please assign stylists for all services');
+        if (!qPaymentDate) return toast.error('Please select a payment date');
 
         const totalLiability = totals.total + (Number(qClient?.dueAmount) || 0);
         if (paidAmount > totalLiability + 1) {
@@ -2569,6 +2647,16 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
 
         setIsProcessing(true);
         try {
+            const getSelectedPaymentDate = (dateStr) => {
+                if (!dateStr) return new Date();
+                const [year, month, day] = dateStr.split('-').map(Number);
+                const dateObj = new Date();
+                dateObj.setFullYear(year, month - 1, day);
+                return dateObj;
+            };
+
+            const actualPaymentDate = getSelectedPaymentDate(qPaymentDate);
+
             const paymentArray = [];
             if (qPayments.cash > 0) paymentArray.push({ method: 'cash', amount: qPayments.cash });
             if (qPayments.online > 0) paymentArray.push({ method: 'online', amount: qPayments.online });
@@ -2576,6 +2664,7 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
             const payload = {
                 clientId: qClient._id,
                 outletId: qOutletId,
+                createdAt: actualPaymentDate.toISOString(),
                 items: qCart.map(i => {
                     const { staffIds, ...rest } = i;
                     return {
@@ -2599,7 +2688,9 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                 membershipDiscount: totals.membershipDiscount || 0,
                 previousDueCollected: qCollectedPrevDue,
                 discountType: qManualDiscount.type,
-                useWalletAmount: totals.redeemWallet
+                useWalletAmount: totals.redeemWallet,
+                promotionId: appliedPromotion?._id || undefined,
+                couponCode: appliedPromotion?.couponCode || undefined
             };
 
             const res = await api.post('/pos/checkout', payload);
@@ -2609,7 +2700,7 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
             const invoiceData = {
                 ...dbInvoice,
                 number: dbInvoice.invoiceNumber || `INV-${Date.now().toString().slice(-4)}`,
-                date: new Date().toLocaleString('en-IN', {
+                date: actualPaymentDate.toLocaleString('en-IN', {
                     day: '2-digit', month: '2-digit', year: 'numeric',
                     hour: '2-digit', minute: '2-digit', hour12: true
                 }),
@@ -3372,6 +3463,23 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                                     <span className="text-xs lg:text-sm xl:text-base font-bold text-emerald-600 font-mono">+₹{qCollectedPrevDue.toFixed(2)}</span>
                                 </div>
                             )}
+                        </div>
+
+                        {/* Modern vertical separator */}
+                        <div className="w-[1px] h-8 bg-slate-200 self-center shrink-0" />
+
+                        {/* Payment Date Input */}
+                        <div className={`bg-slate-50/60 border p-1.5 rounded-lg focus-within:border-primary/50 focus-within:bg-white focus-within:shadow-sm transition-all shadow-sm group hover:border-slate-300 shrink-0 w-[150px] ${!qPaymentDate ? 'border-rose-300 bg-rose-50/20' : 'border-slate-200/80'}`}>
+                            <label className={`text-[9px] font-bold uppercase tracking-wider block mb-0.5 ${!qPaymentDate ? 'text-rose-500 font-extrabold' : 'text-slate-400'}`}>
+                                Payment Date <span className="text-rose-500 font-bold">*</span>
+                            </label>
+                            <input
+                                type="date"
+                                required
+                                className="bg-transparent text-xs font-bold outline-none uppercase text-slate-800 w-full cursor-pointer"
+                                value={qPaymentDate}
+                                onChange={(e) => setQPaymentDate(e.target.value)}
+                            />
                         </div>
 
                         {/* Modern vertical separator */}

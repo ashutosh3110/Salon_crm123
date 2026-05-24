@@ -13,7 +13,20 @@ import { useWallet } from '../../contexts/WalletContext';
 import api from '../../services/api';
 import { getImageUrl } from '../../utils/imageUtils';
 
-const STEPS = ['Stylist', 'Date & Time', 'Confirm'];
+const STEPS = ['Details', 'Outlet', 'Services', 'Stylist', 'Book'];
+
+const calculateDistance = (lat1, lon1, lat2, lon2) => {
+    if (!lat1 || !lon1 || !lat2 || !lon2) return null;
+    const R = 6371; // Radius of earth in km
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLon = (lon2 - lon1) * Math.PI / 180;
+    const a = 
+        Math.sin(dLat/2) * Math.sin(dLat/2) +
+        Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
+        Math.sin(dLon/2) * Math.sin(dLon/2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return R * c; // Distance in km
+};
 
 const slideVariants = {
     enter: (dir) => ({ x: dir > 0 ? 200 : -200, opacity: 0 }),
@@ -77,6 +90,11 @@ export default function AppBookingPage() {
         const urlId = searchParams.get('tenantId') || searchParams.get('salonId');
         const effectiveTid = urlId || activeSalonId || localStorage.getItem('active_salon_id');
         
+        if (urlId && urlId !== activeSalonId) {
+            setActiveSalonId(urlId);
+            localStorage.setItem('active_salon_id', urlId);
+        }
+
         if (!effectiveTid) {
             setIsLoading(false);
             return;
@@ -87,6 +105,7 @@ export default function AppBookingPage() {
             const fetchPromises = [
                 fetchStaff?.(effectiveTid),
                 fetchOutlets?.(effectiveTid),
+                fetchGroupedServices?.(effectiveTid),
                 api.get('/loyalty/membership/active'),
                 api.get('/promotions/active', { params: { _t: Date.now() } })
             ];
@@ -240,18 +259,136 @@ export default function AppBookingPage() {
     const [availableCoupons, setAvailableCoupons] = useState([]);
     const [paymentMethod, setPaymentMethod] = useState('salon'); // 'salon', 'online' or 'wallet'
     const { balance, refreshWallet } = useWallet();
-    const { customer, isCustomerAuthenticated, loading: authLoading } = useCustomerAuth();
+    const { customer, isCustomerAuthenticated, loading: authLoading, requestOtp, customerLogin, updateCustomer } = useCustomerAuth();
 
-    // Redirection logic if not authenticated
+    // Inline login and registration states
+    const [detailName, setDetailName] = useState(customer?.name || '');
+    const [detailPhone, setDetailPhone] = useState(customer?.phone || '');
+    const [otpSent, setOtpSent] = useState(false);
+    const [otpVal, setOtpVal] = useState(['', '', '', '']);
+    const [otpCd, setOtpCd] = useState(0);
+    const [otpLoading, setOtpLoading] = useState(false);
+    const [otpError, setOtpError] = useState('');
+    const otpRefs = [useRef(null), useRef(null), useRef(null), useRef(null)];
+
+    // Geolocation states
+    const [userCoords, setUserCoords] = useState(null);
+    const [locLoading, setLocLoading] = useState(false);
+    const [locError, setLocError] = useState('');
+
     useEffect(() => {
-        if (!authLoading && !isCustomerAuthenticated) {
-            const params = new URLSearchParams();
-            if (outletId) params.set('outletId', outletId);
-            if (preSelectedServiceId) params.set('serviceId', preSelectedServiceId);
-            params.set('redirect', 'services');
-            navigate(`/app/login?${params.toString()}`, { replace: true });
+        if (customer) {
+            setDetailName(customer.name || '');
+            setDetailPhone(customer.phone || '');
         }
-    }, [isCustomerAuthenticated, authLoading, outletId, preSelectedServiceId, navigate]);
+    }, [customer]);
+
+    useEffect(() => {
+        if (otpCd > 0) {
+            const t = setTimeout(() => setOtpCd(c => c - 1), 1000);
+            return () => clearTimeout(t);
+        }
+    }, [otpCd]);
+
+    const handleSendOtp = async () => {
+        if (!detailName.trim()) {
+            setOtpError('Please enter your name');
+            return;
+        }
+        if (detailPhone.length !== 10) {
+            setOtpError('Enter a valid 10-digit mobile number');
+            return;
+        }
+        setOtpLoading(true);
+        setOtpError('');
+        try {
+            const urlId = searchParams.get('tenantId') || searchParams.get('salonId');
+            const effectiveTid = urlId || activeSalonId || localStorage.getItem('active_salon_id') || 'system';
+            await requestOtp(detailPhone, effectiveTid);
+            setOtpSent(true);
+            setOtpCd(30);
+        } catch (err) {
+            setOtpError(err.message || 'Failed to send OTP. Please try again.');
+        } finally {
+            setOtpLoading(false);
+        }
+    };
+
+    const handleVerifyOtp = async () => {
+        const code = otpVal.join('');
+        if (code.length !== 4) {
+            setOtpError('Enter the 4-digit OTP');
+            return;
+        }
+        setOtpLoading(true);
+        setOtpError('');
+        try {
+            const urlId = searchParams.get('tenantId') || searchParams.get('salonId');
+            const effectiveTid = urlId || activeSalonId || localStorage.getItem('active_salon_id') || 'system';
+            const oId = currentOutlet?._id || currentOutlet?.id || '';
+            const cust = await customerLogin(detailPhone, code, effectiveTid, oId);
+            
+            if (cust && (cust.name === 'Guest' || cust.name === 'Guest Customer' || !cust.name || cust.isNewUser)) {
+                await updateCustomer({ name: detailName.trim() });
+            }
+            
+            // Sync local state name and phone
+            setDetailName(detailName.trim());
+            setDetailPhone(detailPhone);
+            
+            // Advance to Step 2 (Outlet Selection)
+            goTo(1);
+        } catch (err) {
+            setOtpError(err.message || 'Verification failed');
+            setOtpVal(['', '', '', '']);
+            otpRefs[0].current?.focus();
+        } finally {
+            setOtpLoading(false);
+        }
+    };
+
+    const handleOtpChange = (i, v) => {
+        if (v.length > 1) v = v.slice(-1);
+        if (!/^\d*$/.test(v)) return;
+        const n = [...otpVal]; n[i] = v; setOtpVal(n);
+        if (v && i < 3) otpRefs[i + 1].current?.focus();
+    };
+
+    const handleOtpKey = (i, e) => {
+        if (e.key === 'Backspace' && !otpVal[i] && i > 0) otpRefs[i - 1].current?.focus();
+    };
+
+    const handleGetLocation = () => {
+        setLocLoading(true);
+        setLocError('');
+        if (!navigator.geolocation) {
+            setLocError('Geolocation is not supported by your browser');
+            setLocLoading(false);
+            return;
+        }
+        navigator.geolocation.getCurrentPosition(
+            (pos) => {
+                const coords = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+                setUserCoords(coords);
+                setLocLoading(false);
+            },
+            (err) => {
+                setLocError('Location access was denied or failed');
+                setLocLoading(false);
+            },
+            { enableHighAccuracy: true, timeout: 8000 }
+        );
+    };
+
+    const outletsWithDistance = useMemo(() => {
+        if (!userCoords) return outlets.map(o => ({ ...o, distanceKm: null }));
+        return outlets.map(o => {
+            const lon = o.location?.coordinates?.[0] || o.longitude;
+            const lat = o.location?.coordinates?.[1] || o.latitude;
+            const dist = calculateDistance(userCoords.lat, userCoords.lng, lat, lon);
+            return { ...o, distanceKm: dist };
+        });
+    }, [outlets, userCoords]);
 
     // Initial load for membership from backend
     useEffect(() => {
@@ -456,6 +593,7 @@ export default function AppBookingPage() {
         if (!businessStaff) return [];
         
         const targetSalonId = String(activeSalonId || salon?._id || '');
+        const activeOid = String(currentOutlet?._id || currentOutlet?.id || '');
         
         return (businessStaff || []).filter(s => {
             // Robust stylist check: Explicit flag OR role check (including 'Stylish' typo/variant)
@@ -472,9 +610,13 @@ export default function AppBookingPage() {
             const sSalonId = String(s.salonId?._id || s.salonId || '');
             if (sSalonId && targetSalonId && sSalonId !== targetSalonId) return false;
             
+            // Outlet check
+            const sOutletId = String(s.outletId?._id || s.outletId || '');
+            if (activeOid && sOutletId && sOutletId !== activeOid) return false;
+
             return true;
         });
-    }, [businessStaff, activeSalonId, salon?._id]);
+    }, [businessStaff, activeSalonId, salon?._id, currentOutlet]);
 
     const tax = useMemo(() => {
         const sGst = Number(platformSettings?.serviceGst || 18);
@@ -663,11 +805,18 @@ export default function AppBookingPage() {
 
     const finalGroups = useMemo(() => {
         const q = serviceSearch.toLowerCase().trim();
+        const activeOid = currentOutlet?._id || currentOutlet?.id;
         
         let groups = (groupedServices || []).map(group => {
             const filteredGroupServices = group.services.filter(s => {
                 // Status check - be lenient (only block if explicitly inactive)
                 if (s.status === 'inactive') return false;
+                
+                // Outlet check: service must either be global or specifically mapped to current outlet
+                if (activeOid && s.outletIds && s.outletIds.length > 0) {
+                    const isAvailableAtOutlet = s.outletIds.some(id => String(id) === String(activeOid));
+                    if (!isAvailableAtOutlet) return false;
+                }
                 
                 // Gender match - be lenient (using appGender from useGender)
                 const sG = String(s.gender || 'both').toLowerCase();
@@ -685,7 +834,7 @@ export default function AppBookingPage() {
         }).filter(group => group.services.length > 0);
 
         return groups;
-    }, [groupedServices, serviceSearch]);
+    }, [groupedServices, serviceSearch, currentOutlet, appGender]);
 
     // Submit booking
 
@@ -986,120 +1135,147 @@ export default function AppBookingPage() {
                         transition={{ duration: 0.3 }}
                         className="space-y-6"
                     >
-                        {/* Selected Service Banner */}
-                        {selectedServices.length > 0 ? (
-                            <div
-                                className="flex items-center justify-between px-4 py-3 rounded-2xl"
-                                style={{ background: 'rgba(200,149,108,0.08)', border: '1px solid rgba(200,149,108,0.2)' }}
-                            >
-                                <div className="flex items-center gap-3">
-                                    <Sparkles size={14} className="text-[#C8956C]" />
-                                    <div>
-                                        <p className="text-[11px] font-black uppercase tracking-wider" style={{ color: colors.text }}>{selectedServices[0].name}</p>
-                                        <p className="text-[9px] opacity-50 font-black uppercase tracking-widest">{selectedServices[0].duration} min · ₹{selectedServices[0].price}</p>
+                        {isCustomerAuthenticated ? (
+                            <div className="space-y-6">
+                                <div className="p-6 rounded-[2rem] bg-surface-alt/10 border border-[#C8956C]/20 space-y-4">
+                                    <div className="flex items-center gap-4">
+                                        <div className="w-12 h-12 rounded-full bg-[#C8956C]/10 flex items-center justify-center border border-[#C8956C]/20">
+                                            <User className="text-[#C8956C]" size={20} />
+                                        </div>
+                                        <div className="text-left">
+                                            <p className="text-xs font-bold uppercase tracking-widest text-[#C8956C]">Logged In Profile</p>
+                                            <p className="text-lg font-bold text-text mt-0.5">{customer?.name}</p>
+                                            <p className="text-xs text-text-muted mt-0.5">+91 {customer?.phone}</p>
+                                        </div>
+                                    </div>
+                                    <div className="pt-2 border-t border-black/5 dark:border-white/5 flex items-center justify-between">
+                                        <p className="text-[10px] text-text-muted font-medium">Not your account?</p>
+                                        <button 
+                                            onClick={customerLogout}
+                                            className="text-[10px] font-bold text-rose-500 uppercase tracking-widest hover:underline"
+                                        >
+                                            Switch Account
+                                        </button>
                                     </div>
                                 </div>
                                 <button
-                                    onClick={() => navigate(-1)}
-                                    className="text-[9px] font-black uppercase text-[#C8956C] underline"
+                                    onClick={() => goTo(1)}
+                                    className="w-full py-5 rounded-[20px] bg-black text-white text-[12px] font-black uppercase tracking-[0.4em] flex items-center justify-center gap-4 shadow-xl transition-all active:scale-[0.98]"
                                 >
-                                    Change
+                                    Continue to Outlet <ArrowRight size={16} />
                                 </button>
                             </div>
                         ) : (
-                            <div
-                                className="flex items-center justify-between px-4 py-3 rounded-2xl cursor-pointer"
-                                style={{ background: 'rgba(200,149,108,0.05)', border: '1px dashed rgba(200,149,108,0.3)' }}
-                                onClick={() => navigate('/app/services')}
-                            >
-                                <div className="flex items-center gap-3">
-                                    <Sparkles size={14} className="text-[#C8956C] opacity-40" />
-                                    <p className="text-[10px] font-black uppercase tracking-widest opacity-40">No service selected</p>
+                            <div className="space-y-6 text-left">
+                                <div className="flex flex-col gap-0">
+                                    <h2 className="text-xl font-bold uppercase tracking-tight" style={{ fontFamily: "'Libre Baskerville', serif" }}>
+                                        Customer <span className="text-[#C8956C]">Details</span>
+                                    </h2>
+                                    <p className="text-[10px] opacity-40 font-black uppercase tracking-widest mt-1">Please enter your details to proceed</p>
                                 </div>
-                                <span className="text-[9px] font-black uppercase text-[#C8956C]">Pick →</span>
-                            </div>
-                        )}
 
-                        {/* Heading */}
-                        <div className="flex flex-col gap-0">
-                            <h2 className="text-xl font-bold uppercase tracking-tight" style={{ fontFamily: "'Libre Baskerville', serif" }}>
-                                Choose <span className="text-[#C8956C]">Expert</span>
-                            </h2>
-                            <p className="text-[10px] opacity-40 font-black uppercase tracking-widest mt-1">Who would you like to work with?</p>
-                        </div>
-
-                        {/* Stylist Grid — always show all salon-wide staff */}
-                        <div className="grid grid-cols-1 gap-4 max-h-[55vh] overflow-y-auto no-scrollbar pb-2">
-                            {outletStaff.length === 0 && (
-                                <div className="text-center py-16 px-6">
-                                    <div className="w-16 h-16 bg-black/5 dark:bg-white/5 rounded-full flex items-center justify-center mx-auto mb-4">
-                                        <User size={24} className="opacity-20" />
-                                    </div>
-                                    <p className="text-sm font-bold opacity-50 mb-2">No experts found</p>
-                                    <p className="text-[10px] opacity-30 font-medium uppercase tracking-widest">Please assign staff in the admin panel.</p>
-                                </div>
-                            )}
-                            {outletStaff.map((s, i) => {
-                                const sid = s._id || s.id;
-                                const isSelected = !!selectedStaff && String(selectedStaff._id || selectedStaff.id) === String(sid);
-                                return (
-                                    <motion.button
-                                        key={sid || i}
-                                        onClick={() => setSelectedStaff(s)}
-                                        style={{
-                                            background: isSelected ? 'rgba(200,149,108,0.1)' : colors.card,
-                                            borderColor: isSelected ? '#C8956C' : colors.border
-                                        }}
-                                        className="w-full flex items-center gap-5 p-5 rounded-[24px] border-2 transition-all"
-                                    >
-                                        <div className="w-16 h-16 rounded-2xl overflow-hidden bg-gray-100 dark:bg-gray-800 flex-shrink-0">
-                                            {s.image ? (
-                                                <img src={getImageUrl(s.image)} alt={s.name} className="w-full h-full object-cover" />
-                                            ) : (
-                                                <div className="w-full h-full flex items-center justify-center font-bold text-[#C8956C] text-xl">
-                                                    {s.name?.charAt(0)}
-                                                </div>
-                                            )}
+                                {!otpSent ? (
+                                    <div className="space-y-4">
+                                        <div className="space-y-2">
+                                            <label className="text-[10px] font-black text-text-muted uppercase tracking-widest pl-1">Your Name</label>
+                                            <input
+                                                type="text"
+                                                value={detailName}
+                                                onChange={(e) => { setDetailName(e.target.value); setOtpError(''); }}
+                                                placeholder="e.g. John Doe"
+                                                className="w-full px-5 py-3.5 rounded-xl border border-border text-sm font-semibold focus:border-[#C8956C] outline-none transition-all bg-surface hover:border-[#C8956C]/40"
+                                            />
                                         </div>
-                                        <div className="text-left flex-1">
-                                            <p className="text-lg font-bold" style={{ color: colors.text }}>{s.name}</p>
-                                            <div className="flex items-center gap-2 mt-0.5">
-                                                <p className="text-[10px] font-black uppercase tracking-widest text-[#C8956C]">{s.role || 'Expert'}</p>
-                                                {s.outletId && outlets.length > 1 && (
-                                                    <span className="text-[8px] bg-black/5 dark:bg-white/5 px-2 py-0.5 rounded-full opacity-50 font-bold">
-                                                        {outlets.find(o => (o._id || o.id) === s.outletId)?.name || 'Branch'}
-                                                    </span>
-                                                )}
+
+                                        <div className="space-y-2">
+                                            <label className="text-[10px] font-black text-text-muted uppercase tracking-widest pl-1">Mobile Number</label>
+                                            <div className="relative flex items-center">
+                                                <span className="absolute left-5 text-sm font-bold text-text-muted">+91</span>
+                                                <input
+                                                    type="tel"
+                                                    maxLength={10}
+                                                    value={detailPhone}
+                                                    onChange={(e) => { setDetailPhone(e.target.value.replace(/\D/g, '')); setOtpError(''); }}
+                                                    placeholder="9876543210"
+                                                    className="w-full pl-14 pr-5 py-3.5 rounded-xl border border-[#C8956C]/20 focus:border-[#C8956C] hover:border-[#C8956C]/40 text-sm font-semibold outline-none transition-all bg-surface"
+                                                />
                                             </div>
                                         </div>
-                                        {isSelected && <Check size={24} className="text-[#C8956C] flex-shrink-0" />}
-                                    </motion.button>
-                                );
-                            })}
-                        </div>
 
-                        {/* Continue Button */}
-                        <button
-                            onClick={() => {
-                                if (selectedServices.length === 0) {
-                                    navigate('/app/services');
-                                } else {
-                                    goTo(1);
-                                }
-                            }}
-                            disabled={!selectedStaff}
-                            className="w-full py-5 rounded-[20px] bg-black text-white text-[12px] font-black uppercase tracking-[0.4em] flex items-center justify-center gap-4 disabled:opacity-20 shadow-xl transition-all active:scale-[0.98]"
-                        >
-                            {selectedServices.length === 0 ? (
-                                <>Select Service <Sparkles size={16} /></>
-                            ) : (
-                                <>Continue <ArrowRight size={16} /></>
-                            )}
-                        </button>
+                                        {otpError && (
+                                            <p className="text-xs text-rose-500 font-semibold pl-1">{otpError}</p>
+                                        )}
+
+                                        <button
+                                            onClick={handleSendOtp}
+                                            disabled={otpLoading}
+                                            className="w-full py-5 rounded-[20px] bg-black text-white text-[12px] font-black uppercase tracking-[0.4em] flex items-center justify-center gap-4 disabled:opacity-20 shadow-xl transition-all active:scale-[0.98] mt-4"
+                                        >
+                                            {otpLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Send OTP'} <ArrowRight size={16} />
+                                        </button>
+                                    </div>
+                                ) : (
+                                    <div className="space-y-6">
+                                        <div className="p-4 rounded-2xl bg-[#C8956C]/5 border border-[#C8956C]/10 text-center">
+                                            <p className="text-xs font-semibold text-text-muted">OTP sent to +91 {detailPhone}</p>
+                                            <button 
+                                                onClick={() => setOtpSent(false)} 
+                                                className="text-[10px] font-black uppercase text-[#C8956C] tracking-wider mt-1 hover:underline"
+                                            >
+                                                Change Number
+                                            </button>
+                                        </div>
+
+                                        <div className="space-y-4">
+                                            <label className="text-[10px] font-black text-text-muted uppercase tracking-widest block text-center">Enter 4-Digit OTP</label>
+                                            <div className="flex justify-center gap-4">
+                                                {[0, 1, 2, 3].map((idx) => (
+                                                    <input
+                                                        key={idx}
+                                                        ref={otpRefs[idx]}
+                                                        type="text"
+                                                        maxLength={1}
+                                                        inputMode="numeric"
+                                                        value={otpVal[idx]}
+                                                        onChange={(e) => handleOtpChange(idx, e.target.value)}
+                                                        onKeyDown={(e) => handleOtpKey(idx, e)}
+                                                        className="w-12 h-14 rounded-xl border-2 border-border text-center text-xl font-bold focus:border-[#C8956C] outline-none bg-surface transition-all"
+                                                    />
+                                                ))}
+                                            </div>
+                                        </div>
+
+                                        {otpError && (
+                                            <p className="text-xs text-rose-500 font-semibold text-center">{otpError}</p>
+                                        )}
+
+                                        <div className="text-center">
+                                            {otpCd > 0 ? (
+                                                <p className="text-[10px] text-text-muted font-bold uppercase tracking-wider">Resend OTP in {otpCd}s</p>
+                                            ) : (
+                                                <button
+                                                    onClick={handleSendOtp}
+                                                    className="text-[10px] font-black uppercase text-[#C8956C] tracking-widest hover:underline"
+                                                >
+                                                    Resend OTP
+                                                </button>
+                                            )}
+                                        </div>
+
+                                        <button
+                                            onClick={handleVerifyOtp}
+                                            disabled={otpLoading}
+                                            className="w-full py-5 rounded-[20px] bg-black text-white text-[12px] font-black uppercase tracking-[0.4em] flex items-center justify-center gap-4 disabled:opacity-20 shadow-xl transition-all active:scale-[0.98]"
+                                        >
+                                            {otpLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Verify & Continue'} <Check size={16} />
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
+                        )}
                     </motion.div>
                 )}
 
-                {/* STEP 1: Date & Time */}
                 {step === 1 && (
                     <motion.div
                         key="step-1"
@@ -1107,9 +1283,318 @@ export default function AppBookingPage() {
                         variants={slideVariants}
                         initial="enter" animate="center" exit="exit"
                         transition={{ duration: 0.3 }}
-                        className="space-y-8"
+                        className="space-y-6"
                     >
-                        <h2 className="text-xl font-bold uppercase tracking-tight" style={{ fontFamily: "'Libre Baskerville', serif" }}>
+                        <div className="space-y-6 text-left">
+                            <div className="flex flex-col gap-0">
+                                <h2 className="text-xl font-bold uppercase tracking-tight" style={{ fontFamily: "'Libre Baskerville', serif" }}>
+                                    Select <span className="text-[#C8956C]">Outlet</span>
+                                </h2>
+                                <p className="text-[10px] opacity-40 font-black uppercase tracking-widest mt-1">Which branch would you like to visit?</p>
+                            </div>
+
+                            {/* Geolocation Button */}
+                            <div className="p-5 rounded-3xl bg-surface-alt/10 border border-border flex flex-col sm:flex-row items-center justify-between gap-4">
+                                <div className="text-left">
+                                    <p className="text-xs font-bold text-text uppercase tracking-wider flex items-center gap-1.5">
+                                        <MapPin className="text-[#C8956C]" size={14} /> Geolocation Helper
+                                    </p>
+                                    <p className="text-[10px] text-text-muted mt-0.5 font-medium leading-relaxed">
+                                        Allow location to show outlets closest to your current location first.
+                                    </p>
+                                </div>
+                                <button
+                                    type="button"
+                                    onClick={handleGetLocation}
+                                    disabled={locLoading}
+                                    className="px-5 py-2.5 bg-[#C8956C] text-white rounded-xl font-bold text-[10px] uppercase tracking-widest shadow-lg shadow-[#C8956C]/10 hover:shadow-[#C8956C]/20 active:scale-95 transition-all flex items-center gap-2 shrink-0"
+                                >
+                                    {locLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : 'Find Nearest'}
+                                </button>
+                            </div>
+
+                            {locError && (
+                                <p className="text-xs text-rose-500 font-semibold pl-1">{locError}</p>
+                            )}
+
+                            {/* Outlets Lists */}
+                            <div className="space-y-6">
+                                {userCoords && (
+                                    <div className="space-y-4">
+                                        <h3 className="text-[10px] font-black text-[#C8956C] uppercase tracking-[0.2em] pl-1">Nearest Outlets</h3>
+                                        <div className="grid grid-cols-1 gap-4">
+                                            {outletsWithDistance
+                                                .filter(o => o.distanceKm !== null)
+                                                .sort((a, b) => (a.distanceKm || 0) - (b.distanceKm || 0))
+                                                .map((o) => {
+                                                    const isSelected = selectedOutlet && String(selectedOutlet._id || selectedOutlet.id) === String(o._id || o.id);
+                                                    return (
+                                                        <motion.button
+                                                            key={o._id || o.id}
+                                                            onClick={() => handleSelectOutlet(o)}
+                                                            style={{
+                                                                background: isSelected ? 'rgba(200,149,108,0.1)' : colors.card,
+                                                                borderColor: isSelected ? '#C8956C' : colors.border
+                                                            }}
+                                                            className="w-full flex items-center gap-4 p-5 rounded-[24px] border-2 text-left transition-all shadow-sm"
+                                                        >
+                                                            <div className="w-14 h-14 rounded-2xl overflow-hidden bg-gray-100 dark:bg-gray-800 flex-shrink-0">
+                                                                <img
+                                                                    src={o.images?.[0] || o.image || "https://images.unsplash.com/photo-1560066984-138dadb4c035?q=80&w=800"}
+                                                                    alt={o.name}
+                                                                    className="w-full h-full object-cover"
+                                                                    onError={(e) => {
+                                                                        e.target.onerror = null;
+                                                                        e.target.src = "data:image/svg+xml;charset=UTF-8,%3Csvg%20width%3D%22400%22%20height%3D%22400%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Crect%20width%3D%22100%25%22%20height%3D%22100%25%22%20fill%3D%22%23222222%22%2F%3E%3Ctext%20x%3D%2250%25%22%20y%3D%2250%25%22%20dominant-baseline%3D%22middle%22%20text-anchor%3D%22middle%22%20fill%3D%22%23666666%22%20font-family%3D%22sans-serif%22%20font-size%3D%2220%22%20font-weight%3D%22bold%22%3EWapixo%3C%2Ftext%3E%3C%2Fsvg%3E";
+                                                                    }}
+                                                                />
+                                                            </div>
+                                                            <div className="flex-1 min-w-0">
+                                                                <p className="text-base font-bold text-text truncate">{o.name}</p>
+                                                                <p className="text-[10px] text-text-muted truncate mt-0.5">{typeof o.address === 'string' ? o.address : (o.address?.street || o.city)}</p>
+                                                                <div className="flex items-center gap-2 mt-2">
+                                                                    <span className="text-[8px] bg-[#C8956C]/10 text-[#C8956C] px-2 py-0.5 rounded-full font-bold uppercase tracking-widest">
+                                                                        {o.distanceKm ? `${o.distanceKm.toFixed(1)} km away` : 'Branch'}
+                                                                    </span>
+                                                                </div>
+                                                            </div>
+                                                            {isSelected && <Check size={20} className="text-[#C8956C] shrink-0" />}
+                                                        </motion.button>
+                                                    );
+                                                })}
+                                        </div>
+                                    </div>
+                                )}
+
+                                <div className="space-y-4">
+                                    <h3 className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] pl-1">All Outlets</h3>
+                                    <div className="grid grid-cols-1 gap-4 max-h-[40vh] overflow-y-auto no-scrollbar">
+                                        {outlets.map((o) => {
+                                            const isSelected = selectedOutlet && String(selectedOutlet._id || selectedOutlet.id) === String(o._id || o.id);
+                                            return (
+                                                <motion.button
+                                                    key={o._id || o.id}
+                                                    onClick={() => handleSelectOutlet(o)}
+                                                    style={{
+                                                        background: isSelected ? 'rgba(200,149,108,0.1)' : colors.card,
+                                                        borderColor: isSelected ? '#C8956C' : colors.border
+                                                    }}
+                                                    className="w-full flex items-center gap-4 p-5 rounded-[24px] border-2 text-left transition-all shadow-sm"
+                                                >
+                                                    <div className="w-14 h-14 rounded-2xl overflow-hidden bg-gray-100 dark:bg-gray-800 flex-shrink-0">
+                                                        <img
+                                                            src={o.images?.[0] || o.image || "https://images.unsplash.com/photo-1560066984-138dadb4c035?q=80&w=800"}
+                                                            alt={o.name}
+                                                            className="w-full h-full object-cover"
+                                                            onError={(e) => {
+                                                                    e.target.onerror = null;
+                                                                    e.target.src = "data:image/svg+xml;charset=UTF-8,%3Csvg%20width%3D%22400%22%20height%3D%22400%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Crect%20width%3D%22100%25%22%20height%3D%22100%25%22%20fill%3D%22%23222222%22%2F%3E%3Ctext%20x%3D%2250%25%22%20y%3D%2250%25%22%20dominant-baseline%3D%22middle%22%20text-anchor%3D%22middle%22%20fill%3D%22%23666666%22%20font-family%3D%22sans-serif%22%20font-size%3D%2220%22%20font-weight%3D%22bold%22%3EWapixo%3C%2Ftext%3E%3C%2Fsvg%3E";
+                                                            }}
+                                                        />
+                                                    </div>
+                                                    <div className="flex-1 min-w-0">
+                                                        <p className="text-base font-bold text-text truncate">{o.name}</p>
+                                                        <p className="text-[10px] text-text-muted truncate mt-0.5">{typeof o.address === 'string' ? o.address : (o.address?.street || o.city)}</p>
+                                                    </div>
+                                                    {isSelected && <Check size={20} className="text-[#C8956C] shrink-0" />}
+                                                </motion.button>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <button
+                                onClick={() => goTo(2)}
+                                disabled={!selectedOutlet}
+                                className="w-full py-5 rounded-[20px] bg-black text-white text-[12px] font-black uppercase tracking-[0.4em] flex items-center justify-center gap-4 disabled:opacity-20 shadow-xl transition-all active:scale-[0.98] mt-8"
+                            >
+                                Continue <ArrowRight size={16} />
+                            </button>
+                        </div>
+                    </motion.div>
+                )}
+
+                {step === 2 && (
+                    <motion.div
+                        key="step-2"
+                        custom={direction}
+                        variants={slideVariants}
+                        initial="enter" animate="center" exit="exit"
+                        transition={{ duration: 0.3 }}
+                        className="space-y-6"
+                    >
+                        <div className="space-y-6 text-left">
+                            <div className="flex flex-col gap-0">
+                                <h2 className="text-xl font-bold uppercase tracking-tight" style={{ fontFamily: "'Libre Baskerville', serif" }}>
+                                    Select <span className="text-[#C8956C]">Services</span>
+                                </h2>
+                                <p className="text-[10px] opacity-40 font-black uppercase tracking-widest mt-1">Available at {selectedOutlet?.name}</p>
+                            </div>
+
+                            {/* Search bar */}
+                            <div className="relative group">
+                                <div className="absolute inset-0 bg-[#C8956C]/5 rounded-xl blur-md opacity-0 group-hover:opacity-100 transition-opacity" />
+                                <div className={`relative flex items-center gap-3 border h-12 px-4 rounded-xl group-focus-within:border-[#C8956C]/50 transition-all ${isLight ? 'bg-white border-neutral-200 shadow-sm' : 'bg-white/[0.03] border-white/[0.05]'}`}>
+                                    <Search size={16} className={`${isLight ? 'text-neutral-400' : 'text-white/20'} group-focus-within:text-[#C8956C] transition-colors`} />
+                                    <input
+                                        type="text"
+                                        placeholder="Search services..."
+                                        value={serviceSearch}
+                                        onChange={(e) => setServiceSearch(e.target.value)}
+                                        className={`w-full bg-transparent border-none outline-none text-sm placeholder:opacity-50 ${isLight ? 'text-neutral-900 placeholder:text-neutral-900' : 'text-white placeholder:text-white'}`}
+                                    />
+                                </div>
+                            </div>
+
+                            {/* Services Group List */}
+                            <div className="space-y-6 max-h-[45vh] overflow-y-auto pr-1 no-scrollbar pb-4">
+                                {finalGroups.length === 0 && (
+                                    <div className="text-center py-12 opacity-50">
+                                        <p className="text-sm font-bold uppercase tracking-widest text-text-muted">No services found</p>
+                                    </div>
+                                )}
+                                {finalGroups.map((group) => (
+                                    <div key={group._id || group.name} className="space-y-3">
+                                        <h3 className="text-[10px] font-black text-[#C8956C] uppercase tracking-[0.2em] pl-1 border-b border-[#C8956C]/10 pb-1">{group.name}</h3>
+                                        <div className="grid grid-cols-1 gap-3">
+                                            {group.services.map((svc) => {
+                                                const isSelected = selectedServices.some(s => (s._id || s.id) === (svc._id || svc.id));
+                                                return (
+                                                    <div
+                                                        key={svc._id || svc.id}
+                                                        onClick={() => toggleService(svc)}
+                                                        style={{
+                                                            background: isSelected ? 'rgba(200,149,108,0.06)' : colors.card,
+                                                            borderColor: isSelected ? '#C8956C' : colors.border
+                                                        }}
+                                                        className="p-4 rounded-2xl border flex items-center justify-between cursor-pointer transition-all hover:border-[#C8956C]/40"
+                                                    >
+                                                        <div className="text-left space-y-1">
+                                                            <p className="text-sm font-bold text-text">{svc.name}</p>
+                                                            <p className="text-[9px] text-text-muted uppercase font-bold tracking-widest">
+                                                                {svc.duration} min · ₹{svc.price}
+                                                            </p>
+                                                        </div>
+                                                        <div className={`w-5 h-5 rounded-full border flex items-center justify-center transition-colors ${isSelected ? 'bg-[#C8956C] border-[#C8956C]' : 'border-border'}`}>
+                                                            {isSelected && <Check size={12} color="white" strokeWidth={4} />}
+                                                        </div>
+                                                    </div>
+                                                );
+                                            })}
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+
+                            {/* Floating Selection Bar */}
+                            {selectedServices.length > 0 && (
+                                <div className="p-4 rounded-2xl bg-[#C8956C]/5 border border-[#C8956C]/20 flex items-center justify-between mt-2 shadow-sm">
+                                    <div className="text-left">
+                                        <p className="text-[10px] font-black uppercase text-[#C8956C] tracking-widest">Selected Package</p>
+                                        <p className="text-sm font-bold text-text mt-0.5">{selectedServices.length} Service(s) · ₹{totalPrice}</p>
+                                    </div>
+                                    <button
+                                        onClick={() => setSelectedServices([])}
+                                        className="text-[9px] font-black uppercase text-rose-500 tracking-wider hover:underline"
+                                    >
+                                        Clear All
+                                    </button>
+                                </div>
+                            )}
+
+                            <button
+                                onClick={() => goTo(3)}
+                                disabled={selectedServices.length === 0}
+                                className="w-full py-5 rounded-[20px] bg-black text-white text-[12px] font-black uppercase tracking-[0.4em] flex items-center justify-center gap-4 disabled:opacity-20 shadow-xl transition-all active:scale-[0.98] mt-4"
+                            >
+                                Continue <ArrowRight size={16} />
+                            </button>
+                        </div>
+                    </motion.div>
+                )}
+
+                {step === 3 && (
+                    <motion.div
+                        key="step-3"
+                        custom={direction}
+                        variants={slideVariants}
+                        initial="enter" animate="center" exit="exit"
+                        transition={{ duration: 0.3 }}
+                        className="space-y-6"
+                    >
+                        <div className="space-y-6 text-left">
+                            <div className="flex flex-col gap-0">
+                                <h2 className="text-xl font-bold uppercase tracking-tight" style={{ fontFamily: "'Libre Baskerville', serif" }}>
+                                    Choose <span className="text-[#C8956C]">Expert</span>
+                                </h2>
+                                <p className="text-[10px] opacity-40 font-black uppercase tracking-widest mt-1">Available experts at {selectedOutlet?.name}</p>
+                            </div>
+
+                            {/* Stylist Grid */}
+                            <div className="grid grid-cols-1 gap-4 max-h-[50vh] overflow-y-auto no-scrollbar pb-2">
+                                {outletStaff.length === 0 && (
+                                    <div className="text-center py-16 px-6">
+                                        <div className="w-16 h-16 bg-black/5 dark:bg-white/5 rounded-full flex items-center justify-center mx-auto mb-4">
+                                            <User size={24} className="opacity-20" />
+                                        </div>
+                                        <p className="text-sm font-bold opacity-50 mb-2">No experts found</p>
+                                        <p className="text-[10px] opacity-30 font-medium uppercase tracking-widest">Please assign staff in the admin panel.</p>
+                                    </div>
+                                )}
+                                {outletStaff.map((s, i) => {
+                                    const sid = s._id || s.id;
+                                    const isSelected = !!selectedStaff && String(selectedStaff._id || selectedStaff.id) === String(sid);
+                                    return (
+                                        <motion.button
+                                            key={sid || i}
+                                            onClick={() => setSelectedStaff(s)}
+                                            style={{
+                                                background: isSelected ? 'rgba(200,149,108,0.1)' : colors.card,
+                                                borderColor: isSelected ? '#C8956C' : colors.border
+                                            }}
+                                            className="w-full flex items-center gap-5 p-5 rounded-[24px] border-2 transition-all shadow-sm"
+                                        >
+                                            <div className="w-16 h-16 rounded-2xl overflow-hidden bg-gray-100 dark:bg-gray-800 flex-shrink-0">
+                                                {s.image ? (
+                                                    <img src={getImageUrl(s.image)} alt={s.name} className="w-full h-full object-cover" />
+                                                ) : (
+                                                    <div className="w-full h-full flex items-center justify-center font-bold text-[#C8956C] text-xl bg-[#C8956C]/5">
+                                                        {s.name?.charAt(0)}
+                                                    </div>
+                                                )}
+                                            </div>
+                                            <div className="text-left flex-1">
+                                                <p className="text-lg font-bold" style={{ color: colors.text }}>{s.name}</p>
+                                                <p className="text-[10px] font-black uppercase tracking-widest text-[#C8956C] mt-0.5">{s.role || 'Expert'}</p>
+                                            </div>
+                                            {isSelected && <Check size={24} className="text-[#C8956C] flex-shrink-0" />}
+                                        </motion.button>
+                                    );
+                                })}
+                            </div>
+
+                            <button
+                                onClick={() => goTo(4)}
+                                disabled={!selectedStaff}
+                                className="w-full py-5 rounded-[20px] bg-black text-white text-[12px] font-black uppercase tracking-[0.4em] flex items-center justify-center gap-4 disabled:opacity-20 shadow-xl transition-all active:scale-[0.98]"
+                            >
+                                Continue <ArrowRight size={16} />
+                            </button>
+                        </div>
+                    </motion.div>
+                )}
+
+                {step === 4 && (
+                    <motion.div
+                        key="step-4"
+                        custom={direction}
+                        variants={slideVariants}
+                        initial="enter" animate="center" exit="exit"
+                        transition={{ duration: 0.3 }}
+                        className="space-y-6"
+                    >
+                        <h2 className="text-xl font-bold uppercase tracking-tight text-left" style={{ fontFamily: "'Libre Baskerville', serif" }}>
                             Select <span className="text-[#C8956C]">Timeline</span>
                         </h2>
 
@@ -1170,11 +1655,11 @@ export default function AppBookingPage() {
                             })}
                         </div>
 
-                        <div className="space-y-4">
+                        <div className="space-y-4 text-left">
                             <p className="text-[10px] font-black uppercase tracking-[0.2em] opacity-50" style={{ color: colors.text }}>Available Slots</p>
                             
                             {selectedDate ? (
-                                <div className="grid grid-cols-3 gap-3 max-h-[250px] overflow-y-auto pr-1 custom-scrollbar">
+                                <div className="grid grid-cols-3 gap-3 max-h-[200px] overflow-y-auto pr-1 no-scrollbar">
                                     {timeSlots.filter(slot => slot.available).map((slot, idx) => (
                                         <button
                                             key={idx}
@@ -1196,194 +1681,173 @@ export default function AppBookingPage() {
                                     )}
                                 </div>
                             ) : (
-                                <div className="py-10 text-center border-2 border-dashed rounded-3xl opacity-20" style={{ borderColor: colors.border }}>
+                                <div className="py-8 text-center border-2 border-dashed rounded-3xl opacity-20" style={{ borderColor: colors.border }}>
                                     <p className="text-[10px] font-black uppercase tracking-widest">Select a date to view slots</p>
                                 </div>
                             )}
                         </div>
 
-                        <button
-                            onClick={() => goTo(2)}
-                            disabled={!selectedDate || !selectedTime}
-                            className="w-full py-5 rounded-[20px] bg-black text-white text-[12px] font-black uppercase tracking-[0.4em] flex items-center justify-center gap-4 disabled:opacity-20 shadow-xl"
-                        >
-                            Next <ArrowRight size={16} />
-                        </button>
-                    </motion.div>
-                )}
-
-                {/* STEP 2: Confirm */}
-                {step === 2 && (
-                    <motion.div
-                        key="step-2"
-                        custom={direction}
-                        variants={slideVariants}
-                        initial="enter" animate="center" exit="exit"
-                        transition={{ duration: 0.3 }}
-                        className="space-y-8"
-                    >
-                        <h2 className="text-xl font-bold uppercase tracking-tight" style={{ fontFamily: "'Libre Baskerville', serif" }}>
-                            Confirm <span className="text-[#C8956C]">Session</span>
-                        </h2>
-
-                        <div style={{ background: colors.card, border: `1px solid ${colors.border}` }} className="rounded-[2rem] p-6 space-y-6 shadow-sm">
-                            <div className="space-y-3 pb-6 border-b border-black/5 dark:border-white/5">
-                                {selectedServices.map((svc) => (
-                                    <div key={svc.id || svc._id || svc.name} className="flex items-center gap-0">
-                                        <div style={{ fontFamily: "'Poppins', sans-serif" }}>
-                                            <h3 className="text-sm font-bold uppercase tracking-tight" style={{ color: colors.text }}>{svc.name}</h3>
-                                            <p className="text-[8px] font-black uppercase tracking-widest mt-0.5 opacity-40" style={{ color: colors.textMuted }}>{svc.category} · {svc.duration} MIN</p>
-                                        </div>
-                                        <div className="ml-auto text-[11px] font-bold text-[#C8956C]" style={{ fontFamily: "'Poppins', sans-serif" }}>₹{svc.price}</div>
-                                    </div>
-                                ))}
-                            </div>
-
-                            <div className="space-y-4" style={{ fontFamily: "'Poppins', sans-serif" }}>
-                                <div className="flex justify-between text-[11px] font-bold uppercase tracking-widest">
-                                    <span style={{ color: colors.textMuted }}>Date</span>
-                                    <span style={{ color: colors.text }}>
-                                        {selectedDate?.date.toLocaleDateString('en-IN', { weekday: 'long', month: 'long', day: 'numeric' })}
-                                    </span>
-                                </div>
-                                <div className="flex justify-between text-[11px] font-bold uppercase tracking-widest">
-                                    <span style={{ color: colors.textMuted }}>Time</span>
-                                    <span style={{ color: colors.text }}>{selectedTime}</span>
-                                </div>
-                                <div className="flex justify-between text-[11px] font-bold uppercase tracking-widest">
-                                    <span style={{ color: colors.textMuted }}>Stylist</span>
-                                    <span style={{ color: colors.text }}>{selectedStaff?.name}</span>
-                                </div>
-                                <div className="flex justify-between text-[11px] font-bold uppercase tracking-widest">
-                                    <span style={{ color: colors.textMuted }}>Salon</span>
-                                    <span style={{ color: colors.text }}>{currentOutlet?.name || 'Not selected'}</span>
-                                </div>
-                            </div>
-
-                            {activeMembership && membershipDiscount > 0 && (
-                                <motion.div
-                                    initial={{ opacity: 0, x: -10 }}
-                                    animate={{ opacity: 1, x: 0 }}
-                                    className="p-3 rounded-2xl flex items-center gap-3 border border-orange-200"
-                                    style={{ background: 'linear-gradient(135deg, rgba(255, 215, 0, 0.1) 0%, rgba(200, 149, 108, 0.05) 100%)' }}
-                                >
-                                    <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center shadow-sm">
-                                        <Crown size={14} color="#C8956C" fill="#C8956C" />
-                                    </div>
-                                    <div className="flex-1">
-                                        <p className="text-[9px] font-black uppercase tracking-widest text-[#C8956C]">{activeMembership.name} Benefit</p>
-                                        <p className="text-[11px] font-bold" style={{ color: colors.text }}>Additional ₹{membershipDiscount} saved</p>
-                                    </div>
-                                    <Sparkles size={14} color="#C8956C" className="animate-pulse" />
-                                </motion.div>
-                            )}
-
-                            <div className="hidden">
-                                {/* Promo Code Disabled */}
-                            </div>
-
-                            {/* Payment Method Section */}
-                            <div className="pt-2">
-                                <p className="text-[10px] font-black uppercase tracking-[0.15em] mb-3 opacity-50" style={{ color: colors.text }}>Payment Method</p>
-                                <div className="grid grid-cols-2 gap-3">
-                                    <button
-                                        onClick={() => setPaymentMethod('salon')}
-                                        className="p-4 rounded-2xl border transition-all text-left relative overflow-hidden"
-                                        style={{ 
-                                            borderColor: paymentMethod === 'salon' ? '#C8956C' : colors.border,
-                                            background: paymentMethod === 'salon' ? '#C8956C08' : 'transparent'
-                                        }}
-                                    >
-                                        <div className="relative z-10">
-                                            <p className="text-[9px] font-black uppercase tracking-widest" style={{ color: paymentMethod === 'salon' ? '#C8956C' : colors.textMuted }}>Pay at Salon</p>
-                                            <p className="text-[7px] font-medium mt-0.5 opacity-40 uppercase tracking-wider" style={{ color: colors.text }}>In-store payment</p>
-                                        </div>
-                                        {paymentMethod === 'salon' && (
-                                            <div className="absolute top-1 right-1 w-3 h-3 rounded-full bg-[#C8956C] flex items-center justify-center">
-                                                <Check size={8} color="white" strokeWidth={4} />
-                                            </div>
-                                        )}
-                                    </button>
-
-                                    <button
-                                        onClick={() => setPaymentMethod('wallet')}
-                                        className="p-4 rounded-2xl border transition-all text-left relative overflow-hidden"
-                                        style={{ 
-                                            borderColor: paymentMethod === 'wallet' ? '#C8956C' : colors.border,
-                                            background: paymentMethod === 'wallet' ? '#C8956C08' : 'transparent'
-                                        }}
-                                    >
-                                        <div className="relative z-10">
-                                            <p className="text-[9px] font-black uppercase tracking-widest" style={{ color: paymentMethod === 'wallet' ? '#C8956C' : colors.textMuted }}>Digital Wallet</p>
-                                            <p className="text-[7px] font-medium mt-0.5 opacity-40 uppercase tracking-wider" style={{ color: colors.text }}>Bal: ₹{balance?.toFixed(0)}</p>
-                                        </div>
-                                        {paymentMethod === 'wallet' && (
-                                            <div className="absolute top-1 right-1 w-3 h-3 rounded-full bg-[#C8956C] flex items-center justify-center">
-                                                <Check size={8} color="white" strokeWidth={4} />
-                                            </div>
-                                        )}
-                                    </button>
-                                </div>
-                            </div>
-
-                            <div className="space-y-2 pt-4 border-t border-dashed border-black/10 dark:border-white/10 uppercase font-black tracking-tight">
-                                <div className="flex justify-between items-center opacity-40 text-xs">
-                                    <span style={{ color: colors.text }}>Subtotal</span>
-                                    <span style={{ color: colors.text }}>₹{totalPrice.toLocaleString()}</span>
-                                </div>
-                                {membershipDiscount > 0 && (
-                                    <div className="flex justify-between items-center text-xs">
-                                        <span className="text-[#C8956C]">
-                                            Membership ({(activeMembership?.planId || activeMembership?.plan)?.name})
-                                            <span className="ml-2 px-1 py-0.5 rounded bg-[#C8956C]/10 border border-[#C8956C]/20 text-[8px] font-black">
-                                                {(activeMembership?.planId || activeMembership?.plan)?.serviceDiscountValue}
-                                                {(activeMembership?.planId || activeMembership?.plan)?.serviceDiscountType === 'percentage' ? '%' : '₹'} OFF
-                                            </span>
-                                        </span>
-                                        <span className="text-[#C8956C]">- ₹{membershipDiscount.toLocaleString()}</span>
-                                    </div>
-                                )}
-                                {promoDiscount > 0 && (
-                                    <div className="flex justify-between items-center text-xs">
-                                        <span className="text-green-500">Promo Discount</span>
-                                        <span className="text-green-500">- ₹{promoDiscount.toLocaleString()}</span>
-                                    </div>
-                                )}
-                                <div className="flex justify-between items-center opacity-40 text-xs">
-                                    <span style={{ color: colors.text }}>GST ({platformSettings?.serviceGst || 18}%)</span>
-                                    <span style={{ color: colors.text }}>+ ₹{Math.round(tax).toLocaleString()}</span>
-                                </div>
-                                <div className="flex justify-between text-2xl pt-2">
-                                    <span style={{ color: colors.textMuted }}>Total</span>
-                                    <span className="text-[#C8956C] px-1">₹{Math.round(finalPrice).toLocaleString()}</span>
-                                </div>
-                                {loyaltySettings?.active && (
-                                    <div className="flex justify-between items-center py-2 px-3 mt-2 rounded-xl bg-[#C8956C]/5 border border-[#C8956C]/20">
-                                        <div className="flex items-center gap-2">
-                                            <Zap size={14} className="text-[#C8956C]" fill="#C8956C" />
-                                            <span style={{ color: colors.text, fontSize: '10px' }} className="font-bold uppercase tracking-widest">Loyalty Earned</span>
-                                        </div>
-                                        <span className="text-[#C8956C] font-black">{Math.floor(finalPrice / (loyaltySettings.pointsRate || 100))} Points</span>
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-
-                            <button
-                                onClick={handleSubmit}
-                                disabled={submitting}
-                                className="w-full py-5 rounded-[20px] bg-black text-white text-[12px] font-black uppercase tracking-[0.4em] flex items-center justify-center gap-4 shadow-2xl active:scale-95 transition-all mt-8"
+                        {selectedDate && selectedTime && (
+                            <motion.div
+                                initial={{ opacity: 0, y: 15 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                className="space-y-6 pt-4 border-t border-border"
                             >
-                                {submitting ? (
-                                    <>
-                                        <Loader2 className="w-4 h-4 animate-spin" /> Processing...
-                                    </>
-                                ) : (
-                                    <>
-                                        Complete Booking <Check className="w-4 h-4" />
-                                    </>
-                                )}
-                            </button>
+                                <div style={{ background: colors.card, border: `1px solid ${colors.border}` }} className="rounded-[2rem] p-6 space-y-6 shadow-sm text-left">
+                                    <div className="space-y-3 pb-6 border-b border-black/5 dark:border-white/5">
+                                        {selectedServices.map((svc) => (
+                                            <div key={svc.id || svc._id || svc.name} className="flex items-center gap-0">
+                                                <div style={{ fontFamily: "'Poppins', sans-serif" }}>
+                                                    <h3 className="text-sm font-bold uppercase tracking-tight" style={{ color: colors.text }}>{svc.name}</h3>
+                                                    <p className="text-[8px] font-black uppercase tracking-widest mt-0.5 opacity-40" style={{ color: colors.textMuted }}>{svc.category} · {svc.duration} MIN</p>
+                                                </div>
+                                                <div className="ml-auto text-[11px] font-bold text-[#C8956C]" style={{ fontFamily: "'Poppins', sans-serif" }}>₹{svc.price}</div>
+                                            </div>
+                                        ))}
+                                    </div>
+
+                                    <div className="space-y-4" style={{ fontFamily: "'Poppins', sans-serif" }}>
+                                        <div className="flex justify-between text-[11px] font-bold uppercase tracking-widest">
+                                            <span style={{ color: colors.textMuted }}>Date</span>
+                                            <span style={{ color: colors.text }}>
+                                                {selectedDate?.date.toLocaleDateString('en-IN', { weekday: 'long', month: 'long', day: 'numeric' })}
+                                            </span>
+                                        </div>
+                                        <div className="flex justify-between text-[11px] font-bold uppercase tracking-widest">
+                                            <span style={{ color: colors.textMuted }}>Time</span>
+                                            <span style={{ color: colors.text }}>{selectedTime}</span>
+                                        </div>
+                                        <div className="flex justify-between text-[11px] font-bold uppercase tracking-widest">
+                                            <span style={{ color: colors.textMuted }}>Stylist</span>
+                                            <span style={{ color: colors.text }}>{selectedStaff?.name}</span>
+                                        </div>
+                                        <div className="flex justify-between text-[11px] font-bold uppercase tracking-widest">
+                                            <span style={{ color: colors.textMuted }}>Outlet</span>
+                                            <span style={{ color: colors.text }}>{selectedOutlet?.name || 'Not selected'}</span>
+                                        </div>
+                                    </div>
+
+                                    {activeMembership && membershipDiscount > 0 && (
+                                        <div
+                                            className="p-3 rounded-2xl flex items-center gap-3 border border-orange-200"
+                                            style={{ background: 'linear-gradient(135deg, rgba(255, 215, 0, 0.1) 0%, rgba(200, 149, 108, 0.05) 100%)' }}
+                                        >
+                                            <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center shadow-sm">
+                                                <Crown size={14} color="#C8956C" fill="#C8956C" />
+                                            </div>
+                                            <div className="flex-1">
+                                                <p className="text-[9px] font-black uppercase tracking-widest text-[#C8956C]">{activeMembership.name} Benefit</p>
+                                                <p className="text-[11px] font-bold" style={{ color: colors.text }}>Additional ₹{membershipDiscount} saved</p>
+                                            </div>
+                                            <Sparkles size={14} color="#C8956C" className="animate-pulse" />
+                                        </div>
+                                    )}
+
+                                    {/* Payment Method Selection */}
+                                    <div className="pt-2">
+                                        <p className="text-[10px] font-black uppercase tracking-[0.15em] mb-3 opacity-50" style={{ color: colors.text }}>Payment Method</p>
+                                        <div className="grid grid-cols-2 gap-3">
+                                            <button
+                                                onClick={() => setPaymentMethod('salon')}
+                                                className="p-4 rounded-2xl border transition-all text-left relative overflow-hidden"
+                                                style={{ 
+                                                    borderColor: paymentMethod === 'salon' ? '#C8956C' : colors.border,
+                                                    background: paymentMethod === 'salon' ? '#C8956C08' : 'transparent'
+                                                }}
+                                            >
+                                                <div className="relative z-10">
+                                                    <p className="text-[9px] font-black uppercase tracking-widest" style={{ color: paymentMethod === 'salon' ? '#C8956C' : colors.textMuted }}>Pay at Salon</p>
+                                                    <p className="text-[7px] font-medium mt-0.5 opacity-40 uppercase tracking-wider" style={{ color: colors.text }}>In-store payment</p>
+                                                </div>
+                                                {paymentMethod === 'salon' && (
+                                                    <div className="absolute top-1 right-1 w-3 h-3 rounded-full bg-[#C8956C] flex items-center justify-center">
+                                                        <Check size={8} color="white" strokeWidth={4} />
+                                                    </div>
+                                                )}
+                                            </button>
+
+                                            <button
+                                                onClick={() => setPaymentMethod('wallet')}
+                                                className="p-4 rounded-2xl border transition-all text-left relative overflow-hidden"
+                                                style={{ 
+                                                    borderColor: paymentMethod === 'wallet' ? '#C8956C' : colors.border,
+                                                    background: paymentMethod === 'wallet' ? '#C8956C08' : 'transparent'
+                                                }}
+                                            >
+                                                <div className="relative z-10">
+                                                    <p className="text-[9px] font-black uppercase tracking-widest" style={{ color: paymentMethod === 'wallet' ? '#C8956C' : colors.textMuted }}>Digital Wallet</p>
+                                                    <p className="text-[7px] font-medium mt-0.5 opacity-40 uppercase tracking-wider" style={{ color: colors.text }}>Bal: ₹{balance?.toFixed(0)}</p>
+                                                </div>
+                                                {paymentMethod === 'wallet' && (
+                                                    <div className="absolute top-1 right-1 w-3 h-3 rounded-full bg-[#C8956C] flex items-center justify-center">
+                                                        <Check size={8} color="white" strokeWidth={4} />
+                                                    </div>
+                                                )}
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    {/* Billing totals */}
+                                    <div className="space-y-2 pt-4 border-t border-dashed border-black/10 dark:border-white/10 uppercase font-black tracking-tight">
+                                        <div className="flex justify-between items-center opacity-40 text-xs">
+                                            <span style={{ color: colors.text }}>Subtotal</span>
+                                            <span style={{ color: colors.text }}>₹{totalPrice.toLocaleString()}</span>
+                                        </div>
+                                        {membershipDiscount > 0 && (
+                                            <div className="flex justify-between items-center text-xs">
+                                                <span className="text-[#C8956C]">
+                                                    Membership ({(activeMembership?.planId || activeMembership?.plan)?.name})
+                                                    <span className="ml-2 px-1 py-0.5 rounded bg-[#C8956C]/10 border border-[#C8956C]/20 text-[8px] font-black">
+                                                        {(activeMembership?.planId || activeMembership?.plan)?.serviceDiscountValue}
+                                                        {(activeMembership?.planId || activeMembership?.plan)?.serviceDiscountType === 'percentage' ? '%' : '₹'} OFF
+                                                    </span>
+                                                </span>
+                                                <span className="text-[#C8956C]">- ₹{membershipDiscount.toLocaleString()}</span>
+                                            </div>
+                                        )}
+                                        {promoDiscount > 0 && (
+                                            <div className="flex justify-between items-center text-xs">
+                                                <span className="text-green-500">Promo Discount</span>
+                                                <span className="text-green-500">- ₹{promoDiscount.toLocaleString()}</span>
+                                            </div>
+                                        )}
+                                        <div className="flex justify-between items-center opacity-40 text-xs">
+                                            <span style={{ color: colors.text }}>GST ({platformSettings?.serviceGst || 18}%)</span>
+                                            <span style={{ color: colors.text }}>+ ₹{Math.round(tax).toLocaleString()}</span>
+                                        </div>
+                                        <div className="flex justify-between text-2xl pt-2">
+                                            <span style={{ color: colors.textMuted }}>Total</span>
+                                            <span className="text-[#C8956C] px-1">₹{Math.round(finalPrice).toLocaleString()}</span>
+                                        </div>
+                                        {loyaltySettings?.active && (
+                                            <div className="flex justify-between items-center py-2 px-3 mt-2 rounded-xl bg-[#C8956C]/5 border border-[#C8956C]/20">
+                                                <div className="flex items-center gap-2">
+                                                    <Zap size={14} className="text-[#C8956C]" fill="#C8956C" />
+                                                    <span style={{ color: colors.text, fontSize: '10px' }} className="font-bold uppercase tracking-widest">Loyalty Earned</span>
+                                                </div>
+                                                <span className="text-[#C8956C] font-black">{Math.floor(finalPrice / (loyaltySettings.pointsRate || 100))} Points</span>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+
+                                <button
+                                    onClick={handleSubmit}
+                                    disabled={submitting}
+                                    className="w-full py-5 rounded-[20px] bg-black text-white text-[12px] font-black uppercase tracking-[0.4em] flex items-center justify-center gap-4 shadow-2xl active:scale-95 transition-all mt-4"
+                                >
+                                    {submitting ? (
+                                        <>
+                                            <Loader2 className="w-4 h-4 animate-spin" /> Processing...
+                                        </>
+                                    ) : (
+                                        <>
+                                            Complete Booking <Check className="w-4 h-4" />
+                                        </>
+                                    )}
+                                </button>
+                            </motion.div>
+                        )}
                     </motion.div>
                 )
                 }

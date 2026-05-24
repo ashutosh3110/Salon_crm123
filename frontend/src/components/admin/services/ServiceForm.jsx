@@ -38,6 +38,7 @@ export default function ServiceForm({ onSave, onCancel, categories = [], initial
         description: initialData?.description || '',
         duration: initialData?.duration || '',
         price: initialData?.price || '',
+        loyaltyPoints: initialData?.loyaltyPoints || 0,
         image: initialData?.image || '',
         commissionApplicable: initialData?.commissionApplicable !== undefined ? initialData.commissionApplicable : true,
         commissionType: initialData?.commissionType || 'percent',
@@ -48,7 +49,9 @@ export default function ServiceForm({ onSave, onCancel, categories = [], initial
         gender: initialData?.gender || 'both',
         resourceType: initialData?.resourceType || 'chair',
         gst: initialData?.gst !== undefined && initialData?.gst !== null ? initialData.gst : (platformSettings?.serviceGst ?? 18),
-        isInclusiveTax: initialData?.isInclusiveTax || false
+        isInclusiveTax: initialData?.isInclusiveTax || false,
+        isRepeated: initialData?.isRepeated || false,
+        reminderDays: initialData?.reminderDays !== undefined ? initialData.reminderDays : 30
     });
 
     useEffect(() => {
@@ -122,9 +125,12 @@ export default function ServiceForm({ onSave, onCancel, categories = [], initial
 
             submissionData.set('duration', parseInt(formData.duration));
             submissionData.set('price', parseFloat(formData.price));
+            submissionData.set('loyaltyPoints', parseInt(formData.loyaltyPoints) || 0);
             submissionData.set('isInclusiveTax', formData.isInclusiveTax);
             submissionData.set('gst', parseFloat(formData.gst) || 0);
             submissionData.set('commissionValue', parseFloat(formData.commissionValue) || 0);
+            submissionData.set('isRepeated', formData.isRepeated);
+            submissionData.set('reminderDays', parseInt(formData.reminderDays) || 30);
 
             // Append Image File if new one selected
             if (imageFile) {
@@ -343,7 +349,7 @@ export default function ServiceForm({ onSave, onCancel, categories = [], initial
                             <h3 className="text-[9px] font-bold text-text uppercase tracking-widest">2. Time & Pricing</h3>
                         </div>
 
-                        <div className="grid grid-cols-2 gap-3">
+                        <div className="grid grid-cols-3 gap-3">
                             <div className="space-y-1">
                                 <label className="text-[9px] font-bold text-text-muted uppercase tracking-tighter italic">Dur (Min)</label>
                                 <div className="relative">
@@ -369,6 +375,16 @@ export default function ServiceForm({ onSave, onCancel, categories = [], initial
                                         onChange={(e) => setFormData({ ...formData, price: e.target.value })}
                                     />
                                 </div>
+                            </div>
+                            <div className="space-y-1">
+                                <label className="text-[9px] font-bold text-text-muted uppercase tracking-tighter italic text-emerald-600">Loyalty Pts</label>
+                                <input
+                                    type="number"
+                                    className={`w-full px-2.5 py-1.5 rounded-lg bg-surface-alt border border-border text-[11px] font-bold text-emerald-600`}
+                                    placeholder="0"
+                                    value={formData.loyaltyPoints}
+                                    onChange={(e) => setFormData({ ...formData, loyaltyPoints: Math.max(0, parseInt(e.target.value) || 0) })}
+                                />
                             </div>
                         </div>
 
@@ -396,6 +412,39 @@ export default function ServiceForm({ onSave, onCancel, categories = [], initial
                                     ))}
                                 </select>
                             </div>
+                        </div>
+
+                        {/* Repeated Service Toggle */}
+                        <div className="pt-3 border-t border-border/50 flex flex-col gap-3 text-left">
+                            <div className="flex items-center justify-between">
+                                <div className="space-y-0.5">
+                                    <label className="text-[10px] font-black uppercase tracking-widest text-text">Is Repeated Service</label>
+                                    <p className="text-[8px] text-text-muted font-bold uppercase tracking-tighter">Enable to send automatic booking reminders to customers.</p>
+                                </div>
+                                <label className="flex items-center gap-2 cursor-pointer select-none">
+                                    <input
+                                        type="checkbox"
+                                        className="w-4 h-4 accent-primary cursor-pointer border"
+                                        checked={formData.isRepeated}
+                                        onChange={(e) => setFormData({ ...formData, isRepeated: e.target.checked })}
+                                    />
+                                    <span className="text-[9px] font-black uppercase tracking-widest text-text">Repeat</span>
+                                </label>
+                            </div>
+
+                            {formData.isRepeated && (
+                                <div className="flex items-center gap-3 animate-in fade-in duration-200">
+                                    <span className="text-[9px] font-black uppercase tracking-wider text-text-muted">Send Reminder Every</span>
+                                    <input
+                                        type="number"
+                                        min="1"
+                                        value={formData.reminderDays}
+                                        onChange={(e) => setFormData({ ...formData, reminderDays: Math.max(1, Number(e.target.value) || 30) })}
+                                        className="w-20 p-2 bg-surface-alt border border-border text-xs font-bold text-center outline-none focus:border-primary"
+                                    />
+                                    <span className="text-[9px] font-black uppercase tracking-wider text-text-muted">Days</span>
+                                </div>
+                            )}
                         </div>
 
                     </div>

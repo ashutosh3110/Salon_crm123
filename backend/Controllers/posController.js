@@ -6,6 +6,7 @@ const Setting = require('../Models/Setting');
 const { sendWapixoTemplate } = require('../Utils/whatsapp');
 const { spendWallet } = require('../Utils/walletHelper');
 const Salon = require('../Models/Salon');
+const Service = require('../Models/Service');
 
 // @desc    Checkout and generate invoice
 // @route   POST /api/pos/checkout
@@ -28,6 +29,7 @@ exports.checkout = async (req, res) => {
             useLoyaltyPoints = 0,
             useWalletAmount = 0,
             promotionId,
+            couponCode,
             discount = 0,
             membershipDiscount = 0,
             previousDueCollected = 0,
@@ -82,10 +84,33 @@ exports.checkout = async (req, res) => {
         // The current invoice due is just the total minus what was paid for this transaction
         const dueAmount = Math.round(Math.max(0, total - useWalletAmount - paidAmount) * 100) / 100;
 
-        // 3. Calculate loyalty points (Rule from settings)
-        const settings = await Setting.findOne();
-        const pointsRate = settings?.loyaltySettings?.pointsRate || 100;
-        const earnedPoints = Math.floor(total / pointsRate);
+        // 3. Calculate loyalty points (configured per item or fallback to default settings rate)
+        let earnedPoints = 0;
+        let hasItemPoints = false;
+        
+        for (const item of items) {
+            let itemPoints = 0;
+            if (item.type === 'service' && item.itemId) {
+                const service = await Service.findById(item.itemId);
+                if (service && service.loyaltyPoints) {
+                    itemPoints = service.loyaltyPoints;
+                    hasItemPoints = true;
+                }
+            } else if (item.type === 'product' && item.itemId) {
+                const product = await Product.findById(item.itemId);
+                if (product && product.loyaltyPoints) {
+                    itemPoints = product.loyaltyPoints;
+                    hasItemPoints = true;
+                }
+            }
+            earnedPoints += itemPoints * (Number(item.quantity) || 1);
+        }
+
+        if (!hasItemPoints) {
+            const settings = await Setting.findOne();
+            const pointsRate = settings?.loyaltySettings?.pointsRate || 100;
+            earnedPoints = Math.floor(total / pointsRate);
+        }
 
         const roundTo2 = (num) => Math.round((Number(num) || 0) * 100) / 100;
 
@@ -122,8 +147,24 @@ exports.checkout = async (req, res) => {
             previousDueCollected: (Number(previousDueCollected) || 0) > 0 ? Number(previousDueCollected) : Math.max(0, (paidAmount + useWalletAmount) - total),
             bookingId,
             orderId,
+            promotionId: promotionId || undefined,
+            couponCode: couponCode || undefined,
+            promoDiscount: roundTo2(discount),
             createdAt: createdAt ? new Date(createdAt) : new Date()
         });
+
+        // Increment promotion usage count if couponCode is used
+        if (couponCode) {
+            try {
+                const Promotion = require('../Models/Promotion');
+                await Promotion.updateOne(
+                    { couponCode: couponCode.trim().toUpperCase(), salonId },
+                    { $inc: { usageCount: 1 } }
+                );
+            } catch (promoErr) {
+                console.error('[POS-Promo] Error incrementing usage count:', promoErr);
+            }
+        }
 
         // 5. Update Customer Profile
         const customer = await Customer.findById(clientId);

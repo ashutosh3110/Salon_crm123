@@ -37,6 +37,8 @@ import CustomerProfileModal from '../../components/admin/CustomerProfileModal';
 import SegmentManager from '../../components/admin/customers/SegmentManager';
 import FeedbackList from '../../components/admin/customers/FeedbackList';
 import ReEngagementTool from '../../components/admin/customers/ReEngagementTool';
+import BridalRemindersView from '../../components/admin/customers/BridalRemindersView';
+import BirthdayAnniversaryRemindersView from '../../components/admin/customers/BirthdayAnniversaryRemindersView';
 import { useWallet } from '../../contexts/WalletContext';
 import { useBusiness } from '../../contexts/BusinessContext';
 import { useAuth } from '../../contexts/AuthContext';
@@ -237,7 +239,7 @@ export default function CustomersPage({ tab = 'directory' }) {
                 {/* Celebration Reminders */}
                 <CelebrationReminders
                     customers={customers}
-                    onSendWhatsApp={(c, msg) => setWhatsappModal({ isOpen: true, customer: c, message: msg })}
+                    onSendWhatsApp={(c, msg, type) => setWhatsappModal({ isOpen: true, customer: c, message: msg, isCelebrationWish: true, celebrationType: type })}
                 />
 
                 {/* KPI Cards (All Data) */}
@@ -268,6 +270,14 @@ export default function CustomersPage({ tab = 'directory' }) {
                                 <button onClick={() => navigate('/admin/crm/reengage')} className={`px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] border-r border-border transition-all whitespace-nowrap relative ${activeTab === 'reengage' ? 'bg-surface text-primary' : 'text-text-muted hover:text-text'}`}>
                                     Re-engage
                                     {activeTab === 'reengage' && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary" />}
+                                </button>
+                                <button onClick={() => navigate('/admin/crm/bridal')} className={`px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] border-r border-border transition-all whitespace-nowrap relative ${activeTab === 'bridal' ? 'bg-surface text-primary' : 'text-text-muted hover:text-text'}`}>
+                                    Bridal Reminders
+                                    {activeTab === 'bridal' && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary" />}
+                                </button>
+                                <button onClick={() => navigate('/admin/crm/birthday-anniversary-reminders')} className={`px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] border-r border-border transition-all whitespace-nowrap relative ${activeTab === 'birthday-anniversary-reminders' ? 'bg-surface text-primary' : 'text-text-muted hover:text-text'}`}>
+                                    Birthday/Anniversary Wishes
+                                    {activeTab === 'birthday-anniversary-reminders' && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary" />}
                                 </button>
                             </>
                         )}
@@ -329,6 +339,8 @@ export default function CustomersPage({ tab = 'directory' }) {
                     {activeTab === 'segments' && <SegmentManager />}
                     {activeTab === 'feedback' && <FeedbackList />}
                     {activeTab === 'reengage' && <ReEngagementTool />}
+                    {activeTab === 'bridal' && <BridalRemindersView />}
+                    {activeTab === 'birthday-anniversary-reminders' && <BirthdayAnniversaryRemindersView />}
                     {activeTab === 'payment-reminders' && (
                         <PaymentRemindersView
                             onCustomerClick={setSelectedCustomer}
@@ -493,6 +505,14 @@ export default function CustomersPage({ tab = 'directory' }) {
                                                 fetchCustomers(currentPage, 10);
                                             } catch (err) {
                                                 console.error('Failed to increment payment reminder:', err);
+                                            }
+                                        }
+                                        if (whatsappModal.isCelebrationWish) {
+                                            try {
+                                                await api.patch(`/clients/${whatsappModal.customer._id}/celebration-wish`, { type: whatsappModal.celebrationType });
+                                                fetchCustomers(currentPage, 10);
+                                            } catch (err) {
+                                                console.error('Failed to register celebration wish:', err);
                                             }
                                         }
                                         setWhatsappModal({ ...whatsappModal, isOpen: false });
@@ -713,18 +733,33 @@ function CelebrationReminders({ customers, onSendWhatsApp }) {
                 <Cake className="w-4 h-4" /> Birthdays & Anniversaries
             </h3>
             <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-hide">
-                {reminders.map(c => (
-                    <div key={c._id} className="flex-shrink-0 min-w-[300px] p-4 bg-surface border border-border flex items-center justify-between group hover:border-primary transition-all">
-                        <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 bg-primary/10 text-primary flex items-center justify-center font-black text-sm">{c.name?.charAt(0) || '?'}</div>
-                            <div>
-                                <p className="text-xs font-black text-text uppercase tracking-tight">{c.name}</p>
-                                <p className="text-[9px] font-bold text-text-muted mt-0.5 uppercase">Upcoming Event</p>
+                {reminders.map(c => {
+                    const isBday = c.dob && new Date(c.dob).getMonth() === currentMonth;
+                    const type = isBday ? 'birthday' : 'anniversary';
+                    const defaultMsg = isBday 
+                        ? `Happy Birthday ${c.name}! We wish you a fantastic year ahead filled with joy and beauty.`
+                        : `Happy Anniversary ${c.name}! Celebrating your beautiful journey together.`;
+
+                    return (
+                        <div key={c._id} className="flex-shrink-0 min-w-[300px] p-4 bg-white border border-border flex items-center justify-between group hover:border-primary transition-all">
+                            <div className="flex items-center gap-3">
+                                <div className="w-10 h-10 bg-primary/10 text-primary flex items-center justify-center font-black text-sm">{c.name?.charAt(0) || '?'}</div>
+                                <div>
+                                    <p className="text-xs font-black text-text uppercase tracking-tight">{c.name}</p>
+                                    <p className="text-[9px] font-bold text-text-muted mt-0.5 uppercase">
+                                        {isBday ? '🎂 Upcoming Birthday' : '🎉 Upcoming Anniversary'}
+                                    </p>
+                                </div>
                             </div>
+                            <button 
+                                onClick={() => onSendWhatsApp(c, defaultMsg, type)} 
+                                className="p-2.5 bg-emerald-500 hover:bg-emerald-600 text-white shadow-lg transition-all"
+                            >
+                                <MessageSquare className="w-3.5 h-3.5" />
+                            </button>
                         </div>
-                        <button onClick={() => onSendWhatsApp(c, "Happy Birthday/Anniversary!")} className="p-2.5 bg-emerald-500 text-white shadow-lg"><MessageSquare className="w-3.5 h-3.5" /></button>
-                    </div>
-                ))}
+                    );
+                })}
             </div>
         </div>
     );
@@ -851,7 +886,15 @@ function CustomerDirectory({ customers, onCustomerClick, onDelete, onUpdate }) {
 }
 
 function PaymentRemindersView({ onCustomerClick, setWhatsappModal, fetchCustomers, currentPage }) {
-    const { salon, updateSalon, outlets } = useBusiness();
+    const { salon, updateSalon, outlets, activeSalonId } = useBusiness();
+    const filteredOutlets = React.useMemo(() => {
+        const currentSalonId = salon?._id || activeSalonId;
+        if (!currentSalonId) return outlets || [];
+        return (outlets || []).filter(o => {
+            const oSalonId = o.salonId?._id || o.salonId;
+            return String(oSalonId) === String(currentSalonId);
+        });
+    }, [outlets, salon, activeSalonId]);
     const [dueClients, setDueClients] = useState([]);
     const [dueMetadata, setDueMetadata] = useState({ totalCount: 0, totalPages: 0, currentPage: 1 });
     const [loading, setLoading] = useState(false);
@@ -1024,7 +1067,7 @@ function PaymentRemindersView({ onCustomerClick, setWhatsappModal, fetchCustomer
                         className="w-full pl-11 pr-4 py-3 bg-surface-alt border border-border text-sm font-bold outline-none"
                     />
                 </div>
-                {outlets && outlets.length > 0 && (
+                {filteredOutlets && filteredOutlets.length > 0 && (
                     <select
                         value={selectedOutlet}
                         onChange={(e) => {
@@ -1034,7 +1077,7 @@ function PaymentRemindersView({ onCustomerClick, setWhatsappModal, fetchCustomer
                         className="px-4 py-3 bg-surface border border-border text-xs font-black uppercase tracking-widest outline-none min-w-[200px] cursor-pointer"
                     >
                         <option value="">All Outlets</option>
-                        {outlets.map(o => (
+                        {filteredOutlets.map(o => (
                             <option key={o._id || o.id} value={o._id || o.id}>
                                 {o.name}
                             </option>

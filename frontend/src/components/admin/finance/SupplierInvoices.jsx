@@ -56,7 +56,7 @@ export default function SupplierInvoices() {
         invoiceNumber: '',
         invoiceDate: new Date().toISOString().slice(0, 10),
         dueDate: new Date(Date.now() + 86400000 * 30).toISOString().slice(0, 10),
-        items: [{ name: '', price: '', quantity: '1', tax: String(platformSettings?.supplierGst ?? 18), isInclusive: false }],
+        items: [{ name: '', price: '', quantity: '1', tax: '0', isInclusive: false }],
         discount: '0',
         cashAmount: '0',
         onlineAmount: '0',
@@ -70,7 +70,7 @@ export default function SupplierInvoices() {
             invoiceNumber: '',
             invoiceDate: new Date().toISOString().slice(0, 10),
             dueDate: new Date(Date.now() + 86400000 * 30).toISOString().slice(0, 10),
-            items: [{ name: '', price: '', quantity: '1', tax: String(platformSettings?.supplierGst ?? 18), isInclusive: false }],
+            items: [{ name: '', price: '', quantity: '1', tax: '0', isInclusive: false }],
             discount: '0',
             cashAmount: '0',
             onlineAmount: '0',
@@ -80,18 +80,7 @@ export default function SupplierInvoices() {
         setShowCreateModal(false);
     };
 
-    // Auto-prefill dynamic GST when platformSettings load
-    useEffect(() => {
-        if (platformSettings?.supplierGst) {
-            setInvoiceForm(prev => ({
-                ...prev,
-                items: prev.items.map(item => ({
-                    ...item,
-                    tax: String(platformSettings.supplierGst)
-                }))
-            }));
-        }
-    }, [platformSettings]);
+    // GST prefill removed
 
     const gstRates = useMemo(() => {
         const rates = [0, 5, 12, 18, 28];
@@ -105,7 +94,7 @@ export default function SupplierInvoices() {
     const handleAddItem = () => {
         setInvoiceForm(prev => ({
             ...prev,
-            items: [...prev.items, { name: '', price: '', quantity: '1', tax: String(platformSettings?.supplierGst ?? 18), isInclusive: false }]
+            items: [...prev.items, { name: '', price: '', quantity: '1', tax: '0', isInclusive: false }]
         }));
     };
 
@@ -499,27 +488,21 @@ export default function SupplierInvoices() {
         const tableData = (inv.items || []).map((item, index) => {
             const qty = item.quantity || 1;
             const price = item.price || 0;
-            const taxRate = item.tax || 0;
             const amount = item.amount || (price * qty);
-
-            // Deduce if price was inclusive of tax
-            const isInclusive = Math.abs(amount - (price * qty)) < 0.5;
-            const baseUnitPrice = isInclusive ? (price / (1 + taxRate / 100)) : price;
 
             return [
                 index + 1,
                 item.name || 'Item Description',
                 qty,
-                `Rs. ${Number(baseUnitPrice).toFixed(2)}`,
-                `${taxRate}%`,
+                `Rs. ${Number(price).toFixed(2)}`,
                 `Rs. ${Number(amount).toFixed(2)}`
             ];
         });
 
         autoTable(doc, {
             startY: 72,
-            head: [['#', 'Item Name', 'Qty', 'Unit Price (Excl. Tax)', 'GST', 'Total (Incl. Tax)']],
-            body: tableData.length > 0 ? tableData : [['1', 'Invoice Items Summary', '1', `Rs. ${Number(inv.amount).toFixed(2)}`, '—', `Rs. ${Number(inv.amount).toFixed(2)}`]],
+            head: [['#', 'Item Name', 'Qty', 'Unit Price', 'Total']],
+            body: tableData.length > 0 ? tableData : [['1', 'Invoice Items Summary', '1', `Rs. ${Number(inv.amount).toFixed(2)}`, `Rs. ${Number(inv.amount).toFixed(2)}`]],
             styles: { fontSize: 9, font: "helvetica" },
             headStyles: { fillColor: [51, 51, 51] },
             alternateRowStyles: { fillColor: [250, 250, 250] },
@@ -575,9 +558,7 @@ export default function SupplierInvoices() {
         const subTotalVal = inv.subTotal || (inv.amount - (inv.taxAmount || 0));
         drawSummaryLine("Subtotal (Base Value):", `Rs. ${Number(subTotalVal).toFixed(2)}`);
         
-        if (inv.taxAmount > 0) {
-            drawSummaryLine("Total Tax (GST):", `Rs. ${Number(inv.taxAmount).toFixed(2)}`);
-        }
+        // Total Tax (GST) line removed
         if (inv.discount > 0) {
             drawSummaryLine("Discount:", `- Rs. ${Number(inv.discount).toFixed(2)}`);
         }
@@ -1168,8 +1149,6 @@ export default function SupplierInvoices() {
                                                 <th className="px-4 py-2.5 text-[10px] font-bold text-text-secondary uppercase tracking-wider">Item Name / Desc *</th>
                                                 <th className="px-4 py-2.5 text-[10px] font-bold text-text-secondary uppercase tracking-wider w-44">Rate (₹) *</th>
                                                 <th className="px-4 py-2.5 text-[10px] font-bold text-text-secondary uppercase tracking-wider w-36">Qty *</th>
-                                                <th className="px-4 py-2.5 text-[10px] font-bold text-text-secondary uppercase tracking-wider w-32">GST Rate</th>
-                                                <th className="px-4 py-2.5 text-[10px] font-bold text-text-secondary uppercase tracking-wider w-40">Tax Mode</th>
                                                 <th className="px-4 py-2.5 text-[10px] font-bold text-text-secondary uppercase tracking-wider w-32 text-right">Row Total</th>
                                                 <th className="px-4 py-2.5 text-[10px] font-bold text-text-secondary uppercase tracking-wider w-16 text-center"></th>
                                             </tr>
@@ -1221,21 +1200,6 @@ export default function SupplierInvoices() {
                                                                 }}
                                                                 className="w-full px-3 py-1.5 border border-border rounded-lg text-xs font-bold text-center focus:outline-none focus:ring-1 focus:ring-primary"
                                                             />
-                                                        </td>
-                                                        <td className="px-4 py-2 text-center">
-                                                            <span className="text-xs font-bold text-text-secondary bg-surface px-2.5 py-1 rounded-md border border-border">
-                                                                {item.tax}%
-                                                            </span>
-                                                        </td>
-                                                        <td className="px-4 py-2">
-                                                            <select
-                                                                value={item.isInclusive ? "inclusive" : "exclusive"}
-                                                                onChange={(e) => handleUpdateItem(index, 'isInclusive', e.target.value === 'inclusive')}
-                                                                className="w-full px-3 py-1.5 bg-white border border-border rounded-lg text-xs font-bold focus:outline-none focus:ring-1 focus:ring-primary"
-                                                            >
-                                                                <option value="exclusive">Excluding GST</option>
-                                                                <option value="inclusive">Including GST</option>
-                                                            </select>
                                                         </td>
                                                         <td className="px-4 py-2 text-right">
                                                             <span className="text-xs font-black text-text">
@@ -1339,12 +1303,8 @@ export default function SupplierInvoices() {
                                     <h4 className="text-xs font-black text-text-secondary uppercase tracking-wider border-b border-border pb-2">Purchase Financial Summary</h4>
                                     
                                     <div className="flex justify-between text-xs text-text-secondary font-semibold">
-                                        <span>Subtotal (Base Value):</span>
+                                        <span>Total Amount:</span>
                                         <span>₹{totals.subTotal.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
-                                    </div>
-                                    <div className="flex justify-between text-xs text-text-secondary font-semibold">
-                                        <span>GST Tax amount:</span>
-                                        <span>₹{totals.taxAmount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
                                     </div>
                                     
                                     <div className="flex justify-between items-center text-xs text-text-secondary font-semibold">

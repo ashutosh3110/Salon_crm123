@@ -28,6 +28,39 @@ export default function POSBillingPage() {
     const [useLoyaltyPoints, setUseLoyaltyPoints] = useState(0);
     const [loyaltyBalance, setLoyaltyBalance] = useState(0);
 
+    const [couponCodeInput, setCouponCodeInput] = useState('');
+    const [applyingCoupon, setApplyingCoupon] = useState(false);
+
+    const handleApplyCoupon = async () => {
+        if (!couponCodeInput.trim()) return;
+        setApplyingCoupon(true);
+        try {
+            const res = await api.post('/promotions/validate-coupon', {
+                couponCode: couponCodeInput.trim().toUpperCase(),
+                outletId: selectedOutlet?._id || undefined,
+                items: cart.map(item => ({
+                    type: item.type, // 'service' or 'product'
+                    price: item.price,
+                    quantity: item.quantity
+                }))
+            });
+
+            if (res.data.success && res.data.data) {
+                const { promotion, discount } = res.data.data;
+                setSelectedPromotion(promotion);
+                toast.success(`Coupon "${promotion.name}" applied successfully! Discount: ₹${discount}`);
+                setCouponCodeInput('');
+            } else {
+                toast.error('Failed to validate coupon');
+            }
+        } catch (err) {
+            const msg = err?.response?.data?.message || err?.message || 'Invalid or expired coupon code';
+            toast.error(msg);
+        } finally {
+            setApplyingCoupon(false);
+        }
+    };
+
     const [activeTab, setActiveTab] = useState('services');
     const [searchItem, setSearchItem] = useState('');
     const [searchClient, setSearchClient] = useState('');
@@ -169,11 +202,29 @@ export default function POSBillingPage() {
     const { gstAmount, baseAmount, cgst, sgst, grandTotal: calculatedGrandTotal } = calculateGST();
 
     const loyaltyDiscount = useLoyaltyPoints;
-    const promoDiscount = selectedPromotion
-        ? selectedPromotion.discountType === 'percentage'
-            ? Math.round(subTotal * (selectedPromotion.discountValue / 100))
-            : selectedPromotion.discountValue || 0
-        : 0;
+    const promoDiscount = useMemo(() => {
+        if (!selectedPromotion) return 0;
+        let eligibleSubtotal = subTotal;
+        const appOn = String(selectedPromotion.applicableOn || 'BOTH').toUpperCase();
+        
+        const serviceSubtotal = cart.filter(i => i.type === 'service').reduce((sum, item) => sum + item.price * item.quantity, 0);
+        const productSubtotal = cart.filter(i => i.type === 'product').reduce((sum, item) => sum + item.price * item.quantity, 0);
+
+        if (appOn === 'SERVICE') {
+            eligibleSubtotal = serviceSubtotal;
+        } else if (appOn === 'PRODUCT') {
+            eligibleSubtotal = productSubtotal;
+        }
+
+        const promoType = String(selectedPromotion.discountType || selectedPromotion.type || '').toLowerCase();
+        const promoVal = Number(selectedPromotion.discountValue !== undefined ? selectedPromotion.discountValue : selectedPromotion.value) || 0;
+
+        if (promoType === 'percentage') {
+            return Math.round(eligibleSubtotal * (promoVal / 100));
+        } else {
+            return Math.min(promoVal, eligibleSubtotal);
+        }
+    }, [selectedPromotion, subTotal, cart]);
     const totalDiscount = loyaltyDiscount + promoDiscount;
     const finalTotal = Math.max(0, calculatedGrandTotal - totalDiscount);
 
@@ -370,6 +421,43 @@ export default function POSBillingPage() {
                             ))}
                         </div>
                         <div className="p-6 bg-surface-alt border-t border-border space-y-4 text-left">
+                            <div className="bg-white p-3 border border-border">
+                                <label className="text-[9px] font-black text-text-muted uppercase tracking-[0.2em] mb-2 block">Coupon / Offer Code</label>
+                                {selectedPromotion ? (
+                                    <div className="flex items-center justify-between p-2.5 bg-primary/10 border border-primary/20">
+                                        <div className="text-left leading-tight">
+                                            <p className="text-[11px] font-black text-primary uppercase">{selectedPromotion.name}</p>
+                                            <p className="text-[9px] text-text-muted uppercase tracking-wider mt-0.5">Code: {selectedPromotion.couponCode || 'Auto'}</p>
+                                        </div>
+                                        <button
+                                            type="button"
+                                            onClick={() => setSelectedPromotion(null)}
+                                            className="px-2.5 py-1 bg-rose-100 hover:bg-rose-200 text-rose-600 text-[8px] font-black uppercase tracking-widest rounded-none transition-colors"
+                                        >
+                                            Remove
+                                        </button>
+                                    </div>
+                                ) : (
+                                    <div className="flex border border-border bg-background overflow-hidden focus-within:ring-2 focus-within:ring-primary/10 transition-all">
+                                        <input
+                                            type="text"
+                                            placeholder="ENTER CODE"
+                                            className="flex-1 p-2 text-[10px] font-black bg-background text-text outline-none uppercase tracking-widest placeholder:opacity-50"
+                                            value={couponCodeInput}
+                                            onChange={(e) => setCouponCodeInput(e.target.value.toUpperCase())}
+                                        />
+                                        <button
+                                            type="button"
+                                            onClick={handleApplyCoupon}
+                                            disabled={applyingCoupon || !couponCodeInput}
+                                            className="bg-primary hover:brightness-110 text-white font-black text-[9px] uppercase tracking-wider px-4 transition-all disabled:opacity-40"
+                                        >
+                                            {applyingCoupon ? '...' : 'Apply'}
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
+
                             <div className="flex items-center justify-between mb-4">
                                 <span className="text-[10px] font-black uppercase tracking-widest text-text-muted">GST Included in Price</span>
                                 <button 

@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { Plus, Search, Edit, Trash2, Tag, Calendar, Percent, TrendingUp, BarChart3 } from 'lucide-react';
 import api from '../../services/api';
 import { toast } from 'react-hot-toast';
+import { useBusiness } from '../../contexts/BusinessContext';
 import {
     BarChart,
     Bar,
@@ -22,6 +23,7 @@ const typeColors = {
 const CHART_COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'];
 
 export default function PromotionsPage() {
+    const { outlets } = useBusiness();
     const [promos, setPromos] = useState([]);
     const [loading, setLoading] = useState(true);
     const [showModal, setShowModal] = useState(false);
@@ -33,9 +35,12 @@ export default function PromotionsPage() {
         startDate: '',
         endDate: '',
         usageLimit: '',
+        usageLimitPerCustomer: 1,
         isActive: true,
         activationMode: 'AUTO',
         couponCode: '',
+        applicableOn: 'BOTH',
+        outletIds: []
     });
 
     const normalizePromo = (p) => {
@@ -53,6 +58,8 @@ export default function PromotionsPage() {
             activationMode: p.activationMode || 'AUTO',
             couponCode: p.couponCode || '',
             usageLimitPerCustomer: p.usageLimitPerCustomer ?? 1,
+            applicableOn: p.applicableOn || 'BOTH',
+            outletIds: Array.isArray(p.outletIds) ? p.outletIds.map(o => typeof o === 'object' ? o._id : String(o)) : []
         };
     };
 
@@ -90,12 +97,15 @@ export default function PromotionsPage() {
                 description: '',
                 type: form.type === 'flat' ? 'FLAT' : (form.type === 'combo' ? 'COMBO' : 'PERCENTAGE'),
                 value: Number(form.value),
-                startDate: new Date(form.startDate),
-                endDate: new Date(form.endDate),
+                startDate: form.startDate ? new Date(form.startDate) : undefined,
+                endDate: form.endDate ? new Date(form.endDate) : undefined,
                 isActive: !!form.isActive,
                 activationMode: form.activationMode || 'AUTO',
                 couponCode: form.activationMode === 'COUPON' ? String(form.couponCode).toUpperCase() : undefined,
                 totalUsageLimit: form.usageLimit ? Number(form.usageLimit) : undefined,
+                usageLimitPerCustomer: form.usageLimitPerCustomer ? Number(form.usageLimitPerCustomer) : 1,
+                applicableOn: form.applicableOn,
+                outletIds: form.outletIds
             };
 
             if (editing) {
@@ -113,9 +123,12 @@ export default function PromotionsPage() {
                 startDate: '',
                 endDate: '',
                 usageLimit: '',
+                usageLimitPerCustomer: 1,
                 isActive: true,
                 activationMode: 'AUTO',
                 couponCode: '',
+                applicableOn: 'BOTH',
+                outletIds: []
             });
             fetchPromos();
         };
@@ -141,9 +154,12 @@ export default function PromotionsPage() {
             startDate: p.startDate?.slice(0, 10) || '',
             endDate: p.endDate?.slice(0, 10) || '',
             usageLimit: p.usageLimit || '',
+            usageLimitPerCustomer: p.usageLimitPerCustomer || 1,
             isActive: p.isActive,
             activationMode: p.activationMode || 'AUTO',
             couponCode: p.couponCode || '',
+            applicableOn: p.applicableOn || 'BOTH',
+            outletIds: p.outletIds || []
         });
         setShowModal(true);
     };
@@ -158,7 +174,7 @@ export default function PromotionsPage() {
                 <button
                     onClick={() => {
                         setEditing(null);
-                        setForm({ name: '', type: 'percentage', value: '', startDate: '', endDate: '', usageLimit: '', isActive: true, activationMode: 'AUTO', couponCode: '' });
+                        setForm({ name: '', type: 'percentage', value: '', startDate: '', endDate: '', usageLimit: '', usageLimitPerCustomer: 1, isActive: true, activationMode: 'AUTO', couponCode: '', applicableOn: 'BOTH', outletIds: [] });
                         setShowModal(true);
                     }}
                     className="w-full lg:w-auto flex items-center justify-center gap-3 bg-primary text-primary-foreground border border-primary px-10 py-4 rounded-none text-[10px] font-black uppercase tracking-[0.2em] shadow-xl shadow-primary/20 hover:brightness-110 transition-all font-black"
@@ -238,6 +254,14 @@ export default function PromotionsPage() {
                                     <Calendar className="w-4 h-4 opacity-40" />
                                     {p.startDate ? new Date(p.startDate).toLocaleDateString('en-IN') : '—'} → {p.endDate ? new Date(p.endDate).toLocaleDateString('en-IN') : '—'}
                                 </div>
+                                <div className="flex items-start gap-3 text-[10px] font-black text-text-muted uppercase tracking-widest text-left">
+                                    <Tag className="w-4 h-4 opacity-40 mt-0.5" />
+                                    <span>Applies to: <strong className="text-primary">{p.applicableOn === 'SERVICE' ? 'Services Only' : (p.applicableOn === 'PRODUCT' ? 'Products Only' : 'Both')}</strong></span>
+                                </div>
+                                <div className="flex items-start gap-3 text-[10px] font-black text-text-muted uppercase tracking-widest text-left">
+                                    <TrendingUp className="w-4 h-4 opacity-40 mt-0.5" />
+                                    <span className="line-clamp-2">Outlets: <strong className="text-primary">{p.outletIds.length === 0 ? 'All Outlets' : p.outletIds.map(id => outlets.find(o => o._id === id)?.name || 'Outlet').join(', ')}</strong></span>
+                                </div>
                             </div>
 
                             <div className="absolute bottom-0 right-0 p-4 font-black">
@@ -282,6 +306,16 @@ export default function PromotionsPage() {
                                 </div>
                             </div>
                              <div className="grid grid-cols-2 gap-8 text-left font-black">
+                                 <div className="space-y-3 text-left">
+                                     <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] pl-1 font-black">Total Usage Limit</label>
+                                     <input type="number" value={form.usageLimit} onChange={(e) => setForm({ ...form, usageLimit: e.target.value })} className="w-full px-6 py-4 rounded-none bg-surface-alt border border-border text-xs font-black uppercase tracking-widest focus:border-primary outline-none transition-all" />
+                                 </div>
+                                 <div className="space-y-3 text-left">
+                                     <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] pl-1 font-black">Usage Limit Per Customer</label>
+                                     <input type="number" value={form.usageLimitPerCustomer} onChange={(e) => setForm({ ...form, usageLimitPerCustomer: e.target.value })} className="w-full px-6 py-4 rounded-none bg-surface-alt border border-border text-xs font-black uppercase tracking-widest focus:border-primary outline-none transition-all" />
+                                 </div>
+                             </div>
+                             <div className="grid grid-cols-2 gap-8 text-left font-black">
                                 <div className="space-y-3 text-left">
                                     <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] pl-1">How it applies</label>
                                     <select value={form.activationMode || 'AUTO'} onChange={(e) => setForm({ ...form, activationMode: e.target.value })} className="w-full px-6 py-4 rounded-none bg-surface-alt border border-border text-xs font-black uppercase tracking-widest focus:border-primary outline-none transition-all cursor-pointer">
@@ -292,6 +326,47 @@ export default function PromotionsPage() {
                                 <div className="space-y-3 text-left">
                                     <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] pl-1">Code</label>
                                     <input type="text" value={form.couponCode} onChange={(e) => setForm({ ...form, couponCode: e.target.value.toUpperCase() })} className="w-full px-6 py-4 rounded-none bg-surface-alt border border-border text-xs font-black uppercase tracking-widest focus:border-primary outline-none transition-all" disabled={form.activationMode !== 'COUPON'} />
+                                </div>
+                            </div>
+                            <div className="grid grid-cols-2 gap-8 text-left font-black">
+                                <div className="space-y-3 text-left">
+                                    <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] pl-1">Discount Applies To *</label>
+                                    <select value={form.applicableOn} onChange={(e) => setForm({ ...form, applicableOn: e.target.value })} className="w-full px-6 py-4 rounded-none bg-surface-alt border border-border text-xs font-black uppercase tracking-widest focus:border-primary outline-none transition-all cursor-pointer">
+                                        <option value="BOTH">Both Services & Products</option>
+                                        <option value="SERVICE">Services Only</option>
+                                        <option value="PRODUCT">Products Only</option>
+                                    </select>
+                                </div>
+                                <div className="space-y-3 text-left">
+                                    <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] pl-1">Applicable Outlets</label>
+                                    <div className="border border-border p-4 bg-surface-alt max-h-[120px] overflow-y-auto space-y-2 rounded-none">
+                                        <label className="flex items-center gap-3 cursor-pointer text-xs font-black uppercase tracking-wider text-text">
+                                            <input
+                                                type="checkbox"
+                                                checked={form.outletIds.length === 0}
+                                                onChange={() => setForm({ ...form, outletIds: [] })}
+                                                className="accent-primary w-4 h-4 cursor-pointer"
+                                            />
+                                            All Outlets
+                                        </label>
+                                        {outlets && outlets.map(o => (
+                                            <label key={o._id} className="flex items-center gap-3 cursor-pointer text-xs font-black uppercase tracking-wider text-text">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={form.outletIds.includes(o._id)}
+                                                    onChange={(e) => {
+                                                        if (e.target.checked) {
+                                                            setForm({ ...form, outletIds: [...form.outletIds, o._id] });
+                                                        } else {
+                                                            setForm({ ...form, outletIds: form.outletIds.filter(id => id !== o._id) });
+                                                        }
+                                                    }}
+                                                    className="accent-primary w-4 h-4 cursor-pointer"
+                                                />
+                                                {o.name}
+                                            </label>
+                                        ))}
+                                    </div>
                                 </div>
                             </div>
                             <div className="flex gap-6 pt-10 font-black">

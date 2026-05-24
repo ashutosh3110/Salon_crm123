@@ -3,13 +3,13 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
 import { useAuth } from '../../contexts/AuthContext';
 import { useBusiness } from '../../contexts/BusinessContext';
-import { Camera, Upload, User as UserIcon, FileText, Plus, X, GripVertical, ChevronUp, ChevronDown } from 'lucide-react';
+import { Camera, Upload, User as UserIcon, FileText, Plus, X, GripVertical, ChevronUp, ChevronDown, Share2, Copy, ExternalLink } from 'lucide-react';
 import PasswordField from '../../components/common/PasswordField';
 import { getImageUrl } from '../../utils/imageUtils';
 import { useRef } from 'react';
 import api from '../../services/api';
 
-const VALID_SECTIONS = ['profile', 'notifications', 'security', 'business', 'terms'];
+const VALID_SECTIONS = ['profile', 'notifications', 'security', 'business', 'terms', 'booking-link'];
 
 const DEFAULT_NOTIFICATIONS = {
     bookingConfirmations: true,
@@ -319,6 +319,7 @@ export default function SettingsPage() {
                     { id: 'business', label: 'Business Info' },
                     { id: 'security', label: 'Security' },
                     { id: 'terms', label: 'Terms & Conditions' },
+                    { id: 'booking-link', label: 'Booking Link' },
                 ].map((t) => (
                     <Link key={t.id} to={`/admin/settings/${t.id}`} className={tabClass(t.id)}>
                         {t.label}
@@ -747,6 +748,140 @@ export default function SettingsPage() {
                                     </div>
                                 </div>
                             )}
+                        </div>
+                    )}
+
+                    {activeTab === 'booking-link' && (
+                        <div className="space-y-8 max-w-3xl text-left">
+                            <div>
+                                <div className="flex items-center gap-3">
+                                    <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center animate-pulse">
+                                        <Share2 className="w-5 h-5 text-primary" />
+                                    </div>
+                                    <div>
+                                        <h2 className="text-lg font-bold text-text tracking-tight">Online Appointment Booking Page</h2>
+                                        <p className="text-xs text-text-muted font-medium mt-0.5">
+                                            This is your dedicated online self-service page link. Copy and share it so customers can book directly.
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Booking Link Copy Field */}
+                            <div className="bg-surface-alt/30 border border-border rounded-2xl p-6 space-y-4 shadow-sm">
+                                <label className="text-[10px] font-black text-text-muted uppercase tracking-widest block">
+                                    Your Dedicated Booking Link
+                                </label>
+                                <div className="flex flex-col sm:flex-row gap-3">
+                                    <input
+                                        type="text"
+                                        readOnly
+                                        value={`${window.location.origin}/app/booking?tenantId=${salon?._id || ''}`}
+                                        className="flex-1 px-4 py-3 rounded-xl border border-border text-sm font-mono focus:border-primary outline-none transition-all bg-surface hover:border-primary/40 focus:ring-4 focus:ring-primary/5 select-all"
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            const link = `${window.location.origin}/app/booking?tenantId=${salon?._id || ''}`;
+                                            navigator.clipboard.writeText(link);
+                                            toast.success('Booking link copied to clipboard!');
+                                        }}
+                                        className="px-6 py-3 bg-primary text-primary-foreground rounded-xl font-bold text-xs uppercase tracking-widest shadow-lg shadow-primary/20 hover:shadow-primary/30 active:scale-95 transition-all flex items-center justify-center gap-2 shrink-0"
+                                    >
+                                        <Copy className="w-4 h-4" /> Copy Link
+                                    </button>
+                                </div>
+                            </div>
+
+                            {/* QR Code and Share Information */}
+                            <div className="grid md:grid-cols-2 gap-6">
+                                <div className="bg-surface border border-border rounded-2xl p-6 flex flex-col items-center justify-center text-center space-y-4 shadow-sm hover:border-primary/20 transition-all">
+                                    <h3 className="text-xs font-black text-text-muted uppercase tracking-widest">
+                                        Scan or Download QR Code
+                                    </h3>
+                                    <div className="p-3 bg-white rounded-2xl border border-border shadow-sm">
+                                        <img
+                                            src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(
+                                                `${window.location.origin}/app/booking?tenantId=${salon?._id || ''}`
+                                            )}`}
+                                            alt="Salon Booking QR Code"
+                                            className="w-44 h-44 object-contain"
+                                        />
+                                    </div>
+                                    <a
+                                        href={`https://api.qrserver.com/v1/create-qr-code/?size=500x500&data=${encodeURIComponent(
+                                            `${window.location.origin}/app/booking?tenantId=${salon?._id || ''}`
+                                        )}`}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="text-[10px] font-bold text-primary uppercase tracking-widest flex items-center gap-1 hover:underline"
+                                    >
+                                        Open Large QR Code <ExternalLink className="w-3.5 h-3.5" />
+                                    </a>
+                                </div>
+
+                                <div className="bg-surface border border-border rounded-2xl p-6 space-y-4 shadow-sm">
+                                    <h3 className="text-xs font-black text-text-muted uppercase tracking-widest">
+                                        How to share with customers?
+                                    </h3>
+                                    <ul className="space-y-3.5 text-xs text-text-muted">
+                                        <li className="flex items-start gap-2.5">
+                                            <span className="w-5 h-5 rounded-full bg-primary/10 text-primary flex items-center justify-center text-[10px] font-bold shrink-0 mt-0.5">1</span>
+                                            <div>
+                                                <strong className="text-text font-bold block mb-0.5">WhatsApp / Instagram Bio</strong>
+                                                Paste the link directly into your WhatsApp Business greetings or Instagram page bio.
+                                            </div>
+                                        </li>
+                                        <li className="flex items-start gap-2.5">
+                                            <span className="w-5 h-5 rounded-full bg-primary/10 text-primary flex items-center justify-center text-[10px] font-bold shrink-0 mt-0.5">2</span>
+                                            <div>
+                                                <strong className="text-text font-bold block mb-0.5">Printed QR Code</strong>
+                                                Print the QR Code and display it at your front desk, waiting area, or salon windows.
+                                            </div>
+                                        </li>
+                                        <li className="flex items-start gap-2.5">
+                                            <span className="w-5 h-5 rounded-full bg-primary/10 text-primary flex items-center justify-center text-[10px] font-bold shrink-0 mt-0.5">3</span>
+                                            <div>
+                                                <strong className="text-text font-bold block mb-0.5">SMS & WhatsApp Alerts</strong>
+                                                Include the link in your promotional SMS campaigns or reminder alerts to encourage self-bookings.
+                                            </div>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+
+                            {/* Customer Flow Walkthrough Explanation */}
+                            <div className="bg-surface-alt/10 border border-border rounded-3xl p-6 space-y-6 shadow-sm">
+                                <div>
+                                    <h3 className="text-sm font-bold text-text uppercase tracking-wider">
+                                        Customer Booking Flow Steps
+                                    </h3>
+                                    <p className="text-[11px] text-text-muted mt-0.5 font-medium">
+                                        Here's the premium experience your customers will see on their mobile devices:
+                                    </p>
+                                </div>
+
+                                <div className="grid sm:grid-cols-5 gap-4">
+                                    {[
+                                        { step: '01', title: 'Details', desc: 'Name & Phone with quick OTP verification' },
+                                        { step: '02', title: 'Outlet', desc: 'Choose Nearby or All branches' },
+                                        { step: '03', title: 'Services', desc: 'Select required service catalog' },
+                                        { step: '04', title: 'Stylist', desc: 'Pick preferred staff expert' },
+                                        { step: '05', title: 'Booking', desc: 'Select Date & Time slot, and confirm' },
+                                    ].map((s) => (
+                                        <div key={s.step} className="bg-surface border border-border p-4 rounded-2xl flex flex-col justify-between space-y-3 hover:border-primary/20 transition-colors shadow-sm">
+                                            <div className="flex items-center justify-between">
+                                                <span className="text-[10px] font-bold text-primary font-mono">{s.step}</span>
+                                                <span className="w-1.5 h-1.5 rounded-full bg-primary/40" />
+                                            </div>
+                                            <div>
+                                                <h4 className="text-xs font-bold text-text block mb-1">{s.title}</h4>
+                                                <p className="text-[9px] text-text-muted leading-relaxed font-medium">{s.desc}</p>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
                         </div>
                     )}
 

@@ -385,6 +385,8 @@ function App() {
                                 <Route path="/admin/crm/segments" element={<CustomersPage tab="segments" />} />
                                 <Route path="/admin/crm/feedback" element={<CustomersPage tab="feedback" />} />
                                 <Route path="/admin/crm/reengage" element={<CustomersPage tab="reengage" />} />
+                                <Route path="/admin/crm/bridal" element={<CustomersPage tab="bridal" />} />
+                                <Route path="/admin/crm/birthday-anniversary-reminders" element={<CustomersPage tab="birthday-anniversary-reminders" />} />
                                 <Route path="/admin/crm" element={<CustomersPage tab="directory" />} />
                             </Route>
                             <Route element={<ProtectedRoute feature="pos" permission="pos" />}>

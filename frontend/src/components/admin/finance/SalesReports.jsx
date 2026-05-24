@@ -18,7 +18,7 @@ function formatInr(n) {
     return `₹${Math.round(Number(n)).toLocaleString('en-IN')}`;
 }
 
-export default function SalesReports() {
+export default function SalesReports({ outletId }) {
     const [period, setPeriod] = useState('monthly');
     const [startDate, setStartDate] = useState('');
     const [endDate, setEndDate] = useState('');
@@ -35,6 +35,9 @@ export default function SalesReports() {
             if (showCustomDates && startDate && endDate) {
                 url += `&startDate=${startDate}&endDate=${endDate}`;
             }
+            if (outletId && outletId !== 'all') {
+                url += `&outletId=${outletId}`;
+            }
             const res = await api.get(url);
             if (res.data?.success) {
                 setData(res.data.data);
@@ -47,7 +50,7 @@ export default function SalesReports() {
         } finally {
             setLoading(false);
         }
-    }, [period, startDate, endDate, showCustomDates]);
+    }, [period, startDate, endDate, showCustomDates, outletId]);
 
     useEffect(() => {
         loadReportData();

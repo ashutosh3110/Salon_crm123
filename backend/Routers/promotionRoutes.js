@@ -7,9 +7,11 @@ const {
     createPromotion,
     updatePromotion,
     deletePromotion,
+    validateCoupon,
 } = require('../Controllers/promotionController');
 
 router.get('/active', protect, getActivePromotions);
+router.post('/validate-coupon', protect, validateCoupon);
 
 router.use(protect);
 router.use(authorize('admin', 'manager'));

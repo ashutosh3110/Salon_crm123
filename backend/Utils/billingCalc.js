@@ -51,10 +51,21 @@ function calculateTotals({
     }
 
     if (appliedPromotion) {
-        if (appliedPromotion.discountType === 'percentage') {
-            generalDiscount += (subtotal * (Number(appliedPromotion.discountValue) || 0)) / 100;
+        let eligibleSubtotal = subtotal;
+        const appOn = String(appliedPromotion.applicableOn || 'BOTH').toUpperCase();
+        if (appOn === 'SERVICE') {
+            eligibleSubtotal = serviceSubtotal;
+        } else if (appOn === 'PRODUCT') {
+            eligibleSubtotal = productSubtotal;
+        }
+
+        const promoType = String(appliedPromotion.discountType || appliedPromotion.type || '').toLowerCase();
+        const promoVal = Number(appliedPromotion.discountValue !== undefined ? appliedPromotion.discountValue : appliedPromotion.value) || 0;
+
+        if (promoType === 'percentage') {
+            generalDiscount += (eligibleSubtotal * promoVal) / 100;
         } else {
-            generalDiscount += Number(appliedPromotion.discountValue) || 0;
+            generalDiscount += Math.min(promoVal, eligibleSubtotal);
         }
     }
 

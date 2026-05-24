@@ -165,3 +165,21 @@ exports.updateSettings = async (req, res) => {
         res.status(500).json({ success: false, message: err.message });
     }
 };
+
+// @desc    Delete bridal booking
+// @route   DELETE /api/reminders-links/bridal-bookings/:bookingId
+// @access  Private
+exports.deleteBridalBooking = async (req, res) => {
+    try {
+        const { bookingId } = req.params;
+        const hub = await ReminderHub.findOneAndUpdate(
+            { salonId: req.user.salonId },
+            { $pull: { bridalBookings: { _id: bookingId } } },
+            { new: true }
+        );
+        res.json({ success: true, data: hub ? (hub.bridalBookings || []) : [] });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+};
+

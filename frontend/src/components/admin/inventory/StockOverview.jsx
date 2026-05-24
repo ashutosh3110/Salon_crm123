@@ -14,6 +14,47 @@ import {
     Boxes,
 } from 'lucide-react';
 
+const getExpiryAlertInfo = (expiryDate) => {
+    if (!expiryDate) return { status: 'none', message: 'No Expiry Set', color: 'text-text-muted border-border bg-surface-alt/50' };
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const expDate = new Date(expiryDate);
+    expDate.setHours(0, 0, 0, 0);
+    
+    const diffTime = expDate - today;
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    
+    if (diffDays < 0) {
+        return {
+            status: 'expired',
+            message: `Expired (${Math.abs(diffDays)}d ago)`,
+            color: 'text-rose-600 bg-rose-500/10 border-rose-500/20',
+            days: diffDays
+        };
+    } else if (diffDays === 0) {
+        return {
+            status: 'expired_today',
+            message: 'Expires Today',
+            color: 'text-amber-600 bg-amber-500/10 border-amber-500/20',
+            days: 0
+        };
+    } else if (diffDays <= 30) {
+        return {
+            status: 'near_expiry',
+            message: `Expires in ${diffDays}d`,
+            color: 'text-amber-500 bg-amber-500/10 border-amber-500/20',
+            days: diffDays
+        };
+    } else {
+        return {
+            status: 'good',
+            message: `Expires in ${diffDays}d`,
+            color: 'text-emerald-600 bg-emerald-500/10 border-emerald-500/20',
+            days: diffDays
+        };
+    }
+};
+
 /**
  * Stock grid from InventoryContext.
  */
@@ -38,7 +79,8 @@ export default function StockOverview() {
                         outletName: outlet?.name || 'Main / Unknown',
                         quantity,
                         threshold: product.minStock || 5,
-                        stockStatus: product.stockStatus || (quantity <= (product.minStock || 5) ? 'Low Stock' : 'In Stock')
+                        stockStatus: product.stockStatus || (quantity <= (product.minStock || 5) ? 'Low Stock' : 'In Stock'),
+                        expiryDate: product.expiryDate
                     });
                 });
             } else if (product.outletIds?.length > 0) {
@@ -54,7 +96,8 @@ export default function StockOverview() {
                         outletName: outlet?.name || 'Main / Unknown',
                         quantity: 0,
                         threshold: product.minStock || 5,
-                        stockStatus: 'Out of Stock'
+                        stockStatus: 'Out of Stock',
+                        expiryDate: product.expiryDate
                     });
                  });
             }
@@ -109,7 +152,12 @@ export default function StockOverview() {
         const inStock = filteredStock.filter(item => item.quantity > item.threshold).length;
         const outOfStock = filteredStock.filter(item => item.quantity === 0).length;
         const critical = filteredStock.filter(item => item.quantity > 0 && item.quantity <= item.threshold).length;
-        return { totalProducts, inStock, outOfStock, critical };
+        const expiredCount = filteredStock.filter(item => item.expiryDate && new Date(item.expiryDate) < new Date()).length;
+        return { totalProducts, inStock, outOfStock, critical, expiredCount };
+    }, [filteredStock]);
+
+    const expiredProductsList = useMemo(() => {
+        return filteredStock.filter(item => item.expiryDate && new Date(item.expiryDate) < new Date());
     }, [filteredStock]);
 
     if (!products.length) {
@@ -146,7 +194,7 @@ export default function StockOverview() {
             </div>
 
             {/* ── Stock Summary Cards ── */}
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 p-6 border-b border-border/40">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 p-6 border-b border-border/40">
                 {/* Total Products */}
                 <div className="relative overflow-hidden rounded-2xl border border-border/50 bg-gradient-to-br from-blue-500/10 via-surface to-surface p-5 group hover:shadow-lg hover:shadow-blue-500/5 transition-all duration-300">
                     <div className="absolute top-3 right-3 w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
@@ -186,7 +234,74 @@ export default function StockOverview() {
                     <p className="text-3xl font-black text-amber-500 mt-1 tracking-tight">{cardStats.critical}</p>
                     <div className="mt-2 h-1 w-12 rounded-full bg-amber-500/20" />
                 </div>
+
+                {/* Expired Products */}
+                <div className="relative overflow-hidden rounded-2xl border border-border/50 bg-gradient-to-br from-rose-600/10 via-surface to-surface p-5 group hover:shadow-lg hover:shadow-rose-600/5 transition-all duration-300">
+                    <div className="absolute top-3 right-3 w-10 h-10 rounded-xl bg-rose-600/10 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                        <ShieldAlert className="w-5 h-5 text-rose-600" />
+                    </div>
+                    <p className="text-[10px] font-bold text-text-muted uppercase tracking-[0.15em]">Expired Products</p>
+                    <p className="text-3xl font-black text-rose-600 mt-1 tracking-tight">{cardStats.expiredCount}</p>
+                    <div className="mt-2 h-1 w-12 rounded-full bg-rose-600/20" />
+                </div>
             </div>
+
+            {/* Expired Products Cards Section */}
+            {expiredProductsList.length > 0 && (
+                <div className="p-6 border-b border-border/40 bg-rose-500/5 animate-reveal">
+                    <div className="text-left font-mono mb-4 flex items-center justify-between">
+                        <div>
+                            <div className="flex items-center gap-2">
+                                <ShieldAlert className="w-5 h-5 text-rose-600 animate-pulse" />
+                                <h3 className="text-sm font-black text-rose-600 uppercase tracking-wider italic">Expired Products :: Quarantine Action Required</h3>
+                            </div>
+                            <p className="text-[9px] font-black text-text-muted mt-1 uppercase tracking-[0.2em] italic">The following inventory batches have exceeded their expiration thresholds</p>
+                        </div>
+                        <span className="px-3 py-1 bg-rose-600 text-white text-[9px] font-black uppercase tracking-widest italic rounded-full shadow-sm animate-pulse">
+                            Critical Alert ({expiredProductsList.length})
+                        </span>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                        {expiredProductsList.map((item) => {
+                            const daysAgo = Math.ceil((new Date() - new Date(item.expiryDate)) / (1000 * 60 * 60 * 24));
+                            return (
+                                <div 
+                                    key={`expired-card-${item.productId}-${item.outletId}`} 
+                                    className="relative overflow-hidden rounded-xl border border-rose-500/30 bg-surface p-4 hover:shadow-md hover:border-rose-500 transition-all duration-300 group text-left"
+                                >
+                                    <div className="absolute top-0 right-0 w-24 h-24 bg-rose-500/5 rounded-full blur-xl group-hover:bg-rose-500/10 transition-colors" />
+                                    <div className="flex justify-between items-start gap-2 relative z-10">
+                                        <div className="flex flex-col">
+                                            <span className="font-bold text-sm text-text line-clamp-1 group-hover:text-rose-600 transition-colors">{item.name}</span>
+                                            <span className="text-[9px] font-bold text-text-muted uppercase tracking-widest mt-0.5">SKU: {item.sku}</span>
+                                        </div>
+                                    </div>
+                                    <div className="mt-4 space-y-2 text-xs relative z-10">
+                                        <div className="flex justify-between items-center py-1 border-b border-border/20">
+                                            <span className="text-[9px] font-bold text-text-muted uppercase tracking-wider">Outlet</span>
+                                            <span className="font-bold text-text-secondary">{item.outletName}</span>
+                                        </div>
+                                        <div className="flex justify-between items-center py-1 border-b border-border/20">
+                                            <span className="text-[9px] font-bold text-text-muted uppercase tracking-wider">Quantity</span>
+                                            <span className="font-black text-rose-600">{item.quantity} units</span>
+                                        </div>
+                                        <div className="flex justify-between items-center py-1 border-b border-border/20">
+                                            <span className="text-[9px] font-bold text-text-muted uppercase tracking-wider">Expired On</span>
+                                            <span className="font-bold text-text-secondary">{new Date(item.expiryDate).toLocaleDateString('en-IN', { dateStyle: 'medium' })}</span>
+                                        </div>
+                                        <div className="flex justify-between items-center pt-1">
+                                            <span className="text-[9px] font-bold text-text-muted uppercase tracking-wider">Status</span>
+                                            <span className="px-2 py-0.5 bg-rose-500/15 text-rose-600 text-[9px] font-black rounded uppercase tracking-widest border border-rose-500/20">
+                                                Expired {daysAgo} days ago
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </div>
+                </div>
+            )}
 
             {/* Filter Header */}
             <div className="p-6 border-b border-border bg-surface/30">
@@ -257,13 +372,18 @@ export default function StockOverview() {
                             <th className="px-6 py-4 text-[10px] font-bold text-text-secondary uppercase tracking-widest bg-surface">
                                 Status
                             </th>
-
+                            <th className="px-6 py-4 text-[10px] font-bold text-text-secondary uppercase tracking-widest bg-surface">
+                                Expiry Date
+                            </th>
+                            <th className="px-6 py-4 text-[10px] font-bold text-text-secondary uppercase tracking-widest bg-surface">
+                                Expiry Alert
+                            </th>
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-border bg-surface text-sm">
                         {lines.length === 0 && !loading && (
                             <tr>
-                                <td colSpan={6} className="px-6 py-12 text-center text-sm text-text-muted">
+                                <td colSpan={8} className="px-6 py-12 text-center text-sm text-text-muted">
                                     No products or no outlets yet. Add outlets and products, then use Stock In to record
                                     quantities.
                                 </td>
@@ -271,7 +391,7 @@ export default function StockOverview() {
                         )}
                         {lines.length > 0 && filteredStock.length === 0 && (
                             <tr>
-                                <td colSpan={6} className="px-6 py-12 text-center text-sm text-text-muted">
+                                <td colSpan={8} className="px-6 py-12 text-center text-sm text-text-muted">
                                     No rows match your filters.
                                 </td>
                             </tr>
@@ -332,6 +452,25 @@ export default function StockOverview() {
                                                     {stockLevel === 'In Stock' ? 'OK' : stockLevel}
                                                 </span>
                                             </div>
+                                        )}
+                                    </td>
+                                    <td className="px-6 py-4">
+                                        <span className="text-xs font-semibold text-text-secondary">
+                                            {item.expiryDate ? new Date(item.expiryDate).toLocaleDateString('en-IN', { dateStyle: 'medium' }) : '—'}
+                                        </span>
+                                    </td>
+                                    <td className="px-6 py-4">
+                                        {item.expiryDate ? (
+                                            (() => {
+                                                const alertInfo = getExpiryAlertInfo(item.expiryDate);
+                                                return (
+                                                    <span className={`px-2 py-0.5 text-[9px] font-bold rounded-md uppercase tracking-wider border ${alertInfo.color}`}>
+                                                        {alertInfo.message}
+                                                    </span>
+                                                );
+                                            })()
+                                        ) : (
+                                            <span className="text-[10px] text-text-muted font-bold uppercase tracking-wider">—</span>
                                         )}
                                     </td>
 

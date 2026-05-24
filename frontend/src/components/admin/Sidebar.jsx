@@ -184,7 +184,7 @@ export default function Sidebar({ collapsed, setCollapsed, isHovered, setIsHover
                 subItems: [
                     { label: 'Staff Attendance', icon: CalendarCheck, path: '/admin/hr/attendance' },
                     { label: 'Payroll Management', icon: DollarSign, path: '/admin/hr/payroll' },
-                    { label: 'Performance Tracking', icon: TrendingUp, path: '/admin/hr/performance' },
+                    // { label: 'Performance Tracking', icon: TrendingUp, path: '/admin/hr/performance' },
                 ]
             },
             {
@@ -199,6 +199,8 @@ export default function Sidebar({ collapsed, setCollapsed, isHovered, setIsHover
                     { label: 'Wallets', icon: Wallet, path: '/admin/crm/wallets' },
                     { label: 'Feedback', icon: Star, path: '/admin/crm/feedback' },
                     { label: 'Re-engagement', icon: ShieldAlert, path: '/admin/crm/reengage' },
+                    { label: 'Bridal Reminders', icon: Bell, path: '/admin/crm/bridal' },
+                    { label: 'Birthday/Anniversary Wishes', icon: Bell, path: '/admin/crm/birthday-anniversary-reminders' },
                 ]
             },
             {
@@ -209,6 +211,7 @@ export default function Sidebar({ collapsed, setCollapsed, isHovered, setIsHover
                 category: 'CRM & Marketing',
                 subItems: [
                     { label: 'Marketing Hub', icon: Layout, path: '/admin/marketing' },
+                    { label: 'Coupons & Promos', icon: Percent, path: '/admin/promotions' },
                     { label: 'WhatsApp Credits', icon: MessageSquare, path: '/admin/whatsapp-credits' },
                 ]
             },

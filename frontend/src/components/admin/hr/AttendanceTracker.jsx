@@ -1,86 +1,35 @@
-import { useState, useMemo, useEffect, useCallback, useRef } from 'react';
-import { Calendar as CalendarIcon, Search, CheckCircle2, Clock, Check, X, MessageSquare, ChevronLeft, ChevronRight, AlertCircle, Users, Download, MapPin } from 'lucide-react';
+import { useState, useMemo, useEffect, useCallback } from 'react';
+import { 
+    Calendar as CalendarIcon, 
+    Search, 
+    CheckCircle2, 
+    Check, 
+    X, 
+    MessageSquare, 
+    ChevronLeft, 
+    ChevronRight, 
+    AlertCircle, 
+    Users, 
+    Download, 
+    MapPin, 
+    Sparkles,
+    Filter,
+    FileText,
+    RefreshCw
+} from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import {
-    PieChart,
-    Pie,
-    Cell,
-    ResponsiveContainer,
-    Tooltip
-} from 'recharts';
 import { useBusiness } from '../../../contexts/BusinessContext';
 import api from '../../../services/api';
 
 const STATUS_META = {
-    pending: { label: 'Not Marked', cls: 'bg-slate-500/10 text-slate-600 border-slate-500/20', color: '#64748b' },
-    present: { label: 'Present', cls: 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20', color: '#10b981' },
-    absent: { label: 'Absent', cls: 'bg-rose-500/10 text-rose-600 border-rose-500/20', color: '#ef4444' },
-    leave: { label: 'On Leave', cls: 'bg-violet-500/10 text-violet-600 border-violet-500/20', color: '#8b5cf6' },
+    pending: { label: 'Not Marked', cls: 'bg-slate-500/10 text-slate-500 border-slate-500/20', activeCls: 'bg-slate-500 text-white border-slate-500' },
+    present: { label: 'Present', cls: 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20', activeCls: 'bg-emerald-500 text-white border-emerald-500 shadow-sm shadow-emerald-500/20' },
+    absent: { label: 'Absent', cls: 'bg-rose-500/10 text-rose-600 border-rose-500/20', activeCls: 'bg-rose-500 text-white border-rose-500 shadow-sm shadow-rose-500/20' },
+    leave: { label: 'On Leave', cls: 'bg-violet-500/10 text-violet-600 border-violet-500/20', activeCls: 'bg-violet-500 text-white border-violet-500 shadow-sm shadow-violet-500/20' },
 };
 
-function outletLabel(u) {
-    if (!u) return '—';
-    return u.outletId?.name || '—';
-}
-
-function formatDisplayTime(iso) {
-    if (!iso) return '-';
-    try {
-        return new Date(iso).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true });
-    } catch {
-        return '-';
-    }
-}
-
-function toTimeInput(iso) {
-    if (!iso) return '';
-    const d = new Date(iso);
-    return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
-}
-
-function buildRow(user, entry) {
-    const id = String(user._id || user.id);
-    const outlet = outletLabel(user);
-    const name = user.name || '';
-    const role = user.role || '';
-    if (!entry) {
-        return {
-            id,
-            staff: name,
-            role,
-            outlet,
-            checkIn: '-',
-            checkOut: '-',
-            hours: '0',
-            status: 'absent',
-            loc: '—',
-            remark: '',
-            mobile: user.mobile || '',
-            checkInAt: null,
-            checkOutAt: null,
-        };
-    }
-    const uid = entry.userId?._id || entry.userId;
-    return {
-        id: String(uid || id),
-        staff: entry.userId?.name || name,
-        role: entry.userId?.role || role,
-        outlet: entry.userId?.outletId?.name || outlet,
-        mobile: entry.userId?.mobile || user.mobile || '',
-        checkInAt: entry.checkInAt,
-        checkOutAt: entry.checkOutAt,
-        checkIn: formatDisplayTime(entry.checkInAt),
-        checkOut: formatDisplayTime(entry.checkOutAt),
-        hours: String(entry.hoursWorked ?? 0),
-        status: entry.status || 'absent',
-        loc: entry.location || 'Salon',
-        remark: entry.remark || '',
-        attendanceId: entry._id,
-    };
-}
-
 export default function AttendanceTracker() {
-    const { staff, fetchStaff } = useBusiness();
+    const { staff, fetchStaff, outlets = [], fetchOutlets } = useBusiness();
     const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
     const [records, setRecords] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -88,12 +37,8 @@ export default function AttendanceTracker() {
     const [filterOutlet, setFilterOutlet] = useState('All');
     const [activeStatusFilter, setActiveStatusFilter] = useState('All');
     const [toast, setToast] = useState(null);
+    const [markingId, setMarkingId] = useState(null); // Track inline status update animation state
     
-    const [changeStatusModal, setChangeStatusModal] = useState(null);
-    const [newStatus, setNewStatus] = useState('present');
-    const [editCheckIn, setEditCheckIn] = useState('');
-    const [editCheckOut, setEditCheckOut] = useState('');
-    const [bulkModal, setBulkModal] = useState(false);
     const [remarkModal, setRemarkModal] = useState(null);
     const [remark, setRemark] = useState('');
 
@@ -183,13 +128,14 @@ export default function AttendanceTracker() {
 
     useEffect(() => {
         fetchStaff();
-    }, [fetchStaff]);
+        fetchOutlets();
+    }, [fetchStaff, fetchOutlets]);
 
     useEffect(() => {
         loadDay();
     }, [loadDay]);
 
-        // Date navigation
+    // Date navigation
     const changeDate = (days) => {
         const d = new Date(selectedDate);
         if (days > 0) {
@@ -207,66 +153,45 @@ export default function AttendanceTracker() {
         setSelectedDate(d.toISOString().split('T')[0]);
     };
 
-    // Filtered
+    // Extract unique outlets from context and loaded records
+    const uniqueOutlets = useMemo(() => {
+        const set = new Set();
+        (outlets || []).forEach(o => {
+            if (o?.name) set.add(o.name);
+        });
+        records.forEach(r => {
+            if (r.outlet && r.outlet !== '—') set.add(r.outlet);
+        });
+        return ['All', ...Array.from(set)];
+    }, [outlets, records]);
+
+    // Filtered records
     const filtered = useMemo(() => records.filter(r => {
         const q = searchTerm.trim().toLowerCase();
         const matchSearch = r.staff.toLowerCase().includes(q) ||
             r.role.toLowerCase().includes(q) ||
             (r.mobile && r.mobile.includes(q));
         const matchStatus = activeStatusFilter === 'All' || r.status === activeStatusFilter;
-        return matchSearch && matchStatus;
-    }), [records, searchTerm, activeStatusFilter]);
+        const matchOutlet = filterOutlet === 'All' || r.outlet === filterOutlet;
+        return matchSearch && matchStatus && matchOutlet;
+    }), [records, searchTerm, activeStatusFilter, filterOutlet]);
 
-    // Stats
-    const stats = useMemo(() => {
-        const counts = {
-            present: records.filter(r => r.status === 'present').length,
-            absent: records.filter(r => r.status === 'absent').length,
-            leave: records.filter(r => r.status === 'leave').length,
-        };
-        return counts;
-    }, [records]);
-
-    const chartData = useMemo(() => [
-        { name: 'Present', value: stats.present, color: STATUS_META.present.color },
-        { name: 'Absent', value: stats.absent, color: STATUS_META.absent.color },
-        { name: 'On Leave', value: stats.leave, color: STATUS_META.leave.color },
-    ].filter(d => d.value > 0), [stats]);
-
-    const applyStatusChange = async (e) => {
-        e.preventDefault();
-        if (!changeStatusModal) return;
+    // Inline Status Update Trigger
+    const handleMarkStatus = async (record, status) => {
+        setMarkingId(record.id);
         try {
             await api.post('/hr/attendance', {
-                staffId: changeStatusModal.id,
+                staffId: record.id,
                 date: selectedDate,
-                status: newStatus,
+                status: status,
             });
-            showToast(`${changeStatusModal.staff} → ${STATUS_META[newStatus]?.label}`);
-            setChangeStatusModal(null);
+            showToast(`${record.staff} marked ${STATUS_META[status]?.label}`);
             await loadDay();
             if (viewMode === 'summary') loadSummary();
         } catch (err) {
             showToast(err?.response?.data?.message || 'Update failed');
-        }
-    };
-
-    const bulkMarkStatus = async (status) => {
-        try {
-            const bulkData = records.map(r => ({
-                staffId: r.id,
-                status,
-                checkIn: status === 'present' ? '09:00' : undefined
-            }));
-            await api.post('/hr/attendance', {
-                date: selectedDate,
-                bulk: bulkData
-            });
-            setBulkModal(false);
-            showToast(`All staff marked ${status} for ${selectedDate}`);
-            await loadDay();
-        } catch (err) {
-            showToast(err?.response?.data?.message || 'Bulk update failed');
+        } finally {
+            setMarkingId(null);
         }
     };
 
@@ -291,8 +216,8 @@ export default function AttendanceTracker() {
 
     // Export CSV
     const exportCSV = () => {
-        const header = 'Staff,Role,Mobile,Status\n';
-        const rows = records.map(r => `${r.staff},${r.role},${r.mobile},${r.status}`).join('\n');
+        const header = 'Staff,Role,Outlet,Mobile,Status\n';
+        const rows = records.map(r => `"${r.staff}","${r.role}","${r.outlet}","${r.mobile}","${r.status}"`).join('\n');
         const blob = new Blob([header + rows], { type: 'text/csv' });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a'); a.href = url;
@@ -300,281 +225,341 @@ export default function AttendanceTracker() {
     };
 
     return (
-        <div className="space-y-6 font-black text-left">
-            {/* Header card with Chart */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 text-left font-black">
-                <div className="lg:col-span-2 bg-surface p-8 rounded-none border border-border shadow-sm flex flex-col xl:flex-row items-center justify-between gap-8 text-left relative overflow-hidden">
-                    <div className="flex flex-col sm:flex-row items-center gap-6 text-left font-black w-full xl:w-auto z-10">
-                        <div className="p-4 rounded-none bg-primary/10 text-primary border border-primary/20 shrink-0">
-                            <CalendarIcon className="w-6 h-6" />
+        <div className="space-y-5 text-left bg-slate-50 dark:bg-slate-900 rounded-3xl p-6 border border-slate-200/60 dark:border-slate-800/80 transition-colors">
+            
+            {/* Top Toolbar: Fully Compacted date, search, filter and switchers */}
+            <div className="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-200/60 dark:border-slate-700/80 shadow-sm flex flex-wrap items-center justify-between gap-4 transition-colors">
+                
+                {/* Date Navigation & Search */}
+                <div className="flex items-center flex-wrap gap-3">
+                    <div className="flex items-center bg-slate-50 dark:bg-slate-750 border border-slate-200 dark:border-slate-700 rounded-xl px-2.5 py-1.5 shadow-sm text-xs font-bold text-slate-700 dark:text-slate-200 transition-colors select-none">
+                        <button type="button" onClick={() => changeDate(-1)} className="p-1 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-500 dark:text-slate-400 active:scale-90 transition-transform">
+                            <ChevronLeft className="w-4 h-4" />
+                        </button>
+                        <div className="flex items-center gap-1 mx-2">
+                            <CalendarIcon className="w-3.5 h-3.5 text-slate-400" />
+                            <input 
+                                type="date" 
+                                value={selectedDate} 
+                                max={new Date().toISOString().split('T')[0]} 
+                                onChange={e => setSelectedDate(e.target.value)}
+                                className="bg-transparent border-none p-0 focus:ring-0 cursor-pointer outline-none font-bold text-slate-700 dark:text-slate-200" 
+                            />
                         </div>
-                        <div className="text-left w-full sm:w-auto">
-                            <p className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Operational Date</p>
-                            <div className="flex items-center gap-3 mt-1 text-left font-black">
-                                <button onClick={() => changeDate(-1)} className="p-1.5 rounded-none hover:bg-surface-alt transition-colors text-text hover:text-text border border-border/20"><ChevronLeft className="w-4 h-4" /></button>
-                                <input type="date" value={selectedDate} max={new Date().toISOString().split('T')[0]} onChange={e => setSelectedDate(e.target.value)}
-                                    className="text-lg font-black text-text bg-transparent border-none p-0 focus:ring-0 cursor-pointer outline-none uppercase" />
-                                <button onClick={() => changeDate(1)} className="p-1.5 rounded-none hover:bg-surface-alt transition-colors text-text hover:text-text border border-border/20"><ChevronRight className="w-4 h-4" /></button>
-                            </div>
-                        </div>
+                        <button type="button" onClick={() => changeDate(1)} className="p-1 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-500 dark:text-slate-400 active:scale-90 transition-transform">
+                            <ChevronRight className="w-4 h-4" />
+                        </button>
                     </div>
 
-                    <div className="flex-1 h-[140px] w-full max-w-[200px] text-left hidden sm:block z-10">
-                        <ResponsiveContainer width="100%" height="100%">
-                            <PieChart>
-                                <Pie data={chartData} innerRadius={35} outerRadius={55} paddingAngle={5} dataKey="value" stroke="transparent">
-                                    {chartData.map((entry, index) => <Cell key={`cell-${index}`} fill={entry.color} />)}
-                                </Pie>
-                                <Tooltip contentStyle={{ backgroundColor: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '0px', fontSize: '10px', fontWeight: '900', textTransform: 'uppercase' }} />
-                            </PieChart>
-                        </ResponsiveContainer>
+                    <div className="relative w-64">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                        <input 
+                            type="text" 
+                            placeholder="Search staff name or role..."
+                            className="w-full pl-9 pr-4 py-2 rounded-xl bg-slate-50 dark:bg-slate-750 border border-slate-200 dark:border-slate-700 text-xs font-semibold text-slate-700 dark:text-slate-200 focus:ring-2 focus:ring-primary/10 focus:border-primary outline-none transition-all placeholder-slate-400"
+                            value={searchTerm} 
+                            onChange={e => setSearchTerm(e.target.value)} 
+                        />
                     </div>
-
-                    <div className="grid grid-cols-2 gap-x-8 gap-y-4 text-left font-black w-full xl:w-auto z-10">
-                        {[
-                            { label: 'Present', value: stats.present, color: 'text-emerald-500' },
-                            { label: 'Late', value: stats.late, color: 'text-amber-500' },
-                            { label: 'Absent', value: stats.absent, color: 'text-rose-500' },
-                            { label: 'Leave', value: stats.leave, color: 'text-violet-500' },
-                        ].map(s => (
-                            <div key={s.label} className="text-left font-black">
-                                <p className="text-[9px] font-black text-text-muted uppercase tracking-[0.1em]">{s.label}</p>
-                                <p className={`text-xl font-black mt-0.5 ${s.color}`}>{s.value}</p>
-                            </div>
-                        ))}
-                    </div>
-                    <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 -mr-16 -mt-16 rotate-45 pointer-events-none" />
                 </div>
 
-                <div className="bg-text p-8 rounded-none shadow-xl shadow-text/10 relative overflow-hidden flex flex-col justify-between text-left font-black">
-                    <div className="relative z-10 text-background text-left">
-                        <p className="text-[10px] font-black text-background/60 uppercase tracking-[0.3em]">Quick Actions</p>
-                        <h3 className="text-lg font-black mt-2 uppercase tracking-tight">Bulk Status Update</h3>
+                {/* Outlet & Status Filter Controls */}
+                <div className="flex items-center flex-wrap gap-3">
+                    
+                    {/* Outlet Dropdown Select */}
+                    <div className="flex items-center gap-2 bg-slate-50 dark:bg-slate-750 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-1.5 shadow-sm text-xs transition-colors">
+                        <Filter className="w-3.5 h-3.5 text-slate-400" />
+                        <select 
+                            value={filterOutlet} 
+                            onChange={e => setFilterOutlet(e.target.value)}
+                            className="bg-transparent border-none p-0 pr-6 focus:ring-0 cursor-pointer outline-none font-bold text-slate-700 dark:text-slate-200 text-xs"
+                        >
+                            {uniqueOutlets.map(o => (
+                                <option key={o} value={o} className="bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 font-bold">
+                                    {o === 'All' ? 'All Outlets' : o}
+                                </option>
+                            ))}
+                        </select>
                     </div>
-                    <button onClick={() => setBulkModal(true)} className="relative z-10 mt-6 flex items-center justify-center gap-3 px-6 py-4 rounded-none bg-white text-text text-xs font-black uppercase tracking-[0.2em] hover:bg-primary hover:text-white transition-all active:scale-95">
-                        <Users className="w-4 h-4" /> Open Mark Portal
+
+                    {/* View Switcher: compact pills */}
+                    <div className="flex items-center bg-slate-50 dark:bg-slate-750 p-1 border border-slate-200 dark:border-slate-700 rounded-xl shadow-inner text-xs transition-colors">
+                        <button 
+                            onClick={() => setViewMode('daily')}
+                            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${viewMode === 'daily' ? 'bg-white dark:bg-slate-800 text-primary dark:text-slate-100 shadow-sm border border-slate-200/50 dark:border-slate-700/50' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}
+                        >
+                            Daily Roll
+                        </button>
+                        <button 
+                            onClick={() => setViewMode('summary')}
+                            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${viewMode === 'summary' ? 'bg-white dark:bg-slate-800 text-primary dark:text-slate-100 shadow-sm border border-slate-200/50 dark:border-slate-700/50' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}
+                        >
+                            Monthly Log
+                        </button>
+                    </div>
+
+                    <button 
+                        onClick={exportCSV} 
+                        className="flex items-center gap-1.5 px-3 py-2 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-750 text-slate-700 dark:text-slate-200 rounded-xl text-xs font-bold transition-all shadow-sm active:scale-95"
+                    >
+                        <Download className="w-3.5 h-3.5 text-slate-400" />
+                        Export
                     </button>
-                    <div className="absolute -bottom-8 -right-8 w-32 h-32 rounded-none bg-white/5 rotate-45" />
                 </div>
             </div>
 
-            {/* View Mode Switcher */}
-            <div className="flex items-center gap-1 bg-surface p-1 border border-border w-fit rounded-none shadow-sm">
-                <button onClick={() => setViewMode('daily')}                        className={`px-6 py-2.5 text-xs font-black uppercase tracking-widest transition-all ${viewMode === 'daily' ? 'bg-primary text-white shadow-lg' : 'text-text hover:text-text'}`}>Daily Registry</button>
-                <button onClick={() => setViewMode('summary')} className={`px-6 py-2.5 text-[10px] font-black uppercase tracking-widest transition-all ${viewMode === 'summary' ? 'bg-primary text-white shadow-lg' : 'text-text hover:text-text'}`}>Monthly Summary</button>
-            </div>
-
-            {/* Toolbar */}
-            <div className="bg-surface p-5 rounded-none border border-border shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4 text-left font-black">
-                <div className="relative flex-1 max-w-sm text-left">
-                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
-                    <input type="text" placeholder="Search staff, role or mobile..."
-                        className="w-full pl-12 pr-4 py-3 rounded-none bg-background border border-border text-[10px] font-black uppercase tracking-widest focus:outline-none focus:border-primary transition-all"
-                        value={searchTerm} onChange={e => setSearchTerm(e.target.value)} />
-                </div>
-                <div className="flex items-center gap-2 flex-wrap text-left">
-                    {viewMode === 'daily' && ['All', 'pending', 'present', 'absent', 'leave'].map(s => (
-                        <button key={s} onClick={() => setActiveStatusFilter(s)}
-                            className={`px-4 py-2 rounded-none text-xs font-black uppercase tracking-[0.1em] border transition-all ${activeStatusFilter === s ? 'bg-primary text-white border-primary' : 'bg-surface text-text border-border hover:border-primary'}`}>
-                            {s === 'All' ? 'Full View' : STATUS_META[s]?.label}
+            {/* Quick Status Pill Bar (Only in Daily view) */}
+            {viewMode === 'daily' && (
+                <div className="flex items-center gap-1.5 flex-wrap">
+                    <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mr-1 select-none">Quick Filters:</span>
+                    {['All', 'pending', 'present', 'absent', 'leave'].map(s => (
+                        <button 
+                            key={s} 
+                            onClick={() => setActiveStatusFilter(s)}
+                            className={`px-3 py-1 rounded-full text-xs font-bold border transition-all ${
+                                activeStatusFilter === s 
+                                    ? 'bg-primary/10 border-primary/20 text-primary dark:text-slate-200' 
+                                    : 'bg-white dark:bg-slate-800 border-slate-200/60 dark:border-slate-700/60 text-slate-650 hover:bg-slate-50 dark:hover:bg-slate-750'
+                            }`}
+                        >
+                            {s === 'All' ? 'Show All' : STATUS_META[s]?.label}
                         </button>
                     ))}
-                    <div className="w-[1px] h-6 bg-border mx-2" />
-                    <button onClick={exportCSV} className="flex items-center gap-2 px-4 py-2 rounded-none border border-border text-xs font-black uppercase tracking-[0.1em] text-text hover:bg-surface-alt transition-all">
-                        <Download className="w-3.5 h-3.5" /> Export Report
-                    </button>
                 </div>
-            </div>
+            )}
 
-            {/* Table / Summary Content */}
-            <div className="bg-surface rounded-none border border-border shadow-sm overflow-hidden text-left font-black table-responsive relative">
+            {/* Main Table Content Container */}
+            <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-250/60 dark:border-slate-700/80 shadow-sm overflow-hidden relative transition-colors">
+                
+                {/* Loader Overlay */}
                 {(loading || summaryLoading) && (
-                    <div className="absolute inset-0 z-10 bg-surface/70 backdrop-blur-[2px] flex items-center justify-center">
-                        <p className="text-[10px] font-black uppercase tracking-[0.3em] text-text-muted italic">Processing staff data…</p>
+                    <div className="absolute inset-0 z-10 bg-white/70 dark:bg-slate-800/70 backdrop-blur-[1px] flex items-center justify-center">
+                        <div className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-750 rounded-xl border border-slate-100 dark:border-slate-700 shadow-md">
+                            <RefreshCw className="w-4 h-4 text-primary animate-spin" />
+                            <span className="text-xs font-bold text-slate-500 dark:text-slate-450 uppercase tracking-widest animate-pulse">Syncing...</span>
+                        </div>
                     </div>
                 )}
 
                 {viewMode === 'daily' ? (
-                    <table className="w-full text-left font-black">
-                        <thead>
-                            <tr className="bg-surface-alt/50 border-b border-border/40 text-left font-black">
-                                <th className="px-6 py-4 text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Staff Member</th>
-                                <th className="px-6 py-4 text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Role / Mobile</th>
-                                <th className="px-6 py-4 text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Status</th>
-                                <th className="px-6 py-4 text-[10px] font-black text-text-muted uppercase tracking-[0.2em] text-right">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-border/40 text-left font-black">
-                            {filtered.map(record => (
-                                <tr key={record.id} className="hover:bg-surface-alt/20 transition-colors group text-left font-black">
-                                    <td className="px-6 py-5 text-left font-black">
-                                        <div className="flex items-center gap-4 text-left font-black">
-                                            <div className="w-10 h-10 rounded-none bg-background border border-border flex items-center justify-center text-text-muted font-black text-[11px] shrink-0 overflow-hidden">
-                                                {record.image ? (
-                                                    <img src={record.image} alt="" className="w-full h-full object-cover" />
-                                                ) : (
-                                                    record.staff.split(' ').map(n => n[0]).join('')
-                                                )}
-                                            </div>
-                                            <div className="text-left font-black">
-                                                <p className="text-xs font-black text-text uppercase tracking-tight text-left leading-none">{record.staff}</p>
-                                                <p className="text-[9px] text-text-muted font-black uppercase tracking-widest text-left mt-1.5 leading-none">{record.outlet}</p>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td className="px-6 py-5 text-left font-black">
-                                        <p className="text-[10px] font-black text-text uppercase tracking-widest">{record.role}</p>
-                                        <p className="text-[9px] text-text-muted font-black uppercase tracking-widest mt-1 italic">{record.mobile}</p>
-                                    </td>
-
-                                    <td className="px-6 py-5 text-left font-black">
-                                        <span className={`px-3 py-1 text-[9px] font-black uppercase tracking-widest border ${STATUS_META[record.status]?.cls || ''}`}>
-                                            {STATUS_META[record.status]?.label}
-                                        </span>
-                                    </td>
-                                    <td className="px-6 py-5 text-right font-black">
-                                        <div className="flex items-center justify-end gap-2 font-black">
-                                            <button onClick={() => {
-                                                setChangeStatusModal(record);
-                                                setNewStatus(record.status);
-                                                setEditCheckIn(toTimeInput(record.checkInAt));
-                                                setEditCheckOut(toTimeInput(record.checkOutAt));
-                                            }}
-                                                className="p-2 rounded-none text-emerald-500 hover:bg-emerald-500/10 border border-transparent hover:border-emerald-500/20 transition-all">
-                                                <CheckCircle2 className="w-4 h-4" />
-                                            </button>
-                                            <button onClick={() => { setRemarkModal(record); setRemark(record.remark); }}
-                                                className="p-2 rounded-none text-primary hover:bg-primary/10 border border-transparent hover:border-primary/20 transition-all">
-                                                <MessageSquare className="w-4 h-4" />
-                                            </button>
-                                        </div>
-                                    </td>
+                    <div className="overflow-x-auto">
+                        <table className="w-full text-left border-collapse">
+                            <thead>
+                                <tr className="bg-slate-50/50 dark:bg-slate-800/60 border-b border-slate-150 dark:border-slate-700 text-left">
+                                    <th className="px-6 py-4 text-[10px] font-extrabold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Staff Member</th>
+                                    <th className="px-6 py-4 text-[10px] font-extrabold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Role / Contact</th>
+                                    <th className="px-6 py-4 text-[10px] font-extrabold text-slate-400 dark:text-slate-500 uppercase tracking-widest text-center">Mark Daily Attendance</th>
+                                    <th className="px-6 py-4 text-[10px] font-extrabold text-slate-400 dark:text-slate-500 uppercase tracking-widest text-right">Remarks</th>
                                 </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                ) : (
-                    <table className="w-full text-left font-black">
-                        <thead>
-                            <tr className="bg-surface-alt/50 border-b border-border/40 text-left font-black">
-                                <th className="px-6 py-4 text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Staff Member</th>
-                                <th className="px-6 py-4 text-[10px] font-black text-text-muted uppercase tracking-[0.2em] text-center">Present</th>
-                                <th className="px-6 py-4 text-[10px] font-black text-text-muted uppercase tracking-[0.2em] text-center">Absent</th>
-                                <th className="px-6 py-4 text-[10px] font-black text-text-muted uppercase tracking-[0.2em] text-center">Leaves</th>
-                                <th className="px-6 py-4 text-[10px] font-black text-text-muted uppercase tracking-[0.2em] text-center">Half Days</th>
-                                <th className="px-6 py-4 text-[10px] font-black text-text-muted uppercase tracking-[0.2em] text-right">Total Logs</th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-border/40 text-left font-black">
-                            {records.map(record => {
-                                const s = summaryData[record.id] || { present: 0, absent: 0, leave: 0, halfDay: 0, total: 0 };
-                                return (
-                                    <tr key={record.id} className="hover:bg-surface-alt/20 transition-colors group text-left font-black">
-                                        <td className="px-6 py-5 text-left font-black">
-                                            <div className="flex items-center gap-4">
-                                                <div className="w-9 h-9 rounded-none bg-background border border-border flex items-center justify-center text-text-muted font-black text-[11px] shrink-0 uppercase italic">{record.staff.split(' ').map(n => n[0]).join('')}</div>
-                                                <div className="text-left font-black">
-                                                    <p className="text-xs font-black text-text uppercase tracking-tight">{record.staff}</p>
-                                                    <p className="text-[9px] text-text-muted font-black uppercase tracking-widest mt-1 leading-none italic">{record.role}</p>
-                                                </div>
-                                            </div>
+                            </thead>
+                            <tbody className="divide-y divide-slate-100 dark:divide-slate-750/50">
+                                {filtered.length === 0 ? (
+                                    <tr>
+                                        <td colSpan={4} className="px-6 py-12 text-center text-xs font-bold text-slate-400 dark:text-slate-550 uppercase tracking-wider">
+                                            No matching staff records found
                                         </td>
-                                        <td className="px-6 py-5 text-center text-sm font-black text-emerald-500">{s.present}</td>
-                                        <td className="px-6 py-5 text-center text-sm font-black text-rose-500">{s.absent}</td>
-                                        <td className="px-6 py-5 text-center text-sm font-black text-violet-500">{s.leave}</td>
-                                        <td className="px-6 py-5 text-center text-sm font-black text-blue-500">{s.halfDay}</td>
-                                        <td className="px-6 py-5 text-right text-[10px] font-black text-text-muted uppercase tracking-widest italic">{s.total} LOGS</td>
                                     </tr>
-                                );
-                            })}
-                        </tbody>
-                    </table>
+                                ) : (
+                                    filtered.map(record => {
+                                        const isMarking = markingId === record.id;
+                                        return (
+                                            <tr key={record.id} className="hover:bg-slate-50/30 dark:hover:bg-slate-750/30 transition-colors">
+                                                
+                                                {/* Staff details with profile pic */}
+                                                <td className="px-6 py-4">
+                                                    <div className="flex items-center gap-3">
+                                                        <div className="w-9 h-9 rounded-xl bg-slate-100 dark:bg-slate-700 border border-slate-200/50 dark:border-slate-650/40 flex items-center justify-center text-slate-500 dark:text-slate-400 font-extrabold text-xs shrink-0 overflow-hidden shadow-inner">
+                                                            {record.image ? (
+                                                                <img src={record.image} alt={record.staff} className="w-full h-full object-cover" />
+                                                            ) : (
+                                                                record.staff.split(' ').map(n => n[0]).join('').toUpperCase()
+                                                            )}
+                                                        </div>
+                                                        <div className="text-left leading-tight">
+                                                            <p className="text-xs font-bold text-slate-800 dark:text-slate-100">{record.staff}</p>
+                                                            <div className="flex items-center gap-1.5 mt-0.5">
+                                                                <MapPin className="w-3 h-3 text-slate-400" />
+                                                                <span className="text-[10px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wider">{record.outlet}</span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </td>
+
+                                                {/* Role & Mobile */}
+                                                <td className="px-6 py-4">
+                                                    <p className="text-[10px] font-bold text-slate-650 dark:text-slate-350 uppercase tracking-wider leading-none">{record.role}</p>
+                                                    <p className="text-[9px] text-slate-400 dark:text-slate-500 font-bold tracking-wider mt-1 italic leading-none">{record.mobile}</p>
+                                                </td>
+
+                                                {/* Inline Status Selection Button Group */}
+                                                <td className="px-6 py-4">
+                                                    <div className="flex items-center justify-center gap-2">
+                                                        {/* Present Button */}
+                                                        <button 
+                                                            onClick={() => handleMarkStatus(record, 'present')}
+                                                            disabled={isMarking}
+                                                            className={`px-3.5 py-1.5 rounded-xl border text-[10px] font-bold flex items-center justify-center transition-all ${
+                                                                record.status === 'present' 
+                                                                    ? STATUS_META.present.activeCls 
+                                                                    : 'bg-transparent text-slate-500 border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-750 hover:text-slate-700 dark:hover:text-slate-200'
+                                                            }`}
+                                                        >
+                                                            <Check className="w-3.5 h-3.5 mr-1" />
+                                                            Present
+                                                        </button>
+
+                                                        {/* Absent Button */}
+                                                        <button 
+                                                            onClick={() => handleMarkStatus(record, 'absent')}
+                                                            disabled={isMarking}
+                                                            className={`px-3.5 py-1.5 rounded-xl border text-[10px] font-bold flex items-center justify-center transition-all ${
+                                                                record.status === 'absent' 
+                                                                    ? STATUS_META.absent.activeCls 
+                                                                    : 'bg-transparent text-slate-500 border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-750 hover:text-slate-700 dark:hover:text-slate-200'
+                                                            }`}
+                                                        >
+                                                            <X className="w-3.5 h-3.5 mr-1" />
+                                                            Absent
+                                                        </button>
+
+                                                        {/* Leave Button */}
+                                                        <button 
+                                                            onClick={() => handleMarkStatus(record, 'leave')}
+                                                            disabled={isMarking}
+                                                            className={`px-3.5 py-1.5 rounded-xl border text-[10px] font-bold flex items-center justify-center transition-all ${
+                                                                record.status === 'leave' 
+                                                                    ? STATUS_META.leave.activeCls 
+                                                                    : 'bg-transparent text-slate-500 border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-750 hover:text-slate-700 dark:hover:text-slate-200'
+                                                            }`}
+                                                        >
+                                                            <CalendarIcon className="w-3.5 h-3.5 mr-1" />
+                                                            Leave
+                                                        </button>
+                                                    </div>
+                                                </td>
+
+                                                {/* Note / Remark Button */}
+                                                <td className="px-6 py-4 text-right">
+                                                    <button 
+                                                        onClick={() => { setRemarkModal(record); setRemark(record.remark); }}
+                                                        className={`p-2 rounded-xl border transition-all inline-flex items-center justify-center ${
+                                                            record.remark 
+                                                                ? 'bg-amber-500/10 border-amber-500/20 text-amber-600 dark:text-amber-400' 
+                                                                : 'bg-transparent border-slate-200 dark:border-slate-700 text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-750 hover:text-slate-650'
+                                                        }`}
+                                                        title={record.remark || 'Add daily remark'}
+                                                    >
+                                                        <MessageSquare className="w-4 h-4" />
+                                                    </button>
+                                                </td>
+
+                                            </tr>
+                                        );
+                                    })
+                                )}
+                            </tbody>
+                        </table>
+                    </div>
+                ) : (
+                    <div className="overflow-x-auto">
+                        <table className="w-full text-left border-collapse">
+                            <thead>
+                                <tr className="bg-slate-50/50 dark:bg-slate-800/60 border-b border-slate-150 dark:border-slate-700 text-left">
+                                    <th className="px-6 py-4 text-[10px] font-extrabold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Staff Member</th>
+                                    <th className="px-6 py-4 text-[10px] font-extrabold text-slate-400 dark:text-slate-500 uppercase tracking-widest text-center">Present</th>
+                                    <th className="px-6 py-4 text-[10px] font-extrabold text-slate-400 dark:text-slate-500 uppercase tracking-widest text-center">Absent</th>
+                                    <th className="px-6 py-4 text-[10px] font-extrabold text-slate-400 dark:text-slate-500 uppercase tracking-widest text-center">Leaves</th>
+                                    <th className="px-6 py-4 text-[10px] font-extrabold text-slate-400 dark:text-slate-500 uppercase tracking-widest text-center">Half Days</th>
+                                    <th className="px-6 py-4 text-[10px] font-extrabold text-slate-400 dark:text-slate-500 uppercase tracking-widest text-right">Total Logs</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-slate-100 dark:divide-slate-750/50">
+                                {filtered.length === 0 ? (
+                                    <tr>
+                                        <td colSpan={6} className="px-6 py-12 text-center text-xs font-bold text-slate-400 dark:text-slate-550 uppercase tracking-wider">
+                                            No staff records available
+                                        </td>
+                                    </tr>
+                                ) : (
+                                    filtered.map(record => {
+                                        const s = summaryData[record.id] || { present: 0, absent: 0, leave: 0, halfDay: 0, total: 0 };
+                                        return (
+                                            <tr key={record.id} className="hover:bg-slate-50/30 dark:hover:bg-slate-750/30 transition-colors">
+                                                <td className="px-6 py-4">
+                                                    <div className="flex items-center gap-3">
+                                                        <div className="w-8 h-8 rounded-xl bg-slate-100 dark:bg-slate-700 border border-slate-200/50 dark:border-slate-650/40 flex items-center justify-center text-slate-500 dark:text-slate-400 font-extrabold text-xs shrink-0 overflow-hidden shadow-inner">
+                                                            {record.staff.split(' ').map(n => n[0]).join('').toUpperCase()}
+                                                        </div>
+                                                        <div className="text-left leading-tight">
+                                                            <p className="text-xs font-bold text-slate-800 dark:text-slate-100">{record.staff}</p>
+                                                            <span className="text-[9px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wider">{record.role}</span>
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                                <td className="px-6 py-4 text-center text-xs font-extrabold text-emerald-600 dark:text-emerald-400">{s.present} days</td>
+                                                <td className="px-6 py-4 text-center text-xs font-extrabold text-rose-600 dark:text-rose-450">{s.absent} days</td>
+                                                <td className="px-6 py-4 text-center text-xs font-extrabold text-violet-650 dark:text-violet-400">{s.leave} days</td>
+                                                <td className="px-6 py-4 text-center text-xs font-extrabold text-blue-600 dark:text-blue-450">{s.halfDay} days</td>
+                                                <td className="px-6 py-4 text-right text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">{s.total} LOGS</td>
+                                            </tr>
+                                        );
+                                    })
+                                )}
+                            </tbody>
+                        </table>
+                    </div>
                 )}
-                <div className="px-6 py-4 border-t border-border bg-surface-alt/30 flex items-center gap-3 font-black">
-                    <AlertCircle className="w-4 h-4 text-primary" />
-                    <p className="text-[10px] text-text-muted font-black uppercase tracking-widest leading-none italic">Note: Records are calculated based on the selected operational date's month cycle.</p>
+                
+                {/* Clean Info Footer Row */}
+                <div className="px-6 py-3 border-t border-slate-150 dark:border-slate-700/80 bg-slate-50/50 dark:bg-slate-800/40 flex items-center gap-2 transition-colors">
+                    <AlertCircle className="w-3.5 h-3.5 text-primary shrink-0" />
+                    <p className="text-[10px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wider leading-none">
+                        Changes are saved instantly in real-time. Logs are calculated for the selected date's monthly cycle.
+                    </p>
                 </div>
             </div>
 
-            {/* Modals ... */}
-            <AnimatePresence>
-                {changeStatusModal && (
-                    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-                        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setChangeStatusModal(null)} className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
-                        <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }}
-                            className="bg-surface w-full max-w-sm rounded-none border border-border shadow-2xl relative p-8">
-                            <div className="flex items-center justify-between mb-8">
-                                <div>
-                                    <h2 className="text-sm font-black text-text uppercase tracking-[0.2em]">Update Status</h2>
-                                    <p className="text-[10px] font-black text-primary mt-1 uppercase tracking-widest italic">{changeStatusModal.staff}</p>
-                                </div>
-                                <button onClick={() => setChangeStatusModal(null)} className="w-10 h-10 rounded-none bg-background border border-border flex items-center justify-center text-text hover:text-text hover:border-text transition-all"><X className="w-5 h-5" /></button>
-                            </div>
-                            <form onSubmit={applyStatusChange} className="space-y-6">
-                                <div className="grid grid-cols-2 gap-3">
-                                    {Object.entries(STATUS_META).map(([key, val]) => (
-                                        <button key={key} type="button" onClick={() => setNewStatus(key)}
-                                            className={`py-3 px-3 rounded-none text-[10px] font-black uppercase tracking-widest border transition-all ${newStatus === key ? 'bg-primary text-white border-primary shadow-lg shadow-primary/20' : 'bg-surface text-text border-border hover:border-primary'}`}>
-                                            {val.label}
-                                        </button>
-                                    ))}
-                                </div>
-
-                                <button type="submit" className="w-full py-4 bg-primary text-white rounded-none font-black text-xs uppercase tracking-[0.2em] shadow-xl shadow-primary/20 hover:scale-[1.02] transition-all">Update Status</button>
-                            </form>
-                        </motion.div>
-                    </div>
-                )}
-            </AnimatePresence>
-
-            <AnimatePresence>
-                {bulkModal && (
-                    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-                        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setBulkModal(false)} className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
-                        <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }}
-                            className="bg-surface w-full max-w-sm rounded-none border border-border shadow-2xl relative p-8 text-center">
-                            <button onClick={() => setBulkModal(false)} className="absolute top-4 right-4 w-9 h-9 rounded-none bg-background border border-border flex items-center justify-center text-text hover:text-text"><X className="w-4 h-4" /></button>
-                            <div className="w-14 h-14 bg-primary/10 rounded-none flex items-center justify-center mx-auto mb-6 border border-primary/20"><Users className="w-6 h-6 text-primary" /></div>
-                            <h3 className="text-xs font-black text-text uppercase tracking-[0.2em]">Mark All Members</h3>
-                            <p className="text-[10px] text-text-muted mt-2 mb-8 uppercase font-bold tracking-widest italic leading-relaxed">Choose status to apply to all staff for {selectedDate}</p>
-                            <div className="grid grid-cols-1 gap-3">
-                                <button onClick={() => bulkMarkStatus('present')} className="py-4 bg-emerald-500 text-white rounded-none text-xs font-black uppercase tracking-[0.2em] shadow-xl shadow-emerald-500/10 hover:scale-[1.02] transition-all">Mark All Present</button>
-                                <button onClick={() => bulkMarkStatus('absent')} className="py-4 bg-rose-500 text-white rounded-none text-xs font-black uppercase tracking-[0.2em] shadow-xl shadow-rose-500/10 hover:scale-[1.02] transition-all">Mark All Absent</button>
-                                <button onClick={() => bulkMarkStatus('leave')} className="py-4 bg-violet-500 text-white rounded-none text-xs font-black uppercase tracking-[0.2em] shadow-xl shadow-violet-500/10 hover:scale-[1.02] transition-all">Mark All Leave</button>
-                            </div>
-                        </motion.div>
-                    </div>
-                )}
-            </AnimatePresence>
-
+            {/* Remark Modal: Styled neatly */}
             <AnimatePresence>
                 {remarkModal && (
                     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-                        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setRemarkModal(null)} className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
+                        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setRemarkModal(null)} className="absolute inset-0 bg-black/50 backdrop-blur-sm" />
                         <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }}
-                            className="bg-surface w-full max-w-sm rounded-none border border-border shadow-2xl relative p-8">
-                            <div className="flex items-center justify-between mb-6">
-                                <h2 className="text-sm font-black text-text uppercase tracking-[0.2em]">Daily Note</h2>
-                                <button onClick={() => setRemarkModal(null)} className="w-10 h-10 rounded-none bg-background border border-border flex items-center justify-center text-text hover:text-text"><X className="w-5 h-5" /></button>
+                            className="bg-white dark:bg-slate-800 w-full max-w-sm rounded-2xl border border-slate-200 dark:border-slate-700 shadow-2xl relative p-6 transition-all text-left">
+                            <div className="flex items-center justify-between mb-4 pb-3 border-b border-slate-100 dark:border-slate-700">
+                                <div>
+                                    <h2 className="text-sm font-extrabold text-slate-850 dark:text-slate-100 tracking-tight">Daily Note / Remark</h2>
+                                    <p className="text-[10px] font-bold text-primary uppercase mt-1 tracking-wider">{remarkModal.staff} · {STATUS_META[remarkModal.status]?.label}</p>
+                                </div>
+                                <button onClick={() => setRemarkModal(null)} className="w-8 h-8 rounded-xl bg-slate-50 dark:bg-slate-750 hover:bg-slate-100 dark:hover:bg-slate-700 border border-slate-200/50 dark:border-slate-700 flex items-center justify-center text-slate-500 dark:text-slate-400 transition-all"><X className="w-4 h-4" /></button>
                             </div>
-                            <p className="text-[10px] font-black text-primary mb-4 uppercase tracking-widest italic">{remarkModal.staff} · {STATUS_META[remarkModal.status]?.label}</p>
-                            <form onSubmit={saveRemark} className="space-y-6">
-                                <textarea required rows={4} placeholder="ENTER LOG DETAIL OR REASON..."
-                                    className="w-full px-5 py-4 rounded-none bg-background border border-border text-[11px] font-black uppercase tracking-widest focus:border-primary outline-none resize-none italic"
-                                    value={remark} onChange={e => setRemark(e.target.value)} />
-                                <button type="submit" className="w-full py-4 bg-amber-500 text-white rounded-none font-black text-xs uppercase tracking-[0.2em] shadow-xl shadow-amber-500/20 hover:scale-[1.02] transition-all">Save Daily Log</button>
+                            <form onSubmit={saveRemark} className="space-y-4">
+                                <textarea 
+                                    required 
+                                    rows={3.5} 
+                                    placeholder="Type details (e.g., late reasons, leave details, shift notes)..."
+                                    className="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-slate-750 border border-slate-200 dark:border-slate-700 text-xs font-semibold text-slate-700 dark:text-slate-200 focus:ring-2 focus:ring-primary/10 focus:border-primary outline-none resize-none transition-all placeholder-slate-400"
+                                    value={remark} 
+                                    onChange={e => setRemark(e.target.value)} 
+                                />
+                                <div className="flex gap-2 w-full">
+                                    <button type="button" onClick={() => setRemarkModal(null)} className="flex-1 py-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-650 text-slate-700 dark:text-slate-250 border border-transparent rounded-xl font-bold text-xs transition-all">Cancel</button>
+                                    <button type="submit" className="flex-[1.5] py-2.5 bg-primary hover:bg-primary-dark text-white rounded-xl font-bold text-xs transition-all shadow-md">Save Note</button>
+                                </div>
                             </form>
                         </motion.div>
                     </div>
                 )}
             </AnimatePresence>
 
+            {/* Compact Toast */}
             <AnimatePresence>
                 {toast && (
-                    <motion.div initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 40 }}
-                        className="fixed bottom-10 left-1/2 -translate-x-1/2 z-[200] flex items-center gap-4 px-8 py-4 bg-text border border-border rounded-none shadow-2xl">
-                        <CheckCircle2 className="w-5 h-5 text-emerald-500 shrink-0" />
-                        <p className="text-[10px] font-black text-background uppercase tracking-[0.2em] font-black">{toast}</p>
+                    <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 30 }}
+                        className="fixed bottom-8 left-1/2 -translate-x-1/2 z-[200] flex items-center gap-2.5 px-5 py-3 bg-slate-900 text-white rounded-2xl shadow-xl shadow-slate-950/20 text-xs font-bold tracking-wide select-none"
+                    >
+                        <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+                        <span>{toast}</span>
                     </motion.div>
                 )}
             </AnimatePresence>

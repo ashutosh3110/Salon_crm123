@@ -14,6 +14,8 @@ const promotionSchema = new mongoose.Schema({
     totalUsageLimit: { type: Number },
     usageLimitPerCustomer: { type: Number, default: 1 },
     usageCount: { type: Number, default: 0 },
+    outletIds: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Outlet' }],
+    applicableOn: { type: String, enum: ['SERVICE', 'PRODUCT', 'BOTH'], default: 'BOTH' },
 }, { timestamps: true });
 
 module.exports = mongoose.model('Promotion', promotionSchema);

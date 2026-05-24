@@ -40,7 +40,7 @@ function pickExpenseRows(res) {
     return [];
 }
 
-export default function ExpenseTracker() {
+export default function ExpenseTracker({ outletId }) {
     const [view, setView] = useState('list');
     return (
         <div className="flex flex-col h-full slide-right overflow-hidden">
@@ -66,16 +66,16 @@ export default function ExpenseTracker() {
             </div>
             <div className="flex-1 overflow-y-auto no-scrollbar bg-white">
                 {view === 'list' ? (
-                    <ExpenseList onAdd={() => setView('form')} />
+                    <ExpenseList onAdd={() => setView('form')} outletId={outletId} />
                 ) : (
-                    <ExpenseForm onCancel={() => setView('list')} onSaved={() => setView('list')} />
+                    <ExpenseForm onCancel={() => setView('list')} onSaved={() => setView('list')} outletId={outletId} />
                 )}
             </div>
         </div>
     );
 }
 
-function ExpenseList({ onAdd }) {
+function ExpenseList({ onAdd, outletId }) {
     const { outlets } = useBusiness();
     const [rows, setRows] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -86,7 +86,7 @@ function ExpenseList({ onAdd }) {
         setLoading(true);
         setError(null);
         try {
-            const res = await api.get('/finance/expenses', { params: { limit: 200, page: 1 } });
+            const res = await api.get('/finance/expenses', { params: { limit: 200, page: 1, outletId: outletId || undefined } });
             setRows(pickExpenseRows(res));
         } catch (e) {
             setError(e?.networkHint || e?.response?.data?.message || e.message || 'Failed to load expenses');
@@ -94,7 +94,7 @@ function ExpenseList({ onAdd }) {
         } finally {
             setLoading(false);
         }
-    }, []);
+    }, [outletId]);
 
     useEffect(() => {
         load();
@@ -262,19 +262,25 @@ function ExpenseList({ onAdd }) {
     );
 }
 
-function ExpenseForm({ onCancel, onSaved }) {
+function ExpenseForm({ onCancel, onSaved, outletId }) {
     const { outlets, fetchOutlets } = useBusiness();
     const [saving, setSaving] = useState(false);
     const [category, setCategory] = useState('Other');
     const [amount, setAmount] = useState('');
     const [paymentMode, setPaymentMode] = useState('cash'); // cash | online (maps to cash | online)
-    const [outletId, setOutletId] = useState('');
+    const [formOutletId, setFormOutletId] = useState(() => (outletId && outletId !== 'all' ? outletId : ''));
     const [dateStr, setDateStr] = useState(() => new Date().toISOString().slice(0, 10));
     const [notes, setNotes] = useState('');
 
     useEffect(() => {
         if (!outlets?.length) fetchOutlets?.();
     }, [outlets?.length, fetchOutlets]);
+
+    useEffect(() => {
+        if (outletId && outletId !== 'all') {
+            setFormOutletId(outletId);
+        }
+    }, [outletId]);
 
     const submit = async (e) => {
         e.preventDefault();
@@ -291,7 +297,7 @@ function ExpenseForm({ onCancel, onSaved }) {
                 paymentMethod: paymentMode === 'cash' ? 'cash' : 'upi', // Mapping 'online' to 'upi' to match backend enum
                 description: notes.trim(),
                 date: dateStr ? new Date(dateStr).toISOString() : undefined,
-                outletId: outletId || undefined,
+                outletId: formOutletId || undefined,
             });
             window.alert('Expense saved.');
             onSaved?.();
@@ -385,8 +391,8 @@ function ExpenseForm({ onCancel, onSaved }) {
                         <div className="relative">
                             <Store className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
                             <select
-                                value={outletId}
-                                onChange={(e) => setOutletId(e.target.value)}
+                                value={formOutletId}
+                                onChange={(e) => setFormOutletId(e.target.value)}
                                 className="w-full pl-10 pr-4 py-2.5 bg-white border border-border rounded-xl text-sm font-semibold text-text-secondary appearance-none transition-all"
                             >
                                 <option value="">All / not specified</option>

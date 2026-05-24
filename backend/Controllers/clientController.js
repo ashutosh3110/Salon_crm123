@@ -20,6 +20,23 @@ exports.getClients = async (req, res) => {
             return res.status(400).json({ success: false, message: 'Salon ID context missing' });
         }
 
+        // Build search query matching options
+        const matchQuery = { salonId: new mongoose.Types.ObjectId(salonId) };
+        if (req.query.wishesSentOnly === 'true') {
+            matchQuery.$or = [
+                { birthdayWishSent: true },
+                { anniversaryWishSent: true }
+            ];
+        }
+
+        const findQuery = { salonId };
+        if (req.query.wishesSentOnly === 'true') {
+            findQuery.$or = [
+                { birthdayWishSent: true },
+                { anniversaryWishSent: true }
+            ];
+        }
+
         // Pagination
         const page = parseInt(req.query.page) || 1;
         const limit = parseInt(req.query.limit) || 5;
@@ -27,7 +44,7 @@ exports.getClients = async (req, res) => {
 
         // Global Stats (Independent of pagination)
         const stats = await Customer.aggregate([
-            { $match: { salonId: new mongoose.Types.ObjectId(salonId) } },
+            { $match: matchQuery },
             { $group: {
                 _id: null,
                 totalRevenue: { $sum: "$totalSpend" },
@@ -40,7 +57,8 @@ exports.getClients = async (req, res) => {
 
         const globalStats = stats[0] || { totalRevenue: 0, totalVIPs: 0, totalInactive: 0, totalCount: 0 };
 
-        const clients = await Customer.find({ salonId })
+        const clients = await Customer.find(findQuery)
+            .populate('lastOutletId', 'name')
             .sort({ createdAt: -1 })
             .skip(skip)
             .limit(limit);
@@ -475,6 +493,44 @@ exports.sendManualPaymentReminder = async (req, res) => {
         });
     } catch (err) {
         console.error('Send manual payment reminder error:', err);
+        res.status(500).json({ success: false, message: 'Server Error' });
+    }
+};
+
+// @desc    Register birthday/anniversary wish sent
+// @route   PATCH /clients/:id/celebration-wish
+// @access  Private
+exports.registerCelebrationWish = async (req, res) => {
+    try {
+        const { type } = req.body; // 'birthday' or 'anniversary'
+        const client = await Customer.findOne({
+            _id: req.params.id,
+            salonId: req.user.salonId
+        });
+
+        if (!client) {
+            return res.status(404).json({ success: false, message: 'Client not found' });
+        }
+
+        if (type === 'birthday') {
+            client.birthdayWishSent = true;
+            client.lastBirthdayWishSentAt = new Date();
+        } else if (type === 'anniversary') {
+            client.anniversaryWishSent = true;
+            client.lastAnniversaryWishSentAt = new Date();
+        } else {
+            return res.status(400).json({ success: false, message: 'Invalid celebration type' });
+        }
+
+        await client.save();
+
+        res.json({
+            success: true,
+            message: 'Celebration wish registered successfully',
+            data: client
+        });
+    } catch (err) {
+        console.error('Register celebration wish error:', err);
         res.status(500).json({ success: false, message: 'Server Error' });
     }
 };

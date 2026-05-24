@@ -6,6 +6,10 @@ const financeTransactionSchema = new mongoose.Schema({
         ref: 'Salon',
         required: true
     },
+    outletId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Outlet'
+    },
     date: {
         type: Date,
         default: Date.now

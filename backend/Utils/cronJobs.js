@@ -3,6 +3,9 @@ const Salon = require('../Models/Salon');
 const User = require('../Models/User');
 const Booking = require('../Models/Booking');
 const Customer = require('../Models/Customer');
+const CustomerMembership = require('../Models/CustomerMembership');
+const ReminderHub = require('../Models/ReminderHub');
+const Service = require('../Models/Service');
 const { sendWapixoTemplate, checkAndDeductWhatsAppCredit, sendWhatsAppMessage } = require('./whatsapp');
 const { addLoyaltyPoints } = require('./loyalty');
 const { sendNotification } = require('./notification');
@@ -168,6 +171,9 @@ const initCronJobs = () => {
                 });
 
                 await addLoyaltyPoints(c._id, c.salonId, 'BIRTHDAY', 'Birthday Celebration Award');
+                c.birthdayWishSent = true;
+                c.lastBirthdayWishSentAt = new Date();
+                await c.save();
             }
 
             // Anniversaries
@@ -197,6 +203,9 @@ const initCronJobs = () => {
                 });
 
                 await addLoyaltyPoints(c._id, c.salonId, 'ANNIVERSARY', 'Anniversary Celebration Award');
+                c.anniversaryWishSent = true;
+                c.lastAnniversaryWishSentAt = new Date();
+                await c.save();
             }
         } catch (err) {
             console.error('Error in celebration cron:', err);
@@ -276,7 +285,231 @@ const initCronJobs = () => {
         }
     });
 
-    console.log('Cron Jobs Initialized: Subscription (00:00), Reminders (09:00), Celebrations (08:00), Payment Reminders (10:00)');
+    // 5. Membership Expiry Reminders (Daily at 11:30 AM)
+    cron.schedule('30 11 * * *', async () => {
+        console.log('Running daily customer membership expiry reminders...');
+        try {
+            const today = new Date();
+            const tomorrow = new Date();
+            tomorrow.setDate(today.getDate() + 1);
+
+            const startOfToday = new Date(today.setHours(0, 0, 0, 0));
+            const endOfToday = new Date(today.setHours(23, 59, 59, 999));
+
+            const startOfTomorrow = new Date(tomorrow.setHours(0, 0, 0, 0));
+            const endOfTomorrow = new Date(tomorrow.setHours(23, 59, 59, 999));
+
+            const templateName = process.env.WHATSAPP_TEMPLATE_MEMBERSHIP_EXPIRY || 'membership_expiry';
+
+            // 1. Remind customers expiring tomorrow (1 day before)
+            const tomorrowExpirations = await CustomerMembership.find({
+                expiryDate: { $gte: startOfTomorrow, $lte: endOfTomorrow },
+                status: 'active'
+            }).populate('customerId planId');
+
+            console.log(`[Membership-Cron] Found ${tomorrowExpirations.length} memberships expiring tomorrow.`);
+
+            for (const m of tomorrowExpirations) {
+                if (m.customerId?.phone) {
+                    const salonName = "our salon";
+                    const salon = await Salon.findById(m.salonId);
+                    const businessName = salon?.businessName || salon?.name || salonName;
+                    const planName = m.planId?.name || 'Membership Plan';
+                    const dateStr = new Date(m.expiryDate).toLocaleDateString('en-IN');
+
+                    const canSend = await checkAndDeductWhatsAppCredit(m.salonId);
+                    if (!canSend) {
+                        console.log(`[Membership-Cron] Skipping customer ${m.customerId.name} - Insufficient credits or notifications disabled.`);
+                        continue;
+                    }
+
+                    let sendResult;
+                    if (process.env.WHATSAPP_TEMPLATE_MEMBERSHIP_EXPIRY) {
+                        sendResult = await sendWapixoTemplate(m.customerId.phone, templateName, [
+                            m.customerId.name,
+                            planName,
+                            dateStr,
+                            "tomorrow",
+                            businessName
+                        ]);
+                    } else {
+                        const msg = `Dear ${m.customerId.name}, this is a friendly reminder that your membership *${planName}* at *${businessName}* is expiring tomorrow (${dateStr}). Renew today to keep enjoying your exclusive benefits!`;
+                        sendResult = await sendWhatsAppMessage(m.customerId.phone, msg);
+                    }
+                    console.log(`[Membership-Cron] Expiry reminder (tomorrow) dispatched to ${m.customerId.name}. Result:`, sendResult);
+                }
+            }
+
+            // 2. Remind customers expiring today (Same day)
+            const todayExpirations = await CustomerMembership.find({
+                expiryDate: { $gte: startOfToday, $lte: endOfToday },
+                status: 'active'
+            }).populate('customerId planId');
+
+            console.log(`[Membership-Cron] Found ${todayExpirations.length} memberships expiring today.`);
+
+            for (const m of todayExpirations) {
+                if (m.customerId?.phone) {
+                    const salon = await Salon.findById(m.salonId);
+                    const businessName = salon?.businessName || salon?.name || "our salon";
+                    const planName = m.planId?.name || 'Membership Plan';
+                    const dateStr = new Date(m.expiryDate).toLocaleDateString('en-IN');
+
+                    const canSend = await checkAndDeductWhatsAppCredit(m.salonId);
+                    if (!canSend) {
+                        console.log(`[Membership-Cron] Skipping customer ${m.customerId.name} - Insufficient credits.`);
+                        continue;
+                    }
+
+                    let sendResult;
+                    if (process.env.WHATSAPP_TEMPLATE_MEMBERSHIP_EXPIRY) {
+                        sendResult = await sendWapixoTemplate(m.customerId.phone, templateName, [
+                            m.customerId.name,
+                            planName,
+                            dateStr,
+                            "today",
+                            businessName
+                        ]);
+                    } else {
+                        const msg = `Dear ${m.customerId.name}, your membership *${planName}* at *${businessName}* is expiring today (${dateStr}). Renew now to avoid service interruption and continue enjoying your exclusive benefits!`;
+                        sendResult = await sendWhatsAppMessage(m.customerId.phone, msg);
+                    }
+                    console.log(`[Membership-Cron] Expiry reminder (today) dispatched to ${m.customerId.name}. Result:`, sendResult);
+
+                    // Auto mark membership status as expired
+                    m.status = 'expired';
+                    await m.save();
+                    console.log(`[Membership-Cron] Auto-updated status of membership ${m._id} to expired.`);
+                }
+            }
+
+        } catch (err) {
+            console.error('Error in customer membership cron:', err);
+        }
+    });
+
+    // 5. Bridal Booking Reminders (Daily at 08:30 AM)
+    cron.schedule('30 8 * * *', async () => {
+        console.log('Running daily bridal booking reminders...');
+        try {
+            const today = new Date();
+            const startOfToday = new Date(today.setHours(0, 0, 0, 0));
+            const endOfToday = new Date(today.setHours(23, 59, 59, 999));
+
+            const hubs = await ReminderHub.find({
+                'bridalBookings.eventDate': { $gte: startOfToday, $lte: endOfToday }
+            });
+
+            for (const hub of hubs) {
+                const salon = await Salon.findById(hub.salonId);
+                const salonName = salon?.businessName || salon?.name || 'Our Salon';
+
+                for (const b of hub.bridalBookings) {
+                    const bookingDate = new Date(b.eventDate);
+                    if (bookingDate >= startOfToday && bookingDate <= endOfToday) {
+                        let sameDayReminder = b.reminders.find(r => r.daysBefore === 0 || r.label === 'Same Day');
+                        if (!sameDayReminder) {
+                            sameDayReminder = { active: true, sentAt: null };
+                        }
+
+                        if (sameDayReminder.active && !sameDayReminder.sentAt) {
+                            const canSend = await checkAndDeductWhatsAppCredit(hub.salonId);
+                            if (canSend && b.clientPhone) {
+                                const phone = b.clientPhone.replace(/\D/g, '');
+                                const message = `Hi ${b.clientName}, Today is your big day! 👰✨ Your Bridal Service Booking (${b.service || 'Bridal Special'}) is scheduled for today. We are excited to make you look stunning for your wedding! - ${salonName}`;
+                                
+                                await sendWhatsAppMessage(phone, message);
+                                console.log(`[Bridal-Cron] Sent same-day WhatsApp reminder to ${b.clientName} (${phone})`);
+                                
+                                // Mark as sent
+                                const dbHub = await ReminderHub.findOne({ _id: hub._id });
+                                const dbBooking = dbHub.bridalBookings.id(b._id || b.id);
+                                if (dbBooking) {
+                                    let dbRem = dbBooking.reminders.find(r => r.daysBefore === 0 || r.label === 'Same Day');
+                                    if (!dbRem) {
+                                        dbBooking.reminders.push({
+                                            label: 'Same Day',
+                                            daysBefore: 0,
+                                            active: true,
+                                            sentAt: new Date()
+                                        });
+                                    } else {
+                                        dbRem.sentAt = new Date();
+                                    }
+                                    await dbHub.save();
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        } catch (err) {
+            console.error('Error in bridal reminder cron:', err);
+        }
+    });
+
+    // 6. Repeated Services Reminders (Daily at 09:30 AM)
+    cron.schedule('30 9 * * *', async () => {
+        console.log('Running daily repeated services reminders...');
+        try {
+            const repeatServices = await Service.find({ isRepeated: true });
+            
+            for (const service of repeatServices) {
+                const reminderDays = service.reminderDays || 30;
+                
+                const targetDate = new Date();
+                targetDate.setDate(targetDate.getDate() - reminderDays);
+                const startOfTarget = new Date(targetDate.setHours(0, 0, 0, 0));
+                const endOfTarget = new Date(targetDate.setHours(23, 59, 59, 999));
+                
+                const bookings = await Booking.find({
+                    serviceId: service._id,
+                    status: 'completed',
+                    appointmentDate: { $gte: startOfTarget, $lte: endOfTarget }
+                }).populate('clientId salonId outletId');
+                
+                for (const b of bookings) {
+                    if (b.clientId && b.clientId.phone) {
+                        // Check if customer has booked this service again AFTER this booking
+                        const newerBooking = await Booking.findOne({
+                            clientId: b.clientId._id,
+                            serviceId: service._id,
+                            appointmentDate: { $gt: b.appointmentDate }
+                        });
+                        
+                        if (newerBooking) {
+                            console.log(`[RepeatService-Cron] Skipping reminder for ${b.clientId.name} - already has newer booking/visit.`);
+                            continue;
+                        }
+                        
+                        const salonName = b.salonId?.businessName || b.salonId?.name || 'Our Salon';
+                        const canSend = await checkAndDeductWhatsAppCredit(b.outletId?._id || b.salonId?._id);
+                        
+                        if (canSend) {
+                            const phone = b.clientId.phone.replace(/\D/g, '');
+                            const message = `Hi ${b.clientId.name}, it's time for your repeat ${service.name} at ${salonName}! We recommend taking this service every ${reminderDays} days. Book your next slot now: ${process.env.FRONTEND_URL || 'https://wapixo.in'}/c/${b.salonId?._id}`;
+                            await sendWhatsAppMessage(phone, message);
+                            console.log(`[RepeatService-Cron] Sent repeat service reminder to ${b.clientId.name} (${phone}) for ${service.name}`);
+                        }
+                        
+                        // Send Push Notification
+                        await sendNotification({
+                            customerId: b.clientId._id,
+                            salonId: b.salonId?._id,
+                            title: 'Time for your next service! 💅✨',
+                            message: `Hi ${b.clientId.name}, it's time for your repeat ${service.name}. Book your slot now!`,
+                            type: 'booking',
+                            actionUrl: '/app/booking'
+                        });
+                    }
+                }
+            }
+        } catch (err) {
+            console.error('Error in repeated services cron:', err);
+        }
+    });
+
+    console.log('Cron Jobs Initialized: Subscription (00:00), Reminders (09:00), Celebrations (08:00), Payment Reminders (10:00), Membership Expiry (11:30), Bridal (08:30), Repeated Services (09:30)');
 };
 
 module.exports = initCronJobs;

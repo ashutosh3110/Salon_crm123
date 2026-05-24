@@ -172,6 +172,19 @@ exports.createBooking = async (req, res) => {
             paymentStatus: (paymentMethod === 'Wallet' || paymentMethod === 'wallet') ? 'paid' : 'unpaid'
         });
 
+        // Increment promotion usage count if couponCode is used
+        if (req.body.couponCode) {
+            try {
+                const Promotion = require('../Models/Promotion');
+                await Promotion.updateOne(
+                    { couponCode: req.body.couponCode.trim().toUpperCase(), salonId },
+                    { $inc: { usageCount: 1 } }
+                );
+            } catch (promoErr) {
+                console.error('[Booking-Promo] Error incrementing usage count:', promoErr);
+            }
+        }
+
         // If booking is created as completed, update customer stats
         if (booking.status === 'completed') {
             await Customer.findByIdAndUpdate(targetCustomerId, {
@@ -347,27 +360,38 @@ exports.updateStatus = async (req, res) => {
         // If status changed to completed, award loyalty points
         if (booking.status === 'completed' && oldStatus !== 'completed') {
             try {
-                const salon = await Salon.findById(booking.salonId);
-                if (salon && salon.loyaltySetting && salon.loyaltySetting.active) {
-                    const rate = salon.loyaltySetting.pointsRate || 100;
-                    const points = Math.floor(booking.totalPrice / rate);
-                    
-                    if (points > 0) {
-                        await Customer.findByIdAndUpdate(booking.clientId, {
-                            $inc: { loyaltyPoints: points }
-                        });
-
-                        // Create Loyalty Transaction record
-                        await LoyaltyTransaction.create({
-                            customerId: booking.clientId,
-                            salonId: booking.salonId,
-                            amount: points,
-                            type: 'EARN',
-                            referenceId: booking._id,
-                            source: 'BOOKING',
-                            description: `Earned from Booking #${booking._id.toString().slice(-6).toUpperCase()}`
-                        });
+                let points = 0;
+                let hasServicePoints = false;
+                
+                const service = await Service.findById(booking.serviceId);
+                if (service && service.loyaltyPoints) {
+                    points = service.loyaltyPoints;
+                    hasServicePoints = true;
+                }
+                
+                if (!hasServicePoints) {
+                    const settings = await Setting.findOne();
+                    if (settings && settings.loyaltySettings && settings.loyaltySettings.active) {
+                        const rate = settings.loyaltySettings.pointsRate || 100;
+                        points = Math.floor(booking.totalPrice / rate);
                     }
+                }
+                
+                if (points > 0) {
+                    await Customer.findByIdAndUpdate(booking.clientId, {
+                        $inc: { loyaltyPoints: points }
+                    });
+
+                    // Create Loyalty Transaction record
+                    await LoyaltyTransaction.create({
+                        customerId: booking.clientId,
+                        salonId: booking.salonId,
+                        amount: points,
+                        type: 'EARN',
+                        referenceId: booking._id,
+                        source: 'BOOKING',
+                        description: `Earned from Booking #${booking._id.toString().slice(-6).toUpperCase()}`
+                    });
                 }
             } catch (error) {
                 console.error('Error awarding loyalty points:', error);

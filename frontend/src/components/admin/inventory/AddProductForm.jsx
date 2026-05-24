@@ -56,6 +56,7 @@ export default function AddProductForm({ onSave, initialData, onCancel }) {
         categoryId: '',
         description: '',
         sellingPrice: '',
+        loyaltyPoints: '0',
         gstPercent: String(platformSettings?.productGst ?? 18),
         hsnCode: '',
         barcode: '',
@@ -91,6 +92,7 @@ export default function AddProductForm({ onSave, initialData, onCancel }) {
         ...(initialData || {}),
         // Robust safety guards for numeric fields to prevent NaN and uncontrolled warnings
         sellingPrice: (initialData?.sellingPrice !== undefined && initialData?.sellingPrice !== null && !isNaN(initialData.sellingPrice)) ? initialData.sellingPrice : defaultFormData.sellingPrice,
+        loyaltyPoints: (initialData?.loyaltyPoints !== undefined && initialData?.loyaltyPoints !== null && !isNaN(initialData.loyaltyPoints)) ? initialData.loyaltyPoints : defaultFormData.loyaltyPoints,
         threshold: (initialData?.threshold !== undefined && initialData?.threshold !== null && !isNaN(initialData.threshold)) ? initialData.threshold : defaultFormData.threshold,
         stock: (initialData?.stock !== undefined && initialData?.stock !== null && !isNaN(initialData.stock)) ? initialData.stock : defaultFormData.stock,
         unit: initialData?.unit || defaultFormData.unit,
@@ -107,6 +109,7 @@ export default function AddProductForm({ onSave, initialData, onCancel }) {
                 ...initialData,
                 categoryId: initialData.categoryId || initialData.category || '',
                 sellingPrice: initialData.sellingPrice ?? '',
+                loyaltyPoints: initialData.loyaltyPoints ?? '0',
                 threshold: initialData.threshold ?? initialData.minStock ?? '5',
                 stock: initialData.stock ?? '0',
                 gstPercent: initialData.gstPercent ?? (platformSettings?.productGst ? String(platformSettings.productGst) : '18'),
@@ -190,7 +193,8 @@ export default function AddProductForm({ onSave, initialData, onCancel }) {
             gstPercent: parseInt(formData.gstPercent),
             isInclusiveTax: formData.isInclusiveTax,
             mfgDate: formData.mfgDate,
-            expiryDate: formData.expiryDate
+            expiryDate: formData.expiryDate,
+            loyaltyPoints: parseInt(formData.loyaltyPoints) || 0
         });
         navigate('/admin/inventory/products');
     };
@@ -343,6 +347,18 @@ export default function AddProductForm({ onSave, initialData, onCancel }) {
                                     </div>
                                 </div>
                             </div>
+                        </div>
+
+                        <div className="space-y-1.5 pt-2">
+                            <label className="text-[9px] font-black text-text-muted uppercase tracking-[0.2em] text-emerald-600">Loyalty Points Earned</label>
+                            <input
+                                type="number"
+                                className="w-full px-4 py-3 bg-background border border-border rounded-lg text-sm font-black focus:border-primary outline-none transition-all text-emerald-600"
+                                placeholder="0"
+                                value={formData.loyaltyPoints || ''}
+                                onFocus={(e) => { if (e.target.value === '0') setFormData(prev => ({ ...prev, loyaltyPoints: '' })); }}
+                                onChange={(e) => setFormData({ ...formData, loyaltyPoints: Math.max(0, parseInt(e.target.value) || 0) })}
+                            />
                         </div>
                     </div>
                 </div>

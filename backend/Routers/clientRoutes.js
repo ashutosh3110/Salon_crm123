@@ -9,7 +9,8 @@ const {
     bulkImport,
     getPaymentDueClients,
     incrementReminderCount,
-    sendManualPaymentReminder
+    sendManualPaymentReminder,
+    registerCelebrationWish
 } = require('../Controllers/clientController');
 const { protect, authorize } = require('../Middleware/auth');
 
@@ -20,6 +21,7 @@ router.post('/bulk', authorize('admin', 'manager', 'receptionist'), bulkImport);
 
 router.get('/payment-due', authorize('admin', 'manager', 'receptionist', 'p:marketing'), getPaymentDueClients);
 router.patch('/:id/increment-reminder', authorize('admin', 'manager', 'receptionist'), incrementReminderCount);
+router.patch('/:id/celebration-wish', authorize('admin', 'manager', 'receptionist'), registerCelebrationWish);
 router.post('/:id/send-payment-reminder', authorize('admin', 'manager', 'receptionist'), sendManualPaymentReminder);
 
 router

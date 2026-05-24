@@ -6,6 +6,10 @@ const endOfDaySchema = new mongoose.Schema({
         ref: 'Salon',
         required: true
     },
+    outletId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Outlet'
+    },
     date: {
         type: Date,
         default: Date.now
@@ -72,6 +76,6 @@ const endOfDaySchema = new mongoose.Schema({
     timestamps: true
 });
 
-endOfDaySchema.index({ salonId: 1, date: 1 }, { unique: true });
+endOfDaySchema.index({ salonId: 1, outletId: 1, date: 1 }, { unique: true });
 
 module.exports = mongoose.model('EndOfDay', endOfDaySchema);
