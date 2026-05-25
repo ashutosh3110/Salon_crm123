@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import {
     Search,
     Filter,
@@ -64,6 +65,14 @@ export default function MembersListTab() {
         document.addEventListener('mousedown', handleClickOutside);
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
+
+    useEffect(() => {
+        const hasOpenModal = !!selectedMember || !!showAssignModal || !!selectedInvoice;
+        document.body.style.overflow = hasOpenModal ? 'hidden' : 'unset';
+        return () => {
+            document.body.style.overflow = 'unset';
+        };
+    }, [selectedMember, showAssignModal, selectedInvoice]);
 
     useEffect(() => {
         const loadMembers = async () => {
@@ -384,37 +393,44 @@ export default function MembersListTab() {
 
             {/* Member Details Modal */}
             <AnimatePresence>
-                {selectedMember && (
-                    <div className="fixed inset-0 z-[1000] flex items-start justify-center p-4 pt-10 sm:pt-16 bg-black/60 backdrop-blur-sm overflow-y-auto">
+                {selectedMember && createPortal(
+                    <div 
+                        className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm"
+                        onClick={() => setSelectedMember(null)}
+                    >
                         <motion.div
                             initial={{ opacity: 0, scale: 0.95, y: 20 }}
                             animate={{ opacity: 1, scale: 1, y: 0 }}
                             exit={{ opacity: 0, scale: 0.95, y: 20 }}
-                            className="bg-surface border border-border w-full max-w-lg overflow-hidden shadow-2xl rounded-none font-sans"
+                            className="bg-white border border-slate-200 w-full max-w-lg overflow-hidden shadow-2xl rounded-none font-sans text-slate-800"
+                            onClick={e => e.stopPropagation()}
                         >
                             {/* Modal Header */}
-                            <div className="bg-surface-alt border-b border-border/40 px-6 py-4 flex items-center justify-between">
+                            <div className="bg-white border-b border-slate-100 px-6 py-5 flex items-center justify-between">
                                 <div className="flex items-center gap-3">
                                     <ShieldCheck className="w-5 h-5 text-primary" />
-                                    <h3 className="text-sm font-black uppercase tracking-widest italic">Member Protocol Details</h3>
+                                    <h3 className="text-sm font-black text-slate-900 uppercase tracking-widest italic">Member Protocol Details</h3>
                                 </div>
-                                <button onClick={() => setSelectedMember(null)} className="text-text-muted hover:text-primary transition-colors">
+                                <button 
+                                    onClick={() => setSelectedMember(null)} 
+                                    className="p-2 rounded-full hover:bg-slate-100 text-slate-400 hover:text-rose-500 transition-colors"
+                                >
                                     <X size={20} />
                                 </button>
                             </div>
 
                             {/* Modal Body */}
-                            <div className="p-8 space-y-8">
+                            <div className="p-8 space-y-6">
                                 {/* Profile Header */}
                                 <div className="flex items-center gap-5">
                                     <div className="w-16 h-16 bg-primary/10 border-2 border-primary/20 flex items-center justify-center text-primary text-2xl font-black italic shadow-inner">
                                         {(selectedMember.name || 'U')[0]}
                                     </div>
                                     <div>
-                                        <h4 className="text-xl font-black text-foreground italic tracking-tight leading-none">
+                                        <h4 className="text-xl font-black text-slate-900 italic tracking-tight leading-none">
                                             {selectedMember.name || 'Unknown Client'}
                                         </h4>
-                                        <p className="text-[10px] font-black text-text-muted uppercase tracking-[0.3em] mt-2">
+                                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] mt-2">
                                             {maskPhone(selectedMember.phone || '', user?.role)}
                                         </p>
                                     </div>
@@ -422,21 +438,21 @@ export default function MembersListTab() {
 
                                 {/* Subscription Grid */}
                                 <div className="grid grid-cols-2 gap-4">
-                                    <div className="p-4 bg-surface-alt border border-border/40 group hover:border-primary/30 transition-all">
-                                        <span className="text-[9px] font-black text-text-muted uppercase tracking-widest block mb-1.5">Current Tier</span>
+                                    <div className="p-4 bg-slate-50 border border-slate-200 group hover:border-primary/30 transition-all text-left">
+                                        <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-1.5">Current Tier</span>
                                         <span className="text-sm font-black text-primary uppercase italic">{selectedMember.loyaltyPlan || 'STANDARD'}</span>
                                     </div>
-                                    <div className="p-4 bg-surface-alt border border-border/40 group hover:border-emerald-500/30 transition-all">
-                                        <span className="text-[9px] font-black text-text-muted uppercase tracking-widest block mb-1.5">Protocol Status</span>
+                                    <div className="p-4 bg-slate-50 border border-slate-200 group hover:border-emerald-500/30 transition-all text-left">
+                                        <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-1.5">Protocol Status</span>
                                         <StatusBadge status={selectedMember.loyaltyStatus || 'active'} />
                                     </div>
-                                    <div className="p-4 bg-surface-alt border border-border/40 group hover:border-text/30 transition-all">
-                                        <span className="text-[9px] font-black text-text-muted uppercase tracking-widest block mb-1.5">Activation Date</span>
-                                        <span className="text-sm font-black text-foreground italic">{new Date(selectedMember.createdAt).toLocaleDateString()}</span>
+                                    <div className="p-4 bg-slate-50 border border-slate-200 group hover:border-slate-300 transition-all text-left">
+                                        <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-1.5">Activation Date</span>
+                                        <span className="text-sm font-black text-slate-900 italic">{new Date(selectedMember.createdAt).toLocaleDateString()}</span>
                                     </div>
-                                    <div className="p-4 bg-surface-alt border border-border/40 group hover:border-text/30 transition-all">
-                                        <span className="text-[9px] font-black text-text-muted uppercase tracking-widest block mb-1.5">Expiry Timeline</span>
-                                        <span className="text-sm font-black text-foreground italic">{selectedMember.loyaltyExpiry || 'NEVER'}</span>
+                                    <div className="p-4 bg-slate-50 border border-slate-200 group hover:border-slate-300 transition-all text-left">
+                                        <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-1.5">Expiry Timeline</span>
+                                        <span className="text-sm font-black text-slate-900 italic">{selectedMember.loyaltyExpiry || 'NEVER'}</span>
                                     </div>
                                 </div>
 
@@ -446,9 +462,9 @@ export default function MembersListTab() {
                                         <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
                                             <Star className="w-5 h-5 text-primary" fill="currentColor" />
                                         </div>
-                                        <div>
-                                            <span className="text-[10px] font-black text-text-muted uppercase tracking-widest block leading-none mb-1">Accumulated Points</span>
-                                            <span className="text-xs font-bold text-text-secondary uppercase tracking-tighter">Loyalty Ledger Balance</span>
+                                        <div className="text-left">
+                                            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block leading-none mb-1">Accumulated Points</span>
+                                            <span className="text-xs font-bold text-slate-500 uppercase tracking-tighter">Loyalty Ledger Balance</span>
                                         </div>
                                     </div>
                                     <div className="text-3xl font-black text-primary italic tracking-tighter">
@@ -458,34 +474,47 @@ export default function MembersListTab() {
                             </div>
 
                             {/* Modal Footer */}
-                            <div className="bg-surface-alt border-t border-border/40 px-6 py-4 flex justify-end">
+                            <div className="bg-slate-50 border-t border-slate-100 px-6 py-4 flex justify-end">
                                 <button 
                                     onClick={() => setSelectedMember(null)}
-                                    className="px-6 py-2.5 bg-text text-background text-[10px] font-black uppercase tracking-[0.2em] hover:bg-primary transition-all shadow-lg"
+                                    className="px-6 py-2.5 bg-slate-900 hover:bg-primary text-white text-[10px] font-black uppercase tracking-[0.2em] transition-all shadow-lg rounded-none"
                                 >
                                     Close Registry
                                 </button>
                             </div>
                         </motion.div>
-                    </div>
+                    </div>,
+                    document.body
                 )}
             </AnimatePresence>
 
             {/* Assign Membership Plan Modal */}
             <AnimatePresence>
-                {showAssignModal && (
-                    <div className="fixed inset-0 z-[1000] flex items-start justify-center p-4 pt-10 sm:pt-16 bg-black/60 backdrop-blur-sm overflow-y-auto">
+                {showAssignModal && createPortal(
+                    <div 
+                        className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm"
+                        onClick={() => {
+                            setShowAssignModal(false);
+                            setSelectedCustomerId('');
+                            setSelectedCustomer(null);
+                            setSelectedPlanId('');
+                            setSearchCustomerTerm('');
+                            setErrorMessage('');
+                            setSuccessMessage('');
+                        }}
+                    >
                         <motion.div
                             initial={{ opacity: 0, scale: 0.95, y: 20 }}
                             animate={{ opacity: 1, scale: 1, y: 0 }}
                             exit={{ opacity: 0, scale: 0.95, y: 20 }}
-                            className="bg-surface border border-border w-full max-w-lg overflow-hidden shadow-2xl rounded-none font-sans"
+                            className="bg-white border border-slate-200 w-full max-w-lg overflow-hidden shadow-2xl rounded-none font-sans text-slate-800 flex flex-col max-h-[90vh]"
+                            onClick={e => e.stopPropagation()}
                         >
                             {/* Modal Header */}
-                            <div className="bg-surface-alt border-b border-border/40 px-6 py-4 flex items-center justify-between">
+                            <div className="bg-white border-b border-slate-100 px-6 py-5 flex items-center justify-between shrink-0">
                                 <div className="flex items-center gap-3">
                                     <ShieldCheck className="w-5 h-5 text-primary" />
-                                    <h3 className="text-sm font-black uppercase tracking-widest italic">Assign Subscription Plan</h3>
+                                    <h3 className="text-sm font-black text-slate-900 uppercase tracking-widest italic">Assign Subscription Plan</h3>
                                 </div>
                                 <button 
                                     onClick={() => {
@@ -497,23 +526,23 @@ export default function MembersListTab() {
                                         setErrorMessage('');
                                         setSuccessMessage('');
                                     }} 
-                                    className="text-text-muted hover:text-primary transition-colors"
+                                    className="p-2 rounded-full hover:bg-slate-100 text-slate-400 hover:text-rose-500 transition-colors"
                                 >
                                     <X size={20} />
                                 </button>
                             </div>
 
                             {/* Modal Body */}
-                            <form onSubmit={handleAssignMembership} className="p-8 space-y-6 text-left">
+                            <form onSubmit={handleAssignMembership} className="p-8 space-y-6 text-left overflow-y-auto no-scrollbar flex-1">
                                 {errorMessage && (
-                                    <div className="p-4 bg-rose-500/10 border border-rose-500/30 text-rose-500 text-xs font-bold flex items-center gap-2">
+                                    <div className="p-4 bg-rose-500/10 border border-rose-500/30 text-rose-600 text-xs font-bold flex items-center gap-2">
                                         <AlertCircle className="w-4 h-4" />
                                         {errorMessage}
                                     </div>
                                 )}
 
                                 {successMessage && (
-                                    <div className="p-4 bg-emerald-500/10 border border-emerald-500/30 text-emerald-500 text-xs font-bold flex items-center gap-2">
+                                    <div className="p-4 bg-emerald-500/10 border border-emerald-500/30 text-emerald-600 text-xs font-bold flex items-center gap-2">
                                         <ShieldCheck className="w-4 h-4" />
                                         {successMessage}
                                     </div>
@@ -521,9 +550,9 @@ export default function MembersListTab() {
 
                                 {/* Search & Select Customer */}
                                 <div className="relative" ref={dropdownRef}>
-                                    <label className="text-[10px] font-black text-text-muted uppercase tracking-widest block mb-2">Select Customer</label>
+                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-2">Select Customer</label>
                                     <div className="relative group">
-                                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-primary transition-colors" />
+                                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-primary transition-colors" />
                                         <input
                                             type="text"
                                             placeholder="Type to search or select customer..."
@@ -535,7 +564,7 @@ export default function MembersListTab() {
                                                 setSelectedCustomer(null);
                                                 setShowDropdown(true);
                                             }}
-                                            className="w-full h-12 bg-surface border border-border/40 pl-12 pr-10 text-xs font-bold text-foreground focus:border-primary outline-none transition-all shadow-sm cursor-pointer"
+                                            className="w-full h-12 bg-slate-50 border border-slate-200 pl-12 pr-10 text-xs font-bold text-slate-900 focus:border-primary outline-none transition-all shadow-sm rounded-none"
                                         />
                                         {selectedCustomerId ? (
                                             <button 
@@ -546,7 +575,7 @@ export default function MembersListTab() {
                                                     setSearchCustomerTerm('');
                                                     setShowDropdown(false);
                                                 }}
-                                                className="absolute right-4 top-1/2 -translate-y-1/2 text-text-muted hover:text-primary"
+                                                className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-900"
                                             >
                                                 <X size={16} />
                                             </button>
@@ -554,7 +583,7 @@ export default function MembersListTab() {
                                             <button 
                                                 type="button"
                                                 onClick={() => setShowDropdown(!showDropdown)}
-                                                className="absolute right-4 top-1/2 -translate-y-1/2 text-text-muted hover:text-primary"
+                                                className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-900"
                                             >
                                                 <ChevronDown size={16} className={`transition-transform duration-200 ${showDropdown ? 'rotate-180' : ''}`} />
                                             </button>
@@ -562,12 +591,12 @@ export default function MembersListTab() {
                                     </div>
                                     
                                     {showDropdown && (
-                                        <div className="absolute z-20 w-full mt-1 max-h-48 overflow-y-auto bg-surface border border-border shadow-2xl divide-y divide-border/20">
+                                        <div className="absolute z-20 w-full mt-1 max-h-48 overflow-y-auto bg-white border border-slate-200 shadow-2xl divide-y divide-slate-100">
                                             {searchCustomerTerm ? (
                                                 searchingCustomers ? (
-                                                    <div className="px-4 py-3 text-xs font-bold text-text-muted italic">Searching customer database...</div>
+                                                    <div className="px-4 py-3 text-xs font-bold text-slate-400 italic">Searching customer database...</div>
                                                 ) : searchResults.length === 0 ? (
-                                                    <div className="px-4 py-3 text-xs font-bold text-text-muted italic">No matching customers found.</div>
+                                                    <div className="px-4 py-3 text-xs font-bold text-slate-400 italic">No matching customers found.</div>
                                                 ) : (
                                                     searchResults.map(c => (
                                                         <div
@@ -579,10 +608,10 @@ export default function MembersListTab() {
                                                                 setSearchResults([]);
                                                                 setShowDropdown(false);
                                                             }}
-                                                            className="w-full text-left px-4 py-3 hover:bg-primary/10 transition-colors text-xs font-black italic flex justify-between items-center cursor-pointer"
+                                                            className="w-full text-left px-4 py-3 hover:bg-slate-50 transition-colors text-xs font-black italic flex justify-between items-center cursor-pointer text-slate-900"
                                                         >
                                                             <span>{c.name || 'Unknown'}</span>
-                                                            <span className="text-[10px] font-bold text-text-muted uppercase tracking-widest">{c.phone || ''}</span>
+                                                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{c.phone || ''}</span>
                                                         </div>
                                                     ))
                                                 )
@@ -598,14 +627,14 @@ export default function MembersListTab() {
                                                                 setSearchCustomerTerm(`${c.name || 'Unknown'} (${c.phone || ''})`);
                                                                 setShowDropdown(false);
                                                             }}
-                                                            className="w-full text-left px-4 py-3 hover:bg-primary/10 transition-colors text-xs font-black italic flex justify-between items-center cursor-pointer"
+                                                            className="w-full text-left px-4 py-3 hover:bg-slate-50 transition-colors text-xs font-black italic flex justify-between items-center cursor-pointer text-slate-900"
                                                         >
                                                             <span>{c.name || 'Unknown'}</span>
-                                                            <span className="text-[10px] font-bold text-text-muted uppercase tracking-widest">{c.phone || ''}</span>
+                                                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{c.phone || ''}</span>
                                                         </div>
                                                     ))
                                                 ) : (
-                                                    <div className="px-4 py-3 text-xs font-bold text-text-muted italic">No customers loaded. Start typing to search.</div>
+                                                    <div className="px-4 py-3 text-xs font-bold text-slate-400 italic">No customers loaded. Start typing to search.</div>
                                                 )
                                             )}
                                         </div>
@@ -614,11 +643,11 @@ export default function MembersListTab() {
 
                                 {/* Select Membership Plan */}
                                 <div>
-                                    <label className="text-[10px] font-black text-text-muted uppercase tracking-widest block mb-2">Select Membership Plan</label>
+                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-2">Select Membership Plan</label>
                                     <select
                                         value={selectedPlanId}
                                         onChange={(e) => setSelectedPlanId(e.target.value)}
-                                        className="w-full h-12 bg-surface border border-border/40 px-4 text-xs font-bold text-foreground focus:border-primary outline-none transition-all shadow-sm rounded-none"
+                                        className="w-full h-12 bg-slate-50 border border-slate-200 px-4 text-xs font-bold text-slate-900 focus:border-primary outline-none transition-all shadow-sm rounded-none"
                                     >
                                         <option value="">-- Choose a Plan --</option>
                                         {plans.map(p => (
@@ -632,11 +661,11 @@ export default function MembersListTab() {
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                     {/* Select Outlet */}
                                     <div>
-                                        <label className="text-[10px] font-black text-text-muted uppercase tracking-widest block mb-2">Select Outlet</label>
+                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-2">Select Outlet</label>
                                         <select
                                             value={selectedOutletId}
                                             onChange={(e) => setSelectedOutletId(e.target.value)}
-                                            className="w-full h-12 bg-surface border border-border/40 px-4 text-xs font-bold text-foreground focus:border-primary outline-none transition-all shadow-sm rounded-none"
+                                            className="w-full h-12 bg-slate-50 border border-slate-200 px-4 text-xs font-bold text-slate-900 focus:border-primary outline-none transition-all shadow-sm rounded-none"
                                         >
                                             <option value="">-- Choose Outlet --</option>
                                             {outlets.map(o => (
@@ -649,11 +678,11 @@ export default function MembersListTab() {
 
                                     {/* Select Payment Method */}
                                     <div>
-                                        <label className="text-[10px] font-black text-text-muted uppercase tracking-widest block mb-2">Payment Method</label>
+                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-2">Payment Method</label>
                                         <select
                                             value={paymentMethod}
                                             onChange={(e) => setPaymentMethod(e.target.value)}
-                                            className="w-full h-12 bg-surface border border-border/40 px-4 text-xs font-bold text-foreground focus:border-primary outline-none transition-all shadow-sm rounded-none"
+                                            className="w-full h-12 bg-slate-50 border border-slate-200 px-4 text-xs font-bold text-slate-900 focus:border-primary outline-none transition-all shadow-sm rounded-none"
                                         >
                                             <option value="cash">Cash</option>
                                             <option value="card">Card</option>
@@ -665,12 +694,12 @@ export default function MembersListTab() {
 
                                 {paymentMethod === 'wallet' && (
                                     selectedCustomer ? (
-                                        <div className="p-4 bg-emerald-500/10 border border-emerald-500/30 text-emerald-600 flex items-center justify-between rounded-none animate-in fade-in slide-in-from-top-2 duration-200">
+                                        <div className="p-4 bg-emerald-50 border border-emerald-200 text-emerald-600 flex items-center justify-between rounded-none animate-in fade-in slide-in-from-top-2 duration-200">
                                             <div className="flex items-center gap-2.5">
-                                                <div className="w-9 h-9 rounded-full bg-emerald-500/20 flex items-center justify-center">
+                                                <div className="w-9 h-9 rounded-full bg-emerald-100 flex items-center justify-center">
                                                     <Star className="w-5 h-5 text-emerald-600" fill="currentColor" />
                                                 </div>
-                                                <div>
+                                                <div className="text-left">
                                                     <span className="text-[10px] font-black uppercase tracking-wider block">Wallet Balance</span>
                                                     <span className="text-[10px] font-medium text-emerald-700/80">Available funds in customer's account</span>
                                                 </div>
@@ -680,9 +709,9 @@ export default function MembersListTab() {
                                             </div>
                                         </div>
                                     ) : (
-                                        <div className="p-4 bg-amber-500/10 border border-amber-500/30 text-amber-600 flex items-center gap-2.5 rounded-none animate-in fade-in slide-in-from-top-2 duration-200">
+                                        <div className="p-4 bg-amber-50 border border-amber-200 text-amber-600 flex items-center gap-2.5 rounded-none animate-in fade-in slide-in-from-top-2 duration-200">
                                             <AlertCircle className="w-5 h-5 text-amber-500 shrink-0" />
-                                            <span className="text-xs font-bold uppercase tracking-wider">Please select a customer first to view wallet balance.</span>
+                                            <span className="text-xs font-bold uppercase tracking-wider text-left">Please select a customer first to view wallet balance.</span>
                                         </div>
                                     )
                                 )}
@@ -704,7 +733,7 @@ export default function MembersListTab() {
                                     const isWalletInsufficient = (selectedCustomer.walletBalance || 0) < calculatedTotal;
                                     if (isWalletInsufficient) {
                                         return (
-                                            <div className="p-4 bg-rose-500/10 border border-rose-500/30 text-rose-500 text-xs font-bold flex items-center gap-2 animate-in fade-in slide-in-from-top-2 duration-200">
+                                            <div className="p-4 bg-rose-50 border border-rose-200 text-rose-600 text-xs font-bold flex items-center gap-2 animate-in fade-in slide-in-from-top-2 duration-200">
                                                 <AlertCircle className="w-4 h-4 shrink-0" />
                                                 <span>Insufficient Wallet Balance. Plan cost: ₹{calculatedTotal.toFixed(2)}, Wallet: ₹{(selectedCustomer.walletBalance || 0).toFixed(2)}.</span>
                                             </div>
@@ -735,25 +764,25 @@ export default function MembersListTab() {
                                     }
 
                                     return (
-                                        <div className="p-4 bg-surface-alt border border-border/40 space-y-2 mt-4 italic">
-                                            <div className="text-[9px] font-black text-text-muted uppercase tracking-widest">Plan Cost & Tax Ledger</div>
+                                        <div className="p-4 bg-slate-50 border border-slate-200 space-y-2 mt-4 italic text-slate-800">
+                                            <div className="text-[9px] font-black text-slate-400 uppercase tracking-widest text-left">Plan Cost & Tax Ledger</div>
                                             <div className="flex justify-between text-xs font-black">
-                                                <span className="text-text-muted uppercase">Base Price:</span>
+                                                <span className="text-slate-400 uppercase">Base Price:</span>
                                                 <span>₹{calculatedBase.toFixed(2)}</span>
                                             </div>
                                             <div className="flex justify-between text-xs font-black text-primary">
                                                 <span className="uppercase">GST ({taxRate}%):</span>
                                                 <span>{selectedPlan.taxType === 'including' ? 'INCLUDED' : '+'} ₹{calculatedTax.toFixed(2)}</span>
                                             </div>
-                                            <div className="h-[1px] bg-border/40 my-1" />
-                                            <div className="flex justify-between text-sm font-black text-foreground">
+                                            <div className="h-[1px] bg-slate-200 my-1" />
+                                            <div className="flex justify-between text-sm font-black text-slate-900">
                                                 <span className="uppercase">Total Amount Payable:</span>
                                                 <span>₹{calculatedTotal.toFixed(2)}</span>
                                             </div>
                                             {paymentMethod === 'wallet' && selectedCustomer && (
                                                 <>
-                                                    <div className="h-[1px] bg-border/40 my-1 border-dashed" />
-                                                    <div className="flex justify-between text-xs font-black text-emerald-600 animate-pulse">
+                                                    <div className="h-[1px] bg-slate-200 my-1 border-dashed" />
+                                                    <div className="flex justify-between text-xs font-black text-emerald-600">
                                                         <span className="uppercase">Est. Wallet After Purchase:</span>
                                                         <span>₹{Math.max(0, (selectedCustomer.walletBalance || 0) - calculatedTotal).toFixed(2)}</span>
                                                     </div>
@@ -762,87 +791,95 @@ export default function MembersListTab() {
                                         </div>
                                     );
                                 })()}
-
-                                {/* Modal Footer / Actions */}
-                                <div className="bg-surface-alt border-t border-border/40 -mx-8 -mb-8 px-8 py-4 flex justify-end gap-3">
-                                    <button 
-                                        type="button"
-                                        onClick={() => {
-                                            setShowAssignModal(false);
-                                            setSelectedCustomerId('');
-                                            setSelectedCustomer(null);
-                                            setSelectedPlanId('');
-                                            setSearchCustomerTerm('');
-                                            setErrorMessage('');
-                                            setSuccessMessage('');
-                                        }}
-                                        className="px-6 py-2.5 border border-border/40 text-[10px] font-black uppercase tracking-[0.2em] hover:bg-surface transition-all"
-                                    >
-                                        Cancel
-                                    </button>
-                                    <button 
-                                        type="submit"
-                                        disabled={
-                                            assigning || 
-                                            (paymentMethod === 'wallet' && selectedCustomer && (() => {
-                                                const selectedPlan = plans.find(p => String(p._id || p.id) === String(selectedPlanId));
-                                                if (!selectedPlan) return false;
-                                                const basePrice = Number(selectedPlan.price || 0);
-                                                const taxRate = Number(selectedPlan.taxRate || 0);
-                                                const calculatedTotal = selectedPlan.taxType === 'including' ? basePrice : basePrice + (basePrice * taxRate) / 100;
-                                                return (selectedCustomer.walletBalance || 0) < calculatedTotal;
-                                            })())
-                                        }
-                                        className="px-6 py-2.5 bg-primary text-white text-[10px] font-black uppercase tracking-[0.2em] hover:bg-primary-dark transition-all disabled:opacity-50 flex items-center gap-2"
-                                    >
-                                        {assigning ? 'Activating...' : 'Activate Subscription'}
-                                    </button>
-                                </div>
                             </form>
+
+                            {/* Modal Footer / Actions */}
+                            <div className="bg-slate-50 border-t border-slate-100 px-8 py-4 flex justify-end gap-3 shrink-0">
+                                <button 
+                                    type="button"
+                                    onClick={() => {
+                                        setShowAssignModal(false);
+                                        setSelectedCustomerId('');
+                                        setSelectedCustomer(null);
+                                        setSelectedPlanId('');
+                                        setSearchCustomerTerm('');
+                                        setErrorMessage('');
+                                        setSuccessMessage('');
+                                    }}
+                                    className="px-6 py-2.5 border border-slate-200 text-slate-600 hover:bg-slate-100 bg-white text-[10px] font-black uppercase tracking-[0.2em] rounded-none transition-all"
+                                >
+                                    Cancel
+                                </button>
+                                <button 
+                                    type="submit"
+                                    disabled={
+                                        assigning || 
+                                        (paymentMethod === 'wallet' && selectedCustomer && (() => {
+                                            const selectedPlan = plans.find(p => String(p._id || p.id) === String(selectedPlanId));
+                                            if (!selectedPlan) return false;
+                                            const basePrice = Number(selectedPlan.price || 0);
+                                            const taxRate = Number(selectedPlan.taxRate || 0);
+                                            const calculatedTotal = selectedPlan.taxType === 'including' ? basePrice : basePrice + (basePrice * taxRate) / 100;
+                                            return (selectedCustomer.walletBalance || 0) < calculatedTotal;
+                                        })())
+                                    }
+                                    className="px-6 py-2.5 bg-slate-900 text-white text-[10px] font-black uppercase tracking-[0.2em] hover:bg-primary transition-all disabled:opacity-50 flex items-center gap-2 rounded-none shadow-lg"
+                                >
+                                    {assigning ? 'Activating...' : 'Activate Subscription'}
+                                </button>
+                            </div>
                         </motion.div>
-                    </div>
+                    </div>,
+                    document.body
                 )}
             </AnimatePresence>
 
             {/* Invoice Preview Modal (Standard/Thermal) */}
             <AnimatePresence>
-                {selectedInvoice && (
-                    <div className="fixed inset-0 z-[1000] flex items-start justify-center p-4 pt-10 sm:pt-16 bg-black/60 backdrop-blur-sm overflow-y-auto no-print">
+                {selectedInvoice && createPortal(
+                    <div 
+                        className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm no-print"
+                        onClick={() => setSelectedInvoice(null)}
+                    >
                         <motion.div
                             initial={{ opacity: 0, scale: 0.95, y: 20 }}
                             animate={{ opacity: 1, scale: 1, y: 0 }}
                             exit={{ opacity: 0, scale: 0.95, y: 20 }}
-                            className="bg-surface border border-border w-full max-w-2xl overflow-hidden shadow-2xl rounded-none font-sans"
+                            className="bg-white border border-slate-200 w-full max-w-2xl overflow-hidden shadow-2xl rounded-none font-sans flex flex-col max-h-[90vh]"
+                            onClick={e => e.stopPropagation()}
                         >
                             {/* Modal Header */}
-                            <div className="bg-surface-alt border-b border-border/40 px-6 py-4 flex items-center justify-between">
+                            <div className="bg-white border-b border-slate-100 px-6 py-5 flex items-center justify-between shrink-0">
                                 <div className="flex items-center gap-3">
                                     <FileText className="w-5 h-5 text-primary" />
-                                    <h3 className="text-sm font-black uppercase tracking-widest italic">Invoice Billing Ledger</h3>
+                                    <h3 className="text-sm font-black text-slate-900 uppercase tracking-widest italic">Invoice Billing Ledger</h3>
                                 </div>
-                                <button onClick={() => setSelectedInvoice(null)} className="text-text-muted hover:text-primary transition-colors">
+                                <button 
+                                    onClick={() => setSelectedInvoice(null)} 
+                                    className="p-2 rounded-full hover:bg-slate-100 text-slate-400 hover:text-rose-500 transition-colors"
+                                >
                                     <X size={20} />
                                 </button>
                             </div>
 
                             {/* Format Switcher Tab Bar */}
-                            <div className="flex border-b border-border/30 bg-surface-alt p-1">
+                            <div className="flex border-b border-slate-100 bg-slate-50 p-1 shrink-0">
                                 <button
                                     onClick={() => setInvoiceTab('standard')}
-                                    className={`flex-1 py-3 text-center text-[10px] font-black uppercase tracking-widest transition-all ${
+                                    className={`flex-1 py-3 text-center text-[10px] font-black uppercase tracking-widest transition-all rounded-none ${
                                         invoiceTab === 'standard'
-                                            ? 'bg-white text-primary border border-border/40 font-extrabold shadow-sm'
-                                            : 'text-text-muted hover:text-foreground'
+                                            ? 'bg-white text-slate-900 border border-slate-200 font-extrabold shadow-sm'
+                                            : 'text-slate-400 hover:text-slate-950'
                                     }`}
                                 >
                                     Standard Invoice (A4)
                                 </button>
                                 <button
                                     onClick={() => setInvoiceTab('thermal')}
-                                    className={`flex-1 py-3 text-center text-[10px] font-black uppercase tracking-widest transition-all ${
+                                    className={`flex-1 py-3 text-center text-[10px] font-black uppercase tracking-widest transition-all rounded-none ${
                                         invoiceTab === 'thermal'
-                                            ? 'bg-white text-primary border border-border/40 font-extrabold shadow-sm'
-                                            : 'text-text-muted hover:text-foreground'
+                                            ? 'bg-white text-slate-900 border border-slate-200 font-extrabold shadow-sm'
+                                            : 'text-slate-400 hover:text-slate-950'
                                     }`}
                                 >
                                     Thermal POS Receipt (80mm)
@@ -850,10 +887,10 @@ export default function MembersListTab() {
                             </div>
 
                             {/* Modal Body / Invoice Sheet */}
-                            <div className="p-8 max-h-[60vh] overflow-y-auto bg-surface-alt/20 flex justify-center">
+                            <div className="p-8 overflow-y-auto bg-slate-100 flex justify-center flex-1 no-scrollbar">
                                 {invoiceTab === 'standard' ? (
                                     /* Standard A4 Styled Invoice Sheet */
-                                    <div id="invoice-print-area" className="w-full bg-white border border-border/40 shadow-inner p-8 text-black text-left font-mono text-[11px] leading-relaxed select-text print:border-0 print:shadow-none print:p-0 print:m-0 print:w-full">
+                                    <div id="invoice-print-area" className="w-full bg-white border border-slate-200 shadow-sm p-8 text-black text-left font-mono text-[11px] leading-relaxed select-text print:border-0 print:shadow-none print:p-0 print:m-0 print:w-full">
                                         <div className="flex justify-between items-start border-b border-black/80 pb-6 mb-6">
                                             <div>
                                                 <h1 className="text-xl font-black uppercase tracking-tight text-black">{selectedInvoice.salonId?.brandName || 'SALON LEDGER'}</h1>
@@ -940,7 +977,7 @@ export default function MembersListTab() {
                                     </div>
                                 ) : (
                                     /* POS Thermal Receipt 80mm Styled Sheet */
-                                    <div id="invoice-print-area" className="w-[300px] bg-white border border-dashed border-gray-400 shadow-md p-6 text-black text-left font-mono text-[10px] leading-relaxed select-text print:border-0 print:shadow-none print:p-0 print:m-0 print:w-full">
+                                    <div id="invoice-print-area" className="w-[300px] bg-white border border-dashed border-gray-400 shadow-sm p-6 text-black text-left font-mono text-[10px] leading-relaxed select-text print:border-0 print:shadow-none print:p-0 print:m-0 print:w-full">
                                         <div className="text-center space-y-1 pb-4 border-b border-dashed border-black">
                                             <h1 className="text-md font-black uppercase tracking-tighter text-black">{selectedInvoice.salonId?.brandName || 'SALON LEDGER'}</h1>
                                             <p className="text-[8px] uppercase tracking-widest text-gray-500">RECEIPT MANIFEST</p>
@@ -1001,10 +1038,10 @@ export default function MembersListTab() {
                             </div>
 
                             {/* Modal Footer / Actions */}
-                            <div className="bg-surface-alt border-t border-border/40 px-6 py-4 flex justify-end gap-3 text-right">
+                            <div className="bg-slate-50 border-t border-slate-100 px-6 py-4 flex justify-end gap-3 text-right shrink-0">
                                 <button
                                     onClick={() => setSelectedInvoice(null)}
-                                    className="px-6 py-2.5 border border-border/40 text-[10px] font-black uppercase tracking-[0.2em] hover:bg-surface transition-all"
+                                    className="px-6 py-2.5 border border-slate-200 bg-white text-slate-600 hover:bg-slate-100 text-[10px] font-black uppercase tracking-[0.2em] rounded-none transition-all"
                                 >
                                     Close
                                 </button>
@@ -1039,13 +1076,14 @@ export default function MembersListTab() {
                                             if (helper) helper.remove();
                                         }, 1000);
                                     }}
-                                    className="px-6 py-2.5 bg-primary text-white text-[10px] font-black uppercase tracking-[0.2em] hover:bg-primary-dark transition-all flex items-center gap-2"
+                                    className="px-6 py-2.5 bg-slate-900 text-white text-[10px] font-black uppercase tracking-[0.2em] hover:bg-primary transition-all flex items-center gap-2 rounded-none shadow-lg"
                                 >
                                     <Printer className="w-4 h-4" /> Print Receipt
                                 </button>
                             </div>
                         </motion.div>
-                    </div>
+                    </div>,
+                    document.body
                 )}
             </AnimatePresence>
         </div>

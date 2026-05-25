@@ -1,4 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { createPortal } from 'react-dom';
+import { motion, AnimatePresence } from 'framer-motion';
 import { 
     ArrowUpRight, 
     ArrowDownRight, 
@@ -53,6 +55,13 @@ export default function Transactions({ outletId }) {
     const [description, setDescription] = useState('');
     const [date, setDate] = useState(todayIso);
     const [formOutletId, setFormOutletId] = useState(() => (outletId && outletId !== 'all' ? outletId : ''));
+
+    useEffect(() => {
+        document.body.style.overflow = isOpen ? 'hidden' : 'unset';
+        return () => {
+            document.body.style.overflow = 'unset';
+        };
+    }, [isOpen]);
 
     useEffect(() => {
         if (!outlets?.length && fetchOutlets) fetchOutlets();
@@ -394,239 +403,255 @@ export default function Transactions({ outletId }) {
             </div>
 
             {/* Record New Transaction Modal */}
-            {isOpen && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4 animate-fadeIn">
-                    <div className="bg-white border border-border rounded-3xl max-w-lg w-full overflow-hidden shadow-2xl animate-scaleUp">
-                        {/* Modal Header */}
-                        <div className="p-6 border-b border-border flex justify-between items-center bg-surface/30">
-                            <div>
-                                <h3 className="text-base font-bold text-text">Record New Transaction</h3>
-                                <p className="text-xs text-text-secondary mt-0.5">Lejhar entries manual add karein.</p>
-                            </div>
-                            <button
-                                type="button"
-                                onClick={() => setIsOpen(false)}
-                                className="p-1.5 text-text-muted hover:text-text rounded-xl hover:bg-surface/50 transition-colors"
+            {createPortal(
+                <AnimatePresence>
+                    {isOpen && (
+                        <div 
+                            className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm no-print"
+                            onClick={() => setIsOpen(false)}
+                        >
+                            <motion.div 
+                                initial={{ opacity: 0, scale: 0.95 }} 
+                                animate={{ opacity: 1, scale: 1 }} 
+                                exit={{ opacity: 0, scale: 0.95 }}
+                                className="bg-white dark:bg-slate-800 border border-slate-205 dark:border-slate-700 w-full max-w-lg shadow-2xl rounded-3xl relative flex flex-col max-h-[90vh] transition-all text-left"
+                                onClick={e => e.stopPropagation()}
                             >
-                                <X className="w-5 h-5" />
-                            </button>
-                        </div>
-
-                        {/* Modal Body */}
-                        <form onSubmit={handleSave} className="p-6 space-y-4">
-                            {formError && (
-                                <div className="p-3 text-xs font-bold text-rose-800 bg-rose-50 border border-rose-200 rounded-xl">
-                                    {formError}
-                                </div>
-                            )}
-
-                            {/* Mode Selector tabs */}
-                            <div className="grid grid-cols-4 gap-2 p-1 bg-surface border border-border rounded-xl">
-                                {[
-                                    { key: 'income', label: 'Income' },
-                                    { key: 'expense', label: 'Expense' },
-                                    { key: 'transfer', label: 'Transfer' },
-                                    { key: 'equity', label: 'Invest' }
-                                ].map((item) => (
+                                {/* Modal Header */}
+                                <div className="p-6 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center bg-white dark:bg-slate-800 rounded-t-3xl">
+                                    <div>
+                                        <h3 className="text-base font-black text-slate-850 dark:text-slate-100 uppercase tracking-widest flex items-center gap-2">
+                                            <ArrowDownUp className="w-5 h-5 text-primary" />
+                                            Record New Transaction
+                                        </h3>
+                                        <p className="text-[10px] text-slate-400 font-bold uppercase mt-1 tracking-wider">Lejhar entries manual add karein.</p>
+                                    </div>
                                     <button
-                                        key={item.key}
                                         type="button"
-                                        onClick={() => setTxnMode(item.key)}
-                                        className={`py-2 text-[10px] font-bold uppercase tracking-wider rounded-lg transition-all ${
-                                            txnMode === item.key
-                                                ? 'bg-white text-text shadow-sm'
-                                                : 'text-text-muted hover:text-text'
-                                        }`}
+                                        onClick={() => setIsOpen(false)}
+                                        className="p-2 text-slate-400 hover:text-rose-500 rounded-full hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
                                     >
-                                        {item.label}
+                                        <X className="w-5 h-5" />
                                     </button>
-                                ))}
-                            </div>
-
-                            {/* Dynamic Category select */}
-                            {txnMode === 'income' && (
-                                <div className="space-y-1.5">
-                                    <label className="text-[10px] font-bold text-text-muted uppercase tracking-widest ml-1">Category</label>
-                                    <select
-                                        value={category}
-                                        onChange={(e) => setCategory(e.target.value)}
-                                        className="w-full p-3 bg-surface border border-border rounded-xl text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-primary/10"
-                                    >
-                                        <option value="Other Income">Other Income</option>
-                                        <option value="Service Revenue">Service Revenue (Non-POS)</option>
-                                        <option value="Product Sale">Product Sale (Non-POS)</option>
-                                    </select>
                                 </div>
-                            )}
 
-                            {txnMode === 'expense' && (
-                                <div className="space-y-1.5">
-                                    <label className="text-[10px] font-bold text-text-muted uppercase tracking-widest ml-1">Category</label>
-                                    <select
-                                        value={category}
-                                        onChange={(e) => setCategory(e.target.value)}
-                                        className="w-full p-3 bg-surface border border-border rounded-xl text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-primary/10"
-                                    >
-                                        <option value="Other Expense">Other Expense</option>
-                                        <option value="Rent">Rent</option>
-                                        <option value="Utilities">Utilities</option>
-                                        <option value="Salaries & Wages">Salaries & Wages</option>
-                                        <option value="Marketing">Marketing Expense</option>
-                                    </select>
-                                </div>
-                            )}
+                                {/* Modal Body */}
+                                <form onSubmit={handleSave} className="p-6 space-y-4 overflow-y-auto max-h-[calc(90vh-160px)]">
+                                    {formError && (
+                                        <div className="p-3 text-xs font-bold text-rose-800 bg-rose-50 border border-rose-200 rounded-xl">
+                                            {formError}
+                                        </div>
+                                    )}
 
-                            {txnMode === 'transfer' && (
-                                <div className="space-y-1.5">
-                                    <label className="text-[10px] font-bold text-text-muted uppercase tracking-widest ml-1">Transfer Mode</label>
-                                    <select
-                                        value={category}
-                                        onChange={(e) => {
-                                            setCategory(e.target.value);
-                                            // Auto configure accounts
-                                            if (e.target.value === 'Bank Deposit') {
-                                                setAccountType('cash');
-                                                setPaymentMethod('cash');
-                                            } else {
-                                                setAccountType('bank');
-                                                setPaymentMethod('bank_transfer');
-                                            }
-                                        }}
-                                        className="w-full p-3 bg-surface border border-border rounded-xl text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-primary/10"
-                                    >
-                                        <option value="Bank Deposit">Deposit Cash to Bank (Cash → Bank)</option>
-                                        <option value="Bank Withdrawal">Withdraw Cash from Bank (Bank → Cash)</option>
-                                    </select>
-                                </div>
-                            )}
+                                    {/* Mode Selector tabs */}
+                                    <div className="grid grid-cols-4 gap-2 p-1 bg-slate-100 dark:bg-slate-700/60 border border-slate-200/40 dark:border-slate-600 rounded-xl">
+                                        {[
+                                            { key: 'income', label: 'Income' },
+                                            { key: 'expense', label: 'Expense' },
+                                            { key: 'transfer', label: 'Transfer' },
+                                            { key: 'equity', label: 'Invest' }
+                                        ].map((item) => (
+                                            <button
+                                                key={item.key}
+                                                type="button"
+                                                onClick={() => setTxnMode(item.key)}
+                                                className={`py-2 text-[10px] font-extrabold uppercase tracking-wider rounded-lg transition-all ${
+                                                    txnMode === item.key
+                                                        ? 'bg-white dark:bg-slate-800 text-slate-850 dark:text-slate-100 shadow-sm'
+                                                        : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'
+                                                }`}
+                                            >
+                                                {item.label}
+                                            </button>
+                                        ))}
+                                    </div>
 
-                            {txnMode === 'equity' && (
-                                <div className="space-y-1.5">
-                                    <label className="text-[10px] font-bold text-text-muted uppercase tracking-widest ml-1">Owner Action</label>
-                                    <select
-                                        value={category}
-                                        onChange={(e) => setCategory(e.target.value)}
-                                        className="w-full p-3 bg-surface border border-border rounded-xl text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-primary/10"
-                                    >
-                                        <option value="Owner Investment">Owner Investment (Equity Inflow)</option>
-                                        <option value="Owner Withdrawal">Owner Withdrawal (Drawings Outflow)</option>
-                                    </select>
-                                </div>
-                            )}
+                                    {/* Dynamic Category select */}
+                                    {txnMode === 'income' && (
+                                        <div className="space-y-1">
+                                            <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-1">Category</label>
+                                            <select
+                                                value={category}
+                                                onChange={(e) => setCategory(e.target.value)}
+                                                className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-750 border border-slate-205 dark:border-slate-700 rounded-xl text-xs font-bold text-slate-900 dark:text-slate-100 focus:border-primary outline-none cursor-pointer"
+                                            >
+                                                <option value="Other Income" className="bg-white dark:bg-slate-800">Other Income</option>
+                                                <option value="Service Revenue" className="bg-white dark:bg-slate-800">Service Revenue (Non-POS)</option>
+                                                <option value="Product Sale" className="bg-white dark:bg-slate-800">Product Sale (Non-POS)</option>
+                                            </select>
+                                        </div>
+                                    )}
 
-                            <div className="grid grid-cols-2 gap-4">
-                                {/* Amount */}
-                                <div className="space-y-1.5">
-                                    <label className="text-[10px] font-bold text-text-muted uppercase tracking-widest ml-1">Amount</label>
-                                    <div className="relative">
-                                        <span className="absolute left-4 top-1/2 -translate-y-1/2 font-bold text-text-muted">₹</span>
-                                        <input
-                                            type="number"
-                                            value={amount}
-                                            required
-                                            onChange={(e) => setAmount(e.target.value)}
-                                            placeholder="1,000"
-                                            className="w-full pl-10 pr-4 py-3 bg-surface border border-border rounded-xl text-sm font-bold focus:outline-none focus:ring-2 focus:ring-primary/10"
+                                    {txnMode === 'expense' && (
+                                        <div className="space-y-1">
+                                            <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-1">Category</label>
+                                            <select
+                                                value={category}
+                                                onChange={(e) => setCategory(e.target.value)}
+                                                className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-750 border border-slate-205 dark:border-slate-700 rounded-xl text-xs font-bold text-slate-900 dark:text-slate-100 focus:border-primary outline-none cursor-pointer"
+                                            >
+                                                <option value="Other Expense" className="bg-white dark:bg-slate-800">Other Expense</option>
+                                                <option value="Rent" className="bg-white dark:bg-slate-800">Rent</option>
+                                                <option value="Utilities" className="bg-white dark:bg-slate-800">Utilities</option>
+                                                <option value="Salaries & Wages" className="bg-white dark:bg-slate-800">Salaries & Wages</option>
+                                                <option value="Marketing" className="bg-white dark:bg-slate-800">Marketing Expense</option>
+                                            </select>
+                                        </div>
+                                    )}
+
+                                    {txnMode === 'transfer' && (
+                                        <div className="space-y-1">
+                                            <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-1">Transfer Mode</label>
+                                            <select
+                                                value={category}
+                                                onChange={(e) => {
+                                                    setCategory(e.target.value);
+                                                    if (e.target.value === 'Bank Deposit') {
+                                                        setAccountType('cash');
+                                                        setPaymentMethod('cash');
+                                                    } else {
+                                                        setAccountType('bank');
+                                                        setPaymentMethod('bank_transfer');
+                                                    }
+                                                }}
+                                                className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-750 border border-slate-205 dark:border-slate-700 rounded-xl text-xs font-bold text-slate-900 dark:text-slate-100 focus:border-primary outline-none cursor-pointer"
+                                            >
+                                                <option value="Bank Deposit" className="bg-white dark:bg-slate-800">Deposit Cash to Bank (Cash → Bank)</option>
+                                                <option value="Bank Withdrawal" className="bg-white dark:bg-slate-800">Withdraw Cash from Bank (Bank → Cash)</option>
+                                            </select>
+                                        </div>
+                                    )}
+
+                                    {txnMode === 'equity' && (
+                                        <div className="space-y-1">
+                                            <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-1">Owner Action</label>
+                                            <select
+                                                value={category}
+                                                onChange={(e) => setCategory(e.target.value)}
+                                                className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-750 border border-slate-205 dark:border-slate-700 rounded-xl text-xs font-bold text-slate-900 dark:text-slate-100 focus:border-primary outline-none cursor-pointer"
+                                            >
+                                                <option value="Owner Investment" className="bg-white dark:bg-slate-800">Owner Investment (Equity Inflow)</option>
+                                                <option value="Owner Withdrawal" className="bg-white dark:bg-slate-800">Owner Withdrawal (Drawings Outflow)</option>
+                                            </select>
+                                        </div>
+                                    )}
+
+                                    <div className="grid grid-cols-2 gap-4">
+                                        {/* Amount */}
+                                        <div className="space-y-1">
+                                            <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-1">Amount</label>
+                                            <div className="relative">
+                                                <span className="absolute left-4 top-1/2 -translate-y-1/2 font-black text-slate-450 dark:text-slate-500">₹</span>
+                                                <input
+                                                    type="number"
+                                                    value={amount}
+                                                    required
+                                                    onChange={(e) => setAmount(e.target.value)}
+                                                    placeholder="1,000"
+                                                    className="w-full pl-10 pr-4 py-3 bg-slate-50 dark:bg-slate-750 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-bold text-slate-900 dark:text-slate-100 focus:border-primary outline-none"
+                                                />
+                                            </div>
+                                        </div>
+
+                                        {/* Date */}
+                                        <div className="space-y-1">
+                                            <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-1">Date</label>
+                                            <input
+                                                type="date"
+                                                value={date}
+                                                required
+                                                onChange={(e) => setDate(e.target.value)}
+                                                className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-750 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-bold text-slate-900 dark:text-slate-100 focus:border-primary outline-none cursor-pointer"
+                                            />
+                                        </div>
+                                    </div>
+
+                                    {/* Payment Mode */}
+                                    {txnMode !== 'transfer' && (
+                                        <div className="space-y-1">
+                                            <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-1">Payment Mode</label>
+                                            <select
+                                                value={accountType === 'cash' ? 'cash' : 'online'}
+                                                onChange={(e) => {
+                                                    const val = e.target.value;
+                                                    if (val === 'cash') {
+                                                        setAccountType('cash');
+                                                        setPaymentMethod('cash');
+                                                    } else {
+                                                        setAccountType('bank');
+                                                        setPaymentMethod('online');
+                                                    }
+                                                }}
+                                                className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-750 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-bold text-slate-900 dark:text-slate-100 focus:border-primary outline-none cursor-pointer"
+                                            >
+                                                <option value="cash" className="bg-white dark:bg-slate-800">Cash</option>
+                                                <option value="online" className="bg-white dark:bg-slate-800">Online (UPI / QR / Card / Bank Transfer)</option>
+                                            </select>
+                                        </div>
+                                    )}
+
+                                    {/* Help Info Box for Bank transfers */}
+                                    {txnMode === 'transfer' && (
+                                        <div className="p-3.5 bg-blue-50/70 dark:bg-blue-900/10 border border-blue-200/50 dark:border-blue-800/30 text-blue-750 dark:text-blue-300 rounded-2xl flex items-start gap-2.5 text-xs font-bold leading-normal">
+                                            <Info className="w-4 h-4 shrink-0 mt-0.5" />
+                                            <p>
+                                                Iss double-entry transfer se automatically do records banenge: Cash account se outflow aur Bank account me inflow (ya vice-versa).
+                                            </p>
+                                        </div>
+                                    )}
+
+                                    {/* Outlet select dropdown */}
+                                    <div className="space-y-1">
+                                        <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-1">Outlet</label>
+                                        <select
+                                            value={formOutletId}
+                                            onChange={(e) => setFormOutletId(e.target.value)}
+                                            className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-750 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-bold text-slate-900 dark:text-slate-100 focus:border-primary outline-none cursor-pointer"
+                                        >
+                                            <option value="" className="bg-white dark:bg-slate-800">All Outlets / Not Specified</option>
+                                            {outlets.map((o) => (
+                                                <option key={o._id || o.id} value={o._id || o.id} className="bg-white dark:bg-slate-800">
+                                                    {o.name}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    </div>
+
+                                    {/* Description */}
+                                    <div className="space-y-1">
+                                        <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-1">Remarks</label>
+                                        <textarea
+                                            value={description}
+                                            onChange={(e) => setDescription(e.target.value)}
+                                            placeholder="e.g. Rent payment, Electricity bill, Staff salary..."
+                                            className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-750 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-medium text-slate-900 dark:text-slate-100 focus:border-primary outline-none resize-none placeholder-slate-400"
+                                            rows={2}
                                         />
                                     </div>
-                                </div>
 
-                                {/* Date */}
-                                <div className="space-y-1.5">
-                                    <label className="text-[10px] font-bold text-text-muted uppercase tracking-widest ml-1">Date</label>
-                                    <input
-                                        type="date"
-                                        value={date}
-                                        required
-                                        onChange={(e) => setDate(e.target.value)}
-                                        className="w-full p-3 bg-surface border border-border rounded-xl text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-primary/10"
-                                    />
-                                </div>
-                            </div>
-
-                            {/* Payment Mode */}
-                            {txnMode !== 'transfer' && (
-                                <div className="space-y-1.5">
-                                    <label className="text-[10px] font-bold text-text-muted uppercase tracking-widest ml-1">Payment Mode</label>
-                                    <select
-                                        value={accountType === 'cash' ? 'cash' : 'online'}
-                                        onChange={(e) => {
-                                            const val = e.target.value;
-                                            if (val === 'cash') {
-                                                setAccountType('cash');
-                                                setPaymentMethod('cash');
-                                            } else {
-                                                setAccountType('bank');
-                                                setPaymentMethod('online');
-                                            }
-                                        }}
-                                        className="w-full p-3 bg-surface border border-border rounded-xl text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-primary/10"
-                                    >
-                                        <option value="cash">Cash</option>
-                                        <option value="online">Online (UPI / QR / Card / Bank Transfer)</option>
-                                    </select>
-                                </div>
-                            )}
-
-                            {/* Help Info Box for Bank transfers */}
-                            {txnMode === 'transfer' && (
-                                <div className="p-3 bg-blue-50 border border-blue-200 text-blue-800 rounded-2xl flex items-start gap-2 text-xs font-semibold">
-                                    <Info className="w-4 h-4 shrink-0 mt-0.5" />
-                                    <p>
-                                        Iss double-entry transfer se automatically do records banenge: Cash account se outflow aur Bank account me inflow (ya vice-versa).
-                                    </p>
-                                </div>
-                            )}
-
-                            {/* Outlet select dropdown */}
-                            <div className="space-y-1.5">
-                                <label className="text-[10px] font-bold text-text-muted uppercase tracking-widest ml-1">Outlet</label>
-                                <select
-                                    value={formOutletId}
-                                    onChange={(e) => setFormOutletId(e.target.value)}
-                                    className="w-full p-3 bg-surface border border-border rounded-xl text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-primary/10"
-                                >
-                                    <option value="">All Outlets / Not Specified</option>
-                                    {outlets.map((o) => (
-                                        <option key={o._id || o.id} value={o._id || o.id}>
-                                            {o.name}
-                                        </option>
-                                    ))}
-                                </select>
-                            </div>
-
-                            {/* Description */}
-                            <div className="space-y-1.5">
-                                <label className="text-[10px] font-bold text-text-muted uppercase tracking-widest ml-1">Remarks</label>
-                                <textarea
-                                    value={description}
-                                    onChange={(e) => setDescription(e.target.value)}
-                                    placeholder="e.g. Rent payment, Electricity bill, Staff salary..."
-                                    className="w-full p-3 bg-surface border border-border rounded-xl text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-primary/10 resize-none"
-                                    rows={2}
-                                />
-                            </div>
-
-                            {/* Action Buttons */}
-                            <div className="pt-4 border-t border-border flex gap-3">
-                                <button
-                                    type="button"
-                                    onClick={() => setIsOpen(false)}
-                                    className="flex-1 py-3 border border-border text-text-secondary text-xs font-bold rounded-xl hover:bg-surface transition-colors"
-                                >
-                                    Cancel
-                                </button>
-                                <button
-                                    type="submit"
-                                    disabled={saving}
-                                    className="flex-1 py-3 bg-primary text-white text-xs font-bold rounded-xl hover:shadow-lg hover:shadow-primary/20 transition-all disabled:opacity-55"
-                                >
-                                    {saving ? 'Saving...' : 'Save Entry'}
-                                </button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
+                                    {/* Action Buttons */}
+                                    <div className="pt-4 border-t border-slate-100 dark:border-slate-700 flex gap-3">
+                                        <button
+                                            type="button"
+                                            onClick={() => setIsOpen(false)}
+                                            className="flex-1 py-3 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-350 text-xs font-bold rounded-xl hover:bg-slate-50 dark:hover:bg-slate-755 transition-colors"
+                                        >
+                                            Cancel
+                                        </button>
+                                        <button
+                                            type="submit"
+                                            disabled={saving}
+                                            className="flex-1 py-3 bg-slate-900 text-white hover:bg-primary text-xs font-bold rounded-xl hover:shadow-lg hover:shadow-primary/20 transition-all disabled:opacity-55"
+                                        >
+                                            {saving ? 'Saving...' : 'Save Entry'}
+                                        </button>
+                                    </div>
+                                </form>
+                            </motion.div>
+                        </div>
+                    )}
+                </AnimatePresence>,
+                document.body
             )}
         </div>
     );

@@ -1,4 +1,6 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import { createPortal } from 'react-dom';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
     FileText,
     Calendar,
@@ -63,6 +65,14 @@ export default function SupplierInvoices() {
         notes: '',
         sendWhatsApp: false
     });
+
+    useEffect(() => {
+        const hasOpenModal = !!payingKey || !!showCreateModal;
+        document.body.style.overflow = hasOpenModal ? 'hidden' : 'unset';
+        return () => {
+            document.body.style.overflow = 'unset';
+        };
+    }, [payingKey, showCreateModal]);
 
     const resetInvoiceForm = () => {
         setInvoiceForm({
@@ -887,531 +897,548 @@ export default function SupplierInvoices() {
                 </table>
             </div>
 
-            {payingKey && payingInvoice && (() => {
-                const outstandingAmt = Math.max(0, Number(payingInvoice.outstanding || 0));
-                const cashAmt = parseFloat(payCashAmount) || 0;
-                const onlineAmt = parseFloat(payOnlineAmount) || 0;
-                const currentPayAmt = cashAmt + onlineAmt;
-                const remainingAfterPay = Math.max(0, outstandingAmt - currentPayAmt);
+            {createPortal(
+                <AnimatePresence>
+                    {payingKey && payingInvoice && (() => {
+                        const outstandingAmt = Math.max(0, Number(payingInvoice.outstanding || 0));
+                        const cashAmt = parseFloat(payCashAmount) || 0;
+                        const onlineAmt = parseFloat(payOnlineAmount) || 0;
+                        const currentPayAmt = cashAmt + onlineAmt;
+                        const remainingAfterPay = Math.max(0, outstandingAmt - currentPayAmt);
 
-                return (
-                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-                    <div className="bg-white border border-border w-full max-w-lg shadow-2xl rounded-2xl overflow-hidden">
-                        {/* Modal Header */}
-                        <div className="px-6 py-4 border-b border-border bg-surface/30 flex justify-between items-center">
-                            <div>
-                                <h3 className="text-lg font-black text-text">Record Supplier Payment</h3>
-                                <p className="text-[10px] font-bold text-text-muted uppercase tracking-wider mt-0.5">
-                                    Invoice #{payingInvoice.invoiceNo} • {payingInvoice.supplierName}
-                                </p>
-                            </div>
-                            <button
-                                type="button"
+                        return (
+                            <div 
+                                className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm no-print"
                                 onClick={() => { setPayingKey(null); setPaySendWhatsApp(false); }}
-                                className="p-1.5 hover:bg-surface rounded-lg text-text-muted hover:text-text transition-colors"
                             >
-                                <X className="w-5 h-5" />
-                            </button>
-                        </div>
-
-                        <div className="p-6 space-y-5">
-                            {/* Due Amount Display */}
-                            <div className="bg-rose-50 border border-rose-200 rounded-xl p-4 flex items-center justify-between">
-                                <div>
-                                    <p className="text-[10px] font-bold text-rose-500 uppercase tracking-wider">Total Due Amount</p>
-                                    <p className="text-2xl font-black text-rose-600">₹{outstandingAmt.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</p>
-                                </div>
-                                <div className="text-right">
-                                    <p className="text-[10px] font-bold text-text-muted uppercase tracking-wider">Invoice Total</p>
-                                    <p className="text-sm font-bold text-text">₹{Number(payingInvoice.amount || 0).toLocaleString('en-IN')}</p>
-                                    <p className="text-[10px] text-text-muted">Paid: ₹{Number(payingInvoice.paidAmount || 0).toLocaleString('en-IN')}</p>
-                                </div>
-                            </div>
-
-                            {/* Payments Section */}
-                            <div className="space-y-4">
-                                <h4 className="text-xs font-black text-text uppercase tracking-wider border-b border-border pb-1.5">Payments</h4>
-                                
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div className="space-y-1.5">
-                                        <label className="text-[10px] font-bold text-text-muted uppercase tracking-wider">Cash Payment (₹)</label>
-                                        <input
-                                            type="text"
-                                            value={payCashAmount}
-                                            onChange={(e) => {
-                                                const val = e.target.value;
-                                                if (val === '' || /^\d*\.?\d*$/.test(val)) {
-                                                    setPayCashAmount(val);
-                                                }
-                                            }}
-                                            placeholder="0.00"
-                                            className="w-full px-4 py-2.5 border border-border rounded-xl text-sm font-bold focus:outline-none focus:ring-2 focus:ring-primary/10 transition-all"
-                                        />
-                                    </div>
-                                    
-                                    <div className="space-y-1.5">
-                                        <label className="text-[10px] font-bold text-text-muted uppercase tracking-wider">Online Payment (₹)</label>
-                                        <input
-                                            type="text"
-                                            value={payOnlineAmount}
-                                            onChange={(e) => {
-                                                const val = e.target.value;
-                                                if (val === '' || /^\d*\.?\d*$/.test(val)) {
-                                                    setPayOnlineAmount(val);
-                                                }
-                                            }}
-                                            placeholder="0.00"
-                                            className="w-full px-4 py-2.5 border border-border rounded-xl text-sm font-bold focus:outline-none focus:ring-2 focus:ring-primary/10 transition-all"
-                                        />
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* Remaining Balance After Payment / Overpaid Warning */}
-                            {currentPayAmt > 0 && (
-                                <div className={`rounded-xl p-3 border text-xs font-bold ${
-                                    currentPayAmt > outstandingAmt
-                                        ? 'bg-rose-50 border-rose-200 text-rose-700'
-                                        : remainingAfterPay > 0
-                                            ? 'bg-amber-50 border-amber-200 text-amber-700'
-                                            : 'bg-emerald-50 border-emerald-200 text-emerald-700'
-                                }`}>
-                                    {currentPayAmt > outstandingAmt ? (
-                                        <span>⚠️ Overpaid by <strong>₹{(currentPayAmt - outstandingAmt).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</strong>! Payment cannot exceed the outstanding due.</span>
-                                    ) : remainingAfterPay > 0 ? (
-                                        <span>⚠️ After this payment, remaining due will be <strong>₹{remainingAfterPay.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</strong></span>
-                                    ) : (
-                                        <span>✅ This payment will settle the invoice in full!</span>
-                                    )}
-                                </div>
-                            )}
-
-                            {/* Note and WhatsApp toggle */}
-                            <div className="grid grid-cols-1 gap-4">
-                                <div className="space-y-1">
-                                    <label className="text-[10px] font-bold text-text-muted uppercase tracking-wider">Note (optional)</label>
-                                    <input
-                                        type="text"
-                                        value={payNote}
-                                        onChange={(e) => setPayNote(e.target.value)}
-                                        placeholder="Payment note..."
-                                        className="w-full px-4 py-2.5 border border-border rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-primary/10 transition-all"
-                                    />
-                                </div>
-                                
-                                <div className="flex items-center justify-between py-2 bg-surface/30 rounded-xl px-4 border border-border/50">
-                                    <span className="text-xs font-bold text-text-secondary">Send WhatsApp receipt to supplier</span>
-                                    <button
-                                        type="button"
-                                        role="switch"
-                                        aria-checked={paySendWhatsApp}
-                                        onClick={() => setPaySendWhatsApp(prev => !prev)}
-                                        className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 transition-all duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-emerald-500/20 ${
-                                            paySendWhatsApp 
-                                                ? 'bg-emerald-500 border-emerald-500 hover:bg-emerald-600 hover:border-emerald-600' 
-                                                : 'bg-slate-300 border-slate-400 hover:bg-slate-400/80 dark:bg-slate-800 dark:border-slate-600'
-                                        }`}
-                                    >
-                                        <span
-                                            className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-md ring-0 transition duration-200 ease-in-out ${
-                                                paySendWhatsApp ? 'translate-x-5' : 'translate-x-0'
-                                            }`}
-                                        />
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Modal Footer */}
-                        <div className="px-6 py-4 border-t border-border flex justify-between items-center bg-surface/30">
-                            <p className="text-[10px] font-bold text-text-muted">
-                                {currentPayAmt === 0 ? '⚡ Record Payment' : remainingAfterPay > 0 ? '⚡ Partial Payment' : '💰 Full Settlement'}
-                            </p>
-                            <div className="flex gap-2">
-                                <button
-                                    type="button"
-                                    onClick={() => {
-                                        setPayingKey(null);
-                                        setPaySendWhatsApp(false);
-                                    }}
-                                    className="px-4 py-2 border border-border rounded-xl text-xs font-bold text-text-muted hover:bg-surface hover:text-text transition-all"
+                                <motion.div 
+                                    initial={{ opacity: 0, scale: 0.95 }} 
+                                    animate={{ opacity: 1, scale: 1 }} 
+                                    exit={{ opacity: 0, scale: 0.95 }}
+                                    className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 w-full max-w-lg shadow-2xl rounded-3xl overflow-hidden relative flex flex-col transition-all text-left"
+                                    onClick={e => e.stopPropagation()}
                                 >
-                                    Cancel
-                                </button>
-                                <button
-                                    type="button"
-                                    onClick={submitPayment}
-                                    disabled={currentPayAmt <= 0 || currentPayAmt > outstandingAmt}
-                                    className="px-6 py-2 bg-primary hover:bg-primary-dark text-white rounded-xl text-xs font-black uppercase tracking-wider hover:shadow-lg hover:shadow-primary/20 transition-all disabled:opacity-40 disabled:pointer-events-none"
-                                >
-                                    Save Payment
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                );
-            })()}
-
-            {showCreateModal && (
-                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm overflow-y-auto">
-                    <div className="bg-white border border-border w-full max-w-5xl shadow-2xl rounded-2xl flex flex-col my-8 max-h-[90vh] overflow-hidden">
-                        {/* Modal Header */}
-                        <div className="px-6 py-4 border-b border-border flex justify-between items-center bg-surface/30">
-                            <div>
-                                <h3 className="text-lg font-black text-text">Record New Supplier Invoice</h3>
-                                <p className="text-xs text-text-muted font-bold uppercase mt-0.5">Create ad-hoc purchase bill & dynamic GST calculations</p>
-                            </div>
-                            <button
-                                type="button"
-                                onClick={resetInvoiceForm}
-                                className="p-1.5 hover:bg-surface rounded-lg text-text-muted hover:text-text transition-colors"
-                            >
-                                <X className="w-5 h-5" />
-                            </button>
-                        </div>
-
-                        {/* Modal Body */}
-                        <div className="flex-1 p-6 overflow-y-auto space-y-6">
-                            {/* Part 1: Invoice metadata */}
-                            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                                <div className="space-y-1">
-                                    <label className="text-[10px] font-bold text-text-muted uppercase">Select Supplier <span className="text-rose-500">*</span></label>
-                                    <select
-                                        value={invoiceForm.supplierId}
-                                        onChange={(e) => setInvoiceForm(prev => ({ ...prev, supplierId: e.target.value }))}
-                                        className="w-full px-4 py-2 bg-white border border-border rounded-xl text-sm font-bold focus:outline-none focus:ring-2 focus:ring-primary/10 transition-all"
-                                    >
-                                        <option value="">-- Select a Supplier --</option>
-                                        {suppliers.map(s => (
-                                            <option key={s._id || s.id} value={s._id || s.id}>
-                                                {s.name}
-                                            </option>
-                                        ))}
-                                    </select>
-                                    {invoiceForm.supplierId && (
-                                        <div className="mt-1 px-3 py-1 bg-amber-500/10 border border-amber-500/20 rounded-xl text-[10px] font-bold text-amber-700 uppercase tracking-wider">
-                                            Current Outstanding: ₹
-                                            {Number(
-                                                Math.abs(suppliers.find(s => String(s._id || s.id) === String(invoiceForm.supplierId))?.currentBalance || 0)
-                                            ).toLocaleString('en-IN')}
+                                    <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-700 bg-white dark:bg-slate-800 flex justify-between items-center rounded-t-3xl">
+                                        <div>
+                                            <h3 className="text-base font-black text-slate-850 dark:text-slate-100 uppercase tracking-widest flex items-center gap-2">
+                                                <IndianRupee className="w-5 h-5 text-primary" />
+                                                Record Supplier Payment
+                                            </h3>
+                                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mt-0.5">
+                                                Invoice #{payingInvoice.invoiceNo} • {payingInvoice.supplierName}
+                                            </p>
                                         </div>
-                                    )}
-                                </div>
-                                <div className="space-y-1">
-                                    <label className="text-[10px] font-bold text-text-muted uppercase">Invoice Number <span className="text-rose-500">*</span></label>
-                                    <input
-                                        type="text"
-                                        placeholder="e.g. GST-1024"
-                                        value={invoiceForm.invoiceNumber}
-                                        onChange={(e) => setInvoiceForm(prev => ({ ...prev, invoiceNumber: e.target.value }))}
-                                        className="w-full px-4 py-2 border border-border rounded-xl text-sm font-bold focus:outline-none focus:ring-2 focus:ring-primary/10 transition-all"
-                                    />
-                                </div>
-                                <div className="space-y-1">
-                                    <label className="text-[10px] font-bold text-text-muted uppercase">Invoice Date</label>
-                                    <input
-                                        type="date"
-                                        value={invoiceForm.invoiceDate}
-                                        onChange={(e) => setInvoiceForm(prev => ({ ...prev, invoiceDate: e.target.value }))}
-                                        className="w-full px-4 py-2 border border-border rounded-xl text-sm font-bold focus:outline-none focus:ring-2 focus:ring-primary/10 transition-all"
-                                    />
-                                </div>
-                                <div className="space-y-1">
-                                    <label className="text-[10px] font-bold text-text-muted uppercase">Due Date</label>
-                                    <input
-                                        type="date"
-                                        value={invoiceForm.dueDate}
-                                        onChange={(e) => setInvoiceForm(prev => ({ ...prev, dueDate: e.target.value }))}
-                                        className="w-full px-4 py-2 border border-border rounded-xl text-sm font-bold focus:outline-none focus:ring-2 focus:ring-primary/10 transition-all"
-                                    />
-                                </div>
-                            </div>
-
-                            {/* Part 2: Invoice Items */}
-                            <div className="space-y-3">
-                                <div className="flex justify-between items-center">
-                                    <h4 className="text-xs font-black text-text uppercase tracking-wider">Purchase Item Lines</h4>
-                                    <button
-                                        type="button"
-                                        onClick={handleAddItem}
-                                        className="flex items-center gap-1.5 px-3 py-1.5 bg-surface border border-border rounded-xl text-xs font-bold text-primary hover:bg-primary/5 transition-all"
-                                    >
-                                        <Plus className="w-3.5 h-3.5" />
-                                        Add Line
-                                    </button>
-                                </div>
-
-                                <div className="border border-border rounded-xl overflow-hidden table-responsive">
-                                    <table className="w-full text-left border-collapse min-w-[700px]">
-                                        <thead>
-                                            <tr className="bg-surface/50 border-b border-border">
-                                                <th className="px-4 py-2.5 text-[10px] font-bold text-text-secondary uppercase tracking-wider">Item Name / Desc *</th>
-                                                <th className="px-4 py-2.5 text-[10px] font-bold text-text-secondary uppercase tracking-wider w-44">Rate (₹) *</th>
-                                                <th className="px-4 py-2.5 text-[10px] font-bold text-text-secondary uppercase tracking-wider w-36">Qty *</th>
-                                                <th className="px-4 py-2.5 text-[10px] font-bold text-text-secondary uppercase tracking-wider w-32 text-right">Row Total</th>
-                                                <th className="px-4 py-2.5 text-[10px] font-bold text-text-secondary uppercase tracking-wider w-16 text-center"></th>
-                                            </tr>
-                                        </thead>
-                                        <tbody className="divide-y divide-border">
-                                            {invoiceForm.items.map((item, index) => {
-                                                const qty = parseFloat(item.quantity) || 0;
-                                                const rate = parseFloat(item.price) || 0;
-                                                const taxRate = parseFloat(item.tax) || 0;
-                                                const rowTotal = item.isInclusive 
-                                                    ? (rate * qty) 
-                                                    : (rate * qty * (1 + taxRate / 100));
-
-                                                return (
-                                                    <tr key={index} className="hover:bg-surface/20 transition-colors">
-                                                        <td className="px-4 py-2">
-                                                            <input
-                                                                type="text"
-                                                                placeholder="Enter product or service name"
-                                                                value={item.name}
-                                                                onChange={(e) => handleUpdateItem(index, 'name', e.target.value)}
-                                                                className="w-full px-3 py-1.5 border border-border rounded-lg text-xs focus:outline-none focus:ring-1 focus:ring-primary font-medium"
-                                                            />
-                                                        </td>
-                                                        <td className="px-4 py-2">
-                                                            <input
-                                                                type="text"
-                                                                placeholder="0.00"
-                                                                value={item.price}
-                                                                onChange={(e) => {
-                                                                    const val = e.target.value;
-                                                                    if (val === '' || /^\d*\.?\d*$/.test(val)) {
-                                                                        handleUpdateItem(index, 'price', val);
-                                                                    }
-                                                                }}
-                                                                className="w-full px-3 py-1.5 border border-border rounded-lg text-xs font-bold text-right focus:outline-none focus:ring-1 focus:ring-primary"
-                                                            />
-                                                        </td>
-                                                        <td className="px-4 py-2">
-                                                            <input
-                                                                type="text"
-                                                                placeholder="1"
-                                                                value={item.quantity}
-                                                                onChange={(e) => {
-                                                                    const val = e.target.value;
-                                                                    if (val === '' || /^\d*$/.test(val)) {
-                                                                        handleUpdateItem(index, 'quantity', val);
-                                                                    }
-                                                                }}
-                                                                className="w-full px-3 py-1.5 border border-border rounded-lg text-xs font-bold text-center focus:outline-none focus:ring-1 focus:ring-primary"
-                                                            />
-                                                        </td>
-                                                        <td className="px-4 py-2 text-right">
-                                                            <span className="text-xs font-black text-text">
-                                                                ₹{rowTotal.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                                                            </span>
-                                                        </td>
-                                                        <td className="px-4 py-2 text-center">
-                                                            <button
-                                                                type="button"
-                                                                onClick={() => handleRemoveItem(index)}
-                                                                className="p-1 hover:bg-rose-50 text-text-muted hover:text-rose-600 rounded transition-colors"
-                                                            >
-                                                                <Trash2 className="w-3.5 h-3.5" />
-                                                            </button>
-                                                        </td>
-                                                    </tr>
-                                                );
-                                            })}
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
-
-                            {/* Part 3: Lower grid (Notes & Payment vs Summary card) */}
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-border">
-                                <div className="space-y-4">
-                                    <div className="space-y-1">
-                                        <label className="text-[10px] font-bold text-text-muted uppercase">Notes & Special Instructions</label>
-                                        <textarea
-                                            rows="2"
-                                            placeholder="Write internal procurement comments, stock-in references..."
-                                            value={invoiceForm.notes}
-                                            onChange={(e) => setInvoiceForm(prev => ({ ...prev, notes: e.target.value }))}
-                                            className="w-full px-4 py-2.5 border border-border rounded-xl text-xs font-medium focus:outline-none focus:ring-2 focus:ring-primary/10 transition-all resize-none"
-                                        />
+                                        <button
+                                            type="button"
+                                            onClick={() => { setPayingKey(null); setPaySendWhatsApp(false); }}
+                                            className="p-2 text-slate-400 hover:text-rose-500 rounded-full hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+                                        >
+                                            <X className="w-5 h-5" />
+                                        </button>
                                     </div>
 
-                                    {/* Payments Section */}
-                                    <div className="space-y-4">
-                                        <h4 className="text-xs font-black text-text uppercase tracking-wider border-b border-border pb-1.5">Payments</h4>
-                                        
-                                        <div className="grid grid-cols-2 gap-4">
-                                            <div className="space-y-1.5">
-                                                <label className="text-[10px] font-bold text-text-muted uppercase tracking-wider">Cash Payment (₹)</label>
+                                    <div className="p-6 space-y-5">
+                                        <div className="bg-rose-50 dark:bg-rose-950/20 border border-rose-200 dark:border-rose-900/30 rounded-xl p-4 flex items-center justify-between">
+                                            <div>
+                                                <p className="text-[9px] font-black text-rose-500 uppercase tracking-wider">Total Due Amount</p>
+                                                <p className="text-2xl font-black text-rose-600 dark:text-rose-400">₹{outstandingAmt.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</p>
+                                            </div>
+                                            <div className="text-right leading-tight">
+                                                <p className="text-[9px] font-black text-slate-400 uppercase tracking-wider">Invoice Total</p>
+                                                <p className="text-sm font-black text-slate-800 dark:text-slate-200">₹{Number(payingInvoice.amount || 0).toLocaleString('en-IN')}</p>
+                                                <p className="text-[10px] text-slate-400 font-bold">Paid: ₹{Number(payingInvoice.paidAmount || 0).toLocaleString('en-IN')}</p>
+                                            </div>
+                                        </div>
+
+                                        <div className="space-y-4">
+                                            <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-100 dark:border-slate-700 pb-1.5">Payments</h4>
+                                            
+                                            <div className="grid grid-cols-2 gap-4">
+                                                <div className="space-y-1">
+                                                    <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-1">Cash Payment (₹)</label>
+                                                    <input
+                                                        type="text"
+                                                        value={payCashAmount}
+                                                        onChange={(e) => {
+                                                            const val = e.target.value;
+                                                            if (val === '' || /^\d*\.?\d*$/.test(val)) {
+                                                                setPayCashAmount(val);
+                                                            }
+                                                        }}
+                                                        placeholder="0.00"
+                                                        className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-750 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-bold text-slate-900 dark:text-slate-100 focus:border-primary outline-none"
+                                                    />
+                                                </div>
+                                                
+                                                <div className="space-y-1">
+                                                    <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-1">Online Payment (₹)</label>
+                                                    <input
+                                                        type="text"
+                                                        value={payOnlineAmount}
+                                                        onChange={(e) => {
+                                                            const val = e.target.value;
+                                                            if (val === '' || /^\d*\.?\d*$/.test(val)) {
+                                                                setPayOnlineAmount(val);
+                                                            }
+                                                        }}
+                                                        placeholder="0.00"
+                                                        className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-750 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-bold text-slate-900 dark:text-slate-100 focus:border-primary outline-none"
+                                                    />
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        {currentPayAmt > 0 && (
+                                            <div className={`rounded-xl p-3 border text-xs font-bold ${
+                                                currentPayAmt > outstandingAmt
+                                                    ? 'bg-rose-50 border-rose-200 text-rose-700'
+                                                    : remainingAfterPay > 0
+                                                        ? 'bg-amber-50 border-amber-200 text-amber-700'
+                                                        : 'bg-emerald-50 border-emerald-200 text-emerald-700'
+                                            }`}>
+                                                {currentPayAmt > outstandingAmt ? (
+                                                    <span>⚠️ Overpaid by <strong>₹{(currentPayAmt - outstandingAmt).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</strong>! Payment cannot exceed the outstanding due.</span>
+                                                ) : remainingAfterPay > 0 ? (
+                                                    <span>⚠️ After this payment, remaining due will be <strong>₹{remainingAfterPay.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</strong></span>
+                                                ) : (
+                                                    <span>✅ This payment will settle the invoice in full!</span>
+                                                )}
+                                            </div>
+                                        )}
+
+                                        <div className="grid grid-cols-1 gap-4">
+                                            <div className="space-y-1">
+                                                <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-1">Note (optional)</label>
                                                 <input
                                                     type="text"
-                                                    value={invoiceForm.cashAmount}
-                                                    onChange={(e) => {
-                                                        const val = e.target.value;
-                                                        if (val === '' || /^\d*\.?\d*$/.test(val)) {
-                                                            setInvoiceForm(prev => ({ ...prev, cashAmount: val }));
-                                                        }
-                                                    }}
-                                                    placeholder="0.00"
-                                                    className="w-full px-4 py-2.5 border border-border rounded-xl text-sm font-bold focus:outline-none focus:ring-2 focus:ring-primary/10 transition-all"
+                                                    value={payNote}
+                                                    onChange={(e) => setPayNote(e.target.value)}
+                                                    placeholder="Payment note..."
+                                                    className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-750 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-semibold text-slate-900 dark:text-slate-100 focus:border-primary outline-none"
                                                 />
                                             </div>
                                             
-                                            <div className="space-y-1.5">
-                                                <label className="text-[10px] font-bold text-text-muted uppercase tracking-wider">Online Payment (₹)</label>
-                                                <input
-                                                    type="text"
-                                                    value={invoiceForm.onlineAmount}
-                                                    onChange={(e) => {
-                                                        const val = e.target.value;
-                                                        if (val === '' || /^\d*\.?\d*$/.test(val)) {
-                                                            setInvoiceForm(prev => ({ ...prev, onlineAmount: val }));
-                                                        }
-                                                    }}
-                                                    placeholder="0.00"
-                                                    className="w-full px-4 py-2.5 border border-border rounded-xl text-sm font-bold focus:outline-none focus:ring-2 focus:ring-primary/10 transition-all"
-                                                />
+                                            <div className="flex items-center justify-between py-2 bg-slate-50 dark:bg-slate-755/30 rounded-xl px-4 border border-slate-200 dark:border-slate-700">
+                                                <span className="text-xs font-bold text-slate-600 dark:text-slate-300">Send WhatsApp receipt to supplier</span>
+                                                <button
+                                                    type="button"
+                                                    role="switch"
+                                                    aria-checked={paySendWhatsApp}
+                                                    onClick={() => setPaySendWhatsApp(prev => !prev)}
+                                                    className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 transition-all duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-emerald-500/20 ${
+                                                        paySendWhatsApp 
+                                                            ? 'bg-emerald-500 border-emerald-500 hover:bg-emerald-600 hover:border-emerald-600' 
+                                                            : 'bg-slate-300 border-slate-400 hover:bg-slate-400/80 dark:bg-slate-850 dark:border-slate-600'
+                                                    }`}
+                                                >
+                                                    <span
+                                                        className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-md ring-0 transition duration-200 ease-in-out ${
+                                                            paySendWhatsApp ? 'translate-x-5' : 'translate-x-0'
+                                                        }`}
+                                                    />
+                                                </button>
                                             </div>
                                         </div>
+                                    </div>
 
-                                        {/* WhatsApp Toggle Switch */}
-                                        <div className="flex items-center justify-between py-2 bg-surface/30 rounded-xl px-4 border border-border/50">
-                                            <span className="text-xs font-bold text-text-secondary">Send via WhatsApp</span>
+                                    <div className="px-6 py-4 border-t border-slate-100 dark:border-slate-700 flex justify-between items-center bg-slate-50 dark:bg-slate-800 rounded-b-3xl">
+                                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                                            {currentPayAmt === 0 ? '⚡ Record Payment' : remainingAfterPay > 0 ? '⚡ Partial Payment' : '💰 Full Settlement'}
+                                        </p>
+                                        <div className="flex gap-2">
                                             <button
                                                 type="button"
-                                                role="switch"
-                                                aria-checked={invoiceForm.sendWhatsApp}
-                                                onClick={() => setInvoiceForm(prev => ({ ...prev, sendWhatsApp: !prev.sendWhatsApp }))}
-                                                className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 transition-all duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-emerald-500/20 ${
-                                                    invoiceForm.sendWhatsApp 
-                                                        ? 'bg-emerald-500 border-emerald-500 hover:bg-emerald-600 hover:border-emerald-600' 
-                                                        : 'bg-slate-300 border-slate-400 hover:bg-slate-400/80 dark:bg-slate-800 dark:border-slate-600'
-                                                }`}
+                                                onClick={() => {
+                                                    setPayingKey(null);
+                                                    setPaySendWhatsApp(false);
+                                                }}
+                                                className="px-4 py-2 border border-slate-200 dark:border-slate-750 bg-white dark:bg-slate-700 rounded-xl text-xs font-bold text-slate-650 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-650 transition-all"
                                             >
-                                                <span
-                                                    className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-md ring-0 transition duration-200 ease-in-out ${
-                                                        invoiceForm.sendWhatsApp ? 'translate-x-5' : 'translate-x-0'
-                                                    }`}
-                                                />
+                                                Cancel
+                                            </button>
+                                            <button
+                                                type="button"
+                                                onClick={submitPayment}
+                                                disabled={currentPayAmt <= 0 || currentPayAmt > outstandingAmt}
+                                                className="px-6 py-2 bg-slate-900 text-white hover:bg-primary rounded-xl text-xs font-black uppercase tracking-wider hover:shadow-lg hover:shadow-primary/20 transition-all disabled:opacity-40 disabled:pointer-events-none"
+                                            >
+                                                Save Payment
                                             </button>
                                         </div>
                                     </div>
-                                </div>
-
-                                <div className="bg-surface/50 border border-border rounded-2xl p-5 space-y-3.5">
-                                    <h4 className="text-xs font-black text-text-secondary uppercase tracking-wider border-b border-border pb-2">Purchase Financial Summary</h4>
-                                    
-                                    <div className="flex justify-between text-xs text-text-secondary font-semibold">
-                                        <span>Total Amount:</span>
-                                        <span>₹{totals.subTotal.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
-                                    </div>
-                                    
-                                    <div className="flex justify-between items-center text-xs text-text-secondary font-semibold">
-                                        <span>Apply Discount (₹):</span>
-                                        <input
-                                            type="number"
-                                            min="0"
-                                            step="0.01"
-                                            value={invoiceForm.discount}
-                                            onChange={(e) => setInvoiceForm(prev => ({ ...prev, discount: e.target.value }))}
-                                            className="w-28 px-2.5 py-1 text-right border border-border rounded-lg text-xs font-bold focus:outline-none focus:ring-1 focus:ring-primary"
-                                        />
-                                    </div>
-
-                                    <div className="flex justify-between items-center text-xs font-semibold border-t border-border/80 pt-3">
-                                        <span className="font-bold text-text">Total Invoice Amount:</span>
-                                        <span className="font-extrabold text-sm text-text">₹{totals.totalAmount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
-                                    </div>
-
-                                    <div className="flex justify-between items-center text-xs font-semibold">
-                                        <span className="font-bold text-emerald-600">Paid Amount:</span>
-                                        <span className="font-black text-emerald-600">₹{((parseFloat(invoiceForm.cashAmount) || 0) + (parseFloat(invoiceForm.onlineAmount) || 0)).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
-                                    </div>
-
-                                    {/* Due Amount - This Invoice */}
-                                    <div className={`rounded-xl p-3 border-2 ${
-                                        totals.balanceAmount > 0
-                                            ? 'bg-rose-50 border-rose-200'
-                                            : ((parseFloat(invoiceForm.cashAmount) || 0) + (parseFloat(invoiceForm.onlineAmount) || 0)) > 0
-                                                ? 'bg-emerald-50 border-emerald-200'
-                                                : 'bg-slate-50 border-slate-200'
-                                    }`}>
-                                        <div className="flex justify-between items-center">
-                                            <span className={`text-xs font-black uppercase tracking-wider ${
-                                                totals.balanceAmount > 0 ? 'text-rose-600' : ((parseFloat(invoiceForm.cashAmount) || 0) + (parseFloat(invoiceForm.onlineAmount) || 0)) > 0 ? 'text-emerald-600' : 'text-slate-500'
-                                            }`}>
-                                                {totals.balanceAmount > 0 ? '⚠️ Due Amount:' : ((parseFloat(invoiceForm.cashAmount) || 0) + (parseFloat(invoiceForm.onlineAmount) || 0)) > 0 ? '✅ Fully Paid' : '📋 Credit (Unpaid):'}
-                                            </span>
-                                            <span className={`text-lg font-black ${
-                                                totals.balanceAmount > 0 ? 'text-rose-600' : ((parseFloat(invoiceForm.cashAmount) || 0) + (parseFloat(invoiceForm.onlineAmount) || 0)) > 0 ? 'text-emerald-600' : 'text-slate-600'
-                                            }`}>
-                                                ₹{totals.balanceAmount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
-                                            </span>
-                                        </div>
-                                        {totals.balanceAmount > 0 && ((parseFloat(invoiceForm.cashAmount) || 0) + (parseFloat(invoiceForm.onlineAmount) || 0)) > 0 && (
-                                            <p className="text-[10px] font-bold text-amber-600 mt-1">
-                                                ⚡ Partial payment — ₹{((parseFloat(invoiceForm.cashAmount) || 0) + (parseFloat(invoiceForm.onlineAmount) || 0)).toLocaleString('en-IN')} paid now, ₹{totals.balanceAmount.toLocaleString('en-IN')} will be supplier debt
-                                            </p>
-                                        )}
-                                        {totals.balanceAmount > 0 && ((parseFloat(invoiceForm.cashAmount) || 0) + (parseFloat(invoiceForm.onlineAmount) || 0)) <= 0 && (
-                                            <p className="text-[10px] font-bold text-slate-500 mt-1">
-                                                Full amount will be recorded as supplier outstanding
-                                            </p>
-                                        )}
-                                    </div>
-
-                                    {/* Previous Outstanding + Total Supplier Dues */}
-                                    {invoiceForm.supplierId && totals.prevOutstanding > 0 && (
-                                        <div className="bg-amber-50 border-2 border-amber-200 rounded-xl p-3 space-y-1.5">
-                                            <div className="flex justify-between items-center text-xs font-bold">
-                                                <span className="text-amber-700">📦 Previous Outstanding:</span>
-                                                <span className="font-black text-amber-700">
-                                                    ₹{totals.newPrevOutstanding.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
-                                                    {totals.prevOutstanding !== totals.newPrevOutstanding && (
-                                                        <span className="text-[10px] text-emerald-600 ml-1 font-semibold">
-                                                            (reduced from ₹{totals.prevOutstanding.toLocaleString('en-IN')})
-                                                        </span>
-                                                    )}
-                                                </span>
-                                            </div>
-                                            <div className="flex justify-between items-center text-xs font-bold border-t border-amber-200 pt-1.5">
-                                                <span className="text-rose-700 uppercase tracking-wider">🔴 Total Supplier Dues:</span>
-                                                <span className="font-black text-rose-700 text-base">₹{totals.totalDues.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
-                                            </div>
-                                        </div>
-                                    )}
-
-                                    {/* Overpaid Warning Message */}
-                                    {totals.overpaidAmount > 0 && (
-                                        <div className="bg-rose-50 border-2 border-rose-200 rounded-xl p-3 text-xs font-bold text-rose-700">
-                                            ⚠️ Overpaid by <strong>₹{totals.overpaidAmount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</strong>! The total payment amount exceeds the invoice total and previous outstanding combined. Please adjust the payment amounts.
-                                        </div>
-                                    )}
-                                </div>
+                                </motion.div>
                             </div>
-                        </div>
+                        );
+                    })()}
+                </AnimatePresence>,
+                document.body
+            )}
 
-                        {/* Modal Footer */}
-                        <div className="px-6 py-4 border-t border-border flex justify-end gap-3 bg-surface/30">
-                            <button
-                                type="button"
-                                onClick={resetInvoiceForm}
-                                className="px-4 py-2 border border-border rounded-xl text-xs font-bold text-text-muted hover:bg-surface hover:text-text transition-all"
+            {createPortal(
+                <AnimatePresence>
+                    {showCreateModal && (
+                        <div 
+                            className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm no-print overflow-y-auto"
+                            onClick={resetInvoiceForm}
+                        >
+                            <motion.div 
+                                initial={{ opacity: 0, scale: 0.95 }} 
+                                animate={{ opacity: 1, scale: 1 }} 
+                                exit={{ opacity: 0, scale: 0.95 }}
+                                className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 w-full max-w-5xl shadow-2xl rounded-3xl flex flex-col my-8 max-h-[90vh] overflow-hidden text-left"
+                                onClick={e => e.stopPropagation()}
                             >
-                                Cancel
-                            </button>
-                            <button
-                                type="button"
-                                onClick={handleCreateInvoice}
-                                disabled={totals.overpaidAmount > 0}
-                                className="px-6 py-2 bg-primary hover:bg-primary-dark text-white rounded-xl text-xs font-black uppercase tracking-widest hover:shadow-lg hover:shadow-primary/20 transition-all disabled:opacity-40 disabled:pointer-events-none"
-                            >
-                                Record & Post Invoice
-                            </button>
+                                <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center bg-white dark:bg-slate-800 rounded-t-3xl text-left">
+                                    <div>
+                                        <h3 className="text-base font-black text-slate-850 dark:text-slate-100 uppercase tracking-widest flex items-center gap-2">
+                                            <Receipt className="w-5 h-5 text-primary" />
+                                            Record New Supplier Invoice
+                                        </h3>
+                                        <p className="text-[10px] text-slate-400 font-bold uppercase mt-0.5 tracking-wider">Create ad-hoc purchase bill & dynamic calculations</p>
+                                    </div>
+                                    <button
+                                        type="button"
+                                        onClick={resetInvoiceForm}
+                                        className="p-2 text-slate-400 hover:text-rose-500 rounded-full hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+                                    >
+                                        <X className="w-5 h-5" />
+                                    </button>
+                                </div>
+
+                                <div className="flex-1 p-6 overflow-y-auto space-y-6">
+                                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4 text-left">
+                                        <div className="space-y-1">
+                                            <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-1">Select Supplier <span className="text-rose-500">*</span></label>
+                                            <select
+                                                value={invoiceForm.supplierId}
+                                                onChange={(e) => setInvoiceForm(prev => ({ ...prev, supplierId: e.target.value }))}
+                                                className="w-full px-4 py-2 bg-slate-50 dark:bg-slate-750 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-bold text-slate-900 dark:text-slate-100 focus:border-primary outline-none cursor-pointer"
+                                            >
+                                                <option value="" className="bg-white dark:bg-slate-800">-- Select a Supplier --</option>
+                                                {suppliers.map(s => (
+                                                    <option key={s._id || s.id} value={s._id || s.id} className="bg-white dark:bg-slate-800">
+                                                        {s.name}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                            {invoiceForm.supplierId && (
+                                                <div className="mt-1 px-3 py-1 bg-amber-500/10 border border-amber-500/20 rounded-xl text-[9px] font-bold text-amber-700 uppercase tracking-wider">
+                                                    Outstanding: ₹
+                                                    {Number(
+                                                        Math.abs(suppliers.find(s => String(s._id || s.id) === String(invoiceForm.supplierId))?.currentBalance || 0)
+                                                    ).toLocaleString('en-IN')}
+                                                </div>
+                                            )}
+                                        </div>
+                                        <div className="space-y-1">
+                                            <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-1">Invoice Number <span className="text-rose-500">*</span></label>
+                                            <input
+                                                type="text"
+                                                placeholder="e.g. GST-1024"
+                                                value={invoiceForm.invoiceNumber}
+                                                onChange={(e) => setInvoiceForm(prev => ({ ...prev, invoiceNumber: e.target.value }))}
+                                                className="w-full px-4 py-2 bg-slate-50 dark:bg-slate-750 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-bold text-slate-900 dark:text-slate-100 focus:border-primary outline-none"
+                                            />
+                                        </div>
+                                        <div className="space-y-1">
+                                            <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-1">Invoice Date</label>
+                                            <input
+                                                type="date"
+                                                value={invoiceForm.invoiceDate}
+                                                onChange={(e) => setInvoiceForm(prev => ({ ...prev, invoiceDate: e.target.value }))}
+                                                className="w-full px-4 py-2 bg-slate-50 dark:bg-slate-750 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-bold text-slate-900 dark:text-slate-100 focus:border-primary outline-none cursor-pointer"
+                                            />
+                                        </div>
+                                        <div className="space-y-1">
+                                            <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-1">Due Date</label>
+                                            <input
+                                                type="date"
+                                                value={invoiceForm.dueDate}
+                                                onChange={(e) => setInvoiceForm(prev => ({ ...prev, dueDate: e.target.value }))}
+                                                className="w-full px-4 py-2 bg-slate-50 dark:bg-slate-750 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-bold text-slate-900 dark:text-slate-100 focus:border-primary outline-none cursor-pointer"
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <div className="space-y-3">
+                                        <div className="flex justify-between items-center">
+                                            <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Purchase Item Lines</h4>
+                                            <button
+                                                type="button"
+                                                onClick={handleAddItem}
+                                                className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-50 dark:bg-slate-750 hover:bg-slate-100 dark:hover:bg-slate-700 border border-slate-205 dark:border-slate-700 rounded-xl text-xs font-bold text-primary transition-all"
+                                            >
+                                                <Plus className="w-3.5 h-3.5" />
+                                                Add Line
+                                            </button>
+                                        </div>
+
+                                        <div className="border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden">
+                                            <table className="w-full text-left border-collapse min-w-[700px]">
+                                                <thead>
+                                                    <tr className="bg-slate-50 dark:bg-slate-750/30 border-b border-slate-200 dark:border-slate-700">
+                                                        <th className="px-4 py-2.5 text-[9px] font-black text-slate-400 uppercase tracking-widest">Item Name / Desc *</th>
+                                                        <th className="px-4 py-2.5 text-[9px] font-black text-slate-400 uppercase tracking-widest w-44">Rate (₹) *</th>
+                                                        <th className="px-4 py-2.5 text-[9px] font-black text-slate-400 uppercase tracking-widest w-36 text-center">Qty *</th>
+                                                        <th className="px-4 py-2.5 text-[9px] font-black text-slate-400 uppercase tracking-widest w-32 text-right">Row Total</th>
+                                                        <th className="px-4 py-2.5 text-[9px] font-black text-slate-400 uppercase tracking-widest w-16 text-center"></th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody className="divide-y divide-slate-100 dark:divide-slate-700/50">
+                                                    {invoiceForm.items.map((item, index) => {
+                                                        const qty = parseFloat(item.quantity) || 0;
+                                                        const rate = parseFloat(item.price) || 0;
+                                                        const taxRate = parseFloat(item.tax) || 0;
+                                                        const rowTotal = item.isInclusive 
+                                                            ? (rate * qty) 
+                                                            : (rate * qty * (1 + taxRate / 100));
+
+                                                        return (
+                                                            <tr key={index} className="hover:bg-slate-50/50 dark:hover:bg-slate-750/30 transition-colors">
+                                                                <td className="px-4 py-2">
+                                                                    <input
+                                                                        type="text"
+                                                                        placeholder="Enter product or service name"
+                                                                        value={item.name}
+                                                                        onChange={(e) => handleUpdateItem(index, 'name', e.target.value)}
+                                                                        className="w-full px-3 py-1.5 bg-slate-50 dark:bg-slate-750 border border-slate-200 dark:border-slate-700 rounded-lg text-xs font-semibold text-slate-900 dark:text-slate-100 focus:border-primary outline-none"
+                                                                    />
+                                                                </td>
+                                                                <td className="px-4 py-2">
+                                                                    <input
+                                                                        type="text"
+                                                                        placeholder="0.00"
+                                                                        value={item.price}
+                                                                        onChange={(e) => {
+                                                                            const val = e.target.value;
+                                                                            if (val === '' || /^\d*\.?\d*$/.test(val)) {
+                                                                                handleUpdateItem(index, 'price', val);
+                                                                            }
+                                                                        }}
+                                                                        className="w-full px-3 py-1.5 bg-slate-50 dark:bg-slate-750 border border-slate-200 dark:border-slate-700 rounded-lg text-xs font-bold text-right text-slate-900 dark:text-slate-100 focus:border-primary outline-none"
+                                                                    />
+                                                                </td>
+                                                                <td className="px-4 py-2">
+                                                                    <input
+                                                                        type="text"
+                                                                        placeholder="1"
+                                                                        value={item.quantity}
+                                                                        onChange={(e) => {
+                                                                            const val = e.target.value;
+                                                                            if (val === '' || /^\d*$/.test(val)) {
+                                                                                handleUpdateItem(index, 'quantity', val);
+                                                                            }
+                                                                        }}
+                                                                        className="w-full px-3 py-1.5 bg-slate-50 dark:bg-slate-750 border border-slate-200 dark:border-slate-700 rounded-lg text-xs font-bold text-center text-slate-900 dark:text-slate-100 focus:border-primary outline-none"
+                                                                    />
+                                                                </td>
+                                                                <td className="px-4 py-2 text-right">
+                                                                    <span className="text-xs font-black text-slate-800 dark:text-slate-200">
+                                                                        ₹{rowTotal.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                                    </span>
+                                                                </td>
+                                                                <td className="px-4 py-2 text-center">
+                                                                    <button
+                                                                        type="button"
+                                                                        onClick={() => handleRemoveItem(index)}
+                                                                        className="p-1.5 hover:bg-rose-50 dark:hover:bg-rose-950/20 text-slate-400 hover:text-rose-600 rounded transition-colors"
+                                                                    >
+                                                                        <Trash2 className="w-3.5 h-3.5" />
+                                                                    </button>
+                                                                </td>
+                                                            </tr>
+                                                        );
+                                                    })}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-slate-100 dark:border-slate-700">
+                                        <div className="space-y-4 text-slate-800 dark:text-slate-200 text-left">
+                                            <div className="space-y-1">
+                                                <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-1">Notes & Special Instructions</label>
+                                                <textarea
+                                                    rows="2"
+                                                    placeholder="Write internal procurement comments, stock-in references..."
+                                                    value={invoiceForm.notes}
+                                                    onChange={(e) => setInvoiceForm(prev => ({ ...prev, notes: e.target.value }))}
+                                                    className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-750 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-medium text-slate-900 dark:text-slate-100 focus:border-primary outline-none resize-none placeholder-slate-400"
+                                                />
+                                            </div>
+
+                                            <div className="space-y-4">
+                                                <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-100 dark:border-slate-700 pb-1.5">Payments</h4>
+                                                
+                                                <div className="grid grid-cols-2 gap-4">
+                                                    <div className="space-y-1">
+                                                        <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-1">Cash Payment (₹)</label>
+                                                        <input
+                                                            type="text"
+                                                            value={invoiceForm.cashAmount}
+                                                            onChange={(e) => {
+                                                                const val = e.target.value;
+                                                                if (val === '' || /^\d*\.?\d*$/.test(val)) {
+                                                                    setInvoiceForm(prev => ({ ...prev, cashAmount: val }));
+                                                                }
+                                                            }}
+                                                            placeholder="0.00"
+                                                            className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-750 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-bold text-slate-900 dark:text-slate-100 focus:border-primary outline-none"
+                                                        />
+                                                    </div>
+                                                    
+                                                    <div className="space-y-1">
+                                                        <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-1">Online Payment (₹)</label>
+                                                        <input
+                                                            type="text"
+                                                            value={invoiceForm.onlineAmount}
+                                                            onChange={(e) => {
+                                                                const val = e.target.value;
+                                                                if (val === '' || /^\d*\.?\d*$/.test(val)) {
+                                                                    setInvoiceForm(prev => ({ ...prev, onlineAmount: val }));
+                                                                }
+                                                            }}
+                                                            placeholder="0.00"
+                                                            className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-750 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-bold text-slate-900 dark:text-slate-100 focus:border-primary outline-none"
+                                                        />
+                                                    </div>
+                                                </div>
+
+                                                <div className="flex items-center justify-between py-2 bg-slate-50 dark:bg-slate-750/30 rounded-xl px-4 border border-slate-200 dark:border-slate-700">
+                                                    <span className="text-xs font-bold text-slate-600 dark:text-slate-350">Send via WhatsApp</span>
+                                                    <button
+                                                        type="button"
+                                                        role="switch"
+                                                        aria-checked={invoiceForm.sendWhatsApp}
+                                                        onClick={() => setInvoiceForm(prev => ({ ...prev, sendWhatsApp: !prev.sendWhatsApp }))}
+                                                        className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 transition-all duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-emerald-500/20 ${
+                                                            invoiceForm.sendWhatsApp 
+                                                                ? 'bg-emerald-500 border-emerald-500 hover:bg-emerald-600 hover:border-emerald-600' 
+                                                                : 'bg-slate-300 border-slate-400 hover:bg-slate-400/80 dark:bg-slate-850 dark:border-slate-600'
+                                                        }`}
+                                                    >
+                                                        <span
+                                                            className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-md ring-0 transition duration-200 ease-in-out ${
+                                                                invoiceForm.sendWhatsApp ? 'translate-x-5' : 'translate-x-0'
+                                                            }`}
+                                                        />
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div className="bg-slate-50 dark:bg-slate-750/30 border border-slate-200 dark:border-slate-700 rounded-2xl p-5 space-y-3.5 text-left">
+                                            <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-150 dark:border-slate-700 pb-2">Purchase Summary</h4>
+                                            
+                                            <div className="flex justify-between text-xs text-slate-600 dark:text-slate-300 font-semibold">
+                                                <span>Total Amount:</span>
+                                                <span className="font-bold text-slate-800 dark:text-slate-100">₹{totals.subTotal.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
+                                            </div>
+                                            
+                                            <div className="flex justify-between items-center text-xs text-slate-600 dark:text-slate-300 font-semibold">
+                                                <span>Apply Discount (₹):</span>
+                                                <input
+                                                    type="number"
+                                                    min="0"
+                                                    step="0.01"
+                                                    value={invoiceForm.discount}
+                                                    onChange={(e) => setInvoiceForm(prev => ({ ...prev, discount: e.target.value }))}
+                                                    className="w-28 px-2.5 py-1 text-right bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg text-xs font-bold text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-1 focus:ring-primary"
+                                                />
+                                            </div>
+
+                                            <div className="flex justify-between items-center text-xs font-semibold border-t border-slate-200 dark:border-slate-700 pt-3">
+                                                <span className="font-bold text-slate-850 dark:text-slate-200">Total Invoice Amount:</span>
+                                                <span className="font-extrabold text-sm text-slate-900 dark:text-slate-100 font-black">₹{totals.totalAmount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
+                                            </div>
+
+                                            <div className="flex justify-between items-center text-xs font-semibold">
+                                                <span className="font-bold text-emerald-600">Paid Amount:</span>
+                                                <span className="font-black text-emerald-600">₹{((parseFloat(invoiceForm.cashAmount) || 0) + (parseFloat(invoiceForm.onlineAmount) || 0)).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
+                                            </div>
+
+                                            <div className={`rounded-xl p-3 border-2 ${
+                                                totals.balanceAmount > 0
+                                                    ? 'bg-rose-50 dark:bg-rose-950/10 border-rose-200 dark:border-rose-900/30'
+                                                    : ((parseFloat(invoiceForm.cashAmount) || 0) + (parseFloat(invoiceForm.onlineAmount) || 0)) > 0
+                                                        ? 'bg-emerald-50 dark:bg-emerald-950/10 border-emerald-200 dark:border-emerald-900/30'
+                                                        : 'bg-slate-50 dark:bg-slate-855 border-slate-200 dark:border-slate-700'
+                                            }`}>
+                                                <div className="flex justify-between items-center">
+                                                    <span className={`text-xs font-black uppercase tracking-wider ${
+                                                        totals.balanceAmount > 0 ? 'text-rose-600' : ((parseFloat(invoiceForm.cashAmount) || 0) + (parseFloat(invoiceForm.onlineAmount) || 0)) > 0 ? 'text-emerald-600' : 'text-slate-500'
+                                                    }`}>
+                                                        {totals.balanceAmount > 0 ? '⚠️ Due Amount:' : ((parseFloat(invoiceForm.cashAmount) || 0) + (parseFloat(invoiceForm.onlineAmount) || 0)) > 0 ? '✅ Fully Paid' : '📋 Credit (Unpaid):'}
+                                                    </span>
+                                                    <span className={`text-lg font-black ${
+                                                        totals.balanceAmount > 0 ? 'text-rose-600' : ((parseFloat(invoiceForm.cashAmount) || 0) + (parseFloat(invoiceForm.onlineAmount) || 0)) > 0 ? 'text-emerald-600' : 'text-slate-655 dark:text-slate-305'
+                                                    }`}>
+                                                        ₹{totals.balanceAmount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+                                                    </span>
+                                                </div>
+                                                {totals.balanceAmount > 0 && ((parseFloat(invoiceForm.cashAmount) || 0) + (parseFloat(invoiceForm.onlineAmount) || 0)) > 0 && (
+                                                    <p className="text-[10px] font-bold text-amber-600 mt-1">
+                                                        ⚡ Partial payment — ₹{((parseFloat(invoiceForm.cashAmount) || 0) + (parseFloat(invoiceForm.onlineAmount) || 0)).toLocaleString('en-IN')} paid now, ₹{totals.balanceAmount.toLocaleString('en-IN')} will be supplier debt
+                                                    </p>
+                                                )}
+                                                {totals.balanceAmount > 0 && ((parseFloat(invoiceForm.cashAmount) || 0) + (parseFloat(invoiceForm.onlineAmount) || 0)) <= 0 && (
+                                                    <p className="text-[10px] font-bold text-slate-500 mt-1">
+                                                        Full amount will be recorded as supplier outstanding
+                                                    </p>
+                                                )}
+                                            </div>
+
+                                            {invoiceForm.supplierId && totals.prevOutstanding > 0 && (
+                                                <div className="bg-amber-50 dark:bg-amber-950/15 border-2 border-amber-200 dark:border-amber-900/30 rounded-xl p-3 space-y-1.5">
+                                                    <div className="flex justify-between items-center text-xs font-bold">
+                                                        <span className="text-amber-700 dark:text-amber-500 font-extrabold">Previous Outstanding:</span>
+                                                        <span className="font-black text-amber-700 dark:text-amber-500">
+                                                            ₹{totals.newPrevOutstanding.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+                                                            {totals.prevOutstanding !== totals.newPrevOutstanding && (
+                                                                <span className="text-[10px] text-emerald-600 ml-1 font-semibold">
+                                                                    (reduced from ₹{totals.prevOutstanding.toLocaleString('en-IN')})
+                                                                </span>
+                                                            )}
+                                                        </span>
+                                                    </div>
+                                                    <div className="flex justify-between items-center text-xs font-bold border-t border-amber-200 dark:border-amber-900/30 pt-1.5">
+                                                        <span className="text-rose-750 dark:text-rose-400 uppercase tracking-wider font-extrabold">🔴 Total Supplier Dues:</span>
+                                                        <span className="font-black text-rose-700 dark:text-rose-450 text-base">₹{totals.totalDues.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
+                                                    </div>
+                                                </div>
+                                            )}
+
+                                            {totals.overpaidAmount > 0 && (
+                                                <div className="bg-rose-50 dark:bg-rose-950/20 border-2 border-rose-200 dark:border-rose-900/30 rounded-xl p-3 text-xs font-bold text-rose-700 dark:text-rose-400">
+                                                    ⚠️ Overpaid by <strong>₹{totals.overpaidAmount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</strong>! The total payment amount exceeds the invoice total and previous outstanding combined. Please adjust the payment amounts.
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="px-6 py-4 border-t border-slate-100 dark:border-slate-700 flex justify-end gap-3 bg-slate-50 dark:bg-slate-800 rounded-b-3xl">
+                                    <button
+                                        type="button"
+                                        onClick={resetInvoiceForm}
+                                        className="px-4 py-2 border border-slate-200 dark:border-slate-750 bg-white dark:bg-slate-700 rounded-xl text-xs font-bold text-slate-655 dark:text-slate-350 hover:bg-slate-50 dark:hover:bg-slate-650 transition-all"
+                                    >
+                                        Cancel
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={handleCreateInvoice}
+                                        disabled={totals.overpaidAmount > 0}
+                                        className="px-6 py-2 bg-slate-900 text-white hover:bg-primary rounded-xl text-xs font-black uppercase tracking-widest hover:shadow-lg hover:shadow-primary/20 transition-all disabled:opacity-40 disabled:pointer-events-none"
+                                    >
+                                        Record & Post Invoice
+                                    </button>
+                                </div>
+                            </motion.div>
                         </div>
-                    </div>
-                </div>
+                    )}
+                </AnimatePresence>,
+                document.body
             )}
 
 

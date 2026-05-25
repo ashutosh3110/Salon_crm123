@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import {
     LayoutGrid,
     Plus,
@@ -23,6 +24,13 @@ export default function ProductCategoryManager() {
     const [isAdding, setIsAdding] = useState(false);
     const [editingId, setEditingId] = useState(null);
     const [formData, setFormData] = useState({ name: '', image: '', status: 'active' });
+
+    useEffect(() => {
+        document.body.style.overflow = isAdding ? 'hidden' : 'unset';
+        return () => {
+            document.body.style.overflow = 'unset';
+        };
+    }, [isAdding]);
 
     const filteredCategories = productCategories.filter(c => 
         (c.name || '').toLowerCase().includes(searchQuery.toLowerCase())
@@ -230,35 +238,32 @@ export default function ProductCategoryManager() {
             </div>
 
             {/* Premium Category Modal */}
-            <AnimatePresence>
-                {isAdding && (
-                    <>
-                        {/* Backdrop */}
-                        <motion.div
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            exit={{ opacity: 0 }}
+            {createPortal(
+                <AnimatePresence>
+                    {isAdding && (
+                        <div 
+                            className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm no-print overflow-y-auto"
                             onClick={() => setIsAdding(false)}
-                            className="fixed inset-0 bg-black/80 backdrop-blur-md z-[100] flex items-start justify-center p-4 overflow-y-auto"
                         >
                             <motion.div 
-                                initial={{ opacity: 0, scale: 0.95, y: 50 }}
-                                animate={{ opacity: 1, scale: 1, y: 0 }}
-                                exit={{ opacity: 0, scale: 0.95, y: 50 }}
+                                initial={{ opacity: 0, scale: 0.95 }} 
+                                animate={{ opacity: 1, scale: 1 }} 
+                                exit={{ opacity: 0, scale: 0.95 }}
                                 onClick={(e) => e.stopPropagation()}
-                                className="w-full max-w-md bg-surface border border-white/10 shadow-[0_0_100px_rgba(0,0,0,0.5)] overflow-hidden rounded-[32px] relative my-10"
+                                className="w-full max-w-md bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-2xl rounded-3xl overflow-hidden relative text-left"
                             >
                                 {/* Modal Header */}
-                                <div className="bg-gradient-to-r from-text via-text/90 to-text/80 p-5 text-background flex items-center justify-between">
+                                <div className="bg-slate-900 text-white p-5 flex items-center justify-between rounded-t-3xl">
                                     <div>
-                                        <h3 className="text-base font-black uppercase italic tracking-tight leading-none">
+                                        <h3 className="text-base font-black uppercase italic tracking-tight leading-none flex items-center gap-2">
+                                            <LayoutGrid className="w-5 h-5 text-primary" />
                                             {editingId ? 'Modify Concept' : 'Define Concept'}
                                         </h3>
                                         <p className="text-[7px] font-bold uppercase tracking-[0.3em] opacity-60 mt-1">Inventory :: Vector Initialization</p>
                                     </div>
                                     <button
                                         onClick={() => setIsAdding(false)}
-                                        className="p-1.5 bg-white/10 hover:bg-white/20 rounded-lg transition-all"
+                                        className="p-1.5 hover:bg-white/10 rounded-lg transition-all"
                                     >
                                         <XCircle className="w-4 h-4" />
                                     </button>
@@ -267,11 +272,11 @@ export default function ProductCategoryManager() {
                                 <div className="p-5 space-y-5">
                                     {/* Name Input */}
                                     <div className="space-y-1.5">
-                                        <label className="text-[9px] font-black text-text-muted uppercase tracking-[0.2em]">Label Designation <span className="text-primary">*</span></label>
+                                        <label className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] block mb-1">Label Designation <span className="text-primary">*</span></label>
                                         <input
                                             type="text"
                                             autoFocus
-                                            className="w-full px-4 py-2.5 bg-background border border-border rounded-xl text-[11px] font-black focus:border-primary outline-none transition-all uppercase placeholder:opacity-20 shadow-inner"
+                                            className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-750 border border-slate-200 dark:border-slate-700 rounded-xl text-[11px] font-black text-slate-900 dark:text-slate-100 focus:border-primary outline-none uppercase placeholder:opacity-20 shadow-inner"
                                             placeholder="e.g. ORGANIC_SERUM"
                                             value={formData.name}
                                             onChange={(e) => setFormData({ ...formData, name: e.target.value })}
@@ -281,7 +286,7 @@ export default function ProductCategoryManager() {
                                     {/* Image Upload Area */}
                                     <div className="space-y-3">
                                         <div className="flex justify-between items-end">
-                                            <label className="text-[9px] font-black text-text-muted uppercase tracking-[0.2em]">Visual Reference</label>
+                                            <label className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em]">Visual Reference</label>
                                             <span className="text-[7px] font-black text-primary uppercase tracking-widest opacity-60">
                                                 MAX: {platformSettings?.maxImageSize || 5}{platformSettings?.maxImageSizeUnit || 'MB'}
                                             </span>
@@ -292,18 +297,18 @@ export default function ProductCategoryManager() {
                                                 <div className="flex gap-2">
                                                     <input
                                                         type="text"
-                                                        className="flex-1 px-3 py-2 bg-background border border-border rounded-lg text-[9px] font-black focus:border-primary outline-none transition-all"
+                                                        className="flex-1 px-3 py-2 bg-slate-50 dark:bg-slate-750 border border-slate-200 dark:border-slate-700 rounded-lg text-[9px] font-black text-slate-900 dark:text-slate-100 focus:border-primary outline-none"
                                                         placeholder="SOURCE_URL"
                                                         value={formData.image || ''}
                                                         onChange={(e) => setFormData({ ...formData, image: e.target.value })}
                                                     />
-                                                    <label className="p-2 border border-border bg-surface-alt hover:bg-text hover:text-background transition-all cursor-pointer flex items-center justify-center rounded-lg">
-                                                        <CloudUpload className="w-3.5 h-3.5" />
+                                                    <label className="p-2 border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-750 hover:bg-slate-100 dark:hover:bg-slate-700 transition-all cursor-pointer flex items-center justify-center rounded-lg">
+                                                        <CloudUpload className="w-3.5 h-3.5 text-slate-500" />
                                                         <input type="file" className="hidden" accept="image/*" onChange={handleFileUpload} />
                                                     </label>
                                                 </div>
                                                 
-                                                <div className="aspect-video w-full border border-border rounded-2xl overflow-hidden bg-background relative shadow-inner group/preview">
+                                                <div className="aspect-video w-full border border-slate-200 dark:border-slate-700 rounded-2xl overflow-hidden bg-slate-50 dark:bg-slate-750 relative shadow-inner group/preview">
                                                     {formData.image ? (
                                                         <>
                                                             <img src={formData.image} className="w-full h-full object-cover" alt="Preview" />
@@ -317,7 +322,7 @@ export default function ProductCategoryManager() {
                                                             </div>
                                                         </>
                                                     ) : (
-                                                        <div className="w-full h-full flex flex-col items-center justify-center gap-2 text-text-muted opacity-20">
+                                                        <div className="w-full h-full flex flex-col items-center justify-center gap-2 text-slate-400 opacity-20">
                                                             <ImageIcon size={24} />
                                                             <p className="text-[8px] font-black uppercase italic tracking-widest">Awaiting Signal</p>
                                                         </div>
@@ -329,16 +334,17 @@ export default function ProductCategoryManager() {
 
                                     {/* Status Protocol */}
                                     <div className="space-y-2">
-                                        <label className="text-[9px] font-black text-text-muted uppercase tracking-[0.2em]">Operational Status</label>
-                                        <div className="flex gap-2 p-0.5 bg-surface-alt border border-border rounded-xl">
+                                        <label className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] block mb-1">Operational Status</label>
+                                        <div className="flex gap-2 p-0.5 bg-slate-100 dark:bg-slate-700/60 border border-slate-200 dark:border-slate-600 rounded-xl">
                                             {['active', 'inactive'].map(s => (
                                                 <button
                                                     key={s}
+                                                    type="button"
                                                     onClick={() => setFormData({ ...formData, status: s })}
                                                     className={`flex-1 py-2 text-[8px] font-black uppercase tracking-widest rounded-lg transition-all ${
                                                         formData.status === s 
-                                                        ? 'bg-text text-background shadow-md' 
-                                                        : 'bg-transparent text-text-muted hover:text-text'
+                                                        ? 'bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 shadow-md' 
+                                                        : 'bg-transparent text-slate-450 dark:text-slate-400 hover:text-slate-600'
                                                     }`}
                                                 >
                                                     {s}
@@ -348,11 +354,11 @@ export default function ProductCategoryManager() {
                                     </div>
 
                                     {/* Action Footers */}
-                                    <div className="pt-4 flex gap-3">
+                                    <div className="pt-4 flex gap-3 border-t border-slate-100 dark:border-slate-700">
                                         <button
                                             type="button"
                                             onClick={() => setIsAdding(false)}
-                                            className="flex-1 py-3 px-4 border border-border rounded-xl text-[9px] font-black uppercase tracking-widest hover:bg-surface-alt transition-all"
+                                            className="flex-1 py-3 px-4 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 rounded-xl text-[9px] font-black uppercase tracking-widest hover:bg-slate-50 dark:hover:bg-slate-750 transition-all"
                                         >
                                             Abort
                                         </button>
@@ -360,17 +366,18 @@ export default function ProductCategoryManager() {
                                             type="button"
                                             onClick={handleSave}
                                             disabled={!formData.name?.trim()}
-                                            className="flex-[1.5] py-3 px-4 bg-text text-background rounded-xl text-[9px] font-black uppercase tracking-widest hover:bg-primary hover:text-white transition-all shadow-xl active:scale-95 disabled:opacity-30 disabled:cursor-not-allowed"
+                                            className="flex-[1.5] py-3 px-4 bg-slate-900 text-white rounded-xl text-[9px] font-black uppercase tracking-widest hover:bg-primary transition-all shadow-xl active:scale-95 disabled:opacity-30 disabled:cursor-not-allowed"
                                         >
                                             {editingId ? 'Update' : 'Initialize'}
                                         </button>
                                     </div>
                                 </div>
                             </motion.div>
-                        </motion.div>
-                    </>
-                )}
-            </AnimatePresence>
+                        </div>
+                    )}
+                </AnimatePresence>,
+                document.body
+            )}
         </div>
     );
 }

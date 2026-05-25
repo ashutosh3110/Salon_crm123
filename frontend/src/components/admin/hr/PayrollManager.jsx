@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import { 
     Calculator, FileText, Download, CheckCircle2, Search, 
     ChevronDown, Calendar, X, Edit2, Eye, Printer, DollarSign, Clock, Check, Settings,
@@ -18,7 +19,7 @@ const STATUS_META = {
 export default function PayrollManager() {
     const { salon, staff, fetchStaff, outlets = [], fetchOutlets } = useBusiness();
     
-    useEffect(() => { 
+    useEffect(() => {
         fetchStaff(); 
         fetchOutlets();
     }, [fetchStaff, fetchOutlets]);
@@ -48,6 +49,14 @@ export default function PayrollManager() {
     const [showDetails, setShowDetails] = useState(null);
     const [isSaving, setIsSaving] = useState(false);
     const [sendingWhatsApp, setSendingWhatsApp] = useState(null);
+
+    useEffect(() => {
+        const hasOpenModal = !!individualModal || !!showDetails;
+        document.body.style.overflow = hasOpenModal ? 'hidden' : 'unset';
+        return () => {
+            document.body.style.overflow = 'unset';
+        };
+    }, [individualModal, showDetails]);
     
     const [detailForm, setDetailForm] = useState({
         baseSalary: 0,
@@ -545,186 +554,301 @@ export default function PayrollManager() {
 
                 <div className="px-6 py-3 border-t border-slate-150 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/40 flex items-center gap-2 transition-colors">
                     <AlertCircle className="w-3.5 h-3.5 text-primary shrink-0" />
-                    <p className="text-[10px] text-slate-450 dark:text-slate-500 font-bold uppercase tracking-wider leading-none">
+                    <p className="text-[10px] text-slate-450 dark:text-slate-550 font-bold uppercase tracking-wider leading-none">
                         Payroll summary automatically reflects the active month and outlet filter selection.
                     </p>
                 </div>
             </div>
 
             {/* Individual Payroll Modal */}
-            <AnimatePresence>
-                {individualModal && (
-                    <div className="fixed inset-0 z-[999] flex items-center justify-center p-4">
-                        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setIndividualModal(false)} className="absolute inset-0 bg-black/50 backdrop-blur-sm" />
-                        <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }}
-                            className="bg-white dark:bg-slate-800 w-full max-w-xl rounded-3xl border border-slate-200 dark:border-slate-700 shadow-2xl relative flex flex-col max-h-[90vh] transition-all">
-                            
-                            <div className="p-6 border-b border-slate-100 dark:border-slate-700 flex items-center justify-between">
-                                <div>
-                                    <h2 className="text-sm font-extrabold text-slate-850 dark:text-slate-100 tracking-tight">Create Individual Pay Record</h2>
-                                    <p className="text-[10px] text-slate-400 dark:text-slate-500 font-bold uppercase mt-1 tracking-wider">Scoped to {filterOutlet === 'All' ? 'All Outlets' : filterOutlet}</p>
-                                </div>
-                                <button onClick={() => setIndividualModal(false)} className="w-8 h-8 rounded-xl bg-slate-50 dark:bg-slate-750 hover:bg-slate-100 dark:hover:bg-slate-700 border border-slate-200/50 dark:border-slate-700 flex items-center justify-center text-slate-500 dark:text-slate-450 transition-all"><X className="w-4 h-4" /></button>
-                            </div>
-                            
-                            <div className="p-6 overflow-y-auto space-y-5 flex-1">
-                                {/* Staff Selection */}
-                                <div className="space-y-1">
-                                    <label className="text-[10px] font-black text-slate-500 dark:text-slate-450 ml-1 uppercase">Select Staff Member</label>
-                                    <select value={individualForm.staffId} onChange={e => {
-                                        const s = staff.find(st => st._id === e.target.value);
-                                        setIndividualForm({...individualForm, staffId: e.target.value, baseSalary: s?.hrProfile?.baseSalary || 0});
-                                    }}
-                                        className="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-slate-750 border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-700 dark:text-slate-200 focus:ring-2 focus:ring-primary/10 focus:border-primary outline-none uppercase cursor-pointer">
-                                        <option value="">Choose Staff...</option>
-                                        {addableStaff.map(s => (
-                                            <option key={s._id} value={s._id} className="bg-white dark:bg-slate-800">
-                                                {s.name} ({s.role}) — {s.outletId?.name || 'No Outlet'}
-                                            </option>
-                                        ))}
-                                    </select>
-                                </div>
-
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div className="space-y-1">
-                                        <label className="text-[10px] font-black text-slate-550 dark:text-slate-450 ml-1 uppercase">Base Salary (₹)</label>
-                                        <input type="number" value={individualForm.baseSalary} onChange={e => setIndividualForm({...individualForm, baseSalary: Number(e.target.value)})}
-                                            className="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-slate-750 border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-700 dark:text-slate-200 focus:ring-2 focus:ring-primary/10 focus:border-primary outline-none" />
+            {createPortal(
+                <AnimatePresence>
+                    {individualModal && (
+                        <div 
+                            className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm no-print"
+                            onClick={() => setIndividualModal(false)}
+                        >
+                            <motion.div 
+                                initial={{ opacity: 0, scale: 0.95 }} 
+                                animate={{ opacity: 1, scale: 1 }} 
+                                exit={{ opacity: 0, scale: 0.95 }}
+                                className="bg-white border border-slate-200 w-full max-w-xl shadow-2xl rounded-none relative flex flex-col max-h-[90vh] transition-all text-left"
+                                onClick={e => e.stopPropagation()}
+                            >
+                                <div className="p-6 border-b border-slate-100 flex items-center justify-between shrink-0 bg-white">
+                                    <div>
+                                        <h2 className="text-sm font-black text-slate-900 uppercase tracking-widest italic flex items-center gap-2">
+                                            <Calculator className="w-5 h-5 text-primary" />
+                                            Create Individual Pay Record
+                                        </h2>
+                                        <p className="text-[10px] text-slate-400 font-bold uppercase mt-1 tracking-wider">Scoped to {filterOutlet === 'All' ? 'All Outlets' : filterOutlet}</p>
                                     </div>
-                                    <div className="space-y-1">
-                                        <label className="text-[10px] font-black text-slate-550 dark:text-slate-450 ml-1 uppercase">Working Days</label>
-                                        <input type="number" value={individualForm.workingDays} onChange={e => setIndividualForm({...individualForm, workingDays: Number(e.target.value)})}
-                                            className="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-slate-750 border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-700 dark:text-slate-200 focus:ring-2 focus:ring-primary/10 focus:border-primary outline-none" />
-                                    </div>
-                                    <div className="space-y-1">
-                                        <label className="text-[10px] font-black text-slate-550 dark:text-slate-450 ml-1 uppercase">Present Days</label>
-                                        <input type="number" step="0.5" value={individualForm.presentDays} onChange={e => setIndividualForm({...individualForm, presentDays: Number(e.target.value)})}
-                                            className="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-slate-750 border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-700 dark:text-slate-200 focus:ring-2 focus:ring-primary/10 focus:border-primary outline-none" />
-                                    </div>
-                                    <div className="space-y-1">
-                                        <label className="text-[10px] font-black text-emerald-600 dark:text-emerald-450 ml-1 uppercase">Incentive (₹)</label>
-                                        <input type="number" value={individualForm.incentive} onChange={e => setIndividualForm({...individualForm, incentive: Number(e.target.value)})}
-                                            className="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-slate-750 border border-slate-200 dark:border-slate-700 text-xs font-bold text-emerald-650 dark:text-emerald-300 focus:ring-2 focus:ring-emerald-500/10 focus:border-emerald-500 outline-none" />
-                                    </div>
-                                </div>
-
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div className="space-y-1">
-                                        <label className="text-[10px] font-black text-rose-600 dark:text-rose-450 ml-1 uppercase">Deductions (₹)</label>
-                                        <input type="number" value={individualForm.otherDeductions} onChange={e => setIndividualForm({...individualForm, otherDeductions: Number(e.target.value)})}
-                                            className="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-slate-750 border border-slate-200 dark:border-slate-700 text-xs font-bold text-rose-650 dark:text-rose-350 focus:ring-2 focus:ring-rose-500/10 focus:border-rose-500 outline-none" />
-                                    </div>
-                                    <div className="space-y-1">
-                                        <label className="text-[10px] font-black text-slate-550 dark:text-slate-450 ml-1 uppercase">Overtime Pay (₹)</label>
-                                        <input type="number" value={individualForm.overtime} onChange={e => setIndividualForm({...individualForm, overtime: Number(e.target.value)})}
-                                            className="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-slate-750 border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-700 dark:text-slate-200 focus:ring-2 focus:ring-primary/10 focus:border-primary outline-none" />
-                                    </div>
-                                </div>
-
-                                <div className="space-y-1">
-                                    <label className="text-[10px] font-black text-slate-550 dark:text-slate-450 ml-1 uppercase">Notes / Explanations</label>
-                                    <textarea rows={2} value={individualForm.notes} onChange={e => setIndividualForm({...individualForm, notes: e.target.value})}
-                                        className="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-slate-750 border border-slate-200 dark:border-slate-700 text-xs font-medium text-slate-700 dark:text-slate-250 focus:ring-2 focus:ring-primary/10 focus:border-primary outline-none resize-none transition-all placeholder-slate-400" placeholder="Type payroll calculations notes..." />
-                                </div>
-                            </div>
-
-                            <div className="p-6 border-t border-slate-100 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/40 flex items-center justify-between">
-                                <div className="text-left">
-                                    <p className="text-[9px] font-black text-slate-450 dark:text-slate-500 uppercase">Estimated Settlement</p>
-                                    <h3 className="text-xl font-black text-primary dark:text-slate-100 tracking-tight mt-0.5">₹{Math.round(((individualForm.baseSalary / (individualForm.workingDays || 1)) * individualForm.presentDays) + Number(individualForm.incentive) + Number(individualForm.overtime) - Number(individualForm.pf) - Number(individualForm.tax) - Number(individualForm.otherDeductions)).toLocaleString()}</h3>
-                                </div>
-                                <div className="flex gap-2">
-                                    <button type="button" onClick={() => setIndividualModal(false)} className="px-4 py-2.5 bg-slate-150 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-650 text-slate-700 dark:text-slate-200 rounded-xl font-bold text-xs transition-all">Cancel</button>
-                                    <button onClick={createIndividual} disabled={!individualForm.staffId || loading}
-                                        className="px-5 py-2.5 bg-primary hover:bg-primary-dark text-white rounded-xl font-bold text-xs shadow-md disabled:opacity-50 transition-all flex items-center gap-1.5">
-                                        {loading ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Check className="w-3.5 h-3.5" />}
-                                        Save Record
+                                    <button 
+                                        onClick={() => setIndividualModal(false)} 
+                                        className="p-2 rounded-full hover:bg-slate-100 text-slate-400 hover:text-rose-500 transition-colors"
+                                    >
+                                        <X className="w-5 h-5" />
                                     </button>
                                 </div>
-                            </div>
-                        </motion.div>
-                    </div>
-                )}
-            </AnimatePresence>
+                                
+                                <div className="p-6 overflow-y-auto space-y-5 flex-1 text-slate-800">
+                                    {/* Staff Selection */}
+                                    <div className="space-y-1">
+                                        <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-1">Select Staff Member</label>
+                                        <select 
+                                            value={individualForm.staffId} 
+                                            onChange={e => {
+                                                const s = staff.find(st => st._id === e.target.value);
+                                                setIndividualForm({...individualForm, staffId: e.target.value, baseSalary: s?.hrProfile?.baseSalary || 0});
+                                            }}
+                                            className="w-full px-4 py-3 rounded-none bg-slate-50 border border-slate-200 text-xs font-bold text-slate-900 focus:border-primary outline-none uppercase cursor-pointer"
+                                        >
+                                            <option value="">Choose Staff...</option>
+                                            {addableStaff.map(s => (
+                                                <option key={s._id} value={s._id} className="bg-white text-slate-900">
+                                                    {s.name} ({s.role}) — {s.outletId?.name || 'No Outlet'}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    </div>
+
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div className="space-y-1">
+                                            <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-1">Base Salary (₹)</label>
+                                            <input 
+                                                type="number" 
+                                                value={individualForm.baseSalary} 
+                                                onChange={e => setIndividualForm({...individualForm, baseSalary: Number(e.target.value)})}
+                                                className="w-full px-4 py-3 rounded-none bg-slate-50 border border-slate-200 text-xs font-bold text-slate-900 focus:border-primary outline-none" 
+                                            />
+                                        </div>
+                                        <div className="space-y-1">
+                                            <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-1">Working Days</label>
+                                            <input 
+                                                type="number" 
+                                                value={individualForm.workingDays} 
+                                                onChange={e => setIndividualForm({...individualForm, workingDays: Number(e.target.value)})}
+                                                className="w-full px-4 py-3 rounded-none bg-slate-50 border border-slate-200 text-xs font-bold text-slate-900 focus:border-primary outline-none" 
+                                            />
+                                        </div>
+                                        <div className="space-y-1">
+                                            <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-1">Present Days</label>
+                                            <input 
+                                                type="number" 
+                                                step="0.5" 
+                                                value={individualForm.presentDays} 
+                                                onChange={e => setIndividualForm({...individualForm, presentDays: Number(e.target.value)})}
+                                                className="w-full px-4 py-3 rounded-none bg-slate-50 border border-slate-200 text-xs font-bold text-slate-900 focus:border-primary outline-none" 
+                                            />
+                                        </div>
+                                        <div className="space-y-1">
+                                            <label className="text-[9px] font-black text-emerald-600 uppercase tracking-widest block mb-1">Incentive (₹)</label>
+                                            <input 
+                                                type="number" 
+                                                value={individualForm.incentive} 
+                                                onChange={e => setIndividualForm({...individualForm, incentive: Number(e.target.value)})}
+                                                className="w-full px-4 py-3 rounded-none bg-slate-50 border border-slate-200 text-xs font-bold text-emerald-600 focus:border-emerald-500 outline-none" 
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div className="space-y-1">
+                                            <label className="text-[9px] font-black text-rose-600 uppercase tracking-widest block mb-1">Deductions (₹)</label>
+                                            <input 
+                                                type="number" 
+                                                value={individualForm.otherDeductions} 
+                                                onChange={e => setIndividualForm({...individualForm, otherDeductions: Number(e.target.value)})}
+                                                className="w-full px-4 py-3 rounded-none bg-slate-50 border border-slate-200 text-xs font-bold text-rose-600 focus:border-rose-500 outline-none" 
+                                            />
+                                        </div>
+                                        <div className="space-y-1">
+                                            <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-1">Overtime Pay (₹)</label>
+                                            <input 
+                                                type="number" 
+                                                value={individualForm.overtime} 
+                                                onChange={e => setIndividualForm({...individualForm, overtime: Number(e.target.value)})}
+                                                className="w-full px-4 py-3 rounded-none bg-slate-50 border border-slate-200 text-xs font-bold text-slate-900 focus:border-primary outline-none" 
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <div className="space-y-1">
+                                        <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-1">Notes / Explanations</label>
+                                        <textarea 
+                                            rows={2} 
+                                            value={individualForm.notes} 
+                                            onChange={e => setIndividualForm({...individualForm, notes: e.target.value})}
+                                            className="w-full px-4 py-3 rounded-none bg-slate-50 border border-slate-200 text-xs font-medium text-slate-900 focus:border-primary outline-none resize-none transition-all placeholder-slate-400" 
+                                            placeholder="Type payroll calculations notes..." 
+                                        />
+                                    </div>
+                                </div>
+                                
+                                <div className="p-6 border-t border-slate-100 bg-slate-50 flex items-center justify-between shrink-0">
+                                    <div className="text-left">
+                                        <p className="text-[9px] font-black text-slate-450 uppercase">Estimated Settlement</p>
+                                        <h3 className="text-xl font-black text-slate-950 tracking-tight mt-0.5">₹{Math.round(((individualForm.baseSalary / (individualForm.workingDays || 1)) * individualForm.presentDays) + Number(individualForm.incentive) + Number(individualForm.overtime) - Number(individualForm.pf) - Number(individualForm.tax) - Number(individualForm.otherDeductions)).toLocaleString()}</h3>
+                                    </div>
+                                    <div className="flex gap-2">
+                                        <button 
+                                            type="button" 
+                                            onClick={() => setIndividualModal(false)} 
+                                            className="px-6 py-2.5 border border-slate-200 bg-white text-slate-600 hover:bg-slate-100 rounded-none font-bold text-xs transition-all"
+                                        >
+                                            Cancel
+                                        </button>
+                                        <button 
+                                            onClick={createIndividual} 
+                                            disabled={!individualForm.staffId || loading}
+                                            className="px-6 py-2.5 bg-slate-900 text-white hover:bg-primary rounded-none font-bold text-xs shadow-lg disabled:opacity-50 transition-all flex items-center gap-1.5"
+                                        >
+                                            {loading ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Check className="w-3.5 h-3.5" />}
+                                            Save Record
+                                        </button>
+                                    </div>
+                                </div>
+                            </motion.div>
+                        </div>
+                    )}
+                </AnimatePresence>,
+                document.body
+            )}
 
             {/* Salary Parameter Adjustments Modal */}
-            <AnimatePresence>
-                {showDetails && (
-                    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-                        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setShowDetails(null)} className="absolute inset-0 bg-black/50 backdrop-blur-sm" />
-                        <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }}
-                            className="bg-white dark:bg-slate-800 w-full max-w-xl rounded-3xl border border-slate-200 dark:border-slate-700 shadow-2xl relative flex flex-col max-h-[90vh] transition-all text-left">
-                            
-                            <div className="p-6 border-b border-slate-100 dark:border-slate-700 flex items-center justify-between">
-                                <div>
-                                    <h2 className="text-sm font-extrabold text-slate-850 dark:text-slate-100 tracking-tight">Adjust Pay Slip Parameters</h2>
-                                    <p className="text-[10px] font-bold text-primary uppercase mt-1 tracking-wider">{showDetails.staffId?.name} · {month}/{year}</p>
-                                </div>
-                                <button onClick={() => setShowDetails(null)} className="w-8 h-8 rounded-xl bg-slate-50 dark:bg-slate-750 hover:bg-slate-100 dark:hover:bg-slate-705 border border-slate-200/50 dark:border-slate-700 flex items-center justify-center text-slate-550 dark:text-slate-450 transition-all"><X className="w-4 h-4" /></button>
-                            </div>
-
-                            <div className="p-6 overflow-y-auto space-y-5 flex-1">
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div className="space-y-1">
-                                        <label className="text-[10px] font-black text-slate-550 dark:text-slate-450 ml-1 uppercase">Base Salary (₹)</label>
-                                        <input type="number" value={detailForm.baseSalary} onChange={e => setDetailForm({...detailForm, baseSalary: Number(e.target.value)})}
-                                            className="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-slate-750 border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-700 dark:text-slate-200 focus:ring-2 focus:ring-primary/10 focus:border-primary outline-none" />
+            {createPortal(
+                <AnimatePresence>
+                    {showDetails && (
+                        <div 
+                            className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm no-print"
+                            onClick={() => setShowDetails(null)}
+                        >
+                            <motion.div 
+                                initial={{ opacity: 0, scale: 0.95 }} 
+                                animate={{ opacity: 1, scale: 1 }} 
+                                exit={{ opacity: 0, scale: 0.95 }}
+                                className="bg-white border border-slate-200 w-full max-w-xl rounded-none relative flex flex-col max-h-[90vh] transition-all text-left"
+                                onClick={e => e.stopPropagation()}
+                            >
+                                <div className="p-6 border-b border-slate-100 flex items-center justify-between shrink-0 bg-white">
+                                    <div>
+                                        <h2 className="text-sm font-black text-slate-900 uppercase tracking-widest italic flex items-center gap-2">
+                                            <Settings className="w-5 h-5 text-primary" />
+                                            Adjust Pay Slip Parameters
+                                        </h2>
+                                        <p className="text-[10px] font-bold text-primary uppercase mt-1 tracking-wider">{showDetails.staffId?.name} · {month}/{year}</p>
                                     </div>
-                                    <div className="space-y-1">
-                                        <label className="text-[10px] font-black text-slate-550 dark:text-slate-450 ml-1 uppercase">Working Days</label>
-                                        <input type="number" value={detailForm.workingDays} onChange={e => setDetailForm({...detailForm, workingDays: Number(e.target.value)})}
-                                            className="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-slate-750 border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-700 dark:text-slate-200 focus:ring-2 focus:ring-primary/10 focus:border-primary outline-none" />
-                                    </div>
-                                    <div className="space-y-1">
-                                        <label className="text-[10px] font-black text-slate-550 dark:text-slate-450 ml-1 uppercase">Present Count</label>
-                                        <input type="number" step="0.5" value={detailForm.presentDays} onChange={e => setDetailForm({...detailForm, presentDays: Number(e.target.value)})}
-                                            className="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-slate-750 border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-700 dark:text-slate-200 focus:ring-2 focus:ring-primary/10 focus:border-primary outline-none" />
-                                    </div>
-                                    <div className="space-y-1">
-                                        <label className="text-[10px] font-black text-emerald-600 dark:text-emerald-450 ml-1 uppercase">Incentive (₹)</label>
-                                        <input type="number" value={detailForm.incentive} onChange={e => setDetailForm({...detailForm, incentive: Number(e.target.value)})}
-                                            className="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-slate-750 border border-slate-200 dark:border-slate-700 text-xs font-bold text-emerald-650 dark:text-emerald-300 focus:ring-2 focus:ring-emerald-500/10 focus:border-emerald-500 outline-none" />
-                                    </div>
-                                </div>
-
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div className="space-y-1">
-                                        <label className="text-[10px] font-black text-rose-600 dark:text-rose-455 ml-1 uppercase">Deductions (₹)</label>
-                                        <input type="number" value={detailForm.otherDeductions} onChange={e => setDetailForm({...detailForm, otherDeductions: Number(e.target.value)})}
-                                            className="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-slate-750 border border-slate-200 dark:border-slate-700 text-xs font-bold text-rose-650 dark:text-rose-350 focus:ring-2 focus:ring-rose-500/10 focus:border-rose-500 outline-none" />
-                                    </div>
-                                    <div className="space-y-1">
-                                        <label className="text-[10px] font-black text-slate-550 dark:text-slate-450 ml-1 uppercase">Overtime (₹)</label>
-                                        <input type="number" value={detailForm.overtime} onChange={e => setDetailForm({...detailForm, overtime: Number(e.target.value)})}
-                                            className="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-slate-750 border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-700 dark:text-slate-200 focus:ring-2 focus:ring-primary/10 focus:border-primary outline-none" />
-                                    </div>
-                                </div>
-
-                                <div className="space-y-1">
-                                    <label className="text-[10px] font-black text-slate-550 dark:text-slate-450 ml-1 uppercase">Adjustments Notes</label>
-                                    <textarea rows={2} value={detailForm.notes} onChange={e => setDetailForm({...detailForm, notes: e.target.value})}
-                                        className="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-slate-750 border border-slate-200 dark:border-slate-700 text-xs font-medium text-slate-700 dark:text-slate-250 focus:ring-2 focus:ring-primary/10 focus:border-primary outline-none resize-none transition-all placeholder-slate-400" placeholder="Type reason for parameters adjustments..." />
-                                </div>
-                            </div>
-
-                            <div className="p-6 border-t border-slate-100 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/40 flex items-center justify-between">
-                                <div className="text-left">
-                                    <p className="text-[9px] font-black text-slate-450 dark:text-slate-550 uppercase">Adjusted Net Payable</p>
-                                    <h3 className="text-xl font-black text-primary dark:text-slate-100 tracking-tight mt-0.5">₹{calculateNet().toLocaleString()}</h3>
-                                </div>
-                                <div className="flex gap-2">
-                                    <button type="button" onClick={() => setShowDetails(null)} className="px-4 py-2.5 bg-slate-150 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-650 text-slate-700 dark:text-slate-200 rounded-xl font-bold text-xs transition-all">Cancel</button>
-                                    <button onClick={saveDetails} disabled={isSaving}
-                                        className="px-5 py-2.5 bg-primary hover:bg-primary-dark text-white rounded-xl font-bold text-xs shadow-md active:scale-95 transition-all flex items-center gap-1.5">
-                                        {isSaving ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Check className="w-3.5 h-3.5" />}
-                                        Save Changes
+                                    <button 
+                                        onClick={() => setShowDetails(null)} 
+                                        className="p-2 rounded-full hover:bg-slate-100 text-slate-400 hover:text-rose-500 transition-colors"
+                                    >
+                                        <X className="w-5 h-5" />
                                     </button>
                                 </div>
-                            </div>
-                        </motion.div>
-                    </div>
-                )}
-            </AnimatePresence>
+
+                                <div className="p-6 overflow-y-auto space-y-5 flex-1 text-slate-800">
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div className="space-y-1">
+                                            <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-1">Base Salary (₹)</label>
+                                            <input 
+                                                type="number" 
+                                                value={detailForm.baseSalary} 
+                                                onChange={e => setDetailForm({...detailForm, baseSalary: Number(e.target.value)})}
+                                                className="w-full px-4 py-3 rounded-none bg-slate-50 border border-slate-200 text-xs font-bold text-slate-900 focus:border-primary outline-none" 
+                                            />
+                                        </div>
+                                        <div className="space-y-1">
+                                            <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-1">Working Days</label>
+                                            <input 
+                                                type="number" 
+                                                value={detailForm.workingDays} 
+                                                onChange={e => setDetailForm({...detailForm, workingDays: Number(e.target.value)})}
+                                                className="w-full px-4 py-3 rounded-none bg-slate-50 border border-slate-200 text-xs font-bold text-slate-900 focus:border-primary outline-none" 
+                                            />
+                                        </div>
+                                        <div className="space-y-1">
+                                            <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-1">Present Count</label>
+                                            <input 
+                                                type="number" 
+                                                step="0.5" 
+                                                value={detailForm.presentDays} 
+                                                onChange={e => setDetailForm({...detailForm, presentDays: Number(e.target.value)})}
+                                                className="w-full px-4 py-3 rounded-none bg-slate-50 border border-slate-200 text-xs font-bold text-slate-900 focus:border-primary outline-none" 
+                                            />
+                                        </div>
+                                        <div className="space-y-1">
+                                            <label className="text-[9px] font-black text-emerald-600 uppercase tracking-widest block mb-1">Incentive (₹)</label>
+                                            <input 
+                                                type="number" 
+                                                value={detailForm.incentive} 
+                                                onChange={e => setDetailForm({...detailForm, incentive: Number(e.target.value)})}
+                                                className="w-full px-4 py-3 rounded-none bg-slate-50 border border-slate-200 text-xs font-bold text-emerald-600 focus:border-emerald-500 outline-none" 
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div className="space-y-1">
+                                            <label className="text-[9px] font-black text-rose-600 uppercase tracking-widest block mb-1">Deductions (₹)</label>
+                                            <input 
+                                                type="number" 
+                                                value={detailForm.otherDeductions} 
+                                                onChange={e => setDetailForm({...detailForm, otherDeductions: Number(e.target.value)})}
+                                                className="w-full px-4 py-3 rounded-none bg-slate-50 border border-slate-200 text-xs font-bold text-rose-600 focus:border-rose-500 outline-none" 
+                                            />
+                                        </div>
+                                        <div className="space-y-1">
+                                            <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-1">Overtime (₹)</label>
+                                            <input 
+                                                type="number" 
+                                                value={detailForm.overtime} 
+                                                onChange={e => setDetailForm({...detailForm, overtime: Number(e.target.value)})}
+                                                className="w-full px-4 py-3 rounded-none bg-slate-50 border border-slate-200 text-xs font-bold text-slate-900 focus:border-primary outline-none" 
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <div className="space-y-1">
+                                        <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-1">Adjustments Notes</label>
+                                        <textarea 
+                                            rows={2} 
+                                            value={detailForm.notes} 
+                                            onChange={e => setDetailForm({...detailForm, notes: e.target.value})}
+                                            className="w-full px-4 py-3 rounded-none bg-slate-50 border border-slate-200 text-xs font-medium text-slate-900 focus:border-primary outline-none resize-none transition-all placeholder-slate-400" 
+                                            placeholder="Type reason for parameters adjustments..." 
+                                        />
+                                    </div>
+                                </div>
+
+                                <div className="p-6 border-t border-slate-100 bg-slate-50 flex items-center justify-between shrink-0">
+                                    <div className="text-left">
+                                        <p className="text-[9px] font-black text-slate-450 uppercase">Adjusted Net Payable</p>
+                                        <h3 className="text-xl font-black text-slate-950 tracking-tight mt-0.5">₹{calculateNet().toLocaleString()}</h3>
+                                    </div>
+                                    <div className="flex gap-2">
+                                        <button 
+                                            type="button" 
+                                            onClick={() => setShowDetails(null)} 
+                                            className="px-6 py-2.5 border border-slate-200 bg-white text-slate-600 hover:bg-slate-100 rounded-none font-bold text-xs transition-all"
+                                        >
+                                            Cancel
+                                        </button>
+                                        <button 
+                                            onClick={saveDetails} 
+                                            disabled={isSaving}
+                                            className="px-6 py-2.5 bg-slate-900 text-white hover:bg-primary rounded-none font-bold text-xs shadow-lg transition-all flex items-center gap-1.5"
+                                        >
+                                            {isSaving ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Check className="w-3.5 h-3.5" />}
+                                            Save Changes
+                                        </button>
+                                    </div>
+                                </div>
+                            </motion.div>
+                        </div>
+                    )}
+                </AnimatePresence>,
+                document.body
+            )}
 
             {/* Notification Toast */}
             <AnimatePresence>

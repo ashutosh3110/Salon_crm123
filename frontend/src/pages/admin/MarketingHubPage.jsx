@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
+import { createPortal } from 'react-dom';
 import {
     MessageSquare, Mail, Share2, TrendingUp, Users, Send,
     Plus, Search, Filter, MoreVertical, CheckCircle, Clock,
@@ -301,162 +302,176 @@ function MarketingHubContent() {
                 </div>
             </div>
 
-            {/* Campaign Modal */}
-            <AnimatePresence>
-                {isCampaignModalOpen && (
-                    <div className="fixed inset-0 z-[200] flex items-start justify-center p-4 pt-10 sm:pt-16 overflow-y-auto">
-                        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm" onClick={() => !isSending && setIsCampaignModalOpen(false)} />
-                        <motion.div
-                            initial={{ opacity: 0, scale: 0.95, y: 20 }}
-                            animate={{ opacity: 1, scale: 1, y: 0 }}
-                            exit={{ opacity: 0, scale: 0.95, y: 20 }}
-                            className="bg-white rounded-[2rem] border border-border w-full max-w-lg shadow-2xl relative overflow-hidden flex flex-col max-h-[90vh] md:max-h-[85vh]"
-                        >
-                            {/* Form Side */}
-                            <div className="flex-1 flex flex-col min-h-0">
-                                <div className="px-5 py-4 border-b border-border flex items-center justify-between shrink-0">
-                                    <div>
-                                        <h3 className="text-base font-black text-text uppercase tracking-tight">Create {activeTab === 'whatsapp' ? 'WhatsApp' : 'Push'} Campaign</h3>
-                                        <p className="text-[8px] text-text-muted font-bold uppercase tracking-widest mt-1">Fill details and send instantly</p>
+            {isCampaignModalOpen && createPortal(
+                <AnimatePresence>
+                    {isCampaignModalOpen && (
+                        <div className="fixed inset-0 z-[9999] flex items-start justify-center p-4 pt-10 sm:pt-16 overflow-y-auto">
+                            <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm" onClick={() => !isSending && setIsCampaignModalOpen(false)} />
+                            <motion.div
+                                initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                                animate={{ opacity: 1, scale: 1, y: 0 }}
+                                exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                                className="bg-white rounded-[2rem] border border-slate-200 w-full max-w-lg shadow-2xl relative overflow-hidden flex flex-col max-h-[90vh] md:max-h-[85vh]"
+                            >
+                                {/* Form Side */}
+                                <div className="flex-1 flex flex-col min-h-0">
+                                    <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between shrink-0">
+                                        <div>
+                                            <h3 className="text-base font-black text-slate-900 uppercase tracking-tight">Create {activeTab === 'whatsapp' ? 'WhatsApp' : 'Push'} Campaign</h3>
+                                            <p className="text-[8px] text-slate-400 font-bold uppercase tracking-widest mt-1">Fill details and send instantly</p>
+                                        </div>
+                                        {!isSending && (
+                                            <div
+                                                role="button"
+                                                onClick={() => setIsCampaignModalOpen(false)}
+                                                className="p-2 hover:bg-slate-100 rounded-full transition-colors cursor-pointer flex items-center justify-center"
+                                            >
+                                                <XCircle className="w-6 h-6 text-slate-400" />
+                                            </div>
+                                        )}
                                     </div>
-                                    {!isSending && (
-                                        <div 
-                                            role="button"
-                                            onClick={() => setIsCampaignModalOpen(false)} 
-                                            className="p-2 hover:bg-surface rounded-full transition-colors cursor-pointer flex items-center justify-center"
-                                        >
-                                            <XCircle className="w-6 h-6 text-text-muted" />
-                                        </div>
-                                    )}
-                                </div>
 
-                                <div className="p-5 space-y-4 flex-1 overflow-y-auto no-scrollbar">
-                                    {isSending ? (
-                                        <div className="py-12 flex flex-col items-center text-center space-y-8">
-                                            <div className="relative w-32 h-32 flex items-center justify-center">
-                                                <svg className="w-full h-full -rotate-90">
-                                                    <circle cx="64" cy="64" r="60" stroke="currentColor" strokeWidth="8" fill="transparent" className="text-slate-100" />
-                                                    <motion.circle
-                                                        cx="64" cy="64" r="60" stroke="currentColor" strokeWidth="8" fill="transparent"
-                                                        strokeDasharray={380}
-                                                        animate={{ strokeDashoffset: 380 - (380 * sendingProgress) / 100 }}
-                                                        className="text-primary"
-                                                    />
-                                                </svg>
-                                                <div className="absolute inset-0 flex items-center justify-center text-2xl font-black text-text">
-                                                    {Math.round(sendingProgress)}%
-                                                </div>
-                                            </div>
-                                            <div>
-                                                <h3 className="text-xl font-black text-text uppercase tracking-tight">Sending Messages...</h3>
-                                                <p className="text-sm text-text-muted mt-2 font-medium">Processing campaign for your selected audience...</p>
-                                            </div>
-                                        </div>
-                                    ) : (
-                                        <>
-                                            {/* Name */}
-                                            <div className="space-y-2">
-                                                <label className="text-[9px] font-black text-text-muted uppercase tracking-[0.2em] block">Campaign Name / Title</label>
-                                                <input
-                                                    type="text"
-                                                    placeholder={activeTab === 'whatsapp' ? 'e.g. Summer Offer' : 'Notification Title...'}
-                                                    className="w-full bg-surface border border-border rounded-xl px-4 py-3 text-sm font-black uppercase tracking-tight focus:outline-none focus:border-primary transition-all"
-                                                    value={campaignForm.name}
-                                                    onChange={(e) => setCampaignForm({ ...campaignForm, name: e.target.value })}
-                                                />
-                                            </div>
-
-                                            {/* Audience */}
-                                            <div className="space-y-2">
-                                                <label className="text-[9px] font-black text-text-muted uppercase tracking-[0.2em] block">Choose Audience</label>
-                                                <div className="grid grid-cols-2 gap-3">
-                                                    {[
-                                                        { id: 'bulk', label: 'Everyone', desc: 'All Customers', icon: Users },
-                                                        { id: 'selective', label: 'Selected', desc: 'Specific List', icon: Target },
-                                                    ].map(t => (
-                                                        <button
-                                                            key={t.id}
-                                                            onClick={() => setCampaignForm({ ...campaignForm, type: t.id })}
-                                                            className={`p-3 rounded-xl border-2 transition-all text-left flex items-center gap-3 ${campaignForm.type === t.id ? 'border-primary bg-primary/[0.02]' : 'border-border hover:border-slate-300'}`}
-                                                        >
-                                                            <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${campaignForm.type === t.id ? 'bg-primary text-white' : 'bg-surface text-text-muted'}`}>
-                                                                <t.icon className="w-4 h-4" />
-                                                            </div>
-                                                            <div>
-                                                                <div className="text-[10px] font-black text-text uppercase tracking-tight">{t.label}</div>
-                                                                <div className="text-[8px] text-text-muted font-bold mt-0.5 uppercase tracking-wider">{t.desc}</div>
-                                                            </div>
-                                                        </button>
-                                                    ))}
-                                                </div>
-
-                                                {campaignForm.type === 'selective' && (
-                                                    <div className="p-4 rounded-2xl bg-surface border border-border flex items-center justify-between">
-                                                        <div>
-                                                            <div className="text-sm font-black text-text">{campaignForm.selectedCustomers.length} selected</div>
-                                                        </div>
-                                                        <button 
-                                                            onClick={() => setIsContactListOpen(true)}
-                                                            className="px-4 py-2 bg-white border border-border rounded-xl text-[10px] font-black text-primary uppercase tracking-widest hover:border-primary/30"
-                                                        >
-                                                            Select Customers
-                                                        </button>
+                                    <div className="p-5 space-y-4 flex-1 overflow-y-auto no-scrollbar">
+                                        {isSending ? (
+                                            <div className="py-12 flex flex-col items-center text-center space-y-8">
+                                                <div className="relative w-32 h-32 flex items-center justify-center">
+                                                    <svg className="w-full h-full -rotate-90">
+                                                        <circle cx="64" cy="64" r="60" stroke="currentColor" strokeWidth="8" fill="transparent" className="text-slate-100" />
+                                                        <motion.circle
+                                                            cx="64" cy="64" r="60" stroke="currentColor" strokeWidth="8" fill="transparent"
+                                                            strokeDasharray={380}
+                                                            animate={{ strokeDashoffset: 380 - (380 * sendingProgress) / 100 }}
+                                                            className="text-primary"
+                                                        />
+                                                    </svg>
+                                                    <div className="absolute inset-0 flex items-center justify-center text-2xl font-black text-slate-900">
+                                                        {Math.round(sendingProgress)}%
                                                     </div>
+                                                </div>
+                                                <div>
+                                                    <h3 className="text-xl font-black text-slate-900 uppercase tracking-tight">Sending Messages...</h3>
+                                                    <p className="text-sm text-slate-400 mt-2 font-medium">Processing campaign for your selected audience...</p>
+                                                </div>
+                                            </div>
+                                        ) : (
+                                            <>
+                                                {/* Name */}
+                                                <div className="space-y-2">
+                                                    <label className="text-[9px] font-black text-slate-500 uppercase tracking-[0.2em] block">Campaign Name / Title</label>
+                                                    <input
+                                                        type="text"
+                                                        placeholder={activeTab === 'whatsapp' ? 'e.g. Summer Offer' : 'Notification Title...'}
+                                                        className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-black uppercase tracking-tight focus:outline-none focus:border-primary transition-all text-slate-900"
+                                                        value={campaignForm.name}
+                                                        onChange={(e) => setCampaignForm({ ...campaignForm, name: e.target.value })}
+                                                    />
+                                                </div>
+
+                                                {/* Audience */}
+                                                <div className="space-y-2">
+                                                    <label className="text-[9px] font-black text-slate-500 uppercase tracking-[0.2em] block">Choose Audience</label>
+                                                    <div className="grid grid-cols-2 gap-3">
+                                                        {[
+                                                            { id: 'bulk', label: 'Everyone', desc: 'All Customers', icon: Users },
+                                                            { id: 'selective', label: 'Selected', desc: 'Specific List', icon: Target },
+                                                        ].map(t => (
+                                                            <button
+                                                                key={t.id}
+                                                                type="button"
+                                                                onClick={() => setCampaignForm({ ...campaignForm, type: t.id })}
+                                                                className={`p-3 rounded-xl border-2 transition-all text-left flex items-center gap-3 ${
+                                                                    campaignForm.type === t.id
+                                                                        ? 'border-primary bg-primary/5'
+                                                                        : 'border-slate-200 hover:border-slate-300 bg-white'
+                                                                }`}
+                                                            >
+                                                                <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${
+                                                                    campaignForm.type === t.id ? 'bg-primary text-white' : 'bg-slate-100 text-slate-400'
+                                                                }`}>
+                                                                    <t.icon className="w-4 h-4" />
+                                                                </div>
+                                                                <div>
+                                                                    <div className="text-[10px] font-black text-slate-800 uppercase tracking-tight">{t.label}</div>
+                                                                    <div className="text-[8px] text-slate-400 font-bold mt-0.5 uppercase tracking-wider">{t.desc}</div>
+                                                                </div>
+                                                            </button>
+                                                        ))}
+                                                    </div>
+
+                                                    {campaignForm.type === 'selective' && (
+                                                        <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 flex items-center justify-between">
+                                                            <div>
+                                                                <div className="text-sm font-black text-slate-900">{campaignForm.selectedCustomers.length} selected</div>
+                                                            </div>
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => setIsContactListOpen(true)}
+                                                                className="px-4 py-2 bg-white border border-slate-200 rounded-xl text-[10px] font-black text-primary uppercase tracking-widest hover:border-primary/50 transition-all"
+                                                            >
+                                                                Select Customers
+                                                            </button>
+                                                        </div>
+                                                    )}
+                                                </div>
+
+                                                {/* Message */}
+                                                <div className="space-y-2">
+                                                    <label className="text-[9px] font-black text-slate-500 uppercase tracking-[0.2em]">Message Content</label>
+                                                    <textarea
+                                                        rows={3}
+                                                        placeholder="Type your message here... (Use {{name}} for customer name)"
+                                                        className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary/20 resize-none transition-all text-slate-900"
+                                                        value={campaignForm.message}
+                                                        onChange={(e) => setCampaignForm({ ...campaignForm, message: e.target.value })}
+                                                    />
+                                                </div>
+
+                                                {campaignError && (
+                                                    <div className="rounded-xl bg-rose-50 border border-rose-200 p-3 text-rose-700 text-xs font-bold">{campaignError}</div>
                                                 )}
-                                            </div>
+                                            </>
+                                        )}
+                                    </div>
 
-                                            {/* Message */}
-                                            <div className="space-y-2">
-                                                <label className="text-[9px] font-black text-text-muted uppercase tracking-[0.2em]">Message Content</label>
-                                                <textarea
-                                                    rows={2}
-                                                    placeholder="Type your message here... (Use {{name}} for customer name)"
-                                                    className="w-full bg-surface border border-border rounded-xl px-4 py-2 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary/20 resize-none transition-all"
-                                                    value={campaignForm.message}
-                                                    onChange={(e) => setCampaignForm({ ...campaignForm, message: e.target.value })}
-                                                />
-                                            </div>
-
-                                            {campaignError && (
-                                                <div className="rounded-xl bg-rose-50 border border-rose-200 p-3 text-rose-700 text-xs font-bold">{campaignError}</div>
-                                            )}
-                                        </>
-                                    )}
+                                    <div className="p-5 border-t border-slate-100 bg-slate-50 shrink-0">
+                                        <button
+                                            type="button"
+                                            onClick={handleSendCampaign}
+                                            disabled={!campaignForm.name || !campaignForm.message || (campaignForm.type === 'selective' && campaignForm.selectedCustomers.length === 0) || isSending}
+                                            className="w-full py-4 bg-slate-900 text-white text-[10px] font-black uppercase tracking-[0.3em] rounded-2xl hover:bg-primary transition-all disabled:opacity-40 disabled:cursor-not-allowed active:scale-[0.98] shadow-lg"
+                                        >
+                                            {isSending ? 'Sending...' : `Send ${activeTab === 'whatsapp' ? 'WhatsApp' : 'Notification'} Now`}
+                                        </button>
+                                    </div>
                                 </div>
+                            </motion.div>
+                        </div>
+                    )}
+                </AnimatePresence>,
+                document.body
+            )}
 
-                                <div className="p-5 border-t border-border bg-surface/30 shrink-0">
-                                    <button
-                                        onClick={handleSendCampaign}
-                                        disabled={!campaignForm.name || !campaignForm.message || (campaignForm.type === 'selective' && campaignForm.selectedCustomers.length === 0) || isSending}
-                                        className="w-full py-4 bg-primary text-white text-[10px] font-black uppercase tracking-[0.3em] rounded-2xl hover:brightness-110 shadow-xl shadow-primary/25 transition-all disabled:opacity-50 active:scale-[0.98]"
-                                    >
-                                        {isSending ? 'Sending...' : `Send ${activeTab === 'whatsapp' ? 'WhatsApp' : 'Notification'} Now`}
-                                    </button>
-                                </div>
-                            </div>
-                        </motion.div>
-                    </div>
-                )}
-            </AnimatePresence>
-
-            <AnimatePresence>
-                <ContactListModal 
-                    isOpen={isContactListOpen} 
-                    onClose={() => setIsContactListOpen(false)} 
-                    selectionMode={true}
-                    selectedIds={campaignForm.selectedCustomers}
-                    onToggleSelect={(id) => {
-                        setCampaignForm(prev => {
-                            const list = prev.selectedCustomers;
-                            if (list.includes(id)) {
-                                return { ...prev, selectedCustomers: list.filter(x => x !== id) };
-                            } else {
-                                return { ...prev, selectedCustomers: [...list, id] };
-                            }
-                        });
-                    }}
-                />
-            </AnimatePresence>
+            {isContactListOpen && createPortal(
+                <AnimatePresence>
+                    <ContactListModal
+                        isOpen={isContactListOpen}
+                        onClose={() => setIsContactListOpen(false)}
+                        selectionMode={true}
+                        selectedIds={campaignForm.selectedCustomers}
+                        onToggleSelect={(id) => {
+                            setCampaignForm(prev => {
+                                const list = prev.selectedCustomers;
+                                if (list.includes(id)) {
+                                    return { ...prev, selectedCustomers: list.filter(x => x !== id) };
+                                } else {
+                                    return { ...prev, selectedCustomers: [...list, id] };
+                                }
+                            });
+                        }}
+                    />
+                </AnimatePresence>,
+                document.body
+            )}
         </div>
     );
 }

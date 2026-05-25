@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import {
     Plus,
@@ -205,6 +206,13 @@ function MembershipCard({ plan, onEdit, onDelete, onToggle }) {
 }
 
 function PlanModal({ plan, serviceOptions = [], onClose, onSave }) {
+    useEffect(() => {
+        document.body.style.overflow = 'hidden';
+        return () => {
+            document.body.style.overflow = 'unset';
+        };
+    }, []);
+
     const [formData, setFormData] = useState(() => {
         if (plan) {
             return {
@@ -253,44 +261,49 @@ function PlanModal({ plan, serviceOptions = [], onClose, onSave }) {
         calculatedTotal = basePrice + calculatedTax;
     }
 
-    return (
-        <div className="fixed inset-0 z-50 flex items-start justify-center p-4 pt-10 sm:pt-16 bg-black/85 backdrop-blur-md overflow-y-auto">
+    return createPortal(
+        <div 
+            className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm"
+            onClick={onClose}
+        >
             <motion.div 
-                initial={{ opacity: 0, scale: 0.9, y: 20 }} 
+                initial={{ opacity: 0, scale: 0.95, y: 20 }} 
                 animate={{ opacity: 1, scale: 1, y: 0 }} 
-                className="relative bg-surface border border-border/40 w-full max-w-lg shadow-2xl rounded-none flex flex-col overflow-hidden text-left"
+                className="relative bg-white border border-slate-200 w-full max-w-lg shadow-2xl rounded-none flex flex-col max-h-[90vh] text-left"
+                onClick={e => e.stopPropagation()}
             >
                 {/* Modal Header */}
-                <div className="px-6 py-5 border-b border-border/40 flex justify-between items-center bg-surface-alt shrink-0">
-                    <h2 className="text-sm font-black text-foreground uppercase tracking-widest italic">
+                <div className="px-6 py-5 border-b border-slate-100 flex justify-between items-center bg-white shrink-0">
+                    <h2 className="text-sm font-black text-slate-900 uppercase tracking-widest italic flex items-center gap-2">
+                        <Crown className="w-5 h-5 text-primary" />
                         {plan ? 'EDIT MEMBERSHIP PLAN' : 'CREATE MEMBERSHIP PLAN'}
                     </h2>
                     <button 
                         onClick={onClose} 
-                        className="p-2 border border-border/40 hover:bg-primary hover:text-white hover:border-primary text-text-muted transition-all rounded-none"
+                        className="p-2 rounded-full hover:bg-slate-100 text-slate-400 hover:text-rose-500 transition-all"
                     >
-                        <X size={16} />
+                        <X size={20} />
                     </button>
                 </div>
 
                 {/* Modal Body */}
-                <div className="p-6 flex-1 overflow-y-auto no-scrollbar space-y-6 italic max-h-[65vh]">
+                <div className="p-6 flex-1 overflow-y-auto no-scrollbar space-y-6 italic text-slate-800">
                     {/* Basic Info */}
                     <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-2">
-                            <label className="text-[9px] font-black text-text-muted uppercase tracking-widest block">PLAN NAME</label>
+                            <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest block">PLAN NAME</label>
                             <input 
-                                className="w-full h-11 bg-surface-alt border border-border/60 px-3 text-xs font-black" 
+                                className="w-full h-11 bg-slate-50 border border-slate-200 px-3 text-xs font-black text-slate-950 outline-none focus:bg-white focus:border-primary rounded-none" 
                                 value={formData.name} 
                                 onChange={e => setFormData({ ...formData, name: e.target.value })} 
                                 placeholder="E.G. GOLD MEMBER"
                             />
                         </div>
                         <div className="space-y-2">
-                            <label className="text-[9px] font-black text-text-muted uppercase tracking-widest block">PRICE (₹)</label>
+                            <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest block">PRICE (₹)</label>
                             <input 
                                 type="number" 
-                                className="w-full h-11 bg-surface-alt border border-border/60 px-3 text-xs font-black" 
+                                className="w-full h-11 bg-slate-50 border border-slate-200 px-3 text-xs font-black text-slate-950 outline-none focus:bg-white focus:border-primary rounded-none" 
                                 value={formData.price} 
                                 onChange={e => setFormData({ ...formData, price: e.target.value })} 
                                 placeholder="0.00"
@@ -301,18 +314,18 @@ function PlanModal({ plan, serviceOptions = [], onClose, onSave }) {
                     {/* Validity & Icon */}
                     <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-2">
-                            <label className="text-[9px] font-black text-text-muted uppercase tracking-widest block">VALIDITY (DAYS)</label>
+                            <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest block">VALIDITY (DAYS)</label>
                             <input 
                                 type="number" 
-                                className="w-full h-11 bg-surface-alt border border-border/60 px-3 text-xs font-black" 
+                                className="w-full h-11 bg-slate-50 border border-slate-200 px-3 text-xs font-black text-slate-950 outline-none focus:bg-white focus:border-primary rounded-none" 
                                 value={formData.duration} 
                                 onChange={e => setFormData({ ...formData, duration: e.target.value })} 
                             />
                         </div>
                         <div className="space-y-2">
-                            <label className="text-[9px] font-black text-text-muted uppercase tracking-widest block">PLAN ICON</label>
+                            <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest block">PLAN ICON</label>
                             <select 
-                                className="w-full h-11 bg-surface-alt border border-border/60 px-3 text-xs font-black uppercase tracking-wider" 
+                                className="w-full h-11 bg-slate-50 border border-slate-200 px-3 text-xs font-black text-slate-950 uppercase tracking-wider outline-none focus:bg-white focus:border-primary rounded-none" 
                                 value={formData.icon} 
                                 onChange={e => setFormData({ ...formData, icon: e.target.value })}
                             >
@@ -324,32 +337,32 @@ function PlanModal({ plan, serviceOptions = [], onClose, onSave }) {
                     </div>
 
                     {/* Tax configuration section (GST) */}
-                    <div className="space-y-3 pt-4 border-t border-border/20">
-                        <label className="text-[9px] font-black text-text-muted uppercase tracking-widest block">Tax Configuration (GST)</label>
+                    <div className="space-y-3 pt-4 border-t border-slate-100">
+                        <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest block">Tax Configuration (GST)</label>
                         <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-2">
-                                <span className="text-[8px] font-bold text-text-muted uppercase tracking-widest block">Tax Type</span>
-                                <div className="grid grid-cols-2 gap-1 bg-surface-alt border border-border/40 p-1">
+                                <span className="text-[8px] font-bold text-slate-400 uppercase tracking-widest block">Tax Type</span>
+                                <div className="grid grid-cols-2 gap-1 bg-slate-50 border border-slate-200 p-1">
                                     <button
                                         type="button"
                                         onClick={() => setFormData({ ...formData, taxType: 'excluding' })}
-                                        className={`py-2 px-1 font-black text-[9px] uppercase tracking-widest transition-all text-center rounded-none ${formData.taxType === 'excluding' ? 'bg-primary text-white' : 'text-text-muted hover:bg-surface'}`}
+                                        className={`py-2 px-1 font-black text-[9px] uppercase tracking-widest transition-all text-center rounded-none ${formData.taxType === 'excluding' ? 'bg-slate-900 text-white' : 'text-slate-500 hover:bg-slate-100'}`}
                                     >
                                         Excl.
                                     </button>
                                     <button
                                         type="button"
                                         onClick={() => setFormData({ ...formData, taxType: 'including' })}
-                                        className={`py-2 px-1 font-black text-[9px] uppercase tracking-widest transition-all text-center rounded-none ${formData.taxType === 'including' ? 'bg-primary text-white' : 'text-text-muted hover:bg-surface'}`}
+                                        className={`py-2 px-1 font-black text-[9px] uppercase tracking-widest transition-all text-center rounded-none ${formData.taxType === 'including' ? 'bg-slate-900 text-white' : 'text-slate-500 hover:bg-slate-100'}`}
                                     >
                                         Incl.
                                     </button>
                                 </div>
                             </div>
                             <div className="space-y-2">
-                                <span className="text-[8px] font-bold text-text-muted uppercase tracking-widest block">GST Rate</span>
+                                <span className="text-[8px] font-bold text-slate-400 uppercase tracking-widest block">GST Rate</span>
                                 <select
-                                    className="w-full h-11 bg-surface-alt border border-border/40 px-3 text-xs font-black uppercase tracking-widest"
+                                    className="w-full h-11 bg-slate-50 border border-slate-200 px-3 text-xs font-black text-slate-950 uppercase tracking-widest outline-none focus:bg-white focus:border-primary rounded-none"
                                     value={formData.taxRate}
                                     onChange={e => setFormData({ ...formData, taxRate: Number(e.target.value) })}
                                 >
@@ -363,18 +376,18 @@ function PlanModal({ plan, serviceOptions = [], onClose, onSave }) {
                         </div>
 
                         {/* Live Billing breakdown summary */}
-                        <div className="p-4 bg-surface-alt border border-border/40 space-y-2">
-                            <div className="text-[9px] font-black text-text-muted uppercase tracking-widest">Pricing & GST Breakdown</div>
-                            <div className="flex justify-between text-xs font-black">
-                                <span className="text-text-muted uppercase">Base Price:</span>
+                        <div className="p-4 bg-slate-50 border border-slate-100 space-y-2">
+                            <div className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Pricing & GST Breakdown</div>
+                            <div className="flex justify-between text-xs font-black text-slate-800">
+                                <span className="text-slate-400 uppercase">Base Price:</span>
                                 <span>₹{calculatedBase.toFixed(2)}</span>
                             </div>
                             <div className="flex justify-between text-xs font-black text-primary">
                                 <span className="uppercase">GST ({taxRate}%):</span>
                                 <span>{formData.taxType === 'including' ? 'INCLUDED' : '+'} ₹{calculatedTax.toFixed(2)}</span>
                             </div>
-                            <div className="h-[1px] bg-border/40 my-1" />
-                            <div className="flex justify-between text-sm font-black text-foreground">
+                            <div className="h-[1px] bg-slate-200 my-1" />
+                            <div className="flex justify-between text-sm font-black text-slate-950">
                                 <span className="uppercase">Net Payable Amount:</span>
                                 <span>₹{calculatedTotal.toFixed(2)}</span>
                             </div>
@@ -382,9 +395,9 @@ function PlanModal({ plan, serviceOptions = [], onClose, onSave }) {
                     </div>
 
                     {/* Benefits Section */}
-                    <div className="space-y-3 pt-4 border-t border-border/20">
+                    <div className="space-y-3 pt-4 border-t border-slate-100">
                         <div className="flex justify-between items-center">
-                            <label className="text-[9px] font-black text-text-muted uppercase tracking-widest">PLAN BENEFITS</label>
+                            <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest">PLAN BENEFITS</label>
                             <button 
                                 type="button"
                                 onClick={() => setFormData({ ...formData, benefits: [...formData.benefits, ''] })} 
@@ -399,13 +412,13 @@ function PlanModal({ plan, serviceOptions = [], onClose, onSave }) {
                                     <input 
                                         value={b} 
                                         onChange={e => handleBenefitChange(i, e.target.value)} 
-                                        className="flex-1 h-10 bg-surface-alt border border-border/60 px-3 text-[11px] font-black italic" 
+                                        className="flex-1 h-10 bg-slate-50 border border-slate-200 px-3 text-[11px] font-black text-slate-950 italic outline-none focus:bg-white focus:border-primary rounded-none" 
                                         placeholder="E.G. 10% OFF ON HAIRCUTS" 
                                     />
                                     <button 
                                         type="button"
                                         onClick={() => setFormData({ ...formData, benefits: formData.benefits.filter((_, idx) => idx !== i) })} 
-                                        className="px-3 text-rose-500 border border-border/40 hover:bg-rose-500/10 hover:border-rose-500 transition-colors"
+                                        className="px-3 text-rose-500 border border-slate-200 hover:bg-rose-50 hover:border-rose-500 transition-colors bg-white rounded-none"
                                     >
                                         <X size={14} />
                                     </button>
@@ -415,20 +428,20 @@ function PlanModal({ plan, serviceOptions = [], onClose, onSave }) {
                     </div>
 
                     {/* Service & Product Discounts */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t border-border/20">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t border-slate-100">
                         {/* Service Discount */}
                         <div className="space-y-2">
-                            <label className="text-[9px] font-black text-text-muted uppercase tracking-widest">Service Benefits (All Services)</label>
+                            <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Service Benefits (All Services)</label>
                             <div className="flex gap-2">
                                 <input 
                                     type="number" 
-                                    className="flex-1 h-11 bg-surface-alt border border-border/60 px-3 text-xs font-black" 
+                                    className="flex-1 h-11 bg-slate-50 border border-slate-200 px-3 text-xs font-black text-slate-950 outline-none focus:bg-white focus:border-primary rounded-none" 
                                     placeholder="Value"
                                     value={formData.serviceDiscountValue} 
                                     onChange={e => setFormData({ ...formData, serviceDiscountValue: Number(e.target.value) })} 
                                 />
                                 <select 
-                                    className="w-24 h-11 bg-surface-alt border border-border/60 px-2 text-[9px] font-black uppercase tracking-tighter"
+                                    className="w-24 h-11 bg-slate-50 border border-slate-200 px-2 text-[9px] font-black text-slate-950 uppercase tracking-tighter outline-none focus:bg-white focus:border-primary rounded-none"
                                     value={formData.serviceDiscountType}
                                     onChange={e => setFormData({ ...formData, serviceDiscountType: e.target.value })}
                                 >
@@ -440,17 +453,17 @@ function PlanModal({ plan, serviceOptions = [], onClose, onSave }) {
 
                         {/* Product Discount */}
                         <div className="space-y-2">
-                            <label className="text-[9px] font-black text-text-muted uppercase tracking-widest">Product Benefits (All Products)</label>
+                            <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Product Benefits (All Products)</label>
                             <div className="flex gap-2">
                                 <input 
                                     type="number" 
-                                    className="flex-1 h-11 bg-surface-alt border border-border/60 px-3 text-xs font-black" 
+                                    className="flex-1 h-11 bg-slate-50 border border-slate-200 px-3 text-xs font-black text-slate-950 outline-none focus:bg-white focus:border-primary rounded-none" 
                                     placeholder="Value"
                                     value={formData.productDiscountValue} 
                                     onChange={e => setFormData({ ...formData, productDiscountValue: Number(e.target.value) })} 
                                 />
                                 <select 
-                                    className="w-24 h-11 bg-surface-alt border border-border/60 px-2 text-[9px] font-black uppercase tracking-tighter"
+                                    className="w-24 h-11 bg-slate-50 border border-slate-200 px-2 text-[9px] font-black text-slate-950 uppercase tracking-tighter outline-none focus:bg-white focus:border-primary rounded-none"
                                     value={formData.productDiscountType}
                                     onChange={e => setFormData({ ...formData, productDiscountType: e.target.value })}
                                 >
@@ -463,15 +476,16 @@ function PlanModal({ plan, serviceOptions = [], onClose, onSave }) {
                 </div>
 
                 {/* Modal Footer */}
-                <div className="p-6 border-t border-border/40 bg-surface-alt shrink-0">
+                <div className="p-6 border-t border-slate-100 bg-slate-50 shrink-0">
                     <button 
                         onClick={() => onSave(formData)} 
-                        className="w-full py-4 bg-text text-white font-black text-[10px] uppercase tracking-widest hover:bg-primary hover:text-white transition-all shadow-xl flex items-center justify-center gap-3"
+                        className="w-full py-4 bg-slate-900 text-white font-black text-[10px] uppercase tracking-widest hover:bg-primary transition-all shadow-xl flex items-center justify-center gap-3 rounded-none"
                     >
                         SAVE MEMBERSHIP PLAN <Save size={14} />
                     </button>
                 </div>
             </motion.div>
-        </div>
+        </div>,
+        document.body
     );
 }

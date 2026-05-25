@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import {
     Bell,
     Calendar,
@@ -46,6 +47,16 @@ export default function BridalRemindersView() {
     useEffect(() => {
         loadBridalState();
     }, []);
+
+    // Lock body scroll when modal is open
+    useEffect(() => {
+        if (showAddModal) {
+            document.body.style.overflow = 'hidden';
+        } else {
+            document.body.style.overflow = 'unset';
+        }
+        return () => { document.body.style.overflow = 'unset'; };
+    }, [showAddModal]);
 
     const handleAddBridal = async (e) => {
         e.preventDefault();
@@ -236,33 +247,44 @@ export default function BridalRemindersView() {
                 </div>
             )}
 
-            {/* Add Bridal Event Modal */}
-            {showAddModal && (
-                <div className="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-[200] flex items-center justify-center p-4" onClick={() => setShowAddModal(false)}>
-                    <div className="bg-white rounded-3xl w-full max-w-md shadow-2xl relative overflow-y-auto max-h-[90vh] hide-scrollbar border border-slate-200/50" onClick={(e) => e.stopPropagation()}>
-                        <div className="p-5 bg-white border-b border-slate-100 flex justify-between items-center">
-                            <h4 className="text-[11px] font-black text-slate-900 uppercase flex items-center gap-2 tracking-widest">
-                                <Calendar className="w-4 h-4 text-slate-800" /> Add Bridal Event
-                            </h4>
-                            <button type="button" onClick={() => setShowAddModal(false)} className="p-1 border-2 border-text hover:bg-rose-500 hover:text-white transition-colors">
+            {showAddModal && createPortal(
+                <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-[9999] flex items-center justify-center p-4" onClick={() => setShowAddModal(false)}>
+                    <div className="bg-white rounded-none w-full max-w-md shadow-2xl relative overflow-y-auto max-h-[90vh] border border-slate-200" onClick={(e) => e.stopPropagation()}>
+                        {/* Modal Header */}
+                        <div className="px-6 py-5 border-b border-slate-100 flex justify-between items-center">
+                            <div className="flex items-center gap-3">
+                                <div className="w-9 h-9 bg-primary/10 flex items-center justify-center">
+                                    <Calendar className="w-4 h-4 text-primary" />
+                                </div>
+                                <div>
+                                    <h4 className="text-sm font-black text-slate-900 uppercase tracking-[0.2em] italic">Add Bridal Event</h4>
+                                    <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">Schedule pre-wedding reminder</p>
+                                </div>
+                            </div>
+                            <button
+                                type="button"
+                                onClick={() => setShowAddModal(false)}
+                                className="p-2 rounded-full hover:bg-slate-100 text-slate-400 hover:text-rose-500 transition-all"
+                            >
                                 <X className="w-4 h-4" />
                             </button>
                         </div>
 
-                        <form onSubmit={handleAddBridal} className="p-6 space-y-4">
+                        <form onSubmit={handleAddBridal} className="p-6 space-y-5">
                             <div className="space-y-1.5 text-left">
-                                <label className="text-[10px] font-black text-text-muted uppercase tracking-wider">Bride Name</label>
+                                <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">Bride Name *</label>
                                 <input
                                     type="text"
                                     required
+                                    autoFocus
                                     placeholder="Enter client name"
                                     value={newBridal.clientName}
                                     onChange={(e) => setNewBridal({ ...newBridal, clientName: e.target.value })}
-                                    className="w-full bg-surface-alt/5 border-2 border-text p-3 text-xs font-black text-slate-900 outline-none focus:bg-white focus:border-primary transition-all rounded-none"
+                                    className="w-full bg-slate-50 border border-slate-200 px-4 py-3 text-xs font-black text-slate-900 outline-none focus:bg-white focus:border-primary transition-all rounded-none"
                                 />
                             </div>
                             <div className="space-y-1.5 text-left">
-                                <label className="text-[10px] font-black text-text-muted uppercase tracking-wider">Phone Number</label>
+                                <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">Phone Number *</label>
                                 <input
                                     type="tel"
                                     required
@@ -272,50 +294,50 @@ export default function BridalRemindersView() {
                                         const val = e.target.value.replace(/\D/g, '');
                                         if (val.length <= 10) setNewBridal({ ...newBridal, clientPhone: val });
                                     }}
-                                    className="w-full bg-surface-alt/5 border-2 border-text p-3 text-xs font-black text-slate-900 outline-none focus:bg-white focus:border-primary transition-all rounded-none"
+                                    className="w-full bg-slate-50 border border-slate-200 px-4 py-3 text-xs font-black text-slate-900 outline-none focus:bg-white focus:border-primary transition-all rounded-none"
                                 />
                             </div>
                             <div className="space-y-1.5 text-left">
-                                <label className="text-[10px] font-black text-text-muted uppercase tracking-wider">Service Booking / Event Date</label>
+                                <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">Service Booking / Event Date *</label>
                                 <input
                                     type="date"
                                     required
                                     min={new Date().toISOString().split('T')[0]}
                                     value={newBridal.eventDate}
                                     onChange={(e) => setNewBridal({ ...newBridal, eventDate: e.target.value })}
-                                    className="w-full bg-surface-alt/5 border-2 border-text p-3 text-xs font-black text-slate-900 outline-none focus:bg-white focus:border-primary transition-all rounded-none"
+                                    className="w-full bg-slate-50 border border-slate-200 px-4 py-3 text-xs font-black text-slate-900 outline-none focus:bg-white focus:border-primary transition-all rounded-none"
                                 />
                             </div>
                             <div className="space-y-1.5 text-left">
-                                <label className="text-[10px] font-black text-text-muted uppercase tracking-wider">Service / Context</label>
+                                <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">Service / Context</label>
                                 <input
                                     type="text"
-                                    required
                                     placeholder="e.g. Bridal Makeup & Hair"
                                     value={newBridal.service}
                                     onChange={(e) => setNewBridal({ ...newBridal, service: e.target.value })}
-                                    className="w-full bg-surface-alt/5 border-2 border-text p-3 text-xs font-black text-slate-900 outline-none focus:bg-white focus:border-primary transition-all rounded-none"
+                                    className="w-full bg-slate-50 border border-slate-200 px-4 py-3 text-xs font-black text-slate-900 outline-none focus:bg-white focus:border-primary transition-all rounded-none"
                                 />
                             </div>
 
-                            <div className="flex gap-4 pt-6">
+                            <div className="flex gap-3 pt-4 border-t border-slate-100">
                                 <button
                                     type="button"
                                     onClick={() => setShowAddModal(false)}
-                                    className="flex-1 py-3.5 border-2 border-text font-black text-[10px] uppercase tracking-widest bg-white hover:bg-surface-alt/20 transition-all text-text-muted rounded-none"
+                                    className="flex-1 py-4 border border-slate-200 font-bold text-[11px] uppercase tracking-[0.2em] bg-white hover:bg-slate-50 transition-all text-slate-600 rounded-none"
                                 >
                                     Cancel
                                 </button>
                                 <button
                                     type="submit"
-                                    className="flex-1 bg-text text-white border-2 border-text py-3.5 font-black text-[10px] uppercase tracking-widest hover:bg-primary hover:border-primary hover:text-white transition-all rounded-none shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:translate-x-0.5 active:translate-y-0.5 active:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]"
+                                    className="flex-1 bg-slate-900 text-white border border-slate-900 py-4 font-bold text-[11px] uppercase tracking-[0.2em] hover:bg-primary hover:border-primary transition-all rounded-none shadow-lg"
                                 >
                                     Save Event
                                 </button>
                             </div>
                         </form>
                     </div>
-                </div>
+                </div>,
+                document.body
             )}
         </div>
     );
