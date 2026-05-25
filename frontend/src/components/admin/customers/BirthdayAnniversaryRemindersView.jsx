@@ -48,16 +48,20 @@ export default function BirthdayAnniversaryRemindersView() {
         loadWishes();
     }, [currentPage]);
 
-    const handleSendManualWhatsApp = (client, type) => {
-        const salonName = salon?.businessName || salon?.name || 'Our Salon';
-        let text = '';
-        if (type === 'birthday') {
-            text = `Happy Birthday ${client.name}! We wish you a fantastic year ahead filled with joy and beauty. Thank you for being a valued client! - ${salonName}`;
-        } else {
-            text = `Happy Anniversary ${client.name}! Celebrating your beautiful journey and wishing you continued happiness. - ${salonName}`;
+    const handleSendManualWhatsApp = async (client, type) => {
+        const toastId = toast.loading('Sending WhatsApp wish...');
+        try {
+            const res = await api.post(`/clients/${client._id}/send-celebration-wish`, { type });
+            if (res.data && res.data.success) {
+                toast.success('Wish sent successfully via WhatsApp API!', { id: toastId });
+                loadWishes();
+            } else {
+                toast.error(res.data?.message || 'Failed to send wish', { id: toastId });
+            }
+        } catch (err) {
+            console.error('Failed to send celebration wish:', err);
+            toast.error(err.response?.data?.message || 'Error sending wish', { id: toastId });
         }
-        const phone = client.phone ? client.phone.replace(/\D/g, '') : '';
-        window.open(`https://wa.me/${phone}?text=${encodeURIComponent(text)}`, '_blank');
     };
 
     const formatDate = (dateStr) => {
@@ -219,17 +223,21 @@ export default function BirthdayAnniversaryRemindersView() {
                                 </thead>
                                 <tbody className="divide-y-2 divide-border text-xs font-bold text-text-secondary">
                                     {wishItems.length === 0 ? (
-                                        <tr>
-                                            <td colSpan={7} className="px-6 py-16 text-center text-text-muted">
-                                                <div className="flex flex-col items-center justify-center space-y-3">
-                                                    <AlertCircle size={40} className="text-text-muted opacity-40" />
-                                                    <div className="space-y-1">
-                                                        <p className="text-sm font-black uppercase italic opacity-40">No wishes sent yet</p>
-                                                        <p className="text-[10px] font-black uppercase opacity-40 tracking-widest">
-                                                            Wishes sent automatically via cron or manual actions will show up here.
-                                                        </p>
-                                                    </div>
-                                                </div>
+                                        <tr className="hover:bg-slate-50 transition-colors">
+                                            <td className="px-6 py-4 font-black uppercase text-text text-sm whitespace-nowrap">—</td>
+                                            <td className="px-6 py-4 font-bold text-text-muted font-mono whitespace-nowrap">—</td>
+                                            <td className="px-6 py-4 whitespace-nowrap">
+                                                <span className="inline-block border text-[9px] font-black uppercase px-2 py-0.5 tracking-wider bg-slate-100 text-slate-400 border-slate-200">
+                                                    —
+                                                </span>
+                                            </td>
+                                            <td className="px-6 py-4 font-bold text-text uppercase whitespace-nowrap">—</td>
+                                            <td className="px-6 py-4 font-bold text-text-muted uppercase whitespace-nowrap">—</td>
+                                            <td className="px-6 py-4 font-bold text-text-muted whitespace-nowrap">—</td>
+                                            <td className="px-6 py-4 text-right whitespace-nowrap">
+                                                <button disabled className="opacity-30 bg-slate-300 text-white font-black text-[9px] uppercase tracking-widest py-2 px-4 shadow-sm inline-flex items-center gap-1.5 cursor-not-allowed">
+                                                    Resend Wish
+                                                </button>
                                             </td>
                                         </tr>
                                     ) : (

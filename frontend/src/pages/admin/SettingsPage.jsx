@@ -68,6 +68,8 @@ export default function SettingsPage() {
         serviceGst: 18,
         productGst: 12,
         inclusiveTax: true,
+        birthdayPoints: 50,
+        anniversaryPoints: 100,
     });
 
     /* Referral settings removed - managed globally by Super Admin */
@@ -97,6 +99,8 @@ export default function SettingsPage() {
                 serviceGst: salon.settings?.serviceGst ?? 18,
                 productGst: salon.settings?.productGst ?? 12,
                 inclusiveTax: salon.settings?.inclusiveTax !== undefined ? salon.settings.inclusiveTax : true,
+                birthdayPoints: salon.loyaltySetting?.birthdayPoints ?? 50,
+                anniversaryPoints: salon.loyaltySetting?.anniversaryPoints ?? 100,
             });
 
             /* Loyalty settings removed - managed globally by Super Admin */
@@ -230,6 +234,11 @@ export default function SettingsPage() {
                     ...salon?.settings, // Preserve existing settings
                     inclusiveTax: !!fiscal.inclusiveTax,
                 },
+                loyaltySetting: {
+                    ...salon?.loyaltySetting,
+                    birthdayPoints: Number(fiscal.birthdayPoints) || 0,
+                    anniversaryPoints: Number(fiscal.anniversaryPoints) || 0,
+                }
             };
             await updateSalon(payload);
             await fetchSalon?.();
@@ -580,6 +589,35 @@ export default function SettingsPage() {
                                             onChange={(e) => setFiscal({ ...fiscal, gstin: e.target.value.toUpperCase() })}
                                             className="w-full px-5 py-3.5 rounded-none border border-border text-sm font-bold focus:border-primary outline-none transition-all bg-surface-alt/50"
                                         />
+                                    </div>
+                                </div>
+
+                                <div className="grid sm:grid-cols-2 gap-6 border-t border-border/40 pt-6">
+                                    <div className="space-y-2">
+                                        <label className="text-[10px] font-black text-text-muted uppercase tracking-widest pl-1">
+                                            Birthday Gift (Loyalty Points)
+                                        </label>
+                                        <input
+                                            type="number"
+                                            min="0"
+                                            value={fiscal.birthdayPoints}
+                                            onChange={(e) => setFiscal({ ...fiscal, birthdayPoints: e.target.value })}
+                                            className="w-full px-5 py-3.5 rounded-none border border-border text-sm font-bold focus:border-primary outline-none transition-all bg-surface-alt/50"
+                                        />
+                                        <p className="text-[10px] text-text-muted">Points sent to customer on birthday</p>
+                                    </div>
+                                    <div className="space-y-2">
+                                        <label className="text-[10px] font-black text-text-muted uppercase tracking-widest pl-1">
+                                            Anniversary Gift (Loyalty Points)
+                                        </label>
+                                        <input
+                                            type="number"
+                                            min="0"
+                                            value={fiscal.anniversaryPoints}
+                                            onChange={(e) => setFiscal({ ...fiscal, anniversaryPoints: e.target.value })}
+                                            className="w-full px-5 py-3.5 rounded-none border border-border text-sm font-bold focus:border-primary outline-none transition-all bg-surface-alt/50"
+                                        />
+                                        <p className="text-[10px] text-text-muted">Points sent to customer on anniversary</p>
                                     </div>
                                 </div>
 

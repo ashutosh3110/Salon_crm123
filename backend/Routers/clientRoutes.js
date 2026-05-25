@@ -10,7 +10,8 @@ const {
     getPaymentDueClients,
     incrementReminderCount,
     sendManualPaymentReminder,
-    registerCelebrationWish
+    registerCelebrationWish,
+    sendManualCelebrationWish
 } = require('../Controllers/clientController');
 const { protect, authorize } = require('../Middleware/auth');
 
@@ -23,6 +24,7 @@ router.get('/payment-due', authorize('admin', 'manager', 'receptionist', 'p:mark
 router.patch('/:id/increment-reminder', authorize('admin', 'manager', 'receptionist'), incrementReminderCount);
 router.patch('/:id/celebration-wish', authorize('admin', 'manager', 'receptionist'), registerCelebrationWish);
 router.post('/:id/send-payment-reminder', authorize('admin', 'manager', 'receptionist'), sendManualPaymentReminder);
+router.post('/:id/send-celebration-wish', authorize('admin', 'manager', 'receptionist'), sendManualCelebrationWish);
 
 router
     .route('/')

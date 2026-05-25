@@ -534,3 +534,91 @@ exports.registerCelebrationWish = async (req, res) => {
         res.status(500).json({ success: false, message: 'Server Error' });
     }
 };
+
+// @desc    Send manual celebration wish via WhatsApp API
+// @route   POST /clients/:id/send-celebration-wish
+// @access  Private
+exports.sendManualCelebrationWish = async (req, res) => {
+    try {
+        const { type } = req.body; // 'birthday' or 'anniversary'
+        const client = await Customer.findOne({
+            _id: req.params.id,
+            salonId: req.user.salonId
+        });
+
+        if (!client) {
+            return res.status(404).json({ success: false, message: 'Client not found' });
+        }
+
+        const salon = await Salon.findById(req.user.salonId);
+        if (!salon) {
+            return res.status(404).json({ success: false, message: 'Salon not found' });
+        }
+
+        // Deduct WhatsApp credit (checks salon or outlet context)
+        const canSend = await checkAndDeductWhatsAppCredit(client.lastOutletId || salon._id);
+        if (!canSend) {
+            return res.status(400).json({ 
+                success: false, 
+                message: 'Insufficient WhatsApp credits or WhatsApp notifications disabled for your salon.' 
+            });
+        }
+
+        const celebrationTemplate = process.env.WHATSAPP_TEMPLATE_SPECIAL_DAYS || 'special_days';
+        const salonName = salon.businessName || salon.name || 'Wapixo';
+        
+        let msgText = '';
+        let points = 0;
+        if (type === 'birthday') {
+            msgText = "Happy Birthday! We wish you a fantastic year ahead filled with joy and beauty.";
+            points = salon.loyaltySetting?.birthdayPoints || 50;
+        } else if (type === 'anniversary') {
+            msgText = "Happy Anniversary! Celebrating your beautiful journey together.";
+            points = salon.loyaltySetting?.anniversaryPoints || 100;
+        } else {
+            return res.status(400).json({ success: false, message: 'Invalid celebration type' });
+        }
+
+        let sendResult;
+        if (process.env.WHATSAPP_TEMPLATE_SPECIAL_DAYS) {
+            // Template parameters: [Customer Name, Message, Points, Salon Name]
+            sendResult = await sendWapixoTemplate(client.phone, celebrationTemplate, [
+                client.name,
+                msgText,
+                String(points),
+                salonName
+            ]);
+        } else {
+            // Fallback to sending plain text message
+            const plainMsg = `Dear ${client.name}, ${msgText} - ${salonName}`;
+            sendResult = await sendWhatsAppMessage(client.phone, plainMsg);
+        }
+
+        if (!sendResult.success) {
+            return res.status(400).json({
+                success: false,
+                message: sendResult.message || 'Failed to send WhatsApp message via API.'
+            });
+        }
+
+        // Update sent flags and timestamps
+        if (type === 'birthday') {
+            client.birthdayWishSent = true;
+            client.lastBirthdayWishSentAt = new Date();
+        } else {
+            client.anniversaryWishSent = true;
+            client.lastAnniversaryWishSentAt = new Date();
+        }
+        await client.save();
+
+        res.json({
+            success: true,
+            message: 'Celebration wish sent successfully via WhatsApp API',
+            data: client
+        });
+    } catch (err) {
+        console.error('Send manual celebration wish error:', err);
+        res.status(500).json({ success: false, message: 'Server Error' });
+    }
+};
+
