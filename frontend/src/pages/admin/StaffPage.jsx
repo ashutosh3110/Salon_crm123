@@ -92,6 +92,10 @@ export default function StaffPage() {
         dob: '',
         pan: '',
         address: '',
+        salary: '',
+        bankName: '',
+        accountNo: '',
+        ifsc: '',
         avatar: '',
         stylistBio: '',
         stylistExperience: '',
@@ -182,22 +186,9 @@ export default function StaffPage() {
             // Append all form fields to FormData
             Object.keys(form).forEach(key => {
                 if (key === 'avatar') return;
+                if (['pan', 'salary', 'bankName', 'accountNo', 'ifsc'].includes(key)) return;
                 if (key === 'availability') {
                     formData.append(key, JSON.stringify(form[key]));
-                } else if (key === 'pan') {
-                    // Safety check for hrProfile to avoid string-spread corruption
-                    let baseHrProfile = {};
-                    if (editing?.hrProfile) {
-                        baseHrProfile = typeof editing.hrProfile === 'string'
-                            ? JSON.parse(editing.hrProfile)
-                            : editing.hrProfile;
-                    }
-
-                    const hrProfile = {
-                        ...baseHrProfile,
-                        panNumber: form.pan
-                    };
-                    formData.append('hrProfile', JSON.stringify(hrProfile));
                 } else if (key === 'stylistSpecializations') {
                     const specs = form.stylistSpecializations ? form.stylistSpecializations.split(',').map(s => s.trim()).filter(Boolean) : [];
                     formData.append(key, JSON.stringify(specs));
@@ -205,6 +196,25 @@ export default function StaffPage() {
                     formData.append(key, form[key] || '');
                 }
             });
+
+            // Handle hrProfile
+            let baseHrProfile = {};
+            if (editing?.hrProfile) {
+                baseHrProfile = typeof editing.hrProfile === 'string'
+                    ? JSON.parse(editing.hrProfile)
+                    : editing.hrProfile;
+            }
+            const hrProfile = {
+                ...baseHrProfile,
+                baseSalary: Number(form.salary) || 0,
+                panNumber: form.pan || '',
+                bankDetails: {
+                    bankName: form.bankName || '',
+                    accountNumber: form.accountNo || '',
+                    ifscCode: form.ifsc || ''
+                }
+            };
+            formData.append('hrProfile', JSON.stringify(hrProfile));
 
             // Append file if selected
             if (avatarFile) {
@@ -219,7 +229,7 @@ export default function StaffPage() {
             setShowModal(false);
             setEditing(null);
             setAvatarFile(null);
-            setForm({ name: '', email: '', phone: '', role: '', roleId: '', outletId: '', avatar: '', stylistBio: '', stylistExperience: '', stylistSpecializations: '', availability: JSON.parse(JSON.stringify(DEFAULT_AVAILABILITY)) });
+            setForm({ name: '', email: '', phone: '', role: '', roleId: '', outletId: '', salary: '', bankName: '', accountNo: '', ifsc: '', avatar: '', stylistBio: '', stylistExperience: '', stylistSpecializations: '', availability: JSON.parse(JSON.stringify(DEFAULT_AVAILABILITY)) });
         } catch (error) {
             toast.error('Operation failed: ' + error.message);
         } finally {
@@ -252,6 +262,14 @@ export default function StaffPage() {
     };
 
     const openEdit = (u) => {
+        let hr = u.hrProfile || {};
+        if (typeof hr === 'string') {
+            try {
+                hr = JSON.parse(hr);
+            } catch (e) {
+                hr = {};
+            }
+        }
         setEditing(u);
         setForm({
             name: u.name,
@@ -261,8 +279,12 @@ export default function StaffPage() {
             roleId: u.roleId || '',
             outletId: u.outletId || '',
             dob: u.dob || '',
-            pan: u.hrProfile?.panNumber || u.pan || '',
+            pan: hr.panNumber || u.pan || '',
             address: u.address || '',
+            salary: hr.baseSalary != null ? String(hr.baseSalary) : '',
+            bankName: hr.bankDetails?.bankName || '',
+            accountNo: hr.bankDetails?.accountNumber || '',
+            ifsc: hr.bankDetails?.ifscCode || '',
             avatar: u.avatar || '',
             stylistBio: u.stylistBio || u.bio || '',
             stylistExperience: u.stylistExperience || u.experience || '',
@@ -283,7 +305,7 @@ export default function StaffPage() {
                 <button
                     onClick={() => {
                         setEditing(null);
-                        setForm({ name: '', email: '', phone: '', role: '', roleId: '', outletId: '', password: '', avatar: '', stylistBio: '', stylistExperience: '', stylistSpecializations: '', availability: JSON.parse(JSON.stringify(DEFAULT_AVAILABILITY)) });
+                        setForm({ name: '', email: '', phone: '', role: '', roleId: '', outletId: '', password: '', salary: '', bankName: '', accountNo: '', ifsc: '', avatar: '', stylistBio: '', stylistExperience: '', stylistSpecializations: '', availability: JSON.parse(JSON.stringify(DEFAULT_AVAILABILITY)) });
                         setShowModal(true);
                     }}
                     className="flex items-center gap-2 bg-text text-white px-5 py-2.5 text-[10px] font-black uppercase tracking-widest shadow-xl hover:bg-primary transition-all italic active:scale-95"
@@ -655,6 +677,50 @@ export default function StaffPage() {
                                         onChange={(e) => setForm({ ...form, address: e.target.value })}
                                         className="w-full px-3 py-1.5 bg-surface-alt border border-border text-[10px] font-black outline-none focus:border-text font-mono resize-none h-12"
                                         placeholder="FULL ADDRESS"
+                                    />
+                                </div>
+
+                                <div className="col-span-2 pt-2 border-t border-border mt-2">
+                                    <p className="text-[9px] font-black text-primary uppercase tracking-[0.2em] font-mono">Payout & Bank Details</p>
+                                </div>
+                                <div className="space-y-1">
+                                    <label className="text-[9px] font-black text-text-muted uppercase tracking-widest font-mono">Base Salary (₹)</label>
+                                    <input
+                                        type="number"
+                                        value={form.salary || ''}
+                                        onChange={(e) => setForm({ ...form, salary: e.target.value })}
+                                        className="w-full px-3 py-2 bg-surface-alt border border-border text-[10px] font-black outline-none focus:border-text font-mono"
+                                        placeholder="ENTER BASE SALARY"
+                                    />
+                                </div>
+                                <div className="space-y-1">
+                                    <label className="text-[9px] font-black text-text-muted uppercase tracking-widest font-mono">Bank Institution</label>
+                                    <input
+                                        type="text"
+                                        value={form.bankName || ''}
+                                        onChange={(e) => setForm({ ...form, bankName: e.target.value })}
+                                        className="w-full px-3 py-2 bg-surface-alt border border-border text-[10px] font-black outline-none focus:border-text font-mono"
+                                        placeholder="BANK NAME"
+                                    />
+                                </div>
+                                <div className="space-y-1">
+                                    <label className="text-[9px] font-black text-text-muted uppercase tracking-widest font-mono">Account Number</label>
+                                    <input
+                                        type="text"
+                                        value={form.accountNo || ''}
+                                        onChange={(e) => setForm({ ...form, accountNo: e.target.value })}
+                                        className="w-full px-3 py-2 bg-surface-alt border border-border text-[10px] font-black outline-none focus:border-text font-mono"
+                                        placeholder="ACCOUNT NUMBER"
+                                    />
+                                </div>
+                                <div className="space-y-1">
+                                    <label className="text-[9px] font-black text-text-muted uppercase tracking-widest font-mono">IFSC Code</label>
+                                    <input
+                                        type="text"
+                                        value={form.ifsc || ''}
+                                        onChange={(e) => setForm({ ...form, ifsc: e.target.value.toUpperCase() })}
+                                        className="w-full px-3 py-2 bg-surface-alt border border-border text-[10px] font-black outline-none focus:border-text font-mono"
+                                        placeholder="IFSC CODE"
                                     />
                                 </div>
 
