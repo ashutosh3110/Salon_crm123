@@ -12,7 +12,9 @@ import {
     Calculator,
     BarChart3,
     Calendar,
-    CheckCircle2
+    CheckCircle2,
+    ChevronRight,
+    Briefcase
 } from 'lucide-react';
 
 // Sub-components (to be created)
@@ -62,20 +64,26 @@ export default function HRPage({ tab = 'attendance' }) {
     const activeTab = HR_TABS.find(t => t.id === tab) || HR_TABS[0];
 
     const tabHint =
-        tab === 'shifts'
-            ? 'Choose a shift name, times and salon — then assign your team.'
-            : 'Staff, attendance, shifts and payroll in one place.';
+        tab === 'attendance'
+            ? 'Mark daily attendance, view monthly summaries, and export reports.'
+            : tab === 'payroll'
+                ? 'Manage salary structures, generate payslips, and track payments.'
+                : tab === 'performance'
+                    ? 'Analyze staff productivity, revenue contribution, and service metrics.'
+                    : 'Staff, attendance, shifts and payroll in one place.';
 
     return (
-        <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
-            {/* Header section */}
-            <div className="flex items-center gap-4">
-                <div className={`p-4 rounded-none ${activeTab.bg.replace('bg-', 'bg-').replace('/10', '/5')} border border-primary/10 shadow-sm transition-transform hover:scale-105`}>
-                    <activeTab.icon className={`w-6 h-6 ${activeTab.color}`} />
-                </div>
+        <div className="space-y-6 animate-reveal text-left font-black">
+            {/* Header section - matching ServicesPage/StaffPage pattern */}
+            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
                 <div>
-                    <h1 className="text-2xl font-black text-text uppercase tracking-tight">{activeTab.label}</h1>
-                    <p className="text-[10px] font-black text-text-muted tracking-wide opacity-80 max-w-xl">{tabHint}</p>
+                    <div className="flex items-center gap-2 text-[10px] font-black text-text-muted uppercase tracking-[0.2em] mb-3">
+                        <span className="opacity-60">Operations</span>
+                        <ChevronRight className="w-3.5 h-3.5 opacity-40" />
+                        <span className="text-primary">Human Resources</span>
+                    </div>
+                    <h1 className="text-3xl font-black text-text tracking-tighter uppercase leading-none">{activeTab.label}</h1>
+                    <p className="text-[10px] font-black text-text-muted mt-2 uppercase tracking-[0.3em] opacity-60">{tabHint}</p>
                 </div>
             </div>
 

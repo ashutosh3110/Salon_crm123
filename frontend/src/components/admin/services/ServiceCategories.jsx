@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 /* v1.0.3 - Image Protocol Integrated */
 import {
     Plus,
@@ -24,6 +25,16 @@ export default function ServiceCategories({ categories = [], onAdd, onUpdate, on
     const { platformSettings } = useBusiness();
     const [searchTerm, setSearchTerm] = useState('');
     const [modalState, setModalState] = useState({ isOpen: false, type: 'add', data: null });
+
+    // Lock body scroll when modal is open
+    useEffect(() => {
+        if (modalState.isOpen) {
+            document.body.style.overflow = 'hidden';
+        } else {
+            document.body.style.overflow = 'unset';
+        }
+        return () => { document.body.style.overflow = 'unset'; };
+    }, [modalState.isOpen]);
 
     // Form States
     const [name, setName] = useState('');
@@ -130,7 +141,7 @@ export default function ServiceCategories({ categories = [], onAdd, onUpdate, on
 
                 <button
                     onClick={openAddModal}
-                    className="flex items-center gap-3 bg-primary text-primary-foreground border border-primary px-10 py-4 rounded-none text-[10px] font-black uppercase tracking-[0.2em] shadow-xl shadow-primary/20 hover:bg-primary/90 transition-all"
+                    className="flex items-center gap-3 bg-primary text-primary-foreground border border-primary px-10 py-4 rounded-none text-[11px] font-bold uppercase tracking-[0.2em] shadow-xl shadow-primary/20 hover:bg-primary/90 transition-all"
                 >
                     <Plus className="w-4 h-4" /> Initialize Category
                 </button>
@@ -185,14 +196,14 @@ export default function ServiceCategories({ categories = [], onAdd, onUpdate, on
                                     <Layers className="w-3 h-3 text-primary" />
                                     {cat.serviceCount} Services
                                 </div>
-                                <div className={`flex items-center gap-1.5 px-2 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest border ${cat.gender === 'men'
-                                    ? 'bg-blue-500/10 text-blue-500 border-blue-500/20'
+                                <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest border ${cat.gender === 'men'
+                                    ? 'bg-blue-500/10 text-blue-600 border-blue-500/20'
                                     : cat.gender === 'both'
-                                        ? 'bg-purple-500/10 text-purple-500 border-purple-500/20'
-                                        : 'bg-pink-500/10 text-pink-500 border-pink-500/20'
+                                        ? 'bg-purple-500/10 text-purple-600 border-purple-500/20'
+                                        : 'bg-pink-500/10 text-pink-600 border-pink-500/20'
                                     }`}>
                                     {cat.gender === 'men' ? <User className="w-3 h-3" /> : cat.gender === 'both' ? <Users className="w-3 h-3" /> : <UserCircle className="w-3 h-3" />}
-                                    {cat.gender}
+                                    {cat.gender === 'men' ? 'Men' : cat.gender === 'women' ? 'Women' : 'Unisex'}
                                 </div>
                                 <span className="text-[10px] font-bold text-text-muted uppercase tracking-tighter ml-auto italic">Currently {cat.status}</span>
                             </div>
@@ -218,27 +229,37 @@ export default function ServiceCategories({ categories = [], onAdd, onUpdate, on
             </div>
 
             {/* Quick Add/Edit Modal */}
-            {modalState.isOpen && (
-                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-                    <div className="absolute inset-0 bg-white dark:bg-slate-900" onClick={closeModal} />
-                    <div className="bg-surface rounded-none p-8 w-full max-w-md relative z-10 shadow-2xl animate-in zoom-in-95 duration-200 border border-border">
-                        <div className="flex items-center gap-3 mb-8">
-                            <div className="w-10 h-10 bg-primary/10 flex items-center justify-center">
-                                {modalState.type === 'add' ? <Plus className="w-5 h-5 text-primary" /> : <Edit2 className="w-5 h-5 text-primary" />}
+            {modalState.isOpen && createPortal(
+                <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
+                    <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onClick={closeModal} />
+                    <div className="bg-white dark:bg-slate-800 rounded-none p-8 w-full max-w-md relative z-10 shadow-2xl animate-in zoom-in-95 duration-200 border border-border">
+                        <div className="flex items-center justify-between mb-8">
+                            <div className="flex items-center gap-3">
+                                <div className="w-10 h-10 bg-primary/10 flex items-center justify-center">
+                                    {modalState.type === 'add' ? <Plus className="w-5 h-5 text-primary" /> : <Edit2 className="w-5 h-5 text-primary" />}
+                                </div>
+                                <div>
+                                    <h2 className="text-sm font-black uppercase tracking-[0.2em] italic text-slate-900 dark:text-white">
+                                        {modalState.type === 'add' ? 'Add New Category' : `Edit Category: ${name}`}
+                                    </h2>
+                                    <p className="text-[9px] font-bold uppercase tracking-widest text-slate-500 opacity-60 italic">Manage your service categories</p>
+                                </div>
                             </div>
-                            <div>
-                                <h2 className="text-sm font-black uppercase tracking-[0.2em] italic text-text">
-                                    {modalState.type === 'add' ? 'Add New Category' : `Edit Category: ${name}`}
-                                </h2>
-                                <p className="text-[9px] font-bold uppercase tracking-widest text-text-muted opacity-60 italic">Manage your service categories</p>
-                            </div>
+                            <button
+                                type="button"
+                                onClick={closeModal}
+                                className="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-400 hover:text-rose-500 transition-all"
+                                title="Close"
+                            >
+                                <X className="w-5 h-5" />
+                            </button>
                         </div>
 
                         <div className="space-y-8">
                             {/* IMAGE UPLOAD SECTION */}
                             <div className="space-y-4">
                                 <div className="flex justify-between items-end">
-                                    <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] leading-none">Category Icon (Required)</label>
+                                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] leading-none">Category Icon (Required)</label>
                                     <span className="text-[9px] font-bold text-primary uppercase tracking-tighter opacity-70">
                                         Max: {platformSettings?.maxImageSize || 5}{platformSettings?.maxImageSizeUnit || 'MB'}
                                     </span>
@@ -252,13 +273,13 @@ export default function ServiceCategories({ categories = [], onAdd, onUpdate, on
                                         onChange={handleImageChange}
                                     />
                                     {imagePreview ? (
-                                        <div className="relative w-full aspect-video rounded-none overflow-hidden border border-border group-hover/img:border-primary transition-all">
+                                        <div className="relative w-full aspect-video rounded-none overflow-hidden border border-slate-200 dark:border-slate-700 group-hover/img:border-primary transition-all">
                                             <img
                                                 src={imagePreview.startsWith('data:') || imagePreview.startsWith('http') ? imagePreview : `${API_BASE_URL}${imagePreview}`}
                                                 className="w-full h-full object-cover"
                                                 alt="Preview"
                                             />
-                                            <div className="absolute inset-0 bg-background/60 opacity-0 group-hover/img:opacity-100 flex items-center justify-center transition-all">
+                                            <div className="absolute inset-0 bg-white/60 dark:bg-slate-900/60 opacity-0 group-hover/img:opacity-100 flex items-center justify-center transition-all">
                                                 <button
                                                     onClick={(e) => { e.preventDefault(); setImage(''); setImagePreview(''); }}
                                                     className="p-3 bg-rose-500 text-white rounded-full shadow-xl hover:scale-110 transition-all"
@@ -270,13 +291,13 @@ export default function ServiceCategories({ categories = [], onAdd, onUpdate, on
                                     ) : (
                                         <label
                                             htmlFor="cat-image-input"
-                                            className="flex flex-col items-center justify-center w-full aspect-video rounded-none border-2 border-dashed border-border hover:border-primary/50 bg-surface-alt cursor-pointer transition-all gap-4"
+                                            className="flex flex-col items-center justify-center w-full aspect-video rounded-none border-2 border-dashed border-slate-300 dark:border-slate-600 hover:border-primary/50 bg-slate-50 dark:bg-slate-800 cursor-pointer transition-all gap-4"
                                         >
                                             <div className="w-12 h-12 bg-primary/10 flex items-center justify-center text-primary">
                                                 <Camera className="w-6 h-6" />
                                             </div>
                                             <div className="text-center">
-                                                <p className="text-[10px] whitespace-nowrap font-black text-text-muted uppercase tracking-[0.2em] group-hover:text-primary transition-colors">
+                                                <p className="text-[10px] whitespace-nowrap font-black text-slate-500 uppercase tracking-[0.2em]">
                                                     Category Image
                                                 </p>
                                             </div>
@@ -286,11 +307,11 @@ export default function ServiceCategories({ categories = [], onAdd, onUpdate, on
                             </div>
 
                             <div className="space-y-2">
-                                <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] leading-none">Category Name</label>
+                                <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] leading-none">Category Name</label>
                                 <input
                                     type="text"
                                     autoFocus
-                                    className="w-full px-4 py-4 rounded-none bg-surface-alt border border-border text-xs font-black uppercase tracking-widest focus:ring-0 focus:border-primary outline-none text-text transition-all"
+                                    className="w-full px-4 py-4 rounded-none bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-black uppercase tracking-widest focus:ring-0 focus:border-primary outline-none text-slate-900 dark:text-white transition-all"
                                     placeholder="e.g. LUXURY HAIR CARE"
                                     value={name}
                                     onChange={(e) => setName(e.target.value)}
@@ -298,20 +319,20 @@ export default function ServiceCategories({ categories = [], onAdd, onUpdate, on
                             </div>
 
                             <div className="space-y-4">
-                                <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] leading-none">Demographic Target</label>
+                                <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] leading-none">Demographic Target</label>
                                 <div className="grid grid-cols-3 gap-2">
                                     {['men', 'women', 'both'].map((g) => (
                                         <button
                                             key={g}
                                             type="button"
                                             onClick={() => setGender(g)}
-                                            className={`py-4 border text-[9px] font-black uppercase tracking-[0.1em] transition-all flex flex-col items-center gap-2 ${gender === g
+                                            className={`py-4 border text-[11px] font-bold uppercase tracking-[0.1em] transition-all flex flex-col items-center gap-2 rounded-none ${gender === g
                                                 ? 'bg-primary text-white border-primary shadow-lg shadow-primary/20'
-                                                : 'bg-surface-alt text-text-muted border-border hover:border-primary/50'
+                                                : 'bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:border-primary/50'
                                                 }`}
                                         >
                                             {g === 'men' ? <User className="w-4 h-4" /> : <UserCircle className="w-4 h-4" />}
-                                            {g}
+                                            <span>{g === 'men' ? 'Men' : g === 'women' ? 'Women' : 'Unisex'}</span>
                                         </button>
                                     ))}
                                 </div>
@@ -320,14 +341,14 @@ export default function ServiceCategories({ categories = [], onAdd, onUpdate, on
                             <div className="flex gap-2 pt-4">
                                 <button
                                     onClick={closeModal}
-                                    className="flex-1 py-4 bg-surface-alt border border-border text-[10px] font-black text-text-secondary uppercase tracking-[0.2em] hover:bg-border transition-all"
+                                    className="flex-1 py-4 bg-slate-100 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 text-[11px] font-bold text-slate-600 dark:text-slate-300 uppercase tracking-[0.2em] hover:bg-slate-200 dark:hover:bg-slate-600 transition-all rounded-none"
                                 >
                                     Abort
                                 </button>
                                 <button
                                     onClick={handleSubmit}
                                     disabled={!name || !image}
-                                    className="flex-1 flex items-center justify-center gap-2 px-6 py-3.5 bg-text text-white text-[10px] font-black uppercase tracking-widest hover:bg-primary disabled:opacity-50 disabled:cursor-not-allowed transition-all italic"
+                                    className="flex-1 flex items-center justify-center gap-2 px-6 py-3.5 bg-slate-900 text-white text-[11px] font-bold uppercase tracking-widest hover:bg-primary disabled:opacity-50 disabled:cursor-not-allowed transition-all italic rounded-none"
                                 >
                                     <Zap className="w-3.5 h-3.5" />
                                     {modalState.type === 'add' ? 'Save Category' : 'Update Category'}
@@ -335,7 +356,8 @@ export default function ServiceCategories({ categories = [], onAdd, onUpdate, on
                             </div>
                         </div>
                     </div>
-                </div>
+                </div>,
+                document.body
             )}
         </div>
     );

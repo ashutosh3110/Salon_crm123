@@ -297,74 +297,79 @@ export default function AdminLayout() {
                 .admin-panel button[class*="bg-primary"] {
                     font-family: 'Inter', sans-serif !important;
                     font-weight: 600 !important;
-                    border-radius: 0.75rem !important;
                     transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
                 }
                 
-                /* Target Primary Buttons inside Admin Panel */
-                .admin-panel button.bg-primary,
-                .admin-panel a.bg-primary,
-                .admin-panel .bg-primary,
-                .admin-panel button[type="submit"],
-                .admin-panel button[class*="bg-primary"],
-                .admin-panel .inline-flex[class*="bg-primary"],
-                .admin-panel button:has(svg.lucide-plus) {
+                /* Target Primary Buttons inside Admin Panel — only explicit primary bg or submit with px padding (real CTA buttons) */
+                .admin-panel button.bg-primary:not(aside *),
+                .admin-panel a.bg-primary:not(aside *),
+                .admin-panel button[class*="bg-primary"]:not(aside *),
+                .admin-panel .inline-flex[class*="bg-primary"]:not(aside *),
+                .admin-panel button[type="submit"][class*="px-"]:not(aside *),
+                .admin-panel button[type="submit"][class*="py-5"]:not(aside *),
+                .admin-panel button[type="submit"][class*="flex-1"]:not(aside *) {
                     background: #000000 !important;
                     color: #ffffff !important;
                     border: 1px solid #000000 !important;
                     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1) !important;
                 }
-                .admin-panel button.bg-primary:hover,
-                .admin-panel a.bg-primary:hover,
-                .admin-panel .bg-primary:hover,
-                .admin-panel button[type="submit"]:hover,
-                .admin-panel button[class*="bg-primary"]:hover,
-                .admin-panel .inline-flex[class*="bg-primary"]:hover,
-                .admin-panel button:has(svg.lucide-plus):hover {
+                .admin-panel button.bg-primary:not(aside *):hover,
+                .admin-panel a.bg-primary:not(aside *):hover,
+                .admin-panel button[class*="bg-primary"]:not(aside *):hover,
+                .admin-panel .inline-flex[class*="bg-primary"]:not(aside *):hover,
+                .admin-panel button[type="submit"][class*="px-"]:not(aside *):hover,
+                .admin-panel button[type="submit"][class*="py-5"]:not(aside *):hover,
+                .admin-panel button[type="submit"][class*="flex-1"]:not(aside *):hover {
                     background: #262626 !important;
                     border-color: #262626 !important;
                     box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.15), 0 4px 6px -4px rgba(0, 0, 0, 0.15) !important;
                     transform: translateY(-1.5px) !important;
                 }
-                .admin-panel button.bg-primary:active,
-                .admin-panel a.bg-primary:active,
-                .admin-panel .bg-primary:active,
-                .admin-panel button[type="submit"]:active,
-                .admin-panel button[class*="bg-primary"]:active,
                 .admin-panel button.bg-primary:not(aside *):active,
                 .admin-panel a.bg-primary:not(aside *):active,
-                .admin-panel .bg-primary:not(aside *):active,
-                .admin-panel button[type="submit"]:not(aside *):active,
                 .admin-panel button[class*="bg-primary"]:not(aside *):active,
-                .admin-panel .inline-flex[class*="bg-primary"]:not(aside *):active {
+                .admin-panel .inline-flex[class*="bg-primary"]:not(aside *):active,
+                .admin-panel button[type="submit"][class*="px-"]:not(aside *):active,
+                .admin-panel button[type="submit"][class*="py-5"]:not(aside *):active,
+                .admin-panel button[type="submit"][class*="flex-1"]:not(aside *):active {
                     transform: translateY(0.5px) scale(0.97) !important;
                     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1) !important;
                 }
 
-                                /* Target Secondary, Outline & Text Buttons */
+                /* Target Secondary, Outline & Icon Buttons in Light Mode */
                 html:not(.dark) .admin-panel button.bg-secondary:not(aside *),
-                html:not(.dark) .admin-panel button.border:not(aside *),
+                html:not(.dark) .admin-panel button.border:not(aside *):not(.bg-primary):not([class*="bg-primary"]):not([class*="bg-text"]):not([class*="bg-slate-9"]),
                 html:not(.dark) .admin-panel a.border:not(aside *),
-                html:not(.dark) .admin-panel button[class*="border-"]:not(aside *),
+                html:not(.dark) .admin-panel button[class*="border-"]:not(aside *):not(.bg-primary):not([class*="bg-primary"]):not([class*="bg-text"]):not([class*="bg-slate-9"]),
                 html:not(.dark) .admin-panel button[class*="bg-white"]:not(aside *),
                 html:not(.dark) .admin-panel button.bg-white:not(aside *),
-                html:not(.dark) .admin-panel [class*="border-border"] button:not(aside *):not(.bg-primary):not([class*="bg-primary"]),
-                html:not(.dark) .admin-panel button:has(svg.lucide-eye):not(aside *),
-                html:not(.dark) .admin-panel button:has(svg.lucide-edit):not(aside *) {
+                html:not(.dark) .admin-panel [class*="border-border"] button:not(aside *):not(.bg-primary):not([class*="bg-primary"]):not([class*="bg-text"]),
+                html:not(.dark) .admin-panel button:has(svg.lucide-eye):not(aside *):not(.bg-primary):not([class*="bg-primary"]),
+                html:not(.dark) .admin-panel button:has(svg.lucide-edit):not(aside *):not(.bg-primary):not([class*="bg-primary"]),
+                html:not(.dark) .admin-panel button:has(svg.lucide-edit-2):not(aside *):not(.bg-primary):not([class*="bg-primary"]),
+                html:not(.dark) .admin-panel button:has(svg.lucide-trash-2):not(aside *):not(.bg-primary):not([class*="bg-primary"]),
+                html:not(.dark) .admin-panel button:has(svg.lucide-trash):not(aside *):not(.bg-primary):not([class*="bg-primary"]),
+                html:not(.dark) .admin-panel button:has(svg.lucide-settings):not(aside *):not(.bg-primary):not([class*="bg-primary"]),
+                html:not(.dark) .admin-panel button:has(svg.lucide-printer):not(aside *):not(.bg-primary):not([class*="bg-primary"]) {
                     background-color: #ffffff !important;
-                    border: 1px solid #cbd5e1 !important;
-                    color: #000000 !important; /* solid black */
+                    border: 1px solid #e2e8f0 !important;
+                    color: #334155 !important;
                     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04) !important;
                 }
                 html:not(.dark) .admin-panel button.bg-secondary:not(aside *):hover,
-                html:not(.dark) .admin-panel button.border:not(aside *):hover,
+                html:not(.dark) .admin-panel button.border:not(aside *):not(.bg-primary):not([class*="bg-primary"]):hover,
                 html:not(.dark) .admin-panel a.border:not(aside *):hover,
-                html:not(.dark) .admin-panel button[class*="border-"]:not(aside *):hover,
+                html:not(.dark) .admin-panel button[class*="border-"]:not(aside *):not(.bg-primary):not([class*="bg-primary"]):hover,
                 html:not(.dark) .admin-panel button[class*="bg-white"]:not(aside *):hover,
                 html:not(.dark) .admin-panel button.bg-white:not(aside *):hover,
                 html:not(.dark) .admin-panel [class*="border-border"] button:not(aside *):not(.bg-primary):not([class*="bg-primary"]):hover,
-                html:not(.dark) .admin-panel button:has(svg.lucide-eye):not(aside *):hover,
-                html:not(.dark) .admin-panel button:has(svg.lucide-edit):not(aside *):hover {
+                html:not(.dark) .admin-panel button:has(svg.lucide-eye):not(aside *):not(.bg-primary):hover,
+                html:not(.dark) .admin-panel button:has(svg.lucide-edit):not(aside *):not(.bg-primary):hover,
+                html:not(.dark) .admin-panel button:has(svg.lucide-edit-2):not(aside *):not(.bg-primary):hover,
+                html:not(.dark) .admin-panel button:has(svg.lucide-trash-2):not(aside *):not(.bg-primary):hover,
+                html:not(.dark) .admin-panel button:has(svg.lucide-trash):not(aside *):not(.bg-primary):hover,
+                html:not(.dark) .admin-panel button:has(svg.lucide-settings):not(aside *):not(.bg-primary):hover,
+                html:not(.dark) .admin-panel button:has(svg.lucide-printer):not(aside *):not(.bg-primary):hover {
                     background-color: #f8fafc !important;
                     border-color: #94a3b8 !important;
                     color: #0f172a !important;
@@ -373,30 +378,36 @@ export default function AdminLayout() {
                 }
                 
                 .dark .admin-panel button.bg-secondary:not(aside *),
-                .dark .admin-panel button.border:not(aside *),
+                .dark .admin-panel button.border:not(aside *):not(.bg-primary):not([class*="bg-primary"]),
                 .dark .admin-panel a.border:not(aside *),
-                .dark .admin-panel button[class*="border-"]:not(aside *),
+                .dark .admin-panel button[class*="border-"]:not(aside *):not(.bg-primary):not([class*="bg-primary"]),
                 .dark .admin-panel button[class*="bg-white"]:not(aside *),
                 .dark .admin-panel button.bg-white:not(aside *),
                 .dark .admin-panel [class*="border-border"] button:not(aside *):not(.bg-primary):not([class*="bg-primary"]),
                 .dark .admin-panel button:has(svg.lucide-eye):not(aside *),
                 .dark .admin-panel button:has(svg.lucide-edit):not(aside *),
+                .dark .admin-panel button:has(svg.lucide-edit-2):not(aside *),
+                .dark .admin-panel button:has(svg.lucide-trash-2):not(aside *),
                 .dark .admin-panel button:has(svg.lucide-trash):not(aside *),
-                .dark .admin-panel button:has(svg.lucide-plus):not(.bg-primary):not([class*="bg-primary"]):not(aside *) {
+                .dark .admin-panel button:has(svg.lucide-settings):not(aside *),
+                .dark .admin-panel button:has(svg.lucide-printer):not(aside *) {
                     background-color: #1e293b !important;
                     border-color: rgba(255, 255, 255, 0.12) !important;
                     color: #cbd5e1 !important;
                 }
                 .dark .admin-panel button.bg-secondary:not(aside *):hover,
-                .dark .dark .admin-panel button.bg-white:not(aside *):hover,
-                .dark .admin-panel button.border:not(aside *):hover,
+                .dark .admin-panel button.border:not(aside *):not(.bg-primary):hover,
                 .dark .admin-panel a.border:not(aside *):hover,
-                .dark .admin-panel button[class*="border-"]:not(aside *):hover,
+                .dark .admin-panel button[class*="border-"]:not(aside *):not(.bg-primary):hover,
                 .dark .admin-panel button[class*="bg-white"]:not(aside *):hover,
                 .dark .admin-panel [class*="border-border"] button:not(aside *):not(.bg-primary):not([class*="bg-primary"]):hover,
                 .dark .admin-panel button:has(svg.lucide-eye):not(aside *):hover,
                 .dark .admin-panel button:has(svg.lucide-edit):not(aside *):hover,
-                .dark .admin-panel button:has(svg.lucide-trash):not(aside *):hover {
+                .dark .admin-panel button:has(svg.lucide-edit-2):not(aside *):hover,
+                .dark .admin-panel button:has(svg.lucide-trash-2):not(aside *):hover,
+                .dark .admin-panel button:has(svg.lucide-trash):not(aside *):hover,
+                .dark .admin-panel button:has(svg.lucide-settings):not(aside *):hover,
+                .dark .admin-panel button:has(svg.lucide-printer):not(aside *):hover {
                     background-color: #121826 !important;
                     border-color: rgba(255, 255, 255, 0.25) !important;
                     color: #ffffff !important;

@@ -1,4 +1,5 @@
 import React, { useMemo, useState } from 'react';
+import { createPortal } from 'react-dom';
 import {
     ChevronRight, Zap, TrendingUp, Layers, Settings2, Plus, Scissors, XCircle,
     Search, RefreshCcw, Download, Upload
@@ -61,6 +62,11 @@ export default function ServicesPage({ tab = 'list' }) {
         fetchServices(null, selectedOutletId === 'all' ? null : selectedOutletId);
         fetchCategories();
     }, [fetchServices, fetchCategories, selectedOutletId, activeTab]);
+
+    React.useEffect(() => {
+        setIsFormModalOpen(false);
+        setEditingService(null);
+    }, [tab]);
 
     const stats = useMemo(() => ([
         { label: 'Active Services', value: services.length, icon: Zap, color: 'primary' },
@@ -283,7 +289,7 @@ export default function ServicesPage({ tab = 'list' }) {
 
                             <button
                                 onClick={handleDownloadTemplate}
-                                className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl bg-white border border-border text-text-muted hover:text-primary transition-all active:scale-95 text-[10px] font-black uppercase tracking-tight"
+                                className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-white border border-border text-text hover:text-primary transition-all active:scale-95 text-[11px] font-bold uppercase tracking-tight"
                             >
                                 <Download className="w-3.5 h-3.5" /> Sample
                             </button>
@@ -299,7 +305,7 @@ export default function ServicesPage({ tab = 'list' }) {
                                 <button
                                     onClick={() => document.getElementById('bulk-upload-top').click()}
                                     disabled={importing}
-                                    className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-white border border-border text-text-muted hover:text-primary transition-all active:scale-95 text-[10px] font-black uppercase tracking-tight disabled:opacity-50"
+                                    className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-white border border-border text-text hover:text-primary transition-all active:scale-95 text-[11px] font-bold uppercase tracking-tight disabled:opacity-50"
                                 >
                                     {importing ? <RefreshCcw className="w-3.5 h-3.5 animate-spin" /> : <Upload className="w-3.5 h-3.5" />}
                                     {importing ? 'Importing...' : 'Bulk Upload'}
@@ -308,7 +314,7 @@ export default function ServicesPage({ tab = 'list' }) {
 
                             <button
                                 onClick={handleAddClick}
-                                className="flex-[2] sm:flex-none flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-primary text-white text-[11px] font-black uppercase tracking-tight shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all"
+                                className="flex-[2] sm:flex-none flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-primary text-white text-[12px] font-bold uppercase tracking-tight shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all"
                             >
                                 <Plus className="w-4 h-4" /> Add Service
                             </button>
@@ -330,7 +336,7 @@ export default function ServicesPage({ tab = 'list' }) {
 
                         <button
                             onClick={handleDownloadCategoryTemplate}
-                            className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl bg-white border border-border text-text-muted hover:text-primary transition-all active:scale-95 text-[10px] font-black uppercase tracking-tight"
+                            className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-white border border-border text-text hover:text-primary transition-all active:scale-95 text-[11px] font-bold uppercase tracking-tight"
                         >
                             <Download className="w-3.5 h-3.5" /> Sample
                         </button>
@@ -346,7 +352,7 @@ export default function ServicesPage({ tab = 'list' }) {
                             <button
                                 onClick={() => document.getElementById('category-bulk-upload').click()}
                                 disabled={importing}
-                                className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-white border border-border text-text-muted hover:text-primary transition-all active:scale-95 text-[10px] font-black uppercase tracking-tight disabled:opacity-50"
+                                className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-white border border-border text-text hover:text-primary transition-all active:scale-95 text-[11px] font-bold uppercase tracking-tight disabled:opacity-50"
                             >
                                 {importing ? <RefreshCcw className="w-3.5 h-3.5 animate-spin" /> : <Upload className="w-3.5 h-3.5" />}
                                 {importing ? 'Importing...' : 'Bulk Upload'}
@@ -421,10 +427,9 @@ export default function ServicesPage({ tab = 'list' }) {
             </div>
 
             {/* Service Form Modal */}
-            {isFormModalOpen && (
-                <div className="fixed inset-0 z-[1000] flex items-start justify-center p-0 overflow-hidden">
-                    <div className="fixed inset-0 bg-white dark:bg-slate-900" onClick={() => setIsFormModalOpen(false)} />
-                    <div className="relative bg-white w-full max-w-6xl shadow-2xl animate-in fade-in zoom-in-95 duration-300 flex flex-col h-screen sm:h-[95vh] sm:mt-0 rounded-none sm:rounded-t-[32px] sm:rounded-b-[32px] border border-white/20 overflow-hidden">
+            {isFormModalOpen && createPortal(
+                <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 sm:p-6 overflow-y-auto bg-slate-900/60 backdrop-blur-sm transition-all" onClick={() => setIsFormModalOpen(false)}>
+                    <div className="relative bg-white dark:bg-slate-800 w-full max-w-6xl shadow-2xl animate-in fade-in zoom-in-95 duration-300 flex flex-col h-[85vh] my-auto rounded-none border border-border overflow-hidden z-10 admin-panel" onClick={(e) => e.stopPropagation()}>
                         <div className="flex items-center justify-between px-6 py-3 border-b border-border bg-slate-50/50">
                             <div className="flex items-center gap-3">
                                 <div className="p-2 bg-primary text-white rounded-lg shadow-lg shadow-primary/20">
@@ -454,7 +459,8 @@ export default function ServicesPage({ tab = 'list' }) {
                             />
                         </div>
                     </div>
-                </div>
+                </div>,
+                document.body
             )}
         </div>
     );

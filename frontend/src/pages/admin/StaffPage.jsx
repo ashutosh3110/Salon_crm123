@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { toast } from 'react-hot-toast';
 import {
     Plus,
@@ -474,11 +475,11 @@ export default function StaffPage() {
             </div>
 
             {/* Shift Modal - High Density Refinement */}
-            {showModal && (
-                <div className="fixed inset-0 bg-white dark:bg-slate-900 z-50 flex items-center justify-center p-4 overflow-y-auto" onClick={() => setShowModal(false)}>
+            {showModal && createPortal(
+                <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 sm:p-6 overflow-y-auto bg-slate-900/60 backdrop-blur-sm transition-all" onClick={() => setShowModal(false)}>
                     <form
                         onSubmit={handleSubmit}
-                        className="bg-white w-full max-w-md shadow-2xl relative border-2 border-text flex flex-col my-auto max-h-[95vh] overflow-hidden"
+                        className="bg-white dark:bg-slate-800 w-full max-w-md shadow-2xl relative border border-border flex flex-col my-auto rounded-none z-10 max-h-[85vh] overflow-y-auto admin-panel"
                         onClick={(e) => e.stopPropagation()}
                     >
                         {/* Modal Header */}
@@ -852,12 +853,13 @@ export default function StaffPage() {
                                 {loading ? (
                                     <div className="w-4 h-4 border-2 border-white/30 border-t-white animate-spin" />
                                 ) : (
-                                    <span className="text-[10px] font-bold uppercase tracking-[0.2em]">{editing ? 'Save Changes' : 'Add Member'}</span>
+                                    <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-white">{editing ? 'Save Changes' : 'Add Member'}</span>
                                 )}
                             </button>
                         </div>
                     </form>
-                </div>
+                </div>,
+                document.body
             )}
         </div>
     );
