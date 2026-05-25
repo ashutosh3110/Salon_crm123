@@ -191,6 +191,7 @@ const AppHomePage = lazy(() => import('./pages/app/AppHomePage'));
 const AppWalletPage = lazy(() => import('./pages/app/AppWalletPage'));
 const SalonProfilePage = lazy(() => import('./pages/app/SalonProfilePage'));
 const AppBookingPage = lazy(() => import('./pages/app/AppBookingPage'));
+const AppSharedBookingPage = lazy(() => import('./pages/app/AppSharedBookingPage'));
 const AppMyBookingsPage = lazy(() => import('./pages/app/AppMyBookingsPage'));
 const AppMyOrdersPage = lazy(() => import('./pages/app/AppMyOrdersPage'));
 const AppBookingDetailsPage = lazy(() => import('./pages/app/AppBookingDetailsPage'));
@@ -601,6 +602,7 @@ function App() {
                         <Route element={<CustomerAppWrapper />}>
                           <Route path="/app/login" element={<AppLoginPage />} />
                           <Route path="/app/gender" element={<GenderSelectPage />} />
+                          <Route path="/app/booking" element={<AppSharedBookingPage />} />
                           <Route element={<AppLayout />}>
                             <Route path="/app" element={<AppHomePage />} />
                             <Route path="/app/nearby-outlets" element={<NearbyOutletsPage />} />
@@ -611,7 +613,7 @@ function App() {
                             <Route path="/app/help" element={<AppHelpPage />} />
                             <Route path="/app/likes" element={<AppFavoritesPage />} />
 
-                            <Route path="/app/booking" element={<AppBookingPage />} />
+
                             <Route path="/app/experts" element={<AppExpertsPage />} />
                             <Route path="/app/services" element={<AppServicesPage />} />
                             <Route path="/app/service/:id" element={<AppServiceDetailsPage />} />

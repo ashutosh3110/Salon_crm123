@@ -511,3 +511,62 @@ exports.getCustomerFavorites = async (req, res) => {
         res.status(500).json({ success: false, message: 'Server error' });
     }
 };
+
+// @desc    Silent Guest Login for share booking page
+// @route   POST /api/auth/silent-guest-login
+// @access  Public
+exports.silentGuestLogin = async (req, res) => {
+    try {
+        const { phone, name, tenantId } = req.body;
+
+        if (!phone || !name || !tenantId) {
+            return res.status(400).json({ success: false, message: 'Name, Phone and Salon ID are required' });
+        }
+
+        // Find or create customer silently
+        let customer = await Customer.findOne({ phone });
+        let isNewUser = false;
+
+        if (!customer) {
+            isNewUser = true;
+            customer = await Customer.create({
+                name,
+                phone,
+                salonId: tenantId,
+                referralCode: generateReferralCode(),
+                status: 'active'
+            });
+            console.log(`[Customer-Auth] Silent guest customer created: ${phone}`);
+        } else {
+            // Update name if it was a default guest name
+            if (customer.name === 'Guest' || customer.name === 'Guest Customer' || !customer.name) {
+                customer.name = name;
+                await customer.save();
+            }
+        }
+
+        const token = jwt.sign(
+            { id: customer._id, role: 'customer', salonId: customer.salonId },
+            process.env.JWT_SECRET,
+            { expiresIn: '30d' }
+        );
+
+        res.json({
+            success: true,
+            data: {
+                accessToken: token,
+                client: {
+                    _id: customer._id,
+                    name: customer.name,
+                    phone: customer.phone,
+                    referralCode: customer.referralCode,
+                    role: 'customer',
+                    isNewUser
+                }
+            }
+        });
+    } catch (err) {
+        console.error('Silent guest login error:', err);
+        res.status(500).json({ success: false, message: 'Server error: ' + err.message });
+    }
+};

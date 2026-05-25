@@ -1,12 +1,13 @@
 const express = require('express');
 const router = express.Router();
-const { requestOtp, customerLoginOtp, registerCustomer, updateProfile, getProfile, getFavorites, deleteAccount } = require('../Controllers/customerAuthController');
+const { requestOtp, customerLoginOtp, registerCustomer, updateProfile, getProfile, getFavorites, deleteAccount, silentGuestLogin } = require('../Controllers/customerAuthController');
 const { protect } = require('../Middleware/auth');
 
 // Public routes for customer app
 router.post('/request-otp', requestOtp);
 router.post('/login-otp', customerLoginOtp);
 router.post('/register-customer', registerCustomer);
+router.post('/silent-guest-login', silentGuestLogin);
 
 // Private routes
 router.get('/profile', protect, getProfile);
