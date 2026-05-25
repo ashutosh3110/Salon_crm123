@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { TrendingUp, Users, Calendar, Search, Globe, ArrowUpRight, ArrowRight } from 'lucide-react';
+import { TrendingUp, Users, Calendar, Search, Globe, ArrowUpRight, ArrowRight, MessageSquare } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import AnimatedCounter from '../../components/common/AnimatedCounter';
@@ -12,6 +12,7 @@ export default function DashboardPage() {
     const [error, setError] = useState(null);
     const [payload, setPayload] = useState(null);
     const [searchQuery, setSearchQuery] = useState('');
+    const [showLowCreditAlert, setShowLowCreditAlert] = useState(false);
 
     const loadDashboard = useCallback(async () => {
         setError(null);
@@ -19,6 +20,14 @@ export default function DashboardPage() {
             const res = await api.get('/dashboard/salon');
             if (res.data?.success) {
                 setPayload(res.data.data);
+                const s = res.data.data?.stats || {};
+                if (s.whatsappCredits !== undefined && Number(s.whatsappCredits) <= 200) {
+                    const alertShown = sessionStorage.getItem('low_whatsapp_credit_alert_shown');
+                    if (!alertShown) {
+                        setShowLowCreditAlert(true);
+                        sessionStorage.setItem('low_whatsapp_credit_alert_shown', 'true');
+                    }
+                }
             } else {
                 setPayload(res.data);
             }
@@ -45,11 +54,13 @@ export default function DashboardPage() {
 
     const activeStats = useMemo(() => {
         const s = payload?.stats || {};
+        const credits = s.whatsappCredits ?? 0;
         return [
             { label: 'Total Outlets', value: s.outlets ?? 0, trend: 'Outlets', positive: true, icon: Globe, path: '/admin/outlets' },
             { label: 'Total Bookings', value: s.bookingsTotal ?? 0, trend: 'Bookings', positive: true, icon: Calendar, path: '/admin/bookings' },
             { label: 'Active Clients', value: s.clients ?? 0, trend: 'CRM', positive: true, icon: Users, path: '/admin/crm/customers' },
             { label: 'Staff Members', value: s.staff ?? 0, trend: 'Team', positive: true, icon: TrendingUp, path: '/admin/staff' },
+            { label: 'WhatsApp Credits', value: credits, trend: credits <= 200 ? 'Low Credits' : 'WhatsApp', positive: credits > 200, icon: MessageSquare, path: '/admin/whatsapp-credits' },
         ];
     }, [payload]);
 
@@ -88,7 +99,7 @@ export default function DashboardPage() {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
                 {activeStats.map((stat, i) => (
                     <Link
                         to={stat.path}
@@ -185,6 +196,47 @@ export default function DashboardPage() {
                     </div>
                 </div>
             </div>
+
+            {showLowCreditAlert && (
+                <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-[9999] flex items-center justify-center p-4 text-left">
+                    <div className="bg-white dark:bg-slate-800 rounded-2xl w-full max-w-md shadow-2xl relative overflow-hidden border border-rose-200 dark:border-rose-900 p-8 text-left">
+                        <div className="flex items-center gap-4 mb-6">
+                            <div className="p-4 bg-rose-50 dark:bg-rose-950/30 text-rose-600 dark:text-rose-450 border border-rose-100 dark:border-rose-900 rounded-xl">
+                                <MessageSquare className="w-8 h-8 animate-bounce text-rose-600 dark:text-rose-400" />
+                            </div>
+                            <div>
+                                <h3 className="text-sm font-black text-rose-600 dark:text-rose-400 uppercase tracking-widest leading-none">Low WhatsApp Credits</h3>
+                                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-2">Critical system warning</p>
+                            </div>
+                        </div>
+
+                        <div className="space-y-4">
+                            <p className="text-xs font-bold text-slate-700 dark:text-slate-350 leading-relaxed uppercase">
+                                Your salon has only <span className="text-rose-600 dark:text-rose-400 font-black">{payload?.stats?.whatsappCredits}</span> WhatsApp credits remaining. 
+                            </p>
+                            <p className="text-[10px] font-bold text-slate-450 dark:text-slate-500 uppercase tracking-wider leading-relaxed">
+                                Once credits run out, automated service reminders, wallet notifications, and promotion sharing will stop working. Please recharge your credits immediately.
+                            </p>
+                        </div>
+
+                        <div className="flex gap-4 pt-8 mt-4 border-t border-slate-100 dark:border-slate-800">
+                            <button 
+                                onClick={() => setShowLowCreditAlert(false)} 
+                                className="flex-1 py-3 border border-slate-200 dark:border-slate-700 rounded-xl text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-700 transition-all"
+                            >
+                                Dismiss
+                            </button>
+                            <Link 
+                                to="/admin/whatsapp-credits" 
+                                onClick={() => setShowLowCreditAlert(false)}
+                                className="flex-1 py-3 bg-rose-600 hover:bg-rose-700 text-white font-bold text-[10px] uppercase tracking-[0.2em] shadow-lg rounded-xl text-center flex items-center justify-center transition-all"
+                            >
+                                Recharge Now
+                            </Link>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

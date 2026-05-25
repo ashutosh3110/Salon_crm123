@@ -595,9 +595,10 @@ function WalletMonitor({ customers, onCustomerClick, customersMetadata, currentP
                 <>
                     <div className="bg-surface border border-border p-5 flex flex-col md:flex-row items-center gap-6 shadow-sm">
                         <div className="flex-1 w-full">
-                            <div className="flex flex-wrap items-center gap-4">
-                                <div className="flex flex-col md:flex-row gap-2 flex-1">
-                                    <div className="relative group">
+                            <div className="flex flex-wrap items-end gap-4">
+                                <div className="flex flex-col md:flex-row gap-4 flex-1">
+                                    <div className="space-y-1.5 text-left flex-1 md:flex-initial">
+                                        <label className="block text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest ml-1">Recharge Amount (₹)</label>
                                         <input
                                             type="number"
                                             placeholder="ENTER AMOUNT (₹)"
@@ -607,7 +608,8 @@ function WalletMonitor({ customers, onCustomerClick, customersMetadata, currentP
                                             className="w-full md:w-48 !p-3 bg-surface-alt border border-border font-black !text-[10px] !leading-none outline-none focus:border-primary transition-all disabled:opacity-70 !h-11"
                                         />
                                     </div>
-                                    <div className="relative group">
+                                    <div className="space-y-1.5 text-left flex-1 md:flex-initial">
+                                        <label className="block text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest ml-1">Description / Notes</label>
                                         <input
                                             type="text"
                                             placeholder="E.G. FESTIVAL PROMO"
@@ -617,7 +619,8 @@ function WalletMonitor({ customers, onCustomerClick, customersMetadata, currentP
                                             className="w-full md:w-64 !p-3 bg-surface-alt border border-border font-black !text-[10px] uppercase !leading-none outline-none focus:border-primary transition-all disabled:opacity-70 !h-11"
                                         />
                                     </div>
-                                    <div className="relative group">
+                                    <div className="space-y-1.5 text-left flex-1 md:flex-initial">
+                                        <label className="block text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest ml-1">Expiry Date</label>
                                         <input
                                             type="date"
                                             disabled={selectedIds.length === 0}
@@ -631,7 +634,7 @@ function WalletMonitor({ customers, onCustomerClick, customersMetadata, currentP
                                 <button
                                     onClick={() => handleBulkRecharge()}
                                     disabled={isProcessing || !bulkAmount || selectedIds.length === 0}
-                                    className="bg-primary text-white px-10 py-4 text-[10px] font-black uppercase tracking-widest shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-95 disabled:opacity-50 disabled:scale-100 transition-all whitespace-nowrap"
+                                    className="bg-primary text-white px-10 py-4 text-[10px] font-black uppercase tracking-widest shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-95 disabled:opacity-50 disabled:scale-100 transition-all whitespace-nowrap h-11 flex items-center justify-center"
                                 >
                                     {isProcessing ? 'Processing...' : `Apply to ${selectedIds.length} Selected`}
                                 </button>

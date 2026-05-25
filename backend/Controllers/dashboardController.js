@@ -22,7 +22,8 @@ exports.getSalonDashboard = async (req, res) => {
             bookingsCount,
             customersCount,
             staffCount,
-            walletLiability
+            walletLiability,
+            salonDoc
         ] = await Promise.all([
             Outlet.countDocuments({ salonId }),
             Booking.countDocuments({ salonId }),
@@ -31,8 +32,11 @@ exports.getSalonDashboard = async (req, res) => {
             WalletTransaction.aggregate([
                 { $match: { salonId, type: 'CREDIT' } },
                 { $group: { _id: null, total: { $sum: '$amount' } } }
-            ]).then(res => res[0]?.total || 0)
+            ]).then(res => res[0]?.total || 0),
+            Salon.findById(salonId).select('whatsappSettings')
         ]);
+
+        const whatsappCredits = salonDoc?.whatsappSettings?.whatsappCredits ?? 0;
 
         // Get revenue data for chart (last 7 days)
         const sevenDaysAgo = new Date();
@@ -96,7 +100,8 @@ exports.getSalonDashboard = async (req, res) => {
                     bookingsTotal: bookingsCount,
                     clients: customersCount,
                     staff: staffCount,
-                    walletLiability: walletLiability
+                    walletLiability: walletLiability,
+                    whatsappCredits: whatsappCredits
                 },
                 revenueWeek: chartData,
                 recentActivity,

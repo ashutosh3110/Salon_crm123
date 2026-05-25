@@ -8,6 +8,7 @@ const {
     updatePromotion,
     deletePromotion,
     validateCoupon,
+    sharePromotionWhatsApp,
 } = require('../Controllers/promotionController');
 
 router.get('/active', protect, getActivePromotions);
@@ -18,5 +19,6 @@ router.use(authorize('admin', 'manager'));
 
 router.route('/').get(getPromotions).post(createPromotion);
 router.route('/:id').patch(updatePromotion).delete(deletePromotion);
+router.post('/:id/share-whatsapp', sharePromotionWhatsApp);
 
 module.exports = router;

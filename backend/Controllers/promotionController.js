@@ -30,8 +30,6 @@ exports.createPromotion = async (req, res) => {
         const salonId = req.user.salonId;
         const promo = await Promotion.create({
             ...req.body,
-            totalUsageLimit: 1,
-            usageLimitPerCustomer: 1,
             salonId
         });
         res.status(201).json({ success: true, data: promo });
@@ -45,11 +43,7 @@ exports.updatePromotion = async (req, res) => {
         const salonId = req.user.salonId;
         const promo = await Promotion.findOneAndUpdate(
             { _id: req.params.id, salonId },
-            {
-                ...req.body,
-                totalUsageLimit: 1,
-                usageLimitPerCustomer: 1
-            },
+            req.body,
             { new: true, runValidators: true }
         );
         if (!promo) return res.status(404).json({ success: false, message: 'Promotion not found' });
@@ -187,5 +181,73 @@ exports.validateCoupon = async (req, res) => {
         });
     } catch (err) {
         res.status(500).json({ success: false, message: err.message });
+    }
+};
+
+exports.sharePromotionWhatsApp = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { customerId } = req.body;
+        const salonId = req.user.salonId;
+
+        const Customer = require('../Models/Customer');
+        const Salon = require('../Models/Salon');
+        const { sendWhatsAppMessage, checkAndDeductWhatsAppCredit } = require('../Utils/whatsapp');
+
+        // 1. Fetch promotion
+        const promo = await Promotion.findOne({ _id: id, salonId });
+        if (!promo) {
+            return res.status(404).json({ success: false, message: 'Promotion not found' });
+        }
+
+        // 2. Fetch customer
+        const customer = await Customer.findOne({ _id: customerId, salonId });
+        if (!customer) {
+            return res.status(404).json({ success: false, message: 'Customer not found' });
+        }
+
+        // 3. Fetch salon
+        const salon = await Salon.findById(salonId);
+        const salonName = salon?.businessName || salon?.name || 'Our Salon';
+
+        // 4. Deduct WhatsApp credit
+        const creditOutletId = req.user.outletId || customer.lastOutletId || salonId;
+        const canSend = await checkAndDeductWhatsAppCredit(creditOutletId);
+        if (!canSend) {
+            return res.status(400).json({
+                success: false,
+                message: 'Insufficient WhatsApp credits or WhatsApp notifications disabled for your salon.'
+            });
+        }
+
+        // 5. Build message content
+        const discountText = promo.type === 'PERCENTAGE' ? `${promo.value}% OFF` : `₹${promo.value} OFF`;
+        const applicableText = promo.applicableOn === 'SERVICE' ? 'Services' : (promo.applicableOn === 'PRODUCT' ? 'Products' : 'Services & Products');
+        const validityText = promo.endDate ? new Date(promo.endDate).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : 'Unlimited';
+
+        let message = `Hi ${customer.name},\n\n🎉 Exclusive offer for you from *${salonName}*!\n\n*${promo.name}*\n✨ Discount: *${discountText}*\n`;
+        
+        if (promo.activationMode === 'COUPON' && promo.couponCode) {
+            message += `🎫 Use Coupon Code: *${promo.couponCode}*\n`;
+        } else {
+            message += `✨ (Applied automatically on your next bill)\n`;
+        }
+
+        message += `\n📅 Applies to: ${applicableText}\n📅 Valid until: ${validityText}\n\nWe look forward to serving you!`;
+
+        // 6. Send message
+        const sendResult = await sendWhatsAppMessage(customer.phone, message);
+
+        if (!sendResult.success) {
+            return res.status(400).json({
+                success: false,
+                message: sendResult.message || 'Failed to send WhatsApp message via API.'
+            });
+        }
+
+        res.json({ success: true, message: 'Promotion shared successfully on WhatsApp!' });
+    } catch (err) {
+        console.error('[PromotionController] sharePromotionWhatsApp error:', err);
+        res.status(500).json({ success: false, message: err.message || 'Server Error' });
     }
 };
