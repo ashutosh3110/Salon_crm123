@@ -171,7 +171,7 @@ export default function Sidebar({ collapsed, setCollapsed, isHovered, setIsHover
                     { label: 'Cash & Bank Book', icon: Wallet, path: '/admin/finance/cash-book' },
                     { label: 'Expenses', icon: DollarSign, path: '/admin/finance/expenses' },
                     { label: 'Sales Reports', icon: FileText, path: '/admin/finance/reports' },
-                    { label: 'Day Closing', icon: Lock, path: '/admin/finance/eod' },
+                    // { label: 'Day Closing', icon: Lock, path: '/admin/finance/eod' },
                 ]
             },
             {

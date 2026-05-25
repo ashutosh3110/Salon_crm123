@@ -290,6 +290,7 @@ export default function Transactions({ outletId }) {
                                         <th className="px-6 py-4">Date</th>
                                         <th className="px-6 py-4">Type</th>
                                         <th className="px-6 py-4">Category</th>
+                                        <th className="px-6 py-4">Outlet</th>
                                         <th className="px-6 py-4">Account</th>
                                         <th className="px-6 py-4">Payment Method</th>
                                         <th className="px-6 py-4 text-right">Amount</th>
@@ -328,6 +329,11 @@ export default function Transactions({ outletId }) {
                                                 </td>
                                                 <td className="px-6 py-4 font-bold text-text whitespace-nowrap">
                                                     {t.category}
+                                                </td>
+                                                <td className="px-6 py-4 whitespace-nowrap">
+                                                    <span className="font-bold text-text-secondary">
+                                                        {outlets.find(o => String(o._id || o.id) === String(t.outletId))?.name || 'All Outlets / Not Specified'}
+                                                    </span>
                                                 </td>
                                                 <td className="px-6 py-4 capitalize whitespace-nowrap">
                                                     <span className="flex items-center gap-1.5 font-bold">

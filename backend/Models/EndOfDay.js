@@ -68,6 +68,9 @@ const endOfDaySchema = new mongoose.Schema({
         default: 'closed'
     },
     notes: String,
+    denominations: {
+        type: mongoose.Schema.Types.Mixed
+    },
     performedBy: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User'
