@@ -418,3 +418,166 @@ exports.getAdminLoyaltyTransactions = async (req, res) => {
         res.status(500).json({ success: false, message: 'Server Error' });
     }
 };
+
+// @desc    Get memberships and their reminder logs
+// @route   GET /api/loyalty/reminders
+// @access  Private (Admin/Manager)
+exports.getMembershipReminders = async (req, res) => {
+    try {
+        const salonId = req.user.salonId;
+        const { search, status } = req.query;
+
+        let query = { salonId };
+
+        // Fetch memberships and populate customer and plan
+        let memberships = await CustomerMembership.find(query)
+            .sort({ expiryDate: 1 }) // Expiring soonest first
+            .populate({
+                path: 'customerId',
+                match: search ? {
+                    $or: [
+                        { name: new RegExp(search, 'i') },
+                        { phone: new RegExp(search, 'i') }
+                    ]
+                } : {}
+            })
+            .populate('planId', 'name price');
+
+        // Filter out memberships where the customer matches the search query and exists
+        memberships = memberships.filter(m => m.customerId !== null && m.customerId !== undefined);
+
+        // Format to match reminders view:
+        const formattedReminders = memberships.map(m => {
+            const customerObj = m.customerId;
+            const isExpired = m.status === 'expired' || new Date(m.expiryDate) <= new Date();
+            const daysLeft = Math.ceil((new Date(m.expiryDate) - new Date()) / (1000 * 60 * 60 * 24));
+            
+            let currentStatus = 'active';
+            if (isExpired) {
+                currentStatus = 'expired';
+            } else if (daysLeft <= 7) {
+                currentStatus = 'expiring_soon';
+            }
+
+            return {
+                _id: m._id,
+                id: m._id,
+                customerId: customerObj._id,
+                customerName: customerObj.name,
+                customerPhone: customerObj.phone,
+                membershipPlan: m.planId?.name || 'Standard Membership',
+                startDate: m.startDate,
+                expiryDate: m.expiryDate,
+                amount: m.amount || m.planId?.price || 0,
+                daysLeft: daysLeft,
+                status: currentStatus,
+                lastReminderSentAt: m.lastReminderSentAt || null,
+                reminderCount: m.reminderCount || 0
+            };
+        });
+
+        // Filter by status if specified
+        let filtered = formattedReminders;
+        if (status && status !== 'all') {
+            if (status === 'expiring_soon') {
+                filtered = formattedReminders.filter(r => r.status === 'expiring_soon');
+            } else if (status === 'expired') {
+                filtered = formattedReminders.filter(r => r.status === 'expired');
+            } else if (status === 'active') {
+                filtered = formattedReminders.filter(r => r.status === 'active');
+            } else if (status === 'reminded') {
+                filtered = formattedReminders.filter(r => r.reminderCount > 0);
+            }
+        }
+
+        res.json({
+            success: true,
+            data: filtered
+        });
+    } catch (err) {
+        console.error('Get membership reminders error:', err);
+        res.status(500).json({ success: false, message: 'Server Error' });
+    }
+};
+
+// @desc    Send manual membership expiry reminder via WhatsApp
+// @route   POST /api/loyalty/reminders/:id/send
+// @access  Private (Admin/Manager)
+exports.sendManualMembershipReminder = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const membership = await CustomerMembership.findById(id).populate('customerId planId');
+
+        if (!membership) {
+            return res.status(404).json({ success: false, message: 'Membership not found' });
+        }
+
+        if (!membership.customerId?.phone) {
+            return res.status(400).json({ success: false, message: 'Customer phone number not available' });
+        }
+
+        const salon = await Salon.findById(membership.salonId);
+        const salonName = salon?.businessName || salon?.name || 'our salon';
+        const planName = membership.planId?.name || 'Membership Plan';
+        const dateStr = new Date(membership.expiryDate).toLocaleDateString('en-IN');
+
+        const { checkAndDeductWhatsAppCredit, sendWapixoTemplate, sendWhatsAppMessage } = require('../Utils/whatsapp');
+
+        // Deduct WhatsApp credit
+        const canSend = await checkAndDeductWhatsAppCredit(membership.salonId);
+        if (!canSend) {
+            return res.status(400).json({ 
+                success: false, 
+                message: 'Insufficient WhatsApp credits or WhatsApp notifications disabled for this salon.' 
+            });
+        }
+
+        const isExpired = membership.status === 'expired' || new Date(membership.expiryDate) <= new Date();
+        const phone = membership.customerId.phone;
+        
+        let sendResult;
+        const templateName = process.env.WHATSAPP_TEMPLATE_MEMBERSHIP_EXPIRY || 'membership_expiry';
+
+        if (process.env.WHATSAPP_TEMPLATE_MEMBERSHIP_EXPIRY) {
+            const timePhrase = isExpired ? "expired" : "soon";
+            sendResult = await sendWapixoTemplate(phone, templateName, [
+                membership.customerId.name,
+                planName,
+                dateStr,
+                timePhrase,
+                salonName
+            ]);
+        } else {
+            let msg;
+            if (isExpired) {
+                msg = `Dear ${membership.customerId.name}, your membership *${planName}* at *${salonName}* has expired on ${dateStr}. Renew now to continue enjoying your exclusive benefits!`;
+            } else {
+                msg = `Dear ${membership.customerId.name}, this is a friendly reminder that your membership *${planName}* at *${salonName}* is expiring on ${dateStr}. Renew today to keep enjoying your exclusive benefits!`;
+            }
+            sendResult = await sendWhatsAppMessage(phone, msg);
+        }
+
+        if (sendResult && sendResult.success) {
+            membership.reminderCount = (membership.reminderCount || 0) + 1;
+            membership.lastReminderSentAt = new Date();
+            await membership.save();
+
+            return res.json({
+                success: true,
+                message: `Reminder sent successfully to ${membership.customerId.name}!`,
+                data: {
+                    reminderCount: membership.reminderCount,
+                    lastReminderSentAt: membership.lastReminderSentAt
+                }
+            });
+        } else {
+            return res.status(500).json({ 
+                success: false, 
+                message: sendResult?.message || 'Failed to send WhatsApp message via provider.' 
+            });
+        }
+    } catch (err) {
+        console.error('Send manual membership reminder error:', err);
+        res.status(500).json({ success: false, message: 'Server Error: ' + err.message });
+    }
+};

@@ -29,7 +29,7 @@ const STATUS_META = {
 };
 
 export default function AttendanceTracker() {
-    const { staff, fetchStaff, outlets = [], fetchOutlets } = useBusiness();
+    const { staff, fetchStaff, outlets = [], fetchOutlets, activeSalonId, salon } = useBusiness();
     const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
     const [records, setRecords] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -127,9 +127,10 @@ export default function AttendanceTracker() {
     }, [selectedDate, staff, showToast]);
 
     useEffect(() => {
-        fetchStaff();
-        fetchOutlets();
-    }, [fetchStaff, fetchOutlets]);
+        const sid = activeSalonId || salon?._id;
+        fetchStaff(sid);
+        fetchOutlets({ salonId: sid });
+    }, [fetchStaff, fetchOutlets, activeSalonId, salon?._id]);
 
     useEffect(() => {
         loadDay();
@@ -153,17 +154,27 @@ export default function AttendanceTracker() {
         setSelectedDate(d.toISOString().split('T')[0]);
     };
 
+    // Filter outlets by active salon
+    const activeSalonIdStr = String(activeSalonId || salon?._id || '');
+    const filteredOutlets = useMemo(() => {
+        if (!activeSalonIdStr) return outlets;
+        return (outlets || []).filter(o => {
+            const oSalonId = String(o?.salonId?._id || o?.salonId || '');
+            return oSalonId === activeSalonIdStr;
+        });
+    }, [outlets, activeSalonIdStr]);
+
     // Extract unique outlets from context and loaded records
     const uniqueOutlets = useMemo(() => {
         const set = new Set();
-        (outlets || []).forEach(o => {
+        (filteredOutlets || []).forEach(o => {
             if (o?.name) set.add(o.name);
         });
         records.forEach(r => {
             if (r.outlet && r.outlet !== '—') set.add(r.outlet);
         });
         return ['All', ...Array.from(set)];
-    }, [outlets, records]);
+    }, [filteredOutlets, records]);
 
     // Filtered records
     const filtered = useMemo(() => records.filter(r => {

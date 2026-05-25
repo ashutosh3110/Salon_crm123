@@ -92,14 +92,7 @@ exports.updateStock = async (req, res) => {
                 }]
             }], { session });
 
-            // Update supplier balance (increase debt)
-            await Supplier.findByIdAndUpdate(req.body.supplierId, {
-                $inc: { currentBalance: -totalAmount } // Debt is negative in our current schema logic? or positive? 
-                // Let's assume currentBalance is what WE OWE. So increase it.
-                // Looking at addInvoicePayment, it does $inc: { currentBalance: amount } (reduced debt).
-                // So adding debt should be negative if balance is "What we owe".
-                // Actually, let's look at Supplier model or previous edits.
-            }).session(session);
+
         }
 
         await session.commitTransaction();

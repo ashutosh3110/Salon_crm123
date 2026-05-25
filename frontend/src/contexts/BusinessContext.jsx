@@ -392,13 +392,19 @@ export function BusinessProvider({ children }) {
     const fetchOutlets = useCallback(async (params = {}) => {
         setOutletsLoading(true);
         try {
-            const { lat, lng, radius } = params;
+            const querySalonId = typeof params === 'string' ? params : params?.salonId;
+            const { lat, lng, radius } = typeof params === 'object' ? params : {};
             let url = '/outlets';
             let query = {};
 
+            const effectiveSalonId = querySalonId || activeSalonId || salon?._id || user?.salonId;
+            if (effectiveSalonId) {
+                query.salonId = effectiveSalonId;
+            }
+
             if (lat && lng) {
                 url = '/outlets/nearby';
-                query = { lat, lng, radius: radius || 10 };
+                query = { ...query, lat, lng, radius: radius || 10 };
             }
 
             const res = await api.get(url, { params: query });
@@ -411,7 +417,7 @@ export function BusinessProvider({ children }) {
         } finally {
             setOutletsLoading(false);
         }
-    }, []);
+    }, [activeSalonId, salon?._id, user?.salonId]);
 
     const fetchStaff = useCallback(async (sId) => {
         try {

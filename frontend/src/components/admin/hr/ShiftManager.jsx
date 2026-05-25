@@ -47,7 +47,7 @@ function mapShiftFromApi(doc) {
 }
 
 export default function ShiftManager() {
-    const { staff, outlets, fetchStaff, fetchOutlets } = useBusiness();
+    const { staff, outlets, fetchStaff, fetchOutlets, activeSalonId, salon } = useBusiness();
     const [shifts, setShifts] = useState([]);
     const [listLoading, setListLoading] = useState(false);
     const [shiftModal, setShiftModal] = useState(false);
@@ -91,9 +91,10 @@ export default function ShiftManager() {
     }, [fetchShifts]);
 
     useEffect(() => {
-        fetchStaff?.();
-        fetchOutlets?.();
-    }, [fetchStaff, fetchOutlets]);
+        const sid = activeSalonId || salon?._id;
+        fetchStaff?.(sid);
+        fetchOutlets?.({ salonId: sid });
+    }, [fetchStaff, fetchOutlets, activeSalonId, salon?._id]);
 
     useEffect(() => {
         if (rosterModal) {
@@ -113,9 +114,18 @@ export default function ShiftManager() {
         [shifts]
     );
 
+    const activeSalonIdStr = String(activeSalonId || salon?._id || '');
+    const filteredOutlets = useMemo(() => {
+        if (!activeSalonIdStr) return outlets;
+        return (outlets || []).filter(o => {
+            const oSalonId = String(o?.salonId?._id || o?.salonId || '');
+            return oSalonId === activeSalonIdStr;
+        });
+    }, [outlets, activeSalonIdStr]);
+
     const openAdd = () => {
         setEditTarget(null);
-        const firstOid = outlets[0]?._id || outlets[0]?.id;
+        const firstOid = filteredOutlets[0]?._id || filteredOutlets[0]?.id;
         setForm({
             name: '',
             start: '09:00',
@@ -218,14 +228,14 @@ export default function ShiftManager() {
                 </div>
                 <button
                     onClick={openAdd}
-                    disabled={!outlets?.length}
+                    disabled={!filteredOutlets?.length}
                     className="flex items-center gap-3 px-8 py-4 rounded-none bg-primary text-white text-[10px] font-black uppercase tracking-[0.2em] shadow-xl shadow-primary/20 hover:bg-primary-dark active:scale-[0.98] transition-all disabled:opacity-40 disabled:cursor-not-allowed"
                 >
                     <Plus className="w-4 h-4" /> Add shift
                 </button>
             </div>
 
-            {!outlets?.length && (
+            {!filteredOutlets?.length && (
                 <p className="text-[11px] text-amber-600 font-bold tracking-wide px-2">
                     Add at least one salon (outlet) first — then you can create shifts.
                 </p>
@@ -304,8 +314,8 @@ export default function ShiftManager() {
                     ))}
                     <button
                         type="button"
+                        disabled={!filteredOutlets?.length}
                         onClick={openAdd}
-                        disabled={!outlets?.length}
                         className="w-full py-6 border border-dashed border-border rounded-none text-text-muted hover:text-primary hover:border-primary hover:bg-primary/5 transition-all text-[10px] font-black uppercase tracking-[0.3em] flex items-center justify-center gap-3 group disabled:opacity-40 disabled:cursor-not-allowed"
                     >
                         <Plus className="w-4 h-4 group-hover:scale-125 transition-transform" /> Add another shift
@@ -454,7 +464,7 @@ export default function ShiftManager() {
                                         onChange={(e) => setForm((f) => ({ ...f, outletId: e.target.value }))}
                                     >
                                         <option value="">Select salon</option>
-                                        {outlets.map((o) => (
+                                        {filteredOutlets.map((o) => (
                                             <option key={String(o._id || o.id)} value={String(o._id || o.id)}>
                                                 {o.name}
                                             </option>

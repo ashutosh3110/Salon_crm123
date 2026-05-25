@@ -165,39 +165,15 @@ export default function SupplierInvoices() {
 
         const disc = parseFloat(invoiceForm.discount) || 0;
         const finalTotal = Math.max(0, totalAmount - disc);
-        const paid = (parseFloat(invoiceForm.cashAmount) || 0) + (parseFloat(invoiceForm.onlineAmount) || 0);
-        
-        // Lookup supplier outstanding
-        const selectedSupplier = suppliers.find(s => String(s._id || s.id) === String(invoiceForm.supplierId));
-        const prevOutstanding = Math.abs(Number(selectedSupplier?.currentBalance || 0));
-
-        // Excess payment above invoice amount
-        const excessPayment = Math.max(0, paid - finalTotal);
-        
-        // Calculate balance for THIS invoice
-        const balance = Math.max(0, finalTotal - paid);
-
-        // Adjust previous outstanding by excess payment
-        const newPrevOutstanding = Math.max(0, prevOutstanding - excessPayment);
-        
-        // Overpaid amount (exceeds invoice total + previous outstanding)
-        const overpaidAmount = Math.max(0, excessPayment - prevOutstanding);
-
-        // Total dues remaining
-        const totalDues = balance + newPrevOutstanding;
 
         return {
             items: computedItems,
             subTotal: Math.round(subTotal * 100) / 100,
             taxAmount: Math.round(taxAmount * 100) / 100,
             totalAmount: Math.round(finalTotal * 100) / 100,
-            balanceAmount: Math.round(balance * 100) / 100,
-            prevOutstanding,
-            newPrevOutstanding,
-            overpaidAmount: Math.round(overpaidAmount * 100) / 100,
-            totalDues: Math.round(totalDues * 100) / 100
+            balanceAmount: Math.round(finalTotal * 100) / 100
         };
-    }, [invoiceForm, suppliers]);
+    }, [invoiceForm]);
 
     const handleCreateInvoice = async () => {
         if (!invoiceForm.supplierId) {
@@ -366,6 +342,20 @@ export default function SupplierInvoices() {
         setPaySendWhatsApp(false);
     };
 
+    const handleQuickPay = async (inv) => {
+        try {
+            await api.post('/finance/invoices/payments', {
+                invoiceId: inv.invoiceKey,
+                amount: inv.outstanding,
+                paymentMethod: 'upi',
+                notes: 'Paid in full via Quick Pay'
+            });
+            await load();
+        } catch (e) {
+            window.alert(e?.response?.data?.message || e.message || 'Payment failed');
+        }
+    };
+
     const submitPayment = async () => {
         const cashAmt = parseFloat(payCashAmount) || 0;
         const onlineAmt = parseFloat(payOnlineAmount) || 0;
@@ -385,13 +375,13 @@ export default function SupplierInvoices() {
         try {
             // First payment
             let firstAmt = 0;
-            let firstMethod = 'online';
+            let firstMethod = 'upi';
             if (cashAmt > 0) {
                 firstAmt = cashAmt;
                 firstMethod = 'cash';
             } else if (onlineAmt > 0) {
                 firstAmt = onlineAmt;
-                firstMethod = 'online';
+                firstMethod = 'upi';
             }
 
             await api.post('/finance/invoices/payments', {
@@ -407,7 +397,7 @@ export default function SupplierInvoices() {
                 await api.post('/finance/invoices/payments', {
                     invoiceId: payingKey,
                     amount: onlineAmt,
-                    paymentMethod: 'online',
+                    paymentMethod: 'upi',
                     notes: (payNote?.trim() ? payNote.trim() + ' - ' : '') + 'Online portion',
                     sendWhatsApp: paySendWhatsApp
                 });
@@ -860,6 +850,16 @@ export default function SupplierInvoices() {
                                 </td>
                                 <td className="px-8 py-5 text-right">
                                     <div className="flex items-center justify-end gap-1.5">
+                                        {inv.status !== 'Paid' && inv.outstanding > 0 && (
+                                            <button
+                                                type="button"
+                                                onClick={() => handleQuickPay(inv)}
+                                                className="p-2 bg-emerald-50 border border-emerald-200 rounded-xl text-emerald-600 hover:bg-emerald-600 hover:text-white hover:border-emerald-600 transition-all"
+                                                title={`Quick Pay (₹${Number(inv.outstanding).toLocaleString('en-IN')})`}
+                                            >
+                                                <IndianRupee className="w-4 h-4" />
+                                            </button>
+                                        )}
                                         {/* Send via WhatsApp */}
                                         <button
                                             type="button"
@@ -1089,14 +1089,6 @@ export default function SupplierInvoices() {
                                             </option>
                                         ))}
                                     </select>
-                                    {invoiceForm.supplierId && (
-                                        <div className="mt-1 px-3 py-1 bg-amber-500/10 border border-amber-500/20 rounded-xl text-[10px] font-bold text-amber-700 uppercase tracking-wider">
-                                            Current Outstanding: ₹
-                                            {Number(
-                                                Math.abs(suppliers.find(s => String(s._id || s.id) === String(invoiceForm.supplierId))?.currentBalance || 0)
-                                            ).toLocaleString('en-IN')}
-                                        </div>
-                                    )}
                                 </div>
                                 <div className="space-y-1">
                                     <label className="text-[10px] font-bold text-text-muted uppercase">Invoice Number <span className="text-rose-500">*</span></label>
@@ -1237,66 +1229,7 @@ export default function SupplierInvoices() {
                                         />
                                     </div>
 
-                                    {/* Payments Section */}
-                                    <div className="space-y-4">
-                                        <h4 className="text-xs font-black text-text uppercase tracking-wider border-b border-border pb-1.5">Payments</h4>
-                                        
-                                        <div className="grid grid-cols-2 gap-4">
-                                            <div className="space-y-1.5">
-                                                <label className="text-[10px] font-bold text-text-muted uppercase tracking-wider">Cash Payment (₹)</label>
-                                                <input
-                                                    type="text"
-                                                    value={invoiceForm.cashAmount}
-                                                    onChange={(e) => {
-                                                        const val = e.target.value;
-                                                        if (val === '' || /^\d*\.?\d*$/.test(val)) {
-                                                            setInvoiceForm(prev => ({ ...prev, cashAmount: val }));
-                                                        }
-                                                    }}
-                                                    placeholder="0.00"
-                                                    className="w-full px-4 py-2.5 border border-border rounded-xl text-sm font-bold focus:outline-none focus:ring-2 focus:ring-primary/10 transition-all"
-                                                />
-                                            </div>
-                                            
-                                            <div className="space-y-1.5">
-                                                <label className="text-[10px] font-bold text-text-muted uppercase tracking-wider">Online Payment (₹)</label>
-                                                <input
-                                                    type="text"
-                                                    value={invoiceForm.onlineAmount}
-                                                    onChange={(e) => {
-                                                        const val = e.target.value;
-                                                        if (val === '' || /^\d*\.?\d*$/.test(val)) {
-                                                            setInvoiceForm(prev => ({ ...prev, onlineAmount: val }));
-                                                        }
-                                                    }}
-                                                    placeholder="0.00"
-                                                    className="w-full px-4 py-2.5 border border-border rounded-xl text-sm font-bold focus:outline-none focus:ring-2 focus:ring-primary/10 transition-all"
-                                                />
-                                            </div>
-                                        </div>
 
-                                        {/* WhatsApp Toggle Switch */}
-                                        <div className="flex items-center justify-between py-2 bg-surface/30 rounded-xl px-4 border border-border/50">
-                                            <span className="text-xs font-bold text-text-secondary">Send via WhatsApp</span>
-                                            <button
-                                                type="button"
-                                                role="switch"
-                                                aria-checked={invoiceForm.sendWhatsApp}
-                                                onClick={() => setInvoiceForm(prev => ({ ...prev, sendWhatsApp: !prev.sendWhatsApp }))}
-                                                className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 transition-all duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-emerald-500/20 ${
-                                                    invoiceForm.sendWhatsApp 
-                                                        ? 'bg-emerald-500 border-emerald-500 hover:bg-emerald-600 hover:border-emerald-600' 
-                                                        : 'bg-slate-300 border-slate-400 hover:bg-slate-400/80 dark:bg-slate-800 dark:border-slate-600'
-                                                }`}
-                                            >
-                                                <span
-                                                    className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-md ring-0 transition duration-200 ease-in-out ${
-                                                        invoiceForm.sendWhatsApp ? 'translate-x-5' : 'translate-x-0'
-                                                    }`}
-                                                />
-                                            </button>
-                                        </div>
-                                    </div>
                                 </div>
 
                                 <div className="bg-surface/50 border border-border rounded-2xl p-5 space-y-3.5">
@@ -1324,70 +1257,6 @@ export default function SupplierInvoices() {
                                         <span className="font-extrabold text-sm text-text">₹{totals.totalAmount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
                                     </div>
 
-                                    <div className="flex justify-between items-center text-xs font-semibold">
-                                        <span className="font-bold text-emerald-600">Paid Amount:</span>
-                                        <span className="font-black text-emerald-600">₹{((parseFloat(invoiceForm.cashAmount) || 0) + (parseFloat(invoiceForm.onlineAmount) || 0)).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
-                                    </div>
-
-                                    {/* Due Amount - This Invoice */}
-                                    <div className={`rounded-xl p-3 border-2 ${
-                                        totals.balanceAmount > 0
-                                            ? 'bg-rose-50 border-rose-200'
-                                            : ((parseFloat(invoiceForm.cashAmount) || 0) + (parseFloat(invoiceForm.onlineAmount) || 0)) > 0
-                                                ? 'bg-emerald-50 border-emerald-200'
-                                                : 'bg-slate-50 border-slate-200'
-                                    }`}>
-                                        <div className="flex justify-between items-center">
-                                            <span className={`text-xs font-black uppercase tracking-wider ${
-                                                totals.balanceAmount > 0 ? 'text-rose-600' : ((parseFloat(invoiceForm.cashAmount) || 0) + (parseFloat(invoiceForm.onlineAmount) || 0)) > 0 ? 'text-emerald-600' : 'text-slate-500'
-                                            }`}>
-                                                {totals.balanceAmount > 0 ? '⚠️ Due Amount:' : ((parseFloat(invoiceForm.cashAmount) || 0) + (parseFloat(invoiceForm.onlineAmount) || 0)) > 0 ? '✅ Fully Paid' : '📋 Credit (Unpaid):'}
-                                            </span>
-                                            <span className={`text-lg font-black ${
-                                                totals.balanceAmount > 0 ? 'text-rose-600' : ((parseFloat(invoiceForm.cashAmount) || 0) + (parseFloat(invoiceForm.onlineAmount) || 0)) > 0 ? 'text-emerald-600' : 'text-slate-600'
-                                            }`}>
-                                                ₹{totals.balanceAmount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
-                                            </span>
-                                        </div>
-                                        {totals.balanceAmount > 0 && ((parseFloat(invoiceForm.cashAmount) || 0) + (parseFloat(invoiceForm.onlineAmount) || 0)) > 0 && (
-                                            <p className="text-[10px] font-bold text-amber-600 mt-1">
-                                                ⚡ Partial payment — ₹{((parseFloat(invoiceForm.cashAmount) || 0) + (parseFloat(invoiceForm.onlineAmount) || 0)).toLocaleString('en-IN')} paid now, ₹{totals.balanceAmount.toLocaleString('en-IN')} will be supplier debt
-                                            </p>
-                                        )}
-                                        {totals.balanceAmount > 0 && ((parseFloat(invoiceForm.cashAmount) || 0) + (parseFloat(invoiceForm.onlineAmount) || 0)) <= 0 && (
-                                            <p className="text-[10px] font-bold text-slate-500 mt-1">
-                                                Full amount will be recorded as supplier outstanding
-                                            </p>
-                                        )}
-                                    </div>
-
-                                    {/* Previous Outstanding + Total Supplier Dues */}
-                                    {invoiceForm.supplierId && totals.prevOutstanding > 0 && (
-                                        <div className="bg-amber-50 border-2 border-amber-200 rounded-xl p-3 space-y-1.5">
-                                            <div className="flex justify-between items-center text-xs font-bold">
-                                                <span className="text-amber-700">📦 Previous Outstanding:</span>
-                                                <span className="font-black text-amber-700">
-                                                    ₹{totals.newPrevOutstanding.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
-                                                    {totals.prevOutstanding !== totals.newPrevOutstanding && (
-                                                        <span className="text-[10px] text-emerald-600 ml-1 font-semibold">
-                                                            (reduced from ₹{totals.prevOutstanding.toLocaleString('en-IN')})
-                                                        </span>
-                                                    )}
-                                                </span>
-                                            </div>
-                                            <div className="flex justify-between items-center text-xs font-bold border-t border-amber-200 pt-1.5">
-                                                <span className="text-rose-700 uppercase tracking-wider">🔴 Total Supplier Dues:</span>
-                                                <span className="font-black text-rose-700 text-base">₹{totals.totalDues.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
-                                            </div>
-                                        </div>
-                                    )}
-
-                                    {/* Overpaid Warning Message */}
-                                    {totals.overpaidAmount > 0 && (
-                                        <div className="bg-rose-50 border-2 border-rose-200 rounded-xl p-3 text-xs font-bold text-rose-700">
-                                            ⚠️ Overpaid by <strong>₹{totals.overpaidAmount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</strong>! The total payment amount exceeds the invoice total and previous outstanding combined. Please adjust the payment amounts.
-                                        </div>
-                                    )}
                                 </div>
                             </div>
                         </div>
@@ -1404,8 +1273,7 @@ export default function SupplierInvoices() {
                             <button
                                 type="button"
                                 onClick={handleCreateInvoice}
-                                disabled={totals.overpaidAmount > 0}
-                                className="px-6 py-2 bg-primary hover:bg-primary-dark text-white rounded-xl text-xs font-black uppercase tracking-widest hover:shadow-lg hover:shadow-primary/20 transition-all disabled:opacity-40 disabled:pointer-events-none"
+                                className="px-6 py-2 bg-primary hover:bg-primary-dark text-white rounded-xl text-xs font-black uppercase tracking-widest hover:shadow-lg hover:shadow-primary/20 transition-all"
                             >
                                 Record & Post Invoice
                             </button>

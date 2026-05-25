@@ -430,7 +430,7 @@ export default function StaffManager() {
                                 <th className="px-6 py-4 text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Staff Member</th>
                                 <th className="px-6 py-4 text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Role & Location</th>
                                 <th className="px-6 py-4 text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Contact Details</th>
-                                <th className="px-6 py-4 text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Salary</th>
+                                <th className="px-6 py-4 text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Base Salary</th>
                                 <th className="px-6 py-4 text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Status</th>
                                 <th className="px-6 py-4 text-[10px] font-black text-text-muted uppercase tracking-[0.2em] text-right">Actions</th>
                             </tr>
@@ -604,7 +604,7 @@ export default function StaffManager() {
                                         <div className="col-span-2 text-[10px] font-black text-primary uppercase tracking-[0.3em] pb-2 border-b border-border/20 mt-4 mb-2">Payout & Bank Details</div>
 
                                         <div className="space-y-2 text-left">
-                                            <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Monthly Salary</label>
+                                            <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Base Salary</label>
                                             <input type="number" placeholder="CURRENCY_VAL"
                                                 className="w-full px-5 py-4 rounded-none bg-background border border-border text-xs font-black uppercase tracking-widest focus:border-primary outline-none"
                                                 value={form.salary} onChange={e => setForm(f => ({ ...f, salary: e.target.value }))} />

@@ -457,7 +457,6 @@ function App() {
 
                             <Route path="/admin/inquiries" element={<InquiryPage />} />
                             <Route path="/admin/reminders" element={<RemindersPage />} />
-                            
                             <Route element={<ProtectedRoute permission="loyalty" />}>
                                 <Route path="/admin/loyalty" element={<LoyaltyMembershipPage tab="rules" />} />
                                 <Route path="/admin/loyalty/rules" element={<LoyaltyMembershipPage tab="rules" />} />
@@ -465,6 +464,7 @@ function App() {
                                 <Route path="/admin/loyalty/members" element={<LoyaltyMembershipPage tab="members" />} />
                                 <Route path="/admin/loyalty/transactions" element={<LoyaltyMembershipPage tab="transactions" />} />
                                 <Route path="/admin/loyalty/referral" element={<LoyaltyMembershipPage tab="referral" />} />
+                                <Route path="/admin/loyalty/reminders" element={<LoyaltyMembershipPage tab="reminders" />} />
                             </Route>
                             <Route path="/admin/invoices" element={<InvoicesPage />} />
                             <Route path="/admin/settings" element={<Navigate to="/admin/settings/profile" replace />} />

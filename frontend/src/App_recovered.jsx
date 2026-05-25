@@ -1,4 +1,4 @@
-﻿import { BrowserRouter as Router, Routes, Route, Outlet, useLocation, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Outlet, useLocation, Navigate } from 'react-router-dom';
 import { useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { AuthProvider } from './contexts/AuthContext';
@@ -356,6 +356,7 @@ function App() {
                                 <Route path="/admin/loyalty/members" element={<LoyaltyMembershipPage tab="members" />} />
                                 <Route path="/admin/loyalty/transactions" element={<LoyaltyMembershipPage tab="transactions" />} />
                                 <Route path="/admin/loyalty/referral" element={<LoyaltyMembershipPage tab="referral" />} />
+                                <Route path="/admin/loyalty/reminders" element={<LoyaltyMembershipPage tab="reminders" />} />
                             </Route>
                             <Route path="/admin/invoices" element={<InvoicesPage />} />
                             <Route path="/admin/settings" element={<Navigate to="/admin/settings/profile" replace />} />

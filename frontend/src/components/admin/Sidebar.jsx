@@ -225,6 +225,7 @@ export default function Sidebar({ collapsed, setCollapsed, isHovered, setIsHover
                 subItems: [
                     { label: 'Membership Plans', icon: CreditCard, path: '/admin/loyalty/plans' },
                     { label: 'Members', icon: Users, path: '/admin/loyalty/members' },
+                    { label: 'Membership Expiry Reminder', icon: Bell, path: '/admin/loyalty/reminders' },
                 ]
             },
             {

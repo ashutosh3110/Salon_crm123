@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect, useCallback } from 'react';
-import { 
-    Calculator, FileText, Download, CheckCircle2, Search, 
+import {
+    Calculator, FileText, Download, CheckCircle2, Search,
     ChevronDown, Calendar, X, Edit2, Eye, Printer, DollarSign, Clock, Check, Settings,
     Filter, RefreshCw, AlertCircle, MessageCircle
 } from 'lucide-react';
@@ -16,24 +16,26 @@ const STATUS_META = {
 };
 
 export default function PayrollManager() {
-    const { salon, staff, fetchStaff, outlets = [], fetchOutlets } = useBusiness();
-    
-    useEffect(() => { 
-        fetchStaff(); 
-        fetchOutlets();
-    }, [fetchStaff, fetchOutlets]);
+    const { salon, activeSalonId, staff, fetchStaff, outlets = [], fetchOutlets } = useBusiness();
+
+    useEffect(() => {
+        const sid = activeSalonId || salon?._id;
+        fetchStaff(sid);
+        fetchOutlets({ salonId: sid });
+    }, [fetchStaff, fetchOutlets, activeSalonId, salon?._id]);
 
     const [individualModal, setIndividualModal] = useState(false);
     const [month, setMonth] = useState(new Date().getMonth() + 1);
     const [year, setYear] = useState(new Date().getFullYear());
     const [records, setRecords] = useState([]);
     const [filterOutlet, setFilterOutlet] = useState('All');
-    
+
     const [individualForm, setIndividualForm] = useState({
         staffId: '',
         baseSalary: 0,
-        workingDays: 30,
+        workingDays: new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0).getDate(),
         presentDays: 0,
+        leaveDays: 0,
         incentive: 0,
         overtime: 0,
         pf: 0,
@@ -41,14 +43,14 @@ export default function PayrollManager() {
         otherDeductions: 0,
         notes: ''
     });
-    
+
     const [loading, setLoading] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
     const [toast, setToast] = useState(null);
     const [showDetails, setShowDetails] = useState(null);
     const [isSaving, setIsSaving] = useState(false);
     const [sendingWhatsApp, setSendingWhatsApp] = useState(null);
-    
+
     const [detailForm, setDetailForm] = useState({
         baseSalary: 0,
         workingDays: 30,
@@ -67,6 +69,41 @@ export default function PayrollManager() {
         setToast(msg);
         setTimeout(() => setToast(null), 3000);
     };
+
+    const fetchAttendanceStats = useCallback(async (staffId, selectedMonth, selectedYear) => {
+        if (!staffId) return;
+        try {
+            const res = await api.get('/hr/attendance/summary', {
+                params: { month: selectedMonth, year: selectedYear, staffId }
+            });
+            const summary = res.data?.data || {};
+            const stats = summary[staffId] || { present: 0, absent: 0, halfDay: 0, leave: 0, late: 0 };
+            const computedPresent = (stats.present || 0) + (stats.late || 0) + ((stats.halfDay || 0) * 0.5);
+            const computedLeave = stats.leave || 0;
+
+            setIndividualForm(prev => ({
+                ...prev,
+                presentDays: computedPresent,
+                leaveDays: computedLeave
+            }));
+        } catch (error) {
+            console.error('Failed to fetch attendance summary', error);
+            showToast('Failed to fetch attendance summary');
+        }
+    }, []);
+
+    useEffect(() => {
+        const days = new Date(year, month, 0).getDate();
+        setIndividualForm(prev => ({
+            ...prev,
+            workingDays: days,
+            ...(prev.staffId ? {} : { presentDays: 0, leaveDays: 0 })
+        }));
+
+        if (individualForm.staffId) {
+            fetchAttendanceStats(individualForm.staffId, month, year);
+        }
+    }, [month, year, individualForm.staffId, fetchAttendanceStats]);
 
     const sendWhatsAppPayroll = async (record) => {
         const phone = record.staffId?.phone;
@@ -161,16 +198,17 @@ export default function PayrollManager() {
                 Number(individualForm.pf) - Number(individualForm.tax) - Number(individualForm.otherDeductions)
             );
 
-            await api.post('/hr/payroll/generate', { 
+            await api.post('/hr/payroll/generate', {
                 ...individualForm,
-                month, 
+                month,
                 year,
                 netSalary
             });
             showToast('Individual payroll created');
             setIndividualModal(false);
+            const daysInMonth = new Date(year, month, 0).getDate();
             setIndividualForm({
-                staffId: '', baseSalary: 0, workingDays: 30, presentDays: 0,
+                staffId: '', baseSalary: 0, workingDays: daysInMonth, presentDays: 0, leaveDays: 0,
                 incentive: 0, overtime: 0, pf: 0, tax: 0, otherDeductions: 0, notes: ''
             });
             loadRecords();
@@ -282,10 +320,20 @@ export default function PayrollManager() {
         win.document.close();
     };
 
+    // Filter outlets by active salon
+    const activeSalonIdStr = String(activeSalonId || salon?._id || '');
+    const filteredOutlets = useMemo(() => {
+        if (!activeSalonIdStr) return outlets;
+        return (outlets || []).filter(o => {
+            const oSalonId = String(o?.salonId?._id || o?.salonId || '');
+            return oSalonId === activeSalonIdStr;
+        });
+    }, [outlets, activeSalonIdStr]);
+
     // Extract unique outlets from context and loaded payroll records
     const uniqueOutlets = useMemo(() => {
         const set = new Set();
-        (outlets || []).forEach(o => {
+        (filteredOutlets || []).forEach(o => {
             if (o?.name) set.add(o.name);
         });
         records.forEach(r => {
@@ -293,7 +341,7 @@ export default function PayrollManager() {
             if (outletName) set.add(outletName);
         });
         return ['All', ...Array.from(set)];
-    }, [outlets, records]);
+    }, [filteredOutlets, records]);
 
     // Apply filters in-memory
     const filtered = useMemo(() => {
@@ -321,7 +369,7 @@ export default function PayrollManager() {
             // Check if already in active payroll records
             const alreadyIn = records.some(r => (r.staffId?._id === s._id || r.staffId === s._id));
             if (alreadyIn) return false;
-            
+
             // Check if matches active outlet selection
             if (filterOutlet !== 'All') {
                 return s.outletId?.name === filterOutlet;
@@ -342,7 +390,7 @@ export default function PayrollManager() {
 
     return (
         <div className="space-y-6 text-left bg-slate-50 dark:bg-slate-900 rounded-3xl p-6 border border-slate-200/60 dark:border-slate-800/80 transition-colors">
-            
+
             {/* Dynamic Outlet-wise Payout Cards */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700/80 shadow-sm flex items-center justify-between group hover:border-primary transition-all">
@@ -378,7 +426,7 @@ export default function PayrollManager() {
 
             {/* Toolbar Panel */}
             <div className="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-200/65 dark:border-slate-700/80 shadow-sm flex flex-wrap items-center justify-between gap-4 transition-colors">
-                
+
                 <div className="flex items-center flex-wrap gap-3">
                     {/* Period selection */}
                     <div className="flex items-center bg-slate-50 dark:bg-slate-750 border border-slate-200 dark:border-slate-700 rounded-xl px-2.5 py-1.5 shadow-sm text-xs font-bold text-slate-700 dark:text-slate-200 select-none">
@@ -398,8 +446,8 @@ export default function PayrollManager() {
                     {/* Outlet selection */}
                     <div className="flex items-center gap-2 bg-slate-50 dark:bg-slate-750 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-1.5 shadow-sm text-xs transition-colors">
                         <Filter className="w-3.5 h-3.5 text-slate-400" />
-                        <select 
-                            value={filterOutlet} 
+                        <select
+                            value={filterOutlet}
                             onChange={e => setFilterOutlet(e.target.value)}
                             className="bg-transparent border-none p-0 pr-6 focus:ring-0 cursor-pointer outline-none font-bold text-slate-700 dark:text-slate-200 text-xs"
                         >
@@ -411,7 +459,7 @@ export default function PayrollManager() {
                         </select>
                     </div>
 
-                    <button 
+                    <button
                         onClick={() => setIndividualModal(true)}
                         className="px-4 py-2 bg-primary hover:bg-primary-dark text-white rounded-xl text-xs font-bold shadow-md hover:shadow-lg hover:shadow-primary/10 active:scale-95 transition-all"
                     >
@@ -422,17 +470,17 @@ export default function PayrollManager() {
                 <div className="flex items-center gap-3">
                     <div className="relative w-60">
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-450" />
-                        <input 
-                            type="text" 
+                        <input
+                            type="text"
                             placeholder="Search employee name..."
                             className="w-full pl-9 pr-4 py-2 rounded-xl bg-slate-50 dark:bg-slate-750 border border-slate-200 dark:border-slate-700 text-xs font-semibold text-slate-700 dark:text-slate-200 focus:ring-2 focus:ring-primary/10 focus:border-primary outline-none transition-all placeholder-slate-400"
-                            value={searchTerm} 
-                            onChange={e => setSearchTerm(e.target.value)} 
+                            value={searchTerm}
+                            onChange={e => setSearchTerm(e.target.value)}
                         />
                     </div>
 
-                    <button 
-                        onClick={exportCSV} 
+                    <button
+                        onClick={exportCSV}
                         className="flex items-center gap-1.5 px-3 py-2 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-755 text-slate-750 dark:text-slate-200 rounded-xl text-xs font-bold transition-all shadow-sm active:scale-95"
                     >
                         <Download className="w-3.5 h-3.5 text-slate-405" />
@@ -443,7 +491,7 @@ export default function PayrollManager() {
 
             {/* Payroll Sheet Table */}
             <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200/80 dark:border-slate-700 shadow-sm overflow-hidden relative min-h-[300px] transition-colors">
-                
+
                 {loading && (
                     <div className="absolute inset-0 z-10 bg-white/70 dark:bg-slate-800/70 backdrop-blur-[1px] flex items-center justify-center">
                         <div className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-750 rounded-xl border border-slate-100 dark:border-slate-700 shadow-md">
@@ -476,7 +524,7 @@ export default function PayrollManager() {
                             )}
                             {filtered.map(record => (
                                 <tr key={record._id} className="hover:bg-slate-50/30 dark:hover:bg-slate-750/30 transition-colors">
-                                    
+
                                     <td className="px-6 py-4">
                                         <div className="flex items-center gap-3">
                                             <div className="w-9 h-9 rounded-xl bg-slate-100 dark:bg-slate-700 border border-slate-200/50 dark:border-slate-650/40 flex items-center justify-center text-slate-500 dark:text-slate-400 font-extrabold text-xs shrink-0 overflow-hidden shadow-inner">
@@ -519,10 +567,10 @@ export default function PayrollManager() {
                                         <div className="flex items-center justify-end gap-2">
                                             <button onClick={() => handleEdit(record)} className="p-2 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-400 hover:text-primary hover:border-primary bg-transparent hover:bg-slate-50 dark:hover:bg-slate-750 transition-all" title="Adjust Salary Parameters"><Settings className="w-4 h-4" /></button>
                                             <button onClick={() => generateSlip(record)} className="p-2 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-400 hover:text-emerald-500 hover:border-emerald-500 bg-transparent hover:bg-slate-50 dark:hover:bg-slate-750 transition-all" title="Print Salary Slip"><Printer className="w-4 h-4" /></button>
-                                            <button 
-                                                onClick={() => sendWhatsAppPayroll(record)} 
+                                            <button
+                                                onClick={() => sendWhatsAppPayroll(record)}
                                                 disabled={sendingWhatsApp === record._id}
-                                                className="p-2 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-450 hover:text-emerald-500 hover:border-emerald-500 bg-transparent hover:bg-slate-50 dark:hover:bg-slate-750 transition-all disabled:opacity-50 animate-pulse-slow" 
+                                                className="p-2 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-450 hover:text-emerald-500 hover:border-emerald-500 bg-transparent hover:bg-slate-50 dark:hover:bg-slate-750 transition-all disabled:opacity-50 animate-pulse-slow"
                                                 title="Send Payslip on WhatsApp"
                                             >
                                                 {sendingWhatsApp === record._id ? (
@@ -558,7 +606,7 @@ export default function PayrollManager() {
                         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setIndividualModal(false)} className="absolute inset-0 bg-black/50 backdrop-blur-sm" />
                         <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }}
                             className="bg-white dark:bg-slate-800 w-full max-w-xl rounded-3xl border border-slate-200 dark:border-slate-700 shadow-2xl relative flex flex-col max-h-[90vh] transition-all">
-                            
+
                             <div className="p-6 border-b border-slate-100 dark:border-slate-700 flex items-center justify-between">
                                 <div>
                                     <h2 className="text-sm font-extrabold text-slate-850 dark:text-slate-100 tracking-tight">Create Individual Pay Record</h2>
@@ -566,14 +614,18 @@ export default function PayrollManager() {
                                 </div>
                                 <button onClick={() => setIndividualModal(false)} className="w-8 h-8 rounded-xl bg-slate-50 dark:bg-slate-750 hover:bg-slate-100 dark:hover:bg-slate-700 border border-slate-200/50 dark:border-slate-700 flex items-center justify-center text-slate-500 dark:text-slate-450 transition-all"><X className="w-4 h-4" /></button>
                             </div>
-                            
+
                             <div className="p-6 overflow-y-auto space-y-5 flex-1">
                                 {/* Staff Selection */}
                                 <div className="space-y-1">
                                     <label className="text-[10px] font-black text-slate-500 dark:text-slate-450 ml-1 uppercase">Select Staff Member</label>
                                     <select value={individualForm.staffId} onChange={e => {
                                         const s = staff.find(st => st._id === e.target.value);
-                                        setIndividualForm({...individualForm, staffId: e.target.value, baseSalary: s?.hrProfile?.baseSalary || 0});
+                                        setIndividualForm(prev => ({
+                                            ...prev,
+                                            staffId: e.target.value,
+                                            baseSalary: s?.hrProfile?.baseSalary || 0
+                                        }));
                                     }}
                                         className="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-slate-750 border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-700 dark:text-slate-200 focus:ring-2 focus:ring-primary/10 focus:border-primary outline-none uppercase cursor-pointer">
                                         <option value="">Choose Staff...</option>
@@ -588,42 +640,43 @@ export default function PayrollManager() {
                                 <div className="grid grid-cols-2 gap-4">
                                     <div className="space-y-1">
                                         <label className="text-[10px] font-black text-slate-550 dark:text-slate-450 ml-1 uppercase">Base Salary (₹)</label>
-                                        <input type="number" value={individualForm.baseSalary} onChange={e => setIndividualForm({...individualForm, baseSalary: Number(e.target.value)})}
+                                        <input type="number" value={individualForm.baseSalary} onChange={e => setIndividualForm({ ...individualForm, baseSalary: Number(e.target.value) })}
                                             className="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-slate-750 border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-700 dark:text-slate-200 focus:ring-2 focus:ring-primary/10 focus:border-primary outline-none" />
                                     </div>
                                     <div className="space-y-1">
                                         <label className="text-[10px] font-black text-slate-550 dark:text-slate-450 ml-1 uppercase">Working Days</label>
-                                        <input type="number" value={individualForm.workingDays} onChange={e => setIndividualForm({...individualForm, workingDays: Number(e.target.value)})}
+                                        <input type="number" value={individualForm.workingDays} onChange={e => setIndividualForm({ ...individualForm, workingDays: Number(e.target.value) })}
                                             className="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-slate-750 border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-700 dark:text-slate-200 focus:ring-2 focus:ring-primary/10 focus:border-primary outline-none" />
                                     </div>
                                     <div className="space-y-1">
                                         <label className="text-[10px] font-black text-slate-550 dark:text-slate-450 ml-1 uppercase">Present Days</label>
-                                        <input type="number" step="0.5" value={individualForm.presentDays} onChange={e => setIndividualForm({...individualForm, presentDays: Number(e.target.value)})}
+                                        <input type="number" step="0.5" value={individualForm.presentDays} onChange={e => setIndividualForm({ ...individualForm, presentDays: Number(e.target.value) })}
                                             className="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-slate-750 border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-700 dark:text-slate-200 focus:ring-2 focus:ring-primary/10 focus:border-primary outline-none" />
                                     </div>
                                     <div className="space-y-1">
-                                        <label className="text-[10px] font-black text-emerald-600 dark:text-emerald-450 ml-1 uppercase">Incentive (₹)</label>
-                                        <input type="number" value={individualForm.incentive} onChange={e => setIndividualForm({...individualForm, incentive: Number(e.target.value)})}
-                                            className="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-slate-750 border border-slate-200 dark:border-slate-700 text-xs font-bold text-emerald-650 dark:text-emerald-300 focus:ring-2 focus:ring-emerald-500/10 focus:border-emerald-500 outline-none" />
+                                        <label className="text-[10px] font-black text-violet-650 dark:text-violet-400 ml-1 uppercase">Leave Days</label>
+                                        <input type="number" value={individualForm.leaveDays} onChange={e => setIndividualForm({ ...individualForm, leaveDays: Number(e.target.value) })}
+                                            className="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-slate-750 border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-700 dark:text-slate-200 focus:ring-2 focus:ring-primary/10 focus:border-primary outline-none" />
                                     </div>
                                 </div>
 
-                                <div className="grid grid-cols-2 gap-4">
+                                <div className="grid grid-cols-3 gap-4">
                                     <div className="space-y-1">
-                                        <label className="text-[10px] font-black text-rose-600 dark:text-rose-450 ml-1 uppercase">Deductions (₹)</label>
-                                        <input type="number" value={individualForm.otherDeductions} onChange={e => setIndividualForm({...individualForm, otherDeductions: Number(e.target.value)})}
-                                            className="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-slate-750 border border-slate-200 dark:border-slate-700 text-xs font-bold text-rose-650 dark:text-rose-350 focus:ring-2 focus:ring-rose-500/10 focus:border-rose-500 outline-none" />
+                                        <label className="text-[10px] font-black text-emerald-600 dark:text-emerald-450 ml-1 uppercase">Incentive (₹)</label>
+                                        <input type="number" value={individualForm.incentive} onChange={e => setIndividualForm({ ...individualForm, incentive: Number(e.target.value) })}
+                                            className="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-slate-750 border border-slate-200 dark:border-slate-700 text-xs font-bold text-emerald-650 dark:text-emerald-300 focus:ring-2 focus:ring-emerald-500/10 focus:border-emerald-500 outline-none" />
                                     </div>
                                     <div className="space-y-1">
                                         <label className="text-[10px] font-black text-slate-550 dark:text-slate-450 ml-1 uppercase">Overtime Pay (₹)</label>
-                                        <input type="number" value={individualForm.overtime} onChange={e => setIndividualForm({...individualForm, overtime: Number(e.target.value)})}
+                                        <input type="number" value={individualForm.overtime} onChange={e => setIndividualForm({ ...individualForm, overtime: Number(e.target.value) })}
                                             className="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-slate-750 border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-700 dark:text-slate-200 focus:ring-2 focus:ring-primary/10 focus:border-primary outline-none" />
                                     </div>
+
                                 </div>
 
                                 <div className="space-y-1">
                                     <label className="text-[10px] font-black text-slate-550 dark:text-slate-450 ml-1 uppercase">Notes / Explanations</label>
-                                    <textarea rows={2} value={individualForm.notes} onChange={e => setIndividualForm({...individualForm, notes: e.target.value})}
+                                    <textarea rows={2} value={individualForm.notes} onChange={e => setIndividualForm({ ...individualForm, notes: e.target.value })}
                                         className="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-slate-750 border border-slate-200 dark:border-slate-700 text-xs font-medium text-slate-700 dark:text-slate-250 focus:ring-2 focus:ring-primary/10 focus:border-primary outline-none resize-none transition-all placeholder-slate-400" placeholder="Type payroll calculations notes..." />
                                 </div>
                             </div>
@@ -654,7 +707,7 @@ export default function PayrollManager() {
                         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setShowDetails(null)} className="absolute inset-0 bg-black/50 backdrop-blur-sm" />
                         <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }}
                             className="bg-white dark:bg-slate-800 w-full max-w-xl rounded-3xl border border-slate-200 dark:border-slate-700 shadow-2xl relative flex flex-col max-h-[90vh] transition-all text-left">
-                            
+
                             <div className="p-6 border-b border-slate-100 dark:border-slate-700 flex items-center justify-between">
                                 <div>
                                     <h2 className="text-sm font-extrabold text-slate-850 dark:text-slate-100 tracking-tight">Adjust Pay Slip Parameters</h2>
@@ -667,42 +720,47 @@ export default function PayrollManager() {
                                 <div className="grid grid-cols-2 gap-4">
                                     <div className="space-y-1">
                                         <label className="text-[10px] font-black text-slate-550 dark:text-slate-450 ml-1 uppercase">Base Salary (₹)</label>
-                                        <input type="number" value={detailForm.baseSalary} onChange={e => setDetailForm({...detailForm, baseSalary: Number(e.target.value)})}
+                                        <input type="number" value={detailForm.baseSalary} onChange={e => setDetailForm({ ...detailForm, baseSalary: Number(e.target.value) })}
                                             className="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-slate-750 border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-700 dark:text-slate-200 focus:ring-2 focus:ring-primary/10 focus:border-primary outline-none" />
                                     </div>
                                     <div className="space-y-1">
                                         <label className="text-[10px] font-black text-slate-550 dark:text-slate-450 ml-1 uppercase">Working Days</label>
-                                        <input type="number" value={detailForm.workingDays} onChange={e => setDetailForm({...detailForm, workingDays: Number(e.target.value)})}
+                                        <input type="number" value={detailForm.workingDays} onChange={e => setDetailForm({ ...detailForm, workingDays: Number(e.target.value) })}
                                             className="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-slate-750 border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-700 dark:text-slate-200 focus:ring-2 focus:ring-primary/10 focus:border-primary outline-none" />
                                     </div>
                                     <div className="space-y-1">
                                         <label className="text-[10px] font-black text-slate-550 dark:text-slate-450 ml-1 uppercase">Present Count</label>
-                                        <input type="number" step="0.5" value={detailForm.presentDays} onChange={e => setDetailForm({...detailForm, presentDays: Number(e.target.value)})}
+                                        <input type="number" step="0.5" value={detailForm.presentDays} onChange={e => setDetailForm({ ...detailForm, presentDays: Number(e.target.value) })}
                                             className="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-slate-750 border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-700 dark:text-slate-200 focus:ring-2 focus:ring-primary/10 focus:border-primary outline-none" />
                                     </div>
                                     <div className="space-y-1">
-                                        <label className="text-[10px] font-black text-emerald-600 dark:text-emerald-450 ml-1 uppercase">Incentive (₹)</label>
-                                        <input type="number" value={detailForm.incentive} onChange={e => setDetailForm({...detailForm, incentive: Number(e.target.value)})}
-                                            className="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-slate-750 border border-slate-200 dark:border-slate-700 text-xs font-bold text-emerald-650 dark:text-emerald-300 focus:ring-2 focus:ring-emerald-500/10 focus:border-emerald-500 outline-none" />
+                                        <label className="text-[10px] font-black text-violet-650 dark:text-violet-400 ml-1 uppercase">Leave Days</label>
+                                        <input type="number" value={detailForm.leaveDays} onChange={e => setDetailForm({ ...detailForm, leaveDays: Number(e.target.value) })}
+                                            className="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-slate-750 border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-750 dark:text-slate-200 focus:ring-2 focus:ring-primary/10 focus:border-primary outline-none" />
                                     </div>
                                 </div>
 
-                                <div className="grid grid-cols-2 gap-4">
+                                <div className="grid grid-cols-3 gap-4">
                                     <div className="space-y-1">
-                                        <label className="text-[10px] font-black text-rose-600 dark:text-rose-455 ml-1 uppercase">Deductions (₹)</label>
-                                        <input type="number" value={detailForm.otherDeductions} onChange={e => setDetailForm({...detailForm, otherDeductions: Number(e.target.value)})}
-                                            className="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-slate-750 border border-slate-200 dark:border-slate-700 text-xs font-bold text-rose-650 dark:text-rose-350 focus:ring-2 focus:ring-rose-500/10 focus:border-rose-500 outline-none" />
+                                        <label className="text-[10px] font-black text-emerald-600 dark:text-emerald-450 ml-1 uppercase">Incentive (₹)</label>
+                                        <input type="number" value={detailForm.incentive} onChange={e => setDetailForm({ ...detailForm, incentive: Number(e.target.value) })}
+                                            className="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-slate-750 border border-slate-200 dark:border-slate-700 text-xs font-bold text-emerald-650 dark:text-emerald-300 focus:ring-2 focus:ring-emerald-500/10 focus:border-emerald-500 outline-none" />
                                     </div>
                                     <div className="space-y-1">
                                         <label className="text-[10px] font-black text-slate-550 dark:text-slate-450 ml-1 uppercase">Overtime (₹)</label>
-                                        <input type="number" value={detailForm.overtime} onChange={e => setDetailForm({...detailForm, overtime: Number(e.target.value)})}
+                                        <input type="number" value={detailForm.overtime} onChange={e => setDetailForm({ ...detailForm, overtime: Number(e.target.value) })}
                                             className="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-slate-750 border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-700 dark:text-slate-200 focus:ring-2 focus:ring-primary/10 focus:border-primary outline-none" />
+                                    </div>
+                                    <div className="space-y-1">
+                                        <label className="text-[10px] font-black text-rose-600 dark:text-rose-455 ml-1 uppercase">Deductions (₹)</label>
+                                        <input type="number" value={detailForm.otherDeductions} onChange={e => setDetailForm({ ...detailForm, otherDeductions: Number(e.target.value) })}
+                                            className="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-slate-750 border border-slate-200 dark:border-slate-700 text-xs font-bold text-rose-650 dark:text-rose-350 focus:ring-2 focus:ring-rose-500/10 focus:border-rose-500 outline-none" />
                                     </div>
                                 </div>
 
                                 <div className="space-y-1">
                                     <label className="text-[10px] font-black text-slate-550 dark:text-slate-450 ml-1 uppercase">Adjustments Notes</label>
-                                    <textarea rows={2} value={detailForm.notes} onChange={e => setDetailForm({...detailForm, notes: e.target.value})}
+                                    <textarea rows={2} value={detailForm.notes} onChange={e => setDetailForm({ ...detailForm, notes: e.target.value })}
                                         className="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-slate-750 border border-slate-200 dark:border-slate-700 text-xs font-medium text-slate-700 dark:text-slate-250 focus:ring-2 focus:ring-primary/10 focus:border-primary outline-none resize-none transition-all placeholder-slate-400" placeholder="Type reason for parameters adjustments..." />
                                 </div>
                             </div>

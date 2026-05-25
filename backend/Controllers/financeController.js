@@ -300,10 +300,7 @@ exports.addSupplierInvoice = async (req, res) => {
             });
         }
 
-        // Update supplier current balance
-        await Supplier.findByIdAndUpdate(invoice.supplierId, {
-            $inc: { currentBalance: -(invoice.totalAmount - invoice.paidAmount) }
-        });
+
 
         // Send WhatsApp if requested
         if (req.body.sendWhatsApp && invoice.supplierId) {
@@ -346,7 +343,7 @@ exports.addInvoicePayment = async (req, res) => {
             type: 'expense',
             category: 'Supplier Payment',
             amount,
-            paymentMethod: paymentMethod || 'bank_transfer',
+            paymentMethod: paymentMethod === 'online' ? 'upi' : (paymentMethod || 'bank_transfer'),
             accountType: paymentMethod === 'cash' ? 'cash' : 'bank',
             description: `Payment for Invoice: ${invoice.invoiceNumber}`,
             referenceId: invoice._id,
@@ -354,10 +351,7 @@ exports.addInvoicePayment = async (req, res) => {
             performedBy: req.user._id
         });
 
-        // Update supplier balance
-        await Supplier.findByIdAndUpdate(invoice.supplierId, {
-            $inc: { currentBalance: amount } // Reduced the debt
-        });
+
 
         // Send WhatsApp if requested
         if (req.body.sendWhatsApp) {
