@@ -60,8 +60,8 @@ function normalizeStaffUser(u, outletsList) {
         stylistBio: u.bio || '',
         stylistExperience: u.experience || '',
         stylistSpecializations: Array.isArray(u.specializations) ? u.specializations.join(', ') : '',
-        availability: u.availability || { 
-            mode: 'same', 
+        availability: u.availability || {
+            mode: 'same',
             days: { monday: [{ start: '09:00', end: '18:00' }], tuesday: [{ start: '09:00', end: '18:00' }], wednesday: [{ start: '09:00', end: '18:00' }], thursday: [{ start: '09:00', end: '18:00' }], friday: [{ start: '09:00', end: '18:00' }], saturday: [{ start: '09:00', end: '18:00' }], sunday: [{ start: '09:00', end: '18:00' }] },
             breaks: [{ start: '13:00', end: '14:00', label: 'Lunch' }]
         }
@@ -193,16 +193,16 @@ export default function StaffManager() {
             stylistBio: s.stylistBio || '',
             stylistExperience: s.stylistExperience || '',
             stylistSpecializations: s.stylistSpecializations || '',
-            availability: s.availability || { 
-                mode: 'same', 
-                days: { 
-                    monday: [{ start: '09:00', end: '18:00' }], 
-                    tuesday: [{ start: '09:00', end: '18:00' }], 
-                    wednesday: [{ start: '09:00', end: '18:00' }], 
-                    thursday: [{ start: '09:00', end: '18:00' }], 
-                    friday: [{ start: '09:00', end: '18:00' }], 
-                    saturday: [{ start: '09:00', end: '18:00' }], 
-                    sunday: [{ start: '09:00', end: '18:00' }] 
+            availability: s.availability || {
+                mode: 'same',
+                days: {
+                    monday: [{ start: '09:00', end: '18:00' }],
+                    tuesday: [{ start: '09:00', end: '18:00' }],
+                    wednesday: [{ start: '09:00', end: '18:00' }],
+                    thursday: [{ start: '09:00', end: '18:00' }],
+                    friday: [{ start: '09:00', end: '18:00' }],
+                    saturday: [{ start: '09:00', end: '18:00' }],
+                    sunday: [{ start: '09:00', end: '18:00' }]
                 },
                 breaks: [{ start: '13:00', end: '14:00', label: 'Lunch' }]
             }
@@ -530,7 +530,7 @@ export default function StaffManager() {
                                 <div className="p-8 space-y-6 overflow-y-auto flex-1 text-left">
                                     <div className="grid grid-cols-2 gap-x-6 gap-y-5 text-left">
                                         <div className="col-span-2 text-[10px] font-black text-primary uppercase tracking-[0.3em] pb-2 border-b border-border/20 mb-2">Profile Photo</div>
-                                        
+
                                         <div className="col-span-2 flex justify-center py-4">
                                             <div className="relative group">
                                                 <div className="w-32 h-32 rounded-none bg-background border-2 border-dashed border-border flex items-center justify-center overflow-hidden transition-all group-hover:border-primary">
@@ -680,7 +680,7 @@ export default function StaffManager() {
                                                         setForm(f => ({ ...f, availability: { ...f.availability, breaks: newBreaks } }));
                                                     }} className="text-[9px] font-black text-primary border border-primary/20 px-3 py-1.5 hover:bg-primary/10">+ Add Break</button>
                                                 </div>
-                                                
+
                                                 <div className="space-y-2">
                                                     {(form.availability.breaks || []).map((brk, idx) => (
                                                         <div key={idx} className="flex items-center gap-3 bg-background border border-border p-3">

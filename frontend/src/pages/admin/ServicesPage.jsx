@@ -114,7 +114,7 @@ export default function ServicesPage({ tab = 'list' }) {
             const ws = m.utils.json_to_sheet(templateData);
             const wb = m.utils.book_new();
             m.utils.book_append_sheet(wb, ws, 'Services');
-            
+
             const helpData = outlets.map(o => ({ 'Available Outlets': o.name }));
             const wsHelp = m.utils.json_to_sheet(helpData);
             m.utils.book_append_sheet(wb, wsHelp, 'Outlet_Guide');
@@ -423,7 +423,7 @@ export default function ServicesPage({ tab = 'list' }) {
             {/* Service Form Modal */}
             {isFormModalOpen && (
                 <div className="fixed inset-0 z-[1000] flex items-start justify-center p-0 overflow-hidden">
-                    <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md" onClick={() => setIsFormModalOpen(false)} />
+                    <div className="fixed inset-0 bg-white dark:bg-slate-900" onClick={() => setIsFormModalOpen(false)} />
                     <div className="relative bg-white w-full max-w-6xl shadow-2xl animate-in fade-in zoom-in-95 duration-300 flex flex-col h-screen sm:h-[95vh] sm:mt-0 rounded-none sm:rounded-t-[32px] sm:rounded-b-[32px] border border-white/20 overflow-hidden">
                         <div className="flex items-center justify-between px-6 py-3 border-b border-border bg-slate-50/50">
                             <div className="flex items-center gap-3">

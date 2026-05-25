@@ -180,17 +180,17 @@ export default function OutletsPage() {
                             {/* Card Image Banner */}
                             <div className="relative h-48 overflow-hidden bg-slate-100 flex-shrink-0">
                                 {outlet.images?.length > 0 || outlet.image ? (
-                                    <img 
-                                        src={getImageUrl(outlet.images?.[0] || outlet.image)} 
-                                        alt={outlet.name} 
-                                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" 
+                                    <img
+                                        src={getImageUrl(outlet.images?.[0] || outlet.image)}
+                                        alt={outlet.name}
+                                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                                     />
                                 ) : (
                                     <div className="w-full h-full flex items-center justify-center bg-slate-900 text-white">
                                         <Store className="w-12 h-12 opacity-20" />
                                     </div>
                                 )}
-                                
+
                                 {/* Overlay Gradient */}
                                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-60" />
 

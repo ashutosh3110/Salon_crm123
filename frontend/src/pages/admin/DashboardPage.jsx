@@ -73,9 +73,9 @@ export default function DashboardPage() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 {activeStats.map((stat, i) => (
-                    <Link 
-                        to={stat.path} 
-                        key={i} 
+                    <Link
+                        to={stat.path}
+                        key={i}
                         className="bg-surface py-7 px-7 rounded-2xl border border-border shadow-sm group relative overflow-hidden transition-all hover:shadow-xl hover:border-primary/20 hover:-translate-y-1 active:scale-[0.98]"
                     >
                         <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">

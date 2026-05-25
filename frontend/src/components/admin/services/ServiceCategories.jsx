@@ -186,10 +186,10 @@ export default function ServiceCategories({ categories = [], onAdd, onUpdate, on
                                     {cat.serviceCount} Services
                                 </div>
                                 <div className={`flex items-center gap-1.5 px-2 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest border ${cat.gender === 'men'
-                                        ? 'bg-blue-500/10 text-blue-500 border-blue-500/20'
-                                        : cat.gender === 'both'
-                                            ? 'bg-purple-500/10 text-purple-500 border-purple-500/20'
-                                            : 'bg-pink-500/10 text-pink-500 border-pink-500/20'
+                                    ? 'bg-blue-500/10 text-blue-500 border-blue-500/20'
+                                    : cat.gender === 'both'
+                                        ? 'bg-purple-500/10 text-purple-500 border-purple-500/20'
+                                        : 'bg-pink-500/10 text-pink-500 border-pink-500/20'
                                     }`}>
                                     {cat.gender === 'men' ? <User className="w-3 h-3" /> : cat.gender === 'both' ? <Users className="w-3 h-3" /> : <UserCircle className="w-3 h-3" />}
                                     {cat.gender}
@@ -220,7 +220,7 @@ export default function ServiceCategories({ categories = [], onAdd, onUpdate, on
             {/* Quick Add/Edit Modal */}
             {modalState.isOpen && (
                 <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-                    <div className="absolute inset-0 bg-background/90 backdrop-blur-md" onClick={closeModal} />
+                    <div className="absolute inset-0 bg-white dark:bg-slate-900" onClick={closeModal} />
                     <div className="bg-surface rounded-none p-8 w-full max-w-md relative z-10 shadow-2xl animate-in zoom-in-95 duration-200 border border-border">
                         <div className="flex items-center gap-3 mb-8">
                             <div className="w-10 h-10 bg-primary/10 flex items-center justify-center">

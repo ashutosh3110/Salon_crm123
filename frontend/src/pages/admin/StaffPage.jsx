@@ -105,10 +105,10 @@ export default function StaffPage() {
         if (!form.name?.trim()) newErrors.name = 'Name is required';
         if (!form.email?.trim()) newErrors.email = 'Email is required';
         else if (!/\S+@\S+\.\S+/.test(form.email)) newErrors.email = 'Invalid email format';
-        
+
         if (!form.phone) newErrors.phone = 'Phone is required';
         else if (form.phone.length !== 10) newErrors.phone = 'Phone must be 10 digits';
-        
+
         if (!form.roleId) newErrors.roleId = 'Role is required';
         if (!form.outletId) newErrors.outletId = 'Salon assignment is required';
 
@@ -177,7 +177,7 @@ export default function StaffPage() {
         setLoading(true);
         try {
             const formData = new FormData();
-            
+
             // Append all form fields to FormData
             Object.keys(form).forEach(key => {
                 if (key === 'avatar') return;
@@ -187,11 +187,11 @@ export default function StaffPage() {
                     // Safety check for hrProfile to avoid string-spread corruption
                     let baseHrProfile = {};
                     if (editing?.hrProfile) {
-                        baseHrProfile = typeof editing.hrProfile === 'string' 
-                            ? JSON.parse(editing.hrProfile) 
+                        baseHrProfile = typeof editing.hrProfile === 'string'
+                            ? JSON.parse(editing.hrProfile)
                             : editing.hrProfile;
                     }
-                    
+
                     const hrProfile = {
                         ...baseHrProfile,
                         panNumber: form.pan
@@ -293,7 +293,7 @@ export default function StaffPage() {
 
             {/* Pending Approvals Alert - Compact */}
             {pendingExpertsCount > 0 && (
-                <div 
+                <div
                     onClick={() => navigate('/admin/marketing/cms')}
                     className="bg-amber-500/10 border border-amber-500/20 p-2 shadow-sm flex items-center justify-between cursor-pointer group hover:bg-amber-500/15 transition-all text-left"
                 >
@@ -378,10 +378,10 @@ export default function StaffPage() {
                                             <div className="flex items-center gap-3">
                                                 <div className="w-8 h-8 bg-surface-alt border border-border flex items-center justify-center text-text font-black text-[10px] font-mono group-hover:border-primary transition-colors overflow-hidden">
                                                     {s.avatar ? (
-                                                        <img 
-                                                            src={getImageUrl(s.avatar)} 
-                                                            alt={s.name} 
-                                                            className="w-full h-full object-cover" 
+                                                        <img
+                                                            src={getImageUrl(s.avatar)}
+                                                            alt={s.name}
+                                                            className="w-full h-full object-cover"
                                                         />
                                                     ) : (
                                                         s.name?.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
@@ -453,7 +453,7 @@ export default function StaffPage() {
                         Showing {(currentPage - 1) * itemsPerPage + 1} - {Math.min(currentPage * itemsPerPage, filteredStaff.length)} of {filteredStaff.length} Members
                     </span>
                     <div className="flex gap-4">
-                        <button 
+                        <button
                             type="button"
                             onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
                             disabled={currentPage === 1}
@@ -461,7 +461,7 @@ export default function StaffPage() {
                         >
                             Previous
                         </button>
-                        <button 
+                        <button
                             type="button"
                             onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
                             disabled={currentPage === totalPages || totalPages === 0}
@@ -475,10 +475,10 @@ export default function StaffPage() {
 
             {/* Shift Modal - High Density Refinement */}
             {showModal && (
-                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 overflow-y-auto" onClick={() => setShowModal(false)}>
-                    <form 
+                <div className="fixed inset-0 bg-white dark:bg-slate-900 z-50 flex items-center justify-center p-4 overflow-y-auto" onClick={() => setShowModal(false)}>
+                    <form
                         onSubmit={handleSubmit}
-                        className="bg-white w-full max-w-md shadow-2xl relative border-2 border-text flex flex-col my-auto max-h-[95vh] overflow-hidden" 
+                        className="bg-white w-full max-w-md shadow-2xl relative border-2 border-text flex flex-col my-auto max-h-[95vh] overflow-hidden"
                         onClick={(e) => e.stopPropagation()}
                     >
                         {/* Modal Header */}
@@ -510,10 +510,10 @@ export default function StaffPage() {
                                         <div className="relative group/photo">
                                             <div className="w-24 h-24 bg-surface border-2 border-dashed border-border flex items-center justify-center overflow-hidden transition-all group-hover/photo:border-primary">
                                                 {form.avatar ? (
-                                                    <img 
-                                                        src={getImageUrl(form.avatar)} 
-                                                        alt="Preview" 
-                                                        className="w-full h-full object-cover" 
+                                                    <img
+                                                        src={getImageUrl(form.avatar)}
+                                                        alt="Preview"
+                                                        className="w-full h-full object-cover"
                                                     />
                                                 ) : (
                                                     <Plus className="w-6 h-6 text-text-muted" />
@@ -537,7 +537,7 @@ export default function StaffPage() {
                                 </div>
 
                                 <div className="space-y-1 col-span-2">
-                                     <label className="text-[9px] font-black text-text-muted uppercase tracking-widest font-mono">Member Full Name</label>
+                                    <label className="text-[9px] font-black text-text-muted uppercase tracking-widest font-mono">Member Full Name</label>
                                     <input
                                         type="text"
                                         required
@@ -553,7 +553,7 @@ export default function StaffPage() {
                                     {errors.name && <p className="text-[8px] font-bold text-rose-500 mt-1 uppercase">{errors.name}</p>}
                                 </div>
                                 <div className="space-y-1">
-                                     <label className="text-[9px] font-black text-text-muted uppercase tracking-widest font-mono">Email Address</label>
+                                    <label className="text-[9px] font-black text-text-muted uppercase tracking-widest font-mono">Email Address</label>
                                     <input
                                         type="email"
                                         required
@@ -567,7 +567,7 @@ export default function StaffPage() {
                                     />
                                     {errors.email && <p className="text-[8px] font-bold text-rose-500 mt-1 uppercase">{errors.email}</p>}
                                 </div>
-                                 <div className="space-y-1">
+                                <div className="space-y-1">
                                     <label className="text-[9px] font-black text-text-muted uppercase tracking-widest font-mono">Phone Number</label>
                                     <input
                                         type="tel"
@@ -584,13 +584,13 @@ export default function StaffPage() {
                                 </div>
                                 <div className="space-y-1">
                                     <label className="text-[9px] font-black text-text-muted uppercase tracking-widest font-mono">Profession/Role</label>
-                                    <select 
-                                        value={form.roleId} 
+                                    <select
+                                        value={form.roleId}
                                         onChange={(e) => {
                                             const rId = e.target.value;
                                             const selectedRole = roles.find(r => r._id === rId);
                                             const roleName = selectedRole ? selectedRole.name : '';
-                                            
+
                                             const updates = { role: roleName, roleId: rId };
                                             const isStylistRole = ['stylist'].includes(roleName.toLowerCase());
                                             if (isStylistRole && (!form.availability || !form.availability.days)) {
@@ -609,9 +609,9 @@ export default function StaffPage() {
                                     {errors.roleId && <p className="text-[8px] font-bold text-rose-500 mt-1 uppercase">{errors.roleId}</p>}
                                 </div>
                                 <div className="space-y-1">
-                                     <label className="text-[9px] font-black text-text-muted uppercase tracking-widest font-mono">Assign to Salon</label>
-                                    <select 
-                                        value={form.outletId} 
+                                    <label className="text-[9px] font-black text-text-muted uppercase tracking-widest font-mono">Assign to Salon</label>
+                                    <select
+                                        value={form.outletId}
                                         onChange={(e) => {
                                             setForm({ ...form, outletId: e.target.value });
                                             if (errors.outletId) setErrors(prev => ({ ...prev, outletId: null }));
@@ -634,7 +634,7 @@ export default function StaffPage() {
                                     />
                                 </div>
                                 <div className="space-y-1">
-                                     <label className="text-[9px] font-black text-text-muted uppercase tracking-widest font-mono">PAN Number</label>
+                                    <label className="text-[9px] font-black text-text-muted uppercase tracking-widest font-mono">PAN Number</label>
                                     <input
                                         type="text"
                                         value={form.pan || ''}
@@ -648,7 +648,7 @@ export default function StaffPage() {
                                     {errors.pan && <p className="text-[8px] font-bold text-rose-500 mt-1 uppercase">{errors.pan}</p>}
                                 </div>
                                 <div className="space-y-1 col-span-2">
-                                     <label className="text-[9px] font-black text-text-muted uppercase tracking-widest font-mono">Residential Address</label>
+                                    <label className="text-[9px] font-black text-text-muted uppercase tracking-widest font-mono">Residential Address</label>
                                     <textarea
                                         value={form.address || ''}
                                         onChange={(e) => setForm({ ...form, address: e.target.value })}
@@ -701,8 +701,8 @@ export default function StaffPage() {
                                                         <Clock className="w-3.5 h-3.5 text-primary" />
                                                         <p className="text-[10px] font-black text-primary uppercase tracking-[0.2em] font-mono">Staff Breaks (Lunch/Tea)</p>
                                                     </div>
-                                                    <div 
-                                                        role="button" 
+                                                    <div
+                                                        role="button"
                                                         onClick={() => {
                                                             const currentBreaks = form.availability?.breaks || [];
                                                             setForm({
@@ -725,42 +725,42 @@ export default function StaffPage() {
                                                     ) : (
                                                         form.availability.breaks.map((brk, idx) => (
                                                             <div key={idx} className="flex items-center gap-2 bg-white border border-border p-2 group/break">
-                                                                <input 
-                                                                    type="text" 
-                                                                    value={brk.label} 
+                                                                <input
+                                                                    type="text"
+                                                                    value={brk.label}
                                                                     onChange={(e) => {
                                                                         const newBreaks = [...form.availability.breaks];
                                                                         newBreaks[idx].label = e.target.value;
                                                                         setForm({ ...form, availability: { ...form.availability, breaks: newBreaks } });
                                                                     }}
                                                                     placeholder="Label"
-                                                                    className="flex-1 bg-transparent text-[9px] font-black outline-none border-b border-border/50 focus:border-primary uppercase font-mono" 
+                                                                    className="flex-1 bg-transparent text-[9px] font-black outline-none border-b border-border/50 focus:border-primary uppercase font-mono"
                                                                 />
                                                                 <div className="flex items-center gap-1">
-                                                                    <input 
-                                                                        type="time" 
-                                                                        value={brk.start} 
+                                                                    <input
+                                                                        type="time"
+                                                                        value={brk.start}
                                                                         onChange={(e) => {
                                                                             const newBreaks = [...form.availability.breaks];
                                                                             newBreaks[idx].start = e.target.value;
                                                                             setForm({ ...form, availability: { ...form.availability, breaks: newBreaks } });
                                                                         }}
-                                                                        className="bg-surface px-2 py-1 border border-border text-[9px] font-black outline-none font-mono" 
+                                                                        className="bg-surface px-2 py-1 border border-border text-[9px] font-black outline-none font-mono"
                                                                     />
                                                                     <span className="text-[8px] font-black text-text-muted">-</span>
-                                                                    <input 
-                                                                        type="time" 
-                                                                        value={brk.end} 
+                                                                    <input
+                                                                        type="time"
+                                                                        value={brk.end}
                                                                         onChange={(e) => {
                                                                             const newBreaks = [...form.availability.breaks];
                                                                             newBreaks[idx].end = e.target.value;
                                                                             setForm({ ...form, availability: { ...form.availability, breaks: newBreaks } });
                                                                         }}
-                                                                        className="bg-surface px-2 py-1 border border-border text-[9px] font-black outline-none font-mono" 
+                                                                        className="bg-surface px-2 py-1 border border-border text-[9px] font-black outline-none font-mono"
                                                                     />
                                                                 </div>
-                                                                <div 
-                                                                    role="button" 
+                                                                <div
+                                                                    role="button"
                                                                     onClick={() => {
                                                                         const newBreaks = form.availability.breaks.filter((_, i) => i !== idx);
                                                                         setForm({ ...form, availability: { ...form.availability, breaks: newBreaks } });
@@ -778,14 +778,14 @@ export default function StaffPage() {
                                             <div className="flex items-center justify-between mb-4">
                                                 <p className="text-[10px] font-black text-primary uppercase tracking-[0.2em] font-mono">Work Schedule & Availability</p>
                                                 <div className="flex bg-surface-alt p-1 rounded-none border border-border">
-                                                    <div 
+                                                    <div
                                                         role="button"
                                                         onClick={() => setForm({ ...form, availability: { ...form.availability, mode: 'same' } })}
                                                         className={`px-3 py-1 text-[8px] font-black uppercase tracking-tighter transition-all cursor-pointer ${form.availability?.mode === 'same' ? 'bg-text text-white' : 'text-text-muted hover:text-text'}`}
                                                     >
                                                         Same for all
                                                     </div>
-                                                    <div 
+                                                    <div
                                                         role="button"
                                                         onClick={() => setForm({ ...form, availability: { ...form.availability, mode: 'different' } })}
                                                         className={`px-3 py-1 text-[8px] font-black uppercase tracking-tighter transition-all cursor-pointer ${form.availability?.mode === 'different' ? 'bg-text text-white' : 'text-text-muted hover:text-text'}`}
@@ -797,9 +797,9 @@ export default function StaffPage() {
 
                                             {form.availability?.mode === 'same' ? (
                                                 <div className="bg-surface p-4 border border-border space-y-4">
-                                                    <SlotInputGroup 
-                                                        day="All Days" 
-                                                        slots={form.availability?.days?.monday || []} 
+                                                    <SlotInputGroup
+                                                        day="All Days"
+                                                        slots={form.availability?.days?.monday || []}
                                                         onChange={(newSlots) => {
                                                             const newDays = { ...form.availability.days };
                                                             Object.keys(newDays).forEach(d => {
@@ -813,16 +813,16 @@ export default function StaffPage() {
                                                 <div className="space-y-3">
                                                     {Object.keys(form.availability?.days || {}).map((day) => (
                                                         <div key={day} className="bg-surface p-3 border border-border">
-                                                            <SlotInputGroup 
-                                                                day={day.charAt(0).toUpperCase() + day.slice(1)} 
-                                                                slots={form.availability.days[day]} 
+                                                            <SlotInputGroup
+                                                                day={day.charAt(0).toUpperCase() + day.slice(1)}
+                                                                slots={form.availability.days[day]}
                                                                 onChange={(newSlots) => {
-                                                                    setForm({ 
-                                                                        ...form, 
-                                                                        availability: { 
-                                                                            ...form.availability, 
-                                                                            days: { ...form.availability.days, [day]: newSlots } 
-                                                                        } 
+                                                                    setForm({
+                                                                        ...form,
+                                                                        availability: {
+                                                                            ...form.availability,
+                                                                            days: { ...form.availability.days, [day]: newSlots }
+                                                                        }
                                                                     });
                                                                 }}
                                                             />
@@ -882,15 +882,15 @@ function SlotInputGroup({ day, slots, onChange }) {
         <div className="space-y-2 text-left">
             <div className="flex items-center justify-between">
                 <span className="text-[10px] font-black uppercase tracking-widest text-text font-mono italic">{day}</span>
-                <button 
-                    type="button" 
+                <button
+                    type="button"
                     onClick={addSlot}
                     className="text-[9px] font-black text-primary hover:text-primary-foreground hover:bg-primary px-2 py-1 transition-all border border-primary/20"
                 >
                     + ADD SLOT
                 </button>
             </div>
-            
+
             {slots.length === 0 ? (
                 <div className="py-2 text-[9px] font-bold text-rose-500 uppercase tracking-widest italic opacity-60">Off Duty / Unavailable</div>
             ) : (
@@ -900,8 +900,8 @@ function SlotInputGroup({ day, slots, onChange }) {
                             <div className="flex-1 grid grid-cols-2 gap-2">
                                 <div className="relative">
                                     <Clock className="absolute left-2 top-1/2 -translate-y-1/2 w-3 h-3 text-text-muted" />
-                                    <input 
-                                        type="time" 
+                                    <input
+                                        type="time"
                                         value={slot.start}
                                         onChange={(e) => updateSlot(idx, 'start', e.target.value)}
                                         className="w-full pl-7 pr-2 py-1.5 bg-white border border-border text-[10px] font-black outline-none focus:border-text font-mono"
@@ -909,16 +909,16 @@ function SlotInputGroup({ day, slots, onChange }) {
                                 </div>
                                 <div className="relative">
                                     <Clock className="absolute left-2 top-1/2 -translate-y-1/2 w-3 h-3 text-text-muted" />
-                                    <input 
-                                        type="time" 
+                                    <input
+                                        type="time"
                                         value={slot.end}
                                         onChange={(e) => updateSlot(idx, 'end', e.target.value)}
                                         className="w-full pl-7 pr-2 py-1.5 bg-white border border-border text-[10px] font-black outline-none focus:border-text font-mono"
                                     />
                                 </div>
                             </div>
-                            <button 
-                                type="button" 
+                            <button
+                                type="button"
                                 onClick={() => removeSlot(idx)}
                                 className="p-1.5 text-text-muted hover:text-rose-600 hover:bg-rose-50 transition-all opacity-0 group-hover/slot:opacity-100"
                             >
