@@ -12,7 +12,9 @@ import {
     Filter,
     Plus,
     Gem,
-    Crown
+    Crown,
+    Bell,
+    MessageSquare
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -22,11 +24,13 @@ import MembershipPlansTab from '../../components/admin/loyalty/MembershipPlansTa
 import MembersListTab from '../../components/admin/loyalty/MembersListTab';
 import LoyaltyTransactionsTab from '../../components/admin/loyalty/LoyaltyTransactionsTab';
 import ReferralSettingsTab from '../../components/admin/loyalty/ReferralSettingsTab';
+import MembershipRemindersTab from '../../components/admin/loyalty/MembershipRemindersTab';
 
 const TABS = [
     { id: 'plans', label: 'Membership Plans', icon: CreditCard, description: 'Manage subscription tiers' },
     { id: 'members', label: 'Active Members', icon: Users, description: 'Customer membership status' },
     { id: 'transactions', label: 'Transaction Log', icon: ArrowDownUp, description: 'Points ledger audit trail' },
+    { id: 'reminders', label: 'Expiry Reminders', icon: Bell, description: 'Send expiry notifications' },
 ];
 
 export default function LoyaltyMembershipPage({ tab: initialTab = 'plans' }) {
@@ -38,6 +42,7 @@ export default function LoyaltyMembershipPage({ tab: initialTab = 'plans' }) {
             case 'plans': return <MembershipPlansTab />;
             case 'members': return <MembersListTab />;
             case 'transactions': return <LoyaltyTransactionsTab />;
+            case 'reminders': return <MembershipRemindersTab />;
             default: return <MembershipPlansTab />;
         }
     };

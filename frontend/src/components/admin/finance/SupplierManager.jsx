@@ -112,7 +112,6 @@ function SupplierTable({ suppliers, onEdit, onDelete }) {
                         <th className="px-8 py-4 text-[10px] font-bold text-text-secondary uppercase tracking-widest">Supplier Name</th>
                         <th className="px-8 py-4 text-[10px] font-bold text-text-secondary uppercase tracking-widest">Contact Info</th>
                         <th className="px-8 py-4 text-[10px] font-bold text-text-secondary uppercase tracking-widest">GSTIN</th>
-                        <th className="px-8 py-4 text-[10px] font-bold text-text-secondary uppercase tracking-widest text-center">Outstanding Due</th>
                         <th className="px-8 py-4 text-[10px] font-bold text-text-secondary uppercase tracking-widest">Status</th>
                         <th className="px-8 py-4 text-[10px] font-bold text-text-secondary uppercase tracking-widest text-right">Actions</th>
                     </tr>
@@ -120,7 +119,7 @@ function SupplierTable({ suppliers, onEdit, onDelete }) {
                 <tbody className="divide-y divide-border">
                     {suppliers.length === 0 && (
                         <tr>
-                            <td colSpan={6} className="px-8 py-16 text-center text-sm font-medium text-text-muted">
+                            <td colSpan={5} className="px-8 py-16 text-center text-sm font-medium text-text-muted">
                                 No suppliers yet. Click &quot;Add New Supplier&quot; to create one.
                             </td>
                         </tr>
@@ -150,11 +149,7 @@ function SupplierTable({ suppliers, onEdit, onDelete }) {
                             <td className="px-8 py-5">
                                 <span className="text-[10px] font-bold text-text-secondary bg-surface px-2 py-1 rounded border border-border">{supplier.gstin}</span>
                             </td>
-                            <td className="px-8 py-5 text-center">
-                                <span className={`text-sm font-bold ${supplier.due > 0 ? (supplier.status === 'Overdue' ? 'text-rose-600' : 'text-orange-500') : 'text-emerald-600'}`}>
-                                    ₹{(supplier.due || 0).toLocaleString()}
-                                </span>
-                            </td>
+
                             <td className="px-8 py-5">
                                 <span className={`px-2.5 py-1 rounded-lg text-[9px] font-bold uppercase tracking-widest border ${supplier.status === 'Overdue' ? 'bg-rose-50 text-rose-600 border-rose-100' : 'bg-emerald-50 text-emerald-600 border-emerald-100'
                                     }`}>

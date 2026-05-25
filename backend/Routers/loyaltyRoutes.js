@@ -9,7 +9,9 @@ const {
     getReferralSettings,
     getMyReferrals,
     getLoyaltyMembers,
-    getAdminLoyaltyTransactions
+    getAdminLoyaltyTransactions,
+    getMembershipReminders,
+    sendManualMembershipReminder
 } = require('../Controllers/loyaltyController');
 const {
     getMembershipPlans,
@@ -65,5 +67,7 @@ router.get('/referrals/me', getMyReferrals);
 router.get('/transactions/me', getLoyaltyHistory);
 router.get('/members', authorize('admin', 'manager'), getLoyaltyMembers);
 router.get('/transactions', authorize('admin', 'manager'), getAdminLoyaltyTransactions);
+router.get('/reminders', authorize('admin', 'manager'), getMembershipReminders);
+router.post('/reminders/:id/send', authorize('admin', 'manager'), sendManualMembershipReminder);
 
 module.exports = router;

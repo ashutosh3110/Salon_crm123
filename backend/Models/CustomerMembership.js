@@ -35,7 +35,12 @@ const customerMembershipSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Invoice'
     },
-    amount: Number
+    amount: Number,
+    lastReminderSentAt: Date,
+    reminderCount: {
+        type: Number,
+        default: 0
+    }
 }, {
     timestamps: true
 });
