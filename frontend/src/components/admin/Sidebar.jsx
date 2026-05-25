@@ -196,6 +196,7 @@ export default function Sidebar({ collapsed, setCollapsed, isHovered, setIsHover
                 category: 'CRM & Marketing',
                 subItems: [
                     { label: 'Directory', icon: Users, path: '/admin/crm/customers' },
+                    { label: 'Leads & Enquiries', icon: ClipboardList, path: '/admin/inquiries' },
                     { label: 'Wallets', icon: Wallet, path: '/admin/crm/wallets' },
                     { label: 'Feedback', icon: Star, path: '/admin/crm/feedback' },
                     { label: 'Re-engagement', icon: ShieldAlert, path: '/admin/crm/reengage' },

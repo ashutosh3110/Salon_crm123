@@ -5,6 +5,7 @@ import {
     ChevronDown
 } from 'lucide-react';
 import api from '../../services/api';
+import { useBusiness } from '../../contexts/BusinessContext';
 
 /* ─── Constants ───────────────────────────────────────────────────────── */
 
@@ -54,6 +55,10 @@ function formatDate(dateStr) {
 /* ─── Main Page ───────────────────────────────────────────────────────── */
 
 export default function InquiryPage() {
+    const { outlets: contextOutlets, services: contextServices } = useBusiness();
+    const outlets = contextOutlets || [];
+    const services = contextServices || [];
+
     const [inquiries, setInquiries] = useState([]);
     const [customers, setCustomers] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -67,7 +72,8 @@ export default function InquiryPage() {
     const [form, setForm] = useState({
         customerId: '',
         name: '', phone: '', email: '', source: 'Walk-in',
-        serviceInterest: '', notes: '', followUpDays: 0
+        serviceInterest: '', notes: '', followUpDays: 0,
+        outletId: '', interestedService: ''
     });
 
     const fetchCustomers = async () => {
@@ -125,6 +131,24 @@ export default function InquiryPage() {
         });
     }, [inquiries, search, filterSource, filterStatus]);
 
+    const filteredServices = useMemo(() => {
+        if (!form.outletId) return [];
+        return services.filter(s => {
+            if (!s.outletIds || s.outletIds.length === 0) return true;
+            return s.outletIds.includes(form.outletId) || s.outletIds.some(id => (id._id || id) === form.outletId);
+        });
+    }, [services, form.outletId]);
+
+    const handleServiceChange = (e) => {
+        const serviceId = e.target.value;
+        const matched = services.find(s => s._id === serviceId || s.id === serviceId);
+        setForm(prev => ({
+            ...prev,
+            interestedService: serviceId,
+            serviceInterest: matched ? matched.name : ''
+        }));
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         let followUpDate = null;
@@ -142,6 +166,8 @@ export default function InquiryPage() {
             notes: form.notes,
             followUpDate,
             reminderChannel: followUpDate ? 'whatsapp' : 'none',
+            outletId: form.outletId || undefined,
+            interestedService: form.interestedService || undefined
         };
 
         try {
@@ -190,8 +216,12 @@ export default function InquiryPage() {
         setForm({
             customerId: matched?._id || '',
             name: inq.name, phone: inq.phone, email: inq.email || '',
-            source: inq.source, serviceInterest: inq.serviceInterest || '',
-            notes: inq.notes || '', followUpDays
+            source: inq.source,
+            serviceInterest: inq.serviceInterest || '',
+            notes: inq.notes || '',
+            followUpDays,
+            outletId: inq.outletId?._id || inq.outletId || '',
+            interestedService: inq.interestedService?._id || inq.interestedService || ''
         });
         setShowModal(true);
     };
@@ -199,7 +229,18 @@ export default function InquiryPage() {
     const closeModal = () => {
         setShowModal(false);
         setEditingInquiry(null);
-        setForm({ customerId: '', name: '', phone: '', email: '', source: 'Walk-in', serviceInterest: '', notes: '', followUpDays: 0 });
+        setForm({
+            customerId: '',
+            name: '',
+            phone: '',
+            email: '',
+            source: 'Walk-in',
+            serviceInterest: '',
+            notes: '',
+            followUpDays: 0,
+            outletId: '',
+            interestedService: ''
+        });
     };
 
     if (loading) {
@@ -248,65 +289,126 @@ export default function InquiryPage() {
                 </div>
             </div>
 
-            <div className="bg-white border border-border shadow-sm overflow-hidden min-h-[400px]">
-                <div className="overflow-x-auto no-scrollbar">
-                    <table className="w-full text-left border-collapse min-w-[1000px]">
-                        <thead>
-                            <tr className="bg-surface font-mono border-b border-border">
-                                <th className="px-4 py-3 text-[9px] font-black text-text-muted uppercase tracking-widest">Customer</th>
-                                <th className="px-4 py-3 text-[9px] font-black text-text-muted uppercase tracking-widest">Source</th>
-                                <th className="px-4 py-3 text-[9px] font-black text-text-muted uppercase tracking-widest">Interest</th>
-                                <th className="px-4 py-3 text-[9px] font-black text-text-muted uppercase tracking-widest">Status</th>
-                                <th className="px-4 py-3 text-[9px] font-black text-text-muted uppercase tracking-widest text-right">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-border">
-                            {filtered.length === 0 ? (
-                                <tr><td colSpan="5" className="px-6 py-20 text-center uppercase font-black text-[10px] font-mono opacity-20">No enquiries</td></tr>
-                            ) : (
-                                filtered.map((inq) => {
-                                    const stStyle = STATUS_STYLES[inq.status] || STATUS_STYLES['new'];
-                                    return (
-                                        <tr key={inq.id} className="hover:bg-primary/[0.02]">
-                                            <td className="px-4 py-2">
-                                                <div className="font-black text-text text-[11px] uppercase font-mono italic">{inq.name}</div>
-                                                <div className="text-[9px] text-text-muted font-mono">{inq.phone}</div>
-                                            </td>
-                                            <td className="px-4 py-2">
-                                                <span className="text-[8px] font-black uppercase font-mono border border-border px-2 py-0.5">{inq.source}</span>
-                                            </td>
-                                            <td className="px-4 py-2 uppercase font-mono text-[9px]">{inq.serviceInterest || '—'}</td>
-                                            <td className="px-4 py-2">
-                                                <button onClick={() => setStatusDropdown(statusDropdown === inq.id ? null : inq.id)} className={`text-[8px] font-black border uppercase tracking-widest font-mono px-2 py-0.5 ${stStyle.bg} ${stStyle.text} ${stStyle.border}`}>
-                                                    {stStyle.label} <ChevronDown className="w-2 h-2" />
-                                                </button>
-                                            </td>
-                                            <td className="px-4 py-2 text-right">
-                                                <button onClick={() => openEdit(inq)} className="p-1"><Edit className="w-3 h-3" /></button>
-                                                <button onClick={() => handleDelete(inq.id)} className="p-1 text-rose-500"><Trash2 className="w-3 h-3" /></button>
-                                            </td>
-                                        </tr>
-                                    );
-                                })
-                            )}
-                        </tbody>
-                    </table>
-                </div>
+            <div className="bg-white border border-border shadow-sm overflow-visible min-h-[400px]">                <div className="overflow-x-auto overflow-y-visible no-scrollbar">
+                <table className="w-full text-left border-collapse min-w-[1000px] relative">
+                    <thead>
+                        <tr className="bg-surface font-mono border-b border-border">
+                            <th className="px-4 py-3 text-[9px] font-black text-text-muted uppercase tracking-widest">Customer</th>
+                            <th className="px-4 py-3 text-[9px] font-black text-text-muted uppercase tracking-widest">Outlet</th>
+                            <th className="px-4 py-3 text-[9px] font-black text-text-muted uppercase tracking-widest">Source</th>
+                            <th className="px-4 py-3 text-[9px] font-black text-text-muted uppercase tracking-widest">Interest</th>
+                            <th className="px-4 py-3 text-[9px] font-black text-text-muted uppercase tracking-widest">Status</th>
+                            <th className="px-4 py-3 text-[9px] font-black text-text-muted uppercase tracking-widest text-right">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody className="divide-y divide-border">
+                        {filtered.length === 0 ? (
+                            <tr><td colSpan="6" className="px-6 py-20 text-center uppercase font-black text-[10px] font-mono opacity-20">No enquiries</td></tr>
+                        ) : (
+                            filtered.map((inq) => {
+                                const stStyle = STATUS_STYLES[inq.status] || STATUS_STYLES['new'];
+                                return (
+                                    <tr key={inq.id} className="hover:bg-primary/[0.02]">
+                                        <td className="px-4 py-2">
+                                            <div className="font-black text-text text-[11px] uppercase font-mono italic">{inq.name}</div>
+                                            <div className="text-[9px] text-text-muted font-mono">{inq.phone}</div>
+                                        </td>
+                                        <td className="px-4 py-2">
+                                            <span className="text-[9px] font-bold uppercase font-mono bg-slate-100 text-slate-800 px-2 py-0.5 border border-slate-200">{inq.outletId?.name || 'All Outlets'}</span>
+                                        </td>
+                                        <td className="px-4 py-2">
+                                            <span className="text-[8px] font-black uppercase font-mono border border-border px-2 py-0.5">{inq.source}</span>
+                                        </td>
+                                        <td className="px-4 py-2 uppercase font-mono text-[9px]">{inq.serviceInterest || '—'}</td>
+                                    <td className="px-4 py-2 relative overflow-visible">
+    <button
+        type="button"
+        onClick={(e) => {
+            e.stopPropagation();
+            setStatusDropdown(
+                statusDropdown === inq.id ? null : inq.id
+            );
+        }}
+        className={`inline-flex items-center gap-1 text-[8px] font-black border uppercase tracking-widest font-mono px-2 py-1 ${stStyle.bg} ${stStyle.text} ${stStyle.border}`}
+    >
+        {stStyle.label}
+        <ChevronDown className="w-2 h-2" />
+    </button>
+
+    {statusDropdown === inq.id && (
+        <div className="absolute left-0 top-full mt-1 z-[9999] bg-white border border-border shadow-xl min-w-[150px] rounded">
+            {STATUSES.map((status) => (
+                <button
+                    type="button"
+                    key={status}
+                    onClick={() => changeStatus(inq.id, status)}
+                    className="block w-full text-left px-3 py-2 text-[9px] uppercase font-mono hover:bg-slate-50"
+                >
+                    {STATUS_STYLES[status]?.label || status}
+                </button>
+            ))}
+        </div>
+    )}
+</td>
+                                        <td className="px-4 py-2 text-right">
+                                            <button onClick={() => openEdit(inq)} className="p-1"><Edit className="w-3 h-3" /></button>
+                                            <button onClick={() => handleDelete(inq.id)} className="p-1 text-rose-500"><Trash2 className="w-3 h-3" /></button>
+                                        </td>
+                                    </tr>
+                                );
+                            })
+                        )}
+                    </tbody>
+                </table>
+            </div>
             </div>
 
             {showModal && (
-                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={closeModal}>
+                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-start justify-center p-4 overflow-y-auto pt-10 md:pt-16" onClick={closeModal}>
                     <div className="bg-white w-full max-w-md p-6 border-2 border-text shadow-2xl" onClick={(e) => e.stopPropagation()}>
                         <form onSubmit={handleSubmit} className="space-y-4">
-                            <input type="text" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value.toUpperCase() })} required className="w-full px-3 py-2 border border-border text-[11px] font-black uppercase font-mono" placeholder="NAME" />
-                            <input type="tel" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} required className="w-full px-3 py-2 border border-border text-[11px] font-black font-mono" placeholder="PHONE" />
-                            <select value={form.source} onChange={(e) => setForm({ ...form, source: e.target.value })} className="w-full px-3 py-2 border border-border text-[10px] font-black font-mono uppercase">
-                                {SOURCES.map(s => <option key={s} value={s}>{s}</option>)}
-                            </select>
-                            <input type="text" value={form.serviceInterest} onChange={(e) => setForm({ ...form, serviceInterest: e.target.value.toUpperCase() })} className="w-full px-3 py-2 border border-border text-[10px] font-black font-mono" placeholder="INTEREST" />
-                            <div className="flex gap-2">
-                                <button type="button" onClick={closeModal} className="flex-1 py-3 text-[9px] font-black uppercase font-mono">Cancel</button>
-                                <button type="submit" className="flex-1 bg-text text-white py-3 font-black uppercase font-mono text-[9px]">Save</button>
+                            <div className="space-y-1 text-left">
+                                <label className="text-[9px] font-black text-text-muted uppercase tracking-wider block font-mono">Name *</label>
+                                <input type="text" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value.toUpperCase() })} required className="w-full px-3 py-2 border border-border text-[11px] font-black uppercase font-mono" placeholder="ENTER NAME" />
+                            </div>
+                            <div className="space-y-1 text-left">
+                                <label className="text-[9px] font-black text-text-muted uppercase tracking-wider block font-mono">Phone *</label>
+                                <input type="tel" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} required className="w-full px-3 py-2 border border-border text-[11px] font-black font-mono" placeholder="ENTER PHONE" />
+                            </div>
+                            <div className="space-y-1 text-left">
+                                <label className="text-[9px] font-black text-text-muted uppercase tracking-wider block font-mono">Source</label>
+                                <select value={form.source} onChange={(e) => setForm({ ...form, source: e.target.value })} className="w-full px-3 py-2 border border-border text-[10px] font-black font-mono uppercase bg-white outline-none focus:border-primary">
+                                    {SOURCES.map(s => <option key={s} value={s}>{s}</option>)}
+                                </select>
+                            </div>
+                            <div className="space-y-1 text-left">
+                                <label className="text-[9px] font-black text-text-muted uppercase tracking-wider block font-mono">Outlet *</label>
+                                <select
+                                    value={form.outletId}
+                                    onChange={(e) => setForm({ ...form, outletId: e.target.value, interestedService: '', serviceInterest: '' })}
+                                    required
+                                    className="w-full px-3 py-2 border border-border text-[10px] font-black font-mono uppercase bg-white outline-none focus:border-primary"
+                                >
+                                    <option value="">Select Outlet</option>
+                                    {outlets.map(o => <option key={o._id || o.id} value={o._id || o.id}>{o.name}</option>)}
+                                </select>
+                            </div>
+                            <div className="space-y-1 text-left">
+                                <label className="text-[9px] font-black text-text-muted uppercase tracking-wider block font-mono">Service Interest *</label>
+                                <select
+                                    value={form.interestedService}
+                                    onChange={handleServiceChange}
+                                    required
+                                    disabled={!form.outletId}
+                                    className="w-full px-3 py-2 border border-border text-[10px] font-black font-mono uppercase bg-white outline-none focus:border-primary disabled:opacity-50"
+                                >
+                                    <option value="">{!form.outletId ? 'Select Outlet First' : 'Select Service'}</option>
+                                    {filteredServices.map(s => <option key={s._id || s.id} value={s._id || s.id}>{s.name} (₹{s.price})</option>)}
+                                </select>
+                            </div>
+                            <div className="flex gap-2 pt-2">
+                                <button type="button" onClick={closeModal} className="flex-1 py-3 text-[9px] font-black uppercase font-mono border border-border hover:bg-slate-50">Cancel</button>
+                                <button type="submit" className="flex-1 bg-text text-white py-3 font-black uppercase font-mono text-[9px] hover:bg-primary transition-all">Save</button>
                             </div>
                         </form>
                     </div>

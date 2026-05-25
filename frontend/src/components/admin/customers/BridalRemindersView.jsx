@@ -140,14 +140,8 @@ export default function BridalRemindersView() {
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-surface-alt/10 p-6 border border-border">
                 <div className="text-left">
                     <h4 className="text-xs font-black uppercase tracking-widest text-text">Bridal Booking Reminders</h4>
-                    <p className="text-[11px] font-semibold text-text-muted">Manage scheduled pre-wedding and wedding day automated alerts.</p>
+                    <p className="text-[11px] font-semibold text-text-muted">View scheduled pre-wedding and wedding day automated alerts.</p>
                 </div>
-                <button
-                    onClick={() => setShowAddModal(true)}
-                    className="bg-primary text-primary-foreground hover:bg-primary/95 px-6 py-3.5 text-[10px] font-black uppercase tracking-[0.2em] shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-95 transition-all flex items-center gap-2 rounded-none"
-                >
-                    <Plus className="w-4 h-4" /> Add Event
-                </button>
             </div>
 
             {loading ? (
@@ -160,7 +154,7 @@ export default function BridalRemindersView() {
                     <AlertCircle size={48} className="text-border" />
                     <div className="space-y-1">
                         <p className="text-lg font-black uppercase italic opacity-25">No Bridal Reminders Scheduled</p>
-                        <p className="text-[10px] font-black uppercase opacity-25 tracking-widest">Add your first bridal service package to trigger automated reminders.</p>
+                        <p className="text-[10px] font-black uppercase opacity-25 tracking-widest">Bridal bookings will automatically appear here to trigger scheduled reminders.</p>
                     </div>
                 </div>
             ) : (
