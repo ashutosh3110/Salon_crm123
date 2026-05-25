@@ -40,7 +40,7 @@ exports.createOrder = async (req, res) => {
             }
         }
 
-        // Validate coupon usage limit per customer
+        // Validate coupon code
         if (couponCode) {
             const Promotion = require('../Models/Promotion');
             const promo = await Promotion.findOne({
@@ -49,7 +49,23 @@ exports.createOrder = async (req, res) => {
                 activationMode: 'COUPON',
                 salonId
             });
-            if (promo && promo.usageLimitPerCustomer) {
+            if (!promo) {
+                return res.status(400).json({ success: false, message: 'Invalid coupon code' });
+            }
+            const now = new Date();
+            if (promo.startDate && new Date(promo.startDate) > now) {
+                return res.status(400).json({ success: false, message: 'Coupon is not active yet' });
+            }
+            if (promo.endDate && new Date(promo.endDate) < now) {
+                return res.status(400).json({ success: false, message: 'Coupon has expired' });
+            }
+            if (promo.totalUsageLimit !== undefined && promo.usageCount >= promo.totalUsageLimit) {
+                return res.status(400).json({ success: false, message: 'Coupon usage limit reached' });
+            }
+            if (promo.applicableOn === 'SERVICE') {
+                return res.status(400).json({ success: false, message: 'This coupon is only applicable on services' });
+            }
+            if (promo.usageLimitPerCustomer) {
                 const code = promo.couponCode;
                 const [bookingsCount, ordersCount, invoicesCount] = await Promise.all([
                     mongoose.model('Booking').countDocuments({ clientId: customerId, couponCode: code, status: { $ne: 'cancelled' } }),

@@ -329,6 +329,28 @@ export default function AppProfilePage() {
                                 className="w-full h-12 px-4 rounded-2xl text-sm font-bold focus:border-[#C8956C] outline-none transition-colors"
                             />
                         </div>
+                        <div className="grid grid-cols-2 gap-3">
+                            <div className="space-y-1.5">
+                                <label className="text-[9px] font-black uppercase tracking-widest opacity-40 ml-1">Date of Birth</label>
+                                <input 
+                                    type="date"
+                                    value={form.dob}
+                                    onChange={(e) => setForm({...form, dob: e.target.value})}
+                                    style={{ background: colors.input, color: colors.text, border: `1px solid ${colors.border}` }}
+                                    className="w-full h-12 px-4 rounded-2xl text-[10px] font-bold focus:border-[#C8956C] outline-none transition-colors"
+                                />
+                            </div>
+                            <div className="space-y-1.5">
+                                <label className="text-[9px] font-black uppercase tracking-widest opacity-40 ml-1">Anniversary Date</label>
+                                <input 
+                                    type="date"
+                                    value={form.anniversary}
+                                    onChange={(e) => setForm({...form, anniversary: e.target.value})}
+                                    style={{ background: colors.input, color: colors.text, border: `1px solid ${colors.border}` }}
+                                    className="w-full h-12 px-4 rounded-2xl text-[10px] font-bold focus:border-[#C8956C] outline-none transition-colors"
+                                />
+                            </div>
+                        </div>
                         <button 
                             onClick={handleSave}
                             disabled={saving}

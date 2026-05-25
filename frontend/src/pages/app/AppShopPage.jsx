@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useRef, useEffect } from 'react';
+import React, { useState, useMemo, useRef, useEffect, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Search, ShoppingBag, Star, ArrowRight, Heart, X, Plus, Minus } from 'lucide-react';
@@ -16,7 +16,7 @@ import { getImageUrl } from '../../utils/imageUtils';
 
 
 
-const ProductCard = React.memo(({ product, index, onOpenProduct, onAddToCart, onUpdateQuantity, cartItem, colors, isLight, hasStock }) => {
+const ProductCard = React.memo(({ product, index, onOpenProduct, onAddToCart, onUpdateQuantity, cartItem, colors, isLight, hasStock, ratingMetrics }) => {
     const { isProductLiked, toggleProductLike } = useFavorites();
     const isLiked = isProductLiked(product._id || product.id);
 
@@ -84,7 +84,8 @@ const ProductCard = React.memo(({ product, index, onOpenProduct, onAddToCart, on
                     </h3>
                     <div className="flex items-center gap-0.5 shrink-0 mt-0.5">
                         <Star className="w-2.5 h-2.5 text-amber-500 fill-amber-500" />
-                        <span className="text-[10px] font-bold" style={{ color: colors.textMuted }}>{Number(product.rating || 0).toFixed(1)}</span>
+                        <span className="text-[10px] font-bold" style={{ color: colors.text }}>{ratingMetrics?.rating || '0.0'}</span>
+                        <span className="text-[9px] font-semibold opacity-60 ml-0.5">({ratingMetrics?.count || 0})</span>
                     </div>
                 </div>
                 <div className="mt-auto pt-2 flex items-center justify-between">
@@ -145,7 +146,8 @@ export default function AppShopPage() {
         activeOutletId,
         fetchCustomerInitialData,
         fetchProducts,
-        isInitializing
+        isInitializing,
+        feedbacks
     } = useBusiness();
     const { toggleProductLike } = useInventory(); // Keep only for actions if needed, or move toggle to business
     const [isLoading, setIsLoading] = useState(true);
@@ -204,6 +206,24 @@ export default function AppShopPage() {
         }, 2000);
         return () => clearInterval(timer);
     }, []);
+
+    const getProductReviewMetrics = useCallback((product) => {
+        if (!product) return { rating: '0.0', count: 0 };
+        const pId = String(product._id || product.id);
+        const productReviews = (feedbacks || []).filter(rev => {
+            const targetId = rev.targetId?._id || rev.targetId || rev.target;
+            return rev.targetType === 'product' && String(targetId) === pId && rev.status === 'Approved';
+        });
+        if (productReviews.length === 0) {
+            return { rating: '0.0', count: 0 };
+        }
+        const sum = productReviews.reduce((acc, curr) => acc + (curr.rating || 0), 0);
+        const avg = sum / productReviews.length;
+        return {
+            rating: avg.toFixed(1),
+            count: productReviews.length
+        };
+    }, [feedbacks]);
 
     const shopProducts = useMemo(() => {
         if (!inventoryProducts) return [];
@@ -520,6 +540,7 @@ export default function AppShopPage() {
                             const cartItem = (cart?.items || []).find(item => 
                                 (item.productId?._id || item.productId?.id || item.productId) === (product._id || product.id)
                             );
+                            const metrics = getProductReviewMetrics(product);
                             
                             return (
                                 <ProductCard 
@@ -533,6 +554,7 @@ export default function AppShopPage() {
                                     colors={colors} 
                                     isLight={isLight} 
                                     hasStock={hasStock}
+                                    ratingMetrics={metrics}
                                 />
                             );
                         })}

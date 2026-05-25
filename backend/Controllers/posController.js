@@ -40,6 +40,65 @@ exports.checkout = async (req, res) => {
 
         const salonId = req.user.salonId;
 
+        // Validate coupon code
+        if (couponCode) {
+            const Promotion = require('../Models/Promotion');
+            const promo = await Promotion.findOne({
+                isActive: true,
+                couponCode: couponCode.trim().toUpperCase(),
+                activationMode: 'COUPON',
+                salonId
+            });
+            if (!promo) {
+                return res.status(400).json({ success: false, message: 'Invalid coupon code' });
+            }
+            const now = new Date();
+            if (promo.startDate && new Date(promo.startDate) > now) {
+                return res.status(400).json({ success: false, message: 'Coupon is not active yet' });
+            }
+            if (promo.endDate && new Date(promo.endDate) < now) {
+                return res.status(400).json({ success: false, message: 'Coupon has expired' });
+            }
+            if (promo.totalUsageLimit !== undefined && promo.usageCount >= promo.totalUsageLimit) {
+                return res.status(400).json({ success: false, message: 'Coupon usage limit reached' });
+            }
+            if (promo.applicableOn === 'SERVICE' || promo.applicableOn === 'PRODUCT') {
+                let eligibleSubtotal = 0;
+                if (items && Array.isArray(items)) {
+                    items.forEach(item => {
+                        const itemType = String(item.type || '').toUpperCase(); // 'SERVICE' or 'PRODUCT'
+                        const qty = Number(item.quantity) || 1;
+                        const price = Number(item.price) || 0;
+
+                        if (promo.applicableOn === 'SERVICE' && itemType === 'SERVICE') {
+                            eligibleSubtotal += price * qty;
+                        } else if (promo.applicableOn === 'PRODUCT' && itemType === 'PRODUCT') {
+                            eligibleSubtotal += price * qty;
+                        }
+                    });
+                }
+                if (eligibleSubtotal === 0) {
+                    if (promo.applicableOn === 'SERVICE') {
+                        return res.status(400).json({ success: false, message: 'This coupon is only applicable on services' });
+                    } else if (promo.applicableOn === 'PRODUCT') {
+                        return res.status(400).json({ success: false, message: 'This coupon is only applicable on products' });
+                    }
+                }
+            }
+            if (clientId && promo.usageLimitPerCustomer) {
+                const code = promo.couponCode;
+                const [bookingsCount, ordersCount, invoicesCount] = await Promise.all([
+                    mongoose.model('Booking').countDocuments({ clientId, couponCode: code, status: { $ne: 'cancelled' } }),
+                    mongoose.model('Order').countDocuments({ customerId: clientId, couponCode: code, status: { $ne: 'cancelled' } }),
+                    mongoose.model('Invoice').countDocuments({ customerId: clientId, couponCode: code, status: { $ne: 'cancelled' } })
+                ]);
+                const totalCustomerUsage = bookingsCount + ordersCount + invoicesCount;
+                if (totalCustomerUsage >= promo.usageLimitPerCustomer) {
+                    return res.status(400).json({ success: false, message: 'Customer has already used this coupon code' });
+                }
+            }
+        }
+
         // 1. Generate Invoice Number (atomic to prevent duplicate numbers)
         const salonDoc = await Salon.findByIdAndUpdate(
             salonId,

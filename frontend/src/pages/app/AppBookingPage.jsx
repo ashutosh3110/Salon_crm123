@@ -259,7 +259,58 @@ export default function AppBookingPage() {
     const [availableCoupons, setAvailableCoupons] = useState([]);
     const [paymentMethod, setPaymentMethod] = useState('salon'); // 'salon', 'online' or 'wallet'
     const { balance, refreshWallet } = useWallet();
-    const { customer, isCustomerAuthenticated, loading: authLoading, requestOtp, customerLogin, updateCustomer } = useCustomerAuth();
+    const { customer, isCustomerAuthenticated, loading: authLoading, requestOtp, customerLogin, updateCustomer, customerLogout } = useCustomerAuth();
+
+    const isPreselected = Boolean(preSelectedServiceId);
+
+    const STEPS = useMemo(() => {
+        if (isPreselected) {
+            if (!isCustomerAuthenticated) {
+                return ['Details', 'Stylist', 'Slots', 'Confirm & Book'];
+            }
+            return ['Stylist', 'Slots', 'Confirm & Book'];
+        }
+        return ['Details', 'Outlet', 'Services', 'Stylist', 'Slots', 'Confirm & Book'];
+    }, [isPreselected, isCustomerAuthenticated]);
+
+    const virtualStep = useMemo(() => {
+        if (isPreselected) {
+            if (!isCustomerAuthenticated) {
+                if (step === 0) return 0; // Details
+                if (step === 3) return 1; // Stylist
+                if (step === 4) return 2; // Slots
+                if (step === 5) return 3; // Confirm & Book
+                return 0;
+            } else {
+                if (step === 3) return 0; // Stylist
+                if (step === 4) return 1; // Slots
+                if (step === 5) return 2; // Confirm & Book
+                return 0;
+            }
+        }
+        return step;
+    }, [isPreselected, isCustomerAuthenticated, step]);
+
+    const handleBack = () => {
+        if (isPreselected) {
+            if (step === 5) {
+                goTo(4); // from Confirm & Book to Slots
+            } else if (step === 4) {
+                goTo(3); // from Slots to Stylist
+            } else if (step === 3) {
+                if (!isCustomerAuthenticated) {
+                    goTo(0); // from Stylist to Details
+                } else {
+                    navigate(-1);
+                }
+            } else {
+                navigate(-1);
+            }
+        } else {
+            if (step > 0) goTo(step - 1);
+            else navigate(-1);
+        }
+    };
 
     // Inline login and registration states
     const [detailName, setDetailName] = useState(customer?.name || '');
@@ -336,8 +387,12 @@ export default function AppBookingPage() {
             setDetailName(detailName.trim());
             setDetailPhone(detailPhone);
             
-            // Advance to Step 2 (Outlet Selection)
-            goTo(1);
+            // Advance to next step based on context
+            if (preSelectedServiceId) {
+                goTo(3);
+            } else {
+                goTo(1);
+            }
         } catch (err) {
             setOtpError(err.message || 'Verification failed');
             setOtpVal(['', '', '', '']);
@@ -445,6 +500,24 @@ export default function AppBookingPage() {
             cancelled = true;
         };
     }, [customer?._id]);
+
+    // Auto-skip steps for pre-selected flow if authenticated
+    useEffect(() => {
+        if (!isLoading && !authLoading) {
+            const isPreselectedFlow = Boolean(preSelectedServiceId);
+            if (isPreselectedFlow) {
+                if (isCustomerAuthenticated) {
+                    if (step < 3) {
+                        goTo(3);
+                    }
+                } else {
+                    if (step !== 0) {
+                        goTo(0);
+                    }
+                }
+            }
+        }
+    }, [isLoading, authLoading, isCustomerAuthenticated, preSelectedServiceId, step]);
 
     // Razorpay Script loading disabled for Mock/Offline mode to prevent 1000+ network requests.
     // If production is needed, uncomment the script loading logic.
@@ -655,6 +728,12 @@ export default function AppBookingPage() {
             setPromoDiscount(0);
             setIsPromoApplied(false);
         }
+    };
+
+    const handleRemovePromo = () => {
+        setPromoDiscount(0);
+        setIsPromoApplied(false);
+        setCouponCode('');
     };
 
     const availableSalons = useMemo(() => {
@@ -1073,9 +1152,19 @@ export default function AppBookingPage() {
                                 <span>- ₹{membershipDiscount.toLocaleString()}</span>
                             </div>
                         )}
-                        <div className="flex justify-between text-[11px] font-bold uppercase tracking-widest opacity-40">
-                            <span>Tax (GST {platformSettings?.serviceGst || 18}%)</span>
-                            <span>+ ₹{Math.round(tax).toLocaleString()}</span>
+                        <div className="space-y-1 py-1 border-t border-black/5 dark:border-white/5 opacity-60">
+                            <div className="flex justify-between text-[11px] font-bold uppercase tracking-widest">
+                                <span>GST ({platformSettings?.serviceGst || 18}% - Excluding)</span>
+                                <span>+ ₹{Math.round(tax).toLocaleString()}</span>
+                            </div>
+                            <div className="flex justify-between text-[9px] pl-2 font-medium italic opacity-60">
+                                <span>CGST ({(platformSettings?.serviceGst || 18) / 2}%)</span>
+                                <span>+ ₹{Math.round(tax / 2).toLocaleString()}</span>
+                            </div>
+                            <div className="flex justify-between text-[9px] pl-2 font-medium italic opacity-60">
+                                <span>SGST ({(platformSettings?.serviceGst || 18) / 2}%)</span>
+                                <span>+ ₹{Math.round(tax / 2).toLocaleString()}</span>
+                            </div>
                         </div>
                         <div className="flex justify-between text-base pt-2 uppercase font-black tracking-tighter">
                             <span style={{ color: colors.textMuted }}>Total Payable</span>
@@ -1109,19 +1198,21 @@ export default function AppBookingPage() {
         );
     }
 
+
+
     return (
         <div className="space-y-6 px-4 pb-32" style={{ background: colors.bg, minHeight: '100svh' }}>
             {/* Back Button */}
             <div className="pt-4 flex items-center justify-between">
-                <button onClick={() => step > 0 ? goTo(step - 1) : navigate(-1)} style={{ color: colors.textMuted, fontFamily: "'Poppins', sans-serif" }} className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest hover:text-[#C8956C] transition-colors">
-                    <ArrowLeft className="w-4 h-4" /> {step > 0 ? 'Back' : 'Cancel'}
+                <button onClick={handleBack} style={{ color: colors.textMuted, fontFamily: "'Poppins', sans-serif" }} className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest hover:text-[#C8956C] transition-colors">
+                    <ArrowLeft className="w-4 h-4" /> {((isPreselected && step === 3 && isCustomerAuthenticated) || step === 0) ? 'Cancel' : 'Back'}
                 </button>
-                <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#C8956C] font-mono" style={{ fontFamily: "'Poppins', sans-serif" }}>Step {step + 1}/{STEPS.length}</div>
+                <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#C8956C] font-mono" style={{ fontFamily: "'Poppins', sans-serif" }}>Step {virtualStep + 1}/{STEPS.length}</div>
             </div>
 
             {/* Step Indicator */}
             <div className="py-2">
-                <StepIndicator currentStep={step} steps={STEPS} />
+                <StepIndicator currentStep={virtualStep} steps={STEPS} />
             </div>
 
             {/* Step Content */}
@@ -1159,10 +1250,10 @@ export default function AppBookingPage() {
                                     </div>
                                 </div>
                                 <button
-                                    onClick={() => goTo(1)}
+                                    onClick={() => isPreselected ? goTo(3) : goTo(1)}
                                     className="w-full py-5 rounded-[20px] bg-black text-white text-[12px] font-black uppercase tracking-[0.4em] flex items-center justify-center gap-4 shadow-xl transition-all active:scale-[0.98]"
                                 >
-                                    Continue to Outlet <ArrowRight size={16} />
+                                    Continue to {isPreselected ? 'Stylist' : 'Outlet'} <ArrowRight size={16} />
                                 </button>
                             </div>
                         ) : (
@@ -1691,166 +1782,242 @@ export default function AppBookingPage() {
                             <motion.div
                                 initial={{ opacity: 0, y: 15 }}
                                 animate={{ opacity: 1, y: 0 }}
-                                className="space-y-6 pt-4 border-t border-border"
+                                className="pt-6 animate-fade-in"
                             >
-                                <div style={{ background: colors.card, border: `1px solid ${colors.border}` }} className="rounded-[2rem] p-6 space-y-6 shadow-sm text-left">
-                                    <div className="space-y-3 pb-6 border-b border-black/5 dark:border-white/5">
-                                        {selectedServices.map((svc) => (
-                                            <div key={svc.id || svc._id || svc.name} className="flex items-center gap-0">
-                                                <div style={{ fontFamily: "'Poppins', sans-serif" }}>
-                                                    <h3 className="text-sm font-bold uppercase tracking-tight" style={{ color: colors.text }}>{svc.name}</h3>
-                                                    <p className="text-[8px] font-black uppercase tracking-widest mt-0.5 opacity-40" style={{ color: colors.textMuted }}>{svc.category} · {svc.duration} MIN</p>
-                                                </div>
-                                                <div className="ml-auto text-[11px] font-bold text-[#C8956C]" style={{ fontFamily: "'Poppins', sans-serif" }}>₹{svc.price}</div>
-                                            </div>
-                                        ))}
-                                    </div>
-
-                                    <div className="space-y-4" style={{ fontFamily: "'Poppins', sans-serif" }}>
-                                        <div className="flex justify-between text-[11px] font-bold uppercase tracking-widest">
-                                            <span style={{ color: colors.textMuted }}>Date</span>
-                                            <span style={{ color: colors.text }}>
-                                                {selectedDate?.date.toLocaleDateString('en-IN', { weekday: 'long', month: 'long', day: 'numeric' })}
-                                            </span>
-                                        </div>
-                                        <div className="flex justify-between text-[11px] font-bold uppercase tracking-widest">
-                                            <span style={{ color: colors.textMuted }}>Time</span>
-                                            <span style={{ color: colors.text }}>{selectedTime}</span>
-                                        </div>
-                                        <div className="flex justify-between text-[11px] font-bold uppercase tracking-widest">
-                                            <span style={{ color: colors.textMuted }}>Stylist</span>
-                                            <span style={{ color: colors.text }}>{selectedStaff?.name}</span>
-                                        </div>
-                                        <div className="flex justify-between text-[11px] font-bold uppercase tracking-widest">
-                                            <span style={{ color: colors.textMuted }}>Outlet</span>
-                                            <span style={{ color: colors.text }}>{selectedOutlet?.name || 'Not selected'}</span>
-                                        </div>
-                                    </div>
-
-                                    {activeMembership && membershipDiscount > 0 && (
-                                        <div
-                                            className="p-3 rounded-2xl flex items-center gap-3 border border-orange-200"
-                                            style={{ background: 'linear-gradient(135deg, rgba(255, 215, 0, 0.1) 0%, rgba(200, 149, 108, 0.05) 100%)' }}
-                                        >
-                                            <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center shadow-sm">
-                                                <Crown size={14} color="#C8956C" fill="#C8956C" />
-                                            </div>
-                                            <div className="flex-1">
-                                                <p className="text-[9px] font-black uppercase tracking-widest text-[#C8956C]">{activeMembership.name} Benefit</p>
-                                                <p className="text-[11px] font-bold" style={{ color: colors.text }}>Additional ₹{membershipDiscount} saved</p>
-                                            </div>
-                                            <Sparkles size={14} color="#C8956C" className="animate-pulse" />
-                                        </div>
-                                    )}
-
-                                    {/* Payment Method Selection */}
-                                    <div className="pt-2">
-                                        <p className="text-[10px] font-black uppercase tracking-[0.15em] mb-3 opacity-50" style={{ color: colors.text }}>Payment Method</p>
-                                        <div className="grid grid-cols-2 gap-3">
-                                            <button
-                                                onClick={() => setPaymentMethod('salon')}
-                                                className="p-4 rounded-2xl border transition-all text-left relative overflow-hidden"
-                                                style={{ 
-                                                    borderColor: paymentMethod === 'salon' ? '#C8956C' : colors.border,
-                                                    background: paymentMethod === 'salon' ? '#C8956C08' : 'transparent'
-                                                }}
-                                            >
-                                                <div className="relative z-10">
-                                                    <p className="text-[9px] font-black uppercase tracking-widest" style={{ color: paymentMethod === 'salon' ? '#C8956C' : colors.textMuted }}>Pay at Salon</p>
-                                                    <p className="text-[7px] font-medium mt-0.5 opacity-40 uppercase tracking-wider" style={{ color: colors.text }}>In-store payment</p>
-                                                </div>
-                                                {paymentMethod === 'salon' && (
-                                                    <div className="absolute top-1 right-1 w-3 h-3 rounded-full bg-[#C8956C] flex items-center justify-center">
-                                                        <Check size={8} color="white" strokeWidth={4} />
-                                                    </div>
-                                                )}
-                                            </button>
-
-                                            <button
-                                                onClick={() => setPaymentMethod('wallet')}
-                                                className="p-4 rounded-2xl border transition-all text-left relative overflow-hidden"
-                                                style={{ 
-                                                    borderColor: paymentMethod === 'wallet' ? '#C8956C' : colors.border,
-                                                    background: paymentMethod === 'wallet' ? '#C8956C08' : 'transparent'
-                                                }}
-                                            >
-                                                <div className="relative z-10">
-                                                    <p className="text-[9px] font-black uppercase tracking-widest" style={{ color: paymentMethod === 'wallet' ? '#C8956C' : colors.textMuted }}>Digital Wallet</p>
-                                                    <p className="text-[7px] font-medium mt-0.5 opacity-40 uppercase tracking-wider" style={{ color: colors.text }}>Bal: ₹{balance?.toFixed(0)}</p>
-                                                </div>
-                                                {paymentMethod === 'wallet' && (
-                                                    <div className="absolute top-1 right-1 w-3 h-3 rounded-full bg-[#C8956C] flex items-center justify-center">
-                                                        <Check size={8} color="white" strokeWidth={4} />
-                                                    </div>
-                                                )}
-                                            </button>
-                                        </div>
-                                    </div>
-
-                                    {/* Billing totals */}
-                                    <div className="space-y-2 pt-4 border-t border-dashed border-black/10 dark:border-white/10 uppercase font-black tracking-tight">
-                                        <div className="flex justify-between items-center opacity-40 text-xs">
-                                            <span style={{ color: colors.text }}>Subtotal</span>
-                                            <span style={{ color: colors.text }}>₹{totalPrice.toLocaleString()}</span>
-                                        </div>
-                                        {membershipDiscount > 0 && (
-                                            <div className="flex justify-between items-center text-xs">
-                                                <span className="text-[#C8956C]">
-                                                    Membership ({(activeMembership?.planId || activeMembership?.plan)?.name})
-                                                    <span className="ml-2 px-1 py-0.5 rounded bg-[#C8956C]/10 border border-[#C8956C]/20 text-[8px] font-black">
-                                                        {(activeMembership?.planId || activeMembership?.plan)?.serviceDiscountValue}
-                                                        {(activeMembership?.planId || activeMembership?.plan)?.serviceDiscountType === 'percentage' ? '%' : '₹'} OFF
-                                                    </span>
-                                                </span>
-                                                <span className="text-[#C8956C]">- ₹{membershipDiscount.toLocaleString()}</span>
-                                            </div>
-                                        )}
-                                        {promoDiscount > 0 && (
-                                            <div className="flex justify-between items-center text-xs">
-                                                <span className="text-green-500">Promo Discount</span>
-                                                <span className="text-green-500">- ₹{promoDiscount.toLocaleString()}</span>
-                                            </div>
-                                        )}
-                                        <div className="flex justify-between items-center opacity-40 text-xs">
-                                            <span style={{ color: colors.text }}>GST ({platformSettings?.serviceGst || 18}%)</span>
-                                            <span style={{ color: colors.text }}>+ ₹{Math.round(tax).toLocaleString()}</span>
-                                        </div>
-                                        <div className="flex justify-between text-2xl pt-2">
-                                            <span style={{ color: colors.textMuted }}>Total</span>
-                                            <span className="text-[#C8956C] px-1">₹{Math.round(finalPrice).toLocaleString()}</span>
-                                        </div>
-                                        {loyaltySettings?.active && (
-                                            <div className="flex justify-between items-center py-2 px-3 mt-2 rounded-xl bg-[#C8956C]/5 border border-[#C8956C]/20">
-                                                <div className="flex items-center gap-2">
-                                                    <Zap size={14} className="text-[#C8956C]" fill="#C8956C" />
-                                                    <span style={{ color: colors.text, fontSize: '10px' }} className="font-bold uppercase tracking-widest">Loyalty Earned</span>
-                                                </div>
-                                                <span className="text-[#C8956C] font-black">{Math.floor(finalPrice / (loyaltySettings.pointsRate || 100))} Points</span>
-                                            </div>
-                                        )}
-                                    </div>
-                                </div>
-
                                 <button
-                                    onClick={handleSubmit}
-                                    disabled={submitting}
-                                    className="w-full py-5 rounded-[20px] bg-black text-white text-[12px] font-black uppercase tracking-[0.4em] flex items-center justify-center gap-4 shadow-2xl active:scale-95 transition-all mt-4"
+                                    onClick={() => goTo(5)}
+                                    className="w-full py-5 rounded-[20px] bg-black text-white text-[12px] font-black uppercase tracking-[0.4em] flex items-center justify-center gap-4 shadow-xl hover:opacity-90 active:scale-[0.98] transition-all"
                                 >
-                                    {submitting ? (
-                                        <>
-                                            <Loader2 className="w-4 h-4 animate-spin" /> Processing...
-                                        </>
-                                    ) : (
-                                        <>
-                                            Complete Booking <Check className="w-4 h-4" />
-                                        </>
-                                    )}
+                                    Continue to Checkout <ArrowRight size={16} />
                                 </button>
                             </motion.div>
                         )}
                     </motion.div>
-                )
-                }
+                )}
+
+                {step === 5 && (
+                    <motion.div
+                        key="step-5"
+                        custom={direction}
+                        variants={slideVariants}
+                        initial="enter" animate="center" exit="exit"
+                        transition={{ duration: 0.3 }}
+                        className="space-y-6"
+                    >
+                        <h2 className="text-xl font-bold uppercase tracking-tight text-left" style={{ fontFamily: "'Libre Baskerville', serif" }}>
+                            Confirm & <span className="text-[#C8956C]">Book</span>
+                        </h2>
+
+                        <div style={{ background: colors.card, border: `1px solid ${colors.border}` }} className="rounded-[2rem] p-6 space-y-6 shadow-sm text-left">
+                            {/* Services List / Cart */}
+                            <div className="space-y-3 pb-6 border-b border-black/5 dark:border-white/5">
+                                {selectedServices.map((svc) => (
+                                    <div key={svc.id || svc._id || svc.name} className="flex items-center gap-0">
+                                        <div style={{ fontFamily: "'Poppins', sans-serif" }}>
+                                            <h3 className="text-sm font-bold uppercase tracking-tight" style={{ color: colors.text }}>{svc.name}</h3>
+                                            <p className="text-[8px] font-black uppercase tracking-widest mt-0.5 opacity-40" style={{ color: colors.textMuted }}>{svc.category} · {svc.duration} MIN</p>
+                                        </div>
+                                        <div className="ml-auto text-[11px] font-bold text-[#C8956C]" style={{ fontFamily: "'Poppins', sans-serif" }}>₹{svc.price}</div>
+                                    </div>
+                                ))}
+                            </div>
+
+                            {/* Timeline & details */}
+                            <div className="space-y-4" style={{ fontFamily: "'Poppins', sans-serif" }}>
+                                <div className="flex justify-between text-[11px] font-bold uppercase tracking-widest">
+                                    <span style={{ color: colors.textMuted }}>Date</span>
+                                    <span style={{ color: colors.text }}>
+                                        {selectedDate?.date.toLocaleDateString('en-IN', { weekday: 'long', month: 'long', day: 'numeric' })}
+                                    </span>
+                                </div>
+                                <div className="flex justify-between text-[11px] font-bold uppercase tracking-widest">
+                                    <span style={{ color: colors.textMuted }}>Time</span>
+                                    <span style={{ color: colors.text }}>{selectedTime}</span>
+                                </div>
+                                <div className="flex justify-between text-[11px] font-bold uppercase tracking-widest">
+                                    <span style={{ color: colors.textMuted }}>Stylist</span>
+                                    <span style={{ color: colors.text }}>{selectedStaff?.name}</span>
+                                </div>
+                                <div className="flex justify-between text-[11px] font-bold uppercase tracking-widest">
+                                    <span style={{ color: colors.textMuted }}>Outlet</span>
+                                    <span style={{ color: colors.text }}>{selectedOutlet?.name || 'Not selected'}</span>
+                                </div>
+                            </div>
+
+                            {activeMembership && membershipDiscount > 0 && (
+                                <div
+                                    className="p-3 rounded-2xl flex items-center gap-3 border border-orange-200"
+                                    style={{ background: 'linear-gradient(135deg, rgba(255, 215, 0, 0.1) 0%, rgba(200, 149, 108, 0.05) 100%)' }}
+                                >
+                                    <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center shadow-sm">
+                                        <Crown size={14} color="#C8956C" fill="#C8956C" />
+                                    </div>
+                                    <div className="flex-1">
+                                        <p className="text-[9px] font-black uppercase tracking-widest text-[#C8956C]">{activeMembership.name} Benefit</p>
+                                        <p className="text-[11px] font-bold" style={{ color: colors.text }}>Additional ₹{membershipDiscount} saved</p>
+                                    </div>
+                                    <Sparkles size={14} color="#C8956C" className="animate-pulse" />
+                                </div>
+                            )}
+
+                            {/* Coupon / Promo Code Section */}
+                            <div className="pt-2 space-y-3">
+                                <p className="text-[10px] font-black uppercase tracking-[0.15em] opacity-50" style={{ color: colors.text }}>Promo Code</p>
+                                <div className="flex gap-2">
+                                    <input
+                                        type="text"
+                                        placeholder="ENTER COUPON CODE"
+                                        value={couponCode}
+                                        onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
+                                        disabled={isPromoApplied}
+                                        className="flex-1 px-4 py-3 rounded-2xl border text-xs font-bold tracking-wider uppercase focus:border-[#C8956C] outline-none transition-all"
+                                        style={{
+                                            background: colors.card,
+                                            borderColor: isPromoApplied ? '#22c55e' : colors.border,
+                                            color: colors.text
+                                        }}
+                                    />
+                                    {isPromoApplied ? (
+                                        <button
+                                            type="button"
+                                            onClick={handleRemovePromo}
+                                            className="px-5 py-3 rounded-2xl bg-rose-500/10 text-rose-500 text-[10px] font-black uppercase tracking-widest hover:bg-rose-500/20 transition-all border border-rose-500/20 active:scale-95"
+                                        >
+                                            Remove
+                                        </button>
+                                    ) : (
+                                        <button
+                                            type="button"
+                                            onClick={() => applyPromo()}
+                                            disabled={!couponCode.trim()}
+                                            className="px-5 py-3 rounded-2xl bg-black dark:bg-white text-white dark:text-black text-[10px] font-black uppercase tracking-widest hover:opacity-80 transition-all disabled:opacity-20 active:scale-95"
+                                        >
+                                            Apply
+                                        </button>
+                                    )}
+                                </div>
+                                {isPromoApplied && (
+                                    <p className="text-xs font-bold text-green-500 flex items-center gap-1.5 mt-2 animate-bounce">
+                                        <Check size={14} className="stroke-[3]" /> Coupon applied! You saved ₹{promoDiscount}
+                                    </p>
+                                )}
+                            </div>
+
+                            {/* Payment Method Selection */}
+                            <div className="pt-2">
+                                <p className="text-[10px] font-black uppercase tracking-[0.15em] mb-3 opacity-50" style={{ color: colors.text }}>Payment Method</p>
+                                <div className="grid grid-cols-2 gap-3">
+                                    <button
+                                        onClick={() => setPaymentMethod('salon')}
+                                        className="p-4 rounded-2xl border transition-all text-left relative overflow-hidden"
+                                        style={{ 
+                                            borderColor: paymentMethod === 'salon' ? '#C8956C' : colors.border,
+                                            background: paymentMethod === 'salon' ? '#C8956C08' : 'transparent'
+                                        }}
+                                    >
+                                        <div className="relative z-10">
+                                            <p className="text-[9px] font-black uppercase tracking-widest" style={{ color: paymentMethod === 'salon' ? '#C8956C' : colors.textMuted }}>Pay at Salon</p>
+                                            <p className="text-[7px] font-medium mt-0.5 opacity-40 uppercase tracking-wider" style={{ color: colors.text }}>In-store payment</p>
+                                        </div>
+                                        {paymentMethod === 'salon' && (
+                                            <div className="absolute top-1 right-1 w-3 h-3 rounded-full bg-[#C8956C] flex items-center justify-center">
+                                                <Check size={8} color="white" strokeWidth={4} />
+                                            </div>
+                                        )}
+                                    </button>
+
+                                    <button
+                                        onClick={() => setPaymentMethod('wallet')}
+                                        className="p-4 rounded-2xl border transition-all text-left relative overflow-hidden"
+                                        style={{ 
+                                            borderColor: paymentMethod === 'wallet' ? '#C8956C' : colors.border,
+                                            background: paymentMethod === 'wallet' ? '#C8956C08' : 'transparent'
+                                        }}
+                                    >
+                                        <div className="relative z-10">
+                                            <p className="text-[9px] font-black uppercase tracking-widest" style={{ color: paymentMethod === 'wallet' ? '#C8956C' : colors.textMuted }}>Digital Wallet</p>
+                                            <p className="text-[7px] font-medium mt-0.5 opacity-40 uppercase tracking-wider" style={{ color: colors.text }}>Bal: ₹{balance?.toFixed(0)}</p>
+                                        </div>
+                                        {paymentMethod === 'wallet' && (
+                                            <div className="absolute top-1 right-1 w-3 h-3 rounded-full bg-[#C8956C] flex items-center justify-center">
+                                                <Check size={8} color="white" strokeWidth={4} />
+                                            </div>
+                                        )}
+                                    </button>
+                                </div>
+                            </div>
+
+                            {/* Billing totals */}
+                            <div className="space-y-2 pt-4 border-t border-dashed border-black/10 dark:border-white/10 uppercase font-black tracking-tight">
+                                <div className="flex justify-between items-center opacity-40 text-xs">
+                                    <span style={{ color: colors.text }}>Subtotal</span>
+                                    <span style={{ color: colors.text }}>₹{totalPrice.toLocaleString()}</span>
+                                </div>
+                                {membershipDiscount > 0 && (
+                                    <div className="flex justify-between items-center text-xs">
+                                        <span className="text-[#C8956C]">
+                                            Membership ({(activeMembership?.planId || activeMembership?.plan)?.name})
+                                            <span className="ml-2 px-1 py-0.5 rounded bg-[#C8956C]/10 border border-[#C8956C]/20 text-[8px] font-black">
+                                                {(activeMembership?.planId || activeMembership?.plan)?.serviceDiscountValue}
+                                                {(activeMembership?.planId || activeMembership?.plan)?.serviceDiscountType === 'percentage' ? '%' : '₹'} OFF
+                                            </span>
+                                        </span>
+                                        <span className="text-[#C8956C]">- ₹{membershipDiscount.toLocaleString()}</span>
+                                    </div>
+                                )}
+                                {promoDiscount > 0 && (
+                                    <div className="flex justify-between items-center text-xs">
+                                        <span className="text-green-500">Promo Discount</span>
+                                        <span className="text-green-500">- ₹{promoDiscount.toLocaleString()}</span>
+                                    </div>
+                                )}
+                                <div className="space-y-1 py-1 border-t border-black/5 dark:border-white/5 opacity-60">
+                                    <div className="flex justify-between items-center text-xs">
+                                        <span style={{ color: colors.text }}>GST ({platformSettings?.serviceGst || 18}% - Excluding)</span>
+                                        <span style={{ color: colors.text }}>+ ₹{Math.round(tax).toLocaleString()}</span>
+                                    </div>
+                                    <div className="flex justify-between items-center text-[10px] pl-2 font-medium italic opacity-60">
+                                        <span>CGST ({(platformSettings?.serviceGst || 18) / 2}%)</span>
+                                        <span>+ ₹{Math.round(tax / 2).toLocaleString()}</span>
+                                    </div>
+                                    <div className="flex justify-between items-center text-[10px] pl-2 font-medium italic opacity-60">
+                                        <span>SGST ({(platformSettings?.serviceGst || 18) / 2}%)</span>
+                                        <span>+ ₹{Math.round(tax / 2).toLocaleString()}</span>
+                                    </div>
+                                </div>
+                                <div className="flex justify-between text-2xl pt-2">
+                                    <span style={{ color: colors.textMuted }}>Total</span>
+                                    <span className="text-[#C8956C] px-1">₹{Math.round(finalPrice).toLocaleString()}</span>
+                                </div>
+                                {loyaltySettings?.active && (
+                                    <div className="flex justify-between items-center py-2 px-3 mt-2 rounded-xl bg-[#C8956C]/5 border border-[#C8956C]/20">
+                                        <div className="flex items-center gap-2">
+                                            <Zap size={14} className="text-[#C8956C]" fill="#C8956C" />
+                                            <span style={{ color: colors.text, fontSize: '10px' }} className="font-bold uppercase tracking-widest">Loyalty Earned</span>
+                                        </div>
+                                        <span className="text-[#C8956C] font-black">{Math.floor(finalPrice / (loyaltySettings.pointsRate || 100))} Points</span>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+
+                        <button
+                            onClick={handleSubmit}
+                            disabled={submitting}
+                            className="w-full py-5 rounded-[20px] bg-black text-white text-[12px] font-black uppercase tracking-[0.4em] flex items-center justify-center gap-4 shadow-2xl hover:opacity-90 active:scale-95 transition-all mt-4"
+                        >
+                            {submitting ? (
+                                <>
+                                    <Loader2 className="w-4 h-4 animate-spin" /> Processing...
+                                </>
+                            ) : (
+                                <>
+                                    Complete Booking <Check className="w-4 h-4" />
+                                </>
+                            )}
+                        </button>
+                    </motion.div>
+                )}
             </AnimatePresence >
         </div >
     );

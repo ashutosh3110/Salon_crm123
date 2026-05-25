@@ -147,6 +147,45 @@ exports.createBooking = async (req, res) => {
             finalTotal = calc.total;
         }
 
+        // Validate coupon code
+        if (req.body.couponCode) {
+            const Promotion = require('../Models/Promotion');
+            const promo = await Promotion.findOne({
+                isActive: true,
+                couponCode: req.body.couponCode.trim().toUpperCase(),
+                activationMode: 'COUPON',
+                salonId
+            });
+            if (!promo) {
+                return res.status(400).json({ success: false, message: 'Invalid coupon code' });
+            }
+            const now = new Date();
+            if (promo.startDate && new Date(promo.startDate) > now) {
+                return res.status(400).json({ success: false, message: 'Coupon is not active yet' });
+            }
+            if (promo.endDate && new Date(promo.endDate) < now) {
+                return res.status(400).json({ success: false, message: 'Coupon has expired' });
+            }
+            if (promo.totalUsageLimit !== undefined && promo.usageCount >= promo.totalUsageLimit) {
+                return res.status(400).json({ success: false, message: 'Coupon usage limit reached' });
+            }
+            if (promo.applicableOn === 'PRODUCT') {
+                return res.status(400).json({ success: false, message: 'This coupon is only applicable on products' });
+            }
+            if (promo.usageLimitPerCustomer) {
+                const code = promo.couponCode;
+                const [bookingsCount, ordersCount, invoicesCount] = await Promise.all([
+                    mongoose.model('Booking').countDocuments({ clientId: targetCustomerId, couponCode: code, status: { $ne: 'cancelled' } }),
+                    mongoose.model('Order').countDocuments({ customerId: targetCustomerId, couponCode: code, status: { $ne: 'cancelled' } }),
+                    mongoose.model('Invoice').countDocuments({ customerId: targetCustomerId, couponCode: code, status: { $ne: 'cancelled' } })
+                ]);
+                const totalCustomerUsage = bookingsCount + ordersCount + invoicesCount;
+                if (totalCustomerUsage >= promo.usageLimitPerCustomer) {
+                    return res.status(400).json({ success: false, message: 'You have already used this coupon code' });
+                }
+            }
+        }
+
         // Handle Wallet Payment
         if (paymentMethod === 'Wallet' || paymentMethod === 'wallet') {
             if (!customer) {

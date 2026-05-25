@@ -81,6 +81,18 @@ export default function AppProductDetailsPage() {
 
     const activeOutletId = localStorage.getItem('active_outlet_id');
 
+    const dynamicRatingMetrics = useMemo(() => {
+        if (!reviews || reviews.length === 0) {
+            return { rating: '0.0', count: 0 };
+        }
+        const sum = reviews.reduce((acc, curr) => acc + (curr.rating || 0), 0);
+        const avg = sum / reviews.length;
+        return {
+            rating: avg.toFixed(1),
+            count: reviews.length
+        };
+    }, [reviews]);
+
     useEffect(() => {
         const loadProduct = async () => {
             setIsLoadingProduct(true);
@@ -271,7 +283,7 @@ export default function AppProductDetailsPage() {
                             </span>
                             <div className="flex items-center gap-1.5 px-3 py-1 bg-white/10 backdrop-blur-md rounded-md border border-white/10 text-white">
                                 <Star className="w-3 h-3 text-amber-400 fill-amber-400" />
-                                <span className="text-[10px] font-black">{product.rating}</span>
+                                <span className="text-[10px] font-black">{dynamicRatingMetrics.rating} ({dynamicRatingMetrics.count})</span>
                             </div>
                             <div className={`px-3 py-1 rounded-md border text-[9px] font-black uppercase tracking-widest backdrop-blur-md ${
                                 currentStock <= 0 

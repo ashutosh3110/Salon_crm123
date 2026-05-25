@@ -34,6 +34,24 @@ const getAddressString = (addr) => {
     return '';
 };
 
+const getTodayTimingString = (outlet) => {
+    if (!outlet) return '';
+    const defaultTiming = 'Open daily: 9:00 AM - 9:00 PM';
+    if (!outlet.workingHours || !Array.isArray(outlet.workingHours) || outlet.workingHours.length === 0) {
+        return defaultTiming;
+    }
+    const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+    const todayName = daysOfWeek[new Date().getDay()];
+    const todayHours = outlet.workingHours.find(h => h.day === todayName);
+    if (!todayHours) {
+        return defaultTiming;
+    }
+    if (!todayHours.isOpen) {
+        return 'Closed Today';
+    }
+    return `Today: ${todayHours.openTime || '9:00 AM'} - ${todayHours.closeTime || '9:00 PM'}`;
+};
+
 // Helper to handle address strings
 
 const ServiceCard = memo(({ service, onBook, onClick, colors, isLight, showPrice }) => {
@@ -317,6 +335,46 @@ export default function AppHomePage() {
     const [userLocation, setUserLocation] = useState(null);
     const [searchQuery, setSearchQuery] = useState('');
     const [isFocused, setIsFocused] = useState(false);
+    const [activeOutletSlide, setActiveOutletSlide] = useState(0);
+
+    const activeOutletImages = useMemo(() => {
+        if (!activeOutlet) return [];
+        const imgList = [];
+        if (activeOutlet.images && Array.isArray(activeOutlet.images) && activeOutlet.images.length > 0) {
+            activeOutlet.images.forEach(img => {
+                if (img) imgList.push(img);
+            });
+        }
+        if (imgList.length === 0 && activeOutlet.image) {
+            imgList.push(activeOutlet.image);
+        }
+        return imgList;
+    }, [activeOutlet]);
+
+    useEffect(() => {
+        setActiveOutletSlide(0);
+    }, [activeOutlet?._id]);
+
+    useEffect(() => {
+        if (activeOutletImages.length <= 1) return;
+        const timer = setInterval(() => {
+            setActiveOutletSlide((prev) => (prev + 1) % activeOutletImages.length);
+        }, 5000);
+        return () => clearInterval(timer);
+    }, [activeOutletImages]);
+
+    const getOutletRating = useCallback((outlet) => {
+        if (!outlet) return '0';
+        const outletReviews = (contextReviews || []).filter(rev => {
+            const revOutletId = rev.outletId?._id || rev.outletId || rev.outlet;
+            return String(revOutletId) === String(outlet._id || outlet.id);
+        });
+        if (outletReviews.length === 0) {
+            return outlet.rating || '0';
+        }
+        const sum = outletReviews.reduce((acc, curr) => acc + (curr.rating || 0), 0);
+        return (sum / outletReviews.length).toFixed(1);
+    }, [contextReviews]);
 
     const handleSearchKeyDown = (e) => {
         if (e.key === 'Enter' && searchQuery.trim()) {
@@ -707,6 +765,197 @@ export default function AppHomePage() {
                     </div>
                 </div>
 
+                {/* ── SELECTED OUTLET ── */}
+                {activeOutlet && (
+                    <div style={{ padding: '24px 16px 0' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '14px' }}>
+                            <Crown size={20} color={colors.accent} />
+                            <span style={{ fontSize: '16px', fontWeight: 800, color: colors.text }}>Selected Outlet</span>
+                        </div>
+                        
+                        <div
+                            onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+                            style={{
+                                background: colors.card,
+                                borderRadius: '28px',
+                                border: `1px solid ${colors.border}`,
+                                overflow: 'hidden',
+                                boxShadow: '0 8px 24px rgba(0,0,0,0.12)',
+                                position: 'relative',
+                                cursor: 'pointer',
+                                transition: 'transform 0.2s ease'
+                            }}
+                            className="active:scale-98"
+                        >
+                            {/* Image Carousel (Slideshow) */}
+                            <div style={{ position: 'relative', height: '220px', width: '100%', overflow: 'hidden' }}>
+                                {activeOutletImages.length > 0 ? (
+                                    <img
+                                        src={getImageUrl(activeOutletImages[activeOutletSlide])}
+                                        alt={activeOutlet.name}
+                                        style={{ 
+                                            width: '100%', 
+                                            height: '100%', 
+                                            objectFit: 'cover',
+                                            transition: 'opacity 0.5s ease-in-out' 
+                                        }}
+                                        onError={(e) => { e.target.onerror = null; e.target.src = fallbackImage; }}
+                                    />
+                                ) : (
+                                    <img
+                                        src={fallbackImage}
+                                        alt={activeOutlet.name}
+                                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                    />
+                                )}
+                                
+                                {/* Navigation Arrow buttons */}
+                                {activeOutletImages.length > 1 && (
+                                    <>
+                                        <button
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                setActiveOutletSlide((prev) => (prev - 1 + activeOutletImages.length) % activeOutletImages.length);
+                                            }}
+                                            style={{
+                                                position: 'absolute',
+                                                left: '12px',
+                                                top: '50%',
+                                                transform: 'translateY(-50%)',
+                                                width: '32px',
+                                                height: '32px',
+                                                borderRadius: '50%',
+                                                background: 'rgba(0,0,0,0.6)',
+                                                border: 'none',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                color: '#fff',
+                                                cursor: 'pointer',
+                                                zIndex: 10,
+                                                fontSize: '20px',
+                                                fontWeight: 'bold',
+                                                lineHeight: 1
+                                            }}
+                                        >
+                                            ‹
+                                        </button>
+                                        <button
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                setActiveOutletSlide((prev) => (prev + 1) % activeOutletImages.length);
+                                            }}
+                                            style={{
+                                                position: 'absolute',
+                                                right: '12px',
+                                                top: '50%',
+                                                transform: 'translateY(-50%)',
+                                                width: '32px',
+                                                height: '32px',
+                                                borderRadius: '50%',
+                                                background: 'rgba(0,0,0,0.6)',
+                                                border: 'none',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                color: '#fff',
+                                                cursor: 'pointer',
+                                                zIndex: 10,
+                                                fontSize: '20px',
+                                                fontWeight: 'bold',
+                                                lineHeight: 1
+                                            }}
+                                        >
+                                            ›
+                                        </button>
+                                    </>
+                                )}
+
+                                {/* Dots */}
+                                {activeOutletImages.length > 1 && (
+                                    <div style={{
+                                        position: 'absolute',
+                                        bottom: '12px',
+                                        left: '50%',
+                                        transform: 'translateX(-50%)',
+                                        display: 'flex',
+                                        gap: '6px',
+                                        zIndex: 10
+                                    }}>
+                                        {activeOutletImages.map((_, idx) => (
+                                            <div
+                                                key={idx}
+                                                style={{
+                                                    width: activeOutletSlide === idx ? '16px' : '6px',
+                                                    height: '6px',
+                                                    borderRadius: '3px',
+                                                    background: activeOutletSlide === idx ? colors.accent : 'rgba(255,255,255,0.6)',
+                                                    transition: 'all 0.3s ease'
+                                                }}
+                                            />
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Details Section */}
+                            <div style={{ padding: '18px 20px' }}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
+                                    <h3 style={{ fontSize: '18px', fontWeight: 900, color: colors.text, margin: 0 }}>
+                                        {activeOutlet.name}
+                                    </h3>
+                                    <div style={{
+                                        background: 'rgba(200,149,108,0.1)',
+                                        padding: '4px 10px',
+                                        borderRadius: '10px',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '4px',
+                                        border: `1px solid ${colors.accent}30`
+                                    }}>
+                                        <Star size={14} fill="#C8956C" color="#C8956C" />
+                                        <span style={{ fontSize: '13px', fontWeight: 700, fontFamily: 'system-ui, -apple-system, sans-serif', color: colors.accent }}>{getOutletRating(activeOutlet)}</span>
+                                    </div>
+                                </div>
+
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '12px' }}>
+                                    <MapPin size={14} color={colors.accent} />
+                                    <span style={{ fontSize: '12px', color: colors.textMuted, fontWeight: 500 }}>
+                                        {activeOutlet.address?.city || activeOutlet.address?.street || (typeof activeOutlet.address === 'string' ? activeOutlet.address.split(',')[0] : 'Wapixo Salon')}
+                                    </span>
+                                </div>
+
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '12px' }}>
+                                    <Clock size={14} color={colors.accent} />
+                                    <span style={{ fontSize: '12px', color: colors.textMuted, fontWeight: 500, fontFamily: 'system-ui, -apple-system, sans-serif' }}>
+                                        {getTodayTimingString(activeOutlet)}
+                                    </span>
+                                </div>
+
+
+                                {/* Small "Active Selection" badge / details */}
+                                <div style={{ 
+                                    display: 'flex', 
+                                    justifyContent: 'space-between', 
+                                    alignItems: 'center',
+                                    paddingTop: '12px',
+                                    borderTop: `1px solid ${colors.border}`
+                                }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                        <ShieldCheck size={16} color="#48BB78" />
+                                        <span style={{ fontSize: '11px', color: '#48BB78', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                                            Currently Selected
+                                        </span>
+                                    </div>
+                                    <span style={{ fontSize: '11px', fontWeight: 800, color: colors.accent, display: 'flex', alignItems: 'center', gap: '2px' }}>
+                                        Active Outlet
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
                 {/* ── OTHER NEAREST SALONS ── */}
                 <div style={{ padding: '24px 16px 0' }}>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
@@ -798,8 +1047,8 @@ export default function AppHomePage() {
                                             gap: '3px',
                                             color: '#FFF'
                                         }}>
-                                            <Star size={10} fill="#C8956C" color="#C8956C" />
-                                            <span style={{ fontSize: '9px', fontWeight: 900 }}>{outlet.rating || '4.8'}</span>
+                                            <Star size={11} fill="#C8956C" color="#C8956C" />
+                                            <span style={{ fontSize: '11px', fontWeight: 700, fontFamily: 'system-ui, -apple-system, sans-serif' }}>{getOutletRating(outlet)}</span>
                                         </div>
                                     </div>
                                     <div style={{ padding: '12px' }}>

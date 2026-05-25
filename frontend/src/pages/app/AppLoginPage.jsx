@@ -673,10 +673,20 @@ export default function AppLoginPage() {
                                                                 onClick={() => handleSelectOutlet(o)}
                                                                 className={`w-full group relative overflow-hidden p-4 rounded-3xl border transition-all duration-500 flex items-center gap-4 ${isLight ? 'bg-white border-neutral-100 shadow-sm hover:border-[#C8956C]/40' : 'bg-white/[0.02] border-white/[0.05] hover:border-[#C8956C]/40'}`}
                                                             >
-                                                                <div className="absolute inset-0 bg-gradient-to-r from-[#C8956C]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-                                                                <div className={`w-20 h-20 rounded-2xl overflow-hidden shrink-0 border relative z-10 shadow-2xl ${isLight ? 'border-neutral-100' : 'border-white/10'}`}>
+                                                                <div className="absolute inset-0 bg-gradient-to-r from-[#C8956C]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />                                                                 <div className={`w-20 h-20 rounded-2xl overflow-hidden shrink-0 border relative z-10 shadow-2xl ${isLight ? 'border-neutral-100' : 'border-white/10'}`}>
                                                                     <img
-                                                                        src={(o.images?.[0] || o.image || "").replace('wapixo.com/uploads', 'api.wapixo.com/uploads') || "https://images.unsplash.com/photo-1560066984-138dadb4c035?q=80&w=800"}
+                                                                        src={(() => {
+                                                                            const imgPath = o.images?.[0] || o.image || "";
+                                                                            if (!imgPath) return "https://images.unsplash.com/photo-1560066984-138dadb4c035?q=80&w=800";
+                                                                            if (imgPath.startsWith("http://") || imgPath.startsWith("https://")) {
+                                                                                if (imgPath.includes('wapixo.com/uploads') && !imgPath.includes('api.wapixo.com/uploads')) {
+                                                                                    return imgPath.replace('wapixo.com/uploads', 'api.wapixo.com/uploads');
+                                                                                }
+                                                                                return imgPath;
+                                                                            }
+                                                                            const cleaned = imgPath.startsWith("/") ? imgPath.slice(1) : imgPath;
+                                                                            return `https://api.wapixo.com/${cleaned}`;
+                                                                        })()}
                                                                         alt={o.name}
                                                                         className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
                                                                         onError={(e) => {

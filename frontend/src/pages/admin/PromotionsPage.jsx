@@ -45,7 +45,7 @@ export default function PromotionsPage() {
         value: '',
         startDate: '',
         endDate: '',
-        usageLimit: '',
+        usageLimit: 1,
         usageLimitPerCustomer: 1,
         isActive: true,
         activationMode: 'AUTO',
@@ -64,7 +64,7 @@ export default function PromotionsPage() {
             value: p.value,
             startDate: p.startDate,
             endDate: p.endDate,
-            usageLimit: p.totalUsageLimit ?? '',
+            usageLimit: p.totalUsageLimit ?? 1,
             isActive: !!p.isActive,
             activationMode: p.activationMode || 'AUTO',
             couponCode: p.couponCode || '',
@@ -113,8 +113,8 @@ export default function PromotionsPage() {
                 isActive: !!form.isActive,
                 activationMode: form.activationMode || 'AUTO',
                 couponCode: form.activationMode === 'COUPON' ? String(form.couponCode).toUpperCase() : undefined,
-                totalUsageLimit: form.usageLimit ? Number(form.usageLimit) : undefined,
-                usageLimitPerCustomer: form.usageLimitPerCustomer ? Number(form.usageLimitPerCustomer) : 1,
+                totalUsageLimit: 1,
+                usageLimitPerCustomer: 1,
                 applicableOn: form.applicableOn,
                 outletIds: form.outletIds
             };
@@ -133,7 +133,7 @@ export default function PromotionsPage() {
                 value: '',
                 startDate: '',
                 endDate: '',
-                usageLimit: '',
+                usageLimit: 1,
                 usageLimitPerCustomer: 1,
                 isActive: true,
                 activationMode: 'AUTO',
@@ -164,8 +164,8 @@ export default function PromotionsPage() {
             value: p.value,
             startDate: p.startDate?.slice(0, 10) || '',
             endDate: p.endDate?.slice(0, 10) || '',
-            usageLimit: p.usageLimit || '',
-            usageLimitPerCustomer: p.usageLimitPerCustomer || 1,
+            usageLimit: 1,
+            usageLimitPerCustomer: 1,
             isActive: p.isActive,
             activationMode: p.activationMode || 'AUTO',
             couponCode: p.couponCode || '',
@@ -185,7 +185,7 @@ export default function PromotionsPage() {
                 <button
                     onClick={() => {
                         setEditing(null);
-                        setForm({ name: '', type: 'percentage', value: '', startDate: '', endDate: '', usageLimit: '', usageLimitPerCustomer: 1, isActive: true, activationMode: 'AUTO', couponCode: '', applicableOn: 'BOTH', outletIds: [] });
+                        setForm({ name: '', type: 'percentage', value: '', startDate: '', endDate: '', usageLimit: 1, usageLimitPerCustomer: 1, isActive: true, activationMode: 'AUTO', couponCode: '', applicableOn: 'BOTH', outletIds: [] });
                         setShowModal(true);
                     }}
                     className="w-full lg:w-auto flex items-center justify-center gap-3 bg-primary text-primary-foreground border border-primary px-10 py-4 rounded-none text-[10px] font-black uppercase tracking-[0.2em] shadow-xl shadow-primary/20 hover:brightness-110 transition-all font-black"
@@ -329,11 +329,11 @@ export default function PromotionsPage() {
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="space-y-2">
                                     <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">Total Usage Limit</label>
-                                    <input type="number" value={form.usageLimit} onChange={(e) => setForm({ ...form, usageLimit: e.target.value })} className="w-full px-4 py-3 rounded-none bg-slate-50 border border-slate-200 text-xs font-bold uppercase tracking-widest focus:border-primary outline-none transition-all text-slate-900" />
+                                    <input type="number" value={form.usageLimit} disabled className="w-full px-4 py-3 rounded-none bg-slate-100 border border-slate-200 text-xs font-bold uppercase tracking-widest outline-none opacity-60 text-slate-500 cursor-not-allowed" />
                                 </div>
                                 <div className="space-y-2">
                                     <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">Usage Limit Per Customer</label>
-                                    <input type="number" value={form.usageLimitPerCustomer} onChange={(e) => setForm({ ...form, usageLimitPerCustomer: e.target.value })} className="w-full px-4 py-3 rounded-none bg-slate-50 border border-slate-200 text-xs font-bold uppercase tracking-widest focus:border-primary outline-none transition-all text-slate-900" />
+                                    <input type="number" value={form.usageLimitPerCustomer} disabled className="w-full px-4 py-3 rounded-none bg-slate-100 border border-slate-200 text-xs font-bold uppercase tracking-widest outline-none opacity-60 text-slate-500 cursor-not-allowed" />
                                 </div>
                             </div>
                             <div className="grid grid-cols-2 gap-4">
