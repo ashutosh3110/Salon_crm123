@@ -64,10 +64,14 @@ export default function CustomersPage({ tab = 'directory' }) {
     } = useBusiness();
 
     const [currentPage, setCurrentPage] = useState(1);
+    const [search, setSearch] = useState('');
 
     useEffect(() => {
-        fetchCustomers(currentPage, 10);
-    }, [fetchCustomers, currentPage]);
+        const timer = setTimeout(() => {
+            fetchCustomers(currentPage, 10, search);
+        }, 300);
+        return () => clearTimeout(timer);
+    }, [fetchCustomers, currentPage, search]);
 
 
 
@@ -296,6 +300,11 @@ export default function CustomersPage({ tab = 'directory' }) {
                                 onCustomerClick={setSelectedCustomer}
                                 onDelete={deleteCustomer}
                                 onUpdate={updateCustomer}
+                                searchTerm={search}
+                                setSearchTerm={(val) => {
+                                    setSearch(val);
+                                    setCurrentPage(1);
+                                }}
                             />
 
                             {/* Pagination Controls */}
@@ -781,12 +790,8 @@ function KPICard({ title, value, icon: Icon, color, trend }) {
     );
 }
 
-function CustomerDirectory({ customers, onCustomerClick, onDelete, onUpdate }) {
-    const [searchTerm, setSearchTerm] = useState('');
-    const filtered = customers.filter(c =>
-        (c.name && c.name.toLowerCase().includes(searchTerm.toLowerCase())) ||
-        (c.phone && c.phone.replace(/\D/g, '').includes(searchTerm.replace(/\D/g, '')))
-    );
+function CustomerDirectory({ customers, onCustomerClick, onDelete, onUpdate, searchTerm, setSearchTerm }) {
+    const filtered = customers;
 
     return (
         <div className="p-4 flex flex-col h-full gap-4 slide-right overflow-y-auto no-scrollbar">

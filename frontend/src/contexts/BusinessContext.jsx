@@ -233,10 +233,10 @@ export function BusinessProvider({ children }) {
     }, [platformSettings]);
 
 
-    const fetchCustomers = useCallback(async (page = 1, limit = 5) => {
+    const fetchCustomers = useCallback(async (page = 1, limit = 5, search = '') => {
         setCustomersLoading(true);
         try {
-            const r = await api.get(`/clients?page=${page}&limit=${limit}`);
+            const r = await api.get(`/clients?page=${page}&limit=${limit}&search=${encodeURIComponent(search)}`);
             let list = r.data?.data || (Array.isArray(r.data) ? r.data : []);
             setCustomers(Array.isArray(list) ? list : []);
             if (r.data?.success) {

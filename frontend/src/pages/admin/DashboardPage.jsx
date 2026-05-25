@@ -11,6 +11,7 @@ export default function DashboardPage() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [payload, setPayload] = useState(null);
+    const [searchQuery, setSearchQuery] = useState('');
 
     const loadDashboard = useCallback(async () => {
         setError(null);
@@ -54,6 +55,16 @@ export default function DashboardPage() {
 
     const liveRecentActivity = useMemo(() => payload?.recentActivity || [], [payload]);
 
+    const filteredRecentActivity = useMemo(() => {
+        if (!searchQuery.trim()) return liveRecentActivity;
+        const q = searchQuery.toLowerCase();
+        return liveRecentActivity.filter(activity =>
+            activity.client?.toLowerCase().includes(q) ||
+            activity.service?.toLowerCase().includes(q) ||
+            activity.amount?.toString().includes(q)
+        );
+    }, [liveRecentActivity, searchQuery]);
+
     if (loading) return <div className="p-8 text-center text-text-muted">Loading Dashboard...</div>;
 
     return (
@@ -66,7 +77,13 @@ export default function DashboardPage() {
                 <div className="flex items-center gap-3 w-full lg:w-auto">
                     <div className="relative flex-1 lg:flex-none">
                         <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
-                        <input type="text" placeholder="Search entries..." className="w-full lg:min-w-[300px] pl-12 pr-4 py-3.5 rounded-xl bg-surface border border-border text-sm font-medium outline-none" />
+                        <input
+                            type="text"
+                            placeholder="Search entries..."
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            className="w-full lg:min-w-[300px] pl-12 pr-4 py-3.5 rounded-xl bg-surface border border-border text-sm font-medium outline-none"
+                        />
                     </div>
                 </div>
             </div>
@@ -147,7 +164,7 @@ export default function DashboardPage() {
                         </Link>
                     </div>
                     <div className="divide-y divide-border/50 text-left">
-                        {liveRecentActivity.map((activity, i) => (
+                        {filteredRecentActivity.map((activity, i) => (
                             <div key={i} className="px-8 py-5 flex items-center justify-between hover:bg-surface-alt/30 transition-colors">
                                 <div className="flex items-center gap-4 text-left">
                                     <div className={`w-12 h-12 rounded-xl border flex items-center justify-center font-bold ${activity.isLive ? 'border-primary text-primary' : 'border-border text-text-muted'}`}>{activity.client ? activity.client[0] : 'G'}</div>
@@ -162,8 +179,8 @@ export default function DashboardPage() {
                                 </div>
                             </div>
                         ))}
-                        {liveRecentActivity.length === 0 && (
-                            <div className="p-8 text-center text-text-muted">No recent activity</div>
+                        {filteredRecentActivity.length === 0 && (
+                            <div className="p-8 text-center text-text-muted">No matching activities found</div>
                         )}
                     </div>
                 </div>

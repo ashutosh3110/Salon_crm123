@@ -588,7 +588,7 @@ export default function AppSharedBookingPage() {
                                     >
                                         <div className="w-14 h-14 rounded-2xl overflow-hidden bg-gray-100 dark:bg-gray-800 flex-shrink-0">
                                             <img
-                                                src={o.images?.[0] || o.image || "https://images.unsplash.com/photo-1560066984-138dadb4c035?q=80&w=800"}
+                                                src={getImageUrl(o.images?.[0] || o.image) || "https://images.unsplash.com/photo-1560066984-138dadb4c035?q=80&w=800"}
                                                 alt={o.name}
                                                 className="w-full h-full object-cover"
                                             />

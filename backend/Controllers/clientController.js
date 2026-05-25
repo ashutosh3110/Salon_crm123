@@ -37,6 +37,37 @@ exports.getClients = async (req, res) => {
             ];
         }
 
+        // Search parameter filtering support
+        if (req.query.search) {
+            const searchRegex = new RegExp(req.query.search, 'i');
+            const searchConditions = [
+                { name: searchRegex },
+                { phone: searchRegex },
+                { email: searchRegex }
+            ];
+            
+            // Merge with existing $or if it exists, otherwise assign it
+            if (findQuery.$or) {
+                findQuery.$and = [
+                    { $or: findQuery.$or },
+                    { $or: searchConditions }
+                ];
+                delete findQuery.$or;
+            } else {
+                findQuery.$or = searchConditions;
+            }
+
+            if (matchQuery.$or) {
+                matchQuery.$and = [
+                    { $or: matchQuery.$or },
+                    { $or: searchConditions }
+                ];
+                delete matchQuery.$or;
+            } else {
+                matchQuery.$or = searchConditions;
+            }
+        }
+
         // Pagination
         const page = parseInt(req.query.page) || 1;
         const limit = parseInt(req.query.limit) || 5;
