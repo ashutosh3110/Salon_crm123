@@ -393,9 +393,29 @@ export default function AppSharedBookingPage() {
         toggle: isLight ? '#EDF0F2' : '#1A1A1A',
     };
 
+    // Self-contained styling since this page is outside AppLayout
+    const containerStyle = {
+        maxWidth: '430px',
+        margin: '0 auto',
+        minHeight: '100svh',
+        background: isLight
+            ? 'linear-gradient(to bottom, #FFFFFF 0%, #FBFBFB 100%)'
+            : 'linear-gradient(to bottom, #1A1A1A 0%, #0F0F0F 100%)',
+        fontFamily: "'Inter', sans-serif",
+        color: colors.text,
+        position: 'relative',
+        width: '100%',
+    };
+
+    const inputStyle = {
+        background: colors.card,
+        borderColor: colors.border,
+        color: colors.text,
+    };
+
     if (isLoading) {
         return (
-            <div style={{ background: colors.bg, minHeight: '100svh' }} className="flex flex-col items-center justify-center gap-4">
+            <div style={{ ...containerStyle, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '1rem' }}>
                 <Loader2 className="w-10 h-10 animate-spin text-[#C8956C]" />
                 <p style={{ color: colors.textMuted }} className="text-xs font-bold uppercase tracking-[0.2em]">LOADING EXPERIENCE</p>
             </div>
@@ -408,13 +428,13 @@ export default function AppSharedBookingPage() {
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
                 className="flex flex-col items-center justify-center py-12 px-4 text-center space-y-6"
-                style={{ background: colors.bg, minHeight: '100svh' }}
+                style={containerStyle}
             >
                 <div className="w-24 h-24 rounded-full bg-[#C8956C]/10 flex items-center justify-center border border-[#C8956C]/20">
                     <Check className="w-12 h-12 text-[#C8956C]" strokeWidth={3} />
                 </div>
                 <div>
-                    <h2 style={{ fontFamily: "'Libre Baskerville', serif" }} className="text-2xl font-bold tracking-tight text-text">Booking Requested! 🎉</h2>
+                    <h2 style={{ fontFamily: "'Libre Baskerville', serif", color: colors.text }} className="text-2xl font-bold tracking-tight">Booking Requested! 🎉</h2>
                     <p style={{ color: colors.textMuted }} className="text-[10px] uppercase tracking-[0.2em] mt-2 font-mono">
                         {selectedServices.map(s => s.name).join(' + ')} with {selectedStaff?.name}
                     </p>
@@ -470,7 +490,7 @@ export default function AppSharedBookingPage() {
     }
 
     return (
-        <div className="space-y-6 px-4 pb-32" style={{ background: colors.bg, minHeight: '100svh' }}>
+        <div className="space-y-6 px-4 pb-32" style={containerStyle}>
             {/* Header / Back navigation */}
             <div className="pt-4 flex items-center justify-between">
                 <button onClick={handleBack} style={{ color: colors.textMuted }} className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest hover:text-[#C8956C] transition-colors">
@@ -492,7 +512,7 @@ export default function AppSharedBookingPage() {
                         className="space-y-6 text-left"
                     >
                         <div className="flex flex-col gap-1">
-                            <h2 style={{ fontFamily: "'Libre Baskerville', serif" }} className="text-xl font-bold uppercase tracking-tight text-text">Customer <span className="text-[#C8956C]">Details</span></h2>
+                            <h2 style={{ fontFamily: "'Libre Baskerville', serif", color: colors.text }} className="text-xl font-bold uppercase tracking-tight">Customer <span className="text-[#C8956C]">Details</span></h2>
                             <p style={{ color: colors.textMuted }} className="text-[10px] uppercase tracking-widest font-bold">Please fill in your details to start booking</p>
                         </div>
 
@@ -504,7 +524,8 @@ export default function AppSharedBookingPage() {
                                     placeholder="e.g. John Doe"
                                     value={customerName}
                                     onChange={(e) => { setCustomerName(e.target.value); setCustomerError(''); }}
-                                    className="w-full px-5 py-3.5 rounded-xl border border-border text-sm font-semibold focus:border-[#C8956C] outline-none transition-all bg-surface"
+                                    style={inputStyle}
+                                    className="w-full px-5 py-3.5 rounded-xl border text-sm font-semibold focus:border-[#C8956C] outline-none transition-all"
                                 />
                             </div>
 
@@ -518,7 +539,8 @@ export default function AppSharedBookingPage() {
                                         placeholder="9876543210"
                                         value={customerPhone}
                                         onChange={(e) => { setCustomerPhone(e.target.value.replace(/\D/g, '')); setCustomerError(''); }}
-                                        className="w-full pl-14 pr-5 py-3.5 rounded-xl border border-border text-sm font-semibold focus:border-[#C8956C] outline-none transition-all bg-surface"
+                                        style={inputStyle}
+                                        className="w-full pl-14 pr-5 py-3.5 rounded-xl border text-sm font-semibold focus:border-[#C8956C] outline-none transition-all"
                                     />
                                 </div>
                             </div>
@@ -547,7 +569,7 @@ export default function AppSharedBookingPage() {
                         className="space-y-6 text-left"
                     >
                         <div className="flex flex-col gap-1">
-                            <h2 style={{ fontFamily: "'Libre Baskerville', serif" }} className="text-xl font-bold uppercase tracking-tight text-text">Select <span className="text-[#C8956C]">Outlet</span></h2>
+                            <h2 style={{ fontFamily: "'Libre Baskerville', serif", color: colors.text }} className="text-xl font-bold uppercase tracking-tight">Select <span className="text-[#C8956C]">Outlet</span></h2>
                             <p style={{ color: colors.textMuted }} className="text-[10px] uppercase tracking-widest font-bold">Which branch would you like to visit?</p>
                         </div>
 
@@ -572,8 +594,8 @@ export default function AppSharedBookingPage() {
                                             />
                                         </div>
                                         <div className="flex-1 min-w-0">
-                                            <p className="text-base font-bold text-text truncate">{o.name}</p>
-                                            <p className="text-[10px] text-text-muted truncate mt-0.5">{typeof o.address === 'string' ? o.address : (o.address?.street || o.city)}</p>
+                                            <p className="text-base font-bold truncate" style={{ color: colors.text }}>{o.name}</p>
+                                            <p className="text-[10px] truncate mt-0.5" style={{ color: colors.textMuted }}>{typeof o.address === 'string' ? o.address : (o.address?.street || o.city)}</p>
                                         </div>
                                         {isSelected && <Check size={20} className="text-[#C8956C] shrink-0" />}
                                     </button>
@@ -601,18 +623,19 @@ export default function AppSharedBookingPage() {
                         className="space-y-6 text-left"
                     >
                         <div className="flex flex-col gap-1">
-                            <h2 style={{ fontFamily: "'Libre Baskerville', serif" }} className="text-xl font-bold uppercase tracking-tight text-text">Select <span className="text-[#C8956C]">Services</span></h2>
+                            <h2 style={{ fontFamily: "'Libre Baskerville', serif", color: colors.text }} className="text-xl font-bold uppercase tracking-tight">Select <span className="text-[#C8956C]">Services</span></h2>
                             <p style={{ color: colors.textMuted }} className="text-[10px] uppercase tracking-widest font-bold">Services available at {selectedOutlet?.name}</p>
                         </div>
 
-                        <div className="relative flex items-center gap-3 border h-12 px-4 rounded-xl border-border bg-white/[0.03]">
+                        <div className="relative flex items-center gap-3 h-12 px-4 rounded-xl" style={{ border: `1px solid ${colors.border}`, background: isLight ? '#fff' : 'rgba(255,255,255,0.03)' }}>
                             <Search size={16} style={{ color: colors.textMuted }} />
                             <input
                                 type="text"
                                 placeholder="Search services..."
                                 value={serviceSearch}
                                 onChange={(e) => setServiceSearch(e.target.value)}
-                                className="w-full bg-transparent border-none outline-none text-sm text-text placeholder:opacity-50"
+                                style={{ color: colors.text }}
+                                className="w-full bg-transparent border-none outline-none text-sm placeholder:opacity-50"
                             />
                         </div>
 
@@ -634,10 +657,10 @@ export default function AppSharedBookingPage() {
                                                     className="p-4 rounded-2xl border flex items-center justify-between cursor-pointer transition-all"
                                                 >
                                                     <div className="text-left space-y-1">
-                                                        <p className="text-sm font-bold text-text">{svc.name}</p>
-                                                        <p className="text-[9px] text-text-muted uppercase font-bold tracking-widest">{svc.duration} min · ₹{svc.price}</p>
+                                                        <p className="text-sm font-bold" style={{ color: colors.text }}>{svc.name}</p>
+                                                        <p className="text-[9px] uppercase font-bold tracking-widest" style={{ color: colors.textMuted }}>{svc.duration} min · ₹{svc.price}</p>
                                                     </div>
-                                                    <div className={`w-5 h-5 rounded-full border flex items-center justify-center ${isSelected ? 'bg-[#C8956C] border-[#C8956C]' : 'border-border'}`}>
+                                                    <div className={`w-5 h-5 rounded-full border flex items-center justify-center ${isSelected ? 'bg-[#C8956C] border-[#C8956C]' : ''}`} style={{ borderColor: isSelected ? '#C8956C' : colors.border }}>
                                                         {isSelected && <Check size={12} color="white" strokeWidth={4} />}
                                                     </div>
                                                 </div>
@@ -652,7 +675,7 @@ export default function AppSharedBookingPage() {
                             <div className="p-4 rounded-2xl bg-[#C8956C]/5 border border-[#C8956C]/20 flex items-center justify-between mt-2 shadow-sm">
                                 <div className="text-left">
                                     <p className="text-[10px] font-black uppercase text-[#C8956C] tracking-widest">Selected Services</p>
-                                    <p className="text-sm font-bold text-text mt-0.5">{selectedServices.length} Selected · ₹{totalPrice}</p>
+                                    <p className="text-sm font-bold mt-0.5" style={{ color: colors.text }}>{selectedServices.length} Selected · ₹{totalPrice}</p>
                                 </div>
                                 <button onClick={() => setSelectedServices([])} className="text-[9px] font-black uppercase text-rose-500 tracking-wider hover:underline">Clear</button>
                             </div>
@@ -678,7 +701,7 @@ export default function AppSharedBookingPage() {
                         className="space-y-6 text-left"
                     >
                         <div className="flex flex-col gap-1">
-                            <h2 style={{ fontFamily: "'Libre Baskerville', serif" }} className="text-xl font-bold uppercase tracking-tight text-text">Choose <span className="text-[#C8956C]">Expert</span></h2>
+                            <h2 style={{ fontFamily: "'Libre Baskerville', serif", color: colors.text }} className="text-xl font-bold uppercase tracking-tight">Choose <span className="text-[#C8956C]">Expert</span></h2>
                             <p style={{ color: colors.textMuted }} className="text-[10px] uppercase tracking-widest font-bold">Stylists available at {selectedOutlet?.name}</p>
                         </div>
 
@@ -738,7 +761,7 @@ export default function AppSharedBookingPage() {
                         transition={{ duration: 0.3 }}
                         className="space-y-6"
                     >
-                        <h2 style={{ fontFamily: "'Libre Baskerville', serif" }} className="text-xl font-bold uppercase tracking-tight text-left text-text">Select <span className="text-[#C8956C]">Timeline</span></h2>
+                        <h2 style={{ fontFamily: "'Libre Baskerville', serif", color: colors.text }} className="text-xl font-bold uppercase tracking-tight text-left">Select <span className="text-[#C8956C]">Timeline</span></h2>
 
                         <div className="flex items-center justify-between px-2">
                             <h3 style={{ color: colors.text }} className="text-[10px] font-black uppercase tracking-[0.2em]">{viewMonth.toLocaleDateString('en-IN', { month: 'long', year: 'numeric' })}</h3>
@@ -750,7 +773,7 @@ export default function AppSharedBookingPage() {
 
                         <div className="grid grid-cols-7 gap-1 p-4 rounded-3xl border border-black/5 dark:border-white/5 bg-white/50 dark:bg-black/50">
                             {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((d, idx) => (
-                                <div key={idx} className="h-8 flex items-center justify-center text-[9px] font-black opacity-30 uppercase tracking-widest" style={{ color: colors.text }}>{d}</div>
+                                <div key={idx} style={{ color: colors.text }} className="h-8 flex items-center justify-center text-[9px] font-black opacity-30 uppercase tracking-widest">{d}</div>
                             ))}
                             {calendarDays.map((d, i) => {
                                 const isSelected = selectedDate?.date.toDateString() === d.date.toDateString();
@@ -791,12 +814,12 @@ export default function AppSharedBookingPage() {
                                         </button>
                                     ))}
                                     {timeSlots.length === 0 && (
-                                        <div className="col-span-3 py-8 text-center opacity-40 text-[10px] font-bold uppercase tracking-widest text-text">No slots available for this day</div>
+                                        <div className="col-span-3 py-8 text-center opacity-40 text-[10px] font-bold uppercase tracking-widest" style={{ color: colors.text }}>No slots available for this day</div>
                                     )}
                                 </div>
                             ) : (
-                                <div className="py-8 text-center border-2 border-dashed rounded-3xl opacity-20 border-border">
-                                    <p className="text-[10px] font-black uppercase tracking-widest text-text">Select a date to view slots</p>
+                                <div className="py-8 text-center border-2 border-dashed rounded-3xl opacity-20" style={{ borderColor: colors.border }}>
+                                    <p className="text-[10px] font-black uppercase tracking-widest" style={{ color: colors.text }}>Select a date to view slots</p>
                                 </div>
                             )}
                         </div>
@@ -823,7 +846,7 @@ export default function AppSharedBookingPage() {
                         transition={{ duration: 0.3 }}
                         className="space-y-6"
                     >
-                        <h2 style={{ fontFamily: "'Libre Baskerville', serif" }} className="text-xl font-bold uppercase tracking-tight text-left text-text">Confirm & <span className="text-[#C8956C]">Book</span></h2>
+                        <h2 style={{ fontFamily: "'Libre Baskerville', serif", color: colors.text }} className="text-xl font-bold uppercase tracking-tight text-left">Confirm & <span className="text-[#C8956C]">Book</span></h2>
 
                         <div style={{ background: colors.card, border: `1px solid ${colors.border}` }} className="rounded-[2rem] p-6 space-y-6 shadow-sm text-left">
                             <div className="space-y-3 pb-6 border-b border-black/5 dark:border-white/5">
@@ -900,11 +923,11 @@ export default function AppSharedBookingPage() {
                                         <span style={{ color: colors.text }}>GST ({platformSettings?.serviceGst || 18}% - Excluding)</span>
                                         <span style={{ color: colors.text }}>+ ₹{Math.round(tax).toLocaleString()}</span>
                                     </div>
-                                    <div className="flex justify-between items-center text-[10px] pl-2 font-medium italic opacity-60 text-text">
+                                    <div className="flex justify-between items-center text-[10px] pl-2 font-medium italic opacity-60" style={{ color: colors.text }}>
                                         <span>CGST ({(platformSettings?.serviceGst || 18) / 2}%)</span>
                                         <span>+ ₹{Math.round(tax / 2).toLocaleString()}</span>
                                     </div>
-                                    <div className="flex justify-between items-center text-[10px] pl-2 font-medium italic opacity-60 text-text">
+                                    <div className="flex justify-between items-center text-[10px] pl-2 font-medium italic opacity-60" style={{ color: colors.text }}>
                                         <span>SGST ({(platformSettings?.serviceGst || 18) / 2}%)</span>
                                         <span>+ ₹{Math.round(tax / 2).toLocaleString()}</span>
                                     </div>
