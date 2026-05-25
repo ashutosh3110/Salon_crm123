@@ -659,7 +659,7 @@ exports.getEODHistory = async (req, res) => {
 exports.closeEOD = async (req, res) => {
     try {
         const salonId = req.user.salonId;
-        const { businessDate, openingCash, actualCash, notes, outletId } = req.body;
+        const { businessDate, openingCash, actualCash, notes, outletId, denominations } = req.body;
 
         const date = businessDate ? new Date(businessDate) : new Date();
         const start = new Date(date); start.setHours(0, 0, 0, 0);
@@ -760,6 +760,7 @@ exports.closeEOD = async (req, res) => {
             bankDiscrepancy: 0,
             status: 'closed',
             notes: notes ? notes.trim() : '',
+            denominations,
             performedBy: req.user._id,
             date: start
         };
@@ -928,7 +929,7 @@ exports.getCashBank = async (req, res) => {
 exports.reconcileCashBank = async (req, res) => {
     try {
         const salonId = req.user.salonId;
-        const { businessDate, actualCash, actualBank, notes, locked, outletId } = req.body;
+        const { businessDate, actualCash, actualBank, notes, locked, outletId, denominations } = req.body;
 
         const date = businessDate ? new Date(businessDate) : new Date();
         const start = new Date(date); start.setHours(0, 0, 0, 0);
@@ -1001,6 +1002,7 @@ exports.reconcileCashBank = async (req, res) => {
             bankDiscrepancy,
             status: locked ? 'closed' : 'pending',
             notes,
+            denominations,
             performedBy: req.user._id,
             date: start
         };
@@ -1273,9 +1275,18 @@ exports.getSalesReports = async (req, res) => {
         const invoiceCount = invoices.length;
 
         invoices.forEach(inv => {
-            totalSales += (inv.total || 0);
+            const invTotal = inv.total || 0;
+            totalSales += invTotal;
+
+            let invSubtotal = 0;
             (inv.items || []).forEach(item => {
-                const itemRevenue = (item.price || 0) * (item.quantity || 1);
+                invSubtotal += (item.price || 0) * (item.quantity || 1);
+            });
+
+            const ratio = invSubtotal > 0 ? (invTotal / invSubtotal) : 1;
+
+            (inv.items || []).forEach(item => {
+                const itemRevenue = (item.price || 0) * (item.quantity || 1) * ratio;
                 if (item.type === 'service') {
                     servicesRevenue += itemRevenue;
                 } else if (item.type === 'product') {
@@ -1306,11 +1317,23 @@ exports.getSalesReports = async (req, res) => {
         let prevServicesRevenue = 0;
         let prevProductsRevenue = 0;
         prevInvoices.forEach(inv => {
-            prevTotalSales += (inv.total || 0);
+            const invTotal = inv.total || 0;
+            prevTotalSales += invTotal;
+
+            let invSubtotal = 0;
             (inv.items || []).forEach(item => {
-                const itemRevenue = (item.price || 0) * (item.quantity || 1);
-                if (item.type === 'service') prevServicesRevenue += itemRevenue;
-                else if (item.type === 'product') prevProductsRevenue += itemRevenue;
+                invSubtotal += (item.price || 0) * (item.quantity || 1);
+            });
+
+            const ratio = invSubtotal > 0 ? (invTotal / invSubtotal) : 1;
+
+            (inv.items || []).forEach(item => {
+                const itemRevenue = (item.price || 0) * (item.quantity || 1) * ratio;
+                if (item.type === 'service') {
+                    prevServicesRevenue += itemRevenue;
+                } else if (item.type === 'product') {
+                    prevProductsRevenue += itemRevenue;
+                }
             });
         });
         const prevInvoiceCount = prevInvoices.length;
@@ -1394,8 +1417,17 @@ exports.getSalesReports = async (req, res) => {
         const stylistStats = {};
 
         invoices.forEach(inv => {
+            const invTotal = inv.total || 0;
+
+            let invSubtotal = 0;
             (inv.items || []).forEach(item => {
-                const itemRevenue = (item.price || 0) * (item.quantity || 1);
+                invSubtotal += (item.price || 0) * (item.quantity || 1);
+            });
+
+            const ratio = invSubtotal > 0 ? (invTotal / invSubtotal) : 1;
+
+            (inv.items || []).forEach(item => {
+                const itemRevenue = (item.price || 0) * (item.quantity || 1) * ratio;
                 if (item.type === 'service') {
                     serviceMap[item.name] = (serviceMap[item.name] || 0) + itemRevenue;
                     
@@ -1444,7 +1476,7 @@ exports.getSalesReports = async (req, res) => {
         const recentInvoices = invoices
             .slice()
             .sort((a, b) => b.createdAt - a.createdAt)
-            .slice(0, 50)
+            .slice(0, 5)
             .map(inv => ({
                 _id: inv._id,
                 invoiceNumber: inv.invoiceNumber,

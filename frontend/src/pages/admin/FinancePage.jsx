@@ -138,13 +138,7 @@ export default function FinancePage({ tab = 'dashboard' }) {
                                 <DownloadCloud className="w-4 h-4" />
                                 Refresh data
                             </button>
-                            <button
-                                type="button"
-                                className="flex items-center gap-3 bg-primary text-primary-foreground border border-primary px-10 py-3.5 rounded-none text-[10px] font-black uppercase tracking-[0.2em] shadow-xl shadow-primary/20 hover:bg-primary-dark transition-all"
-                            >
-                                <Calendar className="w-4 h-4" />
-                                Choose Period
-                            </button>
+                         
                         </div>
                     </div>
 
@@ -155,7 +149,6 @@ export default function FinancePage({ tab = 'dashboard' }) {
                             icon={TrendingUp}
                             color="blue"
                             trend="POS Bills"
-                            to="/admin/finance/invoices"
                         />
                         <FinanceKPICard
                             title="Shop Expenses"
@@ -163,7 +156,6 @@ export default function FinancePage({ tab = 'dashboard' }) {
                             icon={ArrowDownRight}
                             color="rose"
                             trend="Salary, Rent, Bills"
-                            to="/admin/finance/expenses"
                         />
                         <FinanceKPICard
                             title="Supplier Purchases"
@@ -171,7 +163,6 @@ export default function FinancePage({ tab = 'dashboard' }) {
                             icon={Package}
                             color="violet"
                             trend="Product Stock"
-                            to="/admin/finance/invoices"
                         />
                         <FinanceKPICard
                             title="Net Profit"
@@ -179,7 +170,6 @@ export default function FinancePage({ tab = 'dashboard' }) {
                             icon={Activity}
                             color="emerald"
                             trend="Income − Expenses"
-                            to="/admin/finance/dashboard"
                         />
                     </div>
                 </>
@@ -276,9 +266,9 @@ function FinanceKPICard({ title, value, icon: Icon, color, trend, className = ''
 
     const content = (
         <>
-            <div className={`absolute -right-4 -top-4 w-20 h-20 bg-primary/5 rotate-12 transition-all group-hover:bg-primary/10`} />
+            <div className={`absolute -right-4 -top-4 w-20 h-20 bg-primary/5 rotate-12 transition-all ${to ? 'group-hover:bg-primary/10' : ''}`} />
             <div className="flex justify-between items-start gap-2 mb-4 text-left font-black min-h-[2.75rem]">
-                <div className={`shrink-0 p-3 rounded-none ${colors[color]} border border-current bg-surface shadow-inner group-hover:scale-105 transition-transform`}>
+                <div className={`shrink-0 p-3 rounded-none ${colors[color]} border border-current bg-surface shadow-inner ${to ? 'group-hover:scale-105' : ''} transition-transform`}>
                     <Icon className="w-5 h-5 font-black" />
                 </div>
                 <span
@@ -297,7 +287,9 @@ function FinanceKPICard({ title, value, icon: Icon, color, trend, className = ''
         </>
     );
 
-    const cardClasses = `bg-surface p-5 sm:p-6 rounded-none border border-border shadow-sm hover:shadow-xl hover:translate-y-[-2px] transition-all group relative overflow-hidden text-left font-black flex flex-col min-h-[160px] ${className}`;
+    const cardClasses = `bg-surface p-5 sm:p-6 rounded-none border border-border shadow-sm ${
+        to ? 'hover:shadow-xl hover:translate-y-[-2px] cursor-pointer' : ''
+    } transition-all group relative overflow-hidden text-left font-black flex flex-col min-h-[160px] ${className}`;
 
     if (to) {
         return (

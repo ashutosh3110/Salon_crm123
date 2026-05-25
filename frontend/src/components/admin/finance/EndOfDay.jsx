@@ -44,6 +44,34 @@ export default function EndOfDay({ outletId }) {
     const [actualCash, setActualCash] = useState('');
     const [history, setHistory] = useState([]);
     const [showHistory, setShowHistory] = useState(false);
+    const [showCalculator, setShowCalculator] = useState(false);
+    const [denominations, setDenominations] = useState({
+        500: '',
+        200: '',
+        100: '',
+        50: '',
+        20: '',
+        10: '',
+        5: '',
+        2: '',
+        1: ''
+    });
+
+    const handleDenominationChange = (value, denom) => {
+        const updated = {
+            ...denominations,
+            [denom]: value === '' ? '' : Math.max(0, parseInt(value) || 0)
+        };
+        setDenominations(updated);
+
+        let total = 0;
+        Object.entries(updated).forEach(([d, count]) => {
+            if (count !== '') {
+                total += parseInt(d) * (parseInt(count) || 0);
+            }
+        });
+        setActualCash(String(total));
+    };
 
     const load = useCallback(async () => {
         setLoading(true);
@@ -74,10 +102,12 @@ export default function EndOfDay({ outletId }) {
                 setOpeningCash(String(data.closure.openingCash || 0));
                 setActualCash(String(data.closure.actualCash || 0));
                 setNotes(data.closure.notes || '');
+                setDenominations(data.closure.denominations || { 500: '', 200: '', 100: '', 50: '', 20: '', 10: '', 5: '', 2: '', 1: '' });
             } else {
                 setOpeningCash(String(data.metrics?.openingCash || 0));
                 setActualCash('');
                 setNotes('');
+                setDenominations({ 500: '', 200: '', 100: '', 50: '', 20: '', 10: '', 5: '', 2: '', 1: '' });
             }
         }
     }, [data]);
@@ -123,6 +153,7 @@ export default function EndOfDay({ outletId }) {
                 openingCash: Number(openingCash),
                 actualCash: Number(actualCash),
                 notes: notes.trim(),
+                denominations,
                 outletId: (outletId && outletId !== 'all') ? outletId : undefined
             });
             await load();
@@ -405,32 +436,113 @@ export default function EndOfDay({ outletId }) {
                                     <div className="space-y-1">
                                         <label className="text-[10px] font-black uppercase text-slate-500 dark:text-slate-450 ml-1">Opening Cash (Morning)</label>
                                         <div className="relative">
-                                            <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-450 dark:text-slate-500 font-bold text-sm">₹</span>
+                                            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-450 dark:text-slate-500 font-bold text-sm">₹</span>
                                             <input
                                                 type="number"
                                                 value={openingCash}
                                                 onChange={(e) => setOpeningCash(e.target.value)}
                                                 placeholder="0"
                                                 disabled={dayClosed}
-                                                className="w-full pl-7 pr-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 text-sm bg-slate-50/50 dark:bg-slate-750 text-slate-800 dark:text-slate-100 disabled:opacity-75 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all font-bold"
+                                                className="w-full pl-10 pr-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 text-sm bg-slate-50/50 dark:bg-slate-750 text-slate-800 dark:text-slate-100 disabled:opacity-75 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all font-bold"
                                             />
                                         </div>
                                     </div>
                                     <div className="space-y-1">
                                         <label className="text-[10px] font-black uppercase text-slate-500 dark:text-slate-450 ml-1">Actual Cash (Counted)</label>
                                         <div className="relative">
-                                            <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-450 dark:text-slate-500 font-bold text-sm">₹</span>
+                                            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-450 dark:text-slate-500 font-bold text-sm">₹</span>
                                             <input
                                                 type="number"
                                                 value={actualCash}
-                                                onChange={(e) => setActualCash(e.target.value)}
+                                                onChange={(e) => {
+                                                    setActualCash(e.target.value);
+                                                    setDenominations({ 500: '', 200: '', 100: '', 50: '', 20: '', 10: '', 5: '', 2: '', 1: '' });
+                                                }}
                                                 placeholder="0"
                                                 disabled={dayClosed}
-                                                className="w-full pl-7 pr-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 text-sm bg-slate-50/50 dark:bg-slate-750 text-slate-800 dark:text-slate-100 disabled:opacity-75 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all font-black text-primary"
+                                                className="w-full pl-10 pr-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 text-sm bg-slate-50/50 dark:bg-slate-750 text-slate-800 dark:text-slate-100 disabled:opacity-75 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all font-black text-primary"
                                             />
                                         </div>
+                                        {!dayClosed && (
+                                            <button
+                                                type="button"
+                                                onClick={() => setShowCalculator(!showCalculator)}
+                                                className="text-[9px] font-bold text-primary hover:text-primary-dark tracking-wider uppercase flex items-center gap-1.5 mt-1.5 focus:outline-none transition-all"
+                                            >
+                                                <Coins className="w-3.5 h-3.5" />
+                                                {showCalculator ? 'Hide Note Calculator' : 'Show Note Calculator'}
+                                            </button>
+                                        )}
                                     </div>
                                 </div>
+
+                                {showCalculator && !dayClosed && (
+                                    <div className="p-5 bg-slate-100/50 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-700 rounded-2xl mt-4 space-y-4 animate-fadeIn">
+                                        <div className="flex justify-between items-center pb-2 border-b border-slate-200 dark:border-slate-700">
+                                            <span className="text-[10px] font-black uppercase text-slate-650 dark:text-slate-400 tracking-wider">Denomination Calculator</span>
+                                            <button
+                                                type="button"
+                                                onClick={() => {
+                                                    setDenominations({ 500: '', 200: '', 100: '', 50: '', 20: '', 10: '', 5: '', 2: '', 1: '' });
+                                                    setActualCash('0');
+                                                }}
+                                                className="text-[9px] font-bold text-rose-500 hover:text-rose-700 uppercase tracking-wider transition-colors"
+                                            >
+                                                Reset
+                                            </button>
+                                        </div>
+                                        <div className="grid grid-cols-3 gap-x-4 gap-y-6">
+                                            {[500, 200, 100, 50, 20, 10, 5, 2, 1].map((denom) => (
+                                                <div key={denom} className="flex flex-col gap-1.5 relative">
+                                                    <span className="text-[9px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                                                        ₹{denom} {denom >= 10 ? 'Note' : 'Coin'}
+                                                    </span>
+                                                    <input
+                                                        type="number"
+                                                        value={denominations[denom]}
+                                                        min="0"
+                                                        onChange={(e) => handleDenominationChange(e.target.value, denom)}
+                                                        placeholder="0"
+                                                        className="w-full px-3 py-2 rounded-xl border border-slate-250 dark:border-slate-700 text-xs font-bold bg-white dark:bg-slate-750 text-slate-800 dark:text-slate-100 outline-none focus:border-primary transition-all text-center"
+                                                    />
+                                                    {denominations[denom] > 0 && (
+                                                        <span className="absolute -bottom-4.5 left-0 right-0 text-[8px] font-bold text-slate-400 dark:text-slate-500 text-center whitespace-nowrap">
+                                                            = ₹{(denom * denominations[denom]).toLocaleString('en-IN')}
+                                                        </span>
+                                                    )}
+                                                </div>
+                                            ))}
+                                        </div>
+                                        <div className="pt-2 flex justify-between items-center text-[10px] font-extrabold uppercase tracking-wider border-t border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400">
+                                            <span>Total Calculated:</span>
+                                            <span className="text-primary font-black text-xs">{formatInr(actualCash)}</span>
+                                        </div>
+                                    </div>
+                                )}
+
+                                {dayClosed && Object.values(denominations).some(val => val !== '' && parseInt(val) > 0) && (
+                                    <div className="p-4 bg-slate-550/5 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-700 rounded-2xl mt-4 space-y-3">
+                                        <div className="text-[10px] font-black uppercase text-slate-500 dark:text-slate-450 tracking-wider border-b border-slate-200 dark:border-slate-700 pb-1.5">
+                                            Locked Cash Denominations
+                                        </div>
+                                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                                            {[500, 200, 100, 50, 20, 10, 5, 2, 1].map((denom) => {
+                                                const count = denominations[denom];
+                                                if (!count || parseInt(count) <= 0) return null;
+                                                return (
+                                                    <div key={denom} className="flex justify-between items-center bg-white dark:bg-slate-750 px-2.5 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 text-xs">
+                                                        <span className="font-semibold text-slate-550 dark:text-slate-400">
+                                                            ₹{denom} {denom >= 10 ? 'Note' : 'Coin'}
+                                                        </span>
+                                                        <span className="font-bold text-slate-800 dark:text-slate-100">
+                                                            {count} <span className="text-[10px] text-slate-400 dark:text-slate-500 font-normal">({(denom * count).toLocaleString('en-IN')})</span>
+                                                        </span>
+                                                    </div>
+                                                );
+                                            })}
+                                        </div>
+                                    </div>
+                                )}
 
                                 {/* Variance and discrepancy feedback */}
                                 {(dayClosed || actualCash !== '') && (
