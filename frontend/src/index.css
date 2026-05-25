@@ -851,4 +851,63 @@ html:not(.dark) .sa-panel button[type="submit"] svg:not([class*="text-green"]):n
 .admin-panel .rounded-full,
 .admin-panel [class*="rounded-full"] {
     border-radius: 9999px !important;
+}
+
+/* ==========================================================================
+   🔆 MODERN PREMIUM LIGHT THEME UI CORRECTIONS (DARK PANELS & OPACITY BUTTONS)
+   ========================================================================== */
+
+/* 1. Prevent opacity variants of bg-primary from turning solid black */
+html:not(.dark) .admin-panel button[class*="bg-primary/"],
+html:not(.dark) .admin-panel .inline-flex[class*="bg-primary/"],
+html:not(.dark) [role="dialog"] button[class*="bg-primary/"],
+html:not(.dark) .fixed.inset-0 button[class*="bg-primary/"] {
+    background-color: rgba(180, 145, 43, 0.05) !important;
+    color: #B4912B !important;
+    border-color: #B4912B !important;
+}
+
+html:not(.dark) .admin-panel button[class*="bg-primary/10"],
+html:not(.dark) .admin-panel .inline-flex[class*="bg-primary/10"] {
+    background-color: rgba(180, 145, 43, 0.1) !important;
+}
+
+html:not(.dark) .admin-panel button[class*="bg-primary/20"],
+html:not(.dark) .admin-panel .inline-flex[class*="bg-primary/20"] {
+    background-color: rgba(180, 145, 43, 0.2) !important;
+}
+
+/* Ensure selected Facility Allocation icons inside the white circular borders look premium gold */
+html:not(.dark) .admin-panel button[class*="bg-primary/"] div,
+html:not(.dark) .admin-panel button[class*="bg-primary/"] svg {
+    color: #B4912B !important;
+}
+
+/* 2. Fix Text Readability inside Dark Panels (slate-900 / slate-950 / black) in Light Mode */
+html:not(.dark) .admin-panel .bg-slate-900 *,
+html:not(.dark) .admin-panel .bg-slate-950 *,
+html:not(.dark) .admin-panel .bg-slate-800 *,
+html:not(.dark) .admin-panel .bg-black *,
+html:not(.dark) .admin-panel [class*="bg-slate-"] *,
+html:not(.dark) .admin-panel [class*="bg-black"] *,
+html:not(.dark) [role="dialog"] .bg-slate-900 *,
+html:not(.dark) [role="dialog"] .bg-slate-950 * {
+    color: #ffffff !important;
+}
+
+/* Restore green and red accents inside dark cards so status toggles remain active */
+html:not(.dark) .admin-panel .bg-slate-900 .text-emerald-500,
+html:not(.dark) .admin-panel .bg-slate-900 .text-emerald-400,
+html:not(.dark) .admin-panel .bg-slate-900 .text-rose-500,
+html:not(.dark) .admin-panel .bg-slate-900 .text-rose-400,
+html:not(.dark) .admin-panel .bg-slate-900 .text-violet-400,
+html:not(.dark) .admin-panel .bg-slate-900 .bg-rose-500,
+html:not(.dark) .admin-panel .bg-slate-900 .bg-emerald-500 {
+    color: inherit !important;
+}
+
+/* Fix text input placeholders inside dark cards */
+html:not(.dark) .admin-panel .bg-slate-900 input::placeholder,
+html:not(.dark) .admin-panel .bg-slate-900 textarea::placeholder {
+    color: rgba(255, 255, 255, 0.4) !important;
 }

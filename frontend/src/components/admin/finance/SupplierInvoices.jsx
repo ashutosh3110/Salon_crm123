@@ -918,7 +918,6 @@ export default function SupplierInvoices() {
                                     className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 w-full max-w-lg shadow-2xl rounded-3xl overflow-hidden relative flex flex-col transition-all text-left"
                                     onClick={e => e.stopPropagation()}
                                 >
-<<<<<<< HEAD
                                     <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-700 bg-white dark:bg-slate-800 flex justify-between items-center rounded-t-3xl">
                                         <div>
                                             <h3 className="text-base font-black text-slate-850 dark:text-slate-100 uppercase tracking-widest flex items-center gap-2">
@@ -1068,230 +1067,6 @@ export default function SupplierInvoices() {
                                         </div>
                                     </div>
                                 </motion.div>
-=======
-                                    Cancel
-                                </button>
-                                <button
-                                    type="button"
-                                    onClick={submitPayment}
-                                    disabled={currentPayAmt <= 0 || currentPayAmt > outstandingAmt}
-                                    className="px-6 py-2 bg-primary hover:bg-primary-dark text-white rounded-xl text-xs font-black uppercase tracking-wider hover:shadow-lg hover:shadow-primary/20 transition-all disabled:opacity-40 disabled:pointer-events-none"
-                                >
-                                    Save Payment
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                );
-            })()}
-
-            {showCreateModal && (
-                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm overflow-y-auto">
-                    <div className="bg-white border border-border w-full max-w-5xl shadow-2xl rounded-2xl flex flex-col my-8 max-h-[90vh] overflow-hidden">
-                        {/* Modal Header */}
-                        <div className="px-6 py-4 border-b border-border flex justify-between items-center bg-surface/30">
-                            <div>
-                                <h3 className="text-lg font-black text-text">Record New Supplier Invoice</h3>
-                                <p className="text-xs text-text-muted font-bold uppercase mt-0.5">Create ad-hoc purchase bill & dynamic GST calculations</p>
-                            </div>
-                            <button
-                                type="button"
-                                onClick={resetInvoiceForm}
-                                className="p-1.5 hover:bg-surface rounded-lg text-text-muted hover:text-text transition-colors"
-                            >
-                                <X className="w-5 h-5" />
-                            </button>
-                        </div>
-
-                        {/* Modal Body */}
-                        <div className="flex-1 p-6 overflow-y-auto space-y-6">
-                            {/* Part 1: Invoice metadata */}
-                            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                                <div className="space-y-1">
-                                    <label className="text-[10px] font-bold text-text-muted uppercase">Select Supplier <span className="text-rose-500">*</span></label>
-                                    <select
-                                        value={invoiceForm.supplierId}
-                                        onChange={(e) => setInvoiceForm(prev => ({ ...prev, supplierId: e.target.value }))}
-                                        className="w-full px-4 py-2 bg-white border border-border rounded-xl text-sm font-bold focus:outline-none focus:ring-2 focus:ring-primary/10 transition-all"
-                                    >
-                                        <option value="">-- Select a Supplier --</option>
-                                        {suppliers.map(s => (
-                                            <option key={s._id || s.id} value={s._id || s.id}>
-                                                {s.name}
-                                            </option>
-                                        ))}
-                                    </select>
-                                </div>
-                                <div className="space-y-1">
-                                    <label className="text-[10px] font-bold text-text-muted uppercase">Invoice Number <span className="text-rose-500">*</span></label>
-                                    <input
-                                        type="text"
-                                        placeholder="e.g. GST-1024"
-                                        value={invoiceForm.invoiceNumber}
-                                        onChange={(e) => setInvoiceForm(prev => ({ ...prev, invoiceNumber: e.target.value }))}
-                                        className="w-full px-4 py-2 border border-border rounded-xl text-sm font-bold focus:outline-none focus:ring-2 focus:ring-primary/10 transition-all"
-                                    />
-                                </div>
-                                <div className="space-y-1">
-                                    <label className="text-[10px] font-bold text-text-muted uppercase">Invoice Date</label>
-                                    <input
-                                        type="date"
-                                        value={invoiceForm.invoiceDate}
-                                        onChange={(e) => setInvoiceForm(prev => ({ ...prev, invoiceDate: e.target.value }))}
-                                        className="w-full px-4 py-2 border border-border rounded-xl text-sm font-bold focus:outline-none focus:ring-2 focus:ring-primary/10 transition-all"
-                                    />
-                                </div>
-                                <div className="space-y-1">
-                                    <label className="text-[10px] font-bold text-text-muted uppercase">Due Date</label>
-                                    <input
-                                        type="date"
-                                        value={invoiceForm.dueDate}
-                                        onChange={(e) => setInvoiceForm(prev => ({ ...prev, dueDate: e.target.value }))}
-                                        className="w-full px-4 py-2 border border-border rounded-xl text-sm font-bold focus:outline-none focus:ring-2 focus:ring-primary/10 transition-all"
-                                    />
-                                </div>
-                            </div>
-
-                            {/* Part 2: Invoice Items */}
-                            <div className="space-y-3">
-                                <div className="flex justify-between items-center">
-                                    <h4 className="text-xs font-black text-text uppercase tracking-wider">Purchase Item Lines</h4>
-                                    <button
-                                        type="button"
-                                        onClick={handleAddItem}
-                                        className="flex items-center gap-1.5 px-3 py-1.5 bg-surface border border-border rounded-xl text-xs font-bold text-primary hover:bg-primary/5 transition-all"
-                                    >
-                                        <Plus className="w-3.5 h-3.5" />
-                                        Add Line
-                                    </button>
-                                </div>
-
-                                <div className="border border-border rounded-xl overflow-hidden table-responsive">
-                                    <table className="w-full text-left border-collapse min-w-[700px]">
-                                        <thead>
-                                            <tr className="bg-surface/50 border-b border-border">
-                                                <th className="px-4 py-2.5 text-[10px] font-bold text-text-secondary uppercase tracking-wider">Item Name / Desc *</th>
-                                                <th className="px-4 py-2.5 text-[10px] font-bold text-text-secondary uppercase tracking-wider w-44">Rate (₹) *</th>
-                                                <th className="px-4 py-2.5 text-[10px] font-bold text-text-secondary uppercase tracking-wider w-36">Qty *</th>
-                                                <th className="px-4 py-2.5 text-[10px] font-bold text-text-secondary uppercase tracking-wider w-32 text-right">Row Total</th>
-                                                <th className="px-4 py-2.5 text-[10px] font-bold text-text-secondary uppercase tracking-wider w-16 text-center"></th>
-                                            </tr>
-                                        </thead>
-                                        <tbody className="divide-y divide-border">
-                                            {invoiceForm.items.map((item, index) => {
-                                                const qty = parseFloat(item.quantity) || 0;
-                                                const rate = parseFloat(item.price) || 0;
-                                                const taxRate = parseFloat(item.tax) || 0;
-                                                const rowTotal = item.isInclusive 
-                                                    ? (rate * qty) 
-                                                    : (rate * qty * (1 + taxRate / 100));
-
-                                                return (
-                                                    <tr key={index} className="hover:bg-surface/20 transition-colors">
-                                                        <td className="px-4 py-2">
-                                                            <input
-                                                                type="text"
-                                                                placeholder="Enter product or service name"
-                                                                value={item.name}
-                                                                onChange={(e) => handleUpdateItem(index, 'name', e.target.value)}
-                                                                className="w-full px-3 py-1.5 border border-border rounded-lg text-xs focus:outline-none focus:ring-1 focus:ring-primary font-medium"
-                                                            />
-                                                        </td>
-                                                        <td className="px-4 py-2">
-                                                            <input
-                                                                type="text"
-                                                                placeholder="0.00"
-                                                                value={item.price}
-                                                                onChange={(e) => {
-                                                                    const val = e.target.value;
-                                                                    if (val === '' || /^\d*\.?\d*$/.test(val)) {
-                                                                        handleUpdateItem(index, 'price', val);
-                                                                    }
-                                                                }}
-                                                                className="w-full px-3 py-1.5 border border-border rounded-lg text-xs font-bold text-right focus:outline-none focus:ring-1 focus:ring-primary"
-                                                            />
-                                                        </td>
-                                                        <td className="px-4 py-2">
-                                                            <input
-                                                                type="text"
-                                                                placeholder="1"
-                                                                value={item.quantity}
-                                                                onChange={(e) => {
-                                                                    const val = e.target.value;
-                                                                    if (val === '' || /^\d*$/.test(val)) {
-                                                                        handleUpdateItem(index, 'quantity', val);
-                                                                    }
-                                                                }}
-                                                                className="w-full px-3 py-1.5 border border-border rounded-lg text-xs font-bold text-center focus:outline-none focus:ring-1 focus:ring-primary"
-                                                            />
-                                                        </td>
-                                                        <td className="px-4 py-2 text-right">
-                                                            <span className="text-xs font-black text-text">
-                                                                ₹{rowTotal.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                                                            </span>
-                                                        </td>
-                                                        <td className="px-4 py-2 text-center">
-                                                            <button
-                                                                type="button"
-                                                                onClick={() => handleRemoveItem(index)}
-                                                                className="p-1 hover:bg-rose-50 text-text-muted hover:text-rose-600 rounded transition-colors"
-                                                            >
-                                                                <Trash2 className="w-3.5 h-3.5" />
-                                                            </button>
-                                                        </td>
-                                                    </tr>
-                                                );
-                                            })}
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
-
-                            {/* Part 3: Lower grid (Notes & Payment vs Summary card) */}
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-border">
-                                <div className="space-y-4">
-                                    <div className="space-y-1">
-                                        <label className="text-[10px] font-bold text-text-muted uppercase">Notes & Special Instructions</label>
-                                        <textarea
-                                            rows="2"
-                                            placeholder="Write internal procurement comments, stock-in references..."
-                                            value={invoiceForm.notes}
-                                            onChange={(e) => setInvoiceForm(prev => ({ ...prev, notes: e.target.value }))}
-                                            className="w-full px-4 py-2.5 border border-border rounded-xl text-xs font-medium focus:outline-none focus:ring-2 focus:ring-primary/10 transition-all resize-none"
-                                        />
-                                    </div>
-
-
-                                </div>
-
-                                <div className="bg-surface/50 border border-border rounded-2xl p-5 space-y-3.5">
-                                    <h4 className="text-xs font-black text-text-secondary uppercase tracking-wider border-b border-border pb-2">Purchase Financial Summary</h4>
-                                    
-                                    <div className="flex justify-between text-xs text-text-secondary font-semibold">
-                                        <span>Total Amount:</span>
-                                        <span>₹{totals.subTotal.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
-                                    </div>
-                                    
-                                    <div className="flex justify-between items-center text-xs text-text-secondary font-semibold">
-                                        <span>Apply Discount (₹):</span>
-                                        <input
-                                            type="number"
-                                            min="0"
-                                            step="0.01"
-                                            value={invoiceForm.discount}
-                                            onChange={(e) => setInvoiceForm(prev => ({ ...prev, discount: e.target.value }))}
-                                            className="w-28 px-2.5 py-1 text-right border border-border rounded-lg text-xs font-bold focus:outline-none focus:ring-1 focus:ring-primary"
-                                        />
-                                    </div>
-
-                                    <div className="flex justify-between items-center text-xs font-semibold border-t border-border/80 pt-3">
-                                        <span className="font-bold text-text">Total Invoice Amount:</span>
-                                        <span className="font-extrabold text-sm text-text">₹{totals.totalAmount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
-                                    </div>
-
-                                </div>
->>>>>>> 2e56e1ed5d0dd57d49fce9f84aa861a20aac9cb7
                             </div>
                         );
                     })()}
@@ -1313,7 +1088,6 @@ export default function SupplierInvoices() {
                                 className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 w-full max-w-5xl shadow-2xl rounded-3xl flex flex-col my-8 max-h-[90vh] overflow-hidden text-left"
                                 onClick={e => e.stopPropagation()}
                             >
-<<<<<<< HEAD
                                 <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center bg-white dark:bg-slate-800 rounded-t-3xl text-left">
                                     <div>
                                         <h3 className="text-base font-black text-slate-850 dark:text-slate-100 uppercase tracking-widest flex items-center gap-2">
@@ -1661,17 +1435,6 @@ export default function SupplierInvoices() {
                                     </button>
                                 </div>
                             </motion.div>
-=======
-                                Cancel
-                            </button>
-                            <button
-                                type="button"
-                                onClick={handleCreateInvoice}
-                                className="px-6 py-2 bg-primary hover:bg-primary-dark text-white rounded-xl text-xs font-black uppercase tracking-widest hover:shadow-lg hover:shadow-primary/20 transition-all"
-                            >
-                                Record & Post Invoice
-                            </button>
->>>>>>> 2e56e1ed5d0dd57d49fce9f84aa861a20aac9cb7
                         </div>
                     )}
                 </AnimatePresence>,
