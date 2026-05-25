@@ -910,4 +910,129 @@ html:not(.dark) .admin-panel .bg-slate-900 .bg-emerald-500 {
 html:not(.dark) .admin-panel .bg-slate-900 input::placeholder,
 html:not(.dark) .admin-panel .bg-slate-900 textarea::placeholder {
     color: rgba(255, 255, 255, 0.4) !important;
+}
+
+/* ==========================================================================
+   ✨ WAPIXO CRM LIGHT MODE ACCESSIBILITY AND VISIBILITY FIXES
+   ========================================================================== */
+
+/* A. Enforce standard, high-contrast text color for all text-text and text-text-muted elements in Light Mode */
+html:not(.dark) .admin-panel .text-text,
+html:not(.dark) .admin-panel [class*="text-text"]:not([class*="text-text-muted"]),
+html:not(.dark) .admin-panel span.text-text,
+html:not(.dark) .admin-panel div.text-text,
+html:not(.dark) .admin-panel p.text-text {
+    color: #0f172a !important;
+}
+
+html:not(.dark) .admin-panel .text-text-muted,
+html:not(.dark) .admin-panel [class*="text-text-muted"],
+html:not(.dark) .admin-panel span.text-text-muted,
+html:not(.dark) .admin-panel div.text-text-muted,
+html:not(.dark) .admin-panel p.text-text-muted {
+    color: #475569 !important;
+}
+
+/* B. Fix drop-down select option texts, select backgrounds and text colors inside all types of dropdowns and selects */
+html:not(.dark) .admin-panel select,
+html:not(.dark) .admin-panel select option,
+html:not(.dark) .admin-panel select.bg-surface,
+html:not(.dark) [role="dialog"] select,
+html:not(.dark) [role="dialog"] select option,
+html:not(.dark) .fixed.inset-0 select,
+html:not(.dark) .fixed.inset-0 select option {
+    background-color: #ffffff !important;
+    color: #000000 !important;
+}
+
+/* C. Ensure CustomSelect dropdown trigger, label, and options have beautiful, rich colors and high contrast */
+html:not(.dark) .admin-panel button:has(svg.lucide-chevron-down),
+html:not(.dark) .admin-panel button:has(svg.lucide-chevron-down) span {
+    color: #000000 !important;
+}
+
+html:not(.dark) .admin-panel .bg-surface,
+html:not(.dark) .admin-panel [class*="bg-surface"] {
+    background-color: #ffffff !important;
+}
+
+/* D. Premium primary CTA gold styling overrides for buttons to prevent solid black button text invisibility */
+html:not(.dark) .admin-panel button.bg-primary:not(aside *),
+html:not(.dark) .admin-panel a.bg-primary:not(aside *),
+html:not(.dark) .admin-panel button[class*="bg-primary"]:not([class*="bg-primary/"]):not(aside *),
+html:not(.dark) .admin-panel .inline-flex[class*="bg-primary"]:not([class*="bg-primary/"]):not(aside *),
+html:not(.dark) .admin-panel button[type="submit"][class*="px-"]:not(aside *),
+html:not(.dark) .admin-panel button[type="submit"][class*="py-5"]:not(aside *),
+html:not(.dark) .admin-panel button[type="submit"][class*="flex-1"]:not(aside *),
+html:not(.dark) [role="dialog"] button.bg-primary,
+html:not(.dark) [role="dialog"] button[type="submit"],
+html:not(.dark) .fixed.inset-0 button.bg-primary,
+html:not(.dark) .fixed.inset-0 button[type="submit"] {
+    background-color: #B4912B !important;
+    background: #B4912B !important;
+    color: #ffffff !important;
+    border-color: #B4912B !important;
+}
+
+html:not(.dark) .admin-panel button.bg-primary:not(aside *) *,
+html:not(.dark) .admin-panel a.bg-primary:not(aside *) *,
+html:not(.dark) .admin-panel button[class*="bg-primary"]:not([class*="bg-primary/"]):not(aside *) *,
+html:not(.dark) .admin-panel .inline-flex[class*="bg-primary"]:not([class*="bg-primary/"]):not(aside *) *,
+html:not(.dark) .admin-panel button[type="submit"][class*="px-"]:not(aside *) *,
+html:not(.dark) .admin-panel button[type="submit"][class*="py-5"]:not(aside *) *,
+html:not(.dark) .admin-panel button[type="submit"][class*="flex-1"]:not(aside *) *,
+html:not(.dark) [role="dialog"] button.bg-primary *,
+html:not(.dark) [role="dialog"] button[type="submit"] *,
+html:not(.dark) .fixed.inset-0 button.bg-primary *,
+html:not(.dark) .fixed.inset-0 button[type="submit"] * {
+    color: #ffffff !important;
+}
+
+html:not(.dark) .admin-panel button.bg-primary:not(aside *):hover,
+html:not(.dark) .admin-panel a.bg-primary:not(aside *):hover,
+html:not(.dark) .admin-panel button[class*="bg-primary"]:not([class*="bg-primary/"]):not(aside *):hover,
+html:not(.dark) .admin-panel .inline-flex[class*="bg-primary"]:not([class*="bg-primary/"]):not(aside *):hover,
+html:not(.dark) .admin-panel button[type="submit"][class*="px-"]:not(aside *):hover,
+html:not(.dark) .admin-panel button[type="submit"][class*="py-5"]:not(aside *):hover,
+html:not(.dark) .admin-panel button[type="submit"][class*="flex-1"]:not(aside *):hover,
+html:not(.dark) [role="dialog"] button.bg-primary:hover,
+html:not(.dark) [role="dialog"] button[type="submit"]:hover,
+html:not(.dark) .fixed.inset-0 button.bg-primary:hover,
+html:not(.dark) .fixed.inset-0 button[type="submit"]:hover {
+    background-color: #c5a23c !important;
+    background: #c5a23c !important;
+    color: #ffffff !important;
+    border-color: #c5a23c !important;
+}
+
+/* E. POS Checkout Button and Cart Spacing High Contrast Color Settings */
+html:not(.dark) .admin-panel .bg-slate-900,
+html:not(.dark) .admin-panel .bg-slate-900 *,
+html:not(.dark) .admin-panel .bg-slate-950,
+html:not(.dark) .admin-panel .bg-slate-950 *,
+html:not(.dark) .admin-panel .bg-slate-800,
+html:not(.dark) .admin-panel .bg-slate-800 * {
+    color: #ffffff !important;
+}
+
+html:not(.dark) .admin-panel .bg-slate-900 .text-emerald-500,
+html:not(.dark) .admin-panel .bg-slate-900 .text-emerald-400,
+html:not(.dark) .admin-panel .bg-slate-900 .text-rose-500,
+html:not(.dark) .admin-panel .bg-slate-900 .text-rose-450,
+html:not(.dark) .admin-panel .bg-slate-900 .text-rose-400,
+html:not(.dark) .admin-panel .bg-slate-900 .text-violet-400,
+html:not(.dark) .admin-panel .bg-slate-900 .bg-rose-500,
+html:not(.dark) .admin-panel .bg-slate-900 .bg-emerald-500 {
+    color: inherit !important;
+}
+
+html:not(.dark) .admin-panel .bg-slate-900 input::placeholder,
+html:not(.dark) .admin-panel .bg-slate-900 textarea::placeholder {
+    color: rgba(255, 255, 255, 0.4) !important;
+}
+
+/* F. Fix whatsapp-credits page general text and contrast */
+html:not(.dark) .admin-panel .whatsapp-credits-container,
+html:not(.dark) .admin-panel .whatsapp-credits-container * {
+    color: #0f172a !important;
 }
