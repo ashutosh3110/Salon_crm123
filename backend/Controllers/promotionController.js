@@ -28,7 +28,12 @@ exports.getActivePromotions = async (req, res) => {
 exports.createPromotion = async (req, res) => {
     try {
         const salonId = req.user.salonId;
-        const promo = await Promotion.create({ ...req.body, salonId });
+        const promo = await Promotion.create({
+            ...req.body,
+            totalUsageLimit: 1,
+            usageLimitPerCustomer: 1,
+            salonId
+        });
         res.status(201).json({ success: true, data: promo });
     } catch (err) {
         res.status(400).json({ success: false, message: err.message });
@@ -40,7 +45,11 @@ exports.updatePromotion = async (req, res) => {
         const salonId = req.user.salonId;
         const promo = await Promotion.findOneAndUpdate(
             { _id: req.params.id, salonId },
-            req.body,
+            {
+                ...req.body,
+                totalUsageLimit: 1,
+                usageLimitPerCustomer: 1
+            },
             { new: true, runValidators: true }
         );
         if (!promo) return res.status(404).json({ success: false, message: 'Promotion not found' });
@@ -143,13 +152,24 @@ exports.validateCoupon = async (req, res) => {
                 }
             });
 
+            if (eligibleSubtotal === 0) {
+                if (appOn === 'SERVICE') {
+                    return res.status(400).json({ success: false, message: 'This coupon is only applicable on services' });
+                } else if (appOn === 'PRODUCT') {
+                    return res.status(400).json({ success: false, message: 'This coupon is only applicable on products' });
+                }
+            }
+
             if (promo.type === 'PERCENTAGE') {
                 discount = (eligibleSubtotal * promo.value) / 100;
             } else {
                 discount = Math.min(promo.value, eligibleSubtotal);
             }
         } else {
-            // Fallback to billAmount
+            // Fallback to billAmount (Service booking context)
+            if (appOn === 'PRODUCT') {
+                return res.status(400).json({ success: false, message: 'This coupon is only applicable on products' });
+            }
             const amount = Number(billAmount) || 0;
             if (promo.type === 'PERCENTAGE') {
                 discount = (amount * promo.value) / 100;

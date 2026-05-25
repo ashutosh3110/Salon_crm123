@@ -11,7 +11,7 @@ const promotionSchema = new mongoose.Schema({
     isActive: { type: Boolean, default: true },
     activationMode: { type: String, enum: ['AUTO', 'COUPON'], default: 'AUTO' },
     couponCode: { type: String, uppercase: true, trim: true },
-    totalUsageLimit: { type: Number },
+    totalUsageLimit: { type: Number, default: 1 },
     usageLimitPerCustomer: { type: Number, default: 1 },
     usageCount: { type: Number, default: 0 },
     outletIds: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Outlet' }],

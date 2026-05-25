@@ -740,7 +740,7 @@ exports.getCustomerInitialData = async (req, res) => {
         // Base filters
         const serviceFilter = { salonId, status: 'active' };
         const productFilter = { salonId, status: 'active' };
-        const feedbackFilter = { salonId, status: 'active' };
+        const feedbackFilter = { salonId, status: 'Approved' };
 
         if (outletId && mongoose.Types.ObjectId.isValid(outletId)) {
             const outletQuery = {

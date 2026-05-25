@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ChevronLeft, Package, Calendar, CreditCard, Truck, MapPin, CheckCircle, Clock, Hash, ShoppingBag, Zap, XCircle } from 'lucide-react';
+import { ChevronLeft, Package, Calendar, CreditCard, Truck, MapPin, CheckCircle, Clock, Hash, ShoppingBag, Zap, XCircle, Tag } from 'lucide-react';
 import { useCustomerTheme } from '../../contexts/CustomerThemeContext';
 import api from '../../services/api';
 import { getImageUrl } from '../../utils/imageUtils';
@@ -35,8 +35,13 @@ export default function AppOrderDetailsPage() {
     const deliveryFee = order?.deliveryCharge || (order?.deliveryPreference === 'home' ? (order?.outletId?.config?.deliveryCharge || 0) : 0);
     const totalAmount = order?.totalAmount || 0;
     const taxAmount = order?.taxAmount || 0;
-    // Calculate discount if it's explicitly stored OR infer it from the difference
-    const membershipDiscount = order?.membershipDiscount || Math.max(0, (itemsTotal + deliveryFee + taxAmount) - totalAmount);
+    const promoDiscount = order?.promoDiscount || 0;
+    const membershipDiscount = order?.membershipDiscount || 0;
+
+    const discountableAmount = itemsTotal - membershipDiscount - promoDiscount;
+    const calculatedGstPercent = discountableAmount > 0 && taxAmount > 0 
+        ? Math.round((taxAmount / discountableAmount) * 100) 
+        : 12; // default fallback
 
     const statusConfig = {
         pending: { color: '#F59E0B', label: 'Order Pending', icon: Clock, bg: 'rgba(245,158,11,0.1)' },
@@ -202,21 +207,49 @@ export default function AppOrderDetailsPage() {
                         </div>
                     )}
 
-                    <div className="flex justify-between items-center text-sm">
-                        <span className="opacity-60 font-bold uppercase text-[10px] tracking-widest">Delivery Fee</span>
-                        <span className="font-black italic tracking-tighter" style={{ color: deliveryFee > 0 ? colors.text : '#10B981' }}>
-                            {deliveryFee > 0 ? `₹${deliveryFee.toLocaleString()}` : 'FREE'}
-                        </span>
-                    </div>
-
-                    {(taxAmount > 0 || !order.taxAmount) && (
+                    {order?.couponCode && promoDiscount > 0 && (
                         <div className="flex justify-between items-center text-sm">
-                            <span className="opacity-60 font-bold uppercase text-[10px] tracking-widest">GST / Tax</span>
-                            <span className="font-black italic tracking-tighter" style={{ color: colors.text }}>
-                                ₹{taxAmount > 0 ? taxAmount.toLocaleString() : Math.round((itemsTotal - membershipDiscount) * 0.18).toLocaleString()}
+                            <span className="font-black uppercase text-[10px] tracking-widest text-[#C8956C] flex items-center gap-1.5">
+                                <Tag size={12} className="rotate-90 text-[#C8956C]" />
+                                Coupon Applied ({order.couponCode})
+                            </span>
+                            <span className="font-black italic tracking-tighter text-[#C8956C]">- ₹{Number(promoDiscount).toFixed(2)}</span>
+                        </div>
+                    )}
+
+                    {order?.deliveryPreference === 'home' && (
+                        <div className="flex justify-between items-center text-sm">
+                            <span className="opacity-60 font-bold uppercase text-[10px] tracking-widest">Delivery Fee</span>
+                            <span className="font-black italic tracking-tighter" style={{ color: deliveryFee > 0 ? colors.text : '#10B981' }}>
+                                {deliveryFee > 0 ? `₹${deliveryFee.toLocaleString()}` : 'FREE'}
                             </span>
                         </div>
                     )}
+
+                    <div className="flex justify-between items-center text-sm">
+                        <span className="opacity-60 font-bold uppercase text-[10px] tracking-widest">Tax Rule</span>
+                        <span className="font-black uppercase text-[9px] tracking-widest text-amber-500 bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 rounded">Excluding GST (Tax Extra)</span>
+                    </div>
+
+                    <div className="flex justify-between items-center text-sm">
+                        <span className="opacity-60 font-bold uppercase text-[10px] tracking-widest">GST Rate</span>
+                        <span className="font-black italic tracking-tighter" style={{ color: colors.text }}>{calculatedGstPercent}%</span>
+                    </div>
+
+                    <div className="flex justify-between items-center text-sm pl-4 border-l-2 border-black/5 dark:border-white/5">
+                        <span className="opacity-50 font-bold uppercase text-[9.5px] tracking-widest">CGST ({calculatedGstPercent / 2}%)</span>
+                        <span className="font-black italic tracking-tighter opacity-80" style={{ color: colors.text }}>₹{(taxAmount / 2).toFixed(2)}</span>
+                    </div>
+
+                    <div className="flex justify-between items-center text-sm pl-4 border-l-2 border-black/5 dark:border-white/5">
+                        <span className="opacity-50 font-bold uppercase text-[9.5px] tracking-widest">SGST ({calculatedGstPercent / 2}%)</span>
+                        <span className="font-black italic tracking-tighter opacity-80" style={{ color: colors.text }}>₹{(taxAmount / 2).toFixed(2)}</span>
+                    </div>
+
+                    <div className="flex justify-between items-center text-sm">
+                        <span className="opacity-60 font-bold uppercase text-[10px] tracking-widest">Total Tax / GST</span>
+                        <span className="font-black italic tracking-tighter" style={{ color: colors.text }}>₹{taxAmount.toFixed(2)}</span>
+                    </div>
 
                     <div className="pt-4 mt-2 border-t border-dashed space-y-4" style={{ borderTopColor: colors.border }}>
                         <div className="flex justify-between items-center">
