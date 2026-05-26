@@ -308,7 +308,7 @@ export default function CustomersPage({ tab = 'directory' }) {
                         <>
                             <CustomerDirectory
                                 customers={customers}
-                                onCustomerClick={setSelectedCustomer}
+                                onCustomerClick={(c) => navigate(`/admin/crm/customers/${c._id}`)}
                                 onDelete={deleteCustomer}
                                 onUpdate={updateCustomer}
                                 searchTerm={search}

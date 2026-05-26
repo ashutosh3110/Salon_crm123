@@ -345,15 +345,24 @@ exports.getOrders = async (req, res) => {
 // @access  Private
 exports.getCustomerOrders = async (req, res) => {
     try {
+        const page = parseInt(req.query.page, 10) || 1;
+        const limit = parseInt(req.query.limit, 10) || 10;
+        const skip = (page - 1) * limit;
+
+        const totalCount = await Order.countDocuments({ customerId: req.params.customerId });
         const orders = await Order.find({ customerId: req.params.customerId })
             .populate('items.productId', 'name image price sellingPrice')
             .populate('salonId', 'name logo')
             .populate('outletId', 'name city')
-            .sort({ createdAt: -1 });
+            .sort({ createdAt: -1 })
+            .skip(skip)
+            .limit(limit);
 
         res.json({
             success: true,
-            count: orders.length,
+            totalCount,
+            totalPages: Math.ceil(totalCount / limit),
+            currentPage: page,
             data: orders
         });
     } catch (err) {
