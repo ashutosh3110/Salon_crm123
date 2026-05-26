@@ -371,105 +371,107 @@ export default function PromotionsPage() {
             </div>
 
             {showModal && createPortal(
-                <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-[9999] flex items-center justify-center p-4 text-left" onClick={() => setShowModal(false)}>
-                    <div className="bg-white rounded-none w-full max-w-xl shadow-2xl relative overflow-hidden border border-slate-200 max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+                <div className="fixed inset-0 bg-black/60 backdrop-blur-md z-[9999] flex items-center justify-center p-4 text-left" onClick={() => setShowModal(false)}>
+                    <div className="bg-white rounded-2xl w-full max-w-xl shadow-[0_20px_60px_-15px_rgba(0,0,0,0.3)] relative overflow-hidden border border-border max-h-[85vh] flex flex-col" onClick={(e) => e.stopPropagation()}>
                         {/* Modal Header */}
-                        <div className="flex items-center justify-between px-8 pt-8 pb-6 border-b border-slate-100">
+                        <div className="flex items-center justify-between px-6 py-4 border-b border-border bg-surface">
                             <div>
-                                <h2 className="text-sm font-black uppercase tracking-[0.2em] text-slate-900">{editing ? 'Edit Coupon' : 'Create New Offer'}</h2>
-                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Configure your discount rules</p>
+                                <h2 className="text-sm font-black uppercase tracking-[0.2em] text-text">{editing ? 'Edit Coupon' : 'Create New Offer'}</h2>
+                                <p className="text-[10px] font-bold text-text-muted uppercase tracking-widest mt-1">Configure your discount rules</p>
                             </div>
-                            <button type="button" onClick={() => setShowModal(false)} className="p-2 rounded-full hover:bg-slate-100 text-slate-400 hover:text-rose-500 transition-all">
+                            <button type="button" onClick={() => setShowModal(false)} className="p-2 hover:bg-white text-text-muted hover:text-rose-500 transition-all border border-transparent hover:border-border">
                                 <X className="w-5 h-5" />
                             </button>
                         </div>
-                        <form onSubmit={handleSubmit} className="space-y-6 p-8 text-left">
-                            <div className="space-y-2">
-                                <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">Offer Name *</label>
-                                <input type="text" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required className="w-full px-4 py-3 rounded-none bg-slate-50 border border-slate-200 text-xs font-bold uppercase tracking-widest focus:border-primary outline-none transition-all text-slate-900" />
-                            </div>
-                            <div className="grid grid-cols-2 gap-4">
+                        <div className="overflow-y-auto no-scrollbar flex-1">
+                            <form onSubmit={handleSubmit} className="space-y-6 p-6 text-left">
                                 <div className="space-y-2">
-                                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">Discount Type *</label>
-                                    <select value={form.type} onChange={(e) => setForm({ ...form, type: e.target.value })} className="w-full px-4 py-3 rounded-none bg-slate-50 border border-slate-200 text-xs font-bold uppercase tracking-widest focus:border-primary outline-none transition-all cursor-pointer text-slate-900">
-                                        <option value="percentage">Percent Off</option>
-                                        <option value="flat">Fixed ₹ Off</option>
-                                    </select>
+                                    <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Offer Name *</label>
+                                    <input placeholder="e.g. SUMMER SALE" type="text" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required className="w-full px-4 py-3 rounded-none bg-white border border-border text-xs font-bold uppercase tracking-widest focus:border-primary outline-none transition-all text-text placeholder:text-text-muted/40" />
                                 </div>
-                                <div className="space-y-2">
-                                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">Discount Value *</label>
-                                    <input type="number" value={form.value} onChange={(e) => setForm({ ...form, value: e.target.value })} required className="w-full px-4 py-3 rounded-none bg-slate-50 border border-slate-200 text-xs font-bold uppercase tracking-widest focus:border-primary outline-none transition-all text-slate-900" />
-                                </div>
-                            </div>
-                            <div className="grid grid-cols-2 gap-4">
-                                <div className="space-y-2">
-                                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">Valid From</label>
-                                    <input type="date" value={form.startDate} onChange={(e) => setForm({ ...form, startDate: e.target.value })} className="w-full px-4 py-3 rounded-none bg-slate-50 border border-slate-200 text-xs font-bold focus:border-primary outline-none transition-all uppercase text-slate-900" />
-                                </div>
-                                <div className="space-y-2">
-                                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">Valid Until</label>
-                                    <input type="date" value={form.endDate} onChange={(e) => setForm({ ...form, endDate: e.target.value })} className="w-full px-4 py-3 rounded-none bg-slate-50 border border-slate-200 text-xs font-bold focus:border-primary outline-none transition-all uppercase text-slate-900" />
-                                </div>
-                            </div>
-                            <div className="grid grid-cols-2 gap-4">
-                                <div className="space-y-2">
-                                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">Total Usage Limit</label>
-                                    <input type="number" value={form.usageLimit} onChange={(e) => setForm({ ...form, usageLimit: e.target.value })} required className="w-full px-4 py-3 rounded-none bg-slate-50 border border-slate-200 text-xs font-bold uppercase tracking-widest focus:border-primary outline-none transition-all text-slate-900" />
-                                </div>
-                                <div className="space-y-2">
-                                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">Usage Limit Per Customer</label>
-                                    <input type="number" value={form.usageLimitPerCustomer} onChange={(e) => setForm({ ...form, usageLimitPerCustomer: e.target.value })} required className="w-full px-4 py-3 rounded-none bg-slate-50 border border-slate-200 text-xs font-bold uppercase tracking-widest focus:border-primary outline-none transition-all text-slate-900" />
-                                </div>
-                            </div>
-                            <div className="grid grid-cols-2 gap-4">
-                                <div className="space-y-2">
-                                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">How It Applies</label>
-                                    <select value={form.activationMode || 'AUTO'} onChange={(e) => setForm({ ...form, activationMode: e.target.value })} className="w-full px-4 py-3 rounded-none bg-slate-50 border border-slate-200 text-xs font-bold uppercase tracking-widest focus:border-primary outline-none transition-all cursor-pointer text-slate-900">
-                                        <option value="AUTO">Automatic</option>
-                                        <option value="COUPON">Coupon Code</option>
-                                    </select>
-                                </div>
-                                <div className="space-y-2">
-                                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">Code</label>
-                                    <input type="text" value={form.couponCode} onChange={(e) => setForm({ ...form, couponCode: e.target.value.toUpperCase() })} className="w-full px-4 py-3 rounded-none bg-slate-50 border border-slate-200 text-xs font-bold uppercase tracking-widest focus:border-primary outline-none transition-all text-slate-900 disabled:opacity-40" disabled={form.activationMode !== 'COUPON'} />
-                                </div>
-                            </div>
-                            <div className="grid grid-cols-2 gap-4">
-                                <div className="space-y-2">
-                                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">Discount Applies To *</label>
-                                    <select value={form.applicableOn} onChange={(e) => setForm({ ...form, applicableOn: e.target.value })} className="w-full px-4 py-3 rounded-none bg-slate-50 border border-slate-200 text-xs font-bold uppercase tracking-widest focus:border-primary outline-none transition-all cursor-pointer text-slate-900">
-                                        <option value="BOTH">Both Services & Products</option>
-                                        <option value="SERVICE">Services Only</option>
-                                        <option value="PRODUCT">Products Only</option>
-                                    </select>
-                                </div>
-                                <div className="space-y-2">
-                                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">Applicable Outlets</label>
-                                    <div className="border border-slate-200 p-3 bg-slate-50 max-h-[120px] overflow-y-auto space-y-2 rounded-none">
-                                        <label className="flex items-center gap-3 cursor-pointer text-xs font-bold uppercase tracking-wider text-slate-700">
-                                            <input type="checkbox" checked={form.outletIds.length === 0} onChange={() => setForm({ ...form, outletIds: [] })} className="accent-primary w-4 h-4 cursor-pointer" />
-                                            All Outlets
-                                        </label>
-                                        {outlets && outlets.map(o => (
-                                            <label key={o._id} className="flex items-center gap-3 cursor-pointer text-xs font-bold uppercase tracking-wider text-slate-700">
-                                                <input type="checkbox" checked={form.outletIds.includes(o._id)} onChange={(e) => {
-                                                    if (e.target.checked) {
-                                                        setForm({ ...form, outletIds: [...form.outletIds, o._id] });
-                                                    } else {
-                                                        setForm({ ...form, outletIds: form.outletIds.filter(id => id !== o._id) });
-                                                    }
-                                                }} className="accent-primary w-4 h-4 cursor-pointer" />
-                                                {o.name}
-                                            </label>
-                                        ))}
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="space-y-2">
+                                        <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Discount Type *</label>
+                                        <select value={form.type} onChange={(e) => setForm({ ...form, type: e.target.value })} className="w-full px-4 py-3 rounded-none bg-white border border-border text-xs font-bold uppercase tracking-widest focus:border-primary outline-none transition-all cursor-pointer text-text">
+                                            <option value="percentage">Percent Off</option>
+                                            <option value="flat">Fixed ₹ Off</option>
+                                        </select>
+                                    </div>
+                                    <div className="space-y-2">
+                                        <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Discount Value *</label>
+                                        <input placeholder="0" type="number" value={form.value} onChange={(e) => setForm({ ...form, value: e.target.value })} required className="w-full px-4 py-3 rounded-none bg-white border border-border text-xs font-bold uppercase tracking-widest focus:border-primary outline-none transition-all text-text placeholder:text-text-muted/40" />
                                     </div>
                                 </div>
-                            </div>
-                            <div className="flex gap-4 pt-4 border-t border-slate-100">
-                                <button type="button" onClick={() => setShowModal(false)} className="flex-1 py-4 rounded-none border border-slate-200 text-[11px] font-bold uppercase tracking-[0.2em] text-slate-600 hover:bg-slate-50 transition-all">Cancel</button>
-                                <button type="submit" className="flex-1 py-4 bg-slate-900 text-white rounded-none font-bold text-[11px] uppercase tracking-[0.2em] shadow-lg hover:bg-primary transition-all">{editing ? 'Save Changes' : 'Create Offer'}</button>
-                            </div>
-                        </form>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="space-y-2">
+                                        <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Valid From</label>
+                                        <input type="date" value={form.startDate} onChange={(e) => setForm({ ...form, startDate: e.target.value })} className="w-full px-4 py-3 rounded-none bg-white border border-border text-xs font-bold focus:border-primary outline-none transition-all uppercase text-text" />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Valid Until</label>
+                                        <input type="date" value={form.endDate} onChange={(e) => setForm({ ...form, endDate: e.target.value })} className="w-full px-4 py-3 rounded-none bg-white border border-border text-xs font-bold focus:border-primary outline-none transition-all uppercase text-text" />
+                                    </div>
+                                </div>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="space-y-2">
+                                        <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Total Usage Limit</label>
+                                        <input type="number" value={form.usageLimit} onChange={(e) => setForm({ ...form, usageLimit: e.target.value })} required className="w-full px-4 py-3 rounded-none bg-white border border-border text-xs font-bold uppercase tracking-widest focus:border-primary outline-none transition-all text-text" />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Usage Limit Per Customer</label>
+                                        <input type="number" value={form.usageLimitPerCustomer} onChange={(e) => setForm({ ...form, usageLimitPerCustomer: e.target.value })} required className="w-full px-4 py-3 rounded-none bg-white border border-border text-xs font-bold uppercase tracking-widest focus:border-primary outline-none transition-all text-text" />
+                                    </div>
+                                </div>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="space-y-2">
+                                        <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">How It Applies</label>
+                                        <select value={form.activationMode || 'AUTO'} onChange={(e) => setForm({ ...form, activationMode: e.target.value })} className="w-full px-4 py-3 rounded-none bg-white border border-border text-xs font-bold uppercase tracking-widest focus:border-primary outline-none transition-all cursor-pointer text-text">
+                                            <option value="AUTO">Automatic</option>
+                                            <option value="COUPON">Coupon Code</option>
+                                        </select>
+                                    </div>
+                                    <div className="space-y-2">
+                                        <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Code</label>
+                                        <input placeholder="CODE10" type="text" value={form.couponCode} onChange={(e) => setForm({ ...form, couponCode: e.target.value.toUpperCase() })} className="w-full px-4 py-3 rounded-none bg-white border border-border text-xs font-bold uppercase tracking-widest focus:border-primary outline-none transition-all text-text disabled:opacity-40 disabled:bg-surface" disabled={form.activationMode !== 'COUPON'} />
+                                    </div>
+                                </div>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="space-y-2">
+                                        <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Discount Applies To *</label>
+                                        <select value={form.applicableOn} onChange={(e) => setForm({ ...form, applicableOn: e.target.value })} className="w-full px-4 py-3 rounded-none bg-white border border-border text-xs font-bold uppercase tracking-widest focus:border-primary outline-none transition-all cursor-pointer text-text">
+                                            <option value="BOTH">Both Services & Products</option>
+                                            <option value="SERVICE">Services Only</option>
+                                            <option value="PRODUCT">Products Only</option>
+                                        </select>
+                                    </div>
+                                    <div className="space-y-2">
+                                        <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Applicable Outlets</label>
+                                        <div className="border border-border p-3 bg-white max-h-[120px] overflow-y-auto space-y-2 rounded-none">
+                                            <label className="flex items-center gap-3 cursor-pointer text-xs font-bold uppercase tracking-wider text-text">
+                                                <input type="checkbox" checked={form.outletIds.length === 0} onChange={() => setForm({ ...form, outletIds: [] })} className="accent-primary w-4 h-4 cursor-pointer" />
+                                                All Outlets
+                                            </label>
+                                            {outlets && outlets.map(o => (
+                                                <label key={o._id} className="flex items-center gap-3 cursor-pointer text-xs font-bold uppercase tracking-wider text-text">
+                                                    <input type="checkbox" checked={form.outletIds.includes(o._id)} onChange={(e) => {
+                                                        if (e.target.checked) {
+                                                            setForm({ ...form, outletIds: [...form.outletIds, o._id] });
+                                                        } else {
+                                                            setForm({ ...form, outletIds: form.outletIds.filter(id => id !== o._id) });
+                                                        }
+                                                    }} className="accent-primary w-4 h-4 cursor-pointer" />
+                                                    {o.name}
+                                                </label>
+                                            ))}
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="flex gap-4 pt-4 border-t border-border">
+                                    <button type="button" onClick={() => setShowModal(false)} className="flex-1 py-4 rounded-none border border-border text-[11px] font-bold uppercase tracking-[0.2em] text-text-muted hover:bg-surface transition-all">Cancel</button>
+                                    <button type="submit" className="flex-1 py-4 bg-primary text-primary-foreground rounded-none font-black text-[11px] uppercase tracking-[0.2em] shadow-lg shadow-primary/20 hover:brightness-110 transition-all">{editing ? 'Save Changes' : 'Create Offer'}</button>
+                                </div>
+                            </form>
+                        </div>
                     </div>
                 </div>,
                 document.body

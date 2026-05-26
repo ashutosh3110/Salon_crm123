@@ -191,7 +191,7 @@ export default function CustomerProfileModal({ customer, isOpen, onClose }) {
     };
 
     return createPortal(
-        <div className="fixed inset-0 z-[9999] flex items-end justify-center p-0">
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
             {/* Backdrop */}
             <div
                 className="absolute inset-0 bg-black/60 backdrop-blur-md animate-fadeIn"
@@ -199,15 +199,11 @@ export default function CustomerProfileModal({ customer, isOpen, onClose }) {
             />
 
             {/* Modal */}
-            <div className="relative w-full max-w-5xl bg-white rounded-t-3xl shadow-[0_-20px_50px_-15px_rgba(0,0,0,0.3)] animate-in slide-in-from-bottom-full duration-500 ease-out flex flex-col mt-auto border-t border-border overflow-hidden max-h-[95vh]">
-                {/* Visual Handle for Bottom Sheet */}
-                <div className="w-full flex justify-center pt-3 pb-1 bg-surface">
-                    <div className="w-12 h-1.5 bg-border rounded-full opacity-50" />
-                </div>
+            <div className="relative w-full max-w-5xl bg-white rounded-2xl shadow-[0_20px_60px_-15px_rgba(0,0,0,0.3)] animate-in fade-in zoom-in-95 duration-300 ease-out flex flex-col border border-border overflow-hidden max-h-[85vh]">
                 {/* Header Section (Integrated Design) */}
-                <div className="bg-surface p-4 border-b border-border flex justify-between items-start">
-                    <div className="flex gap-4 items-center">
-                        <div className="w-16 h-16 rounded-none bg-text text-white flex items-center justify-center text-2xl font-black shadow-lg overflow-hidden border-2 border-white">
+                <div className="bg-surface px-4 py-2.5 border-b border-border flex justify-between items-center">
+                    <div className="flex gap-3 items-center">
+                        <div className="w-11 h-11 rounded-none bg-text text-white flex items-center justify-center text-lg font-black shadow-lg overflow-hidden border-2 border-white">
                             {customer.avatar ? (
                                 <img
                                     src={getImageUrl(customer.avatar)}
@@ -219,62 +215,62 @@ export default function CustomerProfileModal({ customer, isOpen, onClose }) {
                                 customer.name.charAt(0).toUpperCase()
                             )}
                         </div>
-                        <div className="space-y-1">
+                        <div className="space-y-0.5">
                             {isEditing ? (
-                                <div className="space-y-3">
+                                <div className="space-y-1.5">
                                     <input
                                         type="text"
                                         value={editForm?.name}
                                         onChange={(e) => setEditForm({ ...editForm, name: e.target.value.replace(/[^a-zA-Z\s]/g, '') })}
-                                        className="text-2xl font-black text-text bg-white border border-border px-4 py-2 rounded-none outline-none focus:border-primary uppercase tracking-tight"
+                                        className="text-lg font-black text-text bg-white border border-border px-3 py-1.5 rounded-none outline-none focus:border-primary uppercase tracking-tight"
                                     />
                                     <input
                                         type="tel"
                                         value={editForm?.phone}
                                         onChange={(e) => setEditForm({ ...editForm, phone: e.target.value })}
-                                        className="block font-bold text-text-muted text-xs bg-white border border-border px-4 py-2 rounded-none outline-none focus:border-primary"
+                                        className="block font-bold text-text-muted text-[10px] bg-white border border-border px-3 py-1.5 rounded-none outline-none focus:border-primary"
                                     />
                                 </div>
                             ) : (
                                 <>
-                                    <div className="flex items-center gap-4">
-                                        <h2 className="text-3xl font-black text-text tracking-tighter uppercase">{customer.name}</h2>
-                                        <div className="flex gap-2 font-black uppercase tracking-[0.2em] text-[10px]">
+                                    <div className="flex items-center gap-2.5">
+                                        <h2 className="text-xl font-black text-text tracking-tighter uppercase">{customer.name}</h2>
+                                        <div className="flex gap-1.5 font-black uppercase tracking-[0.2em] text-[9px]">
                                             {(customer.tags || []).map((tag, i) => (
-                                                <span key={i} className={`px-2 py-0.5 ${tag === 'VIP' ? 'bg-amber-500 text-white' : 'bg-primary/10 text-primary border border-primary/10'}`}>
+                                                <span key={i} className={`px-1.5 py-px ${tag === 'VIP' ? 'bg-amber-500 text-white' : 'bg-primary/10 text-primary border border-primary/10'}`}>
                                                     {tag}
                                                 </span>
                                             ))}
                                         </div>
                                     </div>
-                                    <p className="font-extrabold text-text-muted text-[10px] flex items-center gap-3 uppercase tracking-[0.3em]">
+                                    <p className="font-extrabold text-text-muted text-[9px] flex items-center gap-2 uppercase tracking-[0.3em]">
                                         {maskPhone(customer.phone, user?.role)} <span className="opacity-20 text-text">|</span> {customer.status} MEMBER STATUS
                                     </p>
                                 </>
                             )}
                         </div>
                     </div>
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-2">
                         {isEditing ? (
                             <button
                                 onClick={handleSave}
-                                className="flex items-center gap-2 bg-primary text-white px-6 py-3 rounded-none text-[10px] font-black uppercase tracking-widest hover:bg-primary-dark transition-all shadow-xl shadow-primary/20"
+                                className="flex items-center gap-1.5 bg-primary text-white px-4 py-2 rounded-none text-[9px] font-black uppercase tracking-widest hover:bg-primary-dark transition-all shadow-xl shadow-primary/20"
                             >
                                 SAVE CHANGES
                             </button>
                         ) : (
                             <button
                                 onClick={() => setIsEditing(true)}
-                                className="flex items-center gap-2 bg-white border border-border px-6 py-3 rounded-none text-[10px] font-black text-text-muted hover:bg-surface transition-all uppercase tracking-widest"
+                                className="flex items-center gap-1.5 bg-white border border-border px-4 py-2 rounded-none text-[9px] font-black text-text-muted hover:bg-surface transition-all uppercase tracking-widest"
                             >
                                 EDIT DATA
                             </button>
                         )}
                         <button
                             onClick={onClose}
-                            className="p-3 hover:bg-surface transition-all border border-transparent hover:border-border"
+                            className="p-2 hover:bg-surface transition-all border border-transparent hover:border-border"
                         >
-                            <X className="w-6 h-6 text-text-muted" />
+                            <X className="w-5 h-5 text-text-muted" />
                         </button>
                     </div>
                 </div>
@@ -306,17 +302,17 @@ export default function CustomerProfileModal({ customer, isOpen, onClose }) {
                 {/* Content Tabs */}
                 <div className="flex-1 flex flex-col md:flex-row overflow-hidden min-h-0">
                     {/* Left Mini Sidebar */}
-                    <div className="w-full md:w-52 bg-surface p-3 space-y-1.5 border-r border-border shrink-0">
+                    <div className="w-full md:w-44 bg-surface p-2 space-y-1 border-r border-border shrink-0">
                         <TabButton id="details" label="Identity Matrix" icon={FileText} active={activeTab === 'details'} onClick={setActiveTab} />
                         <TabButton id="wallet" label="Wallet Matrix" icon={Wallet} active={activeTab === 'wallet'} onClick={setActiveTab} />
                         <TabButton id="history" label="Visit Timeline" icon={Clock3} active={activeTab === 'history'} onClick={setActiveTab} />
                     </div>
 
                     {/* Right Scrollable Content */}
-                    <div className="flex-1 overflow-y-auto p-4 no-scrollbar scroll-smooth bg-white">
+                    <div className="flex-1 overflow-y-auto p-3 no-scrollbar scroll-smooth bg-white">
                         {activeTab === 'details' && (
-                            <div className="space-y-8 animate-in fade-in slide-in-from-left-2 duration-400">
-                                <div className="grid grid-cols-2 gap-8">
+                            <div className="space-y-4 animate-in fade-in slide-in-from-left-2 duration-400">
+                                <div className="grid grid-cols-2 gap-4">
                                     <DetailField label="Date of Birth" value={customer.dob} icon={Cake} type="date" isEditing={isEditing} editValue={editForm?.dob} onEdit={(val) => setEditForm({ ...editForm, dob: val })} />
                                     <DetailField label="Anniversary" value={customer.anniversary} icon={Calendar} type="date" isEditing={isEditing} editValue={editForm?.anniversary} onEdit={(val) => setEditForm({ ...editForm, anniversary: val })} />
 
@@ -325,7 +321,7 @@ export default function CustomerProfileModal({ customer, isOpen, onClose }) {
                                             <Star className={`w-3 h-3 ${customer.isVIP ? 'text-amber-500' : ''}`} /> VIP Privilege
                                         </p>
                                         {isEditing ? (
-                                            <label className="flex items-center gap-3 cursor-pointer group bg-surface border border-primary/20 p-3">
+                                            <label className="flex items-center gap-2 cursor-pointer group bg-surface border border-primary/20 p-2">
                                                 <input
                                                     type="checkbox"
                                                     checked={editForm?.isVIP}
@@ -335,7 +331,7 @@ export default function CustomerProfileModal({ customer, isOpen, onClose }) {
                                                 <span className="text-[11px] font-black uppercase tracking-widest text-text">Mark as VIP Member</span>
                                             </label>
                                         ) : (
-                                            <p className={`text-sm font-black uppercase tracking-tight px-4 py-3 border border-border/50 ${customer.isVIP ? 'bg-amber-500 text-white' : 'bg-surface-alt text-text-muted'}`}>
+                                            <p className={`text-xs font-black uppercase tracking-tight px-3 py-2 border border-border/50 ${customer.isVIP ? 'bg-amber-500 text-white' : 'bg-surface-alt text-text-muted'}`}>
                                                 {customer.isVIP ? 'VIP MEMBER' : 'STANDARD MEMBER'}
                                             </p>
                                         )}
@@ -349,14 +345,14 @@ export default function CustomerProfileModal({ customer, isOpen, onClose }) {
                                             <select
                                                 value={editForm?.status}
                                                 onChange={(e) => setEditForm({ ...editForm, status: e.target.value })}
-                                                className="w-full bg-surface border border-primary/20 px-4 py-3 text-[11px] font-black uppercase outline-none focus:border-primary transition-all"
+                                                className="w-full bg-surface border border-primary/20 px-3 py-2 text-[10px] font-black uppercase outline-none focus:border-primary transition-all"
                                             >
                                                 <option value="active">Active</option>
                                                 <option value="inactive">Inactive</option>
                                                 <option value="suspended">Suspended</option>
                                             </select>
                                         ) : (
-                                            <p className={`text-sm font-black uppercase tracking-tight px-4 py-3 border border-border/50 ${customer.status === 'active' ? 'bg-green-500 text-white' : 'bg-rose-500 text-white'}`}>
+                                            <p className={`text-xs font-black uppercase tracking-tight px-3 py-2 border border-border/50 ${customer.status === 'active' ? 'bg-green-500 text-white' : 'bg-rose-500 text-white'}`}>
                                                 {customer.status?.toUpperCase()}
                                             </p>
                                         )}
@@ -364,67 +360,67 @@ export default function CustomerProfileModal({ customer, isOpen, onClose }) {
 
                                     <DetailField label="Core Preference" value={customer.preferredService} icon={Tag} isEditing={isEditing} editValue={editForm?.preferredService} onEdit={(val) => setEditForm({ ...editForm, preferredService: val })} />
                                 </div>
-                                <div className="space-y-8">
+                                <div className="space-y-4">
                                     <DetailField label="Residential Address" value={customer.address} icon={MapPin} isEditing={isEditing} editValue={editForm?.address} onEdit={(val) => setEditForm({ ...editForm, address: val })} isFullWidth />
                                     <DetailField label="Intelligence Remarks / Notes" value={customer.remarks} icon={FileText} isEditing={isEditing} editValue={editForm?.remarks} onEdit={(val) => setEditForm({ ...editForm, remarks: val })} isFullWidth />
                                 </div>
                             </div>
                         )}
                         {activeTab === 'wallet' && (
-                            <div className="space-y-8 animate-in fade-in slide-in-from-left-2 duration-400">
+                            <div className="space-y-4 animate-in fade-in slide-in-from-left-2 duration-400">
                                 {/* Recharge Form */}
-                                <div className="bg-surface p-6 border border-border">
-                                    <h3 className="text-[11px] font-black text-text uppercase tracking-[0.3em] mb-6 flex items-center gap-3">
-                                        <Wallet className="w-4 h-4 text-primary" /> Recharge Identity Wallet
+                                <div className="bg-surface p-4 border border-border">
+                                    <h3 className="text-[10px] font-black text-text uppercase tracking-[0.3em] mb-4 flex items-center gap-2">
+                                        <Wallet className="w-3.5 h-3.5 text-primary" /> Recharge Identity Wallet
                                     </h3>
-                                    <form onSubmit={handleRecharge} className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                                        <div className="space-y-2">
-                                            <label className="text-[9px] font-black text-text-muted uppercase tracking-widest">Type</label>
+                                    <form onSubmit={handleRecharge} className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+                                        <div className="space-y-1">
+                                            <label className="text-[8px] font-black text-text-muted uppercase tracking-widest">Type</label>
                                             <select
                                                 value={rechargeType}
                                                 onChange={(e) => setRechargeType(e.target.value)}
-                                                className="w-full bg-white border border-border px-4 py-2 text-[10px] font-black uppercase outline-none focus:border-primary"
+                                                className="w-full bg-white border border-border px-3 py-1.5 text-[10px] font-black uppercase outline-none focus:border-primary"
                                             >
                                                 <option value="CREDIT">Credit (+)</option>
                                                 <option value="DEBIT">Debit (-)</option>
                                             </select>
                                         </div>
-                                        <div className="space-y-2">
-                                            <label className="text-[9px] font-black text-text-muted uppercase tracking-widest">Amount (₹)</label>
+                                        <div className="space-y-1">
+                                            <label className="text-[8px] font-black text-text-muted uppercase tracking-widest">Amount (₹)</label>
                                             <input
                                                 type="number"
                                                 placeholder="0.00"
                                                 value={rechargeAmount}
                                                 onChange={(e) => setRechargeAmount(e.target.value)}
-                                                className="w-full bg-white border border-border px-4 py-2 text-[10px] font-black outline-none focus:border-primary"
+                                                className="w-full bg-white border border-border px-3 py-1.5 text-[10px] font-black outline-none focus:border-primary"
                                             />
                                         </div>
-                                        <div className="space-y-2">
-                                            <label className="text-[9px] font-black text-text-muted uppercase tracking-widest">Note / Reason</label>
+                                        <div className="space-y-1">
+                                            <label className="text-[8px] font-black text-text-muted uppercase tracking-widest">Note / Reason</label>
                                             <input
                                                 type="text"
                                                 placeholder="OPTIONAL NOTE..."
                                                 value={rechargeNote}
                                                 onChange={(e) => setRechargeNote(e.target.value)}
-                                                className="w-full bg-white border border-border px-4 py-2 text-[10px] font-black uppercase outline-none focus:border-primary"
+                                                className="w-full bg-white border border-border px-3 py-1.5 text-[10px] font-black uppercase outline-none focus:border-primary"
                                             />
                                         </div>
-                                        <div className="space-y-2">
-                                            <label className="text-[9px] font-black text-text-muted uppercase tracking-widest">Expiry Date (Opt.)</label>
+                                        <div className="space-y-1">
+                                            <label className="text-[8px] font-black text-text-muted uppercase tracking-widest">Expiry Date (Opt.)</label>
                                             <input
                                                 type="date"
                                                 value={rechargeExpiry}
                                                 min={new Date().toISOString().split('T')[0]}
                                                 onChange={(e) => setRechargeExpiry(e.target.value)}
-                                                className="w-full bg-white border border-border px-4 py-2 text-[10px] font-black outline-none focus:border-primary"
+                                                className="w-full bg-white border border-border px-3 py-1.5 text-[10px] font-black outline-none focus:border-primary"
                                             />
                                         </div>
 
-                                        <div className="lg:col-span-2 col-span-2 space-y-2">
+                                        <div className="lg:col-span-2 col-span-2 space-y-1.5">
                                             <button
                                                 type="button"
                                                 onClick={() => setSendWhatsAppAfterRecharge(v => !v)}
-                                                className={`w-full py-2 text-[10px] font-black uppercase tracking-widest border transition-all ${sendWhatsAppAfterRecharge ? 'bg-emerald-500 text-white border-emerald-500' : 'bg-white text-text-muted border-border hover:border-primary hover:text-primary'
+                                                className={`w-full py-1.5 text-[9px] font-black uppercase tracking-widest border transition-all ${sendWhatsAppAfterRecharge ? 'bg-emerald-500 text-white border-emerald-500' : 'bg-white text-text-muted border-border hover:border-primary hover:text-primary'
                                                     }`}
                                             >
                                                 {sendWhatsAppAfterRecharge ? 'WhatsApp message: ON' : 'WhatsApp message: OFF'}
@@ -434,8 +430,8 @@ export default function CustomerProfileModal({ customer, isOpen, onClose }) {
                                                     value={rechargeWhatsAppMessage}
                                                     onChange={(e) => setRechargeWhatsAppMessage(e.target.value)}
                                                     placeholder="Type message to send after credit..."
-                                                    className="w-full bg-white border border-border px-4 py-3 text-[10px] font-black outline-none focus:border-primary uppercase"
-                                                    rows={3}
+                                                    className="w-full bg-white border border-border px-3 py-2 text-[10px] font-black outline-none focus:border-primary uppercase"
+                                                    rows={2}
                                                 />
                                             )}
                                         </div>
@@ -444,7 +440,7 @@ export default function CustomerProfileModal({ customer, isOpen, onClose }) {
                                             <button
                                                 type="submit"
                                                 disabled={isRecharging || !rechargeAmount}
-                                                className="w-full bg-text text-white py-2 text-[10px] font-black uppercase tracking-widest hover:bg-primary transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+                                                className="w-full bg-text text-white py-1.5 text-[9px] font-black uppercase tracking-widest hover:bg-primary transition-all disabled:opacity-50 flex items-center justify-center gap-1.5"
                                             >
                                                 {isRecharging ? 'PROCESSING...' : <><Send className="w-3 h-3" /> EXECUTE</>}
                                             </button>
@@ -453,33 +449,33 @@ export default function CustomerProfileModal({ customer, isOpen, onClose }) {
                                 </div>
 
                                 {/* Wallet Transactions History */}
-                                <div className="space-y-4">
-                                    <div className="flex items-center justify-between border-b border-border pb-2">
-                                        <h3 className="text-[9px] font-black text-text-muted uppercase tracking-[0.3em]">WALLET TRANSACTION LOGS</h3>
-                                        <span className="text-[9px] font-black text-primary uppercase tracking-widest">{walletData.transactions.length} ENTRIES</span>
+                                <div className="space-y-3">
+                                    <div className="flex items-center justify-between border-b border-border pb-1.5">
+                                        <h3 className="text-[8px] font-black text-text-muted uppercase tracking-[0.3em]">WALLET TRANSACTION LOGS</h3>
+                                        <span className="text-[8px] font-black text-primary uppercase tracking-widest">{walletData.transactions.length} ENTRIES</span>
                                     </div>
                                     <div className="space-y-2">
                                         {walletData.transactions.length > 0 ? walletData.transactions.map((tx, idx) => (
-                                            <div key={tx.id} className="flex items-center justify-between p-3 bg-surface border border-border/50 hover:border-primary/20 transition-all">
-                                                <div className="flex items-center gap-4">
-                                                    <div className={`w-8 h-8 flex items-center justify-center ${tx.type === 'CREDIT' ? 'bg-emerald-500/10 text-emerald-600' : 'bg-rose-500/10 text-rose-600'}`}>
-                                                        {tx.type === 'CREDIT' ? <ArrowUpRight className="w-4 h-4" /> : <ArrowDownLeft className="w-4 h-4" />}
+                                            <div key={tx.id} className="flex items-center justify-between p-2 bg-surface border border-border/50 hover:border-primary/20 transition-all">
+                                                <div className="flex items-center gap-3">
+                                                    <div className={`w-6 h-6 flex items-center justify-center ${tx.type === 'CREDIT' ? 'bg-emerald-500/10 text-emerald-600' : 'bg-rose-500/10 text-rose-600'}`}>
+                                                        {tx.type === 'CREDIT' ? <ArrowUpRight className="w-3 h-3" /> : <ArrowDownLeft className="w-3 h-3" />}
                                                     </div>
                                                     <div>
-                                                        <p className="text-[11px] font-black text-text uppercase tracking-tight">{tx.description}</p>
-                                                        <p className="text-[8px] font-bold text-text-muted uppercase tracking-widest">{new Date(tx.date).toLocaleString()}</p>
+                                                        <p className="text-[10px] font-black text-text uppercase tracking-tight">{tx.description}</p>
+                                                        <p className="text-[7px] font-bold text-text-muted uppercase tracking-widest">{new Date(tx.date).toLocaleString()}</p>
                                                     </div>
                                                 </div>
                                                 <div className="text-right">
-                                                    <p className={`text-[13px] font-black ${tx.type === 'CREDIT' ? 'text-emerald-600' : 'text-text'}`}>
+                                                    <p className={`text-[12px] font-black ${tx.type === 'CREDIT' ? 'text-emerald-600' : 'text-text'}`}>
                                                         {tx.type === 'CREDIT' ? '+' : '-'}₹{tx.amount.toLocaleString()}
                                                     </p>
-                                                    {tx.isAdminAction && <span className="text-[8px] font-black text-primary/50 uppercase tracking-tighter">ADMIN_OVERRIDE</span>}
+                                                    {tx.isAdminAction && <span className="text-[7px] font-black text-primary/50 uppercase tracking-tighter">ADMIN_OVERRIDE</span>}
                                                 </div>
                                             </div>
                                         )) : (
-                                            <div className="text-center py-12 border-2 border-dashed border-border">
-                                                <p className="text-[10px] font-black text-text-muted uppercase tracking-widest">TRANSACTION_HISTORY_NULL</p>
+                                            <div className="text-center py-8 border-2 border-dashed border-border">
+                                                <p className="text-[9px] font-black text-text-muted uppercase tracking-widest">TRANSACTION_HISTORY_NULL</p>
                                             </div>
                                         )}
                                     </div>
@@ -504,11 +500,11 @@ function ProfileMetric({ label, value, icon: Icon, color }) {
         red: 'text-rose-500'
     };
     return (
-        <div className="px-5 py-2 space-y-0.5">
-            <span className="text-[9px] font-black text-text-muted uppercase tracking-[0.1em]">{label}</span>
-            <div className="flex items-center gap-1.5">
-                <Icon className={`w-3 h-3 ${colors[color]}`} />
-                <span className="text-sm font-black text-text uppercase tracking-tight">{value}</span>
+        <div className="px-4 py-1.5 space-y-0">
+            <span className="text-[8px] font-black text-text-muted uppercase tracking-[0.1em]">{label}</span>
+            <div className="flex items-center gap-1">
+                <Icon className={`w-2.5 h-2.5 ${colors[color]}`} />
+                <span className="text-xs font-black text-text uppercase tracking-tight">{value}</span>
             </div>
         </div>
     );
@@ -518,16 +514,16 @@ function TabButton({ id, label, icon: Icon, active, onClick }) {
     return (
         <button
             onClick={() => onClick(id)}
-            className={`w-full flex items-center justify-between px-6 py-4 rounded-none text-[11px] font-black uppercase tracking-[0.2em] transition-all group ${active
+            className={`w-full flex items-center justify-between px-4 py-2.5 rounded-none text-[10px] font-black uppercase tracking-[0.15em] transition-all group ${active
                 ? 'bg-white text-text border border-border shadow-xl shadow-slate-200/50'
                 : 'text-text-muted hover:bg-white/50 hover:text-text border border-transparent'
                 }`}
         >
-            <div className="flex items-center gap-4">
-                <Icon className={`w-4 h-4 transition-colors ${active ? 'text-primary' : 'text-text-muted group-hover:text-text'}`} />
+            <div className="flex items-center gap-3">
+                <Icon className={`w-3.5 h-3.5 transition-colors ${active ? 'text-primary' : 'text-text-muted group-hover:text-text'}`} />
                 {label}
             </div>
-            {active && <div className="w-1.5 h-1.5 bg-primary rounded-none" />}
+            {active && <div className="w-1 h-1 bg-primary rounded-none" />}
         </button>
     );
 }
@@ -540,41 +536,41 @@ function VisitHistory() {
     ];
 
     return (
-        <div className="space-y-4 animate-fadeIn">
-            <div className="flex items-center justify-between border-b border-border pb-2">
-                <h3 className="text-[9px] font-black text-text-muted uppercase tracking-[0.3em]">CHRONOLOGICAL TIMELINE</h3>
-                <span className="text-[9px] font-black text-primary uppercase tracking-widest">{history.length} RECORDS FOUND</span>
+        <div className="space-y-3 animate-fadeIn">
+            <div className="flex items-center justify-between border-b border-border pb-1.5">
+                <h3 className="text-[8px] font-black text-text-muted uppercase tracking-[0.3em]">CHRONOLOGICAL TIMELINE</h3>
+                <span className="text-[8px] font-black text-primary uppercase tracking-widest">{history.length} RECORDS FOUND</span>
             </div>
-            <div className="space-y-3">
+            <div className="space-y-2">
                 {history.map((visit, i) => (
-                    <div key={i} className="flex gap-4 relative group">
+                    <div key={i} className="flex gap-3 relative group">
                         {/* Dot & Line */}
                         <div className="flex flex-col items-center">
-                            <div className="w-2.5 h-2.5 bg-text border-2 border-white ring-1 ring-border mt-1 relative z-10 group-hover:bg-primary transition-colors" />
+                            <div className="w-2 h-2 bg-text border-2 border-white ring-1 ring-border mt-1 relative z-10 group-hover:bg-primary transition-colors" />
                             {i !== history.length - 1 && <div className="w-[1px] h-full bg-border absolute top-3" />}
                         </div>
                         {/* Visit Card */}
-                        <div className="flex-1 bg-surface border border-border p-3 hover:bg-white hover:shadow-lg hover:shadow-slate-200/30 transition-all">
-                            <div className="flex justify-between items-start mb-2">
+                        <div className="flex-1 bg-surface border border-border p-2.5 hover:bg-white hover:shadow-lg hover:shadow-slate-200/30 transition-all">
+                            <div className="flex justify-between items-start mb-1.5">
                                 <div>
-                                    <span className="text-[8px] font-black text-primary uppercase tracking-[0.2em] block">
+                                    <span className="text-[7px] font-black text-primary uppercase tracking-[0.2em] block">
                                         {new Date(visit.date).toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short' }).toUpperCase()}
                                     </span>
-                                    <h4 className="font-black text-text text-[13px] tracking-tight">{visit.service}</h4>
+                                    <h4 className="font-black text-text text-[12px] tracking-tight">{visit.service}</h4>
                                 </div>
-                                <span className="text-sm font-black text-text">₹{visit.amount}</span>
+                                <span className="text-xs font-black text-text">₹{visit.amount}</span>
                             </div>
-                            <div className="flex items-center flex-wrap gap-4 pt-2 border-t border-border/50">
-                                <div className="flex items-center gap-2">
-                                    <div className="w-5 h-5 bg-text text-white flex items-center justify-center text-[8px] font-black">
+                            <div className="flex items-center flex-wrap gap-3 pt-1.5 border-t border-border/50">
+                                <div className="flex items-center gap-1.5">
+                                    <div className="w-4 h-4 bg-text text-white flex items-center justify-center text-[7px] font-black">
                                         {visit.staff.charAt(0)}
                                     </div>
-                                    <span className="text-[8px] font-black text-text-muted uppercase tracking-widest">{visit.staff}</span>
+                                    <span className="text-[7px] font-black text-text-muted uppercase tracking-widest">{visit.staff}</span>
                                 </div>
                                 {visit.products.length > 0 && (
-                                    <div className="flex items-center gap-1.5 px-2 py-0.5 bg-emerald-50 border border-emerald-100">
-                                        <ShoppingBag className="w-2.5 h-2.5 text-emerald-600" />
-                                        <span className="text-[8px] font-black text-emerald-700 uppercase tracking-widest">{visit.products.join(', ')}</span>
+                                    <div className="flex items-center gap-1 px-1.5 py-px bg-emerald-50 border border-emerald-100">
+                                        <ShoppingBag className="w-2 h-2 text-emerald-600" />
+                                        <span className="text-[7px] font-black text-emerald-700 uppercase tracking-widest">{visit.products.join(', ')}</span>
                                     </div>
                                 )}
                             </div>
@@ -588,16 +584,16 @@ function VisitHistory() {
 
 function DetailField({ label, value, icon: Icon, isFullWidth, isEditing, editValue, onEdit, type = 'text', options = [] }) {
     return (
-        <div className={`${isFullWidth ? 'col-span-2' : ''} space-y-2`}>
-            <p className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] flex items-center gap-2">
-                <Icon className="w-3 h-3" /> {label}
+        <div className={`${isFullWidth ? 'col-span-2' : ''} space-y-1`}>
+            <p className="text-[9px] font-black text-text-muted uppercase tracking-[0.2em] flex items-center gap-1.5">
+                <Icon className="w-2.5 h-2.5" /> {label}
             </p>
             {isEditing ? (
                 type === 'select' ? (
                     <select
                         value={editValue}
                         onChange={(e) => onEdit(e.target.value)}
-                        className="w-full bg-surface border border-primary/20 px-4 py-3 text-[11px] font-black uppercase outline-none focus:border-primary transition-all"
+                        className="w-full bg-surface border border-primary/20 px-3 py-2 text-[10px] font-black uppercase outline-none focus:border-primary transition-all"
                     >
                         {options.map(o => <option key={o} value={o}>{o}</option>)}
                     </select>
@@ -607,11 +603,11 @@ function DetailField({ label, value, icon: Icon, isFullWidth, isEditing, editVal
                         {...(type === 'date' && { max: new Date().toISOString().split('T')[0] })}
                         value={editValue}
                         onChange={(e) => onEdit(e.target.value)}
-                        className="w-full bg-surface border border-primary/20 px-4 py-3 text-[11px] font-black uppercase outline-none focus:border-primary transition-all"
+                        className="w-full bg-surface border border-primary/20 px-3 py-2 text-[10px] font-black uppercase outline-none focus:border-primary transition-all"
                     />
                 )
             ) : (
-                <p className="text-sm font-black text-text uppercase tracking-tight bg-surface-alt border border-border/50 px-4 py-3">
+                <p className="text-xs font-black text-text uppercase tracking-tight bg-surface-alt border border-border/50 px-3 py-2">
                     {value || '-'}
                 </p>
             )}
