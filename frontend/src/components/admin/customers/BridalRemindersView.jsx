@@ -74,7 +74,7 @@ export default function BridalRemindersView() {
                 clientName: newBridal.clientName.toUpperCase(),
                 eventName: newBridal.eventName.toUpperCase(),
                 reminders: [
-                    { id: `rem-30d-${Date.now()}`, label: '30 Days Before', daysBefore: 30, active: true, sentAt: null },
+                    { id: `rem-5d-${Date.now()}`, label: '5 Days Before', daysBefore: 5, active: true, sentAt: null },
                     { id: `rem-1d-${Date.now()}`, label: '1 Day Before', daysBefore: 1, active: true, sentAt: null },
                     { id: `rem-0d-${Date.now()}`, label: 'Same Day', daysBefore: 0, active: true, sentAt: null }
                 ]

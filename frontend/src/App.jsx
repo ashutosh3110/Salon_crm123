@@ -548,13 +548,19 @@ function App() {
                             
                             {/* Settings Routes */}
                             <Route element={<ProtectedRoute permission="settings_profile" />}>
-                                <Route path="/admin/settings/profile" element={<SettingsPage />} />
+                                <Route path="/admin/settings/profile" element={<SettingsPage section="profile" />} />
                             </Route>
                             <Route element={<ProtectedRoute permission="settings_business" />}>
-                                <Route path="/admin/settings/business" element={<SettingsPage />} />
+                                <Route path="/admin/settings/business" element={<SettingsPage section="business" />} />
                             </Route>
                             <Route element={<ProtectedRoute permission="settings_security" />}>
-                                <Route path="/admin/settings/security" element={<SettingsPage />} />
+                                <Route path="/admin/settings/security" element={<SettingsPage section="security" />} />
+                            </Route>
+                            <Route element={<ProtectedRoute permission="settings_terms" />}>
+                                <Route path="/admin/settings/terms" element={<SettingsPage section="terms" />} />
+                            </Route>
+                            <Route element={<ProtectedRoute permission="settings_booking_link" />}>
+                                <Route path="/admin/settings/booking-link" element={<SettingsPage section="booking-link" />} />
                             </Route>
                             
                             <Route path="/admin/subscription" element={<SubscriptionPage />} />

@@ -394,54 +394,54 @@ const initCronJobs = () => {
         console.log('Running daily bridal booking reminders...');
         try {
             const today = new Date();
-            const startOfToday = new Date(today.setHours(0, 0, 0, 0));
-            const endOfToday = new Date(today.setHours(23, 59, 59, 999));
+            const todayOnly = new Date(today.getFullYear(), today.getMonth(), today.getDate());
 
+            // Find all hubs with bridal bookings
             const hubs = await ReminderHub.find({
-                'bridalBookings.eventDate': { $gte: startOfToday, $lte: endOfToday }
+                'bridalBookings.0': { $exists: true }
             });
 
             for (const hub of hubs) {
                 const salon = await Salon.findById(hub.salonId);
                 const salonName = salon?.businessName || salon?.name || 'Our Salon';
+                let hubUpdated = false;
 
-                for (const b of hub.bridalBookings) {
-                    const bookingDate = new Date(b.eventDate);
-                    if (bookingDate >= startOfToday && bookingDate <= endOfToday) {
-                        let sameDayReminder = b.reminders.find(r => r.daysBefore === 0 || r.label === 'Same Day');
-                        if (!sameDayReminder) {
-                            sameDayReminder = { active: true, sentAt: null };
-                        }
+                // We need to fetch dbHub to save changes correctly
+                const dbHub = await ReminderHub.findById(hub._id);
+                if (!dbHub) continue;
 
-                        if (sameDayReminder.active && !sameDayReminder.sentAt) {
+                for (const b of dbHub.bridalBookings) {
+                    if (!b.eventDate) continue;
+
+                    const eventDate = new Date(b.eventDate);
+                    const eventDateOnly = new Date(eventDate.getFullYear(), eventDate.getMonth(), eventDate.getDate());
+                    const diffDays = Math.round((eventDateOnly.getTime() - todayOnly.getTime()) / (1000 * 60 * 60 * 24));
+
+                    for (const r of b.reminders) {
+                        if (r.active && !r.sentAt && r.daysBefore === diffDays) {
                             const canSend = await checkAndDeductWhatsAppCredit(hub.salonId);
                             if (canSend && b.clientPhone) {
                                 const phone = b.clientPhone.replace(/\D/g, '');
-                                const message = `Hi ${b.clientName}, Today is your big day! 👰✨ Your Bridal Service Booking (${b.service || 'Bridal Special'}) is scheduled for today. We are excited to make you look stunning for your wedding! - ${salonName}`;
-                                
-                                await sendWhatsAppMessage(phone, message);
-                                console.log(`[Bridal-Cron] Sent same-day WhatsApp reminder to ${b.clientName} (${phone})`);
-                                
-                                // Mark as sent
-                                const dbHub = await ReminderHub.findOne({ _id: hub._id });
-                                const dbBooking = dbHub.bridalBookings.id(b._id || b.id);
-                                if (dbBooking) {
-                                    let dbRem = dbBooking.reminders.find(r => r.daysBefore === 0 || r.label === 'Same Day');
-                                    if (!dbRem) {
-                                        dbBooking.reminders.push({
-                                            label: 'Same Day',
-                                            daysBefore: 0,
-                                            active: true,
-                                            sentAt: new Date()
-                                        });
-                                    } else {
-                                        dbRem.sentAt = new Date();
-                                    }
-                                    await dbHub.save();
+                                let message = `Hi ${b.clientName}, `;
+                                if (r.daysBefore === 0) {
+                                    message += `Today is your big day! 👰✨ Your Bridal Service Booking (${b.service || 'Bridal Special'}) is scheduled for today. We are excited to make you look stunning for your wedding! - ${salonName}`;
+                                } else {
+                                    const formattedDate = eventDate.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+                                    message += `Gentle reminder regarding your upcoming Bridal Service Booking (${b.service || 'Bridal Special'}) scheduled on ${formattedDate}. We look forward to serving you! - ${salonName}`;
                                 }
+
+                                await sendWhatsAppMessage(phone, message);
+                                console.log(`[Bridal-Cron] Sent ${r.label} WhatsApp reminder to ${b.clientName} (${phone})`);
+
+                                r.sentAt = new Date();
+                                hubUpdated = true;
                             }
                         }
                     }
+                }
+
+                if (hubUpdated) {
+                    await dbHub.save();
                 }
             }
         } catch (err) {

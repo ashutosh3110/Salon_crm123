@@ -238,6 +238,8 @@ export default function Sidebar({ collapsed, setCollapsed, isHovered, setIsHover
                     { label: 'Profile', icon: User, path: '/admin/settings/profile', permission: 'settings_profile' },
                     { label: 'Business Info', icon: Briefcase, path: '/admin/settings/business', permission: 'settings_business' },
                     { label: 'Security', icon: Shield, path: '/admin/settings/security', permission: 'settings_security' },
+                    { label: 'Terms & Conditions', icon: FileText, path: '/admin/settings/terms', permission: 'settings_terms' },
+                    { label: 'Booking Link', icon: Zap, path: '/admin/settings/booking-link', permission: 'settings_booking_link' },
                 ]
             },
             {

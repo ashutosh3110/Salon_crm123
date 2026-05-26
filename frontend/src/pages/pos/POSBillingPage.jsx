@@ -309,6 +309,8 @@ export default function POSBillingPage() {
     const location = useLocation();
     // ─── State ──────────────────────────────────────────────
     const [cart, setCart] = useState([]);
+    const [focusedItemIndex, setFocusedItemIndex] = useState(-1);
+
     const [selectedClient, setSelectedClient] = useState(null);
     const [payments, setPayments] = useState([{ method: 'cash', amount: 0 }]);
     const [isManualPayment, setIsManualPayment] = useState(false);
@@ -415,6 +417,19 @@ export default function POSBillingPage() {
 
     // Prevent background scroll when any modal is open
     const isAnyModalOpen = showDiscountModal || showCameraScanner || !!successInvoice || showNewClient || showQuickInvoice;
+
+    useEffect(() => {
+        setFocusedItemIndex(-1);
+    }, [searchItem, activeTab, serviceMode, selectedCategory]);
+
+    useEffect(() => {
+        if (focusedItemIndex >= 0) {
+            const activeEl = document.getElementById(`pos-item-${focusedItemIndex}`);
+            if (activeEl) {
+                activeEl.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+            }
+        }
+    }, [focusedItemIndex]);
 
     useEffect(() => {
         if (isAnyModalOpen) {
@@ -1356,17 +1371,59 @@ export default function POSBillingPage() {
             if (e.ctrlKey && e.key === 'Enter') {
                 if (successInvoice) resetBill();
                 else handleCheckout();
+                return;
             }
-            // ESC: Close Modals
+            // ESC: Close Modals / Reset Focus
             if (e.key === 'Escape') {
                 setShowDiscountModal(false);
                 setShowNewClient(false);
+                setFocusedItemIndex(-1);
+                searchInputRef.current?.blur();
+            }
+            // Arrow Down: Navigate item list
+            if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                setFocusedItemIndex(prev => {
+                    const nextIdx = prev + 1;
+                    return nextIdx < filteredItems.length ? nextIdx : prev;
+                });
+            }
+            // Arrow Up: Navigate item list
+            if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                setFocusedItemIndex(prev => {
+                    const nextIdx = prev - 1;
+                    return nextIdx >= 0 ? nextIdx : prev;
+                });
+            }
+            // Enter Key: Add active item to cart
+            if (e.key === 'Enter' && !e.ctrlKey && focusedItemIndex >= 0) {
+                e.preventDefault();
+                const item = filteredItems[focusedItemIndex];
+                if (item) {
+                    addToCart(item);
+                }
+            }
+            // Left / Right Arrow: Switch between Services and Products tabs
+            if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+                const activeEl = document.activeElement;
+                const isInputActive = activeEl && (activeEl.tagName === 'INPUT' || activeEl.tagName === 'TEXTAREA');
+                const isSearchFocusedEmpty = activeEl === searchInputRef.current && !searchItem;
+
+                if (!isInputActive || isSearchFocusedEmpty) {
+                    e.preventDefault();
+                    if (e.key === 'ArrowLeft') {
+                        setActiveTab('services');
+                    } else {
+                        setActiveTab('products');
+                    }
+                }
             }
         };
 
         window.addEventListener('keydown', handleKeyDown);
         return () => window.removeEventListener('keydown', handleKeyDown);
-    }, [successInvoice, cart, selectedClient, payments, totals]);
+    }, [successInvoice, cart, selectedClient, payments, totals, filteredItems, focusedItemIndex, searchItem]);
 
     // ─── Render ─────────────────────────────────────
     if (successInvoice) {
@@ -1641,14 +1698,16 @@ export default function POSBillingPage() {
                     </div>
 
                     <div className="flex-1 overflow-y-auto grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3 pr-2 scrollbar-thin">
-                        {filteredItems.map(item => {
+                        {filteredItems.map((item, idx) => {
                             const isSelected = item.isAppointment
                                 ? selectedBookingIds.includes(item._id)
                                 : item.isOrder
                                     ? selectedOrderIds.includes(item._id)
                                     : cart.some(c => String(c.itemId) === String(item._id || item.id));
+                            const isFocused = idx === focusedItemIndex;
                             return (
                                 <button
+                                    id={`pos-item-${idx}`}
                                     key={item.id || item._id}
                                     onClick={() => addToCart(item)}
                                     className={`relative bg-background border rounded-xl p-3 text-left hover:border-primary transition-all group flex flex-col justify-between h-[80px] shadow-sm hover:shadow-md active:scale-95 ${isSelected ? 'border-primary bg-primary/5 ring-1 ring-primary' : 'border-border'
@@ -2365,6 +2424,35 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
     const [qActiveMembership, setQActiveMembership] = useState(null);
     const [qPaymentDate, setQPaymentDate] = useState('');
 
+    const [qFocusedClientIndex, setQFocusedClientIndex] = useState(-1);
+    const [qFocusedItemIndex, setQFocusedItemIndex] = useState(-1);
+
+    useEffect(() => {
+        setQFocusedClientIndex(-1);
+    }, [qSearchClient, showClientDropdown]);
+
+    useEffect(() => {
+        setQFocusedItemIndex(-1);
+    }, [qSelectedCategory, qActiveTab]);
+
+    useEffect(() => {
+        if (qFocusedClientIndex >= 0) {
+            const activeEl = document.getElementById(`q-client-item-${qFocusedClientIndex}`);
+            if (activeEl) {
+                activeEl.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+            }
+        }
+    }, [qFocusedClientIndex]);
+
+    useEffect(() => {
+        if (qFocusedItemIndex >= 0) {
+            const activeEl = document.getElementById(`q-item-item-${qFocusedItemIndex}`);
+            if (activeEl) {
+                activeEl.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+            }
+        }
+    }, [qFocusedItemIndex]);
+
 
     useEffect(() => {
         const fetchMembership = async () => {
@@ -2409,6 +2497,8 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
         document.addEventListener('mousedown', handleClickOutside);
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, [openStaffIdx, showClientDropdown, showQOutletPicker]);
+
+
 
     const qClientWalletBalance = useMemo(() => {
         if (!qClient?._id) return 0;
@@ -2689,8 +2779,8 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                 previousDueCollected: qCollectedPrevDue,
                 discountType: qManualDiscount.type,
                 useWalletAmount: totals.redeemWallet,
-                promotionId: appliedPromotion?._id || undefined,
-                couponCode: appliedPromotion?.couponCode || undefined
+                promotionId: undefined,
+                couponCode: undefined
             };
 
             const res = await api.post('/pos/checkout', payload);
@@ -2732,11 +2822,103 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
 
             onSuccess(invoiceData);
         } catch (err) {
+            console.log(err)
             toast.error(err.response?.data?.message || 'Checkout failed');
         } finally {
             setIsProcessing(false);
         }
     };
+
+    useEffect(() => {
+        const handleKeyDown = (e) => {
+            // Close modal on Escape
+            if (e.key === 'Escape') {
+                if (showClientDropdown) {
+                    setShowClientDropdown(false);
+                } else if (showNewClient) {
+                    setShowNewClient(false);
+                } else if (qSelectedCategory) {
+                    setQSelectedCategory(null);
+                } else {
+                    onClose();
+                }
+                return;
+            }
+
+            // Client Dropdown Navigation (if dropdown is active)
+            if (showClientDropdown && qFilteredClients.length > 0) {
+                if (e.key === 'ArrowDown') {
+                    e.preventDefault();
+                    setQFocusedClientIndex(prev => {
+                        const next = prev + 1;
+                        return next < qFilteredClients.length ? next : prev;
+                    });
+                }
+                if (e.key === 'ArrowUp') {
+                    e.preventDefault();
+                    setQFocusedClientIndex(prev => {
+                        const next = prev - 1;
+                        return next >= 0 ? next : prev;
+                    });
+                }
+                if (e.key === 'Enter') {
+                    if (qFocusedClientIndex >= 0) {
+                        e.preventDefault();
+                        handleSelectClient(qFilteredClients[qFocusedClientIndex]);
+                    }
+                }
+                return;
+            }
+
+            // Category Items Navigation (if category is open)
+            if (qSelectedCategory) {
+                const currentItems = (qActiveTab === 'services' ? qFilteredServices : qFilteredProducts)
+                    .filter(i => qSelectedCategory === 'All' || i.category === qSelectedCategory);
+
+                if (currentItems.length > 0) {
+                    if (e.key === 'ArrowDown') {
+                        e.preventDefault();
+                        setQFocusedItemIndex(prev => {
+                            const next = prev + 1;
+                            return next < currentItems.length ? next : prev;
+                        });
+                    }
+                    if (e.key === 'ArrowUp') {
+                        e.preventDefault();
+                        setQFocusedItemIndex(prev => {
+                            const next = prev - 1;
+                            return next >= 0 ? next : prev;
+                        });
+                    }
+                    if (e.key === 'Enter') {
+                        if (qFocusedItemIndex >= 0) {
+                            e.preventDefault();
+                            addToQCart(currentItems[qFocusedItemIndex], qActiveTab === 'services' ? 'service' : 'product');
+                        }
+                    }
+                }
+            }
+
+            // Tab switching via Left / Right arrows
+            if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+                const activeEl = document.activeElement;
+                const isTyping = activeEl && activeEl.tagName === 'INPUT' && activeEl.value.length > 0;
+                if (!isTyping) {
+                    e.preventDefault();
+                    if (e.key === 'ArrowLeft') {
+                        setQActiveTab('services');
+                        setQSelectedCategory(null);
+                    } else {
+                        setQActiveTab('products');
+                        setQSelectedCategory(null);
+                    }
+                }
+            }
+        };
+
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, [showClientDropdown, qFilteredClients, qFocusedClientIndex, qSelectedCategory, qActiveTab, qFilteredServices, qFilteredProducts, qFocusedItemIndex, showNewClient]);
 
     return (
         <div className="fixed inset-0 bg-[#0f172a]/90 backdrop-blur-md z-[100] flex items-center justify-center p-0 sm:p-2 overflow-hidden">
@@ -3024,28 +3206,34 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                                                 >
                                                     {qFilteredClients.length > 0 ? (
                                                         <div className="max-h-[220px] overflow-y-auto scrollbar-thin">
-                                                            {qFilteredClients.map(c => (
-                                                                <button
-                                                                    key={c._id}
-                                                                    onClick={() => handleSelectClient(c)}
-                                                                    className="w-full p-2.5 text-left hover:bg-slate-50 border-b border-slate-100 last:border-0 flex items-center gap-2.5 group transition-colors"
-                                                                >
-                                                                    <div className={`w-8 h-8 flex-shrink-0 flex items-center justify-center font-bold rounded-xl text-xs ${Number(c.dueAmount || 0) > 0 ? 'bg-amber-100 text-amber-700' : 'bg-primary/10 text-primary'}`}>{c.name.charAt(0).toUpperCase()}</div>
-                                                                    <div className="flex-1 min-w-0">
-                                                                        <p className="text-xs font-bold text-slate-900 truncate">{c.name}</p>
-                                                                        <div className="flex items-center gap-2">
-                                                                            <p className="text-[10px] font-semibold text-slate-400">{c.phone}</p>
-                                                                            {Number(c.dueAmount || 0) > 0 && <span className="text-[9px] font-bold text-amber-600 bg-amber-50 px-2 py-0.5 rounded border border-amber-100">Due ₹{Number(c.dueAmount).toFixed(0)}</span>}
+                                                            {qFilteredClients.map((c, idx) => {
+                                                                const isFocused = idx === qFocusedClientIndex;
+                                                                return (
+                                                                    <button
+                                                                        id={`q-client-item-${idx}`}
+                                                                        key={c._id}
+                                                                        onClick={() => handleSelectClient(c)}
+                                                                        className={`w-full p-2.5 text-left hover:bg-slate-50 border-b border-slate-100 last:border-0 flex items-center gap-2.5 group transition-colors ${
+                                                                            isFocused ? 'bg-primary/10 border-primary ring-1 ring-primary' : ''
+                                                                        }`}
+                                                                    >
+                                                                        <div className={`w-8 h-8 flex-shrink-0 flex items-center justify-center font-bold rounded-xl text-xs ${Number(c.dueAmount || 0) > 0 ? 'bg-amber-100 text-amber-700' : 'bg-primary/10 text-primary'}`}>{c.name.charAt(0).toUpperCase()}</div>
+                                                                        <div className="flex-1 min-w-0">
+                                                                            <p className="text-xs font-bold text-slate-900 truncate">{c.name}</p>
+                                                                            <div className="flex items-center gap-2">
+                                                                                <p className="text-[10px] font-semibold text-slate-400">{c.phone}</p>
+                                                                                {Number(c.dueAmount || 0) > 0 && <span className="text-[9px] font-bold text-amber-600 bg-amber-50 px-2 py-0.5 rounded border border-amber-100">Due ₹{Number(c.dueAmount).toFixed(0)}</span>}
+                                                                            </div>
                                                                         </div>
-                                                                    </div>
-                                                                    {allWallets?.[c._id]?.balance > 0 && (
-                                                                        <div className="flex flex-col items-end px-2 py-0.5 bg-emerald-50 border border-emerald-100 rounded-lg shrink-0">
-                                                                            <span className="text-[9px] font-bold text-emerald-600 uppercase tracking-wider leading-none">Wallet</span>
-                                                                            <span className="text-xs font-bold text-emerald-600 leading-none mt-0.5">₹{allWallets[c._id].balance.toFixed(0)}</span>
-                                                                        </div>
-                                                                    )}
-                                                                </button>
-                                                            ))}
+                                                                        {allWallets?.[c._id]?.balance > 0 && (
+                                                                            <div className="flex flex-col items-end px-2 py-0.5 bg-emerald-50 border border-emerald-100 rounded-lg shrink-0">
+                                                                                <span className="text-[9px] font-bold text-emerald-600 uppercase tracking-wider leading-none">Wallet</span>
+                                                                                <span className="text-xs font-bold text-emerald-600 leading-none mt-0.5">₹{allWallets[c._id].balance.toFixed(0)}</span>
+                                                                            </div>
+                                                                        )}
+                                                                    </button>
+                                                                );
+                                                            })}
                                                         </div>
                                                     ) : (
                                                         <div className="p-4 text-center space-y-2">
@@ -3153,12 +3341,17 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                                     <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                                         {(qActiveTab === 'services' ? qFilteredServices : qFilteredProducts)
                                             .filter(i => qSelectedCategory === 'All' || i.category === qSelectedCategory)
-                                            .map(item => (
-                                                <button
-                                                    key={item._id}
-                                                    onClick={() => addToQCart(item, qActiveTab === 'services' ? 'service' : 'product')}
-                                                    className="bg-checkout-box hover:border-primary hover:shadow-md transition-all rounded-xl shadow-sm relative overflow-hidden flex flex-col group h-32"
-                                                >
+                                            .map((item, idx) => {
+                                                const isFocused = idx === qFocusedItemIndex;
+                                                return (
+                                                    <button
+                                                        id={`q-item-item-${idx}`}
+                                                        key={item._id}
+                                                        onClick={() => addToQCart(item, qActiveTab === 'services' ? 'service' : 'product')}
+                                                        className={`bg-checkout-box hover:border-primary hover:shadow-md transition-all rounded-xl shadow-sm relative overflow-hidden flex flex-col group h-32 ${
+                                                            isFocused ? 'ring-2 ring-primary border-primary scale-[1.02] shadow-md z-10' : ''
+                                                        }`}
+                                                    >
                                                     <div className="h-16 w-full overflow-hidden bg-gradient-to-br from-primary/5 to-primary/10 flex-shrink-0 relative">
                                                         {(() => {
                                                             const img = item.image || item.images?.[0];
@@ -3182,7 +3375,8 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                                                         <p className="text-xs font-bold text-emerald-600">₹{item.price}</p>
                                                     </div>
                                                 </button>
-                                            ))}
+                                            );
+                                        })}
                                     </div>
                                 )}
                             </div>

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { createPortal } from 'react-dom';
 import {
     X,
     Calendar,
@@ -80,7 +81,7 @@ export default function CustomerProfileModal({ customer, isOpen, onClose }) {
     const handleRecharge = async (e) => {
         e.preventDefault();
         if (!rechargeAmount || isNaN(rechargeAmount)) return;
-        
+
         const amountNum = parseFloat(rechargeAmount);
         const description = rechargeNote || `${rechargeType === 'CREDIT' ? 'Manual Top-up' : 'Manual Adjustment'}`;
 
@@ -189,11 +190,11 @@ export default function CustomerProfileModal({ customer, isOpen, onClose }) {
         }
     };
 
-    return (
-        <div className="fixed inset-0 z-[100] flex items-end justify-center p-0">
+    return createPortal(
+        <div className="fixed inset-0 z-[9999] flex items-end justify-center p-0">
             {/* Backdrop */}
             <div
-                className="absolute inset-0 bg-slate-900/80 backdrop-blur-md animate-fadeIn"
+                className="absolute inset-0 bg-black/60 backdrop-blur-md animate-fadeIn"
                 onClick={onClose}
             />
 
@@ -208,9 +209,9 @@ export default function CustomerProfileModal({ customer, isOpen, onClose }) {
                     <div className="flex gap-4 items-center">
                         <div className="w-16 h-16 rounded-none bg-text text-white flex items-center justify-center text-2xl font-black shadow-lg overflow-hidden border-2 border-white">
                             {customer.avatar ? (
-                                <img 
-                                    src={getImageUrl(customer.avatar)} 
-                                    alt={customer.name} 
+                                <img
+                                    src={getImageUrl(customer.avatar)}
+                                    alt={customer.name}
                                     className="w-full h-full object-cover"
                                     onError={(e) => { e.target.onerror = null; e.target.src = ''; e.target.parentElement.innerHTML = customer.name.charAt(0).toUpperCase(); }}
                                 />
@@ -318,18 +319,18 @@ export default function CustomerProfileModal({ customer, isOpen, onClose }) {
                                 <div className="grid grid-cols-2 gap-8">
                                     <DetailField label="Date of Birth" value={customer.dob} icon={Cake} type="date" isEditing={isEditing} editValue={editForm?.dob} onEdit={(val) => setEditForm({ ...editForm, dob: val })} />
                                     <DetailField label="Anniversary" value={customer.anniversary} icon={Calendar} type="date" isEditing={isEditing} editValue={editForm?.anniversary} onEdit={(val) => setEditForm({ ...editForm, anniversary: val })} />
-                                    
+
                                     <div className="space-y-2">
                                         <p className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] flex items-center gap-2">
                                             <Star className={`w-3 h-3 ${customer.isVIP ? 'text-amber-500' : ''}`} /> VIP Privilege
                                         </p>
                                         {isEditing ? (
                                             <label className="flex items-center gap-3 cursor-pointer group bg-surface border border-primary/20 p-3">
-                                                <input 
-                                                    type="checkbox" 
-                                                    checked={editForm?.isVIP} 
+                                                <input
+                                                    type="checkbox"
+                                                    checked={editForm?.isVIP}
                                                     onChange={(e) => setEditForm({ ...editForm, isVIP: e.target.checked })}
-                                                    className="w-4 h-4 accent-primary" 
+                                                    className="w-4 h-4 accent-primary"
                                                 />
                                                 <span className="text-[11px] font-black uppercase tracking-widest text-text">Mark as VIP Member</span>
                                             </label>
@@ -379,7 +380,7 @@ export default function CustomerProfileModal({ customer, isOpen, onClose }) {
                                     <form onSubmit={handleRecharge} className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                                         <div className="space-y-2">
                                             <label className="text-[9px] font-black text-text-muted uppercase tracking-widest">Type</label>
-                                            <select 
+                                            <select
                                                 value={rechargeType}
                                                 onChange={(e) => setRechargeType(e.target.value)}
                                                 className="w-full bg-white border border-border px-4 py-2 text-[10px] font-black uppercase outline-none focus:border-primary"
@@ -390,7 +391,7 @@ export default function CustomerProfileModal({ customer, isOpen, onClose }) {
                                         </div>
                                         <div className="space-y-2">
                                             <label className="text-[9px] font-black text-text-muted uppercase tracking-widest">Amount (₹)</label>
-                                            <input 
+                                            <input
                                                 type="number"
                                                 placeholder="0.00"
                                                 value={rechargeAmount}
@@ -400,7 +401,7 @@ export default function CustomerProfileModal({ customer, isOpen, onClose }) {
                                         </div>
                                         <div className="space-y-2">
                                             <label className="text-[9px] font-black text-text-muted uppercase tracking-widest">Note / Reason</label>
-                                            <input 
+                                            <input
                                                 type="text"
                                                 placeholder="OPTIONAL NOTE..."
                                                 value={rechargeNote}
@@ -410,7 +411,7 @@ export default function CustomerProfileModal({ customer, isOpen, onClose }) {
                                         </div>
                                         <div className="space-y-2">
                                             <label className="text-[9px] font-black text-text-muted uppercase tracking-widest">Expiry Date (Opt.)</label>
-                                            <input 
+                                            <input
                                                 type="date"
                                                 value={rechargeExpiry}
                                                 min={new Date().toISOString().split('T')[0]}
@@ -423,9 +424,8 @@ export default function CustomerProfileModal({ customer, isOpen, onClose }) {
                                             <button
                                                 type="button"
                                                 onClick={() => setSendWhatsAppAfterRecharge(v => !v)}
-                                                className={`w-full py-2 text-[10px] font-black uppercase tracking-widest border transition-all ${
-                                                    sendWhatsAppAfterRecharge ? 'bg-emerald-500 text-white border-emerald-500' : 'bg-white text-text-muted border-border hover:border-primary hover:text-primary'
-                                                }`}
+                                                className={`w-full py-2 text-[10px] font-black uppercase tracking-widest border transition-all ${sendWhatsAppAfterRecharge ? 'bg-emerald-500 text-white border-emerald-500' : 'bg-white text-text-muted border-border hover:border-primary hover:text-primary'
+                                                    }`}
                                             >
                                                 {sendWhatsAppAfterRecharge ? 'WhatsApp message: ON' : 'WhatsApp message: OFF'}
                                             </button>
@@ -441,12 +441,12 @@ export default function CustomerProfileModal({ customer, isOpen, onClose }) {
                                         </div>
 
                                         <div className="flex items-end">
-                                            <button 
+                                            <button
                                                 type="submit"
                                                 disabled={isRecharging || !rechargeAmount}
                                                 className="w-full bg-text text-white py-2 text-[10px] font-black uppercase tracking-widest hover:bg-primary transition-all disabled:opacity-50 flex items-center justify-center gap-2"
                                             >
-                                                {isRecharging ? 'PROCESSING...' : <><Send className="w-3 h-3"/> EXECUTE</>}
+                                                {isRecharging ? 'PROCESSING...' : <><Send className="w-3 h-3" /> EXECUTE</>}
                                             </button>
                                         </div>
                                     </form>
@@ -490,7 +490,8 @@ export default function CustomerProfileModal({ customer, isOpen, onClose }) {
                     </div>
                 </div>
             </div>
-        </div>
+        </div>,
+        document.body
     );
 }
 

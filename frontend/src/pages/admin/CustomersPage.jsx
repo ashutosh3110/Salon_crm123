@@ -197,103 +197,112 @@ export default function CustomersPage({ tab = 'directory' }) {
     return (
         <>
             <style>{hideScrollbarStyle}</style>
-            <div className="space-y-6 animate-reveal">
+            <div className="space-y-6 animate-reveal text-left">
                 {/* Header */}
                 <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6 pb-2">
-                    <div>
-                        <h1 className="text-3xl sm:text-4xl font-black text-text uppercase tracking-tighter leading-none">Customers</h1>
-                        <p className="text-[10px] font-black text-text-muted mt-3 uppercase tracking-[0.3em] opacity-60 leading-none">Intelligence Hub • CRM • Wallet Matrix</p>
-                    </div>
-
-                    <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-                        {/* Secondary Actions Group */}
-                        <div className="flex items-center bg-surface border border-border p-1 shadow-sm">
-                            <button
-                                onClick={handleExport}
-                                title="Export Directory"
-                                className="p-3 text-text-muted hover:text-primary hover:bg-surface-alt transition-all group"
-                            >
-                                <Download className="w-4 h-4" />
-                            </button>
-                            <div className="w-px h-4 bg-border mx-1" />
-                            <button
-                                onClick={downloadSampleCSV}
-                                title="Download Sample CSV"
-                                className="px-4 py-3 text-[10px] font-black text-text-muted hover:text-primary hover:bg-surface-alt transition-all uppercase tracking-widest flex items-center gap-2"
-                            >
-                                <FileSpreadsheet className="w-4 h-4" />
-                                <span className="hidden xl:inline">Sample</span>
-                            </button>
-                            <div className="w-px h-4 bg-border mx-1" />
-                            <label className="px-4 py-3 text-[10px] font-black text-text-muted hover:text-primary hover:bg-surface-alt transition-all uppercase tracking-widest flex items-center gap-2 cursor-pointer">
-                                <Upload className="w-4 h-4" />
-                                <span className="hidden xl:inline">Import</span>
-                                <input type="file" accept=".csv" onChange={handleImport} className="hidden" />
-                            </label>
+                    {activeTab === 'payment-reminders' ? (
+                        <div>
+                            <h1 className="text-3xl sm:text-4xl font-black text-text uppercase tracking-tighter leading-none">Payment Reminders</h1>
+                            <p className="text-[10px] font-black text-text-muted mt-3 uppercase tracking-[0.3em] opacity-60 leading-none">Operations • POS Outstanding Balances</p>
                         </div>
+                    ) : (
+                        <>
+                            <div>
+                                <h1 className="text-3xl sm:text-4xl font-black text-text uppercase tracking-tighter leading-none">Customers</h1>
+                                <p className="text-[10px] font-black text-text-muted mt-3 uppercase tracking-[0.3em] opacity-60 leading-none">Intelligence Hub • CRM • Wallet Matrix</p>
+                            </div>
 
-                        {/* Primary Action */}
-                        <button
-                            onClick={() => setShowAddModal(true)}
-                            className="bg-primary text-primary-foreground px-8 py-4 rounded-none text-[10px] font-black uppercase tracking-[0.2em] shadow-xl shadow-primary/20 hover:bg-primary/90 hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-3"
-                        >
-                            <UserPlus className="w-4 h-4" /> Add Customer
-                        </button>
-                    </div>
+                            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+                                {/* Secondary Actions Group */}
+                                <div className="flex items-center bg-surface border border-border p-1 shadow-sm">
+                                    <button
+                                        onClick={handleExport}
+                                        title="Export Directory"
+                                        className="p-3 text-text-muted hover:text-primary hover:bg-surface-alt transition-all group"
+                                    >
+                                        <Download className="w-4 h-4" />
+                                    </button>
+                                    <div className="w-px h-4 bg-border mx-1" />
+                                    <button
+                                        onClick={downloadSampleCSV}
+                                        title="Download Sample CSV"
+                                        className="px-4 py-3 text-[10px] font-black text-text-muted hover:text-primary hover:bg-surface-alt transition-all uppercase tracking-widest flex items-center gap-2"
+                                    >
+                                        <FileSpreadsheet className="w-4 h-4" />
+                                        <span className="hidden xl:inline">Sample</span>
+                                    </button>
+                                    <div className="w-px h-4 bg-border mx-1" />
+                                    <label className="px-4 py-3 text-[10px] font-black text-text-muted hover:text-primary hover:bg-surface-alt transition-all uppercase tracking-widest flex items-center gap-2 cursor-pointer">
+                                        <Upload className="w-4 h-4" />
+                                        <span className="hidden xl:inline">Import</span>
+                                        <input type="file" accept=".csv" onChange={handleImport} className="hidden" />
+                                    </label>
+                                </div>
+
+                                {/* Primary Action */}
+                                <button
+                                    onClick={() => setShowAddModal(true)}
+                                    className="bg-primary text-primary-foreground px-8 py-4 rounded-none text-[10px] font-black uppercase tracking-[0.2em] shadow-xl shadow-primary/20 hover:bg-primary/90 hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-3"
+                                >
+                                    <UserPlus className="w-4 h-4" /> Add Customer
+                                </button>
+                            </div>
+                        </>
+                    )}
                 </div>
 
-                {/* Celebration Reminders */}
-                <CelebrationReminders
-                    customers={customers}
-                    onSendWhatsApp={(c, msg, type) => setWhatsappModal({ isOpen: true, customer: c, message: msg, isCelebrationWish: true, celebrationType: type })}
-                />
+                {/* Celebration Reminders & KPI Cards (Only for CRM) */}
+                {activeTab !== 'payment-reminders' && (
+                    <>
+                        <CelebrationReminders
+                            customers={customers}
+                            onSendWhatsApp={(c, msg, type) => setWhatsappModal({ isOpen: true, customer: c, message: msg, isCelebrationWish: true, celebrationType: type })}
+                        />
 
-                {/* KPI Cards (All Data) */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                    <KPICard title="Total Customers" value={globalStats.totalCount} icon={Users} color="blue" trend="" />
-                    <KPICard title="VIP Customers" value={globalStats.totalVIPs} icon={Star} color="purple" trend="" />
-                    <KPICard title="Total Revenue" value={`₹${(globalStats.totalRevenue || 0).toLocaleString()}`} icon={TrendingUp} color="green" trend="" />
-                    <KPICard title="Inactive" value={globalStats.totalInactive} icon={ShieldAlert} color="red" trend="Needs attention" />
-                </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                            <KPICard title="Total Customers" value={globalStats.totalCount} icon={Users} color="blue" trend="" />
+                            <KPICard title="VIP Customers" value={globalStats.totalVIPs} icon={Star} color="purple" trend="" />
+                            <KPICard title="Total Revenue" value={`₹${(globalStats.totalRevenue || 0).toLocaleString()}`} icon={TrendingUp} color="green" trend="" />
+                            <KPICard title="Inactive" value={globalStats.totalInactive} icon={ShieldAlert} color="red" trend="Needs attention" />
+                        </div>
+                    </>
+                )}
 
                 {/* Content Container */}
                 <div className="bg-surface rounded-none border border-border shadow-sm overflow-hidden min-h-[600px]">
-                    <div className="flex border-b border-border bg-surface-alt/30 overflow-x-auto no-scrollbar">
-                        {hasCrmPermission && (
-                            <>
-                                <button onClick={() => navigate('/admin/crm/customers')} className={`px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] border-r border-border transition-all whitespace-nowrap relative ${activeTab === 'directory' ? 'bg-surface text-primary' : 'text-text-muted hover:text-text'}`}>
-                                    Directory
-                                    {activeTab === 'directory' && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary" />}
-                                </button>
-                                <button onClick={() => navigate('/admin/crm/wallets')} className={`px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] border-r border-border transition-all whitespace-nowrap relative ${activeTab === 'wallets' ? 'bg-surface text-primary' : 'text-text-muted hover:text-text'}`}>
-                                    Wallets
-                                    {activeTab === 'wallets' && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary" />}
-                                </button>
-                                <button onClick={() => navigate('/admin/crm/feedback')} className={`px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] border-r border-border transition-all whitespace-nowrap relative ${activeTab === 'feedback' ? 'bg-surface text-primary' : 'text-text-muted hover:text-text'}`}>
-                                    Feedback
-                                    {activeTab === 'feedback' && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary" />}
-                                </button>
-                                <button onClick={() => navigate('/admin/crm/reengage')} className={`px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] border-r border-border transition-all whitespace-nowrap relative ${activeTab === 'reengage' ? 'bg-surface text-primary' : 'text-text-muted hover:text-text'}`}>
-                                    Re-engage
-                                    {activeTab === 'reengage' && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary" />}
-                                </button>
-                                <button onClick={() => navigate('/admin/crm/bridal')} className={`px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] border-r border-border transition-all whitespace-nowrap relative ${activeTab === 'bridal' ? 'bg-surface text-primary' : 'text-text-muted hover:text-text'}`}>
-                                    Bridal Reminders
-                                    {activeTab === 'bridal' && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary" />}
-                                </button>
-                                <button onClick={() => navigate('/admin/crm/birthday-anniversary-reminders')} className={`px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] border-r border-border transition-all whitespace-nowrap relative ${activeTab === 'birthday-anniversary-reminders' ? 'bg-surface text-primary' : 'text-text-muted hover:text-text'}`}>
-                                    Birthday/Anniversary Wishes
-                                    {activeTab === 'birthday-anniversary-reminders' && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary" />}
-                                </button>
-                            </>
-                        )}
-                        {hasPosPermission && (
-                            <button onClick={() => navigate('/admin/operations/payment-reminders')} className={`px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] border-border transition-all whitespace-nowrap relative ${activeTab === 'payment-reminders' ? 'bg-surface text-primary' : 'text-text-muted hover:text-text'}`}>
-                                Payment Reminders
-                                {activeTab === 'payment-reminders' && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary" />}
-                            </button>
-                        )}
-                    </div>
+                    {/* Tab Navigation Bar (Only for CRM) */}
+                    {activeTab !== 'payment-reminders' && (
+                        <div className="flex border-b border-border bg-surface-alt/30 overflow-x-auto no-scrollbar">
+                            {hasCrmPermission && (
+                                <>
+                                    <button onClick={() => navigate('/admin/crm/customers')} className={`px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] border-r border-border transition-all whitespace-nowrap relative ${activeTab === 'directory' ? 'bg-surface text-primary' : 'text-text-muted hover:text-text'}`}>
+                                        Directory
+                                        {activeTab === 'directory' && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary" />}
+                                    </button>
+                                    <button onClick={() => navigate('/admin/crm/wallets')} className={`px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] border-r border-border transition-all whitespace-nowrap relative ${activeTab === 'wallets' ? 'bg-surface text-primary' : 'text-text-muted hover:text-text'}`}>
+                                        Wallets
+                                        {activeTab === 'wallets' && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary" />}
+                                    </button>
+                                    <button onClick={() => navigate('/admin/crm/feedback')} className={`px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] border-r border-border transition-all whitespace-nowrap relative ${activeTab === 'feedback' ? 'bg-surface text-primary' : 'text-text-muted hover:text-text'}`}>
+                                        Feedback
+                                        {activeTab === 'feedback' && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary" />}
+                                    </button>
+                                    <button onClick={() => navigate('/admin/crm/reengage')} className={`px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] border-r border-border transition-all whitespace-nowrap relative ${activeTab === 'reengage' ? 'bg-surface text-primary' : 'text-text-muted hover:text-text'}`}>
+                                        Re-engage
+                                        {activeTab === 'reengage' && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary" />}
+                                    </button>
+                                    <button onClick={() => navigate('/admin/crm/bridal')} className={`px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] border-r border-border transition-all whitespace-nowrap relative ${activeTab === 'bridal' ? 'bg-surface text-primary' : 'text-text-muted hover:text-text'}`}>
+                                        Bridal Reminders
+                                        {activeTab === 'bridal' && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary" />}
+                                    </button>
+                                    <button onClick={() => navigate('/admin/crm/birthday-anniversary-reminders')} className={`px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] border-r border-border transition-all whitespace-nowrap relative ${activeTab === 'birthday-anniversary-reminders' ? 'bg-surface text-primary' : 'text-text-muted hover:text-text'}`}>
+                                        Birthday/Anniversary Wishes
+                                        {activeTab === 'birthday-anniversary-reminders' && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary" />}
+                                    </button>
+                                </>
+                            )}
+                        </div>
+                    )}
 
                     {activeTab === 'directory' && (
                         <>

@@ -8,6 +8,7 @@ const {
     deleteClient,
     bulkImport,
     getPaymentDueClients,
+    getInactiveClients,
     incrementReminderCount,
     sendManualPaymentReminder,
     registerCelebrationWish,
@@ -21,6 +22,7 @@ router.use(protect);
 router.post('/bulk', authorize('admin', 'manager', 'receptionist'), bulkImport);
 
 router.get('/payment-due', authorize('admin', 'manager', 'receptionist', 'p:marketing'), getPaymentDueClients);
+router.get('/inactive', authorize('admin', 'manager', 'receptionist', 'p:crm_reengage'), getInactiveClients);
 router.patch('/:id/increment-reminder', authorize('admin', 'manager', 'receptionist'), incrementReminderCount);
 router.patch('/:id/celebration-wish', authorize('admin', 'manager', 'receptionist'), registerCelebrationWish);
 router.post('/:id/send-payment-reminder', authorize('admin', 'manager', 'receptionist'), sendManualPaymentReminder);

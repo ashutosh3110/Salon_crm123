@@ -1,8 +1,9 @@
 import { useState, useEffect, useMemo } from 'react';
+import { createPortal } from 'react-dom';
 import {
     Plus, Search, Phone, Edit, Trash2, TrendingUp,
     ClipboardList, Calendar, Clock, CheckCircle,
-    ChevronDown, Eye
+    ChevronDown, Eye, X
 } from 'lucide-react';
 import api from '../../services/api';
 import { useBusiness } from '../../contexts/BusinessContext';
@@ -387,33 +388,39 @@ export default function InquiryPage() {
             </div>
             </div>
 
-            {showModal && (
-                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-start justify-center p-4 overflow-y-auto pt-10 md:pt-16" onClick={closeModal}>
-                    <div className="bg-white w-full max-w-md p-6 border-2 border-text shadow-2xl" onClick={(e) => e.stopPropagation()}>
-                        <form onSubmit={handleSubmit} className="space-y-4">
+            {showModal && createPortal(
+                <div className="fixed inset-0 bg-black/60 backdrop-blur-md z-[9999] flex items-start justify-center p-4 overflow-y-auto pt-10 md:pt-16" onClick={closeModal}>
+                    <div className="bg-white dark:bg-[#1e293b] w-full max-w-sm p-5 border-2 border-text dark:border-slate-700 shadow-2xl relative" onClick={(e) => e.stopPropagation()}>
+                        <button type="button" onClick={closeModal} className="absolute right-4 top-4 text-text-muted hover:text-text dark:hover:text-white transition-colors">
+                            <X className="w-4 h-4" />
+                        </button>
+                        <h2 className="text-sm font-black text-text dark:text-white uppercase italic tracking-tight leading-none mb-4 pb-2 border-b border-border dark:border-slate-700 flex items-center gap-2">
+                            <ClipboardList className="w-4 h-4 text-primary" /> {editingInquiry ? 'Edit Enquiry' : 'Add Enquiry'}
+                        </h2>
+                        <form onSubmit={handleSubmit} className="space-y-3">
                             <div className="space-y-1 text-left">
                                 <label className="text-[9px] font-black text-text-muted uppercase tracking-wider block font-mono">Name *</label>
-                                <input type="text" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value.toUpperCase() })} required className="w-full px-3 py-2 border border-border text-[11px] font-black uppercase font-mono" placeholder="ENTER NAME" />
+                                <input type="text" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value.toUpperCase() })} required className="w-full px-3 py-2 border border-border text-[11px] font-black uppercase font-mono dark:bg-slate-900 dark:border-slate-700 dark:text-white" placeholder="ENTER NAME" />
                             </div>
                             <div className="space-y-1 text-left">
                                 <label className="text-[9px] font-black text-text-muted uppercase tracking-wider block font-mono">Phone *</label>
-                                <input type="tel" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} required className="w-full px-3 py-2 border border-border text-[11px] font-black font-mono" placeholder="ENTER PHONE" />
+                                <input type="tel" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} required className="w-full px-3 py-2 border border-border text-[11px] font-black font-mono dark:bg-slate-900 dark:border-slate-700 dark:text-white" placeholder="ENTER PHONE" />
                             </div>
                             <div className="space-y-1 text-left">
                                 <label className="text-[9px] font-black text-text-muted uppercase tracking-wider block font-mono">Source</label>
-                                <select value={form.source} onChange={(e) => setForm({ ...form, source: e.target.value })} className="w-full px-3 py-2 border border-border text-[10px] font-black font-mono uppercase bg-white outline-none focus:border-primary">
+                                <select value={form.source} onChange={(e) => setForm({ ...form, source: e.target.value })} className="w-full px-3 py-2 border border-border text-[10px] font-black font-mono uppercase bg-white outline-none focus:border-primary dark:bg-slate-900 dark:border-slate-700 dark:text-white">
                                     {SOURCES.map(s => <option key={s} value={s}>{s}</option>)}
                                 </select>
                             </div>
                             <div className="space-y-1 text-left">
                                 <label className="text-[9px] font-black text-text-muted uppercase tracking-wider block font-mono">Lead Status</label>
-                                <select value={form.status} onChange={(e) => setForm({ ...form, status: e.target.value })} className="w-full px-3 py-2 border border-border text-[10px] font-black font-mono uppercase bg-white outline-none focus:border-primary">
+                                <select value={form.status} onChange={(e) => setForm({ ...form, status: e.target.value })} className="w-full px-3 py-2 border border-border text-[10px] font-black font-mono uppercase bg-white outline-none focus:border-primary dark:bg-slate-900 dark:border-slate-700 dark:text-white">
                                     {STATUSES.map(s => <option key={s} value={s}>{STATUS_STYLES[s]?.label || s}</option>)}
                                 </select>
                             </div>
                             <div className="space-y-1 text-left">
                                 <label className="text-[9px] font-black text-text-muted uppercase tracking-wider block font-mono">Lead Follow-up Reminder</label>
-                                <select value={form.followUpDays} onChange={(e) => setForm({ ...form, followUpDays: Number(e.target.value) })} className="w-full px-3 py-2 border border-border text-[10px] font-black font-mono uppercase bg-white outline-none focus:border-primary">
+                                <select value={form.followUpDays} onChange={(e) => setForm({ ...form, followUpDays: Number(e.target.value) })} className="w-full px-3 py-2 border border-border text-[10px] font-black font-mono uppercase bg-white outline-none focus:border-primary dark:bg-slate-900 dark:border-slate-700 dark:text-white">
                                     {FOLLOW_UP_OPTIONS.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
                                 </select>
                             </div>
@@ -423,7 +430,7 @@ export default function InquiryPage() {
                                     value={form.outletId}
                                     onChange={(e) => setForm({ ...form, outletId: e.target.value, interestedService: '', serviceInterest: '' })}
                                     required
-                                    className="w-full px-3 py-2 border border-border text-[10px] font-black font-mono uppercase bg-white outline-none focus:border-primary"
+                                    className="w-full px-3 py-2 border border-border text-[10px] font-black font-mono uppercase bg-white outline-none focus:border-primary dark:bg-slate-900 dark:border-slate-700 dark:text-white"
                                 >
                                     <option value="">Select Outlet</option>
                                     {outlets.map(o => <option key={o._id || o.id} value={o._id || o.id}>{o.name}</option>)}
@@ -436,7 +443,7 @@ export default function InquiryPage() {
                                     onChange={handleServiceChange}
                                     required
                                     disabled={!form.outletId}
-                                    className="w-full px-3 py-2 border border-border text-[10px] font-black font-mono uppercase bg-white outline-none focus:border-primary disabled:opacity-50"
+                                    className="w-full px-3 py-2 border border-border text-[10px] font-black font-mono uppercase bg-white outline-none focus:border-primary disabled:opacity-50 dark:bg-slate-900 dark:border-slate-700 dark:text-white"
                                 >
                                     <option value="">{!form.outletId ? 'Select Outlet First' : 'Select Service'}</option>
                                     {filteredServices.map(s => <option key={s._id || s.id} value={s._id || s.id}>{s.name} (₹{s.price})</option>)}
@@ -448,24 +455,28 @@ export default function InquiryPage() {
                                     value={form.notes}
                                     onChange={(e) => setForm({ ...form, notes: e.target.value.toUpperCase() })}
                                     rows={2}
-                                    className="w-full px-3 py-2 border border-border text-[11px] font-black uppercase font-mono resize-none focus:border-primary outline-none"
+                                    className="w-full px-3 py-2 border border-border text-[11px] font-black uppercase font-mono resize-none focus:border-primary outline-none dark:bg-slate-900 dark:border-slate-700 dark:text-white"
                                     placeholder="ENTER DETAILS/NOTES"
                                 />
                             </div>
                             <div className="flex gap-2 pt-2">
-                                <button type="button" onClick={closeModal} className="flex-1 py-3 text-[9px] font-black uppercase font-mono border border-border hover:bg-slate-50">Cancel</button>
-                                <button type="submit" className="flex-1 bg-text text-white py-3 font-black uppercase font-mono text-[9px] hover:bg-primary transition-all">Save</button>
+                                <button type="button" onClick={closeModal} className="flex-1 py-3 text-[9px] font-black uppercase font-mono border border-border hover:bg-slate-50 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800">Cancel</button>
+                                <button type="submit" className="flex-1 bg-text text-background py-3 font-black uppercase font-mono text-[9px] hover:bg-primary hover:text-white transition-all">Save</button>
                             </div>
                         </form>
                     </div>
-                </div>
+                </div>,
+                document.body
             )}
 
-            {viewingInquiry && (
-                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-start justify-center p-4 overflow-y-auto pt-10 md:pt-16" onClick={() => setViewingInquiry(null)}>
-                    <div className="bg-white w-full max-w-md p-6 border-2 border-text shadow-2xl space-y-6 text-left font-mono" onClick={(e) => e.stopPropagation()}>
-                        <div className="border-b border-border pb-4">
-                            <h2 className="text-sm font-black text-text uppercase italic tracking-tight leading-none flex items-center gap-2">
+            {viewingInquiry && createPortal(
+                <div className="fixed inset-0 bg-black/60 backdrop-blur-md z-[9999] flex items-start justify-center p-4 overflow-y-auto pt-10 md:pt-16" onClick={() => setViewingInquiry(null)}>
+                    <div className="bg-white dark:bg-[#1e293b] w-full max-w-sm p-5 border-2 border-text dark:border-slate-700 shadow-2xl space-y-5 text-left font-mono relative" onClick={(e) => e.stopPropagation()}>
+                        <button type="button" onClick={() => setViewingInquiry(null)} className="absolute right-4 top-4 text-text-muted hover:text-text dark:hover:text-white transition-colors">
+                            <X className="w-4 h-4" />
+                        </button>
+                        <div className="border-b border-border dark:border-slate-700 pb-3">
+                            <h2 className="text-sm font-black text-text dark:text-white uppercase italic tracking-tight leading-none flex items-center gap-2">
                                 <ClipboardList className="w-4 h-4 text-primary" /> Enquiry Overview
                             </h2>
                             <p className="text-[8px] text-text-muted mt-1 uppercase tracking-wider">Reference_ID: {viewingInquiry.id || viewingInquiry._id}</p>
@@ -475,18 +486,18 @@ export default function InquiryPage() {
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="space-y-0.5">
                                     <span className="text-[8px] text-text-muted block">Client Identity</span>
-                                    <span className="text-[10px] text-text italic">{viewingInquiry.name}</span>
+                                    <span className="text-[10px] text-text dark:text-white italic">{viewingInquiry.name}</span>
                                 </div>
                                 <div className="space-y-0.5">
                                     <span className="text-[8px] text-text-muted block">Contact Number</span>
-                                    <span className="text-[10px] text-text">{viewingInquiry.phone}</span>
+                                    <span className="text-[10px] text-text dark:text-white">{viewingInquiry.phone}</span>
                                 </div>
                             </div>
 
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="space-y-0.5">
                                     <span className="text-[8px] text-text-muted block">Source Channel</span>
-                                    <span className="text-[9px] bg-slate-100 px-2 py-0.5 border border-slate-200 text-slate-800 inline-block mt-0.5">{viewingInquiry.source}</span>
+                                    <span className="text-[9px] bg-slate-100 dark:bg-slate-900 px-2 py-0.5 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 inline-block mt-0.5">{viewingInquiry.source}</span>
                                 </div>
                                 <div className="space-y-0.5">
                                     <span className="text-[8px] text-text-muted block">Lead Status</span>
@@ -498,18 +509,18 @@ export default function InquiryPage() {
 
                             <div className="space-y-0.5">
                                 <span className="text-[8px] text-text-muted block">Assigned Outlet</span>
-                                <span className="text-[10px] text-text">{viewingInquiry.outletId?.name || 'All Outlets'}</span>
+                                <span className="text-[10px] text-text dark:text-white">{viewingInquiry.outletId?.name || 'All Outlets'}</span>
                             </div>
 
                             <div className="space-y-0.5">
                                 <span className="text-[8px] text-text-muted block">Service Interest</span>
-                                <span className="text-[10px] text-text">{viewingInquiry.serviceInterest || '—'}</span>
+                                <span className="text-[10px] text-text dark:text-white">{viewingInquiry.serviceInterest || '—'}</span>
                             </div>
 
                             {viewingInquiry.followUpDate && (
                                 <div className="space-y-0.5">
                                     <span className="text-[8px] text-text-muted block">Follow-up Target</span>
-                                    <span className="text-[10px] text-text flex items-center gap-1.5">
+                                    <span className="text-[10px] text-text dark:text-white flex items-center gap-1.5">
                                         <Calendar className="w-3.5 h-3.5 text-primary" />
                                         {formatDate(viewingInquiry.followUpDate)}
                                         <span className={`px-2 py-0.5 text-[8px] border font-black ${getFollowUpLabel(viewingInquiry.followUpDate)?.bg} ${getFollowUpLabel(viewingInquiry.followUpDate)?.color}`}>
@@ -521,17 +532,18 @@ export default function InquiryPage() {
 
                             <div className="space-y-1">
                                 <span className="text-[8px] text-text-muted block">Enquiry Notes / Description</span>
-                                <div className="p-3 bg-slate-50 border border-border rounded text-[10px] normal-case text-text font-mono leading-relaxed min-h-[60px] whitespace-pre-wrap">
+                                <div className="p-3 bg-slate-50 dark:bg-slate-900 border border-border dark:border-slate-700 rounded text-[10px] normal-case text-text dark:text-white font-mono leading-relaxed min-h-[60px] whitespace-pre-wrap">
                                     {viewingInquiry.notes || 'No description notes provided for this lead.'}
                                 </div>
                             </div>
                         </div>
 
                         <div className="pt-2">
-                            <button type="button" onClick={() => setViewingInquiry(null)} className="w-full py-2.5 text-[9px] font-black uppercase font-mono border border-border hover:bg-slate-50 transition-all">Dismiss Details</button>
+                            <button type="button" onClick={() => setViewingInquiry(null)} className="w-full py-2.5 text-[9px] font-black uppercase font-mono border border-border hover:bg-slate-50 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800 transition-all">Dismiss Details</button>
                         </div>
                     </div>
-                </div>
+                </div>,
+                document.body
             )}
         </div>
     );
