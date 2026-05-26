@@ -32,7 +32,7 @@ const SOURCE_STYLES = {
 const STATUS_STYLES = {
     'new': { bg: 'bg-sky-50', text: 'text-sky-700', border: 'border-sky-200', label: 'New' },
     'follow-up': { bg: 'bg-amber-50', text: 'text-amber-700', border: 'border-amber-200', label: 'Follow-up' },
-    'converted': { bg: 'bg-emerald-50', text: 'text-emerald-700', border: 'border-emerald-200', label: 'Booked' },
+    'converted': { bg: 'bg-emerald-50', text: 'text-emerald-700', border: 'border-emerald-200', label: 'Converted' },
     'lost': { bg: 'bg-slate-50', text: 'text-slate-500', border: 'border-slate-200', label: 'Not Interested' },
 };
 
@@ -65,10 +65,10 @@ export default function InquiryPage() {
     const [search, setSearch] = useState('');
     const [filterSource, setFilterSource] = useState('All');
     const [filterStatus, setFilterStatus] = useState('All');
+    const [filterOutlet, setFilterOutlet] = useState('All');
     const [showModal, setShowModal] = useState(false);
     const [editingInquiry, setEditingInquiry] = useState(null);
     const [viewingInquiry, setViewingInquiry] = useState(null);
-    const [statusDropdown, setStatusDropdown] = useState(null);
     const [convertedId, setConvertedId] = useState(null);
     const [form, setForm] = useState({
         customerId: '',
@@ -116,7 +116,7 @@ export default function InquiryPage() {
         return [
             { label: 'Total Enquiries', value: total, icon: ClipboardList, trend: '' },
             { label: 'Needs Follow-up', value: pending, icon: Clock, trend: '' },
-            { label: 'Booked', value: converted, icon: CheckCircle, trend: '' },
+            { label: 'Converted', value: converted, icon: CheckCircle, trend: '' },
             { label: 'Conversion Rate', value: `${rate}%`, icon: TrendingUp, trend: '' },
         ];
     }, [inquiries]);
@@ -129,9 +129,11 @@ export default function InquiryPage() {
                 (i.serviceInterest?.toLowerCase() || '').includes(search.toLowerCase());
             const matchSource = filterSource === 'All' || i.source === filterSource;
             const matchStatus = filterStatus === 'All' || i.status === filterStatus;
-            return matchSearch && matchSource && matchStatus;
+            const inqOutletId = i.outletId?._id || i.outletId;
+            const matchOutlet = filterOutlet === 'All' || inqOutletId === filterOutlet;
+            return matchSearch && matchSource && matchStatus && matchOutlet;
         });
-    }, [inquiries, search, filterSource, filterStatus]);
+    }, [inquiries, search, filterSource, filterStatus, filterOutlet]);
 
     const filteredServices = useMemo(() => {
         if (!form.outletId) return [];
@@ -207,7 +209,6 @@ export default function InquiryPage() {
         } catch (error) {
             console.error('[Inquiry] Status update failed:', error);
         }
-        setStatusDropdown(null);
     };
 
     const openEdit = (inq) => {
@@ -282,7 +283,7 @@ export default function InquiryPage() {
             </div>
 
             <div className="bg-white p-2 border border-border shadow-sm flex flex-col md:flex-row gap-2">
-                <div className="relative flex-1">
+                <div className="relative flex-grow">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-text-muted" />
                     <input
                         type="text"
@@ -291,6 +292,40 @@ export default function InquiryPage() {
                         placeholder="SEARCH..."
                         className="w-full pl-9 pr-3 py-1.5 bg-surface border border-border text-[11px] font-bold focus:border-primary outline-none transition-all uppercase font-mono"
                     />
+                </div>
+                <div className="flex flex-wrap gap-2">
+                    <select
+                        value={filterOutlet}
+                        onChange={(e) => setFilterOutlet(e.target.value)}
+                        className="px-3 py-1.5 bg-surface border border-border text-[11px] font-bold outline-none focus:border-primary font-mono uppercase bg-white min-w-[150px] cursor-pointer"
+                    >
+                        <option value="All">All Outlets</option>
+                        {outlets.map(o => (
+                            <option key={o._id || o.id} value={o._id || o.id}>{o.name}</option>
+                        ))}
+                    </select>
+
+                    <select
+                        value={filterStatus}
+                        onChange={(e) => setFilterStatus(e.target.value)}
+                        className="px-3 py-1.5 bg-surface border border-border text-[11px] font-bold outline-none focus:border-primary font-mono uppercase bg-white min-w-[130px] cursor-pointer"
+                    >
+                        <option value="All">All Statuses</option>
+                        {STATUSES.map(s => (
+                            <option key={s} value={s}>{STATUS_STYLES[s]?.label || s}</option>
+                        ))}
+                    </select>
+
+                    <select
+                        value={filterSource}
+                        onChange={(e) => setFilterSource(e.target.value)}
+                        className="px-3 py-1.5 bg-surface border border-border text-[11px] font-bold outline-none focus:border-primary font-mono uppercase bg-white min-w-[130px] cursor-pointer"
+                    >
+                        <option value="All">All Sources</option>
+                        {SOURCES.map(s => (
+                            <option key={s} value={s}>{s}</option>
+                        ))}
+                    </select>
                 </div>
             </div>
 
@@ -325,36 +360,19 @@ export default function InquiryPage() {
                                             <span className="text-[8px] font-black uppercase font-mono border border-border px-2 py-0.5">{inq.source}</span>
                                         </td>
                                         <td className="px-4 py-2 uppercase font-mono text-[9px]">{inq.serviceInterest || '—'}</td>
-                                    <td className="px-4 py-2 relative overflow-visible">
-    <button
-        type="button"
-        onClick={(e) => {
-            e.stopPropagation();
-            setStatusDropdown(
-                statusDropdown === inq.id ? null : inq.id
-            );
-        }}
-        className={`inline-flex items-center gap-1 text-[8px] font-black border uppercase tracking-widest font-mono px-2 py-1 ${stStyle.bg} ${stStyle.text} ${stStyle.border}`}
-    >
-        {stStyle.label}
-        <ChevronDown className="w-2 h-2" />
-    </button>
-
-    {statusDropdown === inq.id && (
-        <div className="absolute left-0 top-full mt-1 z-[9999] bg-white border border-border shadow-xl min-w-[150px] rounded">
-            {STATUSES.map((status) => (
-                <button
-                    type="button"
-                    key={status}
-                    onClick={() => changeStatus(inq.id, status)}
-                    className="block w-full text-left px-3 py-2 text-[9px] uppercase font-mono hover:bg-slate-50"
-                >
-                    {STATUS_STYLES[status]?.label || status}
-                </button>
-            ))}
-        </div>
-    )}
-</td>
+                                        <td className="px-4 py-2">
+                                            <select
+                                                value={inq.status}
+                                                onChange={(e) => changeStatus(inq.id, e.target.value)}
+                                                className={`text-[8px] font-black border uppercase tracking-widest font-mono px-2 py-1 cursor-pointer outline-none ${stStyle.bg} ${stStyle.text} ${stStyle.border}`}
+                                            >
+                                                {STATUSES.map((status) => (
+                                                    <option key={status} value={status} className="bg-white text-text uppercase font-mono text-[9px]">
+                                                        {STATUS_STYLES[status]?.label || status}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                        </td>
                                         <td className="px-4 py-2 text-right">
                                             <button onClick={() => setViewingInquiry(inq)} className="p-1 text-slate-500 hover:text-primary transition-colors" title="View Details"><Eye className="w-3.5 h-3.5" /></button>
                                             <button onClick={() => openEdit(inq)} className="p-1" title="Edit"><Edit className="w-3 h-3" /></button>

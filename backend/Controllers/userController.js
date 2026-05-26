@@ -16,7 +16,7 @@ exports.getUsers = async (req, res) => {
             return res.status(400).json({ success: false, message: 'Salon ID is required' });
         }
 
-        const staff = await Staff.find({ salonId }).sort({ createdAt: -1 });
+        const staff = await Staff.find({ salonId }).populate('outletId', 'name').sort({ createdAt: -1 });
 
         res.json({
             success: true,
@@ -39,7 +39,7 @@ exports.getUser = async (req, res) => {
             filter.salonId = req.user.salonId;
         }
 
-        const staff = await Staff.findOne(filter);
+        const staff = await Staff.findOne(filter).populate('outletId', 'name');
 
         if (!staff) {
             return res.status(404).json({ success: false, message: 'Staff member not found' });
@@ -146,9 +146,11 @@ exports.createUser = async (req, res) => {
             console.error('Welcome notifications failed during staff creation:', err);
         }
 
+        const populatedStaff = await Staff.findById(staff._id).populate('outletId', 'name');
+
         res.status(201).json({
             success: true,
-            data: staff
+            data: populatedStaff
         });
     } catch (err) {
         console.error('Create Staff Error:', err);
@@ -191,7 +193,7 @@ exports.updateUser = async (req, res) => {
         const updatedStaff = await Staff.findByIdAndUpdate(req.params.id, req.body, {
             new: true,
             runValidators: true
-        });
+        }).populate('outletId', 'name');
 
         res.json({
             success: true,

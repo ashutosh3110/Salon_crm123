@@ -69,7 +69,7 @@ const inquirySchema = new mongoose.Schema({
     },
     status: {
         type: String,
-        enum: ['new', 'follow-up', 'interested', 'not-interested', 'converted'],
+        enum: ['new', 'follow-up', 'interested', 'not-interested', 'converted', 'lost'],
         default: 'new'
     }
 }, {

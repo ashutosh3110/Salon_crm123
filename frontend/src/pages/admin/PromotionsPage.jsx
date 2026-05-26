@@ -1,9 +1,10 @@
 import { useState, useEffect, useMemo } from 'react';
 import { createPortal } from 'react-dom';
-import { Plus, Search, Edit, Trash2, Tag, Calendar, Percent, TrendingUp, BarChart3, X } from 'lucide-react';
+import { Plus, Search, Edit, Trash2, Tag, Calendar, Percent, TrendingUp, BarChart3, X, Share2 } from 'lucide-react';
 import api from '../../services/api';
 import { toast } from 'react-hot-toast';
 import { useBusiness } from '../../contexts/BusinessContext';
+import { useAuth } from '../../contexts/AuthContext';
 import {
     BarChart,
     Bar,
@@ -25,9 +26,19 @@ const CHART_COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'];
 
 export default function PromotionsPage() {
     const { outlets } = useBusiness();
+    const { user } = useAuth();
     const [promos, setPromos] = useState([]);
     const [loading, setLoading] = useState(true);
     const [showModal, setShowModal] = useState(false);
+
+    // Share modal states
+    const [sharingPromo, setSharingPromo] = useState(null);
+    const [shareModalOpen, setShareModalOpen] = useState(false);
+    const [customers, setCustomers] = useState([]);
+    const [customersLoading, setCustomersLoading] = useState(false);
+    const [selectedCustomerId, setSelectedCustomerId] = useState('');
+    const [customerSearch, setCustomerSearch] = useState('');
+    const [sendingWhatsApp, setSendingWhatsApp] = useState(false);
 
     // Lock background scroll when modal is open
     useEffect(() => {
@@ -113,8 +124,8 @@ export default function PromotionsPage() {
                 isActive: !!form.isActive,
                 activationMode: form.activationMode || 'AUTO',
                 couponCode: form.activationMode === 'COUPON' ? String(form.couponCode).toUpperCase() : undefined,
-                totalUsageLimit: 1,
-                usageLimitPerCustomer: 1,
+                totalUsageLimit: Number(form.usageLimit) || 1,
+                usageLimitPerCustomer: Number(form.usageLimitPerCustomer) || 1,
                 applicableOn: form.applicableOn,
                 outletIds: form.outletIds
             };
@@ -164,8 +175,8 @@ export default function PromotionsPage() {
             value: p.value,
             startDate: p.startDate?.slice(0, 10) || '',
             endDate: p.endDate?.slice(0, 10) || '',
-            usageLimit: 1,
-            usageLimitPerCustomer: 1,
+            usageLimit: p.usageLimit ?? 1,
+            usageLimitPerCustomer: p.usageLimitPerCustomer ?? 1,
             isActive: p.isActive,
             activationMode: p.activationMode || 'AUTO',
             couponCode: p.couponCode || '',
@@ -174,6 +185,72 @@ export default function PromotionsPage() {
         });
         setShowModal(true);
     };
+
+    const fetchCustomersList = async () => {
+        setCustomersLoading(true);
+        try {
+            const res = await api.get('/clients', { params: { page: 1, limit: 1000 } });
+            const list = res.data?.data || res.data?.results || res.data || [];
+            setCustomers(Array.isArray(list) ? list : []);
+        } catch (e) {
+            console.error('[PromotionsPage] Customer fetch failed:', e);
+            setCustomers([]);
+        } finally {
+            setCustomersLoading(false);
+        }
+    };
+
+    const handleOpenShare = (p) => {
+        setSharingPromo(p);
+        setShareModalOpen(true);
+        setSelectedCustomerId('');
+        setCustomerSearch('');
+        if (customers.length === 0) {
+            fetchCustomersList();
+        }
+    };
+
+    const handleSendPromo = async () => {
+        if (!selectedCustomerId || !sharingPromo) return;
+        setSendingWhatsApp(true);
+        try {
+            const res = await api.post(`/promotions/${sharingPromo._id}/share-whatsapp`, {
+                customerId: selectedCustomerId
+            });
+            if (res.data?.success) {
+                toast.success('Promotion shared successfully on WhatsApp!');
+                setShareModalOpen(false);
+                setSelectedCustomerId('');
+                setCustomerSearch('');
+            } else {
+                toast.error(res.data?.message || 'Failed to send WhatsApp message');
+            }
+        } catch (err) {
+            console.error('[PromotionsPage] Share WhatsApp error:', err);
+            toast.error(err.response?.data?.message || 'Error sending WhatsApp promotion');
+        } finally {
+            setSendingWhatsApp(false);
+        }
+    };
+
+    const filteredCustomers = useMemo(() => {
+        let list = customers;
+
+        // Filter by coupon's outlets if the coupon is restricted to specific outlets
+        if (sharingPromo && sharingPromo.outletIds && sharingPromo.outletIds.length > 0) {
+            list = list.filter(c => {
+                const customerOutletId = c.lastOutletId?._id || c.lastOutletId;
+                return customerOutletId && sharingPromo.outletIds.includes(String(customerOutletId));
+            });
+        }
+
+        const q = customerSearch.trim().toLowerCase();
+        if (!q) return list;
+        return list.filter(c => 
+            (c.name || '').toLowerCase().includes(q) || 
+            (c.phone || '').includes(q)
+        );
+    }, [customers, customerSearch, sharingPromo]);
 
     return (
         <div className="space-y-6 text-left font-black">
@@ -248,40 +325,48 @@ export default function PromotionsPage() {
                         <h3 className="text-sm font-black text-text uppercase tracking-[0.3em]">No coupons yet</h3>
                     </div>
                 ) : (
-                    promos.map((p) => (
-                        <div key={p._id} className="bg-surface rounded-none border border-border p-8 hover:shadow-2xl hover:translate-y-[-4px] transition-all group relative overflow-hidden text-left font-black">
-                            <div className="flex items-start justify-between mb-8 text-left">
-                                <span className={`text-[10px] font-black px-4 py-1.5 rounded-none uppercase tracking-widest ${typeColors[p.type] || 'bg-gray-50 text-gray-500'} bg-opacity-5 border border-current`}>{typeLabels[p.type]}</span>
-                                <div className="flex gap-2">
-                                    <button onClick={() => openEdit(p)} className="p-3 rounded-none bg-surface border border-border text-text-muted hover:text-primary transition-all"><Edit className="w-4 h-4" /></button>
-                                    <button onClick={() => handleDelete(p._id)} className="p-3 rounded-none bg-surface border border-border text-text-muted hover:text-rose-600 transition-all"><Trash2 className="w-4 h-4" /></button>
+                    promos.map((p) => {
+                        const showShare = p.outletIds.length === 0 || !user?.outletId || p.outletIds.includes(String(user?.outletId));
+                        return (
+                            <div key={p._id} className="bg-surface rounded-none border border-border p-8 hover:shadow-2xl hover:translate-y-[-4px] transition-all group relative overflow-hidden text-left font-black">
+                                <div className="flex items-start justify-between mb-8 text-left">
+                                    <span className={`text-[10px] font-black px-4 py-1.5 rounded-none uppercase tracking-widest ${typeColors[p.type] || 'bg-gray-50 text-gray-500'} bg-opacity-5 border border-current`}>{typeLabels[p.type]}</span>
+                                    <div className="flex gap-2">
+                                        {showShare && (
+                                            <button onClick={() => handleOpenShare(p)} className="p-3 rounded-none bg-surface border border-border text-text-muted hover:text-emerald-500 transition-all" title="Share on WhatsApp">
+                                                <Share2 className="w-4 h-4" />
+                                            </button>
+                                        )}
+                                        <button onClick={() => openEdit(p)} className="p-3 rounded-none bg-surface border border-border text-text-muted hover:text-primary transition-all"><Edit className="w-4 h-4" /></button>
+                                        <button onClick={() => handleDelete(p._id)} className="p-3 rounded-none bg-surface border border-border text-text-muted hover:text-rose-600 transition-all"><Trash2 className="w-4 h-4" /></button>
+                                    </div>
                                 </div>
-                            </div>
-                            <h3 className="text-xl font-black text-text uppercase tracking-tight text-left leading-tight mb-2">{p.name}</h3>
-                            <div className="text-5xl font-black text-primary tracking-tighter text-left leading-none mb-6">{p.type === 'percentage' ? `${p.value}%` : `₹${p.value}`}</div>
+                                <h3 className="text-xl font-black text-text uppercase tracking-tight text-left leading-tight mb-2">{p.name}</h3>
+                                <div className="text-5xl font-black text-primary tracking-tighter text-left leading-none mb-6">{p.type === 'percentage' ? `${p.value}%` : `₹${p.value}`}</div>
 
-                            <div className="space-y-3 pt-6 border-t border-border/40 text-left font-black">
-                                <div className="flex items-center gap-3 text-[10px] font-black text-text-muted uppercase tracking-widest text-left">
-                                    <Calendar className="w-4 h-4 opacity-40" />
-                                    {p.startDate ? new Date(p.startDate).toLocaleDateString('en-IN') : '—'} → {p.endDate ? new Date(p.endDate).toLocaleDateString('en-IN') : '—'}
+                                <div className="space-y-3 pt-6 border-t border-border/40 text-left font-black">
+                                    <div className="flex items-center gap-3 text-[10px] font-black text-text-muted uppercase tracking-widest text-left">
+                                        <Calendar className="w-4 h-4 opacity-40" />
+                                        {p.startDate ? new Date(p.startDate).toLocaleDateString('en-IN') : '—'} → {p.endDate ? new Date(p.endDate).toLocaleDateString('en-IN') : '—'}
+                                    </div>
+                                    <div className="flex items-start gap-3 text-[10px] font-black text-text-muted uppercase tracking-widest text-left">
+                                        <Tag className="w-4 h-4 opacity-40 mt-0.5" />
+                                        <span>Applies to: <strong className="text-primary">{p.applicableOn === 'SERVICE' ? 'Services Only' : (p.applicableOn === 'PRODUCT' ? 'Products Only' : 'Both')}</strong></span>
+                                    </div>
+                                    <div className="flex items-start gap-3 text-[10px] font-black text-text-muted uppercase tracking-widest text-left">
+                                        <TrendingUp className="w-4 h-4 opacity-40 mt-0.5" />
+                                        <span className="line-clamp-2">Outlets: <strong className="text-primary">{p.outletIds.length === 0 ? 'All Outlets' : p.outletIds.map(id => outlets.find(o => o._id === id)?.name || 'Outlet').join(', ')}</strong></span>
+                                    </div>
                                 </div>
-                                <div className="flex items-start gap-3 text-[10px] font-black text-text-muted uppercase tracking-widest text-left">
-                                    <Tag className="w-4 h-4 opacity-40 mt-0.5" />
-                                    <span>Applies to: <strong className="text-primary">{p.applicableOn === 'SERVICE' ? 'Services Only' : (p.applicableOn === 'PRODUCT' ? 'Products Only' : 'Both')}</strong></span>
-                                </div>
-                                <div className="flex items-start gap-3 text-[10px] font-black text-text-muted uppercase tracking-widest text-left">
-                                    <TrendingUp className="w-4 h-4 opacity-40 mt-0.5" />
-                                    <span className="line-clamp-2">Outlets: <strong className="text-primary">{p.outletIds.length === 0 ? 'All Outlets' : p.outletIds.map(id => outlets.find(o => o._id === id)?.name || 'Outlet').join(', ')}</strong></span>
-                                </div>
-                            </div>
 
-                            <div className="absolute bottom-0 right-0 p-4 font-black">
-                                <span className={`text-[9px] font-black uppercase tracking-[0.2em] ${p.isActive ? 'text-emerald-500' : 'text-text-muted opacity-40'}`}>
-                                    {p.isActive ? 'Active' : 'Inactive'}
-                                </span>
+                                <div className="absolute bottom-0 right-0 p-4 font-black">
+                                    <span className={`text-[9px] font-black uppercase tracking-[0.2em] ${p.isActive ? 'text-emerald-500' : 'text-text-muted opacity-40'}`}>
+                                        {p.isActive ? 'Active' : 'Inactive'}
+                                    </span>
+                                </div>
                             </div>
-                        </div>
-                    ))
+                        );
+                    })
                 )}
             </div>
 
@@ -329,11 +414,11 @@ export default function PromotionsPage() {
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="space-y-2">
                                     <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">Total Usage Limit</label>
-                                    <input type="number" value={form.usageLimit} disabled className="w-full px-4 py-3 rounded-none bg-slate-100 border border-slate-200 text-xs font-bold uppercase tracking-widest outline-none opacity-60 text-slate-500 cursor-not-allowed" />
+                                    <input type="number" value={form.usageLimit} onChange={(e) => setForm({ ...form, usageLimit: e.target.value })} required className="w-full px-4 py-3 rounded-none bg-slate-50 border border-slate-200 text-xs font-bold uppercase tracking-widest focus:border-primary outline-none transition-all text-slate-900" />
                                 </div>
                                 <div className="space-y-2">
                                     <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">Usage Limit Per Customer</label>
-                                    <input type="number" value={form.usageLimitPerCustomer} disabled className="w-full px-4 py-3 rounded-none bg-slate-100 border border-slate-200 text-xs font-bold uppercase tracking-widest outline-none opacity-60 text-slate-500 cursor-not-allowed" />
+                                    <input type="number" value={form.usageLimitPerCustomer} onChange={(e) => setForm({ ...form, usageLimitPerCustomer: e.target.value })} required className="w-full px-4 py-3 rounded-none bg-slate-50 border border-slate-200 text-xs font-bold uppercase tracking-widest focus:border-primary outline-none transition-all text-slate-900" />
                                 </div>
                             </div>
                             <div className="grid grid-cols-2 gap-4">
@@ -385,6 +470,88 @@ export default function PromotionsPage() {
                                 <button type="submit" className="flex-1 py-4 bg-slate-900 text-white rounded-none font-bold text-[11px] uppercase tracking-[0.2em] shadow-lg hover:bg-primary transition-all">{editing ? 'Save Changes' : 'Create Offer'}</button>
                             </div>
                         </form>
+                    </div>
+                </div>,
+                document.body
+            )}
+
+            {shareModalOpen && sharingPromo && createPortal(
+                <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-[9999] flex items-center justify-center p-4 text-left" onClick={() => setShareModalOpen(false)}>
+                    <div className="bg-white dark:bg-slate-850 rounded-none w-full max-w-md shadow-2xl relative overflow-hidden border border-slate-200 dark:border-slate-700 max-h-[90vh] flex flex-col" onClick={(e) => e.stopPropagation()}>
+                        {/* Modal Header */}
+                        <div className="flex items-center justify-between px-6 pt-6 pb-4 border-b border-slate-100 dark:border-slate-700">
+                            <div>
+                                <h2 className="text-xs font-black uppercase tracking-[0.2em] text-slate-900 dark:text-white flex items-center gap-2">
+                                    <Share2 className="w-4 h-4 text-emerald-500 animate-pulse" />
+                                    Share Promotion
+                                </h2>
+                                <p className="text-[9px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mt-1">Send "{sharingPromo.name}" on WhatsApp</p>
+                            </div>
+                            <button type="button" onClick={() => setShareModalOpen(false)} className="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-400 hover:text-rose-500 transition-all">
+                                <X className="w-5 h-5" />
+                            </button>
+                        </div>
+
+                        {/* Modal Content */}
+                        <div className="p-6 overflow-y-auto space-y-4 flex-1 text-slate-800 dark:text-slate-200">
+                            {/* Searchable Customer Dropdown */}
+                            <div className="space-y-1">
+                                <label className="text-[9px] font-black text-slate-500 dark:text-slate-450 ml-1 uppercase tracking-widest block mb-1">Select Customer</label>
+                                
+                                {/* Search Input */}
+                                <div className="relative mb-2">
+                                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" />
+                                    <input
+                                        type="text"
+                                        placeholder="Search customer name or phone..."
+                                        value={customerSearch}
+                                        onChange={(e) => setCustomerSearch(e.target.value)}
+                                        className="w-full pl-9 pr-4 py-2.5 rounded-none bg-slate-50 dark:bg-slate-750 border border-slate-200 dark:border-slate-700 text-xs font-bold uppercase tracking-wider focus:border-primary outline-none text-slate-900 dark:text-white"
+                                    />
+                                </div>
+
+                                {/* Customer List Dropdown Select */}
+                                {customersLoading ? (
+                                    <div className="text-center py-8 text-[10px] font-black text-slate-400 uppercase tracking-widest animate-pulse">Loading Customers...</div>
+                                ) : (
+                                    <div className="border border-slate-200 dark:border-slate-700 max-h-[180px] overflow-y-auto divide-y divide-slate-100 dark:divide-slate-750 bg-slate-50 dark:bg-slate-750 rounded-none">
+                                        {filteredCustomers.length === 0 ? (
+                                            <div className="p-4 text-center text-[10px] font-bold text-slate-400 uppercase tracking-widest">No customers found</div>
+                                        ) : (
+                                            filteredCustomers.map(c => {
+                                                const isSelected = selectedCustomerId === c._id;
+                                                return (
+                                                    <div 
+                                                        key={c._id} 
+                                                        onClick={() => setSelectedCustomerId(c._id)}
+                                                        className={`p-3 text-xs font-bold uppercase cursor-pointer hover:bg-primary/5 hover:text-primary transition-all flex items-center justify-between ${isSelected ? 'bg-primary/10 text-primary border-l-2 border-primary' : 'text-slate-700 dark:text-slate-350'}`}
+                                                    >
+                                                        <div className="text-left">
+                                                            <p className="font-extrabold">{c.name}</p>
+                                                            <p className="text-[9px] opacity-60 font-mono tracking-normal mt-0.5">{c.phone}</p>
+                                                        </div>
+                                                        {isSelected && <span className="text-[9px] font-black text-primary uppercase tracking-widest">Selected</span>}
+                                                    </div>
+                                                );
+                                            })
+                                        )}
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+
+                        {/* Modal Footer */}
+                        <div className="p-6 border-t border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/40 flex gap-3 shrink-0">
+                            <button type="button" onClick={() => setShareModalOpen(false)} className="flex-1 py-3 border border-slate-200 dark:border-slate-700 text-[10px] font-bold uppercase tracking-[0.2em] text-slate-600 dark:text-slate-350 hover:bg-slate-100 dark:hover:bg-slate-700 transition-all">Cancel</button>
+                            <button 
+                                type="button" 
+                                onClick={handleSendPromo}
+                                disabled={!selectedCustomerId || sendingWhatsApp}
+                                className="flex-1 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[10px] uppercase tracking-[0.2em] shadow-lg disabled:opacity-50 transition-all flex items-center justify-center gap-1.5"
+                            >
+                                {sendingWhatsApp ? 'Sending...' : 'Send WhatsApp'}
+                            </button>
+                        </div>
                     </div>
                 </div>,
                 document.body

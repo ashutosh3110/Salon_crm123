@@ -4,6 +4,7 @@ const Payroll = require('../Models/Payroll');
 const Shift = require('../Models/Shift');
 const LeaveRequest = require('../Models/LeaveRequest');
 const Booking = require('../Models/Booking');
+const Service = require('../Models/Service');
 const mongoose = require('mongoose');
 
 // @desc    Get all staff with HR profiles
@@ -108,11 +109,58 @@ exports.getAttendanceSummary = async (req, res) => {
         logs.forEach(log => {
             const sid = log.staffId.toString();
             if (!summary[sid]) {
-                summary[sid] = { present: 0, absent: 0, halfDay: 0, leave: 0, late: 0, total: 0 };
+                summary[sid] = { present: 0, absent: 0, halfDay: 0, leave: 0, late: 0, total: 0, commission: 0 };
             }
             summary[sid][log.status === 'half-day' ? 'halfDay' : log.status]++;
             summary[sid].total++;
         });
+
+        // Calculate commissions for completed bookings
+        let bookingQuery = {
+            salonId,
+            status: 'completed',
+            appointmentDate: { $gte: startDate, $lte: endDate }
+        };
+        if (staffId) {
+            bookingQuery.staffId = staffId;
+        }
+
+        const bookings = await Booking.find(bookingQuery).populate('serviceId');
+        const commissionMap = {};
+
+        for (const booking of bookings) {
+            const stylistsCount = booking.staffId?.length || 1;
+            for (const sId of booking.staffId || []) {
+                const sidStr = sId.toString();
+                const staff = await Staff.findById(sId);
+                if (!staff) continue;
+
+                let baseCommission = 0;
+                const service = booking.serviceId;
+                if (service) {
+                    if (service.commissionApplicable) {
+                        if (service.commissionType === 'fixed') {
+                            baseCommission = service.commissionValue || 0;
+                        } else {
+                            baseCommission = (booking.totalPrice * (service.commissionValue || 0)) / 100;
+                        }
+                    } else {
+                        const staffPct = staff.hrProfile?.commissionPercentage || 0;
+                        baseCommission = (booking.totalPrice * staffPct) / 100;
+                    }
+                }
+                const allocatedCommission = baseCommission / stylistsCount;
+                commissionMap[sidStr] = (commissionMap[sidStr] || 0) + allocatedCommission;
+            }
+        }
+
+        Object.keys(summary).forEach(sid => {
+            summary[sid].commission = Math.round(commissionMap[sid] || 0);
+        });
+
+        if (staffId && !summary[staffId]) {
+            summary[staffId] = { present: 0, absent: 0, halfDay: 0, leave: 0, late: 0, total: 0, commission: Math.round(commissionMap[staffId] || 0) };
+        }
 
         res.status(200).json({ success: true, data: summary });
     } catch (error) {
@@ -162,7 +210,7 @@ exports.generatePayroll = async (req, res) => {
 
         // If manual save for single staff
         if (staffId && baseSalary !== undefined) {
-            const perDaySalary = baseSalary / (workingDays || 30);
+            const perDaySalary = baseSalary / 30;
             const earnedSalary = perDaySalary * (presentDays || 0);
             const netSalary = Math.round(
                 earnedSalary + 
@@ -181,7 +229,7 @@ exports.generatePayroll = async (req, res) => {
                     month, 
                     year, 
                     baseSalary,
-                    workingDays: workingDays || 30,
+                    workingDays: 30,
                     presentDays: presentDays || 0,
                     leaveDays: leaveDays || 0,
                     incentive: Number(incentive) || 0,
@@ -219,8 +267,37 @@ exports.generatePayroll = async (req, res) => {
             const leaveCount = attendance.filter(a => a.status === 'leave').length;
             
             const effectivePresent = presentCount + (halfDayCount * 0.5);
-            const perDay = salary / totalDaysInMonth;
+            const perDay = salary / 30;
             const earned = Math.round(effectivePresent * perDay);
+
+            // Calculate commissions for this staff member
+            const staffBookings = await Booking.find({
+                staffId: staff._id,
+                status: 'completed',
+                appointmentDate: { $gte: startDate, $lte: endDate }
+            }).populate('serviceId');
+
+            let totalCommission = 0;
+            for (const booking of staffBookings) {
+                const stylistsCount = booking.staffId?.length || 1;
+                let baseCommission = 0;
+                const service = booking.serviceId;
+                if (service) {
+                    if (service.commissionApplicable) {
+                        if (service.commissionType === 'fixed') {
+                            baseCommission = service.commissionValue || 0;
+                        } else {
+                            baseCommission = (booking.totalPrice * (service.commissionValue || 0)) / 100;
+                        }
+                    } else {
+                        const staffPct = staff.hrProfile?.commissionPercentage || 0;
+                        baseCommission = (booking.totalPrice * staffPct) / 100;
+                    }
+                }
+                totalCommission += baseCommission / stylistsCount;
+            }
+            const commissionEarned = Math.round(totalCommission);
+            const netSalary = Math.round(earned + commissionEarned);
 
             const payroll = await Payroll.findOneAndUpdate(
                 { staffId: staff._id, month, year },
@@ -230,10 +307,11 @@ exports.generatePayroll = async (req, res) => {
                     month, 
                     year, 
                     baseSalary: salary,
-                    workingDays: totalDaysInMonth,
+                    workingDays: 30,
                     presentDays: effectivePresent,
                     leaveDays: leaveCount,
-                    netSalary: earned,
+                    incentive: commissionEarned,
+                    netSalary: netSalary,
                     status: 'draft',
                     performedBy: req.user._id
                 },

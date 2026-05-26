@@ -6,7 +6,8 @@ const Customer = require('../Models/Customer');
 const CustomerMembership = require('../Models/CustomerMembership');
 const ReminderHub = require('../Models/ReminderHub');
 const Service = require('../Models/Service');
-const { sendWapixoTemplate, checkAndDeductWhatsAppCredit, sendWhatsAppMessage } = require('./whatsapp');
+const Inquiry = require('../Models/Inquiry');
+const { sendWapixoTemplate, checkAndDeductWhatsAppCredit, sendWhatsAppMessage, sendWhatsAppTemplate } = require('./whatsapp');
 const { addLoyaltyPoints } = require('./loyalty');
 const { sendNotification } = require('./notification');
 
@@ -509,7 +510,72 @@ const initCronJobs = () => {
         }
     });
 
-    console.log('Cron Jobs Initialized: Subscription (00:00), Reminders (09:00), Celebrations (08:00), Payment Reminders (10:00), Membership Expiry (11:30), Bridal (08:30), Repeated Services (09:30)');
+    // 7. Inquiry Follow-up Reminders (Daily at 10:30 AM)
+    cron.schedule('30 10 * * *', async () => {
+        console.log('Running daily inquiry follow-up reminders...');
+        try {
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+
+            // Fetch inquiries with 'new' or 'follow-up' status
+            const activeInquiries = await Inquiry.find({
+                status: { $in: ['new', 'follow-up'] }
+            });
+
+            console.log(`[Inquiry-FollowUp] Found ${activeInquiries.length} active inquiries to evaluate.`);
+
+            for (const inq of activeInquiries) {
+                if (!inq.phone) continue;
+
+                const createdAt = new Date(inq.createdAt);
+                createdAt.setHours(0, 0, 0, 0);
+
+                const diffTime = today.getTime() - createdAt.getTime();
+                const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
+
+                // Only send reminders on day 3, 7, 10, and 15
+                if ([3, 7, 10, 15].includes(diffDays)) {
+                    // Check and deduct credit
+                    const targetId = inq.outletId || inq.salonId;
+                    if (!targetId) {
+                        console.log(`[Inquiry-FollowUp] Skipping inquiry ${inq._id} - No salonId or outletId associated.`);
+                        continue;
+                    }
+
+                    const canSend = await checkAndDeductWhatsAppCredit(targetId);
+                    if (!canSend) {
+                        console.log(`[Inquiry-FollowUp] Skipping inquiry ${inq._id} - Insufficient credits or notifications disabled.`);
+                        continue;
+                    }
+
+                    const salon = await Salon.findById(inq.salonId);
+                    const salonName = salon?.businessName || salon?.name || 'Our Salon';
+                    const templateName = process.env.WHATSAPP_TEMPLATE_INQUIRY_FOLLOWUP || 'inquiry_follow_up';
+
+                    let sendResult;
+                    if (process.env.WHATSAPP_TEMPLATE_INQUIRY_FOLLOWUP) {
+                        // Template parameters: [Customer Name, Service Interest, Salon Name, Diff Days]
+                        sendResult = await sendWhatsAppTemplate(inq.phone, templateName, [
+                            inq.name,
+                            inq.serviceInterest || 'our services',
+                            salonName,
+                            String(diffDays)
+                        ]);
+                    } else {
+                        // Plain text fallback
+                        const msg = `Hi ${inq.name}, thank you for inquiring about ${inq.serviceInterest || 'our services'} at ${salonName}. Just checking in to see if you have any questions or would like to book an appointment. We'd love to welcome you!`;
+                        sendResult = await sendWhatsAppMessage(inq.phone, msg);
+                    }
+
+                    console.log(`[Inquiry-FollowUp] Reminder sent to ${inq.name} (${inq.phone}) for day ${diffDays}. Result:`, sendResult);
+                }
+            }
+        } catch (err) {
+            console.error('Error in inquiry follow-up cron:', err);
+        }
+    });
+
+    console.log('Cron Jobs Initialized: Subscription (00:00), Reminders (09:00), Celebrations (08:00), Payment Reminders (10:00), Membership Expiry (11:30), Bridal (08:30), Repeated Services (09:30), Inquiry Follow-up (10:30)');
 };
 
 module.exports = initCronJobs;

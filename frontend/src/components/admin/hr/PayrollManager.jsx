@@ -34,7 +34,7 @@ export default function PayrollManager() {
     const [individualForm, setIndividualForm] = useState({
         staffId: '',
         baseSalary: 0,
-        workingDays: new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0).getDate(),
+        workingDays: 30,
         presentDays: 0,
         leaveDays: 0,
         incentive: 0,
@@ -88,11 +88,13 @@ export default function PayrollManager() {
             const stats = summary[staffId] || { present: 0, absent: 0, halfDay: 0, leave: 0, late: 0 };
             const computedPresent = (stats.present || 0) + (stats.late || 0) + ((stats.halfDay || 0) * 0.5);
             const computedLeave = stats.leave || 0;
+            const computedCommission = stats.commission || 0;
 
             setIndividualForm(prev => ({
                 ...prev,
                 presentDays: computedPresent,
-                leaveDays: computedLeave
+                leaveDays: computedLeave,
+                incentive: computedCommission
             }));
         } catch (error) {
             console.error('Failed to fetch attendance summary', error);
@@ -101,10 +103,9 @@ export default function PayrollManager() {
     }, []);
 
     useEffect(() => {
-        const days = new Date(year, month, 0).getDate();
         setIndividualForm(prev => ({
             ...prev,
-            workingDays: days,
+            workingDays: 30,
             ...(prev.staffId ? {} : { presentDays: 0, leaveDays: 0 })
         }));
 
@@ -214,9 +215,8 @@ export default function PayrollManager() {
             });
             showToast('Individual payroll created');
             setIndividualModal(false);
-            const daysInMonth = new Date(year, month, 0).getDate();
             setIndividualForm({
-                staffId: '', baseSalary: 0, workingDays: daysInMonth, presentDays: 0, leaveDays: 0,
+                staffId: '', baseSalary: 0, workingDays: 30, presentDays: 0, leaveDays: 0,
                 incentive: 0, overtime: 0, pf: 0, tax: 0, otherDeductions: 0, notes: ''
             });
             loadRecords();
@@ -660,8 +660,8 @@ export default function PayrollManager() {
                                         </div>
                                         <div className="space-y-1">
                                             <label className="text-[10px] font-black text-slate-550 dark:text-slate-450 ml-1 uppercase">Working Days</label>
-                                            <input type="number" value={individualForm.workingDays} onChange={e => setIndividualForm({ ...individualForm, workingDays: Number(e.target.value) })}
-                                                className="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-slate-750 border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-700 dark:text-slate-200 focus:ring-2 focus:ring-primary/10 focus:border-primary outline-none" />
+                                            <input type="number" value={individualForm.workingDays} disabled
+                                                className="w-full px-4 py-3 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-400 dark:text-slate-500 cursor-not-allowed outline-none" />
                                         </div>
                                         <div className="space-y-1">
                                             <label className="text-[10px] font-black text-slate-550 dark:text-slate-450 ml-1 uppercase">Present Days</label>
@@ -762,8 +762,8 @@ export default function PayrollManager() {
                                             <input 
                                                 type="number" 
                                                 value={detailForm.workingDays} 
-                                                onChange={e => setDetailForm({...detailForm, workingDays: Number(e.target.value)})}
-                                                className="w-full px-4 py-3 rounded-none bg-slate-50 border border-slate-200 text-xs font-bold text-slate-900 focus:border-primary outline-none" 
+                                                disabled
+                                                className="w-full px-4 py-3 rounded-none bg-slate-100 border border-slate-200 text-xs font-bold text-slate-400 cursor-not-allowed outline-none" 
                                             />
                                         </div>
                                         <div className="space-y-1">
