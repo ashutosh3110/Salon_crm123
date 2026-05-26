@@ -653,3 +653,118 @@ exports.sendManualCelebrationWish = async (req, res) => {
     }
 };
 
+// @desc    Get inactive clients (customers) with last activity details
+// @route   GET /clients/inactive
+// @access  Private
+exports.getInactiveClients = async (req, res) => {
+    try {
+        const salonId = req.user.salonId;
+        if (!salonId) {
+            return res.status(400).json({ success: false, message: 'Salon ID context missing' });
+        }
+
+        // Ensure models are registered
+        require('../Models/Booking');
+        require('../Models/Invoice');
+        const Booking = mongoose.model('Booking');
+        const Invoice = mongoose.model('Invoice');
+
+        const inactiveCustomers = await Customer.aggregate([
+            {
+                $match: {
+                    salonId: new mongoose.Types.ObjectId(salonId)
+                }
+            },
+            {
+                $lookup: {
+                    from: 'bookings',
+                    let: { customerId: '$_id' },
+                    pipeline: [
+                        { $match: { $expr: { $eq: ['$clientId', '$$customerId'] } } },
+                        { $sort: { appointmentDate: -1 } },
+                        { $limit: 1 }
+                    ],
+                    as: 'latestBooking'
+                }
+            },
+            {
+                $lookup: {
+                    from: 'invoices',
+                    let: { customerId: '$_id' },
+                    pipeline: [
+                        { $match: { $expr: { $eq: ['$customerId', '$$customerId'] } } },
+                        { $sort: { createdAt: -1 } },
+                        { $limit: 1 }
+                    ],
+                    as: 'latestInvoice'
+                }
+            },
+            {
+                $project: {
+                    name: 1,
+                    phone: 1,
+                    email: 1,
+                    lastLogin: 1,
+                    lastVisit: 1,
+                    createdAt: 1,
+                    updatedAt: 1,
+                    latestBookingDate: { $arrayElemAt: ['$latestBooking.appointmentDate', 0] },
+                    latestInvoiceDate: { $arrayElemAt: ['$latestInvoice.createdAt', 0] }
+                }
+            }
+        ]);
+
+        const today = new Date();
+        const mapped = inactiveCustomers.map(customer => {
+            const dates = [
+                { date: customer.createdAt, type: 'Profile Registration' },
+                { date: customer.updatedAt, type: 'Profile Update' },
+                { date: customer.lastLogin, type: 'App Login' },
+                { date: customer.lastVisit, type: 'Last Visit' },
+                { date: customer.latestBookingDate, type: 'Appointment Booking' },
+                { date: customer.latestInvoiceDate, type: 'Invoice / Billing' }
+            ].filter(d => d.date);
+
+            // Sort dates to find the latest activity
+            dates.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+            const latest = dates[0] || { date: customer.createdAt, type: 'Profile Registration' };
+            const latestDate = new Date(latest.date);
+            const diffTime = Math.max(0, today - latestDate);
+            const inactiveDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+
+            let status = 'Inactive (1-3 Months)';
+            if (inactiveDays >= 90) {
+                status = 'Dormant (3+ Months)';
+            }
+
+            return {
+                _id: customer._id,
+                name: customer.name || 'New Customer',
+                phone: customer.phone,
+                email: customer.email || '',
+                lastActivityDate: latestDate,
+                lastActivityType: latest.type,
+                inactiveDays,
+                status
+            };
+        });
+
+        // Filter for customers with 30+ days of inactivity
+        const result = mapped.filter(c => c.inactiveDays >= 30);
+
+        // Sort descending by days since last activity
+        result.sort((a, b) => b.inactiveDays - a.inactiveDays);
+
+        res.json({
+            success: true,
+            count: result.length,
+            data: result
+        });
+    } catch (err) {
+        console.error('Get inactive clients error:', err);
+        res.status(500).json({ success: false, message: 'Server Error' });
+    }
+};
+
+

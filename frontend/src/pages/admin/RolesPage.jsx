@@ -177,7 +177,9 @@ const PERMISSION_STRUCTURE = [
         subPermissions: [
             { id: 'settings_profile', label: 'Profile Settings', icon: User, description: 'Personal info' },
             { id: 'settings_business', label: 'Business Info', icon: Store, description: 'Company configurations' },
-            { id: 'settings_security', label: 'Security & Password', icon: Shield, description: 'Change password' }
+            { id: 'settings_security', label: 'Security & Password', icon: Shield, description: 'Change password' },
+            { id: 'settings_terms', label: 'Terms & Conditions', icon: FileText, description: 'Invoice terms & conditions' },
+            { id: 'settings_booking_link', label: 'Booking Link', icon: Zap, description: 'Self-booking URL & QR Code' }
         ]
     },
     {

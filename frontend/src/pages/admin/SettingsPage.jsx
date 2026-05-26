@@ -27,8 +27,9 @@ const NOTIFICATION_ITEMS = [
     { key: 'marketingUpdates', title: 'Marketing Updates', desc: 'Product news and marketing tips from us.' },
 ];
 
-export default function SettingsPage() {
-    const { section } = useParams();
+export default function SettingsPage({ section: propSection }) {
+    const { section: urlSection } = useParams();
+    const section = propSection || urlSection;
     const navigate = useNavigate();
     const { user, updateProfile, changePassword, refreshUser } = useAuth();
     const { salon, salonLoading, updateSalon, fetchSalon } = useBusiness();
