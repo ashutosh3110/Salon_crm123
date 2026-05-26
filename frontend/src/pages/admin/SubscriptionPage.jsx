@@ -273,41 +273,40 @@ export default function SubscriptionPage() {
                 )}
             </AnimatePresence>
 
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-6">
                 <div className="space-y-1">
-                    <div className="flex items-center gap-2 mb-1">
-                        <div className="w-1.5 h-6 bg-[#B4912B] rounded-full" />
-                        <span className="text-[10px] font-black uppercase tracking-[0.3em] text-[#B4912B]">Subscription Management</span>
+                    <div className="flex items-center gap-2 mb-0.5">
+                        <div className="w-1 h-4 bg-[#B4912B] rounded-full" />
+                        <span className="text-[9px] font-black uppercase tracking-[0.3em] text-[#B4912B]">Subscription Management</span>
                     </div>
-                    <h1 className="text-4xl font-black text-text tracking-tighter uppercase italic leading-none">
+                    <h1 className="text-2xl font-black text-text tracking-tighter uppercase italic leading-none">
                         Our <span className="text-text-muted opacity-50">Plans.</span>
                     </h1>
                 </div>
-
             </div>
 
             {/* Current Plan Banner */}
-            <div className="relative group mb-12">
-                <div className="absolute inset-0 bg-gradient-to-r from-[#B4912B]/20 via-transparent to-transparent rounded-[2.5rem] blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
-                <div className="relative bg-white border border-border p-10 rounded-[2.5rem] overflow-hidden shadow-sm hover:shadow-2xl transition-all duration-500">
-                    <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-[#B4912B]/5 to-transparent rounded-full -translate-y-1/2 translate-x-1/2" />
+            <div className="relative group mb-8">
+                <div className="absolute inset-0 bg-gradient-to-r from-[#B4912B]/20 via-transparent to-transparent rounded-[1.5rem] blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
+                <div className="relative bg-white border border-border p-6 rounded-[1.5rem] overflow-hidden shadow-sm hover:shadow-xl transition-all duration-500">
+                    <div className="absolute top-0 right-0 w-48 h-48 bg-gradient-to-br from-[#B4912B]/5 to-transparent rounded-full -translate-y-1/2 translate-x-1/2" />
                     
-                    <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-10">
-                        <div className="space-y-4">
+                    <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+                        <div className="space-y-3">
                             <div className="flex items-center gap-3">
-                                <div className="w-12 h-12 rounded-2xl bg-[#B4912B]/10 flex items-center justify-center border border-[#B4912B]/20">
-                                    <Crown className="w-6 h-6 text-[#B4912B]" strokeWidth={1.5} />
+                                <div className="w-10 h-10 rounded-xl bg-[#B4912B]/10 flex items-center justify-center border border-[#B4912B]/20">
+                                    <Crown className="w-5 h-5 text-[#B4912B]" strokeWidth={1.5} />
                                 </div>
                                 <div className="space-y-0.5">
                                     <div className="flex items-center gap-2">
-                                        <span className="text-[10px] font-black text-[#B4912B] uppercase tracking-[0.2em] block">Your Current Plan</span>
+                                        <span className="text-[9px] font-black text-[#B4912B] uppercase tracking-[0.2em] block">Your Current Plan</span>
                                         {effectiveSalon?.isActive ? (
                                             <span className="bg-emerald-500/10 text-emerald-600 text-[8px] font-black px-2 py-0.5 rounded-full border border-emerald-500/20 uppercase tracking-widest">Active</span>
                                         ) : (
                                             <span className="bg-rose-500/10 text-rose-600 text-[8px] font-black px-2 py-0.5 rounded-full border border-rose-500/20 uppercase tracking-widest">Inactive</span>
                                         )}
                                     </div>
-                                    <h2 className="text-4xl font-black text-text tracking-tighter uppercase italic">
+                                    <h2 className="text-2xl font-black text-text tracking-tighter uppercase italic">
                                         {currentPlan ? currentPlan.name : (
                                             effectiveSalon?.status === 'pending' ? 'Application Under Review' : 
                                             (effectiveSalon?.status === 'trial' ? 'Trial Period' : 'No Active Plan')
@@ -317,16 +316,16 @@ export default function SubscriptionPage() {
                             </div>
                         </div>
 
-                        <div className="flex flex-wrap gap-12 md:border-l border-border md:pl-12">
-                            <div className="space-y-2">
-                                <p className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Outlet Limit</p>
-                                <p className="text-2xl font-black text-text tracking-tighter">{currentPlan ? currentPlan.limits?.outletLimit : (effectiveSalon?.status === 'trial' ? effectiveSalon?.limits?.outletLimit : '0')} <span className="text-sm font-bold text-text-muted opacity-40">BRANCHE(S)</span></p>
+                        <div className="flex flex-wrap gap-8 md:border-l border-border md:pl-8">
+                            <div className="space-y-1">
+                                <p className="text-[9px] font-black text-text-muted uppercase tracking-[0.2em]">Outlet Limit</p>
+                                <p className="text-lg font-black text-text tracking-tighter">{currentPlan ? currentPlan.limits?.outletLimit : (effectiveSalon?.status === 'trial' ? effectiveSalon?.limits?.outletLimit : '0')} <span className="text-[10px] font-bold text-text-muted opacity-40">BRANCHE(S)</span></p>
                             </div>
-                            <div className="space-y-2">
-                                <p className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">
+                            <div className="space-y-1">
+                                <p className="text-[9px] font-black text-text-muted uppercase tracking-[0.2em]">
                                     {effectiveSalon?.status === 'trial' ? 'Trial Ends On' : 'Expires On'}
                                 </p>
-                                <p className="text-2xl font-black text-text tracking-tighter">
+                                <p className="text-lg font-black text-text tracking-tighter">
                                     {(effectiveSalon?.subscriptionExpiry && (currentPlan || effectiveSalon?.status === 'trial'))
                                         ? (new Date(effectiveSalon.subscriptionExpiry).getFullYear() > new Date().getFullYear() + 50 
                                             ? 'Life Time' 
@@ -337,41 +336,39 @@ export default function SubscriptionPage() {
                         </div>
                     </div>
                 </div>
-                
             </div>
 
             {/* Plans Grid */}
-            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
                 {displayPlans.map((plan) => {
                     const isCurrent = currentPlanName?.toLowerCase() === plan.name?.toLowerCase();
-                    const rankName = plan.name?.toLowerCase();
 
                     return (
                         <div 
                             key={plan.id} 
-                            className={`group relative bg-white border rounded-[2rem] p-8 flex flex-col gap-8 transition-all duration-500 hover:-translate-y-2 ${isCurrent ? 'ring-2 ring-[#B4912B] shadow-2xl shadow-[#B4912B]/10' : 'hover:shadow-xl border-border'}`}
+                            className={`group relative bg-white border rounded-[1.5rem] p-5 flex flex-col gap-5 transition-all duration-500 hover:-translate-y-1.5 ${isCurrent ? 'ring-2 ring-[#B4912B] shadow-xl shadow-[#B4912B]/5' : 'hover:shadow-lg border-border'}`}
                         >
                             {isCurrent && (
-                                <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-[#B4912B] text-white text-[9px] font-black uppercase tracking-[0.2em] px-4 py-1.5 rounded-full shadow-lg">
+                                <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-[#B4912B] text-white text-[8px] font-black uppercase tracking-[0.2em] px-3.5 py-1 rounded-full shadow-md">
                                     Active Now
                                 </div>
                             )}
 
-                            <div className="space-y-4">
+                            <div className="space-y-2">
                                 <div className="flex items-center justify-between">
-                                    <h4 className="text-2xl font-black uppercase italic tracking-tighter text-text">{plan.name}</h4>
-                                    {plan.popular && <Sparkles className="w-5 h-5 text-[#B4912B] animate-pulse" />}
+                                    <h4 className="text-lg font-black uppercase italic tracking-tighter text-text">{plan.name}</h4>
+                                    {plan.popular && <Sparkles className="w-4 h-4 text-[#B4912B] animate-pulse" />}
                                 </div>
                                 <div className="flex flex-col">
                                     {plan.price === 0 || (plan.monthlyPrice === 0) ? (
                                         <>
-                                            <span className="text-3xl font-black tracking-tighter text-emerald-600 italic uppercase">Free</span>
-                                            <span className="text-[10px] font-black text-emerald-600/60 uppercase tracking-[0.2em] mt-1">Validity: {trialDays} Days</span>
+                                            <span className="text-xl font-black tracking-tighter text-emerald-600 italic uppercase">Free</span>
+                                            <span className="text-[8px] font-black text-emerald-600/60 uppercase tracking-[0.2em] mt-0.5">Validity: {trialDays} Days</span>
                                         </>
                                     ) : (
-                                        <div className="flex items-baseline gap-1">
-                                            <span className="text-3xl font-black tracking-tighter">₹{(plan.monthlyPrice || 0).toLocaleString()}</span>
-                                            <span className="text-[10px] font-bold text-text-muted uppercase tracking-widest">/mo</span>
+                                        <div className="flex items-baseline gap-0.5">
+                                            <span className="text-xl font-black tracking-tighter">₹{(plan.monthlyPrice || 0).toLocaleString()}</span>
+                                            <span className="text-[8px] font-bold text-text-muted uppercase tracking-widest">/mo</span>
                                         </div>
                                     )}
                                 </div>
@@ -379,27 +376,26 @@ export default function SubscriptionPage() {
 
                             <div className="h-px bg-border group-hover:bg-[#B4912B]/20 transition-colors" />
 
-                            <ul className="space-y-3 flex-1 overflow-y-auto max-h-[300px] custom-scrollbar pr-2">
+                            <ul className="space-y-2 flex-1 overflow-y-auto max-h-[220px] custom-scrollbar pr-1">
                                 {/* Limits First */}
                                 {[
                                     { icon: Users, label: `${plan.limits?.staffLimit || 0} Staff Members`, active: true },
                                     { icon: Store, label: `${plan.limits?.outletLimit || 0} Salon Branches`, active: true },
                                     { icon: MessageSquare, label: `${plan.limits?.whatsappLimit || 0} AI Automations`, active: true },
                                 ].map((item, i) => (
-                                    <li key={i} className="flex items-center gap-3">
-                                        <div className="w-6 h-6 rounded-lg bg-emerald-50 flex items-center justify-center shrink-0 border border-emerald-100">
-                                            <item.icon className="w-3 h-3 text-emerald-600" />
+                                    <li key={i} className="flex items-center gap-2">
+                                        <div className="w-5 h-5 rounded-md bg-emerald-50 flex items-center justify-center shrink-0 border border-emerald-100">
+                                            <item.icon className="w-2.5 h-2.5 text-emerald-600" />
                                         </div>
-                                        <span className="text-[10px] font-bold text-text uppercase tracking-wider">{item.label}</span>
+                                        <span className="text-[9px] font-bold text-text uppercase tracking-wider">{item.label}</span>
                                     </li>
                                 ))}
-
                             </ul>
 
-                                <button 
+                            <button 
                                 onClick={() => handleUpgrade(plan)} 
                                 disabled={isCurrent || (effectiveSalon?.isActive && currentPlan && currentPlan.price > 0 && !isCurrent) || upgrading === plan.id}
-                                className={`w-full h-14 rounded-2xl text-[11px] font-black uppercase tracking-[0.3em] transition-all duration-500 shadow-lg ${
+                                className={`w-full h-10 rounded-xl text-[9px] font-black uppercase tracking-[0.3em] transition-all duration-500 shadow-md ${
                                     isCurrent
                                     ? 'bg-surface text-text-muted cursor-default' 
                                     : (effectiveSalon?.isActive && currentPlan?.price > 0 && !isCurrent)

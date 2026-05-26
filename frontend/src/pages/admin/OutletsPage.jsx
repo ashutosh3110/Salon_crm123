@@ -40,13 +40,18 @@ export default function OutletsPage() {
         let result = outlets;
         if (search && search.trim()) {
             const term = search.trim().toLowerCase();
-            result = result.filter(o =>
-                o.name?.toLowerCase().includes(term) ||
-                (o.address?.city || o.city)?.toLowerCase().includes(term)
-            );
+            result = result.filter(o => {
+                const nameMatch = String(o.name || '').toLowerCase().includes(term);
+                const cityValue = o.address?.city || o.city || '';
+                const cityMatch = String(cityValue).toLowerCase().includes(term);
+                return nameMatch || cityMatch;
+            });
         }
         if (cityFilter !== 'all') {
-            result = result.filter(o => (o.address?.city || o.city) === cityFilter);
+            result = result.filter(o => {
+                const cityValue = o.address?.city || o.city || '';
+                return String(cityValue) === String(cityFilter);
+            });
         }
         setFilteredOutlets(result);
     }, [search, cityFilter, outlets]);
@@ -94,10 +99,10 @@ export default function OutletsPage() {
             {/* Analytics Grid - 4 Columns */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 {stats.map((stat, i) => (
-                    <div key={i} className="bg-white p-5 border border-border flex flex-col justify-between group hover:border-black transition-all min-h-[140px] relative overflow-hidden rounded-xl">
+                    <div key={i} className="bg-white dark:bg-slate-900 p-5 border border-border dark:border-slate-800 flex flex-col justify-between group hover:border-black dark:hover:border-white transition-all min-h-[140px] relative overflow-hidden rounded-xl">
                         <div className="flex items-center justify-between">
                             <span className="text-xs font-bold text-text-muted uppercase tracking-wider">{stat.label}</span>
-                            <div className="w-8 h-8 bg-slate-50 border border-border flex items-center justify-center rounded-lg group-hover:bg-black group-hover:text-white transition-colors">
+                            <div className="w-8 h-8 bg-slate-50 dark:bg-slate-800 border border-border dark:border-slate-800 flex items-center justify-center rounded-lg group-hover:bg-black group-hover:text-white transition-colors">
                                 <stat.icon className="w-4 h-4 text-text-muted group-hover:text-white" />
                             </div>
                         </div>
@@ -113,10 +118,10 @@ export default function OutletsPage() {
                 ))}
 
                 {/* Regional Distribution Chart */}
-                <div className="bg-white p-5 border border-border flex flex-col justify-between group hover:border-black transition-all min-h-[140px] relative overflow-hidden rounded-xl">
+                <div className="bg-white dark:bg-slate-900 p-5 border border-border dark:border-slate-800 flex flex-col justify-between group hover:border-black dark:hover:border-white transition-all min-h-[140px] relative overflow-hidden rounded-xl">
                     <div className="flex items-center justify-between">
                         <span className="text-xs font-bold text-text-muted uppercase tracking-wider">Branches by City</span>
-                        <div className="w-8 h-8 bg-slate-50 border border-border flex items-center justify-center rounded-lg group-hover:bg-black group-hover:text-white transition-colors">
+                        <div className="w-8 h-8 bg-slate-50 dark:bg-slate-800 border border-border dark:border-slate-800 flex items-center justify-center rounded-lg group-hover:bg-black group-hover:text-white transition-colors">
                             <PieIcon className="w-4 h-4 text-text-muted group-hover:text-white" />
                         </div>
                     </div>
@@ -136,26 +141,28 @@ export default function OutletsPage() {
             </div>
 
             {/* Filters - Compact */}
-            <div className="bg-white p-3 border border-border flex flex-col md:flex-row gap-3 rounded-xl">
-                <div className="relative flex-1">
-                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
+            <div className="bg-white dark:bg-slate-900 p-3 border border-border dark:border-slate-800 flex flex-col md:flex-row gap-3 rounded-xl">
+                <div className="flex items-center gap-3 flex-1 bg-white dark:bg-slate-800 border border-border dark:border-slate-700 px-4 py-1.5 rounded-lg">
+                    <Search className="w-4 h-4 text-text-muted shrink-0" />
                     <input
                         type="text"
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
                         placeholder="Search by salon name or city..."
-                        className="w-full pl-12 pr-4 py-3 bg-white border border-border text-sm font-bold uppercase tracking-wider focus:border-black outline-none transition-all placeholder:text-text-muted/40 rounded-lg"
+                        className="w-full py-1.5 text-sm font-bold uppercase tracking-wider outline-none text-neutral-800 dark:text-neutral-200 bg-transparent border-0 focus:ring-0 focus:outline-none"
                     />
                 </div>
-                <div className="relative min-w-[200px]">
-                    <Filter className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted pointer-events-none" />
+                <div className="flex items-center gap-3 min-w-[200px] bg-white dark:bg-slate-800 border border-border dark:border-slate-700 px-4 py-1.5 rounded-lg relative">
+                    <Filter className="w-4 h-4 text-text-muted shrink-0 pointer-events-none" />
                     <select
                         value={cityFilter}
                         onChange={(e) => setCityFilter(e.target.value)}
-                        className="w-full pl-12 pr-10 py-3 bg-white border border-border text-sm font-bold uppercase tracking-wider focus:border-black outline-none cursor-pointer appearance-none rounded-lg"
+                        className="w-full py-1.5 pr-6 text-sm font-bold uppercase tracking-wider outline-none cursor-pointer appearance-none text-neutral-800 dark:text-neutral-200 bg-transparent border-0 focus:ring-0 focus:outline-none"
                     >
                         {cities.map(city => (
-                            <option key={city} value={city}>{city === 'all' ? 'ALL CITIES' : city.toUpperCase()}</option>
+                            <option key={city} value={city} className="bg-white dark:bg-slate-800 text-neutral-800 dark:text-neutral-200">
+                                {city === 'all' ? 'ALL CITIES' : city.toUpperCase()}
+                            </option>
                         ))}
                     </select>
                     {/* Custom Select Arrow */}

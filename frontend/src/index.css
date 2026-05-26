@@ -884,12 +884,11 @@ html:not(.dark) .admin-panel button[class*="bg-primary/"] svg {
 }
 
 /* 2. Fix Text Readability inside Dark Panels (slate-900 / slate-950 / black) in Light Mode */
+html:not(.dark) .admin-panel .bg-slate-700 *,
+html:not(.dark) .admin-panel .bg-slate-800 *,
 html:not(.dark) .admin-panel .bg-slate-900 *,
 html:not(.dark) .admin-panel .bg-slate-950 *,
-html:not(.dark) .admin-panel .bg-slate-800 *,
 html:not(.dark) .admin-panel .bg-black *,
-html:not(.dark) .admin-panel [class*="bg-slate-"] *,
-html:not(.dark) .admin-panel [class*="bg-black"] *,
 html:not(.dark) [role="dialog"] .bg-slate-900 *,
 html:not(.dark) [role="dialog"] .bg-slate-950 * {
     color: #ffffff !important;

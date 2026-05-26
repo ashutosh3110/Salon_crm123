@@ -356,7 +356,7 @@ export default function OutletForm() {
                         onClick={() => navigate('/admin/outlets')}
                         className="group w-11 h-11 rounded-lg bg-white border border-border flex items-center justify-center text-text-muted hover:text-black hover:border-black transition-all shadow-sm"
                     >
-                        <ArrowLeft className="w-5 h-5 group-hover:-translate-x-0.5 transition-transform" />
+                        <ArrowLeft className="w-5 h-5 text-primary group-hover:-translate-x-0.5 transition-transform" />
                     </button>
                     <div className="space-y-1">
                         <div className="flex items-center gap-2">
@@ -382,7 +382,7 @@ export default function OutletForm() {
                             <div className="space-y-6">
                                 <div className="flex items-center gap-3">
                                     <div className="w-10 h-10 rounded-lg bg-slate-50 border border-border flex items-center justify-center">
-                                        <Store className="w-5 h-5 text-text-muted" />
+                                        <Store className="w-5 h-5 text-primary" />
                                     </div>
                                     <div>
                                         <h2 className="text-lg font-black text-text uppercase tracking-tight">General Identity</h2>
@@ -435,7 +435,7 @@ export default function OutletForm() {
                             <div className="flex items-center justify-between mb-6">
                                 <div className="flex items-center gap-3">
                                     <div className="w-10 h-10 rounded-lg bg-slate-50 border border-border flex items-center justify-center">
-                                        <Users className="w-5 h-5 text-text-muted" />
+                                        <Users className="w-5 h-5 text-primary" />
                                     </div>
                                     <div>
                                         <h2 className="text-lg font-black text-text uppercase tracking-tight">Resource Setup</h2>
@@ -467,7 +467,7 @@ export default function OutletForm() {
                                                     <div className="w-8 h-8 rounded-lg bg-white border border-border flex items-center justify-center text-xs font-bold text-text-muted">{chair.id}</div>
                                                     <input value={chair.name} onChange={(e) => handleChairNameChange(chair.id, e.target.value)} className="flex-1 bg-transparent border-none text-sm font-bold text-text outline-none uppercase" />
                                                 </div>
-                                                <div role="button" onClick={() => handleRemoveChair(chair.id)} className="p-1.5 text-rose-500 hover:bg-rose-50 rounded-lg cursor-pointer"><X className="w-4 h-4" /></div>
+                                                <div role="button" onClick={() => handleRemoveChair(chair.id)} className="p-1.5 text-rose-500 hover:bg-rose-50 rounded-lg cursor-pointer"><X className="w-4 h-4 text-rose-500" /></div>
                                             </div>
                                         ))}
                                     </div>
@@ -487,7 +487,7 @@ export default function OutletForm() {
                                                     <div className="w-8 h-8 rounded-lg bg-white border border-border flex items-center justify-center text-xs font-bold text-text-muted">{bed.id}</div>
                                                     <input value={bed.name} onChange={(e) => handleBedNameChange(bed.id, e.target.value)} className="flex-1 bg-transparent border-none text-sm font-bold text-text outline-none uppercase" />
                                                 </div>
-                                                <div role="button" onClick={() => handleRemoveBed(bed.id)} className="p-1.5 text-rose-500 hover:bg-rose-50 rounded-lg cursor-pointer"><X className="w-4 h-4" /></div>
+                                                <div role="button" onClick={() => handleRemoveBed(bed.id)} className="p-1.5 text-rose-500 hover:bg-rose-50 rounded-lg cursor-pointer"><X className="w-4 h-4 text-rose-500" /></div>
                                             </div>
                                         ))}
                                     </div>
@@ -499,7 +499,7 @@ export default function OutletForm() {
                         <div className="bg-white border border-border rounded-xl p-6 shadow-sm hover:border-black transition-all duration-300">
                             <div className="flex items-center gap-3 mb-6">
                                 <div className="w-10 h-10 rounded-lg bg-slate-50 border border-border flex items-center justify-center">
-                                    <Activity className="w-5 h-5 text-text-muted" />
+                                    <Activity className="w-5 h-5 text-primary" />
                                 </div>
                                 <div>
                                     <h2 className="text-lg font-black text-text uppercase tracking-tight">Operational Logic</h2>
@@ -529,7 +529,7 @@ export default function OutletForm() {
                                 <div className="space-y-2">
                                     <div className="flex items-center justify-between">
                                         <div className="flex items-center gap-2">
-                                            <Truck className="w-4 h-4 text-text-muted" />
+                                            <Truck className="w-4 h-4 text-primary" />
                                             <span className="text-xs font-bold text-text-muted uppercase tracking-wider">Home Delivery</span>
                                         </div>
                                         <div
@@ -552,7 +552,7 @@ export default function OutletForm() {
                                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                                     <div className="flex items-center gap-3">
                                         <div className="w-10 h-10 rounded-lg bg-slate-50 border border-border flex items-center justify-center">
-                                            <Clock className="w-5 h-5 text-text-muted" />
+                                            <Clock className="w-5 h-5 text-primary" />
                                         </div>
                                         <div>
                                             <h2 className="text-lg font-black text-text uppercase tracking-tight">Shift Dynamics</h2>
@@ -579,7 +579,7 @@ export default function OutletForm() {
                                                 onClick={() => handleDayToggle(day.full)}
                                                 className={`py-3 rounded-lg flex flex-col items-center gap-1.5 transition-all cursor-pointer ${isActive ? 'bg-black text-white shadow-sm' : 'bg-slate-50 border border-border text-text-muted hover:bg-slate-200'}`}
                                             >
-                                                <span className="text-[10px] font-bold uppercase tracking-wider">{day.label}</span>
+                                                <span className={`text-[10px] font-bold uppercase tracking-wider ${isActive ? 'text-white' : 'text-text-muted'}`}>{day.label}</span>
                                                 <div className={`w-1.5 h-1.5 rounded-full ${isActive ? 'bg-white' : 'bg-slate-300'}`} />
                                             </div>
                                         );
@@ -595,7 +595,7 @@ export default function OutletForm() {
                         <div className="bg-white border border-border rounded-xl p-6 shadow-sm hover:border-black transition-all duration-300">
                             <div className="flex items-center gap-3 mb-6">
                                 <div className="w-10 h-10 rounded-lg bg-slate-50 border border-border flex items-center justify-center">
-                                    <ImageIcon className="w-5 h-5 text-text-muted" />
+                                    <ImageIcon className="w-5 h-5 text-primary" />
                                 </div>
                                 <h2 className="text-lg font-black text-text uppercase tracking-tight">Visual Gallery</h2>
                             </div>
@@ -603,13 +603,13 @@ export default function OutletForm() {
                                 {(form.images || []).map((img, idx) => (
                                     <div key={idx} className="relative aspect-square rounded-lg overflow-hidden border border-border group shadow-sm">
                                         <img src={img.startsWith('data:') || img.startsWith('http') ? img : `${import.meta.env.VITE_API_URL}${img}`} alt={`Outlet ${idx}`} className="w-full h-full object-cover group-hover:scale-105 transition-all duration-500" />
-                                        <div role="button" onClick={() => removeImage(idx)} className="absolute top-2 right-2 p-1.5 bg-white/90 rounded-lg text-rose-500 opacity-0 group-hover:opacity-100 transition-all cursor-pointer"><X className="w-3.5 h-3.5" /></div>
+                                        <div role="button" onClick={() => removeImage(idx)} className="absolute top-2 right-2 p-1.5 bg-white/90 rounded-lg text-rose-500 opacity-0 group-hover:opacity-100 transition-all cursor-pointer"><X className="w-3.5 h-3.5 text-rose-500" /></div>
                                     </div>
                                 ))}
                                 {(form.images?.length || 0) < 5 && (
                                     <label className="flex flex-col items-center justify-center aspect-square rounded-lg border border-dashed border-border bg-slate-50 hover:bg-white cursor-pointer group relative overflow-hidden transition-colors">
                                         <div className="flex flex-col items-center">
-                                            <div className="w-8 h-8 rounded-full bg-slate-100 text-text-muted flex items-center justify-center group-hover:bg-black group-hover:text-white transition-all"><Upload className="w-4 h-4" /></div>
+                                            <div className="w-8 h-8 rounded-full bg-slate-100 text-text-muted flex items-center justify-center group-hover:bg-black group-hover:text-white transition-all"><Upload className="w-4 h-4 text-primary group-hover:text-white transition-colors" /></div>
                                             <p className="text-[10px] font-bold text-text-muted uppercase tracking-wider mt-2">Add Media</p>
                                         </div>
                                         <input type="file" className="hidden" accept="image/*" multiple onChange={handleImageUpload} />
@@ -623,7 +623,7 @@ export default function OutletForm() {
                             <div className="flex items-center justify-between mb-6">
                                 <div className="flex items-center gap-3">
                                     <div className="w-10 h-10 rounded-lg bg-slate-50 border border-border flex items-center justify-center">
-                                        <MapPin className="w-5 h-5 text-text-muted" />
+                                        <MapPin className="w-5 h-5 text-primary" />
                                     </div>
                                     <h2 className="text-lg font-black text-text uppercase tracking-tight">Geotagging</h2>
                                 </div>
@@ -663,7 +663,7 @@ export default function OutletForm() {
                         disabled={saving}
                         className="h-12 px-8 rounded-lg bg-black text-white text-xs font-bold uppercase tracking-wider shadow-lg hover:bg-neutral-800 transition-all flex items-center gap-2 active:scale-95 disabled:opacity-50"
                     >
-                        {saving ? <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <Save className="w-4 h-4" />}
+                        {saving ? <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <Save className="w-4 h-4 text-white" />}
                         {isEdit ? 'Save Changes' : 'Create Outlet'}
                     </button>
                 </div>

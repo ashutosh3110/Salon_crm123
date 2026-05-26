@@ -82,45 +82,33 @@ export default function DashboardPage() {
         <div className="space-y-6 animate-reveal font-sans">
             <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6">
                 <div className="text-left">
-                    <h1 className="text-4xl font-bold text-text tracking-tight">Welcome Back</h1>
-                    <p className="text-sm font-medium text-text-muted mt-2 tracking-wide uppercase">Real-time Analytics Dashboard</p>
-                </div>
-                <div className="flex items-center gap-3 w-full lg:w-auto">
-                    <div className="relative flex-1 lg:flex-none">
-                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
-                        <input
-                            type="text"
-                            placeholder="Search entries..."
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                            className="w-full lg:min-w-[300px] pl-12 pr-4 py-3.5 rounded-xl bg-surface border border-border text-sm font-medium outline-none"
-                        />
-                    </div>
+                    <h1 className="text-3xl font-bold text-text tracking-tight">Welcome Back</h1>
+                    <p className="text-[10px] font-bold text-text-muted mt-1.5 tracking-wide uppercase">Real-time Analytics Dashboard</p>
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
                 {activeStats.map((stat, i) => (
                     <Link
                         to={stat.path}
                         key={i}
-                        className="bg-surface py-7 px-7 rounded-2xl border border-border shadow-sm group relative overflow-hidden transition-all hover:shadow-xl hover:border-primary/20 hover:-translate-y-1 active:scale-[0.98]"
+                        className="bg-surface py-4 px-5 rounded-2xl border border-border shadow-sm group relative overflow-hidden transition-all hover:shadow-xl hover:border-primary/20 hover:-translate-y-1 active:scale-[0.98]"
                     >
-                        <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
-                            <ArrowUpRight className="w-4 h-4 text-primary" />
+                        <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <ArrowUpRight className="w-3.5 h-3.5 text-primary" />
                         </div>
                         <div className="relative z-10">
-                            <div className="flex items-center justify-between mb-4">
-                                <div className="flex items-center gap-3">
-                                    <div className="w-8 h-8 rounded-lg bg-primary/5 flex items-center justify-center transition-colors group-hover:bg-primary/10">
-                                        <stat.icon className="w-4 h-4 text-primary" />
+                            <div className="flex items-center justify-between mb-2.5">
+                                <div className="flex items-center gap-2.5">
+                                    <div className="w-7 h-7 rounded-lg bg-primary/5 flex items-center justify-center transition-colors group-hover:bg-primary/10">
+                                        <stat.icon className="w-3.5 h-3.5 text-primary" />
                                     </div>
-                                    <p className="text-[12px] font-bold text-text-secondary uppercase tracking-wider">{stat.label}</p>
+                                    <p className="text-[10px] font-black text-text-secondary uppercase tracking-wider">{stat.label}</p>
                                 </div>
                             </div>
                             <div className="flex items-end justify-between">
-                                <h3 className="text-3xl font-bold text-text"><AnimatedCounter value={stat.value} prefix={stat.prefix} /></h3>
-                                <div className={`text-[10px] font-black ${stat.positive ? 'text-emerald-500' : 'text-rose-500'}`}>{stat.trend}</div>
+                                <h3 className="text-2xl font-bold text-text"><AnimatedCounter value={stat.value} prefix={stat.prefix} /></h3>
+                                <div className={`text-[9px] font-black ${stat.positive ? 'text-emerald-500' : 'text-rose-500'}`}>{stat.trend}</div>
                             </div>
                         </div>
                     </Link>
@@ -128,14 +116,14 @@ export default function DashboardPage() {
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <div className="lg:col-span-2 bg-white p-8 rounded-2xl border border-border shadow-sm group hover:shadow-md transition-all">
-                    <div className="flex items-center justify-between mb-8">
-                        <h2 className="text-lg font-bold text-text tracking-tight">Revenue Trends (Weekly)</h2>
-                        <Link to="/admin/finance/dashboard" className="p-2 rounded-lg bg-primary/5 text-primary opacity-0 group-hover:opacity-100 transition-all hover:bg-primary hover:text-white">
+                <div className="lg:col-span-2 bg-white p-6 rounded-2xl border border-border shadow-sm group hover:shadow-md transition-all">
+                    <div className="flex items-center justify-between mb-6">
+                        <h2 className="text-base font-bold text-text tracking-tight">Revenue Trends (Weekly)</h2>
+                        <Link to="/admin/finance/dashboard" className="p-1.5 rounded-lg bg-primary/5 text-primary opacity-0 group-hover:opacity-100 transition-all hover:bg-primary hover:text-white">
                             <ArrowUpRight className="w-4 h-4" />
                         </Link>
                     </div>
-                    <div className="h-[300px] w-full min-w-0 overflow-hidden">
+                    <div className="h-[280px] w-full min-w-0 overflow-hidden">
                         <ResponsiveContainer width="100%" height="100%" minWidth={0}>
                             <AreaChart data={revenueData}>
                                 <CartesianGrid strokeDasharray="3 3" vertical={false} strokeOpacity={0.1} />
@@ -146,17 +134,17 @@ export default function DashboardPage() {
                         </ResponsiveContainer>
                     </div>
                 </div>
-                <div className="bg-white p-8 rounded-2xl border border-border shadow-sm group hover:shadow-md transition-all">
-                    <div className="flex items-center justify-between mb-8">
-                        <h2 className="text-lg font-bold text-text tracking-tight">Service Split</h2>
-                        <Link to="/admin/hr/performance" className="p-2 rounded-lg bg-primary/5 text-primary opacity-0 group-hover:opacity-100 transition-all hover:bg-primary hover:text-white">
+                <div className="bg-white p-6 rounded-2xl border border-border shadow-sm group hover:shadow-md transition-all">
+                    <div className="flex items-center justify-between mb-6">
+                        <h2 className="text-base font-bold text-text tracking-tight">Service Split</h2>
+                        <Link to="/admin/hr/performance" className="p-1.5 rounded-lg bg-primary/5 text-primary opacity-0 group-hover:opacity-100 transition-all hover:bg-primary hover:text-white">
                             <ArrowUpRight className="w-4 h-4" />
                         </Link>
                     </div>
-                    <div className="h-[220px] w-full min-w-0 overflow-hidden">
+                    <div className="h-[200px] w-full min-w-0 overflow-hidden">
                         <ResponsiveContainer width="100%" height="100%" minWidth={0}>
                             <PieChart>
-                                <Pie data={serviceDistribution} dataKey="value" innerRadius={60} outerRadius={80} paddingAngle={8}>
+                                <Pie data={serviceDistribution} dataKey="value" innerRadius={50} outerRadius={70} paddingAngle={8}>
                                     {serviceDistribution.map((entry, index) => <Cell key={index} fill={entry.color} />)}
                                 </Pie>
                                 <Tooltip />
@@ -168,30 +156,30 @@ export default function DashboardPage() {
 
             <div className="grid grid-cols-1 gap-6 text-left">
                 <div className="bg-white rounded-2xl border border-border shadow-sm overflow-hidden group hover:shadow-md transition-all">
-                    <div className="px-8 py-6 border-b border-border bg-surface-alt/10 flex items-center justify-between">
-                        <h3 className="text-lg font-bold text-text tracking-tight">Recent Activity Stream</h3>
+                    <div className="px-6 py-4.5 border-b border-border bg-surface-alt/10 flex items-center justify-between">
+                        <h3 className="text-base font-bold text-text tracking-tight">Recent Activity Stream</h3>
                         <Link to="/pos/invoices" className="flex items-center gap-2 text-xs font-bold text-primary uppercase tracking-widest hover:underline">
                             View All Invoices <ArrowRight className="w-4 h-4" />
                         </Link>
                     </div>
                     <div className="divide-y divide-border/50 text-left">
                         {filteredRecentActivity.map((activity, i) => (
-                            <div key={i} className="px-8 py-5 flex items-center justify-between hover:bg-surface-alt/30 transition-colors">
+                            <div key={i} className="px-6 py-4 flex items-center justify-between hover:bg-surface-alt/30 transition-colors">
                                 <div className="flex items-center gap-4 text-left">
-                                    <div className={`w-12 h-12 rounded-xl border flex items-center justify-center font-bold ${activity.isLive ? 'border-primary text-primary' : 'border-border text-text-muted'}`}>{activity.client ? activity.client[0] : 'G'}</div>
+                                    <div className={`w-10 h-10 rounded-xl border flex items-center justify-center font-bold ${activity.isLive ? 'border-primary text-primary' : 'border-border text-text-muted'}`}>{activity.client ? activity.client[0] : 'G'}</div>
                                     <div className="text-left">
-                                        <p className="text-[15px] font-bold text-text">{activity.client}</p>
+                                        <p className="text-[14px] font-bold text-text">{activity.client}</p>
                                         <p className="text-xs text-text-muted font-medium">{activity.service}</p>
                                     </div>
                                 </div>
                                 <div className="text-right">
-                                    <p className="text-sm font-black text-text uppercase">{activity.amount}</p>
+                                    <p className="text-xs font-black text-text uppercase">{activity.amount}</p>
                                     <p className="text-[9px] text-text-muted font-bold tracking-widest uppercase">{activity.time}</p>
                                 </div>
                             </div>
                         ))}
                         {filteredRecentActivity.length === 0 && (
-                            <div className="p-8 text-center text-text-muted">No matching activities found</div>
+                            <div className="p-6 text-center text-text-muted">No matching activities found</div>
                         )}
                     </div>
                 </div>
