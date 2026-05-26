@@ -9,7 +9,7 @@ const {
 const { protect, authorize } = require('../Middleware/auth');
 
 router.use(protect);
-router.use(authorize('admin')); // Only salon owners can manage roles
+router.use(authorize('admin', 'p:manage_roles')); // Salon owners and roles manager can manage roles
 
 router.route('/')
     .get(getRoles)

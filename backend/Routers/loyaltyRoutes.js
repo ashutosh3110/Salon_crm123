@@ -38,20 +38,20 @@ router.use(protect);
 router
     .route('/membership-plans')
     .get(getMembershipPlans)
-    .post(authorize('admin', 'manager'), createMembershipPlan);
+    .post(authorize('admin', 'manager', 'p:loyalty'), createMembershipPlan);
 
 router
     .route('/membership-plans/:id')
     .get(getMembershipPlan)
-    .patch(authorize('admin', 'manager'), updateMembershipPlan)
-    .delete(authorize('admin', 'manager'), deleteMembershipPlan);
+    .patch(authorize('admin', 'manager', 'p:loyalty'), updateMembershipPlan)
+    .delete(authorize('admin', 'manager', 'p:loyalty'), deleteMembershipPlan);
 
 router
     .route('/settings')
-    .get(authorize('admin', 'manager', 'customer', 'superadmin'), getLoyaltySettings)
+    .get(authorize('admin', 'manager', 'customer', 'superadmin', 'p:loyalty'), getLoyaltySettings)
     .put(authorize('superadmin'), updateLoyaltySettings);
 
-router.get('/rules', authorize('admin', 'manager', 'customer', 'superadmin'), getLoyaltySettings);
+router.get('/rules', authorize('admin', 'manager', 'customer', 'superadmin', 'p:loyalty'), getLoyaltySettings);
 
 router.get('/history', getLoyaltyHistory);
 router.post('/redeem', redeemLoyaltyPoints);
@@ -60,14 +60,14 @@ router.get('/membership/active', getActiveMembership);
 router.post('/membership/order', createMembershipOrder);
 router.post('/membership/verify', verifyMembershipPayment);
 router.post('/membership/wallet-pay', buyMembershipWithWallet);
-router.post('/membership/assign', authorize('admin', 'manager'), assignMembershipDirect);
+router.post('/membership/assign', authorize('admin', 'manager', 'p:loyalty'), assignMembershipDirect);
 
 router.get('/referral-settings', getReferralSettings);
 router.get('/referrals/me', getMyReferrals);
 router.get('/transactions/me', getLoyaltyHistory);
-router.get('/members', authorize('admin', 'manager'), getLoyaltyMembers);
-router.get('/transactions', authorize('admin', 'manager'), getAdminLoyaltyTransactions);
-router.get('/reminders', authorize('admin', 'manager'), getMembershipReminders);
-router.post('/reminders/:id/send', authorize('admin', 'manager'), sendManualMembershipReminder);
+router.get('/members', authorize('admin', 'manager', 'p:loyalty'), getLoyaltyMembers);
+router.get('/transactions', authorize('admin', 'manager', 'p:loyalty'), getAdminLoyaltyTransactions);
+router.get('/reminders', authorize('admin', 'manager', 'p:loyalty'), getMembershipReminders);
+router.post('/reminders/:id/send', authorize('admin', 'manager', 'p:loyalty'), sendManualMembershipReminder);
 
 module.exports = router;

@@ -36,7 +36,7 @@ const {
 
 // All routes are protected and for admin/manager
 router.use(protect);
-router.use(authorize('admin', 'manager', 'superadmin'));
+router.use(authorize('admin', 'manager', 'superadmin', 'p:finance', 'p:suppliers'));
 
 // General Transactions
 router.get('/transactions', getTransactions);

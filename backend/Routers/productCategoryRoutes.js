@@ -6,14 +6,14 @@ const {
     updateProductCategory,
     deleteProductCategory
 } = require('../Controllers/productCategoryController');
-const { protect } = require('../Middleware/auth');
+const { protect, authorize } = require('../Middleware/auth');
 
 router.route('/')
     .get(getProductCategories)
-    .post(protect, createProductCategory);
+    .post(protect, authorize('admin', 'manager', 'p:inventory'), createProductCategory);
 
 router.route('/:id')
-    .put(protect, updateProductCategory)
-    .delete(protect, deleteProductCategory);
+    .put(protect, authorize('admin', 'manager', 'p:inventory'), updateProductCategory)
+    .delete(protect, authorize('admin', 'manager', 'p:inventory'), deleteProductCategory);
 
 module.exports = router;

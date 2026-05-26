@@ -16,17 +16,17 @@ const checkImageLimit = require('../Middleware/imageLimit');
 
 router.get('/grouped', protect, getServicesGrouped);
 router.get('/outlet/:outletId', require('../Controllers/homePageController').getServicesByOutlet);
-router.post('/bulk-import', protect, authorize('admin', 'manager'), optimizedUpload.single('file'), bulkImportServices);
+router.post('/bulk-import', protect, authorize('admin', 'manager', 'p:setup'), optimizedUpload.single('file'), bulkImportServices);
 
 router
     .route('/')
     .get(protect, getServices)
-    .post(protect, authorize('admin', 'manager'), optimizedUpload.single('image'), checkImageLimit, processToWebP('services'), createService);
+    .post(protect, authorize('admin', 'manager', 'p:setup'), optimizedUpload.single('image'), checkImageLimit, processToWebP('services'), createService);
 
 router
     .route('/:id')
     .get(getService)
-    .put(protect, authorize('admin', 'manager'), optimizedUpload.single('image'), checkImageLimit, processToWebP('services'), updateService)
-    .delete(protect, authorize('admin', 'manager'), deleteService);
+    .put(protect, authorize('admin', 'manager', 'p:setup'), optimizedUpload.single('image'), checkImageLimit, processToWebP('services'), updateService)
+    .delete(protect, authorize('admin', 'manager', 'p:setup'), deleteService);
 
 module.exports = router;

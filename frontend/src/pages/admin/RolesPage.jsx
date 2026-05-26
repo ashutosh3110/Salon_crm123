@@ -22,26 +22,181 @@ import {
     ClipboardList,
     Crown,
     Settings,
-    Store
+    Store,
+    UserCog,
+    Tag,
+    Zap,
+    FileText,
+    MessageSquare,
+    List,
+    Box,
+    ShoppingBag,
+    ArrowLeftRight,
+    Wallet,
+    CalendarCheck,
+    Star,
+    ShieldAlert,
+    Percent,
+    User,
+    LifeBuoy
 } from 'lucide-react';
 import api from '../../services/api';
 import toast from 'react-hot-toast';
 
-const AVAILABLE_PERMISSIONS = [
-    { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, description: 'Main business overview' },
-    { id: 'pos', label: 'Billing (POS)', icon: CreditCard, description: 'Sales and payments' },
-    { id: 'bookings', label: 'Bookings', icon: Scissors, description: 'Calendar and appointments' },
-    { id: 'marketing', label: 'Marketing', icon: Megaphone, description: 'Hub and CMS' },
-    { id: 'enquiries', label: 'Enquiries', icon: ClipboardList, description: 'Customer leads' },
-    { id: 'reminders', label: 'Reminders', icon: Bell, description: 'Follow-ups and links' },
-    { id: 'crm', label: 'CRM / Customers', icon: Users, description: 'Customer directory' },
-    { id: 'loyalty', label: 'Loyalty', icon: Crown, description: 'Points and memberships' },
-    { id: 'inventory', label: 'Inventory', icon: Package, description: 'Stock management' },
-    { id: 'finance', label: 'Finance', icon: DollarSign, description: 'Expenses and cash' },
-    { id: 'hr', label: 'HR / Payroll', icon: Briefcase, description: 'Staff and attendance' },
-    { id: 'setup', label: 'Business Setup', icon: Store, description: 'Outlets and services' },
-    { id: 'settings', label: 'Settings', icon: Settings, description: 'Profile and security' },
+const PERMISSION_STRUCTURE = [
+    {
+        id: 'dashboard',
+        label: 'Dashboard',
+        icon: LayoutDashboard,
+        description: 'Main business overview page',
+    },
+    {
+        id: 'setup',
+        label: 'Business Setup',
+        icon: Briefcase,
+        description: 'Manage outlets, staff, and roles',
+        subPermissions: [
+            { id: 'setup_outlets', label: 'Outlets Management', icon: Store, description: 'Add/edit outlets' },
+            { id: 'manage_roles', label: 'Roles & Permissions', icon: Shield, description: 'Setup custom staff roles' },
+            { id: 'setup_staff', label: 'Staff Management', icon: UserCog, description: 'Manage staff details & logins' },
+            { id: 'services_list', label: 'Service List', icon: Scissors, description: 'Manage services & pricing' },
+            { id: 'services_categories', label: 'Service Categories', icon: Tag, description: 'Categorize services' }
+        ]
+    },
+    {
+        id: 'pos',
+        label: 'Operations (POS)',
+        icon: CreditCard,
+        description: 'POS Billing and Invoices',
+        subPermissions: [
+            { id: 'pos_dashboard', label: 'POS Dashboard', icon: LayoutDashboard, description: 'POS overview' },
+            { id: 'pos_billing', label: 'New Bill', icon: Zap, description: 'Create bills and invoices' },
+            { id: 'pos_invoices', label: 'Invoices & Payments', icon: FileText, description: 'View history' },
+            { id: 'pos_reminders', label: 'Payment Reminders', icon: MessageSquare, description: 'Send dues alerts' }
+        ]
+    },
+    {
+        id: 'bookings',
+        label: 'Bookings',
+        icon: Scissors,
+        description: 'Manage appointments',
+        subPermissions: [
+            { id: 'bookings_registry', label: 'Booking Registry', icon: List, description: 'View appointment list' },
+            { id: 'bookings_new', label: 'Direct Booking', icon: Zap, description: 'Create new bookings' }
+        ]
+    },
+    {
+        id: 'inventory',
+        label: 'Products & Stock',
+        icon: Package,
+        description: 'Product catalog & inventory controls',
+        subPermissions: [
+            { id: 'inventory_products', label: 'Products Management', icon: Box, description: 'Manage products and edit stock' },
+            { id: 'inventory_shop_orders', label: 'Shop Orders', icon: ShoppingBag, description: 'Track online orders' },
+            { id: 'inventory_categories', label: 'Product Categories', icon: Tag, description: 'Categorize shop products' },
+            { id: 'inventory_stock_overview', label: 'Stock Alerts & Overview', icon: LayoutDashboard, description: 'Out of stock alerts' },
+            { id: 'inventory_transfer', label: 'Stock Transfer', icon: ArrowLeftRight, description: 'Transfer stock between outlets' }
+        ]
+    },
+    {
+        id: 'suppliers',
+        label: 'Suppliers',
+        icon: Users,
+        description: 'Supplier directory & bills',
+        subPermissions: [
+            { id: 'suppliers_directory', label: 'Supplier Directory', icon: Users, description: 'Manage supplier contacts' },
+            { id: 'suppliers_invoices', label: 'Supplier Invoices', icon: FileText, description: 'Supplier billing & invoices' }
+        ]
+    },
+    {
+        id: 'finance',
+        label: 'Finance',
+        icon: DollarSign,
+        description: 'Cash book and financial reports',
+        subPermissions: [
+            { id: 'finance_dashboard', label: 'Finance Dashboard', icon: LayoutDashboard, description: 'Expense & income overview' },
+            { id: 'finance_transactions', label: 'Transactions', icon: ArrowLeftRight, description: 'Detailed cash transactions' },
+            { id: 'finance_cash_book', label: 'Cash & Bank Book', icon: Wallet, description: 'Ledgers' },
+            { id: 'finance_expenses', label: 'Expenses', icon: DollarSign, description: 'Log operational expenses' },
+            { id: 'finance_reports', label: 'Sales & Expense Reports', icon: FileText, description: 'Financial exports' }
+        ]
+    },
+    {
+        id: 'hr',
+        label: 'HR & Payroll',
+        icon: Briefcase,
+        description: 'Attendance & staff payroll',
+        subPermissions: [
+            { id: 'hr_attendance', label: 'Staff Attendance', icon: CalendarCheck, description: 'Mark/view attendance' },
+            { id: 'hr_payroll', label: 'Payroll Management', icon: DollarSign, description: 'Staff salaries & payouts' },
+            { id: 'hr_advance_salary', label: 'Advance Salary', icon: DollarSign, description: 'Manage staff advance salary records' }
+        ]
+    },
+    {
+        id: 'crm',
+        label: 'Customers (CRM)',
+        icon: Users,
+        description: 'Manage customers and notifications',
+        subPermissions: [
+            { id: 'crm_directory', label: 'Customer Directory', icon: Users, description: 'Contact list and details' },
+            { id: 'crm_inquiries', label: 'Leads & Enquiries', icon: ClipboardList, description: 'Leads registry' },
+            { id: 'crm_wallets', label: 'Customer Wallets', icon: Wallet, description: 'Prepaid balances' },
+            { id: 'crm_feedback', label: 'Customer Feedback', icon: Star, description: 'Ratings and reviews' },
+            { id: 'crm_reengage', label: 'Re-engagement alerts', icon: ShieldAlert, description: 'Dormant client outreach' },
+            { id: 'crm_bridal', label: 'Bridal Reminders', icon: Bell, description: 'Bridal booking reminders' },
+            { id: 'crm_birthday_anniversary', label: 'Birthday/Anniversary Wishes', icon: Bell, description: 'Automated greeting logs' }
+        ]
+    },
+    {
+        id: 'marketing',
+        label: 'Marketing',
+        icon: Megaphone,
+        description: 'Campaigns and CMS',
+        subPermissions: [
+            { id: 'marketing_hub', label: 'Marketing Hub', icon: LayoutDashboard, description: 'Campaign overview' },
+            { id: 'marketing_promotions', label: 'Coupons & Promos', icon: Percent, description: 'Create and edit offers' },
+            { id: 'marketing_whatsapp_credits', label: 'WhatsApp Credits', icon: MessageSquare, description: 'Buy/verify WhatsApp credits' }
+        ]
+    },
+    {
+        id: 'loyalty',
+        label: 'Loyalty & Membership',
+        icon: Crown,
+        description: 'Rewards and plans',
+        subPermissions: [
+            { id: 'loyalty_plans', label: 'Membership Plans', icon: CreditCard, description: 'Define VIP/tier plans' },
+            { id: 'loyalty_members', label: 'Loyalty Members', icon: Users, description: 'View enrolled members' },
+            { id: 'loyalty_reminders', label: 'Membership Expiry Reminder', icon: Bell, description: 'Expiry followups' }
+        ]
+    },
+    {
+        id: 'settings',
+        label: 'Settings',
+        icon: Settings,
+        description: 'Profile and company setup',
+        subPermissions: [
+            { id: 'settings_profile', label: 'Profile Settings', icon: User, description: 'Personal info' },
+            { id: 'settings_business', label: 'Business Info', icon: Store, description: 'Company configurations' },
+            { id: 'settings_security', label: 'Security & Password', icon: Shield, description: 'Change password' }
+        ]
+    },
+    {
+        id: 'support',
+        label: 'Support Tickets',
+        icon: LifeBuoy,
+        description: 'Support & documentation help desk'
+    }
 ];
+
+const AVAILABLE_PERMISSIONS = [];
+PERMISSION_STRUCTURE.forEach(p => {
+    AVAILABLE_PERMISSIONS.push({ id: p.id, label: p.label, icon: p.icon, description: p.description });
+    if (p.subPermissions) {
+        p.subPermissions.forEach(sp => {
+            AVAILABLE_PERMISSIONS.push({ id: sp.id, label: sp.label, icon: sp.icon, description: sp.description });
+        });
+    }
+});
 
 export default function RolesPage() {
     const [roles, setRoles] = useState([]);
@@ -134,13 +289,41 @@ export default function RolesPage() {
         return () => { document.body.style.overflow = 'unset'; };
     }, [showModal]);
 
-    const togglePermission = (permId) => {
-        setForm(prev => ({
-            ...prev,
-            permissions: prev.permissions.includes(permId)
-                ? prev.permissions.filter(p => p !== permId)
-                : [...prev.permissions, permId]
-        }));
+    const handleToggleParent = (group) => {
+        const groupSubIds = (group.subPermissions || []).map(sp => sp.id);
+        const allIds = [group.id, ...groupSubIds];
+        const isParentChecked = form.permissions.includes(group.id);
+
+        setForm(prev => {
+            let nextPermissions = [...prev.permissions];
+            if (isParentChecked) {
+                nextPermissions = nextPermissions.filter(p => !allIds.includes(p));
+            } else {
+                allIds.forEach(id => {
+                    if (!nextPermissions.includes(id)) {
+                        nextPermissions.push(id);
+                    }
+                });
+            }
+            return { ...prev, permissions: nextPermissions };
+        });
+    };
+
+    const handleToggleSub = (subId, group) => {
+        setForm(prev => {
+            let nextPermissions = [...prev.permissions];
+            const isChecked = nextPermissions.includes(subId);
+
+            if (isChecked) {
+                nextPermissions = nextPermissions.filter(p => p !== subId);
+            } else {
+                nextPermissions.push(subId);
+                if (!nextPermissions.includes(group.id)) {
+                    nextPermissions.push(group.id);
+                }
+            }
+            return { ...prev, permissions: nextPermissions };
+        });
     };
 
     const filteredRoles = roles.filter(r => 
@@ -317,26 +500,82 @@ export default function RolesPage() {
                                     <span className="text-[9px] font-black text-primary uppercase italic"> {form.permissions.length} Selected</span>
                                 </div>
 
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                    {AVAILABLE_PERMISSIONS.map((perm) => (
-                                        <div
-                                            key={perm.id}
-                                            role="button"
-                                            onClick={() => togglePermission(perm.id)}
-                                            className={`flex items-center gap-3 p-3 transition-all text-left border cursor-pointer ${form.permissions.includes(perm.id) 
-                                                ? 'bg-white border-2 border-primary shadow-md' 
-                                                : 'bg-surface-alt border-border hover:bg-white hover:border-text-muted'
-                                            }`}
-                                        >
-                                            <div className={`p-2 transition-all ${form.permissions.includes(perm.id) ? 'bg-primary text-white' : 'bg-white text-text-muted border border-border'}`}>
-                                                <perm.icon className="w-4 h-4" />
+                                <div className="space-y-6">
+                                    {PERMISSION_STRUCTURE.map((group) => {
+                                        const isGroupChecked = form.permissions.includes(group.id);
+                                        const groupSubIds = (group.subPermissions || []).map(sp => sp.id);
+                                        const checkedSubCount = (group.subPermissions || []).filter(sp => form.permissions.includes(sp.id)).length;
+                                        
+                                        return (
+                                            <div key={group.id} className="border border-border bg-slate-50/50 p-4 rounded-none">
+                                                {/* Parent Header */}
+                                                <div 
+                                                    role="button"
+                                                    onClick={() => handleToggleParent(group)}
+                                                    className="flex items-center justify-between pb-3 border-b border-border mb-3 cursor-pointer select-none"
+                                                >
+                                                    <div className="flex items-center gap-3">
+                                                        <div className={`p-2 transition-colors duration-200 ${isGroupChecked || checkedSubCount > 0 ? 'bg-primary text-white' : 'bg-white text-text-muted border border-border'}`}>
+                                                            <group.icon className="w-4 h-4" />
+                                                        </div>
+                                                        <div className="text-left">
+                                                            <p className={`text-[11px] font-black uppercase tracking-widest leading-none mb-1 ${(isGroupChecked || checkedSubCount > 0) ? 'text-primary font-bold' : 'text-text'}`}>
+                                                                {group.label}
+                                                            </p>
+                                                            <p className="text-[8px] font-bold text-text-muted uppercase tracking-wider leading-none opacity-50 italic">{group.description}</p>
+                                                        </div>
+                                                    </div>
+                                                    <div className="flex items-center gap-2">
+                                                        {group.subPermissions && (
+                                                            <span className="text-[8px] font-black text-text-muted uppercase italic">
+                                                                {checkedSubCount}/{groupSubIds.length} Selected
+                                                            </span>
+                                                        )}
+                                                        <input 
+                                                            type="checkbox"
+                                                            checked={isGroupChecked}
+                                                            readOnly
+                                                            className="w-4 h-4 accent-primary cursor-pointer"
+                                                        />
+                                                    </div>
+                                                </div>
+
+                                                {/* Sub Permissions */}
+                                                {group.subPermissions && (
+                                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pl-4 border-l-2 border-slate-200">
+                                                        {group.subPermissions.map((sub) => {
+                                                            const isSubChecked = form.permissions.includes(sub.id);
+                                                            return (
+                                                                <div
+                                                                    key={sub.id}
+                                                                    role="button"
+                                                                    onClick={() => handleToggleSub(sub.id, group)}
+                                                                    className={`flex items-center gap-2.5 p-2 transition-all text-left border cursor-pointer ${isSubChecked 
+                                                                        ? 'bg-white border-2 border-primary shadow-sm' 
+                                                                        : 'bg-white/40 border-border/60 hover:bg-white hover:border-text-muted'
+                                                                    }`}
+                                                                >
+                                                                    <div className={`p-1.5 transition-all ${isSubChecked ? 'bg-primary/20 text-primary' : 'bg-white text-text-muted border border-border'}`}>
+                                                                        <sub.icon className="w-3.5 h-3.5" />
+                                                                    </div>
+                                                                    <div className="flex-1 min-w-0 pr-2">
+                                                                        <p className={`text-[9px] font-bold uppercase tracking-widest leading-none mb-0.5 ${isSubChecked ? 'text-primary' : 'text-text'}`}>{sub.label}</p>
+                                                                        <p className="text-[7px] font-medium text-text-muted uppercase tracking-wider leading-none opacity-50 italic">{sub.description}</p>
+                                                                    </div>
+                                                                    <input 
+                                                                        type="checkbox"
+                                                                        checked={isSubChecked}
+                                                                        readOnly
+                                                                        className="w-3 h-3 accent-primary cursor-pointer"
+                                                                    />
+                                                                </div>
+                                                            );
+                                                        })}
+                                                    </div>
+                                                )}
                                             </div>
-                                            <div className="flex-1 min-w-0 pr-2">
-                                                <p className={`text-[10px] font-black uppercase tracking-widest leading-none mb-1 ${form.permissions.includes(perm.id) ? 'text-primary' : 'text-text'}`}>{perm.label}</p>
-                                                <p className="text-[8px] font-bold text-text-muted uppercase tracking-wider leading-none opacity-40 italic">{perm.description}</p>
-                                            </div>
-                                        </div>
-                                    ))}
+                                        );
+                                    })}
                                 </div>
                             </div>
                         </div>

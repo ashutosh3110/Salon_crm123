@@ -18,12 +18,12 @@ const checkImageLimit = require('../Middleware/imageLimit');
 router
     .route('/')
     .get(getUsers) // Public, but filtered by salonId in controller
-    .post(protect, authorize('admin', 'manager'), optimizedUpload.single('avatar'), checkImageLimit, processToWebP('staff'), createUser);
+    .post(protect, authorize('admin', 'manager', 'p:setup'), optimizedUpload.single('avatar'), checkImageLimit, processToWebP('staff'), createUser);
 
 router
     .route('/:id')
-    .get(protect, authorize('admin', 'manager'), getUser)
-    .patch(protect, authorize('admin', 'manager'), optimizedUpload.single('avatar'), checkImageLimit, processToWebP('staff'), updateUser)
-    .delete(protect, authorize('admin', 'manager'), deleteUser);
+    .get(protect, authorize('admin', 'manager', 'p:setup'), getUser)
+    .patch(protect, authorize('admin', 'manager', 'p:setup'), optimizedUpload.single('avatar'), checkImageLimit, processToWebP('staff'), updateUser)
+    .delete(protect, authorize('admin', 'manager', 'p:setup'), deleteUser);
 
 module.exports = router;
