@@ -726,10 +726,12 @@ export default function POSInvoicesPage() {
 
     const filtered = useMemo(() => {
         return invoices.filter(inv => {
+            const clientName = inv.customerId?.name || inv.clientId?.name || '';
+            const clientPhone = inv.customerId?.phone || inv.clientId?.phone || '';
             const matchSearch = !search ||
                 inv.invoiceNumber?.toLowerCase().includes(search.toLowerCase()) ||
-                inv.customerId?.name?.toLowerCase().includes(search.toLowerCase()) ||
-                inv.customerId?.phone?.includes(search);
+                clientName.toLowerCase().includes(search.toLowerCase()) ||
+                clientPhone.includes(search);
 
             let matchDate = true;
             if (dateFilter === 'today') {
@@ -782,19 +784,19 @@ export default function POSInvoicesPage() {
 
                     <div className="flex flex-wrap items-center gap-3">
                          {/* Outlet Selection */}
-                         <div className="relative group min-w-[200px]">
+                         <div className="relative group min-w-[220px]">
                             <select
                                 value={activeOutletId || ''}
                                 onChange={(e) => setActiveOutletId(e.target.value)}
-                                className="w-full pl-12 pr-12 py-4 bg-surface border border-border text-[10px] font-black uppercase tracking-widest outline-none focus:border-primary transition-all cursor-pointer appearance-none shadow-sm hover:shadow-md"
+                                className="w-full pl-9 pr-10 py-3.5 bg-surface border border-border text-[10px] font-black uppercase tracking-widest outline-none focus:border-primary transition-all cursor-pointer appearance-none shadow-sm hover:shadow-md hover:border-primary/40 text-slate-900 dark:text-white"
                             >
                                 <option value="">All Outlets</option>
                                 {(outlets || []).map(o => (
                                     <option key={o._id} value={o._id}>{o.name}</option>
                                 ))}
                             </select>
-                            <Store className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-primary" />
-                            <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-hover:text-primary transition-colors pointer-events-none" />
+                            <Store className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-primary pointer-events-none" />
+                            <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-text-muted group-hover:text-primary transition-colors pointer-events-none" />
                         </div>
                     </div>
                 </div>

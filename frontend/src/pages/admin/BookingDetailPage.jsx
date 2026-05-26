@@ -1,17 +1,18 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { useParams, useNavigate } from 'react-router-dom';
-import { 
-    ChevronLeft, 
-    Calendar, 
-    Clock, 
-    User, 
-    CreditCard, 
-    AlertCircle, 
-    CheckCircle2, 
-    MapPin, 
-    Phone, 
-    Mail, 
-    Zap, 
+import {
+    ChevronLeft,
+    Calendar,
+    Clock,
+    User,
+    CreditCard,
+    AlertCircle,
+    CheckCircle2,
+    MapPin,
+    Phone,
+    Mail,
+    Zap,
     RotateCcw,
     XCircle,
     FileText,
@@ -43,16 +44,16 @@ const paymentStatusColors = {
 export default function BookingDetailPage() {
     const { id } = useParams();
     const navigate = useNavigate();
-    const { 
-        bookings, 
-        fetchBookings, 
-        updateBookingStatus, 
-        invoices, 
+    const {
+        bookings,
+        fetchBookings,
+        updateBookingStatus,
+        invoices,
         fetchInvoices,
         platformSettings,
         fetchPlatformSettings,
         staff,
-        fetchStaff 
+        fetchStaff
     } = useBusiness();
     const [booking, setBooking] = useState(null);
     const [invoice, setInvoice] = useState(null);
@@ -66,7 +67,7 @@ export default function BookingDetailPage() {
 
     useEffect(() => {
         if (fetchedRef.current) return;
-        
+
         const fetchDetail = async () => {
             setLoading(true);
             try {
@@ -75,7 +76,7 @@ export default function BookingDetailPage() {
                 if (bookings?.length === 0 && fetchBookings) promises.push(fetchBookings());
                 if ((!invoices || invoices.length === 0) && fetchInvoices) promises.push(fetchInvoices());
                 if (!platformSettings && fetchPlatformSettings) promises.push(fetchPlatformSettings());
-                
+
                 if (promises.length > 0) {
                     await Promise.all(promises);
                 }
@@ -85,7 +86,7 @@ export default function BookingDetailPage() {
             }
         };
         fetchDetail();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     useEffect(() => {
@@ -93,7 +94,7 @@ export default function BookingDetailPage() {
         if (b) {
             setBooking(b);
             setNotes(b.notes || '');
-            
+
             // Find associated invoice
             const inv = invoices?.find(i => String(i.bookingId?._id || i.bookingId) === String(b._id));
             if (inv) setInvoice(inv);
@@ -156,8 +157,8 @@ export default function BookingDetailPage() {
                 <AlertCircle className="w-16 h-16 text-rose-500 mx-auto mb-6 opacity-20" />
                 <h2 className="text-2xl font-black uppercase tracking-tight mb-2">Protocol 404</h2>
                 <p className="text-xs text-text-muted font-bold uppercase tracking-widest mb-8">The requested booking record does not exist in the mainframe.</p>
-                <button 
-                    onClick={() => navigate('/admin/bookings')} 
+                <button
+                    onClick={() => navigate('/admin/bookings')}
                     className="px-8 py-3 bg-primary text-white font-black uppercase text-[10px] tracking-[0.2em] rounded-xl hover:brightness-110 transition-all shadow-lg shadow-primary/20"
                 >
                     Return to Overview
@@ -169,20 +170,20 @@ export default function BookingDetailPage() {
     const client = booking.clientId || booking.client || {};
 
     return (
-        <div className="max-w-7xl mx-auto space-y-8 animate-reveal pb-24 px-4">
+        <div className="max-w-7xl mx-auto space-y-4 animate-reveal pb-12 px-4">
             {/* Top Navigation & Status Bar */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-                <div className="flex items-center gap-5">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div className="flex items-center gap-4">
                     <button 
                         onClick={() => navigate('/admin/bookings')}
-                        className="w-12 h-12 flex items-center justify-center rounded-2xl bg-surface border border-border hover:border-primary/40 hover:text-primary transition-all group shadow-sm"
+                        className="w-10 h-10 flex items-center justify-center rounded-xl bg-surface border border-border hover:border-primary/40 hover:text-primary transition-all group shadow-sm"
                     >
                         <ChevronLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
                     </button>
                     <div>
                         <div className="flex items-center gap-3 mb-1">
-                            <h1 className="text-2xl font-black text-text uppercase tracking-tight">Booking #{booking._id?.slice(-8).toUpperCase()}</h1>
-                            <span className={`px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest border ${statusColors[booking.status]}`}>
+                            <h1 className="text-xl font-black text-text uppercase tracking-tight">Booking #{booking._id?.slice(-8).toUpperCase()}</h1>
+                            <span className={`px-3 py-0.5 rounded-full text-[9px] font-black uppercase tracking-widest border ${statusColors[booking.status]}`}>
                                 {booking.status}
                             </span>
                         </div>
@@ -192,13 +193,13 @@ export default function BookingDetailPage() {
                     </div>
                 </div>
 
-                <div className="flex flex-wrap items-center gap-3">
+                <div className="flex flex-wrap items-center gap-2">
                     {booking.status === 'pending' && (
                         <>
                             <button 
                                 disabled={isUpdating}
                                 onClick={() => handleUpdateStatus('confirmed')}
-                                className="px-6 py-3 bg-indigo-600 text-white text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-600/20 flex items-center gap-2 disabled:opacity-50"
+                                className="px-4 py-2 bg-indigo-600 text-white text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-600/20 flex items-center gap-2 disabled:opacity-50"
                             >
                                 {isUpdating ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle2 className="w-4 h-4" />} 
                                 Accept Booking
@@ -206,7 +207,7 @@ export default function BookingDetailPage() {
                             <button 
                                 disabled={isUpdating}
                                 onClick={() => handleUpdateStatus('cancelled')}
-                                className="px-6 py-3 bg-rose-50 text-rose-600 text-[10px] font-black uppercase tracking-widest rounded-xl border border-rose-100 hover:bg-rose-100 transition-all flex items-center gap-2 disabled:opacity-50"
+                                className="px-4 py-2 bg-rose-50 text-rose-600 text-[10px] font-black uppercase tracking-widest rounded-xl border border-rose-100 hover:bg-rose-100 transition-all flex items-center gap-2 disabled:opacity-50"
                             >
                                 {isUpdating ? <Loader2 className="w-4 h-4 animate-spin" /> : <XCircle className="w-4 h-4" />} 
                                 Reject
@@ -217,7 +218,7 @@ export default function BookingDetailPage() {
                         <button 
                             disabled={isUpdating}
                             onClick={() => handleUpdateStatus('completed')}
-                            className="px-8 py-3 bg-emerald-500 text-white text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-emerald-600 transition-all shadow-lg shadow-emerald-500/20 flex items-center gap-2 disabled:opacity-50"
+                            className="px-5 py-2 bg-emerald-500 text-white text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-emerald-600 transition-all shadow-lg shadow-emerald-500/20 flex items-center gap-2 disabled:opacity-50"
                         >
                             {isUpdating ? <Loader2 className="w-4 h-4 animate-spin" /> : <Zap className="w-4 h-4" />} 
                             Complete Session
@@ -226,47 +227,47 @@ export default function BookingDetailPage() {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
                 {/* Main Content Area */}
-                <div className="lg:col-span-8 space-y-8">
+                <div className="lg:col-span-8 space-y-4">
                     {/* Primary Info Card */}
-                    <div className="bg-surface border border-border rounded-[2.5rem] p-10 relative overflow-hidden shadow-sm">
+                    <div className="bg-surface border border-border rounded-3xl p-6 relative overflow-hidden shadow-sm">
                         <div className="absolute right-0 top-0 w-64 h-64 bg-primary/5 -mr-32 -mt-32 rounded-full blur-3xl" />
                         
-                        <div className="relative z-10 grid grid-cols-1 md:grid-cols-2 gap-12">
-                            <div className="space-y-8">
+                        <div className="relative z-10 grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div className="space-y-4">
                                 <div>
-                                    <p className="text-[10px] font-black text-text-muted uppercase tracking-widest mb-3 flex items-center gap-2">
+                                    <p className="text-[10px] font-black text-text-muted uppercase tracking-widest mb-1.5 flex items-center gap-2">
                                         <Calendar className="w-3.5 h-3.5 text-primary" /> Appointment Date
                                     </p>
-                                    <p className="text-2xl font-black text-text uppercase italic tracking-tight">
+                                    <p className="text-lg font-black text-text uppercase italic tracking-tight">
                                         {new Date(booking.appointmentDate).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
                                     </p>
                                 </div>
                                 <div>
-                                    <p className="text-[10px] font-black text-text-muted uppercase tracking-widest mb-3 flex items-center gap-2">
+                                    <p className="text-[10px] font-black text-text-muted uppercase tracking-widest mb-1.5 flex items-center gap-2">
                                         <Clock className="w-3.5 h-3.5 text-primary" /> Time Slot
                                     </p>
-                                    <p className="text-2xl font-black text-text uppercase italic tracking-tight">
+                                    <p className="text-lg font-black text-text uppercase italic tracking-tight">
                                         {booking.time || 'Not Specified'}
                                     </p>
                                 </div>
                             </div>
 
-                            <div className="space-y-8 p-8 rounded-[2rem] bg-surface-alt/50 border border-border/50">
+                            <div className="space-y-4 p-5 rounded-2xl bg-surface-alt/50 border border-border/50">
                                 <div className="flex items-start justify-between">
                                     <div className="space-y-1">
                                         <p className="text-[10px] font-black text-text-muted uppercase tracking-widest">Assigned Expert</p>
-                                        <h3 className="text-xl font-black text-text uppercase tracking-tight">{booking.staffId?.name || 'Unassigned'}</h3>
+                                        <h3 className="text-lg font-black text-text uppercase tracking-tight">{booking.staffId?.name || 'Unassigned'}</h3>
                                         <p className="text-[10px] font-bold text-primary uppercase tracking-widest">{booking.staffId?.role || 'Staff'}</p>
                                     </div>
-                                    <div className="w-12 h-12 rounded-2xl bg-surface border border-border flex items-center justify-center font-black text-lg text-primary shadow-sm">
+                                    <div className="w-10 h-10 rounded-xl bg-surface border border-border flex items-center justify-center font-black text-base text-primary shadow-sm">
                                         {booking.staffId?.name?.[0] || '?'}
                                     </div>
                                 </div>
                                 <button 
                                     onClick={() => setIsReassignModalOpen(true)}
-                                    className="w-full py-3 rounded-xl border border-dashed border-border hover:border-primary/50 hover:text-primary text-[9px] font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2"
+                                    className="w-full py-2 rounded-xl border border-dashed border-border hover:border-primary/50 hover:text-primary text-[9px] font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2"
                                 >
                                     <RotateCcw className="w-3.5 h-3.5" /> Reassign Staff
                                 </button>
@@ -275,30 +276,30 @@ export default function BookingDetailPage() {
                     </div>
 
                     {/* Services & Payment Sections Grid */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {/* Service Details */}
-                        <div className="bg-surface border border-border rounded-[2.5rem] p-8 space-y-6 shadow-sm">
-                            <div className="flex items-center justify-between pb-4 border-b border-border">
+                        <div className="bg-surface border border-border rounded-3xl p-5 space-y-4 shadow-sm">
+                            <div className="flex items-center justify-between pb-3 border-b border-border">
                                 <h3 className="text-[11px] font-black text-text uppercase tracking-widest">Service Profile</h3>
                                 <ShieldCheck className="w-4 h-4 text-text-muted opacity-30" />
                             </div>
-                            <div className="flex items-center justify-between p-5 rounded-3xl bg-surface-alt border border-border/50 group hover:border-primary/30 transition-all">
+                            <div className="flex items-center justify-between p-4 rounded-2xl bg-surface-alt border border-border/50 group hover:border-primary/30 transition-all">
                                 <div className="space-y-1">
-                                    <p className="text-sm font-black text-text uppercase tracking-tight">{booking.serviceId?.name || 'Test Service'}</p>
+                                    <p className="text-xs font-black text-text uppercase tracking-tight">{booking.serviceId?.name || 'Test Service'}</p>
                                     <p className="text-[9px] font-bold text-text-muted uppercase tracking-widest opacity-60">Duration: {booking.duration || 30} Mins</p>
                                 </div>
-                                <p className="text-lg font-black text-text italic font-mono">₹{booking.totalPrice || 0}</p>
+                                <p className="text-base font-black text-text italic font-mono">₹{booking.totalPrice || 0}</p>
                             </div>
                         </div>
 
                         {/* Payment Transaction */}
-                        <div className="bg-surface border border-border rounded-[2.5rem] p-8 space-y-6 shadow-sm">
-                            <div className="flex items-center justify-between pb-4 border-b border-border">
+                        <div className="bg-surface border border-border rounded-3xl p-5 space-y-4 shadow-sm">
+                            <div className="flex items-center justify-between pb-3 border-b border-border">
                                 <h3 className="text-[11px] font-black text-text uppercase tracking-widest">Payment Transaction</h3>
                                 <CreditCard className="w-4 h-4 text-text-muted opacity-30" />
                             </div>
                             
-                            <div className="space-y-5">
+                            <div className="space-y-4">
                                 <div className="flex items-center justify-between">
                                     <p className="text-[10px] font-black text-text-muted uppercase tracking-widest">Method</p>
                                     <span className="text-[10px] font-black text-text uppercase tracking-tight px-3 py-1 bg-surface-alt rounded-lg border border-border">
@@ -334,7 +335,7 @@ export default function BookingDetailPage() {
                                     </div>
                                 </div>
 
-                                <div className="space-y-3 pt-2">
+                                <div className="space-y-2 pt-2">
                                     <div className="flex items-center justify-between opacity-60">
                                         <p className="text-[10px] font-black text-text uppercase tracking-widest">Gross Amount</p>
                                         <p className="text-sm font-black italic font-mono">₹{(booking.subtotal || 0).toFixed(2)}</p>
@@ -377,9 +378,9 @@ export default function BookingDetailPage() {
                                                     <p className="text-sm font-black italic font-mono">+₹{tax.toFixed(2)}</p>
                                                 </div>
 
-                                                <div className="pt-4 border-t border-border flex items-center justify-between">
+                                                <div className="pt-3 border-t border-border flex items-center justify-between">
                                                     <p className="text-[11px] font-black text-text uppercase tracking-widest">Total Payable</p>
-                                                    <p className="text-2xl font-black text-primary italic font-mono tracking-tighter">₹{total.toFixed(2)}</p>
+                                                    <p className="text-xl font-black text-primary italic font-mono tracking-tighter">₹{total.toFixed(2)}</p>
                                                 </div>
                                             </>
                                         );
@@ -390,8 +391,8 @@ export default function BookingDetailPage() {
                     </div>
 
                     {/* Internal Notes */}
-                    <div className="bg-surface border border-border rounded-[2.5rem] p-8 space-y-6 shadow-sm">
-                        <div className="flex items-center justify-between pb-4 border-b border-border">
+                    <div className="bg-surface border border-border rounded-3xl p-5 space-y-4 shadow-sm">
+                        <div className="flex items-center justify-between pb-3 border-b border-border">
                             <div className="flex items-center gap-2">
                                 <h3 className="text-[11px] font-black text-text uppercase tracking-widest">Internal Admin Notes</h3>
                                 <FileText className="w-3.5 h-3.5 text-text-muted opacity-30" />
@@ -404,9 +405,9 @@ export default function BookingDetailPage() {
                             </button>
                         </div>
                         {isEditingNotes ? (
-                            <div className="space-y-4 animate-in fade-in zoom-in-95 duration-200">
+                            <div className="space-y-3 animate-in fade-in zoom-in-95 duration-200">
                                 <textarea 
-                                    className="w-full p-6 bg-surface-alt border border-border rounded-3xl text-[11px] font-bold text-text uppercase font-mono h-32 focus:border-primary/50 transition-all resize-none outline-none shadow-inner"
+                                    className="w-full p-4 bg-surface-alt border border-border rounded-2xl text-[11px] font-bold text-text uppercase font-mono h-24 focus:border-primary/50 transition-all resize-none outline-none shadow-inner"
                                     value={notes}
                                     onChange={(e) => setNotes(e.target.value)}
                                     placeholder="Add secure internal notes..."
@@ -432,7 +433,7 @@ export default function BookingDetailPage() {
                                 </div>
                             </div>
                         ) : (
-                            <div className="p-6 rounded-3xl bg-surface-alt/30 border border-border/50 italic text-[11px] font-medium text-text-muted leading-relaxed">
+                            <div className="p-4 rounded-2xl bg-surface-alt/30 border border-border/50 italic text-[11px] font-medium text-text-muted leading-relaxed">
                                 {notes || 'No secure internal logs recorded for this transaction.'}
                             </div>
                         )}
@@ -440,26 +441,52 @@ export default function BookingDetailPage() {
                 </div>
 
                 {/* Right Column - Intelligence & Metadata */}
-                <div className="lg:col-span-4 space-y-8">
+                <div className="lg:col-span-4 space-y-4">
                     {/* Customer Intelligence Card */}
-                    <div className="bg-surface border border-border rounded-[2.5rem] overflow-hidden shadow-sm">
-                        <div className="p-8 bg-black text-white relative">
-                            <div className="absolute right-0 top-0 w-32 h-32 bg-primary/10 -mr-16 -mt-16 rotate-45" />
-                            <h3 className="text-[10px] font-black uppercase tracking-[0.3em] opacity-40 mb-8">Customer Intelligence</h3>
+                    <div className="bg-surface border border-border rounded-3xl overflow-hidden shadow-sm customer-intelligence-header">
+                        <style>{`
+                            html body #root .customer-intelligence-header h2,
+                            html body #root .customer-intelligence-header h2 *,
+                            .customer-intelligence-header h2 {
+                                color: #ffffff !important;
+                            }
+                            html body #root .customer-intelligence-header h3,
+                            html body #root .customer-intelligence-header h3 *,
+                            .customer-intelligence-header h3 {
+                                color: rgba(255, 255, 255, 0.5) !important;
+                            }
+                            html body #root .customer-intelligence-header .loyalty-gold,
+                            html body #root .customer-intelligence-header .loyalty-gold *,
+                            .customer-intelligence-header .loyalty-gold {
+                                color: #B4912B !important;
+                                border-color: rgba(180, 145, 43, 0.3) !important;
+                                background-color: rgba(180, 145, 43, 0.15) !important;
+                            }
+                            html body #root .customer-intelligence-header .avatar-gold,
+                            html body #root .customer-intelligence-header .avatar-gold *,
+                            .customer-intelligence-header .avatar-gold {
+                                color: #B4912B !important;
+                                border-color: rgba(255, 255, 255, 0.1) !important;
+                                background-color: rgba(255, 255, 255, 0.1) !important;
+                            }
+                        `}</style>
+                        <div className="p-5 bg-[#0f172a] relative">
+                            <div className="absolute right-0 top-0 w-32 h-32 bg-[#B4912B]/10 -mr-16 -mt-16 rotate-45" />
+                            <h3 className="text-[10px] font-black uppercase tracking-[0.3em] mb-8">Customer Intelligence</h3>
                             <div className="flex items-center gap-5 relative z-10">
-                                <div className="w-16 h-16 rounded-3xl bg-white/10 backdrop-blur-md border border-white/10 flex items-center justify-center font-black text-2xl text-primary shadow-xl">
+                                <div className="w-12 h-12 rounded-2xl backdrop-blur-md border flex items-center justify-center font-black text-xl shadow-xl avatar-gold">
                                     {client.name?.[0] || 'G'}
                                 </div>
                                 <div>
-                                    <h2 className="text-2xl font-black uppercase tracking-tight leading-none mb-2">{client.name || 'GUEST'}</h2>
-                                    <span className="px-3 py-1 bg-primary/20 text-primary text-[8px] font-black uppercase tracking-widest rounded-full border border-primary/20">
+                                    <h2 className="text-xl font-black uppercase tracking-tight leading-none mb-1">{client.name || 'GUEST'}</h2>
+                                    <span className="px-3 py-1 text-[8px] font-black uppercase tracking-widest rounded-full border loyalty-gold">
                                         Loyalty Rank: Gold
                                     </span>
                                 </div>
                             </div>
                         </div>
-                        <div className="p-8 space-y-6">
-                            <div className="space-y-4 pb-6 border-b border-border">
+                        <div className="p-5 space-y-4">
+                            <div className="space-y-3 pb-4 border-b border-border">
                                 <div className="flex items-center gap-4 text-text-muted">
                                     <Phone className="w-4 h-4 text-primary" />
                                     <span className="text-xs font-black font-mono">{client.phone || 'N/A'}</span>
@@ -470,32 +497,32 @@ export default function BookingDetailPage() {
                                 </div>
                             </div>
 
-                            <div className="grid grid-cols-2 gap-4">
-                                <div className="p-4 rounded-2xl bg-surface-alt border border-border/50 text-center">
+                            <div className="grid grid-cols-2 gap-3">
+                                <div className="p-3 rounded-xl bg-surface-alt border border-border/50 text-center">
                                     <p className="text-[9px] font-black text-text-muted uppercase tracking-widest mb-1">Total Visits</p>
-                                    <p className="text-xl font-black text-text italic font-mono">{client.totalVisits || 0}</p>
+                                    <p className="text-lg font-black text-text italic font-mono">{client.totalVisits || 0}</p>
                                 </div>
-                                <div className="p-4 rounded-2xl bg-surface-alt border border-border/50 text-center">
+                                <div className="p-3 rounded-xl bg-surface-alt border border-border/50 text-center">
                                     <p className="text-[9px] font-black text-text-muted uppercase tracking-widest mb-1">Total Spent</p>
-                                    <p className="text-xl font-black text-text italic font-mono">₹{client.totalSpend || 0}</p>
+                                    <p className="text-lg font-black text-text italic font-mono">₹{client.totalSpend || 0}</p>
                                 </div>
                             </div>
 
-                            <button className="w-full py-4 rounded-2xl bg-surface-alt border border-border hover:bg-black hover:text-white hover:border-black transition-all text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-3 group">
+                            <button className="w-full py-3 rounded-xl bg-surface-alt border border-border hover:bg-black hover:text-white hover:border-black transition-all text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-3 group">
                                 View History <History className="w-4 h-4 group-hover:rotate-12 transition-transform" />
                             </button>
                         </div>
                     </div>
 
                     {/* Appointment Venue */}
-                    <div className="bg-surface border border-border rounded-[2.5rem] p-8 space-y-6 shadow-sm">
+                    <div className="bg-surface border border-border rounded-3xl p-5 space-y-4 shadow-sm">
                         <h3 className="text-[10px] font-black text-text uppercase tracking-[0.3em] opacity-40">Appointment Venue</h3>
                         <div className="flex gap-4">
                             <div className="w-10 h-10 rounded-2xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
                                 <MapPin className="w-5 h-5" />
                             </div>
                             <div className="space-y-2">
-                                <p className="text-sm font-black text-text uppercase tracking-tight">{booking.outletId?.name || 'Main Outlet'}</p>
+                                <p className="text-xs font-black text-text uppercase tracking-tight">{booking.outletId?.name || 'Main Outlet'}</p>
                                 <p className="text-[10px] font-bold text-text-muted leading-relaxed">
                                     {booking.outletId?.address?.street || 'Shop No 19/2 Bike Gally Kismat Nagar, CST Road, near Kanakia, Kurla West, Kurla, Mumbai, Maharashtra 400070, India, Konkan Division, Maharashtra 400070'}
                                 </p>
@@ -504,9 +531,9 @@ export default function BookingDetailPage() {
                     </div>
 
                     {/* Booking Audit */}
-                    <div className="bg-surface border border-border rounded-[2.5rem] p-8 space-y-6 shadow-sm">
+                    <div className="bg-surface border border-border rounded-3xl p-5 space-y-4 shadow-sm">
                         <h3 className="text-[10px] font-black text-text uppercase tracking-[0.3em] opacity-40">Booking Audit</h3>
-                        <div className="space-y-6 relative before:absolute before:left-2 before:top-2 before:bottom-2 before:w-px before:bg-border">
+                        <div className="space-y-4 relative before:absolute before:left-2 before:top-2 before:bottom-2 before:w-px before:bg-border">
                             <div className="relative pl-8 group">
                                 <div className="absolute left-0 top-1.5 w-4 h-4 rounded-full bg-emerald-500 border-4 border-surface shadow-sm group-hover:scale-125 transition-all" />
                                 <p className="text-[10px] font-black text-text uppercase tracking-tight">Booking Created</p>
@@ -527,43 +554,64 @@ export default function BookingDetailPage() {
                 </div>
             </div>
             {/* Reassign Staff Modal */}
-            {isReassignModalOpen && (
-                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
-                    <div className="bg-white w-full max-w-md rounded-[2.5rem] border border-border shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200">
-                        <div className="p-8 border-b border-border bg-surface-alt/30">
-                            <h3 className="text-xl font-black text-text uppercase tracking-tight italic">Reassign Expert</h3>
-                            <p className="text-[10px] font-bold text-text-muted uppercase tracking-[0.2em] mt-1">Select new professional for this session</p>
+            {isReassignModalOpen && createPortal(
+                <div className="fixed inset-0 bg-[#0f172a]/80 backdrop-blur-sm z-[9999] flex items-center justify-center p-4">
+                    <div className="bg-white dark:bg-[#1e293b] w-full max-w-md rounded-3xl border border-slate-200/80 dark:border-slate-700/80 shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200">
+                        {/* Header */}
+                        <div className="flex items-center justify-between p-6 border-b border-slate-100 dark:border-slate-700/50">
+                            <div className="flex items-center gap-3">
+                                <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
+                                    <RotateCcw className="w-5 h-5" />
+                                </div>
+                                <div>
+                                    <h3 className="text-lg font-bold text-slate-900 dark:text-white">Reassign Expert</h3>
+                                    <p className="text-xs text-slate-500 dark:text-slate-400">Select new professional for this session</p>
+                                </div>
+                            </div>
+                            <button 
+                                onClick={() => setIsReassignModalOpen(false)}
+                                className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors"
+                            >
+                                <XCircle className="w-5 h-5" />
+                            </button>
                         </div>
+
+                        {/* List */}
                         <div className="p-6 max-h-[400px] overflow-y-auto no-scrollbar space-y-3">
                             {staff.filter(s => s._id !== booking.staffId?._id).map(s => (
                                 <button
                                     key={s._id}
                                     onClick={() => handleReassignStaff(s._id)}
-                                    className="w-full flex items-center justify-between p-4 rounded-2xl bg-surface border border-border hover:border-primary hover:bg-primary/5 transition-all group"
+                                    className="w-full flex items-center justify-between p-3.5 rounded-xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200/60 dark:border-slate-700/50 hover:border-primary/50 hover:bg-primary/[0.03] dark:hover:bg-primary/[0.02] transition-all group cursor-pointer text-left"
                                 >
                                     <div className="flex items-center gap-4">
-                                        <div className="w-10 h-10 rounded-xl bg-surface-alt border border-border flex items-center justify-center font-black text-primary">
+                                        <div className="w-10 h-10 rounded-xl bg-primary/10 dark:bg-primary/20 flex items-center justify-center font-bold text-primary text-sm uppercase">
                                             {s.name?.[0]}
                                         </div>
-                                        <div className="text-left">
-                                            <p className="text-sm font-black text-text uppercase tracking-tight group-hover:text-primary transition-colors">{s.name}</p>
-                                            <p className="text-[9px] font-bold text-text-muted uppercase tracking-widest">{s.role}</p>
+                                        <div>
+                                            <p className="text-sm font-bold text-slate-900 dark:text-white group-hover:text-primary transition-colors">{s.name}</p>
+                                            <p className="text-xs text-slate-500 dark:text-slate-400 capitalize">{s.role?.replace('_', ' ')}</p>
                                         </div>
                                     </div>
-                                    <CheckCircle2 className="w-5 h-5 text-primary opacity-0 group-hover:opacity-100 transition-all" />
+                                    <div className="w-6 h-6 rounded-full bg-primary/10 text-primary flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all">
+                                        <CheckCircle2 className="w-4 h-4" />
+                                    </div>
                                 </button>
                             ))}
                         </div>
-                        <div className="p-6 bg-surface-alt/30 border-t border-border flex justify-end">
+
+                        {/* Footer */}
+                        <div className="p-4 bg-slate-50 dark:bg-slate-800/30 border-t border-slate-100 dark:border-slate-700/50 flex justify-end gap-3">
                             <button 
                                 onClick={() => setIsReassignModalOpen(false)}
-                                className="px-8 py-3 text-[10px] font-black uppercase tracking-widest text-text-muted hover:text-text transition-colors"
+                                className="px-5 py-2.5 rounded-xl text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all"
                             >
-                                Cancel Protocol
+                                Cancel
                             </button>
                         </div>
                     </div>
-                </div>
+                </div>,
+                document.body
             )}
         </div>
     );

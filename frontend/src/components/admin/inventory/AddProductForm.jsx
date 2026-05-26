@@ -510,7 +510,11 @@ export default function AddProductForm({ onSave, initialData, onCancel }) {
 
                     <div className="flex flex-col md:flex-row gap-6">
                         <div className="w-full md:w-1/3 space-y-3">
-                            <label className={`flex items-center gap-3 p-4 border transition-all cursor-pointer ${formData.availability === 'all' ? 'bg-text text-background border-text' : 'bg-background border-border text-text-muted hover:border-text-muted'}`}>
+                            <label className={`flex items-center gap-3 p-4 border transition-all cursor-pointer rounded-xl ${
+                                formData.availability === 'all' 
+                                    ? 'bg-primary/10 border-primary text-primary font-black shadow-sm shadow-primary/5' 
+                                    : 'bg-slate-50 dark:bg-slate-800/40 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:border-slate-400 dark:hover:border-slate-500'
+                            }`}>
                                 <input
                                     type="radio"
                                     name="outlet"
@@ -518,9 +522,17 @@ export default function AddProductForm({ onSave, initialData, onCancel }) {
                                     onChange={() => setFormData({ ...formData, availability: 'all', outletIds: [] })}
                                     className="hidden"
                                 />
-                                <span className="text-[10px] font-black uppercase tracking-widest">Global (All Nodes)</span>
+                                <span className={`text-[10px] font-black uppercase tracking-widest ${
+                                    formData.availability === 'all' ? 'text-primary' : 'text-slate-700 dark:text-slate-300'
+                                }`}>
+                                    Global (All Nodes)
+                                </span>
                             </label>
-                            <label className={`flex items-center gap-3 p-4 border transition-all cursor-pointer ${formData.availability === 'selected' ? 'bg-text text-background border-text' : 'bg-background border-border text-text-muted hover:border-text-muted'}`}>
+                            <label className={`flex items-center gap-3 p-4 border transition-all cursor-pointer rounded-xl ${
+                                formData.availability === 'selected' 
+                                    ? 'bg-primary/10 border-primary text-primary font-black shadow-sm shadow-primary/5' 
+                                    : 'bg-slate-50 dark:bg-slate-800/40 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:border-slate-400 dark:hover:border-slate-500'
+                            }`}>
                                 <input
                                     type="radio"
                                     name="outlet"
@@ -528,7 +540,11 @@ export default function AddProductForm({ onSave, initialData, onCancel }) {
                                     onChange={() => setFormData({ ...formData, availability: 'selected' })}
                                     className="hidden"
                                 />
-                                <span className="text-[10px] font-black uppercase tracking-widest">Targeted (Manual)</span>
+                                <span className={`text-[10px] font-black uppercase tracking-widest ${
+                                    formData.availability === 'selected' ? 'text-primary' : 'text-slate-700 dark:text-slate-300'
+                                }`}>
+                                    Targeted (Manual)
+                                </span>
                             </label>
                         </div>
 

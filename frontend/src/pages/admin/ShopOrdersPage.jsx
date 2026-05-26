@@ -1,15 +1,16 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { 
-    Search, 
-    Filter, 
-    ChevronLeft, 
-    ChevronRight, 
-    Eye, 
-    Package, 
-    Truck, 
-    CheckCircle2, 
-    XCircle, 
-    Clock, 
+import { createPortal } from 'react-dom';
+import {
+    Search,
+    Filter,
+    ChevronLeft,
+    ChevronRight,
+    Eye,
+    Package,
+    Truck,
+    CheckCircle2,
+    XCircle,
+    Clock,
     MoreVertical,
     Download,
     MapPin,
@@ -88,14 +89,14 @@ export default function ShopOrdersPage() {
 
     const filteredOrders = useMemo(() => {
         return orders.filter(o => {
-            const matchesSearch = !search || 
+            const matchesSearch = !search ||
                 o._id.toLowerCase().includes(search.toLowerCase()) ||
                 o.customerId?.name?.toLowerCase().includes(search.toLowerCase()) ||
                 o.customerId?.phone?.includes(search);
-            
+
             const matchesStatus = statusFilter === 'all' || o.status === statusFilter;
             const matchesOutlet = outletFilter === 'all' || String(o.outletId) === String(outletFilter);
-            
+
             return matchesSearch && matchesStatus && matchesOutlet;
         });
     }, [orders, search, statusFilter, outletFilter]);
@@ -130,7 +131,7 @@ export default function ShopOrdersPage() {
             doc.text(`Customer: ${order.customerId?.name || 'Unknown'}`, 120, 40);
             doc.text(`Phone: ${order.customerId?.phone || 'N/A'}`, 120, 45);
             doc.text(`Outlet: ${outletName}`, 120, 50);
-            
+
             if (order.deliveryPreference === 'home') {
                 doc.text(`Address: ${order.address?.street || ''}`, 120, 55);
                 doc.text(`${order.address?.city || ''}, ${order.address?.zip || ''}`, 120, 60);
@@ -168,7 +169,7 @@ export default function ShopOrdersPage() {
             }
             doc.text(`Logistics: +Rs. ${order.deliveryCharge?.toLocaleString()}`, 120, finalY + 15);
             doc.text(`Tax: +Rs. ${order.taxAmount?.toLocaleString()}`, 120, finalY + 20);
-            
+
             doc.setFontSize(12);
             doc.setFont('helvetica', 'bold');
             doc.text(`GRAND TOTAL: Rs. ${order.totalAmount?.toLocaleString()}`, 120, finalY + 30);
@@ -198,6 +199,120 @@ export default function ShopOrdersPage() {
 
     return (
         <div className="space-y-6 animate-reveal text-left max-w-[1600px] mx-auto pb-12">
+            <style>{`
+                .status-filter-btn.active-status {
+                    background-color: #000000 !important;
+                    border-color: #000000 !important;
+                    color: #ffffff !important;
+                    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1) !important;
+                }
+                .status-filter-btn.active-status span {
+                    color: #ffffff !important;
+                }
+                .dark .status-filter-btn.active-status {
+                    background-color: #B4912B !important;
+                    border-color: #B4912B !important;
+                    color: #ffffff !important;
+                    box-shadow: 0 4px 6px -1px rgba(180, 145, 43, 0.25) !important;
+                }
+                .dark .status-filter-btn.active-status span {
+                    color: #ffffff !important;
+                }
+                
+                .status-filter-btn:not(.active-status) {
+                    background-color: #ffffff !important;
+                    color: #000000 !important;
+                    border-color: #e2e8f0 !important;
+                }
+                .status-filter-btn:not(.active-status) span {
+                    color: #000000 !important;
+                }
+                .dark .status-filter-btn:not(.active-status) {
+                    background-color: #1e293b !important;
+                    color: #cbd5e1 !important;
+                    border-color: rgba(255, 255, 255, 0.08) !important;
+                }
+                .dark .status-filter-btn:not(.active-status) span {
+                    color: #cbd5e1 !important;
+                }
+
+                /* Drawer Protocol Action Buttons */
+                .protocol-action-btn.btn-accepted {
+                    border-color: #10b981 !important;
+                    color: #10b981 !important;
+                    background-color: transparent !important;
+                }
+                .protocol-action-btn.btn-accepted:hover {
+                    background-color: #10b981 !important;
+                    color: #ffffff !important;
+                }
+                .protocol-action-btn.btn-rejected {
+                    border-color: #f43f5e !important;
+                    color: #f43f5e !important;
+                    background-color: transparent !important;
+                }
+                .protocol-action-btn.btn-rejected:hover {
+                    background-color: #f43f5e !important;
+                    color: #ffffff !important;
+                }
+                .protocol-action-btn.btn-other {
+                    border-color: #B4912B !important;
+                    color: #B4912B !important;
+                    background-color: transparent !important;
+                }
+                .protocol-action-btn.btn-other:hover {
+                    background-color: #B4912B !important;
+                    color: #ffffff !important;
+                }
+                .protocol-action-btn span {
+                    color: inherit !important;
+                }
+                
+                /* Dark Mode supports for these action buttons */
+                .dark .protocol-action-btn.btn-accepted {
+                    border-color: rgba(16, 185, 129, 0.4) !important;
+                    color: #34d399 !important;
+                }
+                .dark .protocol-action-btn.btn-accepted:hover {
+                    background-color: #10b981 !important;
+                    color: #ffffff !important;
+                }
+                .dark .protocol-action-btn.btn-rejected {
+                    border-color: rgba(244, 63, 94, 0.4) !important;
+                    color: #fb7185 !important;
+                }
+                .dark .protocol-action-btn.btn-rejected:hover {
+                    background-color: #f43f5e !important;
+                    color: #ffffff !important;
+                }
+
+                /* Eye Details Action Button */
+                .eye-details-btn {
+                    background-color: #ffffff !important;
+                    border-color: #e2e8f0 !important;
+                    color: #334155 !important;
+                }
+                .eye-details-btn:hover {
+                    background-color: #B4912B !important;
+                    border-color: #B4912B !important;
+                    color: #ffffff !important;
+                }
+                .eye-details-btn svg {
+                    color: inherit !important;
+                }
+                
+                .dark .eye-details-btn {
+                    background-color: #1e293b !important;
+                    border-color: rgba(255, 255, 255, 0.08) !important;
+                    color: #cbd5e1 !important;
+                }
+                .dark .eye-details-btn:hover {
+                    background-color: #B4912B !important;
+                    border-color: #B4912B !important;
+                    color: #ffffff !important;
+                }
+            `}</style>
+
             {/* Header */}
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 px-1 border-b border-border pb-6">
                 <div className="text-left font-mono">
@@ -215,7 +330,7 @@ export default function ShopOrdersPage() {
             <div className="flex flex-col md:flex-row gap-4 items-end">
                 <div className="relative flex-1 group">
                     <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-primary transition-colors" />
-                    <input 
+                    <input
                         type="text"
                         placeholder="Search by Order ID, Customer Name or Phone..."
                         className="w-full pl-12 pr-6 py-3 border border-border bg-surface text-[11px] font-black uppercase tracking-widest placeholder:opacity-30 focus:outline-none focus:border-primary transition-all shadow-sm"
@@ -223,7 +338,7 @@ export default function ShopOrdersPage() {
                         onChange={(e) => setSearch(e.target.value)}
                     />
                 </div>
-                
+
                 {/* Outlet Filter */}
                 <div className="flex flex-col gap-2 min-w-[200px]">
                     <span className="text-[9px] font-black uppercase tracking-widest text-text-muted pl-1">Target Outlet</span>
@@ -245,9 +360,9 @@ export default function ShopOrdersPage() {
                         <button
                             key={s}
                             onClick={() => setStatusFilter(s)}
-                            className={`px-4 py-3 text-[9px] font-black uppercase tracking-widest transition-all whitespace-nowrap border ${statusFilter === s ? 'bg-text text-background border-text' : 'bg-surface text-text-muted border-border hover:border-primary'}`}
+                            className={`px-4 py-2.5 text-[9px] font-black uppercase tracking-widest transition-all whitespace-nowrap border rounded-xl status-filter-btn ${statusFilter === s ? 'active-status' : ''}`}
                         >
-                            {s}
+                            <span>{s}</span>
                         </button>
                     ))}
                 </div>
@@ -284,7 +399,7 @@ export default function ShopOrdersPage() {
                                 {filteredOrders.map(order => {
                                     const statusInfo = STATUS_FLOW[order.status] || STATUS_FLOW.pending;
                                     const StatusIcon = statusInfo.icon;
-                                    
+
                                     return (
                                         <tr key={order._id} className="hover:bg-surface-alt/50 transition-colors group border-b border-border/10">
                                             <td className="px-6 py-5">
@@ -338,9 +453,9 @@ export default function ShopOrdersPage() {
                                                 </span>
                                             </td>
                                             <td className="px-6 py-5 text-center">
-                                                <button 
+                                                <button
                                                     onClick={() => setSelectedOrder(order)}
-                                                    className="p-2.5 border border-border bg-surface hover:bg-primary hover:border-primary hover:text-white transition-all active:scale-95 shadow-sm"
+                                                    className="p-2.5 border rounded-xl transition-all active:scale-95 shadow-sm eye-details-btn"
                                                 >
                                                     <Eye className="w-4 h-4" />
                                                 </button>
@@ -355,30 +470,31 @@ export default function ShopOrdersPage() {
             </div>
 
             {/* Order Details Drawer/Modal */}
-            <AnimatePresence>
-                {selectedOrder && (
-                    <div className="fixed inset-0 z-[100] flex justify-end">
-                        <motion.div 
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            exit={{ opacity: 0 }}
-                            onClick={() => setSelectedOrder(null)}
-                            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
-                        />
-                        <motion.div 
-                            initial={{ x: '100%' }}
-                            animate={{ x: 0 }}
-                            exit={{ x: '100%' }}
-                            transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-                            className="relative w-full max-w-2xl bg-surface h-full shadow-2xl flex flex-col border-l border-border"
-                        >
+            {createPortal(
+                <AnimatePresence>
+                    {selectedOrder && (
+                        <div className="fixed inset-0 z-[999999] flex justify-end">
+                            <motion.div
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                exit={{ opacity: 0 }}
+                                onClick={() => setSelectedOrder(null)}
+                                className="absolute inset-0 bg-[#0f172a]/65 backdrop-blur-[16px]"
+                            />
+                            <motion.div
+                                initial={{ x: '100%' }}
+                                animate={{ x: 0 }}
+                                exit={{ x: '100%' }}
+                                transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+                                className="relative w-full max-w-2xl bg-surface h-full shadow-2xl flex flex-col border-l border-border z-10"
+                            >
                             {/* Drawer Header */}
                             <div className="p-6 bg-surface-alt border-b border-border flex items-center justify-between">
                                 <div className="font-mono">
                                     <p className="text-[10px] font-black text-primary uppercase tracking-[0.3em] mb-1">Order Protocol Details</p>
                                     <h2 className="text-xl font-black text-text uppercase italic tracking-tighter">ORD-{selectedOrder._id.slice(-6).toUpperCase()}</h2>
                                 </div>
-                                <button 
+                                <button
                                     onClick={() => setSelectedOrder(null)}
                                     className="p-3 bg-surface border border-border hover:bg-rose-500 hover:text-white transition-all"
                                 >
@@ -397,18 +513,16 @@ export default function ShopOrdersPage() {
                                                 key={s}
                                                 disabled={updatingStatus}
                                                 onClick={() => handleUpdateStatus(selectedOrder._id, s)}
-                                                className={`px-6 py-3 text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2 border ${
-                                                    s === 'rejected' ? 'border-rose-500 text-rose-500 hover:bg-rose-500 hover:text-white' : 
-                                                    s === 'accepted' ? 'border-emerald-500 text-emerald-500 hover:bg-emerald-500 hover:text-white' :
-                                                    'border-primary text-primary hover:bg-primary hover:text-white'
-                                                }`}
+                                                className={`px-6 py-3 text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2 border rounded-xl protocol-action-btn btn-${s === 'accepted' ? 'accepted' : s === 'rejected' ? 'rejected' : 'other'}`}
                                             >
                                                 {updatingStatus && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
-                                                {s === 'accepted' && 'APPROVE ORDER'}
-                                                {s === 'rejected' && 'REJECT ORDER'}
-                                                {s === 'dispatched' && 'MARK DISPATCHED'}
-                                                {s === 'out_for_delivery' && 'OUT FOR DELIVERY'}
-                                                {s === 'delivered' && 'CONFIRM DELIVERY'}
+                                                <span>
+                                                    {s === 'accepted' && 'APPROVE ORDER'}
+                                                    {s === 'rejected' && 'REJECT ORDER'}
+                                                    {s === 'dispatched' && 'MARK DISPATCHED'}
+                                                    {s === 'out_for_delivery' && 'OUT FOR DELIVERY'}
+                                                    {s === 'delivered' && 'CONFIRM DELIVERY'}
+                                                </span>
                                             </button>
                                         ))}
                                         {(selectedOrder.status === 'cancelled' || selectedOrder.status === 'rejected' || selectedOrder.status === 'delivered') && (
@@ -529,7 +643,7 @@ export default function ShopOrdersPage() {
 
                             {/* Drawer Footer */}
                             <div className="p-6 bg-surface border-t border-border">
-                                <button 
+                                <button
                                     onClick={() => downloadManifest(selectedOrder)}
                                     className="w-full py-4 bg-text text-background font-black text-[10px] uppercase tracking-[0.3em] hover:bg-primary hover:text-white transition-all flex items-center justify-center gap-3 shadow-lg shadow-black/10"
                                 >
@@ -539,7 +653,9 @@ export default function ShopOrdersPage() {
                         </motion.div>
                     </div>
                 )}
-            </AnimatePresence>
+            </AnimatePresence>,
+            document.body
+        )}
         </div>
     );
 }

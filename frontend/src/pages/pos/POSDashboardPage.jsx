@@ -25,6 +25,7 @@ import api from '../../services/api';
 export default function POSDashboardPage() {
     const navigate = useNavigate();
     const [showAppointments, setShowAppointments] = useState(false);
+    const [showStockAlert, setShowStockAlert] = useState(true);
     const [invoices, setInvoices] = useState([]);
     const [dashboardData, setDashboardData] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -162,20 +163,33 @@ export default function POSDashboardPage() {
                     </button>
                 </div>
             </div>
-
             {/* Threshold Alerts */}
-            {lowStockItems.length > 0 && (
-                <div className="bg-amber-500/5 border border-amber-500/20 p-5 rounded-none flex items-center justify-between">
+            {lowStockItems.length > 0 && showStockAlert && (
+                <div className="pos-stock-alert-banner bg-amber-500/10 dark:bg-amber-950/20 border border-amber-500/30 p-5 rounded-none flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                     <div className="flex items-center gap-5">
-                        <div className="w-12 h-12 bg-amber-500/10 border border-amber-500/20 flex items-center justify-center shrink-0">
-                            <AlertTriangle className="w-6 h-6 text-amber-600" />
+                        <div className="w-12 h-12 bg-amber-500/20 dark:bg-amber-500/10 border border-amber-500/30 flex items-center justify-center shrink-0">
+                            <AlertTriangle className="w-6 h-6 text-amber-600 dark:text-amber-500" />
                         </div>
                         <div>
-                            <p className="text-sm font-black text-amber-800 uppercase tracking-widest">Low Stock Alert</p>
-                            <p className="text-sm text-amber-700/70 font-bold uppercase tracking-wider mt-1">{lowStockItems.length} products are low in stock</p>
+                            <p className="pos-stock-alert-title text-sm font-black text-amber-900 dark:text-amber-400 uppercase tracking-widest">Low Stock Alert</p>
+                            <p className="pos-stock-alert-desc text-sm text-amber-800 dark:text-slate-300 font-bold uppercase tracking-wider mt-1">{lowStockItems.length} products are low in stock</p>
                         </div>
                     </div>
-                    <button className="text-sm font-black text-amber-800 uppercase tracking-widest hover:underline px-4 py-2 border border-amber-500/20 active:scale-95 transition-all">Check Stock</button>
+                    <div className="flex items-center gap-3 self-end sm:self-center">
+                        <button 
+                            onClick={() => navigate('/admin/inventory/stock-overview')} 
+                            className="pos-stock-alert-btn text-xs font-black text-amber-900 dark:text-amber-400 bg-amber-500/20 dark:bg-amber-500/10 border border-amber-500/30 hover:bg-amber-500 hover:text-white dark:hover:bg-amber-500 dark:hover:text-white uppercase tracking-widest px-6 py-2.5 active:scale-95 transition-all"
+                        >
+                            Check Stock
+                        </button>
+                        <button 
+                            onClick={() => setShowStockAlert(false)} 
+                            className="pos-stock-alert-close p-2 border border-amber-500/20 hover:bg-amber-500/10 text-amber-800 dark:text-amber-500 transition-all rounded-none"
+                            title="Dismiss Alert"
+                        >
+                            <X className="w-4 h-4" />
+                        </button>
+                    </div>
                 </div>
             )}
 
@@ -287,15 +301,15 @@ export default function POSDashboardPage() {
                     </div>
 
                     {/* Quick Access Grid */}
-                    <div className="bg-text p-8 rounded-none text-background shadow-2xl relative overflow-hidden group text-left">
+                    <div className="pos-quick-action-card bg-text p-8 rounded-none text-background shadow-2xl relative overflow-hidden group text-left">
                         <div className="relative z-10 space-y-6">
-                            <h3 className="text-sm font-black uppercase tracking-[0.3em] opacity-40">Quick Actions</h3>
+                            <h3 className="pos-quick-action-title text-sm font-black uppercase tracking-[0.3em] opacity-40">Quick Actions</h3>
                             <div className="grid grid-cols-2 gap-3">
                                 {quickActions.map((action, i) => (
                                     <button
                                         key={i}
                                         onClick={action.onClick || (() => navigate(action.path))}
-                                        className="p-5 bg-white/5 hover:bg-primary transition-all border border-white/10 flex flex-col items-center gap-3 active:scale-95 group/btn"
+                                        className="pos-quick-action-btn p-5 bg-white/5 hover:bg-primary transition-all border border-white/10 flex flex-col items-center gap-3 active:scale-95 group/btn"
                                     >
                                         <action.icon className="w-5 h-5 text-primary group-hover/btn:text-white" />
                                         <span className="text-xs font-black uppercase tracking-widest text-center group-hover/btn:text-white">{action.label}</span>

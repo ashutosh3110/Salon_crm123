@@ -41,9 +41,8 @@ export default function ServiceCategories({ categories = [], onAdd, onUpdate, on
     const [gender, setGender] = useState('women');
     const [image, setImage] = useState('');
     const [imagePreview, setImagePreview] = useState('');
-
     const filteredCategories = categories.filter(cat =>
-        cat.name.toLowerCase().includes(searchTerm.toLowerCase())
+        (cat.name || '').toLowerCase().includes(searchTerm.toLowerCase())
     );
 
     const handleImageChange = (e) => {
@@ -232,12 +231,10 @@ export default function ServiceCategories({ categories = [], onAdd, onUpdate, on
             {modalState.isOpen && createPortal(
                 <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
                     <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onClick={closeModal} />
-                    <div className="bg-white dark:bg-slate-800 rounded-none p-8 w-full max-w-md relative z-10 shadow-2xl animate-in zoom-in-95 duration-200 border border-border">
+                    <div className="bg-white dark:bg-slate-800 rounded-none p-8 w-full max-w-md relative z-10 shadow-2xl animate-in zoom-in-95 duration-200 border border-border admin-panel" onClick={(e) => e.stopPropagation()}>
                         <div className="flex items-center justify-between mb-8">
                             <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 bg-primary/10 flex items-center justify-center">
-                                    {modalState.type === 'add' ? <Plus className="w-5 h-5 text-primary" /> : <Edit2 className="w-5 h-5 text-primary" />}
-                                </div>
+                                {modalState.type === 'add' ? <Plus className="w-6 h-6 text-text shrink-0" /> : <Edit2 className="w-6 h-6 text-text shrink-0" />}
                                 <div>
                                     <h2 className="text-sm font-black uppercase tracking-[0.2em] italic text-slate-900 dark:text-white">
                                         {modalState.type === 'add' ? 'Add New Category' : `Edit Category: ${name}`}
@@ -322,18 +319,24 @@ export default function ServiceCategories({ categories = [], onAdd, onUpdate, on
                                 <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] leading-none">Demographic Target</label>
                                 <div className="grid grid-cols-3 gap-2">
                                     {['men', 'women', 'both'].map((g) => (
-                                        <button
+                                        <div
                                             key={g}
-                                            type="button"
+                                            role="button"
                                             onClick={() => setGender(g)}
-                                            className={`py-4 border text-[11px] font-bold uppercase tracking-[0.1em] transition-all flex flex-col items-center gap-2 rounded-none ${gender === g
-                                                ? 'bg-primary text-white border-primary shadow-lg shadow-primary/20'
+                                            className={`py-2.5 border text-[11px] font-bold uppercase tracking-[0.1em] transition-all flex flex-col items-center gap-1.5 rounded-none cursor-pointer ${gender === g
+                                                ? 'bg-primary border-primary shadow-lg shadow-primary/20 text-white'
                                                 : 'bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:border-primary/50'
                                                 }`}
                                         >
-                                            {g === 'men' ? <User className="w-4 h-4" /> : <UserCircle className="w-4 h-4" />}
-                                            <span>{g === 'men' ? 'Men' : g === 'women' ? 'Women' : 'Unisex'}</span>
-                                        </button>
+                                            {g === 'men' ? (
+                                                <User className={`w-4 h-4 ${gender === g ? 'text-white' : 'text-slate-400'}`} />
+                                            ) : g === 'women' ? (
+                                                <UserCircle className={`w-4 h-4 ${gender === g ? 'text-white' : 'text-slate-400'}`} />
+                                            ) : (
+                                                <Users className={`w-4 h-4 ${gender === g ? 'text-white' : 'text-slate-400'}`} />
+                                            )}
+                                            <span className={`${gender === g ? 'text-white' : 'text-slate-500 dark:text-slate-300'}`}>{g === 'men' ? 'Men' : g === 'women' ? 'Women' : 'Unisex'}</span>
+                                        </div>
                                     ))}
                                 </div>
                             </div>

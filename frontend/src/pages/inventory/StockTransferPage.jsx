@@ -164,6 +164,71 @@ export default function StockTransferPage() {
                     overflow-y: auto !important;
                     height: auto !important;
                 }
+
+                /* Fix light mode white-on-white text overrides caused by globalbg-slate-900 wildcard styles */
+                html:not(.dark) .st-modal-title {
+                    color: #1e293b !important; /* slate-800 */
+                }
+                .dark .st-modal-title {
+                    color: #cbd5e1 !important; /* slate-300 */
+                }
+                html:not(.dark) .st-modal-subtitle {
+                    color: #64748b !important; /* slate-500 */
+                }
+                .dark .st-modal-subtitle {
+                    color: #94a3b8 !important; /* slate-450 */
+                }
+                html:not(.dark) .st-warning-text {
+                    color: #B4912B !important; /* Premium Gold */
+                }
+                .dark .st-warning-text {
+                    color: #B4912B !important;
+                }
+                html:not(.dark) .st-warning-icon {
+                    color: #B4912B !important;
+                    stroke: #B4912B !important;
+                }
+                .dark .st-warning-icon {
+                    color: #B4912B !important;
+                    stroke: #B4912B !important;
+                }
+
+                /* General overrides for light mode inside the modal to cancel global white text resets */
+                html:not(.dark) .st-modal-container label {
+                    color: #64748b !important; /* slate-500 */
+                }
+                html:not(.dark) .st-modal-container input {
+                    color: #0f172a !important; /* slate-900 */
+                }
+                html:not(.dark) .st-modal-container input::placeholder {
+                    color: #94a3b8 !important; /* slate-400 */
+                }
+                html:not(.dark) .st-modal-container select {
+                    color: #0f172a !important; /* slate-900 */
+                }
+                html:not(.dark) .st-modal-container select option {
+                    color: #0f172a !important; /* slate-900 */
+                    background-color: #ffffff !important;
+                }
+                html:not(.dark) .st-modal-container .text-slate-400,
+                html:not(.dark) .st-modal-container svg.text-slate-400,
+                html:not(.dark) .st-modal-container button.text-slate-400,
+                html:not(.dark) .st-modal-container button.text-slate-400 * {
+                    color: #94a3b8 !important;
+                }
+                html:not(.dark) .st-modal-container [class*="text-[#B4912B]"] {
+                    color: #B4912B !important;
+                }
+                html:not(.dark) .st-modal-container button.hover\:text-rose-500:hover,
+                html:not(.dark) .st-modal-container button.hover\:text-rose-500:hover * {
+                    color: #f43f5e !important; /* rose-500 */
+                }
+                html:not(.dark) .st-modal-container button.st-premium-btn {
+                    color: #ffffff !important;
+                }
+                html:not(.dark) .st-modal-container button.st-premium-btn * {
+                    color: #ffffff !important;
+                }
             `}</style>
 
             {/* ── Header ── */}
@@ -303,8 +368,8 @@ export default function StockTransferPage() {
                                             <ArrowLeftRight className="w-5 h-5 text-[#B4912B]" />
                                         </div>
                                         <div className="text-left">
-                                            <h2 className="text-base font-bold text-slate-800 dark:text-slate-200">Move Inventory</h2>
-                                            <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Outlet-to-Outlet Transfer</p>
+                                            <h2 className="st-modal-title text-base font-bold text-slate-800 dark:text-slate-200">Move Inventory</h2>
+                                            <p className="st-modal-subtitle text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Outlet-to-Outlet Transfer</p>
                                         </div>
                                     </div>
                                     <button onClick={() => setIsModalOpen(false)}
@@ -480,9 +545,9 @@ export default function StockTransferPage() {
                                     {/* Warning note */}
                                     <div className="p-3.5 bg-[#B4912B]/5 rounded-2xl border border-[#B4912B]/10 flex items-center gap-3">
                                         <div className="w-8 h-8 rounded-lg bg-[#B4912B]/10 flex items-center justify-center shrink-0">
-                                            <ShieldCheck className="w-4 h-4 text-[#B4912B]" />
+                                            <ShieldCheck className="st-warning-icon w-4 h-4 text-[#B4912B]" />
                                         </div>
-                                        <p className="text-[10px] font-bold text-[#B4912B] uppercase tracking-wider leading-normal">Transfer logs are permanent and will auto-update stock levels.</p>
+                                        <p className="st-warning-text text-[10px] font-bold text-[#B4912B] uppercase tracking-wider leading-normal">Transfer logs are permanent and will auto-update stock levels.</p>
                                     </div>
 
                                     {/* Result feedback */}

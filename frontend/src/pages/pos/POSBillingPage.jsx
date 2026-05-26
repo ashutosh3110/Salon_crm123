@@ -1651,31 +1651,31 @@ export default function POSBillingPage() {
                                 <button
                                     key={item.id || item._id}
                                     onClick={() => addToCart(item)}
-                                    className={`relative bg-background border rounded-xl p-4 text-left hover:border-primary transition-all group flex flex-col justify-between h-[120px] shadow-sm hover:shadow-md active:scale-95 ${isSelected ? 'border-primary bg-primary/5 ring-1 ring-primary' : 'border-border'
+                                    className={`relative bg-background border rounded-xl p-3 text-left hover:border-primary transition-all group flex flex-col justify-between h-[80px] shadow-sm hover:shadow-md active:scale-95 ${isSelected ? 'border-primary bg-primary/5 ring-1 ring-primary' : 'border-border'
                                         }`}
                                 >
                                     {isSelected ? (
-                                        <div className="absolute top-0 right-0 bg-primary/10 text-primary text-[10px] font-bold px-2.5 py-1 uppercase tracking-wider rounded-tr-xl rounded-bl-xl shadow-sm">
+                                        <div className="absolute top-0 right-0 bg-primary/10 text-primary text-[9px] font-bold px-2 py-0.5 uppercase tracking-wider rounded-tr-xl rounded-bl-xl shadow-sm z-10">
                                             In Cart
                                         </div>
                                     ) : (
-                                        <div className="absolute top-0 right-0 p-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                            <span className="text-xs font-bold text-text-muted group-hover:text-primary transition-colors">ADD</span>
+                                        <div className="absolute top-0 right-0 p-2 opacity-0 group-hover:opacity-100 transition-opacity z-10">
+                                            <span className="text-[10px] font-bold text-primary transition-colors">ADD</span>
                                         </div>
                                     )}
-                                    <div className="w-full">
-                                        <div className="flex items-center justify-between gap-2 mb-1 w-full">
-                                            <h4 className="text-xs font-bold text-text line-clamp-1 uppercase tracking-tight leading-tight">{item.name}</h4>
-                                            <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded-md uppercase ${item.isInclusiveTax ? 'bg-emerald-500/10 text-emerald-600' : 'bg-slate-100 text-slate-500'}`}>
+                                    <div className="w-full h-full flex flex-col justify-between">
+                                        <div className="flex items-center justify-between gap-2 w-full">
+                                            <h4 className="text-xs font-bold text-text line-clamp-1 uppercase tracking-tight leading-tight flex-1 pr-6">{item.name}</h4>
+                                            <span className={`text-[9px] font-semibold px-1.5 py-0.5 rounded-md uppercase shrink-0 transition-opacity duration-200 ${isSelected ? 'opacity-0' : 'group-hover:opacity-0'} ${item.isInclusiveTax ? 'bg-emerald-500/10 text-emerald-600' : 'bg-slate-100 text-slate-500'}`}>
                                                 {item.isInclusiveTax ? 'Incl' : 'Excl'}
                                             </span>
                                         </div>
-                                        <div className="flex items-baseline gap-1">
+                                        <div className="flex items-baseline justify-between gap-1 mt-1">
                                             <p className="text-sm font-bold text-primary">₹{item.price}</p>
+                                            {item.barcode && (
+                                                <p className="text-[8px] font-mono text-text-muted/60 truncate max-w-[80px]">{item.barcode}</p>
+                                            )}
                                         </div>
-                                        {item.barcode && (
-                                            <p className="text-[8px] font-mono text-text-muted/60 mt-0.5 truncate">{item.barcode}</p>
-                                        )}
                                     </div>
                                 </button>
                             );
@@ -1961,85 +1961,85 @@ export default function POSBillingPage() {
                         {/* FOOTER - Fixed at bottom */}
                         <div className="p-3 border-t border-border bg-surface space-y-3 shrink-0">
                             {/* TOTAL */}
-                            <div className="border border-border rounded-xl bg-slate-900 text-white p-3 shadow-lg shadow-slate-950/10">
-                                <div className="flex justify-between text-[11px] font-bold mb-1 opacity-60">
-                                    <span>Subtotal</span>
-                                    <span>₹{totals.subtotal.toFixed(2)}</span>
+                            <div className="pos-billing-cart-total-box border border-border rounded-xl bg-slate-900 !text-white p-3 shadow-lg shadow-slate-950/10">
+                                <div className="flex justify-between text-[11px] font-bold mb-1 opacity-90">
+                                    <span className="!text-white">Subtotal</span>
+                                    <span className="!text-white">₹{totals.subtotal.toFixed(2)}</span>
                                 </div>
 
                                 {totals.cgst > 0 && (
-                                    <div className="flex justify-between text-[11px] font-bold mb-1">
-                                        <span className="opacity-60">
+                                    <div className="flex justify-between text-[11px] font-bold mb-1 opacity-90">
+                                        <span className="!text-white">
                                             CGST {cart.every(i => i.type === 'service') ? `(${(totals.serviceGstRate) / 2}%)` :
                                                 cart.every(i => i.type === 'product') ? `(${(totals.productGstRate) / 2}%)` :
                                                     totals.serviceGstRate === totals.productGstRate ? `(${(totals.serviceGstRate) / 2}%)` : ''}
                                         </span>
-                                        <div className="flex gap-1 text-right">
+                                        <div className="flex gap-1 text-right !text-white">
                                             {totals.cgst > totals.cgstExcl && <span className="text-emerald-400/80 font-normal">(Included)</span>}
-                                            {totals.cgstExcl > 0 && <span>+</span>}
-                                            <span>₹{totals.cgst.toFixed(2)}</span>
+                                            {totals.cgstExcl > 0 && <span className="!text-white">+</span>}
+                                            <span className="!text-white">₹{totals.cgst.toFixed(2)}</span>
                                         </div>
                                     </div>
                                 )}
                                 {totals.sgst > 0 && (
-                                    <div className="flex justify-between text-[11px] font-bold mb-1">
-                                        <span className="opacity-60">
+                                    <div className="flex justify-between text-[11px] font-bold mb-1 opacity-90">
+                                        <span className="!text-white">
                                             SGST {cart.every(i => i.type === 'service') ? `(${(totals.serviceGstRate) / 2}%)` :
                                                 cart.every(i => i.type === 'product') ? `(${(totals.productGstRate) / 2}%)` :
                                                     totals.serviceGstRate === totals.productGstRate ? `(${(totals.serviceGstRate) / 2}%)` : ''}
                                         </span>
-                                        <div className="flex gap-1 text-right">
+                                        <div className="flex gap-1 text-right !text-white">
                                             {totals.sgst > totals.sgstExcl && <span className="text-emerald-400/80 font-normal">(Included)</span>}
-                                            {totals.sgstExcl > 0 && <span>+</span>}
-                                            <span>₹{totals.sgst.toFixed(2)}</span>
+                                            {totals.sgstExcl > 0 && <span className="!text-white">+</span>}
+                                            <span className="!text-white">₹{totals.sgst.toFixed(2)}</span>
                                         </div>
                                     </div>
                                 )}
                                 {totals.igst > 0 && (
-                                    <div className="flex justify-between text-[11px] font-bold mb-1">
-                                        <span className="opacity-60">IGST {totals.serviceGstRate === totals.productGstRate ? `(${totals.serviceGstRate}%)` : ''}</span>
-                                        <div className="flex gap-1 text-right">
+                                    <div className="flex justify-between text-[11px] font-bold mb-1 opacity-90">
+                                        <span className="!text-white">IGST {totals.serviceGstRate === totals.productGstRate ? `(${totals.serviceGstRate}%)` : ''}</span>
+                                        <div className="flex gap-1 text-right !text-white">
                                             {totals.igst > totals.totalExclusiveTax && <span className="text-emerald-400/80 font-normal">(Included)</span>}
-                                            {totals.totalExclusiveTax > 0 && <span>+</span>}
-                                            <span>₹{totals.igst.toFixed(2)}</span>
+                                            {totals.totalExclusiveTax > 0 && <span className="!text-white">+</span>}
+                                            <span className="!text-white">₹{totals.igst.toFixed(2)}</span>
                                         </div>
                                     </div>
                                 )}
 
                                 {totals.discount > 0 && (
-                                    <div className="flex justify-between text-[11px] font-bold mb-1 text-emerald-400">
-                                        <span>Discount</span>
-                                        <span>-₹{totals.discount.toFixed(2)}</span>
+                                    <div className="flex justify-between text-[11px] font-bold mb-1 !text-emerald-400">
+                                        <span className="!text-emerald-400">Discount</span>
+                                        <span className="!text-emerald-400">-₹{totals.discount.toFixed(2)}</span>
                                     </div>
                                 )}
                                 {totals.membershipDiscount > 0 && (
-                                    <div className="flex justify-between text-[11px] font-bold mb-1 text-emerald-400">
-                                        <span>Membership Disc</span>
-                                        <span>-₹{totals.membershipDiscount.toFixed(2)}</span>
+                                    <div className="flex justify-between text-[11px] font-bold mb-1 !text-emerald-400">
+                                        <span className="!text-emerald-400">Membership Disc</span>
+                                        <span className="!text-emerald-400">-₹{totals.membershipDiscount.toFixed(2)}</span>
                                     </div>
                                 )}
                                 {includePreviousDue && Number(selectedClient?.dueAmount || 0) > 0 && (
-                                    <div className="flex justify-between text-[11px] font-bold mb-1 text-rose-400 animate-pulse">
-                                        <span>Previous Dues Added</span>
-                                        <span>+₹{Number(selectedClient.dueAmount).toFixed(2)}</span>
+                                    <div className="flex justify-between text-[11px] font-bold mb-1 !text-rose-400 animate-pulse">
+                                        <span className="!text-rose-400">Previous Dues Added</span>
+                                        <span className="!text-rose-400">+₹{Number(selectedClient.dueAmount).toFixed(2)}</span>
                                     </div>
                                 )}
                                 <div className="border-t border-white/10 mt-2 pt-2 flex items-center justify-between">
-                                    <span className="text-sm font-bold uppercase tracking-wider text-emerald-400">TOTAL</span>
-                                    <span className="text-2xl font-bold tracking-tight">₹{totals.total.toFixed(2)}</span>
+                                    <span className="text-sm font-bold uppercase tracking-wider !text-emerald-400">TOTAL</span>
+                                    <span className="text-2xl font-bold tracking-tight !text-white">₹{totals.total.toFixed(2)}</span>
                                 </div>
 
                                 {totals.redeemWallet > 0 && (
-                                    <div className="flex justify-between text-[11px] font-bold mt-2 text-emerald-400">
-                                        <span>Wallet Used</span>
-                                        <span>-₹{totals.redeemWallet.toFixed(2)}</span>
+                                    <div className="flex justify-between text-[11px] font-bold mt-2 !text-emerald-400">
+                                        <span className="!text-emerald-400">Wallet Used</span>
+                                        <span className="!text-emerald-400">-₹{totals.redeemWallet.toFixed(2)}</span>
                                     </div>
                                 )}
 
                                 {totals.total - totals.redeemWallet - payments.reduce((s, p) => s + p.amount, 0) > 0.5 && (
-                                    <div className="flex justify-between text-xs font-semibold text-rose-400 mt-2 bg-rose-500/5 p-2 rounded-lg border border-rose-500/20 animate-pulse">
-                                        <span className="uppercase tracking-widest">Balance Due</span>
-                                        <span>₹{(totals.total - totals.redeemWallet - payments.reduce((s, p) => s + p.amount, 0)).toFixed(2)}</span>
+                                    <div className="flex justify-between text-xs font-semibold !text-rose-400 mt-2 bg-rose-500/5 p-2 rounded-lg border border-rose-500/20 animate-pulse">
+                                        <span className="uppercase tracking-widest !text-rose-400">Balance Due</span>
+                                        <span className="!text-rose-400">₹{(totals.total - totals.redeemWallet - payments.reduce((s, p) => s + p.amount, 0)).toFixed(2)}</span>
                                     </div>
                                 )}
 
@@ -2739,7 +2739,7 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
     };
 
     return (
-        <div className="fixed inset-0 bg-slate-900/90 backdrop-blur-md z-[100] flex items-center justify-center p-0 sm:p-2 overflow-hidden">
+        <div className="fixed inset-0 bg-[#0f172a]/90 backdrop-blur-md z-[100] flex items-center justify-center p-0 sm:p-2 overflow-hidden">
             <motion.div
                 initial={{ opacity: 0, scale: 0.95, y: 20 }}
                 animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -2857,7 +2857,7 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                         >
                             Reset Form
                         </button>
-                        <button onClick={onClose} className="p-2 hover:bg-slate-200 rounded-full transition-colors group">
+                        <button onClick={onClose} className="pos-billing-close-btn p-2 hover:bg-slate-200 rounded-full transition-colors group">
                             <X className="w-6 h-6 text-slate-400 group-hover:text-slate-900" />
                         </button>
                     </div>
@@ -3123,9 +3123,9 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                                             <button
                                                 key={cat.name}
                                                 onClick={() => setQSelectedCategory(cat.name)}
-                                                className="bg-checkout-box hover:border-primary hover:shadow-md transition-all rounded-xl overflow-hidden flex flex-col group h-24"
+                                                className="bg-checkout-box hover:border-primary hover:shadow-md transition-all rounded-xl overflow-hidden flex flex-col group h-[70px]"
                                             >
-                                                <div className="h-14 w-full bg-checkout-box-inner relative overflow-hidden flex-shrink-0">
+                                                <div className="h-10 w-full bg-checkout-box-inner relative overflow-hidden flex-shrink-0">
                                                     {cat.image ? (
                                                         <img
                                                             src={getImageUrl(cat.image)}
@@ -3135,16 +3135,16 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                                                     ) : (
                                                         <div className="w-full h-full flex items-center justify-center bg-primary/5">
                                                             {cat.name === 'All' ? (
-                                                                <LayoutGrid className="w-6 h-6 text-primary/40" />
+                                                                <LayoutGrid className="w-5 h-5 text-primary/40" />
                                                             ) : (
-                                                                <Tag className="w-5 h-5 text-primary/30" />
+                                                                <Tag className="w-4 h-4 text-primary/30" />
                                                             )}
                                                         </div>
                                                     )}
                                                     <div className="absolute inset-0 bg-black/5 group-hover:bg-black/0 transition-colors" />
                                                 </div>
-                                                <div className="flex-1 flex items-center justify-center p-1.5">
-                                                    <span className="text-xs font-bold text-slate-800 uppercase tracking-tight text-center leading-tight group-hover:text-primary transition-colors">{cat.name}</span>
+                                                <div className="flex-1 flex items-center justify-center p-1">
+                                                    <span className="text-[10px] font-bold !text-slate-800 dark:!text-slate-200 uppercase tracking-tight text-center leading-tight group-hover:!text-primary transition-colors">{cat.name}</span>
                                                 </div>
                                             </button>
                                         ))}

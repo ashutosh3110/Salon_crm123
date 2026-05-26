@@ -304,39 +304,31 @@ export default function ServiceForm({ onSave, onCancel, categories = [], initial
                             Facility Allocation *
                         </label>
                         <div className="grid grid-cols-2 gap-2">
-                            <button
-                                type="button"
+                            <div
+                                role="button"
                                 onClick={() => setFormData({ ...formData, resourceType: 'chair' })}
-                                className={`flex items-center gap-2 p-2 rounded-xl border transition-all ${
+                                className={`flex items-center justify-center gap-2 p-2 px-4 rounded-xl border transition-all cursor-pointer ${
                                     formData.resourceType === 'chair'
-                                        ? 'bg-primary/5 border-primary text-primary shadow-sm'
+                                        ? 'bg-primary border-primary text-white shadow-sm'
                                         : 'bg-surface-alt border-border text-text-muted hover:border-primary/40'
                                 }`}
                             >
-                                <div className={`p-1.5 rounded-lg ${formData.resourceType === 'chair' ? 'bg-primary text-white' : 'bg-white border border-border'}`}>
-                                    <Armchair className="w-3.5 h-3.5" />
-                                </div>
-                                <div className="text-left">
-                                    <p className="text-[9px] font-black uppercase tracking-tight">Chair</p>
-                                </div>
-                            </button>
+                                <Armchair className={`w-4 h-4 shrink-0 ${formData.resourceType === 'chair' ? 'text-white' : 'text-text-muted'}`} />
+                                <span className={`text-[9px] font-black uppercase tracking-tight ${formData.resourceType === 'chair' ? 'text-white' : 'text-text'}`}>Chair</span>
+                            </div>
 
-                            <button
-                                type="button"
+                            <div
+                                role="button"
                                 onClick={() => setFormData({ ...formData, resourceType: 'room' })}
-                                className={`flex items-center gap-2 p-2 rounded-xl border transition-all ${
+                                className={`flex items-center justify-center gap-2 p-2 px-4 rounded-xl border transition-all cursor-pointer ${
                                     formData.resourceType === 'room'
-                                        ? 'bg-primary/5 border-primary text-primary shadow-sm'
+                                        ? 'bg-primary border-primary text-white shadow-sm'
                                         : 'bg-surface-alt border-border text-text-muted hover:border-primary/40'
                                 }`}
                             >
-                                <div className={`p-1.5 rounded-lg ${formData.resourceType === 'room' ? 'bg-primary text-white' : 'bg-white border border-border'}`}>
-                                    <DoorClosed className="w-3.5 h-3.5" />
-                                </div>
-                                <div className="text-left">
-                                    <p className="text-[9px] font-black uppercase tracking-tight">Room</p>
-                                </div>
-                            </button>
+                                <DoorClosed className={`w-4 h-4 shrink-0 ${formData.resourceType === 'room' ? 'text-white' : 'text-text-muted'}`} />
+                                <span className={`text-[9px] font-black uppercase tracking-tight ${formData.resourceType === 'room' ? 'text-white' : 'text-text'}`}>Room</span>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -450,28 +442,28 @@ export default function ServiceForm({ onSave, onCancel, categories = [], initial
                     </div>
 
                     {/* 4. Commission Rules */}
-                    <div className={`bg-slate-900 text-white ${isModal ? 'p-4' : 'p-6'} rounded-3xl shadow-xl shadow-slate-200 relative overflow-hidden group`}>
+                    <div className={`commission-dark-card bg-slate-900 text-white ${isModal ? 'p-4' : 'p-6'} rounded-3xl relative overflow-hidden group`}>
                         <div className="relative z-10 space-y-3">
                             <div className="flex items-center justify-between">
                                 <div className="flex items-center gap-2">
-                                    <Percent className="w-3.5 h-3.5 text-rose-400" />
-                                    <h3 className="text-[9px] font-bold uppercase tracking-widest text-rose-400">4. Commission</h3>
+                                    <Percent className="w-3.5 h-3.5 text-rose-400 commission-icon" />
+                                    <h3 className="text-[9px] font-bold uppercase tracking-widest text-rose-400 text-white commission-title">4. Commission</h3>
                                 </div>
                                 <label className="flex items-center gap-2 cursor-pointer">
                                     <div className={`w-8 h-4 rounded-full p-0.5 transition-all ${formData.commissionApplicable ? 'bg-rose-500' : 'bg-slate-700'}`} onClick={() => setFormData({ ...formData, commissionApplicable: !formData.commissionApplicable })}>
                                         <div className={`w-3 h-3 bg-white rounded-full transition-all ${formData.commissionApplicable ? 'translate-x-4' : 'translate-x-0'}`} />
                                     </div>
-                                    <span className="text-[8px] font-bold uppercase tracking-widest opacity-50">Active</span>
+                                    <span className="text-[8px] font-bold uppercase tracking-widest opacity-50 text-white commission-status-text">Active</span>
                                 </label>
                             </div>
 
                             {formData.commissionApplicable && (
                                 <div className="grid grid-cols-2 gap-3 animate-in fade-in duration-300">
                                     <div className="space-y-1">
-                                        <label className="text-[8px] font-bold text-white/40 uppercase tracking-widest">Type</label>
+                                        <label className="text-[8px] font-bold text-white/40 uppercase tracking-widest text-white">Type</label>
                                         <div className="flex bg-white/5 rounded-lg p-0.5 border border-white/10">
-                                            <button onClick={() => setFormData({ ...formData, commissionType: 'percent' })} className={`flex-1 py-1 text-[8px] font-bold rounded-md transition-all ${formData.commissionType === 'percent' ? 'bg-white text-slate-900' : 'text-white/40'}`}>%</button>
-                                            <button onClick={() => setFormData({ ...formData, commissionType: 'fixed' })} className={`flex-1 py-1 text-[8px] font-bold rounded-md transition-all ${formData.commissionType === 'fixed' ? 'bg-white text-slate-900' : 'text-white/40'}`}>₹</button>
+                                            <div role="button" onClick={() => setFormData({ ...formData, commissionType: 'percent' })} className={`flex-1 py-1 text-[8px] font-bold rounded-md transition-all text-center cursor-pointer ${formData.commissionType === 'percent' ? 'bg-white text-slate-900' : 'text-white/45 text-white'}`}>%</div>
+                                            <div role="button" onClick={() => setFormData({ ...formData, commissionType: 'fixed' })} className={`flex-1 py-1 text-[8px] font-bold rounded-md transition-all text-center cursor-pointer ${formData.commissionType === 'fixed' ? 'bg-white text-slate-900' : 'text-white/45 text-white'}`}>₹</div>
                                         </div>
                                     </div>
                                     <div className="space-y-1">

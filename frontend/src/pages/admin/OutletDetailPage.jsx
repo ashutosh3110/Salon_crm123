@@ -388,8 +388,8 @@ export default function OutletDetailPage() {
                 <div className="space-y-6">
                     <div className="bg-primary p-8 rounded-none text-white shadow-2xl shadow-primary/20 relative overflow-hidden group">
                         <div className="relative z-10">
-                            <h4 className="text-[10px] font-black opacity-60 uppercase tracking-[0.3em] mb-2">Salon Oversight</h4>
-                            <p className="text-xl font-black mb-6 uppercase tracking-tight">Manage Salon</p>
+                            <h4 className="text-[10px] font-black text-white opacity-60 uppercase tracking-[0.3em] mb-2">Salon Oversight</h4>
+                            <p className="text-xl font-black text-white mb-6 uppercase tracking-tight">Manage Salon</p>
                             <div className="space-y-3">
                                 <button 
                                     onClick={() => setActiveTab('staff')}

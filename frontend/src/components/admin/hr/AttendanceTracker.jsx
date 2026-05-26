@@ -1,17 +1,18 @@
 import { useState, useMemo, useEffect, useCallback } from 'react';
-import { 
-    Calendar as CalendarIcon, 
-    Search, 
-    CheckCircle2, 
-    Check, 
-    X, 
-    MessageSquare, 
-    ChevronLeft, 
-    ChevronRight, 
-    AlertCircle, 
-    Users, 
-    Download, 
-    MapPin, 
+import { createPortal } from 'react-dom';
+import {
+    Calendar as CalendarIcon,
+    Search,
+    CheckCircle2,
+    Check,
+    X,
+    MessageSquare,
+    ChevronLeft,
+    ChevronRight,
+    AlertCircle,
+    Users,
+    Download,
+    MapPin,
     Sparkles,
     Filter,
     FileText,
@@ -38,7 +39,7 @@ export default function AttendanceTracker() {
     const [activeStatusFilter, setActiveStatusFilter] = useState('All');
     const [toast, setToast] = useState(null);
     const [markingId, setMarkingId] = useState(null); // Track inline status update animation state
-    
+
     const [remarkModal, setRemarkModal] = useState(null);
     const [remark, setRemark] = useState('');
 
@@ -236,11 +237,11 @@ export default function AttendanceTracker() {
     };
 
     return (
-        <div className="space-y-5 text-left bg-slate-50 dark:bg-slate-900 rounded-3xl p-6 border border-slate-200/60 dark:border-slate-800/80 transition-colors">
-            
+        <div className="space-y-5 text-left bg-slate-50 dark:bg-[#0f172a] rounded-3xl p-6 border border-slate-200/60 dark:border-slate-800/80 transition-colors">
+
             {/* Top Toolbar: Fully Compacted date, search, filter and switchers */}
             <div className="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-200/60 dark:border-slate-700/80 shadow-sm flex flex-wrap items-center justify-between gap-4 transition-colors">
-                
+
                 {/* Date Navigation & Search */}
                 <div className="flex items-center flex-wrap gap-3">
                     <div className="flex items-center bg-slate-50 dark:bg-slate-750 border border-slate-200 dark:border-slate-700 rounded-xl px-2.5 py-1.5 shadow-sm text-xs font-bold text-slate-700 dark:text-slate-200 transition-colors select-none">
@@ -249,12 +250,12 @@ export default function AttendanceTracker() {
                         </button>
                         <div className="flex items-center gap-1 mx-2">
                             <CalendarIcon className="w-3.5 h-3.5 text-slate-400" />
-                            <input 
-                                type="date" 
-                                value={selectedDate} 
-                                max={new Date().toISOString().split('T')[0]} 
+                            <input
+                                type="date"
+                                value={selectedDate}
+                                max={new Date().toISOString().split('T')[0]}
                                 onChange={e => setSelectedDate(e.target.value)}
-                                className="bg-transparent border-none p-0 focus:ring-0 cursor-pointer outline-none font-bold text-slate-700 dark:text-slate-200" 
+                                className="bg-transparent border-none p-0 focus:ring-0 cursor-pointer outline-none font-bold text-slate-700 dark:text-slate-200"
                             />
                         </div>
                         <button type="button" onClick={() => changeDate(1)} className="p-1 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-500 dark:text-slate-400 active:scale-90 transition-transform">
@@ -264,24 +265,24 @@ export default function AttendanceTracker() {
 
                     <div className="relative w-64">
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                        <input 
-                            type="text" 
+                        <input
+                            type="text"
                             placeholder="Search staff name or role..."
                             className="w-full pl-9 pr-4 py-2 rounded-xl bg-slate-50 dark:bg-slate-750 border border-slate-200 dark:border-slate-700 text-xs font-semibold text-slate-700 dark:text-slate-200 focus:ring-2 focus:ring-primary/10 focus:border-primary outline-none transition-all placeholder-slate-400"
-                            value={searchTerm} 
-                            onChange={e => setSearchTerm(e.target.value)} 
+                            value={searchTerm}
+                            onChange={e => setSearchTerm(e.target.value)}
                         />
                     </div>
                 </div>
 
                 {/* Outlet & Status Filter Controls */}
                 <div className="flex items-center flex-wrap gap-3">
-                    
+
                     {/* Outlet Dropdown Select */}
                     <div className="flex items-center gap-2 bg-slate-50 dark:bg-slate-750 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-1.5 shadow-sm text-xs transition-colors">
                         <Filter className="w-3.5 h-3.5 text-slate-400" />
-                        <select 
-                            value={filterOutlet} 
+                        <select
+                            value={filterOutlet}
                             onChange={e => setFilterOutlet(e.target.value)}
                             className="bg-transparent border-none p-0 pr-6 focus:ring-0 cursor-pointer outline-none font-bold text-slate-700 dark:text-slate-200 text-xs"
                         >
@@ -295,13 +296,13 @@ export default function AttendanceTracker() {
 
                     {/* View Switcher: compact pills */}
                     <div className="flex items-center bg-slate-50 dark:bg-slate-750 p-1 border border-slate-200 dark:border-slate-700 rounded-xl shadow-inner text-xs transition-colors">
-                        <button 
+                        <button
                             onClick={() => setViewMode('daily')}
                             className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${viewMode === 'daily' ? 'bg-white dark:bg-slate-800 text-primary dark:text-slate-100 shadow-sm border border-slate-200/50 dark:border-slate-700/50' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}
                         >
                             Daily Roll
                         </button>
-                        <button 
+                        <button
                             onClick={() => setViewMode('summary')}
                             className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${viewMode === 'summary' ? 'bg-white dark:bg-slate-800 text-primary dark:text-slate-100 shadow-sm border border-slate-200/50 dark:border-slate-700/50' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}
                         >
@@ -309,8 +310,8 @@ export default function AttendanceTracker() {
                         </button>
                     </div>
 
-                    <button 
-                        onClick={exportCSV} 
+                    <button
+                        onClick={exportCSV}
                         className="flex items-center gap-1.5 px-3 py-2 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-750 text-slate-700 dark:text-slate-200 rounded-xl text-xs font-bold transition-all shadow-sm active:scale-95"
                     >
                         <Download className="w-3.5 h-3.5 text-slate-400" />
@@ -324,14 +325,13 @@ export default function AttendanceTracker() {
                 <div className="flex items-center gap-1.5 flex-wrap">
                     <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mr-1 select-none">Quick Filters:</span>
                     {['All', 'pending', 'present', 'absent', 'leave'].map(s => (
-                        <button 
-                            key={s} 
+                        <button
+                            key={s}
                             onClick={() => setActiveStatusFilter(s)}
-                            className={`px-3 py-1 rounded-full text-xs font-bold border transition-all ${
-                                activeStatusFilter === s 
-                                    ? 'bg-primary/10 border-primary/20 text-primary dark:text-slate-200' 
-                                    : 'bg-white dark:bg-slate-800 border-slate-200/60 dark:border-slate-700/60 text-slate-650 hover:bg-slate-50 dark:hover:bg-slate-750'
-                            }`}
+                            className={`px-3 py-1 rounded-full text-xs font-bold border transition-all ${activeStatusFilter === s
+                                ? 'bg-primary/10 border-primary/20 text-primary dark:text-slate-200'
+                                : 'bg-white dark:bg-slate-800 border-slate-200/60 dark:border-slate-700/60 text-slate-650 hover:bg-slate-50 dark:hover:bg-slate-750'
+                                }`}
                         >
                             {s === 'All' ? 'Show All' : STATUS_META[s]?.label}
                         </button>
@@ -341,7 +341,7 @@ export default function AttendanceTracker() {
 
             {/* Main Table Content Container */}
             <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-250/60 dark:border-slate-700/80 shadow-sm overflow-hidden relative transition-colors">
-                
+
                 {/* Loader Overlay */}
                 {(loading || summaryLoading) && (
                     <div className="absolute inset-0 z-10 bg-white/70 dark:bg-slate-800/70 backdrop-blur-[1px] flex items-center justify-center">
@@ -375,7 +375,7 @@ export default function AttendanceTracker() {
                                         const isMarking = markingId === record.id;
                                         return (
                                             <tr key={record.id} className="hover:bg-slate-50/30 dark:hover:bg-slate-750/30 transition-colors">
-                                                
+
                                                 {/* Staff details with profile pic */}
                                                 <td className="px-6 py-4">
                                                     <div className="flex items-center gap-3">
@@ -406,42 +406,39 @@ export default function AttendanceTracker() {
                                                 <td className="px-6 py-4">
                                                     <div className="flex items-center justify-center gap-2">
                                                         {/* Present Button */}
-                                                        <button 
+                                                        <button
                                                             onClick={() => handleMarkStatus(record, 'present')}
                                                             disabled={isMarking}
-                                                            className={`px-3.5 py-1.5 rounded-xl border text-[10px] font-bold flex items-center justify-center transition-all ${
-                                                                record.status === 'present' 
-                                                                    ? STATUS_META.present.activeCls 
-                                                                    : 'bg-transparent text-slate-500 border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-750 hover:text-slate-700 dark:hover:text-slate-200'
-                                                            }`}
+                                                            className={`px-3.5 py-1.5 rounded-xl border text-[10px] font-bold flex items-center justify-center transition-all ${record.status === 'present'
+                                                                ? STATUS_META.present.activeCls
+                                                                : 'bg-transparent text-slate-500 border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-750 hover:text-slate-700 dark:hover:text-slate-200'
+                                                                }`}
                                                         >
                                                             <Check className="w-3.5 h-3.5 mr-1" />
                                                             Present
                                                         </button>
 
                                                         {/* Absent Button */}
-                                                        <button 
+                                                        <button
                                                             onClick={() => handleMarkStatus(record, 'absent')}
                                                             disabled={isMarking}
-                                                            className={`px-3.5 py-1.5 rounded-xl border text-[10px] font-bold flex items-center justify-center transition-all ${
-                                                                record.status === 'absent' 
-                                                                    ? STATUS_META.absent.activeCls 
-                                                                    : 'bg-transparent text-slate-500 border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-750 hover:text-slate-700 dark:hover:text-slate-200'
-                                                            }`}
+                                                            className={`px-3.5 py-1.5 rounded-xl border text-[10px] font-bold flex items-center justify-center transition-all ${record.status === 'absent'
+                                                                ? STATUS_META.absent.activeCls
+                                                                : 'bg-transparent text-slate-500 border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-750 hover:text-slate-700 dark:hover:text-slate-200'
+                                                                }`}
                                                         >
                                                             <X className="w-3.5 h-3.5 mr-1" />
                                                             Absent
                                                         </button>
 
                                                         {/* Leave Button */}
-                                                        <button 
+                                                        <button
                                                             onClick={() => handleMarkStatus(record, 'leave')}
                                                             disabled={isMarking}
-                                                            className={`px-3.5 py-1.5 rounded-xl border text-[10px] font-bold flex items-center justify-center transition-all ${
-                                                                record.status === 'leave' 
-                                                                    ? STATUS_META.leave.activeCls 
-                                                                    : 'bg-transparent text-slate-500 border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-750 hover:text-slate-700 dark:hover:text-slate-200'
-                                                            }`}
+                                                            className={`px-3.5 py-1.5 rounded-xl border text-[10px] font-bold flex items-center justify-center transition-all ${record.status === 'leave'
+                                                                ? STATUS_META.leave.activeCls
+                                                                : 'bg-transparent text-slate-500 border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-750 hover:text-slate-700 dark:hover:text-slate-200'
+                                                                }`}
                                                         >
                                                             <CalendarIcon className="w-3.5 h-3.5 mr-1" />
                                                             Leave
@@ -451,13 +448,12 @@ export default function AttendanceTracker() {
 
                                                 {/* Note / Remark Button */}
                                                 <td className="px-6 py-4 text-right">
-                                                    <button 
+                                                    <button
                                                         onClick={() => { setRemarkModal(record); setRemark(record.remark); }}
-                                                        className={`p-2 rounded-xl border transition-all inline-flex items-center justify-center ${
-                                                            record.remark 
-                                                                ? 'bg-amber-500/10 border-amber-500/20 text-amber-600 dark:text-amber-400' 
-                                                                : 'bg-transparent border-slate-200 dark:border-slate-700 text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-750 hover:text-slate-650'
-                                                        }`}
+                                                        className={`p-2 rounded-xl border transition-all inline-flex items-center justify-center ${record.remark
+                                                            ? 'bg-amber-500/10 border-amber-500/20 text-amber-600 dark:text-amber-400'
+                                                            : 'bg-transparent border-slate-200 dark:border-slate-700 text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-750 hover:text-slate-650'
+                                                            }`}
                                                         title={record.remark || 'Add daily remark'}
                                                     >
                                                         <MessageSquare className="w-4 h-4" />
@@ -520,7 +516,7 @@ export default function AttendanceTracker() {
                         </table>
                     </div>
                 )}
-                
+
                 {/* Clean Info Footer Row */}
                 <div className="px-6 py-3 border-t border-slate-150 dark:border-slate-700/80 bg-slate-50/50 dark:bg-slate-800/40 flex items-center gap-2 transition-colors">
                     <AlertCircle className="w-3.5 h-3.5 text-primary shrink-0" />
@@ -530,38 +526,41 @@ export default function AttendanceTracker() {
                 </div>
             </div>
 
-            {/* Remark Modal: Styled neatly */}
-            <AnimatePresence>
-                {remarkModal && (
-                    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-                        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setRemarkModal(null)} className="absolute inset-0 bg-black/50 backdrop-blur-sm" />
-                        <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }}
-                            className="bg-white dark:bg-slate-800 w-full max-w-sm rounded-2xl border border-slate-200 dark:border-slate-700 shadow-2xl relative p-6 transition-all text-left">
-                            <div className="flex items-center justify-between mb-4 pb-3 border-b border-slate-100 dark:border-slate-700">
-                                <div>
-                                    <h2 className="text-sm font-extrabold text-slate-850 dark:text-slate-100 tracking-tight">Daily Note / Remark</h2>
-                                    <p className="text-[10px] font-bold text-primary uppercase mt-1 tracking-wider">{remarkModal.staff} · {STATUS_META[remarkModal.status]?.label}</p>
+            {/* Remark Modal: Styled neatly inside a React Portal with premium background blur */}
+            {createPortal(
+                <AnimatePresence>
+                    {remarkModal && (
+                        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
+                            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setRemarkModal(null)} className="absolute inset-0 bg-black/60 backdrop-blur-md" />
+                            <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }}
+                                className="bg-white dark:bg-slate-800 w-full max-w-sm rounded-2xl border border-slate-200 dark:border-slate-700 shadow-2xl relative p-6 transition-all text-left z-10">
+                                <div className="flex items-center justify-between mb-4 pb-3 border-b border-slate-100 dark:border-slate-700">
+                                    <div>
+                                        <h2 className="text-sm font-extrabold text-slate-850 dark:text-slate-100 tracking-tight">Daily Note / Remark</h2>
+                                        <p className="text-[10px] font-bold text-primary uppercase mt-1 tracking-wider">{remarkModal.staff} · {STATUS_META[remarkModal.status]?.label}</p>
+                                    </div>
+                                    <button onClick={() => setRemarkModal(null)} className="w-8 h-8 rounded-xl bg-slate-50 dark:bg-slate-750 hover:bg-slate-100 dark:hover:bg-slate-700 border border-slate-200/50 dark:border-slate-700 flex items-center justify-center text-slate-500 dark:text-slate-400 transition-all"><X className="w-4 h-4" /></button>
                                 </div>
-                                <button onClick={() => setRemarkModal(null)} className="w-8 h-8 rounded-xl bg-slate-50 dark:bg-slate-750 hover:bg-slate-100 dark:hover:bg-slate-700 border border-slate-200/50 dark:border-slate-700 flex items-center justify-center text-slate-500 dark:text-slate-400 transition-all"><X className="w-4 h-4" /></button>
-                            </div>
-                            <form onSubmit={saveRemark} className="space-y-4">
-                                <textarea 
-                                    required 
-                                    rows={3.5} 
-                                    placeholder="Type details (e.g., late reasons, leave details, shift notes)..."
-                                    className="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-slate-750 border border-slate-200 dark:border-slate-700 text-xs font-semibold text-slate-700 dark:text-slate-200 focus:ring-2 focus:ring-primary/10 focus:border-primary outline-none resize-none transition-all placeholder-slate-400"
-                                    value={remark} 
-                                    onChange={e => setRemark(e.target.value)} 
-                                />
-                                <div className="flex gap-2 w-full">
-                                    <button type="button" onClick={() => setRemarkModal(null)} className="flex-1 py-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-650 text-slate-700 dark:text-slate-250 border border-transparent rounded-xl font-bold text-xs transition-all">Cancel</button>
-                                    <button type="submit" className="flex-[1.5] py-2.5 bg-primary hover:bg-primary-dark text-white rounded-xl font-bold text-xs transition-all shadow-md">Save Note</button>
-                                </div>
-                            </form>
-                        </motion.div>
-                    </div>
-                )}
-            </AnimatePresence>
+                                <form onSubmit={saveRemark} className="space-y-4">
+                                    <textarea
+                                        required
+                                        rows={3.5}
+                                        placeholder="Type details (e.g., late reasons, leave details, shift notes)..."
+                                        className="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-slate-750 border border-slate-200 dark:border-slate-700 text-xs font-semibold text-slate-700 dark:text-slate-200 focus:ring-2 focus:ring-primary/10 focus:border-primary outline-none resize-none transition-all placeholder-slate-400"
+                                        value={remark}
+                                        onChange={e => setRemark(e.target.value)}
+                                    />
+                                    <div className="flex gap-2 w-full">
+                                        <button type="button" onClick={() => setRemarkModal(null)} className="flex-1 py-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-650 text-slate-700 dark:text-slate-250 border border-transparent rounded-xl font-bold text-xs transition-all">Cancel</button>
+                                        <button type="submit" className="flex-[1.5] py-2.5 bg-primary hover:bg-primary-dark text-white rounded-xl font-bold text-xs transition-all shadow-md">Save Note</button>
+                                    </div>
+                                </form>
+                            </motion.div>
+                        </div>
+                    )}
+                </AnimatePresence>,
+                document.body
+            )}
 
             {/* Compact Toast */}
             <AnimatePresence>

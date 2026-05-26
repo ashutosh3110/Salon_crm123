@@ -440,16 +440,14 @@ export default function RolesPage() {
                     
                     <form 
                         onSubmit={handleSubmit}
-                        className="relative bg-white shadow-[0_40px_100px_-20px_rgba(0,0,0,0.4)] w-full max-w-2xl flex flex-col animate-reveal rounded-none border-2 border-text max-h-[90vh] overflow-hidden" 
+                        className="relative bg-white dark:bg-slate-800 shadow-[0_40px_100px_-20px_rgba(0,0,0,0.4)] w-full max-w-2xl flex flex-col animate-reveal rounded-none border-2 border-text dark:border-slate-700 max-h-[90vh] overflow-hidden admin-panel" 
                         onClick={(e) => e.stopPropagation()}
                     >
                         
                         {/* Simple Header */}
-                        <div className="flex items-center justify-between px-8 py-5 border-b-2 border-border bg-white sticky top-0 z-20">
+                        <div className="flex items-center justify-between px-8 py-5 border-b-2 border-border dark:border-slate-700 bg-white dark:bg-slate-800 sticky top-0 z-20">
                             <div className="flex items-center gap-4 text-left">
-                                <div className="w-10 h-10 bg-text text-white flex items-center justify-center">
-                                    <Shield className="w-5 h-5" />
-                                </div>
+                                <Shield className="w-5 h-5 text-text shrink-0" />
                                 <div className="text-left">
                                     <h2 className="text-lg font-black uppercase tracking-tight italic text-text leading-none mb-1 font-mono">
                                         {editingRole ? 'Edit Role' : 'Add New Role'}
@@ -581,7 +579,7 @@ export default function RolesPage() {
                         </div>
 
                         {/* Actions */}
-                        <div className="px-8 py-6 border-t-2 border-text bg-white flex flex-col sm:flex-row items-center justify-between gap-4">
+                        <div className="px-8 py-6 border-t-2 border-text dark:border-slate-700 bg-white dark:bg-slate-800 flex flex-col sm:flex-row items-center justify-between gap-4">
                             <div className="flex items-center gap-2">
                                 <div className="w-16 h-1 bg-surface-alt border border-border">
                                     <div 

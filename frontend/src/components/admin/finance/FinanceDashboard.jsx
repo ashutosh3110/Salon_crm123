@@ -173,9 +173,9 @@ export default function FinanceDashboard({ data, loading, error, onRetry }) {
                         <button
                             type="button"
                             className="w-full py-4 bg-surface border border-border rounded-none text-[9px] font-black text-text uppercase tracking-[0.3em] hover:bg-primary hover:text-white transition-all"
-                            onClick={() => navigate('/admin/finance/invoices')}
+                            onClick={() => navigate('/admin/finance/transactions')}
                         >
-                            View invoices
+                            View Transactions
                         </button>
                     </div>
 

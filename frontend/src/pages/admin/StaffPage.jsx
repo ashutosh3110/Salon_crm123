@@ -506,9 +506,7 @@ export default function StaffPage() {
                     >
                         {/* Modal Header */}
                         <div className="flex items-center gap-4 p-6 pb-4 border-b border-border shrink-0">
-                            <div className="w-10 h-10 bg-text text-white flex items-center justify-center">
-                                <UserCog className="w-6 h-6" />
-                            </div>
+                            <UserCog className="w-6 h-6 text-text shrink-0" />
                             <div className="text-left">
                                 <h2 className="text-lg font-black text-text uppercase italic font-mono leading-none">
                                     {editing ? 'Update Profile' : 'Add New Member'}

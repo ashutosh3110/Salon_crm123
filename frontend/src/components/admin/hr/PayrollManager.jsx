@@ -629,7 +629,7 @@ export default function PayrollManager() {
                 <AnimatePresence>
                     {individualModal && (
                         <div 
-                            className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm no-print"
+                            className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm no-print"
                             onClick={() => setIndividualModal(false)}
                         >
                             <motion.div 
@@ -743,7 +743,7 @@ export default function PayrollManager() {
                 <AnimatePresence>
                     {showDetails && (
                         <div 
-                            className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm no-print"
+                            className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm no-print"
                             onClick={() => setShowDetails(null)}
                         >
                             <motion.div 

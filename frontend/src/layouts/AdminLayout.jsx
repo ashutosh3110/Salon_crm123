@@ -785,10 +785,12 @@ export default function AdminLayout() {
                 }
 
                 /* Compact, Clean & Premium Table Cells */
-                .admin-panel table th {
+                .admin-panel table th,
+                html:not(.dark) .admin-panel table th {
                     padding: 0.5rem 0.75rem !important;
                 }
-                .admin-panel table td {
+                .admin-panel table td,
+                html:not(.dark) .admin-panel table td {
                     padding: 0.625rem 0.75rem !important;
                 }
 

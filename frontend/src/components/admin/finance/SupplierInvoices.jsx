@@ -143,7 +143,7 @@ export default function SupplierInvoices() {
             const qty = parseFloat(item.quantity) || 0;
             const rate = parseFloat(item.price) || 0;
             const taxRate = parseFloat(item.tax) || 0;
-            
+
             let itemTax = 0;
             let itemTotal = 0;
             let basePrice = 0;
@@ -466,7 +466,7 @@ export default function SupplierInvoices() {
         doc.text("Supplier Details:", 14, 42);
         doc.setFont("helvetica", "normal");
         doc.text(inv.supplierName || 'Unknown Supplier', 14, 48);
-        
+
         // Find supplier phone if available
         const supplierObj = suppliers.find(s => String(s._id || s.id) === String(inv.supplierId?._id || inv.supplierId));
         if (supplierObj?.phone) {
@@ -546,7 +546,7 @@ export default function SupplierInvoices() {
         const finalY = lastY + 10;
         doc.setFontSize(10);
         doc.setTextColor(60);
-        
+
         let currentY = finalY + 6;
         const drawSummaryLine = (label, val, isBold = false) => {
             doc.setFont("helvetica", isBold ? "bold" : "normal");
@@ -557,7 +557,7 @@ export default function SupplierInvoices() {
 
         const subTotalVal = inv.subTotal || (inv.amount - (inv.taxAmount || 0));
         drawSummaryLine("Subtotal (Base Value):", `Rs. ${Number(subTotalVal).toFixed(2)}`);
-        
+
         // Total Tax (GST) line removed
         if (inv.discount > 0) {
             drawSummaryLine("Discount:", `- Rs. ${Number(inv.discount).toFixed(2)}`);
@@ -570,7 +570,7 @@ export default function SupplierInvoices() {
 
         drawSummaryLine("Total Invoice Amount:", `Rs. ${Number(inv.amount).toFixed(2)}`, true);
         drawSummaryLine("Paid Amount:", `Rs. ${Number(inv.paidAmount).toFixed(2)}`, true);
-        
+
         // Highlight outstanding due in red if > 0, otherwise green
         if (inv.outstanding > 0) {
             doc.setTextColor(220, 50, 50); // Red
@@ -782,11 +782,10 @@ export default function SupplierInvoices() {
                                 <td className="px-8 py-5">
                                     <div className="flex items-center gap-3">
                                         <div
-                                            className={`p-2 rounded-lg ${
-                                                inv.status === 'Paid'
+                                            className={`p-2 rounded-lg ${inv.status === 'Paid'
                                                     ? 'bg-emerald-50 text-emerald-600'
                                                     : 'bg-surface text-text-muted'
-                                            }`}
+                                                }`}
                                         >
                                             <FileText className="w-4 h-4" />
                                         </div>
@@ -825,14 +824,12 @@ export default function SupplierInvoices() {
                                 <td className="px-8 py-5">
                                     <div className="flex items-center gap-2">
                                         <Clock
-                                            className={`w-3.5 h-3.5 ${
-                                                inv.status === 'Overdue' ? 'text-rose-500' : 'text-text-muted'
-                                            }`}
+                                            className={`w-3.5 h-3.5 ${inv.status === 'Overdue' ? 'text-rose-500' : 'text-text-muted'
+                                                }`}
                                         />
                                         <span
-                                            className={`text-xs font-semibold ${
-                                                inv.status === 'Overdue' ? 'text-rose-600' : 'text-text-secondary'
-                                            }`}
+                                            className={`text-xs font-semibold ${inv.status === 'Overdue' ? 'text-rose-600' : 'text-text-secondary'
+                                                }`}
                                         >
                                             {inv.dueDate ? new Date(inv.dueDate).toLocaleDateString() : '—'}
                                         </span>
@@ -840,15 +837,14 @@ export default function SupplierInvoices() {
                                 </td>
                                 <td className="px-8 py-5">
                                     <span
-                                        className={`px-2.5 py-1 rounded-lg text-[9px] font-bold uppercase tracking-widest border ${
-                                            inv.status === 'Paid'
+                                        className={`px-2.5 py-1 rounded-lg text-[9px] font-bold uppercase tracking-widest border ${inv.status === 'Paid'
                                                 ? 'bg-emerald-50 text-emerald-600 border-emerald-100'
                                                 : inv.status === 'Overdue'
-                                                  ? 'bg-rose-50 text-rose-600 border-rose-100'
-                                                  : inv.status === 'Partial'
-                                                    ? 'bg-sky-50 text-sky-600 border-sky-100'
-                                                    : 'bg-orange-50 text-orange-500 border-orange-100'
-                                        }`}
+                                                    ? 'bg-rose-50 text-rose-600 border-rose-100'
+                                                    : inv.status === 'Partial'
+                                                        ? 'bg-sky-50 text-sky-600 border-sky-100'
+                                                        : 'bg-orange-50 text-orange-500 border-orange-100'
+                                            }`}
                                     >
                                         {inv.status}
                                     </span>
@@ -907,13 +903,13 @@ export default function SupplierInvoices() {
                         const remainingAfterPay = Math.max(0, outstandingAmt - currentPayAmt);
 
                         return (
-                            <div 
+                            <div
                                 className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm no-print"
                                 onClick={() => { setPayingKey(null); setPaySendWhatsApp(false); }}
                             >
-                                <motion.div 
-                                    initial={{ opacity: 0, scale: 0.95 }} 
-                                    animate={{ opacity: 1, scale: 1 }} 
+                                <motion.div
+                                    initial={{ opacity: 0, scale: 0.95 }}
+                                    animate={{ opacity: 1, scale: 1 }}
                                     exit={{ opacity: 0, scale: 0.95 }}
                                     className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 w-full max-w-lg shadow-2xl rounded-3xl overflow-hidden relative flex flex-col transition-all text-left"
                                     onClick={e => e.stopPropagation()}
@@ -952,7 +948,7 @@ export default function SupplierInvoices() {
 
                                         <div className="space-y-4">
                                             <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-100 dark:border-slate-700 pb-1.5">Payments</h4>
-                                            
+
                                             <div className="grid grid-cols-2 gap-4">
                                                 <div className="space-y-1">
                                                     <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-1">Cash Payment (₹)</label>
@@ -969,7 +965,7 @@ export default function SupplierInvoices() {
                                                         className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-750 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-bold text-slate-900 dark:text-slate-100 focus:border-primary outline-none"
                                                     />
                                                 </div>
-                                                
+
                                                 <div className="space-y-1">
                                                     <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-1">Online Payment (₹)</label>
                                                     <input
@@ -989,13 +985,12 @@ export default function SupplierInvoices() {
                                         </div>
 
                                         {currentPayAmt > 0 && (
-                                            <div className={`rounded-xl p-3 border text-xs font-bold ${
-                                                currentPayAmt > outstandingAmt
+                                            <div className={`rounded-xl p-3 border text-xs font-bold ${currentPayAmt > outstandingAmt
                                                     ? 'bg-rose-50 border-rose-200 text-rose-700'
                                                     : remainingAfterPay > 0
                                                         ? 'bg-amber-50 border-amber-200 text-amber-700'
                                                         : 'bg-emerald-50 border-emerald-200 text-emerald-700'
-                                            }`}>
+                                                }`}>
                                                 {currentPayAmt > outstandingAmt ? (
                                                     <span>⚠️ Overpaid by <strong>₹{(currentPayAmt - outstandingAmt).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</strong>! Payment cannot exceed the outstanding due.</span>
                                                 ) : remainingAfterPay > 0 ? (
@@ -1017,7 +1012,7 @@ export default function SupplierInvoices() {
                                                     className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-750 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-semibold text-slate-900 dark:text-slate-100 focus:border-primary outline-none"
                                                 />
                                             </div>
-                                            
+
                                             <div className="flex items-center justify-between py-2 bg-slate-50 dark:bg-slate-755/30 rounded-xl px-4 border border-slate-200 dark:border-slate-700">
                                                 <span className="text-xs font-bold text-slate-600 dark:text-slate-300">Send WhatsApp receipt to supplier</span>
                                                 <button
@@ -1025,16 +1020,14 @@ export default function SupplierInvoices() {
                                                     role="switch"
                                                     aria-checked={paySendWhatsApp}
                                                     onClick={() => setPaySendWhatsApp(prev => !prev)}
-                                                    className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 transition-all duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-emerald-500/20 ${
-                                                        paySendWhatsApp 
-                                                            ? 'bg-emerald-500 border-emerald-500 hover:bg-emerald-600 hover:border-emerald-600' 
+                                                    className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 transition-all duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-emerald-500/20 ${paySendWhatsApp
+                                                            ? 'bg-emerald-500 border-emerald-500 hover:bg-emerald-600 hover:border-emerald-600'
                                                             : 'bg-slate-300 border-slate-400 hover:bg-slate-400/80 dark:bg-slate-850 dark:border-slate-600'
-                                                    }`}
+                                                        }`}
                                                 >
                                                     <span
-                                                        className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-md ring-0 transition duration-200 ease-in-out ${
-                                                            paySendWhatsApp ? 'translate-x-5' : 'translate-x-0'
-                                                        }`}
+                                                        className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-md ring-0 transition duration-200 ease-in-out ${paySendWhatsApp ? 'translate-x-5' : 'translate-x-0'
+                                                            }`}
                                                     />
                                                 </button>
                                             </div>
@@ -1077,13 +1070,13 @@ export default function SupplierInvoices() {
             {createPortal(
                 <AnimatePresence>
                     {showCreateModal && (
-                        <div 
+                        <div
                             className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm no-print overflow-y-auto"
                             onClick={resetInvoiceForm}
                         >
-                            <motion.div 
-                                initial={{ opacity: 0, scale: 0.95 }} 
-                                animate={{ opacity: 1, scale: 1 }} 
+                            <motion.div
+                                initial={{ opacity: 0, scale: 0.95 }}
+                                animate={{ opacity: 1, scale: 1 }}
                                 exit={{ opacity: 0, scale: 0.95 }}
                                 className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 w-full max-w-5xl shadow-2xl rounded-3xl flex flex-col my-8 max-h-[90vh] overflow-hidden text-left"
                                 onClick={e => e.stopPropagation()}
@@ -1189,8 +1182,8 @@ export default function SupplierInvoices() {
                                                         const qty = parseFloat(item.quantity) || 0;
                                                         const rate = parseFloat(item.price) || 0;
                                                         const taxRate = parseFloat(item.tax) || 0;
-                                                        const rowTotal = item.isInclusive 
-                                                            ? (rate * qty) 
+                                                        const rowTotal = item.isInclusive
+                                                            ? (rate * qty)
                                                             : (rate * qty * (1 + taxRate / 100));
 
                                                         return (
@@ -1269,7 +1262,7 @@ export default function SupplierInvoices() {
 
                                             <div className="space-y-4">
                                                 <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-100 dark:border-slate-700 pb-1.5">Payments</h4>
-                                                
+
                                                 <div className="grid grid-cols-2 gap-4">
                                                     <div className="space-y-1">
                                                         <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-1">Cash Payment (₹)</label>
@@ -1286,7 +1279,7 @@ export default function SupplierInvoices() {
                                                             className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-750 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-bold text-slate-900 dark:text-slate-100 focus:border-primary outline-none"
                                                         />
                                                     </div>
-                                                    
+
                                                     <div className="space-y-1">
                                                         <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-1">Online Payment (₹)</label>
                                                         <input
@@ -1311,16 +1304,14 @@ export default function SupplierInvoices() {
                                                         role="switch"
                                                         aria-checked={invoiceForm.sendWhatsApp}
                                                         onClick={() => setInvoiceForm(prev => ({ ...prev, sendWhatsApp: !prev.sendWhatsApp }))}
-                                                        className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 transition-all duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-emerald-500/20 ${
-                                                            invoiceForm.sendWhatsApp 
-                                                                ? 'bg-emerald-500 border-emerald-500 hover:bg-emerald-600 hover:border-emerald-600' 
+                                                        className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 transition-all duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-emerald-500/20 ${invoiceForm.sendWhatsApp
+                                                                ? 'bg-emerald-500 border-emerald-500 hover:bg-emerald-600 hover:border-emerald-600'
                                                                 : 'bg-slate-300 border-slate-400 hover:bg-slate-400/80 dark:bg-slate-850 dark:border-slate-600'
-                                                        }`}
+                                                            }`}
                                                     >
                                                         <span
-                                                            className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-md ring-0 transition duration-200 ease-in-out ${
-                                                                invoiceForm.sendWhatsApp ? 'translate-x-5' : 'translate-x-0'
-                                                            }`}
+                                                            className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-md ring-0 transition duration-200 ease-in-out ${invoiceForm.sendWhatsApp ? 'translate-x-5' : 'translate-x-0'
+                                                                }`}
                                                         />
                                                     </button>
                                                 </div>
@@ -1329,12 +1320,12 @@ export default function SupplierInvoices() {
 
                                         <div className="bg-slate-50 dark:bg-slate-750/30 border border-slate-200 dark:border-slate-700 rounded-2xl p-5 space-y-3.5 text-left">
                                             <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-150 dark:border-slate-700 pb-2">Purchase Summary</h4>
-                                            
+
                                             <div className="flex justify-between text-xs text-slate-600 dark:text-slate-300 font-semibold">
                                                 <span>Total Amount:</span>
                                                 <span className="font-bold text-slate-800 dark:text-slate-100">₹{totals.subTotal.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
                                             </div>
-                                            
+
                                             <div className="flex justify-between items-center text-xs text-slate-600 dark:text-slate-300 font-semibold">
                                                 <span>Apply Discount (₹):</span>
                                                 <input
@@ -1357,22 +1348,19 @@ export default function SupplierInvoices() {
                                                 <span className="font-black text-emerald-600">₹{((parseFloat(invoiceForm.cashAmount) || 0) + (parseFloat(invoiceForm.onlineAmount) || 0)).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
                                             </div>
 
-                                            <div className={`rounded-xl p-3 border-2 ${
-                                                totals.balanceAmount > 0
+                                            <div className={`rounded-xl p-3 border-2 ${totals.balanceAmount > 0
                                                     ? 'bg-rose-50 dark:bg-rose-950/10 border-rose-200 dark:border-rose-900/30'
                                                     : ((parseFloat(invoiceForm.cashAmount) || 0) + (parseFloat(invoiceForm.onlineAmount) || 0)) > 0
                                                         ? 'bg-emerald-50 dark:bg-emerald-950/10 border-emerald-200 dark:border-emerald-900/30'
                                                         : 'bg-slate-50 dark:bg-slate-855 border-slate-200 dark:border-slate-700'
-                                            }`}>
+                                                }`}>
                                                 <div className="flex justify-between items-center">
-                                                    <span className={`text-xs font-black uppercase tracking-wider ${
-                                                        totals.balanceAmount > 0 ? 'text-rose-600' : ((parseFloat(invoiceForm.cashAmount) || 0) + (parseFloat(invoiceForm.onlineAmount) || 0)) > 0 ? 'text-emerald-600' : 'text-slate-500'
-                                                    }`}>
+                                                    <span className={`text-xs font-black uppercase tracking-wider ${totals.balanceAmount > 0 ? 'text-rose-600' : ((parseFloat(invoiceForm.cashAmount) || 0) + (parseFloat(invoiceForm.onlineAmount) || 0)) > 0 ? 'text-emerald-600' : 'text-slate-500'
+                                                        }`}>
                                                         {totals.balanceAmount > 0 ? '⚠️ Due Amount:' : ((parseFloat(invoiceForm.cashAmount) || 0) + (parseFloat(invoiceForm.onlineAmount) || 0)) > 0 ? '✅ Fully Paid' : '📋 Credit (Unpaid):'}
                                                     </span>
-                                                    <span className={`text-lg font-black ${
-                                                        totals.balanceAmount > 0 ? 'text-rose-600' : ((parseFloat(invoiceForm.cashAmount) || 0) + (parseFloat(invoiceForm.onlineAmount) || 0)) > 0 ? 'text-emerald-600' : 'text-slate-655 dark:text-slate-305'
-                                                    }`}>
+                                                    <span className={`text-lg font-black ${totals.balanceAmount > 0 ? 'text-rose-600' : ((parseFloat(invoiceForm.cashAmount) || 0) + (parseFloat(invoiceForm.onlineAmount) || 0)) > 0 ? 'text-emerald-600' : 'text-slate-655 dark:text-slate-305'
+                                                        }`}>
                                                         ₹{totals.balanceAmount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
                                                     </span>
                                                 </div>

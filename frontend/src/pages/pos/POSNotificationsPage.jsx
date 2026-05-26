@@ -62,10 +62,10 @@ const MOCK_NOTIFICATIONS = [
         color: 'text-rose-500'
     }
 ];
-
 export default function POSNotificationsPage() {
     const [notifications, setNotifications] = useState(MOCK_NOTIFICATIONS);
     const [filter, setFilter] = useState('all');
+    const [searchTerm, setSearchTerm] = useState('');
 
     const markAllRead = () => {
         setNotifications(notifications.map(n => ({ ...n, read: true })));
@@ -80,10 +80,13 @@ export default function POSNotificationsPage() {
     };
 
     const filtered = notifications.filter(n => {
-        if (filter === 'unread') return !n.read;
-        return true;
+        const matchesFilter = filter === 'unread' ? !n.read : true;
+        const matchesSearch = !searchTerm || 
+            (n.title || '').toLowerCase().includes(searchTerm.toLowerCase()) || 
+            (n.message || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+            (n.category || '').toLowerCase().includes(searchTerm.toLowerCase());
+        return matchesFilter && matchesSearch;
     });
-
     return (
         <div className="max-w-4xl mx-auto space-y-6 animate-in fade-in duration-700 pb-10">
             {/* Header */}
@@ -134,6 +137,8 @@ export default function POSNotificationsPage() {
                         type="text"
                         placeholder="SEARCH_SIGNAL_LOGS..."
                         className="w-full pl-10 pr-4 py-2 bg-surface-alt border border-border text-[10px] font-black uppercase tracking-[0.2em] text-text outline-none focus:border-primary focus:ring-1 focus:ring-primary/20 transition-all shadow-inner"
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
                     />
                 </div>
             </div>

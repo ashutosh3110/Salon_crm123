@@ -40,7 +40,7 @@ export default function POSLayout() {
 
                 .admin-panel {
                     --font-serif: 'Inter', sans-serif !important;
-                    font-size: 17px !important;
+                    font-size: 14px !important;
                 }
                 
                 .admin-panel h1, 
@@ -63,9 +63,10 @@ export default function POSLayout() {
                 [role="dialog"] h6 {
                     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
                     font-style: normal !important;
+                    font-weight: 700 !important; /* Reduced from 800/900 for cleaner aesthetics */
                 }
 
-                /* --- Global Font Size Scale Amplifiers (Slightly larger & crisp) --- */
+                /* --- Global Elegant & Compact Font Size Scale --- */
                 .admin-panel .text-\\[7px\\],
                 .admin-panel .text-\\[8px\\],
                 .admin-panel .text-\\[9px\\],
@@ -75,56 +76,57 @@ export default function POSLayout() {
                 .fixed.inset-0 .text-\\[7px\\],
                 .fixed.inset-0 .text-\\[8px\\],
                 .fixed.inset-0 .text-\\[9px\\] {
-                    font-size: 13.5px !important;
-                    letter-spacing: 0.03em !important;
-                    font-weight: 700 !important;
+                    font-size: 8.5px !important;
+                    letter-spacing: 0.01em !important;
+                    font-weight: 600 !important;
                 }
                 .admin-panel .text-\\[10px\\],
                 [role="dialog"] .text-\\[10px\\],
                 .fixed.inset-0 .text-\\[10px\\] {
-                    font-size: 15px !important;
-                    letter-spacing: 0.02em !important;
+                    font-size: 9.5px !important;
+                    letter-spacing: 0.01em !important;
                     font-weight: 600 !important;
                 }
                 .admin-panel .text-\\[11px\\],
                 [role="dialog"] .text-\\[11px\\],
                 .fixed.inset-0 .text-\\[11px\\] {
-                    font-size: 16px !important;
+                    font-size: 10.5px !important;
                     letter-spacing: 0.01em !important;
                     font-weight: 500 !important;
                 }
                 .admin-panel .text-xs {
-                    font-size: 1rem !important; /* 16px instead of 14px */
-                    line-height: 1.5rem !important;
+                    font-size: 0.72rem !important; /* ~11.5px */
+                    line-height: 1.1rem !important;
                 }
                 .admin-panel .text-sm {
-                    font-size: 1.1rem !important; /* ~17.6px instead of 15.6px */
-                    line-height: 1.7rem !important;
+                    font-size: 0.8rem !important; /* ~12.8px */
+                    line-height: 1.25rem !important;
                 }
                 .admin-panel .text-base {
-                    font-size: 1.22rem !important; /* ~19.5px instead of 18px */
-                    line-height: 1.9rem !important;
+                    font-size: 0.9rem !important; /* ~14.5px */
+                    line-height: 1.4rem !important;
                 }
                 .admin-panel .text-lg {
-                    font-size: 1.38rem !important; /* ~22px instead of 20px */
-                    line-height: 2.05rem !important;
+                    font-size: 1.05rem !important; /* ~16.8px */
+                    line-height: 1.5rem !important;
                 }
                 .admin-panel .text-xl {
-                    font-size: 1.63rem !important; /* ~26px instead of 24px */
-                    line-height: 2.25rem !important;
+                    font-size: 1.2rem !important; /* ~19px */
+                    line-height: 1.65rem !important;
                 }
                 .admin-panel .text-2xl {
-                    font-size: 2rem !important; /* ~32px instead of 30px */
-                    line-height: 2.4rem !important;
-                    font-weight: 800 !important;
-                    letter-spacing: -0.025em !important;
+                    font-size: 1.45rem !important; /* ~23px */
+                    line-height: 1.9rem !important;
+                    font-weight: 700 !important;
+                    letter-spacing: -0.015em !important;
                 }
                 .admin-panel .text-3xl {
-                    font-size: 2.45rem !important; /* ~39.2px instead of 36px */
-                    line-height: 2.75rem !important;
-                    font-weight: 900 !important;
-                    letter-spacing: -0.03em !important;
+                    font-size: 1.8rem !important; /* ~29px */
+                    line-height: 2.2rem !important;
+                    font-weight: 700 !important;
+                    letter-spacing: -0.02em !important;
                 }
+
 
                 /* ==========================================
                    📐 COMPREHENSIVE SPACE COMPRESSION OVERRIDES
@@ -268,6 +270,266 @@ export default function POSLayout() {
                 /* Compress topbar */
                 .admin-panel header.h-16 {
                     height: 3rem !important;
+                }
+
+                /* ==========================================
+                   🎨 PREMIUM DARK MODE OVERRIDES (ALIGNED WITH MAIN ADMIN LAYOUT)
+                   ========================================== */
+                /* Restore brand primary color inside Admin Panel instead of shadcn silver override */
+                .dark .admin-panel {
+                    --primary: #B4912B !important;
+                    --primary-foreground: #ffffff !important;
+                    background-color: #121826 !important;
+                    color: #cbd5e1 !important;
+                }
+
+                /* Robust background overrides in Dark Mode */
+                .dark .admin-panel .bg-white,
+                .dark .admin-panel .bg-surface,
+                .dark .admin-panel .bg-background,
+                .dark .admin-panel .bg-slate-50,
+                .dark .admin-panel .bg-slate-100,
+                .dark .admin-panel .bg-gray-50,
+                .dark .admin-panel .bg-gray-100,
+                .dark .admin-panel [class*="bg-white"],
+                .dark .admin-panel [class*="bg-surface"],
+                .dark .admin-panel [class*="bg-background"],
+                .dark .admin-panel [class*="bg-slate-50"],
+                .dark .admin-panel [class*="bg-slate-100"],
+                .dark .admin-panel [class*="bg-gray-50"],
+                .dark .admin-panel [class*="bg-gray-100"],
+                .dark [role="dialog"],
+                .dark [role="dialog"] .bg-white,
+                .dark [role="dialog"] [class*="bg-white"],
+                .dark [role="dialog"] .bg-slate-50,
+                .dark [role="dialog"] [class*="bg-slate-50"],
+                .dark .fixed.inset-0 .bg-white,
+                .dark .fixed.inset-0 [class*="bg-white"],
+                .dark .fixed.inset-0 .bg-slate-50,
+                .dark .fixed.inset-0 [class*="bg-slate-50"] {
+                    background-color: #1e293b !important; /* slate-800 */
+                }
+
+                /* Deep slate-900 backgrounds for main page, modal overlays, inputs, etc. */
+                .dark .admin-panel,
+                .dark .admin-panel .bg-surface-alt,
+                .dark .admin-panel [class*="bg-surface-alt"],
+                .dark .admin-panel .bg-\[\#fafafa\],
+                .dark .admin-panel [class*="bg-[#fafafa]"],
+                .dark [class*="bg-[#fafafa]"],
+                .dark .admin-panel input:not(.bg-transparent),
+                .dark .admin-panel select:not(.bg-transparent),
+                .dark .admin-panel textarea:not(.bg-transparent),
+                .dark [role="dialog"] input:not(.bg-transparent),
+                .dark [role="dialog"] select:not(.bg-transparent),
+                .dark [role="dialog"] textarea:not(.bg-transparent),
+                .dark .fixed.inset-0 input:not(.bg-transparent),
+                .dark .fixed.inset-0 select:not(.bg-transparent),
+                .dark .fixed.inset-0 textarea:not(.bg-transparent) {
+                    background-color: #121826 !important; /* slate-900 */
+                }
+
+                /* Robust border color overrides in Dark Mode */
+                .dark .admin-panel .border,
+                .dark .admin-panel .border-border,
+                .dark .admin-panel [class*="border-border"],
+                .dark .admin-panel [class*="border-r"],
+                .dark .admin-panel [class*="border-b"],
+                .dark .admin-panel [class*="border-t"],
+                .dark .admin-panel [class*="border-l"],
+                .dark .admin-panel [class*="border-2"],
+                .dark .admin-panel table th,
+                .dark .admin-panel table td,
+                .dark [role="dialog"] .border,
+                .dark [role="dialog"] [class*="border"],
+                .dark .fixed.inset-0 .border,
+                .dark .fixed.inset-0 [class*="border"] {
+                    border-color: rgba(255, 255, 255, 0.08) !important;
+                }
+
+                /* Robust text color overrides in Dark Mode */
+                .dark .admin-panel .text-text,
+                .dark .admin-panel [class*="text-text"],
+                .dark .admin-panel [class*="text-slate-900"],
+                .dark .admin-panel [class*="text-slate-800"],
+                .dark .admin-panel [class*="text-slate-700"],
+                .dark .admin-panel [class*="text-gray-900"],
+                .dark .admin-panel [class*="text-gray-800"],
+                .dark .admin-panel [class*="text-gray-700"],
+                .dark .admin-panel h1,
+                .dark .admin-panel h2,
+                .dark .admin-panel h3,
+                .dark .admin-panel h4,
+                .dark .admin-panel h5,
+                .dark .admin-panel h6,
+                .dark [role="dialog"] .text-text,
+                .dark [role="dialog"] [class*="text-text"],
+                .dark [role="dialog"] h1,
+                .dark [role="dialog"] h2,
+                .dark [role="dialog"] h3,
+                .dark [role="dialog"] h4,
+                .dark [role="dialog"] h5,
+                .dark [role="dialog"] h6,
+                .dark .fixed.inset-0 .text-text,
+                .dark .fixed.inset-0 [class*="text-text"],
+                .dark .fixed.inset-0 h1,
+                .dark .fixed.inset-0 h2,
+                .dark .fixed.inset-0 h3,
+                .dark .fixed.inset-0 h4,
+                .dark .fixed.inset-0 h5,
+                .dark .fixed.inset-0 h6 {
+                    color: #f8fafc !important; /* slate-50 */
+                }
+
+                .dark .admin-panel .text-text-secondary,
+                .dark .admin-panel [class*="text-text-secondary"],
+                .dark .admin-panel [class*="text-slate-600"],
+                .dark .admin-panel [class*="text-slate-500"],
+                .dark .admin-panel [class*="text-gray-600"],
+                .dark .admin-panel [class*="text-gray-500"],
+                .dark [role="dialog"] .text-text-secondary,
+                .dark [role="dialog"] [class*="text-text-secondary"],
+                .dark .fixed.inset-0 .text-text-secondary,
+                .dark .fixed.inset-0 [class*="text-text-secondary"] {
+                    color: #94a3b8 !important; /* slate-400 */
+                }
+
+                .dark .admin-panel .text-text-muted,
+                .dark .admin-panel [class*="text-text-muted"],
+                .dark .admin-panel [class*="text-slate-400"],
+                .dark .admin-panel [class*="text-gray-400"],
+                .dark [role="dialog"] .text-text-muted,
+                .dark [role="dialog"] [class*="text-text-muted"],
+                .dark .fixed.inset-0 .text-text-muted,
+                .dark .fixed.inset-0 [class*="text-text-muted"] {
+                    color: #64748b !important; /* slate-500 */
+                }
+
+                /* Ensure dark mode input placeholders and borders are clearly visible */
+                .dark .admin-panel input::placeholder,
+                .dark .admin-panel textarea::placeholder,
+                .dark [role="dialog"] input::placeholder,
+                .dark [role="dialog"] textarea::placeholder,
+                .dark .fixed.inset-0 input::placeholder,
+                .dark .fixed.inset-0 textarea::placeholder {
+                    color: rgba(255, 255, 255, 0.35) !important;
+                }
+
+                /* --- Sidebar & Topbar dark mode overrides --- */
+                .dark .admin-panel aside,
+                .dark .admin-panel header,
+                .dark .admin-panel aside div,
+                .dark .admin-panel header div {
+                    background-color: #1e293b !important; /* slate-800 background */
+                    color: #f8fafc !important;
+                    border-color: rgba(255, 255, 255, 0.08) !important;
+                }
+
+                /* --- Spacious & Beautiful Tables in Dark Mode --- */
+                .dark .admin-panel table th {
+                    color: #94a3b8 !important; /* slate-400 */
+                    background-color: #121826 !important; /* slate-900 */
+                    border-bottom: 2px solid rgba(255, 255, 255, 0.08) !important;
+                }
+                .dark .admin-panel table td {
+                    color: #cbd5e1 !important; /* slate-300 */
+                    border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+                }
+                .dark .admin-panel table tr:hover td {
+                    background-color: #1e293b !important;
+                }
+
+                /* --- Form Controls in Dark Mode --- */
+                .dark .admin-panel label {
+                    color: #94a3b8 !important; /* slate-400 */
+                }
+                .dark .admin-panel input:focus, 
+                .dark .admin-panel select:focus, 
+                .dark .admin-panel textarea:focus {
+                    border-color: #B4912B !important;
+                    box-shadow: 0 0 0 4px rgba(180, 145, 43, 0.25) !important;
+                }
+
+                /* --- Primary Buttons in Dark Mode --- */
+                .dark .admin-panel button.bg-primary,
+                .dark .admin-panel a.bg-primary,
+                .dark .admin-panel .bg-primary,
+                .dark .admin-panel button[type="submit"],
+                .dark .admin-panel button[class*="bg-primary"],
+                .dark .admin-panel .inline-flex[class*="bg-primary"],
+                .dark .admin-panel button:has(svg.lucide-plus) {
+                    background: #B4912B !important;
+                    color: #ffffff !important;
+                    border: 1px solid #B4912B !important;
+                }
+                .dark .admin-panel button.bg-primary:hover,
+                .dark .admin-panel a.bg-primary:hover,
+                .dark .admin-panel .bg-primary:hover,
+                .dark .admin-panel button[type="submit"]:hover,
+                .dark .admin-panel button[class*="bg-primary"]:hover,
+                .dark .admin-panel .inline-flex[class*="bg-primary"]:hover,
+                .dark .admin-panel button:has(svg.lucide-plus):hover {
+                    background: #C5A23C !important;
+                    border-color: #C5A23C !important;
+                }
+
+                /* --- Secondary/Outline Buttons in Dark Mode --- */
+                .dark .admin-panel button.bg-secondary:not(aside *),
+                .dark .admin-panel button.border:not(aside *),
+                .dark .admin-panel a.border:not(aside *),
+                .dark .admin-panel button[class*="border-"]:not(aside *),
+                .dark .admin-panel button:has(svg.lucide-eye):not(aside *),
+                .dark .admin-panel button:has(svg.lucide-edit):not(aside *),
+                .dark .admin-panel button:has(svg.lucide-trash):not(aside *),
+                .dark .admin-panel button:has(svg.lucide-plus):not(.bg-primary):not([class*="bg-primary"]):not(aside *),
+                .dark .admin-panel [class*="border-border"] button:not(aside *):not(.bg-primary):not([class*="bg-primary"]) {
+                    background-color: #1e293b !important;
+                    border-color: rgba(255, 255, 255, 0.12) !important;
+                    color: #cbd5e1 !important;
+                }
+                .dark .admin-panel button.bg-secondary:not(aside *):hover,
+                .dark .admin-panel button.border:not(aside *):hover,
+                .dark .admin-panel a.border:not(aside *):hover,
+                .dark .dark .admin-panel button[class*="border-"]:not(aside *):hover,
+                .dark .admin-panel button:has(svg.lucide-eye):not(aside *):hover,
+                .dark .admin-panel button:has(svg.lucide-edit):not(aside *):hover,
+                .dark .admin-panel button:has(svg.lucide-trash):not(aside *):hover,
+                .dark .admin-panel [class*="border-border"] button:not(aside *):not(.bg-primary):not([class*="bg-primary"]):hover {
+                    background-color: #121826 !important;
+                    border-color: rgba(255, 255, 255, 0.25) !important;
+                    color: #ffffff !important;
+                }
+
+                /* POS Billing Cart Total Box High Contrast Overrides */
+                html:not(.dark) .admin-panel .pos-billing-cart-total-box div,
+                html:not(.dark) .admin-panel .pos-billing-cart-total-box span,
+                html:not(.dark) .admin-panel .pos-billing-cart-total-box p,
+                html:not(.dark) .admin-panel .pos-billing-cart-total-box select,
+                html:not(.dark) .admin-panel .pos-billing-cart-total-box option,
+                html:not(.dark) .admin-panel .pos-billing-cart-total-box *,
+                html:not(.dark) .pos-billing-cart-total-box div,
+                html:not(.dark) .pos-billing-cart-total-box span,
+                html:not(.dark) .pos-billing-cart-total-box p,
+                html:not(.dark) .pos-billing-cart-total-box *,
+                .pos-billing-cart-total-box,
+                .pos-billing-cart-total-box div,
+                .pos-billing-cart-total-box span,
+                .pos-billing-cart-total-box p,
+                .pos-billing-cart-total-box * {
+                    color: #ffffff !important; /* Force white text for subtotal, total, numbers */
+                }
+
+                /* Accent colors inside total box */
+                html:not(.dark) .admin-panel .pos-billing-cart-total-box .text-emerald-400,
+                html:not(.dark) .pos-billing-cart-total-box .text-emerald-400,
+                .pos-billing-cart-total-box .text-emerald-400 {
+                    color: #34d399 !important; /* Force emerald green for TOTAL label, discount, etc. */
+                }
+
+                html:not(.dark) .admin-panel .pos-billing-cart-total-box .text-rose-400,
+                html:not(.dark) .pos-billing-cart-total-box .text-rose-400,
+                .pos-billing-cart-total-box .text-rose-400 {
+                    color: #fb7185 !important; /* Force rose red for dues, overpaid */
                 }
             `}</style>
             <Sidebar

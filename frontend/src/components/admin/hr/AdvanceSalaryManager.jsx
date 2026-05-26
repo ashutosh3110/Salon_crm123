@@ -433,7 +433,7 @@ export default function AdvanceSalaryManager() {
                 <AnimatePresence>
                     {isModalOpen && (
                         <div 
-                            className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm"
+                            className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
                             onClick={closeModal}
                         >
                             <motion.div 

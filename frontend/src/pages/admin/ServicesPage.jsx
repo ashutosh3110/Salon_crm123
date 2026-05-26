@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
 import {
-    ChevronRight, Zap, TrendingUp, Layers, Settings2, Plus, Scissors, XCircle,
+    ChevronRight, Zap, TrendingUp, Layers, Settings2, Plus, Scissors, X,
     Search, RefreshCcw, Download, Upload
 } from 'lucide-react';
 import ServiceList from '../../components/admin/services/ServiceList';
@@ -281,7 +281,7 @@ export default function ServicesPage({ tab = 'list' }) {
                         <div className="flex items-center gap-2 w-full sm:w-auto mt-2 sm:mt-0">
                             <button
                                 onClick={handleRefresh}
-                                className="flex-1 sm:flex-none p-2.5 rounded-xl bg-white border border-border text-text-muted hover:text-primary transition-all active:scale-95 flex justify-center items-center"
+                                className="flex-1 sm:flex-none p-2.5 rounded-xl bg-surface border border-border text-text-muted hover:text-primary hover:border-primary transition-all active:scale-95 flex justify-center items-center"
                                 title="Refresh List"
                             >
                                 <RefreshCcw className="w-4 h-4" />
@@ -289,9 +289,11 @@ export default function ServicesPage({ tab = 'list' }) {
 
                             <button
                                 onClick={handleDownloadTemplate}
-                                className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-white border border-border text-text hover:text-primary transition-all active:scale-95 text-[11px] font-bold uppercase tracking-tight"
+                                className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/30 text-amber-700 dark:text-amber-400 hover:bg-amber-100 dark:hover:bg-amber-500/20 transition-all active:scale-95 text-[11px] font-bold uppercase tracking-tight group"
+                                title="Download Sample Template"
                             >
-                                <Download className="w-3.5 h-3.5" /> Sample
+                                <Download className="w-3.5 h-3.5 group-hover:scale-110 transition-transform" />
+                                <span>Sample</span>
                             </button>
 
                             <div className="relative flex-1 sm:flex-none">
@@ -305,10 +307,10 @@ export default function ServicesPage({ tab = 'list' }) {
                                 <button
                                     onClick={() => document.getElementById('bulk-upload-top').click()}
                                     disabled={importing}
-                                    className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-white border border-border text-text hover:text-primary transition-all active:scale-95 text-[11px] font-bold uppercase tracking-tight disabled:opacity-50"
+                                    className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/30 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-emerald-500/20 transition-all active:scale-95 text-[11px] font-bold uppercase tracking-tight disabled:opacity-50 group"
                                 >
-                                    {importing ? <RefreshCcw className="w-3.5 h-3.5 animate-spin" /> : <Upload className="w-3.5 h-3.5" />}
-                                    {importing ? 'Importing...' : 'Bulk Upload'}
+                                    {importing ? <RefreshCcw className="w-3.5 h-3.5 animate-spin" /> : <Upload className="w-3.5 h-3.5 group-hover:scale-110 transition-transform" />}
+                                    <span>{importing ? 'Importing...' : 'Import'}</span>
                                 </button>
                             </div>
 
@@ -432,9 +434,7 @@ export default function ServicesPage({ tab = 'list' }) {
                     <div className="relative bg-white dark:bg-slate-800 w-full max-w-6xl shadow-2xl animate-in fade-in zoom-in-95 duration-300 flex flex-col h-[85vh] my-auto rounded-none border border-border overflow-hidden z-10 admin-panel" onClick={(e) => e.stopPropagation()}>
                         <div className="flex items-center justify-between px-6 py-3 border-b border-border bg-slate-50/50">
                             <div className="flex items-center gap-3">
-                                <div className="p-2 bg-primary text-white rounded-lg shadow-lg shadow-primary/20">
-                                    <Scissors className="w-4 h-4" />
-                                </div>
+                                <Scissors className="w-5 h-5 text-text shrink-0" />
                                 <div>
                                     <h2 className="text-sm font-black uppercase tracking-[0.2em] italic text-text">
                                         {editingService ? `Edit Service: ${editingService.name}` : 'Initialize New Entry'}
@@ -444,9 +444,9 @@ export default function ServicesPage({ tab = 'list' }) {
                             </div>
                             <button
                                 onClick={() => setIsFormModalOpen(false)}
-                                className="p-1.5 text-text-muted hover:text-rose-500 hover:bg-rose-50 rounded-lg transition-all"
+                                className="modal-close-btn p-1.5 rounded-lg transition-all"
                             >
-                                <XCircle className="w-5 h-5" />
+                                <X className="w-5 h-5" />
                             </button>
                         </div>
                         <div className="flex-1 overflow-y-auto">
