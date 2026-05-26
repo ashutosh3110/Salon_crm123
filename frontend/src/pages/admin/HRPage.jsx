@@ -22,10 +22,12 @@ import StaffManager from '../../components/admin/hr/StaffManager';
 import AttendanceTracker from '../../components/admin/hr/AttendanceTracker';
 import PayrollManager from '../../components/admin/hr/PayrollManager';
 import PerformanceAnalytics from '../../components/admin/hr/PerformanceAnalytics';
+import AdvanceSalaryManager from '../../components/admin/hr/AdvanceSalaryManager';
 
 const HR_TABS = [
     { id: 'attendance', label: 'Staff Attendance', icon: CalendarCheck, color: 'text-emerald-500', bg: 'bg-emerald-500/10' },
     { id: 'payroll', label: 'Payroll Management', icon: DollarSign, color: 'text-blue-500', bg: 'bg-blue-500/10' },
+    { id: 'advance-salary', label: 'Advance Salary', icon: DollarSign, color: 'text-violet-500', bg: 'bg-violet-500/10' },
     { id: 'performance', label: 'Performance Tracking', icon: TrendingUp, color: 'text-rose-500', bg: 'bg-rose-500/10' },
 ];
 
@@ -56,6 +58,7 @@ export default function HRPage({ tab = 'attendance' }) {
         switch (tab) {
             case 'attendance': return <AttendanceTracker />;
             case 'payroll': return <PayrollManager />;
+            case 'advance-salary': return <AdvanceSalaryManager />;
             case 'performance': return <PerformanceAnalytics />;
             default: return <AttendanceTracker />;
         }

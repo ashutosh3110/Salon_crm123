@@ -99,11 +99,11 @@ export default function Sidebar({ collapsed, setCollapsed, isHovered, setIsHover
                 permission: 'setup',
                 category: 'Management',
                 subItems: [
-                    { label: 'Outlets', icon: Store, path: '/admin/outlets' },
+                    { label: 'Outlets', icon: Store, path: '/admin/outlets', permission: 'setup_outlets' },
                     { label: 'Roles & Permissions', icon: Shield, path: '/admin/setup/roles', permission: 'manage_roles' },
-                    { label: 'Staff', icon: UserCog, path: '/admin/staff' },
-                    { label: 'Service List', icon: ScissorsIcon, path: '/admin/services/list' },
-                    { label: 'Service Categories', icon: Tag, path: '/admin/services/categories' },
+                    { label: 'Staff', icon: UserCog, path: '/admin/staff', permission: 'setup_staff' },
+                    { label: 'Service List', icon: ScissorsIcon, path: '/admin/services/list', permission: 'services_list' },
+                    { label: 'Service Categories', icon: Tag, path: '/admin/services/categories', permission: 'services_categories' },
                 ]
             },
             {
@@ -114,10 +114,10 @@ export default function Sidebar({ collapsed, setCollapsed, isHovered, setIsHover
                 feature: 'pos',
                 category: 'Operations',
                 subItems: [
-                    { label: 'POS Dashboard', icon: LayoutDashboard, path: '/pos' },
-                    { label: 'New Bill', icon: Zap, path: '/pos/billing' },
-                    { label: 'Invoices & Payments', icon: FileText, path: '/pos/invoices' },
-                    { label: 'Payment Reminders', icon: MessageSquare, path: '/admin/operations/payment-reminders' },
+                    { label: 'POS Dashboard', icon: LayoutDashboard, path: '/pos', permission: 'pos_dashboard' },
+                    { label: 'New Bill', icon: Zap, path: '/pos/billing', permission: 'pos_billing' },
+                    { label: 'Invoices & Payments', icon: FileText, path: '/pos/invoices', permission: 'pos_invoices' },
+                    { label: 'Payment Reminders', icon: MessageSquare, path: '/admin/operations/payment-reminders', permission: 'pos_reminders' },
                 ]
             },
             {
@@ -127,8 +127,8 @@ export default function Sidebar({ collapsed, setCollapsed, isHovered, setIsHover
                 permission: 'bookings',
                 category: 'Operations',
                 subItems: [
-                    { label: 'Booking Registry', icon: List, path: '/admin/bookings' },
-                    { label: 'Direct Booking', icon: Zap, path: '/admin/bookings/new' },
+                    { label: 'Booking Registry', icon: List, path: '/admin/bookings', permission: 'bookings_registry' },
+                    { label: 'Direct Booking', icon: Zap, path: '/admin/bookings/new', permission: 'bookings_new' },
                 ]
             },
             {
@@ -139,23 +139,23 @@ export default function Sidebar({ collapsed, setCollapsed, isHovered, setIsHover
                 feature: 'inventory',
                 category: 'Operations',
                 subItems: [
-                    { label: 'Products Management', icon: Box, path: '/admin/inventory/products' },
-                    { label: 'Shop Orders', icon: ShoppingBag, path: '/admin/shop-orders' },
-                    { label: 'Product Categories', icon: Tag, path: '/admin/inventory/product-categories' },
-                    { label: 'Stock Alerts', icon: LayoutDashboard, path: '/admin/inventory/stock-overview' },
-                    { label: 'Stock Transfer', icon: ArrowLeftRight, path: '/admin/inventory/transfer' },
+                    { label: 'Products Management', icon: Box, path: '/admin/inventory/products', permission: 'inventory_products' },
+                    { label: 'Shop Orders', icon: ShoppingBag, path: '/admin/shop-orders', permission: 'inventory_shop_orders' },
+                    { label: 'Product Categories', icon: Tag, path: '/admin/inventory/product-categories', permission: 'inventory_categories' },
+                    { label: 'Stock Alerts', icon: LayoutDashboard, path: '/admin/inventory/stock-overview', permission: 'inventory_stock_overview' },
+                    { label: 'Stock Transfer', icon: ArrowLeftRight, path: '/admin/inventory/transfer', permission: 'inventory_transfer' },
                 ]
             },
             {
                 label: 'Suppliers',
                 icon: Users,
                 path: '/admin/suppliers',
-                permission: 'finance',
+                permission: 'suppliers',
                 feature: 'finance',
                 category: 'Operations',
                 subItems: [
-                    { label: 'Supplier Directory', icon: Users, path: '/admin/suppliers/directory' },
-                    { label: 'Supplier Invoices', icon: FileText, path: '/admin/suppliers/invoices' },
+                    { label: 'Supplier Directory', icon: Users, path: '/admin/suppliers/directory', permission: 'suppliers_directory' },
+                    { label: 'Supplier Invoices', icon: FileText, path: '/admin/suppliers/invoices', permission: 'suppliers_invoices' },
                 ]
             },
             {
@@ -166,12 +166,11 @@ export default function Sidebar({ collapsed, setCollapsed, isHovered, setIsHover
                 feature: 'finance',
                 category: 'Operations',
                 subItems: [
-                    { label: 'Dashboard', icon: LayoutDashboard, path: '/admin/finance/dashboard' },
-                    { label: 'Transactions', icon: ArrowDownUp, path: '/admin/finance/transactions' },
-                    { label: 'Cash & Bank Book', icon: Wallet, path: '/admin/finance/cash-book' },
-                    { label: 'Expenses', icon: DollarSign, path: '/admin/finance/expenses' },
-                    { label: 'Sales Reports', icon: FileText, path: '/admin/finance/reports' },
-                    // { label: 'Day Closing', icon: Lock, path: '/admin/finance/eod' },
+                    { label: 'Dashboard', icon: LayoutDashboard, path: '/admin/finance/dashboard', permission: 'finance_dashboard' },
+                    { label: 'Transactions', icon: ArrowDownUp, path: '/admin/finance/transactions', permission: 'finance_transactions' },
+                    { label: 'Cash & Bank Book', icon: Wallet, path: '/admin/finance/cash-book', permission: 'finance_cash_book' },
+                    { label: 'Expenses', icon: DollarSign, path: '/admin/finance/expenses', permission: 'finance_expenses' },
+                    { label: 'Sales Reports', icon: FileText, path: '/admin/finance/reports', permission: 'finance_reports' },
                 ]
             },
             {
@@ -182,9 +181,9 @@ export default function Sidebar({ collapsed, setCollapsed, isHovered, setIsHover
                 feature: 'payroll',
                 category: 'Management',
                 subItems: [
-                    { label: 'Staff Attendance', icon: CalendarCheck, path: '/admin/hr/attendance' },
-                    { label: 'Payroll Management', icon: DollarSign, path: '/admin/hr/payroll' },
-                    // { label: 'Performance Tracking', icon: TrendingUp, path: '/admin/hr/performance' },
+                    { label: 'Staff Attendance', icon: CalendarCheck, path: '/admin/hr/attendance', permission: 'hr_attendance' },
+                    { label: 'Payroll Management', icon: DollarSign, path: '/admin/hr/payroll', permission: 'hr_payroll' },
+                    { label: 'Advance Salary', icon: DollarSign, path: '/admin/hr/advance-salary', permission: 'hr_advance_salary' },
                 ]
             },
             {
@@ -195,13 +194,13 @@ export default function Sidebar({ collapsed, setCollapsed, isHovered, setIsHover
                 feature: 'crm',
                 category: 'CRM & Marketing',
                 subItems: [
-                    { label: 'Directory', icon: Users, path: '/admin/crm/customers' },
-                    { label: 'Leads & Enquiries', icon: ClipboardList, path: '/admin/inquiries' },
-                    { label: 'Wallets', icon: Wallet, path: '/admin/crm/wallets' },
-                    { label: 'Feedback', icon: Star, path: '/admin/crm/feedback' },
-                    { label: 'Re-engagement', icon: ShieldAlert, path: '/admin/crm/reengage' },
-                    { label: 'Bridal Reminders', icon: Bell, path: '/admin/crm/bridal' },
-                    { label: 'Birthday/Anniversary Wishes', icon: Bell, path: '/admin/crm/birthday-anniversary-reminders' },
+                    { label: 'Directory', icon: Users, path: '/admin/crm/customers', permission: 'crm_directory' },
+                    { label: 'Leads & Enquiries', icon: ClipboardList, path: '/admin/inquiries', permission: 'crm_inquiries' },
+                    { label: 'Wallets', icon: Wallet, path: '/admin/crm/wallets', permission: 'crm_wallets' },
+                    { label: 'Feedback', icon: Star, path: '/admin/crm/feedback', permission: 'crm_feedback' },
+                    { label: 'Re-engagement', icon: ShieldAlert, path: '/admin/crm/reengage', permission: 'crm_reengage' },
+                    { label: 'Bridal Reminders', icon: Bell, permission: 'crm_bridal', path: '/admin/crm/bridal' },
+                    { label: 'Birthday/Anniversary Wishes', icon: Bell, permission: 'crm_birthday_anniversary', path: '/admin/crm/birthday-anniversary-reminders' },
                 ]
             },
             {
@@ -211,9 +210,9 @@ export default function Sidebar({ collapsed, setCollapsed, isHovered, setIsHover
                 permission: 'marketing',
                 category: 'CRM & Marketing',
                 subItems: [
-                    { label: 'Marketing Hub', icon: Layout, path: '/admin/marketing' },
-                    { label: 'Coupons & Promos', icon: Percent, path: '/admin/promotions' },
-                    { label: 'WhatsApp Credits', icon: MessageSquare, path: '/admin/whatsapp-credits' },
+                    { label: 'Marketing Hub', icon: Layout, path: '/admin/marketing', permission: 'marketing_hub' },
+                    { label: 'Coupons & Promos', icon: Percent, path: '/admin/promotions', permission: 'marketing_promotions' },
+                    { label: 'WhatsApp Credits', icon: MessageSquare, path: '/admin/whatsapp-credits', permission: 'marketing_whatsapp_credits' },
                 ]
             },
             {
@@ -224,9 +223,9 @@ export default function Sidebar({ collapsed, setCollapsed, isHovered, setIsHover
                 feature: 'loyalty',
                 category: 'CRM & Marketing',
                 subItems: [
-                    { label: 'Membership Plans', icon: CreditCard, path: '/admin/loyalty/plans' },
-                    { label: 'Members', icon: Users, path: '/admin/loyalty/members' },
-                    { label: 'Membership Expiry Reminder', icon: Bell, path: '/admin/loyalty/reminders' },
+                    { label: 'Membership Plans', icon: CreditCard, path: '/admin/loyalty/plans', permission: 'loyalty_plans' },
+                    { label: 'Members', icon: Users, path: '/admin/loyalty/members', permission: 'loyalty_members' },
+                    { label: 'Membership Expiry Reminder', icon: Bell, path: '/admin/loyalty/reminders', permission: 'loyalty_reminders' },
                 ]
             },
             {
@@ -236,9 +235,9 @@ export default function Sidebar({ collapsed, setCollapsed, isHovered, setIsHover
                 permission: 'settings',
                 category: 'Management',
                 subItems: [
-                    { label: 'Profile', icon: User, path: '/admin/settings/profile' },
-                    { label: 'Business Info', icon: Briefcase, path: '/admin/settings/business' },
-                    { label: 'Security', icon: Shield, path: '/admin/settings/security' },
+                    { label: 'Profile', icon: User, path: '/admin/settings/profile', permission: 'settings_profile' },
+                    { label: 'Business Info', icon: Briefcase, path: '/admin/settings/business', permission: 'settings_business' },
+                    { label: 'Security', icon: Shield, path: '/admin/settings/security', permission: 'settings_security' },
                 ]
             },
             {
@@ -250,20 +249,49 @@ export default function Sidebar({ collapsed, setCollapsed, isHovered, setIsHover
             },
         ];
 
-        return items.filter(item => {
-            if (user?.role === 'superadmin') return true;
-            if (user?.role === 'admin') return true;
+        return items
+            .map(item => {
+                if (item.subItems) {
+                    const filteredSubItems = item.subItems.filter(sub => {
+                        if (user?.role === 'superadmin') return true;
+                        if (user?.role === 'admin') return true;
 
-            const userPermissions = user?.permissions || [];
-            if (userPermissions.includes('*')) return true;
+                        const userPermissions = user?.permissions || [];
+                        if (userPermissions.includes('*')) return true;
 
-            if (item.permission) {
-                if (item.permission === 'admin_only') return false;
-                return userPermissions.includes(item.permission);
-            }
+                        if (sub.permission) {
+                            if (sub.permission === 'admin_only') return false;
+                            return userPermissions.includes(sub.permission);
+                        }
+                        return true;
+                    });
+                    return { ...item, subItems: filteredSubItems };
+                }
+                return item;
+            })
+            .filter(item => {
+                if (user?.role === 'superadmin') return true;
+                if (user?.role === 'admin') return true;
 
-            return true;
-        });
+                const userPermissions = user?.permissions || [];
+                if (userPermissions.includes('*')) return true;
+
+                if (item.subItems) {
+                    const hasSubPermission = item.subItems.length > 0;
+                    if (item.permission) {
+                        if (item.permission === 'admin_only') return false;
+                        return userPermissions.includes(item.permission) || hasSubPermission;
+                    }
+                    return hasSubPermission;
+                }
+
+                if (item.permission) {
+                    if (item.permission === 'admin_only') return false;
+                    return userPermissions.includes(item.permission);
+                }
+
+                return true;
+            });
     }, [user, pendingExpertsCount, lowStockCount, salon]);
 
     const [expandedItems, setExpandedItems] = useState([]);

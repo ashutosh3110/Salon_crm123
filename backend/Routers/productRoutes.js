@@ -8,18 +8,18 @@ const {
     deleteProduct,
     toggleLike
 } = require('../Controllers/productController');
-const { protect } = require('../Middleware/auth');
+const { protect, authorize } = require('../Middleware/auth');
 
 router.get('/outlet/:outletId', require('../Controllers/homePageController').getProductsByOutlet);
 
 router.route('/')
     .get(getProducts)
-    .post(protect, createProduct);
+    .post(protect, authorize('admin', 'manager', 'p:inventory'), createProduct);
 
 router.route('/:id')
     .get(getProduct)
-    .put(protect, updateProduct)
-    .delete(protect, deleteProduct);
+    .put(protect, authorize('admin', 'manager', 'p:inventory'), updateProduct)
+    .delete(protect, authorize('admin', 'manager', 'p:inventory'), deleteProduct);
 
 router.post('/:id/like', protect, toggleLike);
 

@@ -59,6 +59,10 @@ const payrollSchema = new mongoose.Schema({
         type: Number,
         default: 0
     },
+    advanceSalary: {
+        type: Number,
+        default: 0
+    },
     netSalary: {
         type: Number,
         required: true

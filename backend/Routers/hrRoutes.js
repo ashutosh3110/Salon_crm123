@@ -16,12 +16,16 @@ const {
     getOverallPerformance,
     updateRoster,
     deleteShift,
-    sendPayrollWhatsApp
+    sendPayrollWhatsApp,
+    getSalaryAdvances,
+    createSalaryAdvance,
+    updateSalaryAdvance,
+    deleteSalaryAdvance
 } = require('../Controllers/hrController');
 const { protect, authorize } = require('../Middleware/auth');
 
 router.use(protect);
-router.use(authorize('admin', 'manager'));
+router.use(authorize('admin', 'manager', 'p:hr'));
 
 router.get('/staff', getAllStaff);
 router.put('/staff/:id', updateStaffHR);
@@ -39,6 +43,12 @@ router.post('/payroll/generate', generatePayroll);
 router.get('/payroll', getPayroll);
 router.patch('/payroll/:id/status', updatePayrollStatus);
 router.post('/payroll/:id/whatsapp', sendPayrollWhatsApp);
+
+// Salary Advance Routes
+router.get('/salary-advances', getSalaryAdvances);
+router.post('/salary-advances', createSalaryAdvance);
+router.put('/salary-advances/:id', updateSalaryAdvance);
+router.delete('/salary-advances/:id', deleteSalaryAdvance);
 
 router.get('/leaves', getLeaveRequests);
 router.put('/leaves/:id', updateLeaveStatus);

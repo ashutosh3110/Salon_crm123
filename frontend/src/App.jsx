@@ -366,77 +366,128 @@ function App() {
                         <Route element={<ProtectedRoute />}>
                           <Route element={<AdminLayout />}>
                             <Route path="/admin" element={<DashboardPage />} />
-                            <Route path="/admin/outlets" element={<OutletsPage />} />
-                            <Route path="/admin/outlets/new" element={<OutletForm />} />
-                            <Route path="/admin/outlets/edit/:id" element={<OutletForm />} />
-                            <Route path="/admin/outlets/:id" element={<OutletDetailPage />} />
-                            <Route path="/admin/setup/roles" element={<RolesPage />} />
-                            <Route path="/admin/staff" element={<StaffPage />} />
                             
-                            <Route element={<ProtectedRoute permission="bookings" />}>
+                            {/* Business Setup Routes */}
+                            <Route element={<ProtectedRoute permission="setup_outlets" />}>
+                                <Route path="/admin/outlets" element={<OutletsPage />} />
+                                <Route path="/admin/outlets/new" element={<OutletForm />} />
+                                <Route path="/admin/outlets/edit/:id" element={<OutletForm />} />
+                                <Route path="/admin/outlets/:id" element={<OutletDetailPage />} />
+                            </Route>
+                            <Route element={<ProtectedRoute permission="manage_roles" />}>
+                                <Route path="/admin/setup/roles" element={<RolesPage />} />
+                            </Route>
+                            <Route element={<ProtectedRoute permission="setup_staff" />}>
+                                <Route path="/admin/staff" element={<StaffPage />} />
+                            </Route>
+                            
+                            {/* Bookings Routes */}
+                            <Route element={<ProtectedRoute permission="bookings_registry" />}>
                                 <Route path="/admin/bookings" element={<BookingsPage />} />
                                 <Route path="/admin/bookings/:id" element={<BookingDetailPage />} />
+                            </Route>
+                            <Route element={<ProtectedRoute permission="bookings_new" />}>
                                 <Route path="/admin/bookings/new" element={<NewBookingPage />} />
                             </Route>
 
-                            {/* CweRM Routes */}
-                            <Route element={<ProtectedRoute feature="crm" permission="crm" />}>
+                            {/* CRM Routes */}
+                            <Route element={<ProtectedRoute feature="crm" permission="crm_directory" />}>
                                 <Route path="/admin/crm/customers" element={<CustomersPage tab="directory" />} />
-                                <Route path="/admin/crm/wallets" element={<CustomersPage tab="wallets" />} />
-                                <Route path="/admin/crm/segments" element={<CustomersPage tab="segments" />} />
-                                <Route path="/admin/crm/feedback" element={<CustomersPage tab="feedback" />} />
-                                <Route path="/admin/crm/reengage" element={<CustomersPage tab="reengage" />} />
-                                <Route path="/admin/crm/bridal" element={<CustomersPage tab="bridal" />} />
-                                <Route path="/admin/crm/birthday-anniversary-reminders" element={<CustomersPage tab="birthday-anniversary-reminders" />} />
                                 <Route path="/admin/crm" element={<CustomersPage tab="directory" />} />
                             </Route>
-                            <Route element={<ProtectedRoute feature="pos" permission="pos" />}>
+                            <Route element={<ProtectedRoute feature="crm" permission="crm_wallets" />}>
+                                <Route path="/admin/crm/wallets" element={<CustomersPage tab="wallets" />} />
+                            </Route>
+                            <Route element={<ProtectedRoute feature="crm" permission="crm_directory" />}>
+                                <Route path="/admin/crm/segments" element={<CustomersPage tab="segments" />} />
+                            </Route>
+                            <Route element={<ProtectedRoute feature="crm" permission="crm_feedback" />}>
+                                <Route path="/admin/crm/feedback" element={<CustomersPage tab="feedback" />} />
+                            </Route>
+                            <Route element={<ProtectedRoute feature="crm" permission="crm_reengage" />}>
+                                <Route path="/admin/crm/reengage" element={<CustomersPage tab="reengage" />} />
+                            </Route>
+                            <Route element={<ProtectedRoute feature="crm" permission="crm_bridal" />}>
+                                <Route path="/admin/crm/bridal" element={<CustomersPage tab="bridal" />} />
+                            </Route>
+                            <Route element={<ProtectedRoute feature="crm" permission="crm_birthday_anniversary" />}>
+                                <Route path="/admin/crm/birthday-anniversary-reminders" element={<CustomersPage tab="birthday-anniversary-reminders" />} />
+                            </Route>
+                            
+                            {/* POS Reminders */}
+                            <Route element={<ProtectedRoute feature="pos" permission="pos_reminders" />}>
                                 <Route path="/admin/operations/payment-reminders" element={<CustomersPage tab="payment-reminders" />} />
                             </Route>
+
                             <Route path="/admin/clients" element={<ClientsPage />} />
 
                             {/* Services Routes */}
-                            <Route path="/admin/services" element={<ServicesPage tab="list" />} />
-                            <Route path="/admin/services/list" element={<ServicesPage tab="list" />} />
-                            <Route path="/admin/services/new" element={<ServicesPage tab="add-service" />} />
-                            <Route path="/admin/services/edit/:id" element={<ServicesPage tab="edit-service" />} />
-                            <Route path="/admin/services/view/:id" element={<ServiceDetailPage />} />
-                            <Route path="/admin/services/categories" element={<ServicesPage tab="categories" />} />
+                            <Route element={<ProtectedRoute permission="services_list" />}>
+                                <Route path="/admin/services" element={<ServicesPage tab="list" />} />
+                                <Route path="/admin/services/list" element={<ServicesPage tab="list" />} />
+                                <Route path="/admin/services/new" element={<ServicesPage tab="add-service" />} />
+                                <Route path="/admin/services/edit/:id" element={<ServicesPage tab="edit-service" />} />
+                                <Route path="/admin/services/view/:id" element={<ServiceDetailPage />} />
+                            </Route>
+                            <Route element={<ProtectedRoute permission="services_categories" />}>
+                                <Route path="/admin/services/categories" element={<ServicesPage tab="categories" />} />
+                            </Route>
 
-                            <Route element={<ProtectedRoute feature="inventory" permission="inventory" />}>
+                            {/* Products & Inventory Routes */}
+                            <Route element={<ProtectedRoute feature="inventory" permission="inventory_products" />}>
                                 <Route path="/admin/products" element={<ProductManagementPage />} />
-                                <Route path="/admin/inventory" element={<InventoryPage tab="overview" />} />
-                                <Route path="/admin/inventory/overview" element={<InventoryPage tab="overview" />} />
-                                <Route path="/admin/inventory/stock-overview" element={<StockOverviewPage />} />
-                                <Route path="/admin/inventory/transfer" element={<StockTransferPage />} />
-                                <Route path="/admin/inventory/stock-in" element={<InventoryPage tab="stock-in" />} />
-                                <Route path="/admin/inventory/adjustment" element={<InventoryPage tab="adjustment" />} />
-                                <Route path="/admin/inventory/alerts" element={<InventoryPage tab="alerts" />} />
                                 <Route path="/admin/inventory/products" element={<ProductManagementPage />} />
                                 <Route path="/admin/inventory/products/new" element={<AddProductPage />} />
                                 <Route path="/admin/inventory/products/edit/:id" element={<AddProductPage />} />
                                 <Route path="/admin/inventory/products/view/:id" element={<ProductDetailsPage />} />
+                            </Route>
+                            <Route element={<ProtectedRoute feature="inventory" permission="inventory" />}>
+                                <Route path="/admin/inventory" element={<InventoryPage tab="overview" />} />
+                                <Route path="/admin/inventory/overview" element={<InventoryPage tab="overview" />} />
+                                <Route path="/admin/inventory/stock-in" element={<InventoryPage tab="stock-in" />} />
+                                <Route path="/admin/inventory/adjustment" element={<InventoryPage tab="adjustment" />} />
+                                <Route path="/admin/inventory/alerts" element={<InventoryPage tab="alerts" />} />
                                 <Route path="/admin/inventory/shop-categories" element={<InventoryPage tab="shop-categories" />} />
+                            </Route>
+                            <Route element={<ProtectedRoute feature="inventory" permission="inventory_stock_overview" />}>
+                                <Route path="/admin/inventory/stock-overview" element={<StockOverviewPage />} />
+                            </Route>
+                            <Route element={<ProtectedRoute feature="inventory" permission="inventory_transfer" />}>
+                                <Route path="/admin/inventory/transfer" element={<StockTransferPage />} />
+                            </Route>
+                            <Route element={<ProtectedRoute feature="inventory" permission="inventory_categories" />}>
                                 <Route path="/admin/inventory/product-categories" element={<ProductCategoriesPage />} />
+                            </Route>
+                            <Route element={<ProtectedRoute feature="inventory" permission="inventory_shop_orders" />}>
                                 <Route path="/admin/shop-orders" element={<ShopOrdersPage />} />
                             </Route>
 
                             {/* Finance Routes */}
-                            <Route element={<ProtectedRoute feature="finance" permission="finance" />}>
+                            <Route element={<ProtectedRoute feature="finance" permission="finance_dashboard" />}>
                                 <Route path="/admin/finance" element={<FinancePage tab="dashboard" />} />
                                 <Route path="/admin/finance/dashboard" element={<FinancePage tab="dashboard" />} />
+                            </Route>
+                            <Route element={<ProtectedRoute feature="finance" permission="finance_transactions" />}>
                                 <Route path="/admin/finance/transactions" element={<FinancePage tab="transactions" />} />
+                            </Route>
+                            <Route element={<ProtectedRoute feature="finance" permission="finance_cash_book" />}>
                                 <Route path="/admin/finance/cash-book" element={<FinancePage tab="cash-book" />} />
                                 <Route path="/admin/finance/bank-book" element={<FinancePage tab="bank-book" />} />
+                            </Route>
+                            <Route element={<ProtectedRoute feature="finance" permission="finance_expenses" />}>
                                 <Route path="/admin/finance/expenses" element={<FinancePage tab="expenses" />} />
+                            </Route>
+                            <Route element={<ProtectedRoute feature="finance" permission="finance_reports" />}>
                                 <Route path="/admin/finance/reports" element={<FinancePage tab="reports" />} />
                                 <Route path="/admin/finance/eod" element={<FinancePage tab="eod" />} />
                             </Route>
 
                             {/* Supplier Routes */}
-                            <Route element={<ProtectedRoute feature="finance" permission="finance" />}>
+                            <Route element={<ProtectedRoute feature="finance" permission="suppliers_directory" />}>
                                 <Route path="/admin/suppliers" element={<SuppliersPage tab="directory" />} />
                                 <Route path="/admin/suppliers/directory" element={<SuppliersPage tab="directory" />} />
+                            </Route>
+                            <Route element={<ProtectedRoute feature="finance" permission="suppliers_invoices" />}>
                                 <Route path="/admin/suppliers/invoices" element={<SuppliersPage tab="invoices" />} />
                             </Route>
 
@@ -444,34 +495,69 @@ function App() {
                             <Route element={<ProtectedRoute feature="payroll" permission="hr" />}>
                                 <Route path="/admin/hr" element={<HRPage tab="staff" />} />
                                 <Route path="/admin/hr/staff" element={<HRPage tab="staff" />} />
-                                <Route path="/admin/hr/attendance" element={<HRPage tab="attendance" />} />
-                                <Route path="/admin/hr/payroll" element={<HRPage tab="payroll" />} />
                                 <Route path="/admin/hr/performance" element={<HRPage tab="performance" />} />
                             </Route>
-
-                            <Route path="/admin/promotions" element={<PromotionsPage />} />
-                            
-                            <Route element={<ProtectedRoute permission="marketing" />}>
-                                <Route path="/admin/marketing" element={<MarketingHubPage />} />
-                                <Route path="/admin/marketing/cms" element={<MarketingCMSPage />} />
+                            <Route element={<ProtectedRoute feature="payroll" permission="hr_attendance" />}>
+                                <Route path="/admin/hr/attendance" element={<HRPage tab="attendance" />} />
+                            </Route>
+                            <Route element={<ProtectedRoute feature="payroll" permission="hr_payroll" />}>
+                                <Route path="/admin/hr/payroll" element={<HRPage tab="payroll" />} />
+                            </Route>
+                            <Route element={<ProtectedRoute feature="payroll" permission="hr_advance_salary" />}>
+                                <Route path="/admin/hr/advance-salary" element={<HRPage tab="advance-salary" />} />
                             </Route>
 
-                            <Route path="/admin/inquiries" element={<InquiryPage />} />
+                            {/* Marketing Routes */}
+                            <Route element={<ProtectedRoute permission="marketing_promotions" />}>
+                                <Route path="/admin/promotions" element={<PromotionsPage />} />
+                            </Route>
+                            <Route element={<ProtectedRoute permission="marketing_hub" />}>
+                                <Route path="/admin/marketing" element={<MarketingHubPage />} />
+                            </Route>
+                            <Route element={<ProtectedRoute permission="marketing" />}>
+                                <Route path="/admin/marketing/cms" element={<MarketingCMSPage />} />
+                            </Route>
+                            <Route element={<ProtectedRoute permission="marketing_whatsapp_credits" />}>
+                                <Route path="/admin/whatsapp-credits" element={<WhatsAppCreditsPage />} />
+                            </Route>
+
+                            <Route element={<ProtectedRoute permission="crm_inquiries" />}>
+                                <Route path="/admin/inquiries" element={<InquiryPage />} />
+                            </Route>
                             <Route path="/admin/reminders" element={<RemindersPage />} />
+                            
+                            {/* Loyalty Routes */}
                             <Route element={<ProtectedRoute permission="loyalty" />}>
                                 <Route path="/admin/loyalty" element={<LoyaltyMembershipPage tab="rules" />} />
                                 <Route path="/admin/loyalty/rules" element={<LoyaltyMembershipPage tab="rules" />} />
-                                <Route path="/admin/loyalty/plans" element={<LoyaltyMembershipPage tab="plans" />} />
-                                <Route path="/admin/loyalty/members" element={<LoyaltyMembershipPage tab="members" />} />
                                 <Route path="/admin/loyalty/transactions" element={<LoyaltyMembershipPage tab="transactions" />} />
                                 <Route path="/admin/loyalty/referral" element={<LoyaltyMembershipPage tab="referral" />} />
+                            </Route>
+                            <Route element={<ProtectedRoute permission="loyalty_plans" />}>
+                                <Route path="/admin/loyalty/plans" element={<LoyaltyMembershipPage tab="plans" />} />
+                            </Route>
+                            <Route element={<ProtectedRoute permission="loyalty_members" />}>
+                                <Route path="/admin/loyalty/members" element={<LoyaltyMembershipPage tab="members" />} />
+                            </Route>
+                            <Route element={<ProtectedRoute permission="loyalty_reminders" />}>
                                 <Route path="/admin/loyalty/reminders" element={<LoyaltyMembershipPage tab="reminders" />} />
                             </Route>
+                            
                             <Route path="/admin/invoices" element={<InvoicesPage />} />
                             <Route path="/admin/settings" element={<Navigate to="/admin/settings/profile" replace />} />
-                            <Route path="/admin/settings/:section" element={<SettingsPage />} />
+                            
+                            {/* Settings Routes */}
+                            <Route element={<ProtectedRoute permission="settings_profile" />}>
+                                <Route path="/admin/settings/profile" element={<SettingsPage />} />
+                            </Route>
+                            <Route element={<ProtectedRoute permission="settings_business" />}>
+                                <Route path="/admin/settings/business" element={<SettingsPage />} />
+                            </Route>
+                            <Route element={<ProtectedRoute permission="settings_security" />}>
+                                <Route path="/admin/settings/security" element={<SettingsPage />} />
+                            </Route>
+                            
                             <Route path="/admin/subscription" element={<SubscriptionPage />} />
-                            <Route path="/admin/whatsapp-credits" element={<WhatsAppCreditsPage />} />
                             <Route path="/admin/support" element={<SupportPage />} />
                             <Route path="/admin/feature-locked" element={<FeatureLockedPage />} />
                           </Route>

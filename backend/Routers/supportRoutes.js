@@ -21,9 +21,9 @@ router.patch('/faqs/:id', protect, authorize('superadmin'), updateFaq);
 router.delete('/faqs/:id', protect, authorize('superadmin'), deleteFaq);
 
 // Admin Ticket routes
-router.get('/admin/tickets', protect, authorize('admin', 'manager'), getAdminTickets);
-router.patch('/tickets/:id/status', protect, authorize('admin', 'manager', 'superadmin'), updateTicketStatus);
-router.patch('/tickets/:id/escalate', protect, authorize('admin', 'manager'), escalateTicket);
+router.get('/admin/tickets', protect, authorize('admin', 'manager', 'p:support'), getAdminTickets);
+router.patch('/tickets/:id/status', protect, authorize('admin', 'manager', 'superadmin', 'p:support'), updateTicketStatus);
+router.patch('/tickets/:id/escalate', protect, authorize('admin', 'manager', 'p:support'), escalateTicket);
 
 // SuperAdmin Ticket routes
 router.get('/superadmin/tickets', protect, authorize('superadmin'), getSuperAdminTickets);

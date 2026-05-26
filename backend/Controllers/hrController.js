@@ -5,6 +5,7 @@ const Shift = require('../Models/Shift');
 const LeaveRequest = require('../Models/LeaveRequest');
 const Booking = require('../Models/Booking');
 const Service = require('../Models/Service');
+const SalaryAdvance = require('../Models/SalaryAdvance');
 const mongoose = require('mongoose');
 
 // @desc    Get all staff with HR profiles
@@ -210,6 +211,25 @@ exports.generatePayroll = async (req, res) => {
 
         // If manual save for single staff
         if (staffId && baseSalary !== undefined) {
+            // Find existing payroll to reset previously linked advances
+            const existingPayroll = await Payroll.findOne({ staffId, month, year });
+            if (existingPayroll) {
+                await SalaryAdvance.updateMany(
+                    { adjustedPayrollId: existingPayroll._id },
+                    { isAdjusted: false, adjustedPayrollId: null }
+                );
+            }
+
+            // Find unadjusted advances for this staff in this cycle
+            const advances = await SalaryAdvance.find({
+                staffId,
+                month: Number(month),
+                year: Number(year),
+                isAdjusted: false,
+                status: { $in: ['approved', 'paid'] }
+            });
+            const advanceSalarySum = advances.reduce((sum, adv) => sum + adv.amount, 0);
+
             const perDaySalary = baseSalary / 30;
             const earnedSalary = perDaySalary * (presentDays || 0);
             const netSalary = Math.round(
@@ -218,7 +238,8 @@ exports.generatePayroll = async (req, res) => {
                 (Number(overtime) || 0) - 
                 (Number(pf) || 0) - 
                 (Number(tax) || 0) - 
-                (Number(otherDeductions) || 0)
+                (Number(otherDeductions) || 0) -
+                advanceSalarySum
             );
 
             const payroll = await Payroll.findOneAndUpdate(
@@ -237,6 +258,7 @@ exports.generatePayroll = async (req, res) => {
                     pf: Number(pf) || 0,
                     tax: Number(tax) || 0,
                     otherDeductions: Number(otherDeductions) || 0,
+                    advanceSalary: advanceSalarySum,
                     netSalary,
                     notes,
                     status: status || 'draft',
@@ -244,6 +266,15 @@ exports.generatePayroll = async (req, res) => {
                 },
                 { new: true, upsert: true }
             );
+
+            // Mark matching advances as adjusted and link them to this payroll
+            if (advanceSalarySum > 0) {
+                await SalaryAdvance.updateMany(
+                    { _id: { $in: advances.map(a => a._id) } },
+                    { isAdjusted: true, adjustedPayrollId: payroll._id }
+                );
+            }
+
             return res.status(200).json({ success: true, data: payroll });
         }
 
@@ -297,7 +328,27 @@ exports.generatePayroll = async (req, res) => {
                 totalCommission += baseCommission / stylistsCount;
             }
             const commissionEarned = Math.round(totalCommission);
-            const netSalary = Math.round(earned + commissionEarned);
+
+            // Find existing payroll to reset previously linked advances
+            const existingPayroll = await Payroll.findOne({ staffId: staff._id, month, year });
+            if (existingPayroll) {
+                await SalaryAdvance.updateMany(
+                    { adjustedPayrollId: existingPayroll._id },
+                    { isAdjusted: false, adjustedPayrollId: null }
+                );
+            }
+
+            // Find unadjusted advances for this staff in this cycle
+            const advances = await SalaryAdvance.find({
+                staffId: staff._id,
+                month: Number(month),
+                year: Number(year),
+                isAdjusted: false,
+                status: { $in: ['approved', 'paid'] }
+            });
+            const advanceSalarySum = advances.reduce((sum, adv) => sum + adv.amount, 0);
+
+            const netSalary = Math.round(earned + commissionEarned - advanceSalarySum);
 
             const payroll = await Payroll.findOneAndUpdate(
                 { staffId: staff._id, month, year },
@@ -311,12 +362,22 @@ exports.generatePayroll = async (req, res) => {
                     presentDays: effectivePresent,
                     leaveDays: leaveCount,
                     incentive: commissionEarned,
+                    advanceSalary: advanceSalarySum,
                     netSalary: netSalary,
                     status: 'draft',
                     performedBy: req.user._id
                 },
                 { new: true, upsert: true }
             );
+
+            // Mark matching advances as adjusted and link them to this payroll
+            if (advanceSalarySum > 0) {
+                await SalaryAdvance.updateMany(
+                    { _id: { $in: advances.map(a => a._id) } },
+                    { isAdjusted: true, adjustedPayrollId: payroll._id }
+                );
+            }
+
             payrollResults.push(payroll);
         }
 
@@ -586,6 +647,7 @@ exports.sendPayrollWhatsApp = async (req, res) => {
             (payroll.pf > 0 ? `• PF Deduction: -₹${payroll.pf.toLocaleString('en-IN')}\n` : '') +
             (payroll.tax > 0 ? `• Tax Deduction: -₹${payroll.tax.toLocaleString('en-IN')}\n` : '') +
             (payroll.otherDeductions > 0 ? `• Other Deductions: -₹${payroll.otherDeductions.toLocaleString('en-IN')}\n` : '') +
+            (payroll.advanceSalary > 0 ? `• Advance Salary: -₹${payroll.advanceSalary.toLocaleString('en-IN')}\n` : '') +
             `• *Net Settlement: ₹${payroll.netSalary.toLocaleString('en-IN')}*\n` +
             `• Status: *${payroll.status.toUpperCase()}*\n` +
             (payroll.paymentMethod ? `• Payment Mode: ${payroll.paymentMethod.toUpperCase()}\n` : '') +
@@ -604,6 +666,143 @@ exports.sendPayrollWhatsApp = async (req, res) => {
         }
     } catch (error) {
         console.error('[HR-Controller] sendPayrollWhatsApp Error:', error);
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
+
+// @desc    Record a new salary advance
+// @route   POST /api/hr/salary-advances
+// @access  Private/Admin
+exports.createSalaryAdvance = async (req, res) => {
+    try {
+        const { staffId, amount, reason, date, status } = req.body;
+        const salonId = req.user.salonId;
+
+        if (!staffId || !amount || !date) {
+            return res.status(400).json({ success: false, message: 'Staff ID, amount, and date are required' });
+        }
+
+        // Get staff base salary
+        const staffObj = await Staff.findById(staffId);
+        if (!staffObj) {
+            return res.status(404).json({ success: false, message: 'Staff member not found' });
+        }
+        const baseSalary = staffObj.hrProfile?.baseSalary || 0;
+        if (baseSalary === 0) {
+            return res.status(400).json({ success: false, message: 'Base salary is not configured for this staff member. Please setup base salary first.' });
+        }
+        if (Number(amount) > baseSalary) {
+            return res.status(400).json({ success: false, message: `Advance amount cannot exceed the employee's base salary (₹${baseSalary.toLocaleString('en-IN')})` });
+        }
+
+        const parsedDate = new Date(date);
+        const month = parsedDate.getMonth() + 1; // 1-12
+        const year = parsedDate.getFullYear();
+
+        const advance = await SalaryAdvance.create({
+            salonId,
+            staffId,
+            amount: Number(amount),
+            reason,
+            date: parsedDate,
+            month,
+            year,
+            status: status || 'paid'
+        });
+
+        res.status(201).json({ success: true, data: advance });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
+
+// @desc    Get all salary advances for the salon
+// @route   GET /api/hr/salary-advances
+// @access  Private/Admin
+exports.getSalaryAdvances = async (req, res) => {
+    try {
+        const salonId = req.user.salonId;
+        const { staffId, month, year } = req.query;
+
+        let query = { salonId };
+        if (staffId) query.staffId = staffId;
+        if (month) query.month = Number(month);
+        if (year) query.year = Number(year);
+
+        const advances = await SalaryAdvance.find(query)
+            .populate('staffId', 'name role phone hrProfile')
+            .sort({ date: -1 });
+
+        res.status(200).json({ success: true, count: advances.length, data: advances });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
+
+// @desc    Update a salary advance (only if not adjusted)
+// @route   PUT /api/hr/salary-advances/:id
+// @access  Private/Admin
+exports.updateSalaryAdvance = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { amount, reason, date, status } = req.body;
+
+        const advance = await SalaryAdvance.findById(id);
+        if (!advance) {
+            return res.status(404).json({ success: false, message: 'Salary advance record not found' });
+        }
+
+        if (advance.isAdjusted) {
+            return res.status(400).json({ success: false, message: 'Cannot update a salary advance that has already been adjusted in payroll' });
+        }
+
+        if (amount !== undefined) {
+            const staffObj = await Staff.findById(advance.staffId);
+            if (!staffObj) {
+                return res.status(404).json({ success: false, message: 'Staff member associated with this advance not found' });
+            }
+            const baseSalary = staffObj.hrProfile?.baseSalary || 0;
+            if (Number(amount) > baseSalary) {
+                return res.status(400).json({ success: false, message: `Advance amount cannot exceed the employee's base salary (₹${baseSalary.toLocaleString('en-IN')})` });
+            }
+            advance.amount = Number(amount);
+        }
+
+        if (date) {
+            const parsedDate = new Date(date);
+            advance.date = parsedDate;
+            advance.month = parsedDate.getMonth() + 1;
+            advance.year = parsedDate.getFullYear();
+        }
+        if (reason !== undefined) advance.reason = reason;
+        if (status !== undefined) advance.status = status;
+
+        await advance.save();
+        res.status(200).json({ success: true, data: advance });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
+
+// @desc    Delete a salary advance (only if not adjusted)
+// @route   DELETE /api/hr/salary-advances/:id
+// @access  Private/Admin
+exports.deleteSalaryAdvance = async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        const advance = await SalaryAdvance.findById(id);
+        if (!advance) {
+            return res.status(404).json({ success: false, message: 'Salary advance record not found' });
+        }
+
+        if (advance.isAdjusted) {
+            return res.status(400).json({ success: false, message: 'Cannot delete a salary advance that has already been adjusted in payroll' });
+        }
+
+        await SalaryAdvance.findByIdAndDelete(id);
+        res.status(200).json({ success: true, message: 'Salary advance deleted successfully' });
+    } catch (error) {
         res.status(500).json({ success: false, message: error.message });
     }
 };

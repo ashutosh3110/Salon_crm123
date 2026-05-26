@@ -11,7 +11,7 @@ const {
 const { protect, authorize } = require('../Middleware/auth');
 
 router.use(protect);
-router.use(authorize('admin', 'manager'));
+router.use(authorize('admin', 'manager', 'p:inventory'));
 
 router.post('/update-stock', updateStock);
 router.get('/history', getStockHistory);

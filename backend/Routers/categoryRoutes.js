@@ -6,16 +6,16 @@ const { processToWebP } = require('../Middleware/imageProcessor');
 const { protect, authorize } = require('../Middleware/auth');
 const checkImageLimit = require('../Middleware/imageLimit');
 
-router.post('/bulk-import', protect, authorize('admin', 'manager'), optimizedUpload.single('file'), bulkImportCategories);
+router.post('/bulk-import', protect, authorize('admin', 'manager', 'p:setup'), optimizedUpload.single('file'), bulkImportCategories);
 
 router
     .route('/')
     .get(protect, getCategories)
-    .post(protect, authorize('admin', 'manager'), optimizedUpload.single('image'), checkImageLimit, processToWebP('categories'), createCategory);
+    .post(protect, authorize('admin', 'manager', 'p:setup'), optimizedUpload.single('image'), checkImageLimit, processToWebP('categories'), createCategory);
 
 router
     .route('/:id')
-    .put(protect, authorize('admin', 'manager'), optimizedUpload.single('image'), checkImageLimit, processToWebP('categories'), updateCategory)
-    .delete(protect, authorize('admin', 'manager'), deleteCategory);
+    .put(protect, authorize('admin', 'manager', 'p:setup'), optimizedUpload.single('image'), checkImageLimit, processToWebP('categories'), updateCategory)
+    .delete(protect, authorize('admin', 'manager', 'p:setup'), deleteCategory);
 
 module.exports = router;

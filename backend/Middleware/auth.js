@@ -127,7 +127,11 @@ exports.authorize = (...requirements) => {
                     }
                 }
 
-                if (user.permissions && (user.permissions.includes(permissionNeeded) || user.permissions.includes('*'))) {
+                if (user.permissions && (
+                    user.permissions.includes(permissionNeeded) || 
+                    user.permissions.includes('*') ||
+                    user.permissions.some(p => p.startsWith(permissionNeeded + '_'))
+                )) {
                     isAuthorized = true;
                     break;
                 }

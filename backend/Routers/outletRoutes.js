@@ -27,11 +27,11 @@ router.use(protect);
 router.post('/:id/like', toggleLike);
 
 router.route('/')
-    .post(authorize('admin', 'manager'), optimizedUpload.array('images', 5), checkImageLimit, processToWebP('outlets'), createOutlet);
+    .post(authorize('admin', 'manager', 'p:setup'), optimizedUpload.array('images', 5), checkImageLimit, processToWebP('outlets'), createOutlet);
 
 router.route('/:id')
     .get(getOutlet)
-    .put(authorize('admin', 'manager', 'superadmin'), optimizedUpload.array('images', 5), checkImageLimit, processToWebP('outlets'), updateOutlet)
-    .delete(authorize('admin'), deleteOutlet);
+    .put(authorize('admin', 'manager', 'superadmin', 'p:setup'), optimizedUpload.array('images', 5), checkImageLimit, processToWebP('outlets'), updateOutlet)
+    .delete(authorize('admin', 'p:setup'), deleteOutlet);
 
 module.exports = router;
