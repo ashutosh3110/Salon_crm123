@@ -110,6 +110,19 @@ export default function AdvanceSalaryManager() {
             return;
         }
 
+        const selectedStaff = staff?.find(s => s._id === form.staffId);
+        const baseSalary = selectedStaff?.hrProfile?.baseSalary || 0;
+
+        if (baseSalary === 0) {
+            showToast("Base salary is not configured for this employee. Setup base salary first.");
+            return;
+        }
+
+        if (Number(form.amount) > baseSalary) {
+            showToast(`Advance amount cannot exceed the employee's base salary (₹${baseSalary.toLocaleString()})`);
+            return;
+        }
+
         setIsSaving(true);
         try {
             if (editingAdvance) {

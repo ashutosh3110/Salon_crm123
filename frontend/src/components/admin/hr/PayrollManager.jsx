@@ -42,6 +42,7 @@ export default function PayrollManager() {
         pf: 0,
         tax: 0,
         otherDeductions: 0,
+        advanceSalary: 0,
         notes: ''
     });
 
@@ -90,11 +91,19 @@ export default function PayrollManager() {
             const computedLeave = stats.leave || 0;
             const computedCommission = stats.commission || 0;
 
+            // Fetch advances
+            const advancesRes = await api.get('/hr/salary-advances', {
+                params: { staffId, month: selectedMonth, year: selectedYear }
+            });
+            const advances = advancesRes.data?.data || [];
+            const advanceSalarySum = advances.filter(a => !a.isAdjusted && ['approved', 'paid'].includes(a.status)).reduce((sum, a) => sum + a.amount, 0);
+
             setIndividualForm(prev => ({
                 ...prev,
                 presentDays: computedPresent,
                 leaveDays: computedLeave,
-                incentive: computedCommission
+                incentive: computedCommission,
+                advanceSalary: advanceSalarySum
             }));
         } catch (error) {
             console.error('Failed to fetch attendance summary', error);
@@ -165,6 +174,7 @@ export default function PayrollManager() {
             pf: record.pf || 0,
             tax: record.tax || 0,
             otherDeductions: record.otherDeductions || 0,
+            advanceSalary: record.advanceSalary || 0,
             notes: record.notes || '',
             status: record.status || 'draft'
         });
@@ -173,7 +183,7 @@ export default function PayrollManager() {
     const calculateNet = () => {
         const perDay = detailForm.baseSalary / (detailForm.workingDays || 1);
         const earned = perDay * detailForm.presentDays;
-        const total = earned + Number(detailForm.incentive) + Number(detailForm.overtime) - Number(detailForm.pf) - Number(detailForm.tax) - Number(detailForm.otherDeductions);
+        const total = earned + Number(detailForm.incentive) + Number(detailForm.overtime) - Number(detailForm.pf) - Number(detailForm.tax) - Number(detailForm.otherDeductions) - Number(detailForm.advanceSalary || 0);
         return Math.round(total);
     };
 
@@ -204,7 +214,8 @@ export default function PayrollManager() {
             const netSalary = Math.round(
                 ((individualForm.baseSalary / (individualForm.workingDays || 1)) * individualForm.presentDays) +
                 Number(individualForm.incentive) + Number(individualForm.overtime) -
-                Number(individualForm.pf) - Number(individualForm.tax) - Number(individualForm.otherDeductions)
+                Number(individualForm.pf) - Number(individualForm.tax) - Number(individualForm.otherDeductions) -
+                Number(individualForm.advanceSalary || 0)
             );
 
             await api.post('/hr/payroll/generate', {
@@ -217,7 +228,7 @@ export default function PayrollManager() {
             setIndividualModal(false);
             setIndividualForm({
                 staffId: '', baseSalary: 0, workingDays: 30, presentDays: 0, leaveDays: 0,
-                incentive: 0, overtime: 0, pf: 0, tax: 0, otherDeductions: 0, notes: ''
+                incentive: 0, overtime: 0, pf: 0, tax: 0, otherDeductions: 0, advanceSalary: 0, notes: ''
             });
             loadRecords();
         } catch (e) {
@@ -307,6 +318,13 @@ export default function PayrollManager() {
                             <td class="amount">-</td>
                             <td class="amount" style="color: #e11d48">-₹${record.otherDeductions.toLocaleString()}</td>
                         </tr>
+                        ${record.advanceSalary > 0 ? `
+                        <tr>
+                            <td>Advance Salary Deduction</td>
+                            <td class="amount">-</td>
+                            <td class="amount" style="color: #e11d48">-₹${record.advanceSalary.toLocaleString()}</td>
+                        </tr>
+                        ` : ''}
                         <tr class="total-row">
                             <td colspan="2">NET SETTLEMENT AMOUNT</td>
                             <td class="amount">₹${record.netSalary.toLocaleString()}</td>
@@ -686,6 +704,11 @@ export default function PayrollManager() {
                                             <input type="number" value={individualForm.overtime} onChange={e => setIndividualForm({ ...individualForm, overtime: Number(e.target.value) })}
                                                 className="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-slate-750 border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-700 dark:text-slate-200 focus:ring-2 focus:ring-primary/10 focus:border-primary outline-none" />
                                         </div>
+                                        <div className="space-y-1">
+                                            <label className="text-[10px] font-black text-violet-650 dark:text-violet-400 ml-1 uppercase">Advance Salary (₹)</label>
+                                            <input type="number" value={individualForm.advanceSalary || 0} disabled
+                                                className="w-full px-4 py-3 rounded-xl bg-slate-150 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-400 dark:text-slate-500 cursor-not-allowed outline-none" />
+                                        </div>
                                     </div>
 
                                     <div className="space-y-1">
@@ -697,8 +720,8 @@ export default function PayrollManager() {
 
                                 <div className="p-6 border-t border-slate-100 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/40 flex items-center justify-between">
                                     <div className="text-left">
-                                        <p className="text-[9px] font-black text-slate-450 dark:text-slate-550 uppercase">Estimated Settlement</p>
-                                        <h3 className="text-xl font-black text-primary dark:text-slate-100 tracking-tight mt-0.5">₹{Math.round(((individualForm.baseSalary / (individualForm.workingDays || 1)) * individualForm.presentDays) + Number(individualForm.incentive) + Number(individualForm.overtime) - Number(individualForm.pf) - Number(individualForm.tax) - Number(individualForm.otherDeductions)).toLocaleString()}</h3>
+                                        <p className="text-[9px] font-black text-slate-450 dark:text-slate-555 uppercase">Estimated Settlement</p>
+                                        <h3 className="text-xl font-black text-primary dark:text-slate-100 tracking-tight mt-0.5">₹{Math.round(((individualForm.baseSalary / (individualForm.workingDays || 1)) * individualForm.presentDays) + Number(individualForm.incentive) + Number(individualForm.overtime) - Number(individualForm.pf) - Number(individualForm.tax) - Number(individualForm.otherDeductions) - Number(individualForm.advanceSalary || 0)).toLocaleString()}</h3>
                                     </div>
                                     <div className="flex gap-2">
                                         <button type="button" onClick={() => setIndividualModal(false)} className="px-4 py-2.5 bg-slate-150 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-650 text-slate-700 dark:text-slate-200 rounded-xl font-bold text-xs transition-all">Cancel</button>
@@ -787,7 +810,7 @@ export default function PayrollManager() {
                                         </div>
                                     </div>
 
-                                    <div className="grid grid-cols-2 gap-4">
+                                    <div className="grid grid-cols-3 gap-4">
                                         <div className="space-y-1">
                                             <label className="text-[9px] font-black text-rose-600 uppercase tracking-widest block mb-1">Deductions (₹)</label>
                                             <input 
@@ -804,6 +827,15 @@ export default function PayrollManager() {
                                                 value={detailForm.overtime} 
                                                 onChange={e => setDetailForm({...detailForm, overtime: Number(e.target.value)})}
                                                 className="w-full px-4 py-3 rounded-none bg-slate-50 border border-slate-200 text-xs font-bold text-slate-900 focus:border-primary outline-none" 
+                                            />
+                                        </div>
+                                        <div className="space-y-1">
+                                            <label className="text-[9px] font-black text-violet-600 uppercase tracking-widest block mb-1">Advance Deducted (₹)</label>
+                                            <input 
+                                                type="number" 
+                                                value={detailForm.advanceSalary || 0} 
+                                                disabled
+                                                className="w-full px-4 py-3 rounded-none bg-slate-100 border border-slate-200 text-xs font-bold text-slate-400 cursor-not-allowed outline-none" 
                                             />
                                         </div>
                                     </div>

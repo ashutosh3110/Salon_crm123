@@ -682,6 +682,19 @@ exports.createSalaryAdvance = async (req, res) => {
             return res.status(400).json({ success: false, message: 'Staff ID, amount, and date are required' });
         }
 
+        // Get staff base salary
+        const staffObj = await Staff.findById(staffId);
+        if (!staffObj) {
+            return res.status(404).json({ success: false, message: 'Staff member not found' });
+        }
+        const baseSalary = staffObj.hrProfile?.baseSalary || 0;
+        if (baseSalary === 0) {
+            return res.status(400).json({ success: false, message: 'Base salary is not configured for this staff member. Please setup base salary first.' });
+        }
+        if (Number(amount) > baseSalary) {
+            return res.status(400).json({ success: false, message: `Advance amount cannot exceed the employee's base salary (₹${baseSalary.toLocaleString('en-IN')})` });
+        }
+
         const parsedDate = new Date(date);
         const month = parsedDate.getMonth() + 1; // 1-12
         const year = parsedDate.getFullYear();
@@ -743,13 +756,24 @@ exports.updateSalaryAdvance = async (req, res) => {
             return res.status(400).json({ success: false, message: 'Cannot update a salary advance that has already been adjusted in payroll' });
         }
 
+        if (amount !== undefined) {
+            const staffObj = await Staff.findById(advance.staffId);
+            if (!staffObj) {
+                return res.status(404).json({ success: false, message: 'Staff member associated with this advance not found' });
+            }
+            const baseSalary = staffObj.hrProfile?.baseSalary || 0;
+            if (Number(amount) > baseSalary) {
+                return res.status(400).json({ success: false, message: `Advance amount cannot exceed the employee's base salary (₹${baseSalary.toLocaleString('en-IN')})` });
+            }
+            advance.amount = Number(amount);
+        }
+
         if (date) {
             const parsedDate = new Date(date);
             advance.date = parsedDate;
             advance.month = parsedDate.getMonth() + 1;
             advance.year = parsedDate.getFullYear();
         }
-        if (amount !== undefined) advance.amount = Number(amount);
         if (reason !== undefined) advance.reason = reason;
         if (status !== undefined) advance.status = status;
 
