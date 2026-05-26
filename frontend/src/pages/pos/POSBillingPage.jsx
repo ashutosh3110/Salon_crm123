@@ -1862,7 +1862,7 @@ export default function POSBillingPage() {
                                         required
                                         value={paymentDate}
                                         onChange={(e) => setPaymentDate(e.target.value)}
-                                        className={`bg-surface border text-[11px] font-black uppercase rounded-lg px-2.5 py-1 outline-none text-slate-800 focus:border-primary/50 cursor-pointer ${!paymentDate ? 'border-rose-300 bg-rose-50/20' : 'border-border'}`}
+                                        className={`bg-surface border text-[11px] font-black uppercase rounded-lg px-2.5 py-1 outline-none text-slate-800 dark:text-slate-200 dark:[color-scheme:dark] focus:border-primary/50 cursor-pointer ${!paymentDate ? 'border-rose-300 bg-rose-50/20 dark:border-rose-900/60 dark:bg-rose-950/20' : 'border-border'}`}
                                     />
                                 </div>
                                 <div className="flex items-center justify-between px-1 mb-1">
@@ -2281,7 +2281,7 @@ export default function POSBillingPage() {
                                     <input
                                         type="date"
                                         max={new Date().toISOString().split('T')[0]}
-                                        className="w-full p-3 bg-background border border-border text-xs font-black text-text outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 rounded-lg transition-all"
+                                        className="w-full p-3 bg-background border border-border text-xs font-black text-text outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 rounded-lg transition-all dark:[color-scheme:dark]"
                                         value={newClientForm.dob}
                                         onChange={(e) => setNewClientForm({ ...newClientForm, dob: e.target.value })}
                                     />
@@ -2291,7 +2291,7 @@ export default function POSBillingPage() {
                                     <input
                                         type="date"
                                         max={new Date().toISOString().split('T')[0]}
-                                        className="w-full p-3 bg-background border border-border text-xs font-black text-text outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 rounded-lg transition-all"
+                                        className="w-full p-3 bg-background border border-border text-xs font-black text-text outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 rounded-lg transition-all dark:[color-scheme:dark]"
                                         value={newClientForm.anniversary}
                                         onChange={(e) => setNewClientForm({ ...newClientForm, anniversary: e.target.value })}
                                     />
@@ -2743,10 +2743,98 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
             <motion.div
                 initial={{ opacity: 0, scale: 0.95, y: 20 }}
                 animate={{ opacity: 1, scale: 1, y: 0 }}
-                className="bg-white w-full max-w-[96%] h-full sm:h-[95vh] shadow-2xl flex flex-col sm:rounded-2xl border border-slate-200 overflow-hidden"
+                className="bg-checkout-modal w-full max-w-[96%] h-full sm:h-[95vh] shadow-2xl flex flex-col sm:rounded-2xl border overflow-hidden"
             >
+                <style>{`
+                    /* --- Custom scoped styles to override global admin overrides cleanly --- */
+                    .bg-checkout-modal {
+                        background-color: #ffffff !important;
+                        border: 1px solid #e2e8f0 !important;
+                    }
+                    .dark .bg-checkout-modal {
+                        background-color: #0b0f19 !important;
+                        border: 1px solid rgba(255, 255, 255, 0.08) !important;
+                    }
+                    .bg-checkout-modal-sub {
+                        background-color: #ffffff !important;
+                    }
+                    .dark .bg-checkout-modal-sub {
+                        background-color: #0d1220 !important;
+                    }
+                    .bg-checkout-header {
+                        background-color: #f8fafc !important;
+                        border-bottom: 1px solid #e2e8f0 !important;
+                    }
+                    .dark .bg-checkout-header {
+                        background-color: #111726 !important;
+                        border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+                    }
+                    .bg-checkout-topbar {
+                        background-color: #f8fafc !important;
+                        border-bottom: 1px solid #e2e8f0 !important;
+                    }
+                    .dark .bg-checkout-topbar {
+                        background-color: #121826 !important;
+                        border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+                    }
+                    .bg-checkout-right-panel {
+                        background-color: #f8fafc !important;
+                    }
+                    .dark .bg-checkout-right-panel {
+                        background-color: #0b0f19 !important;
+                    }
+                    .bg-checkout-bar {
+                        background-color: #ffffff !important;
+                    }
+                    .dark .bg-checkout-bar {
+                        background-color: #090d16 !important;
+                    }
+                    .bg-checkout-box {
+                        background-color: #f8fafc !important;
+                        border: 1px solid #e2e8f0 !important;
+                    }
+                    .dark .bg-checkout-box {
+                        background-color: #161e2e !important;
+                        border: 1px solid rgba(255, 255, 255, 0.08) !important;
+                    }
+                    .bg-checkout-box:hover {
+                        border-color: #cbd5e1 !important;
+                    }
+                    .dark .bg-checkout-box:hover {
+                        border-color: rgba(255, 255, 255, 0.2) !important;
+                    }
+                    .bg-checkout-box-inner {
+                        background-color: #ffffff !important;
+                    }
+                    .dark .bg-checkout-box-inner {
+                        background-color: #1a2333 !important;
+                    }
+                    .bg-checkout-box-error {
+                        background-color: rgba(244, 63, 94, 0.03) !important;
+                        border: 1px solid #fca5a5 !important;
+                    }
+                    .dark .bg-checkout-box-error {
+                        background-color: rgba(244, 63, 94, 0.08) !important;
+                        border: 1px solid rgba(244, 63, 94, 0.5) !important;
+                    }
+                    .bg-discount-btn {
+                        background-color: rgba(244, 63, 94, 0.08) !important;
+                        color: #e11d48 !important;
+                    }
+                    .dark .bg-discount-btn {
+                        background-color: rgba(244, 63, 94, 0.2) !important;
+                        color: #fda4af !important;
+                    }
+                    .bg-discount-btn:hover {
+                        background-color: rgba(244, 63, 94, 0.15) !important;
+                    }
+                    .dark .bg-discount-btn:hover {
+                        background-color: rgba(244, 63, 94, 0.3) !important;
+                    }
+                `}</style>
+
                 {/* Header */}
-                <div className="p-4 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
+                <div className="p-4 bg-checkout-header flex items-center justify-between">
                     <div className="flex items-center gap-4">
                         <div className="bg-emerald-600 p-2 rounded-xl text-white">
                             <Sparkles className="w-5 h-5" />
@@ -2775,11 +2863,11 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                     </div>
                 </div>
 
-                <div className="flex-1 min-h-0 flex flex-col lg:flex-row overflow-hidden bg-white">
+                <div className="flex-1 min-h-0 flex flex-col lg:flex-row overflow-hidden bg-checkout-modal-sub">
                     {/* Left Panel: Configuration & Services */}
-                    <div className="flex-1 min-h-0 flex flex-col bg-white overflow-hidden border-r border-slate-100">
+                    <div className="flex-1 min-h-0 flex flex-col bg-checkout-modal-sub overflow-hidden border-r border-slate-100/50">
                         {/* Top Bar: Compact Outlet & Client */}
-                        <div className="p-4 bg-slate-50/50 border-b border-slate-100 grid grid-cols-1 md:grid-cols-2 gap-4 shrink-0">
+                        <div className="p-4 bg-checkout-topbar grid grid-cols-1 md:grid-cols-2 gap-4 shrink-0">
                             <div className="space-y-1 relative">
                                 <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider flex items-center gap-1">
                                     <Building2 className="w-3.5 h-3.5 text-slate-500" /> Outlet
@@ -2980,13 +3068,13 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
 
                         {/* Tab Switcher */}
                         <div className="px-4 pt-4 shrink-0">
-                            <div className="flex bg-slate-100 p-1 rounded-xl">
+                            <div className="flex bg-slate-100 dark:bg-slate-950/60 p-1 rounded-xl">
                                 <button
                                     onClick={() => { setQActiveTab('services'); setQSelectedCategory(null); }}
                                     className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-xs uppercase tracking-wider transition-all duration-300 group ${
                                         qActiveTab === 'services'
                                             ? 'bg-primary text-white font-black shadow-md shadow-primary/20 scale-[1.01]'
-                                            : 'bg-white/60 text-slate-800 font-extrabold shadow-sm border border-slate-200/10 hover:bg-white/90 hover:text-slate-900 hover:shadow-md hover:scale-[1.01]'
+                                            : 'bg-slate-200/60 dark:bg-slate-800 text-slate-800 dark:text-slate-200 font-extrabold shadow-sm border border-slate-200/10 hover:bg-slate-200/90 dark:hover:bg-slate-700 hover:text-slate-900 hover:shadow-md hover:scale-[1.01]'
                                     }`}
                                 >
                                     <Scissors className={`w-3.5 h-3.5 transition-all duration-300 ${qActiveTab === 'services' ? 'text-white scale-110' : 'text-primary group-hover:scale-110'}`} /> Services
@@ -2996,7 +3084,7 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                                     className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-xs uppercase tracking-wider transition-all duration-300 group ${
                                         qActiveTab === 'products'
                                             ? 'bg-primary text-white font-black shadow-md shadow-primary/20 scale-[1.01]'
-                                            : 'bg-white/60 text-slate-800 font-extrabold shadow-sm border border-slate-200/10 hover:bg-white/90 hover:text-slate-900 hover:shadow-md hover:scale-[1.01]'
+                                            : 'bg-slate-200/60 dark:bg-slate-800 text-slate-800 dark:text-slate-200 font-extrabold shadow-sm border border-slate-200/10 hover:bg-slate-200/90 dark:hover:bg-slate-700 hover:text-slate-900 hover:shadow-md hover:scale-[1.01]'
                                     }`}
                                 >
                                     <Package className={`w-3.5 h-3.5 transition-all duration-300 ${qActiveTab === 'products' ? 'text-white scale-110' : 'text-primary group-hover:scale-110'}`} /> Products
@@ -3011,7 +3099,7 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                                     {qSelectedCategory && (
                                         <button
                                             onClick={() => setQSelectedCategory(null)}
-                                            className="p-1.5 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg transition-colors"
+                                            className="p-1.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-400 rounded-lg transition-colors"
                                             title="Back to Categories"
                                         >
                                             <ChevronDown className="w-3.5 h-3.5 rotate-90" />
@@ -3021,7 +3109,7 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                                         {qActiveTab === 'services' ? <Scissors className="w-3 h-3 text-slate-500" /> : <Package className="w-3 h-3 text-slate-500" />} {qSelectedCategory || (qActiveTab === 'services' ? 'Service Categories' : 'Product Categories')}
                                     </h3>
                                 </div>
-                                <div className="text-[10px] font-semibold text-slate-500 bg-slate-100 px-2 py-0.5 rounded uppercase">
+                                <div className="text-[10px] font-semibold text-slate-500 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded uppercase">
                                     {qSelectedCategory
                                         ? `${(qActiveTab === 'services' ? qFilteredServices : qFilteredProducts).filter(i => qSelectedCategory === 'All' || i.category === qSelectedCategory).length} ${qActiveTab === 'services' ? 'Services' : 'Products'}`
                                         : `${qCategories.length} Categories`
@@ -3035,9 +3123,9 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                                             <button
                                                 key={cat.name}
                                                 onClick={() => setQSelectedCategory(cat.name)}
-                                                className="bg-white border border-slate-200 hover:border-primary hover:shadow-md transition-all rounded-xl overflow-hidden flex flex-col group h-24"
+                                                className="bg-checkout-box hover:border-primary hover:shadow-md transition-all rounded-xl overflow-hidden flex flex-col group h-24"
                                             >
-                                                <div className="h-14 w-full bg-slate-50 relative overflow-hidden flex-shrink-0">
+                                                <div className="h-14 w-full bg-checkout-box-inner relative overflow-hidden flex-shrink-0">
                                                     {cat.image ? (
                                                         <img
                                                             src={getImageUrl(cat.image)}
@@ -3069,7 +3157,7 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                                                 <button
                                                     key={item._id}
                                                     onClick={() => addToQCart(item, qActiveTab === 'services' ? 'service' : 'product')}
-                                                    className="bg-white border border-slate-200 hover:border-primary hover:shadow-md transition-all rounded-xl shadow-sm relative overflow-hidden flex flex-col group h-32"
+                                                    className="bg-checkout-box hover:border-primary hover:shadow-md transition-all rounded-xl shadow-sm relative overflow-hidden flex flex-col group h-32"
                                                 >
                                                     <div className="h-16 w-full overflow-hidden bg-gradient-to-br from-primary/5 to-primary/10 flex-shrink-0 relative">
                                                         {(() => {
@@ -3102,8 +3190,8 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                     </div>
 
                     {/* Right Panel: Invoice Summary */}
-                    <div className="w-full lg:w-[480px] bg-slate-50 flex flex-col border-t lg:border-t-0 lg:border-l border-slate-200 overflow-hidden h-[300px] lg:h-full min-h-0">
-                        <div className="p-4 border-b border-slate-200 bg-white flex items-center justify-between shrink-0">
+                    <div className="w-full lg:w-[480px] bg-checkout-right-panel flex flex-col border-t lg:border-t-0 lg:border-l border-slate-200 overflow-hidden h-[300px] lg:h-full min-h-0">
+                        <div className="p-4 border-b border-slate-200 bg-checkout-header flex items-center justify-between shrink-0">
                             <div className="flex items-center gap-2">
                                 <ShoppingCart className="w-4 h-4 text-primary" />
                                 <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider">Cart Items ({qCart.length})</h3>
@@ -3123,13 +3211,13 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                         <div className="flex-1 overflow-y-auto p-4 space-y-3 scrollbar-thin">
                             {qCart.length === 0 ? (
                                 <div className="h-full flex flex-col items-center justify-center opacity-30 italic text-slate-400 text-center space-y-3">
-                                    <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center border-2 border-dashed border-slate-200">
+                                    <div className="w-16 h-16 bg-checkout-box rounded-full flex items-center justify-center border-2 border-dashed border-slate-200">
                                         <ShoppingBag className="w-8 h-8" />
                                     </div>
                                     <p className="text-xs font-bold uppercase tracking-wider">Select services to begin</p>
                                 </div>
                             ) : qCart.map((item, idx) => (
-                                <div key={idx} className="bg-white border border-slate-200 p-4 rounded-xl shadow-sm space-y-3 relative">
+                                <div key={idx} className="bg-checkout-box p-4 rounded-xl shadow-sm space-y-3 relative">
                                     <div className="flex justify-between items-start">
                                         <div className="flex-1 pr-10">
                                             <p className="text-base md:text-lg font-black text-slate-900 uppercase leading-tight line-clamp-1">{item.name}</p>
@@ -3152,9 +3240,9 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                                                 {(item.type === 'service' || item.type === 'product') && (
                                                     <div className="flex flex-col gap-1 items-start shrink-0">
                                                         <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider pl-0.5">Qty</span>
-                                                        <div className="flex items-center bg-slate-50 border border-slate-200 rounded-lg h-8 overflow-hidden shadow-sm shrink-0">
+                                                        <div className="flex items-center bg-checkout-box-inner border border-slate-200 rounded-lg h-8 overflow-hidden shadow-sm shrink-0">
                                                             <button type="button" onClick={() => updateQQty(idx, -1)} className="px-2 hover:bg-slate-200 text-slate-500 transition-colors h-full flex items-center"><Minus className="w-3 h-3" /></button>
-                                                            <span style={{ fontWeight: 900 }} className="px-2 text-xs font-black text-slate-800 border-x border-slate-200 flex items-center h-full bg-white justify-center">{item.quantity}</span>
+                                                            <span style={{ fontWeight: 900 }} className="px-2 text-xs font-black text-slate-800 border-x border-slate-200 flex items-center h-full bg-checkout-box-inner justify-center">{item.quantity}</span>
                                                             <button type="button" onClick={() => updateQQty(idx, 1)} className="px-2 hover:bg-slate-200 text-slate-500 transition-colors h-full flex items-center"><Plus className="w-3 h-3" /></button>
                                                         </div>
                                                     </div>
@@ -3163,11 +3251,11 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                                                 {(item.type === 'service' || item.type === 'product') && (
                                                     <div className="flex flex-col gap-1 items-start shrink-0">
                                                         <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider pl-0.5">Discount</span>
-                                                        <div className="flex items-center gap-1 bg-slate-50 border border-slate-200 rounded-lg h-8 px-1.5 transition-all shadow-sm shrink-0">
+                                                        <div className="flex items-center gap-1 bg-checkout-box-inner border border-slate-200 rounded-lg h-8 px-1.5 transition-all shadow-sm shrink-0">
                                                             <Sparkles className="w-3 h-3 text-slate-400 shrink-0" />
 
                                                             {/* Toggle between % and ₹ */}
-                                                            <div className="flex items-center bg-white border border-slate-200 rounded overflow-hidden h-6 shrink-0">
+                                                            <div className="flex items-center bg-checkout-box-inner border border-slate-200 rounded overflow-hidden h-6 shrink-0">
                                                                 <button
                                                                     type="button"
                                                                     onClick={() => {
@@ -3186,8 +3274,8 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                                                                             : (qActiveMembership?.planId?.productDiscountType || 'percentage')
                                                                         )
                                                                     ) === 'percentage'
-                                                                        ? 'bg-slate-800 text-white'
-                                                                        : 'text-slate-400 hover:bg-slate-50'
+                                                                        ? 'bg-slate-800 dark:bg-slate-950 text-white'
+                                                                        : 'text-slate-400 hover:bg-slate-200/50 dark:hover:bg-slate-700/50'
                                                                         }`}
                                                                 >
                                                                     %
@@ -3210,8 +3298,8 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                                                                             : (qActiveMembership?.planId?.productDiscountType || 'percentage')
                                                                         )
                                                                     ) === 'fixed'
-                                                                        ? 'bg-slate-800 text-white'
-                                                                        : 'text-slate-400 hover:bg-slate-50'
+                                                                        ? 'bg-slate-800 dark:bg-slate-950 text-white'
+                                                                        : 'text-slate-400 hover:bg-slate-200/50 dark:hover:bg-slate-700/50'
                                                                         }`}
                                                                 >
                                                                     ₹
@@ -3252,7 +3340,7 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                                                                     updateQItemMembershipDiscount(idx, currentType, val);
                                                                 }}
                                                                 style={{ fontWeight: 900 }}
-                                                                className="w-16 bg-white border border-slate-200 rounded text-xs font-black text-center h-6 focus:outline-none focus:border-slate-500 text-slate-800 shrink-0"
+                                                                className="w-16 bg-checkout-box-inner border border-slate-200 rounded text-xs font-black text-center h-6 focus:outline-none focus:border-slate-500 text-slate-800 shrink-0"
                                                             />
                                                             {(() => {
                                                                 const currentType = item.membershipDiscountType !== undefined
@@ -3382,22 +3470,22 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                 </div>{/* End flex body */}
 
                 {/* Bottom Billing Row */}
-                <div className="flex-shrink-0 bg-white border-t border-slate-200 shadow-[0_-8px_30px_rgba(0,0,0,0.08)] z-20 w-full overflow-hidden">
+                <div className="flex-shrink-0 bg-checkout-bar shadow-[0_-8px_30px_rgba(0,0,0,0.08)] z-20 w-full overflow-hidden" style={{ borderTop: '1px solid rgba(128, 128, 128, 0.15)' }}>
                     <div className="w-full px-3 py-3 flex items-center justify-between gap-3 overflow-x-auto whitespace-nowrap scrollbar-thin">
                         {/* Totals Breakdown */}
                         <div className="flex items-center gap-2 lg:gap-3 xl:gap-4 px-1 shrink-0">
                             <div className="flex flex-col shrink-0">
-                                <span className="text-[10px] lg:text-xs font-semibold text-slate-400 uppercase tracking-wider">Subtotal</span>
-                                <span className="text-xs lg:text-sm xl:text-base font-bold text-slate-800 font-mono">₹{totals.subtotal.toFixed(2)}</span>
+                                <span className="text-[10px] lg:text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Subtotal</span>
+                                <span className="text-xs lg:text-sm xl:text-base font-bold text-slate-800 dark:text-slate-200 font-mono">₹{totals.subtotal.toFixed(2)}</span>
                             </div>
                             {totals.cgst > 0 && (
                                 <div className="flex flex-col shrink-0">
-                                    <span className="text-[10px] lg:text-xs font-semibold text-slate-400 uppercase tracking-wider">
+                                    <span className="text-[10px] lg:text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
                                         CGST {qCart.every(i => i.type === 'service') ? `(${(totals.serviceGstRate) / 2}%)` :
                                             qCart.every(i => i.type === 'product') ? `(${(totals.productGstRate) / 2}%)` :
                                                 totals.serviceGstRate === totals.productGstRate ? `(${(totals.serviceGstRate) / 2}%)` : ''}
                                     </span>
-                                    <span className="text-xs lg:text-sm xl:text-base font-bold text-slate-800 font-mono">
+                                    <span className="text-xs lg:text-sm xl:text-base font-bold text-slate-800 dark:text-slate-200 font-mono">
                                         {totals.cgst > totals.cgstExcl && <span className="text-emerald-600 text-xs font-bold align-top mr-1">(INCL)</span>}
                                         ₹{totals.cgst.toFixed(2)}
                                     </span>
@@ -3405,12 +3493,12 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                             )}
                             {totals.sgst > 0 && (
                                 <div className="flex flex-col shrink-0">
-                                    <span className="text-[10px] lg:text-xs font-semibold text-slate-400 uppercase tracking-wider">
+                                    <span className="text-[10px] lg:text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
                                         SGST {qCart.every(i => i.type === 'service') ? `(${(totals.serviceGstRate) / 2}%)` :
                                             qCart.every(i => i.type === 'product') ? `(${(totals.productGstRate) / 2}%)` :
                                                 totals.serviceGstRate === totals.productGstRate ? `(${(totals.serviceGstRate) / 2}%)` : ''}
                                     </span>
-                                    <span className="text-xs lg:text-sm xl:text-base font-bold text-slate-800 font-mono">
+                                    <span className="text-xs lg:text-sm xl:text-base font-bold text-slate-800 dark:text-slate-200 font-mono">
                                         {totals.sgst > totals.sgstExcl && <span className="text-emerald-600 text-xs font-bold align-top mr-1">(INCL)</span>}
                                         ₹{totals.sgst.toFixed(2)}
                                     </span>
@@ -3418,25 +3506,27 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                             )}
                             {totals.igst > 0 && (
                                 <div className="flex flex-col shrink-0">
-                                    <span className="text-[10px] lg:text-xs font-semibold text-slate-400 uppercase tracking-wider">IGST {totals.serviceGstRate === totals.productGstRate ? `(${totals.serviceGstRate}%)` : ''}</span>
-                                    <span className="text-xs lg:text-sm xl:text-base font-bold text-slate-800 font-mono">
+                                    <span className="text-[10px] lg:text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">IGST {totals.serviceGstRate === totals.productGstRate ? `(${totals.serviceGstRate}%)` : ''}</span>
+                                    <span className="text-xs lg:text-sm xl:text-base font-bold text-slate-800 dark:text-slate-200 font-mono">
                                         {totals.igst > totals.totalExclusiveTax && <span className="text-emerald-600 text-xs font-bold align-top mr-1">(INCL)</span>}
                                         ₹{totals.igst.toFixed(2)}
                                     </span>
                                 </div>
                             )}
                             <div className="flex flex-col shrink-0">
-                                <span className="text-[10px] lg:text-xs font-semibold text-slate-400 uppercase tracking-wider">Discount</span>
-                                <div className="flex items-center bg-rose-50/50 rounded-lg border border-rose-100/80 overflow-hidden">
+                                <span className="text-[10px] lg:text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Discount</span>
+                                <div className="flex items-center rounded-lg overflow-hidden bg-rose-50/50 dark:bg-rose-950/20 border border-rose-100/80 dark:border-rose-900/60">
                                     <button
+                                        type="button"
                                         onClick={() => setQManualDiscount(prev => ({ ...prev, type: prev.type === 'fixed' ? 'percentage' : 'fixed' }))}
-                                        className="px-2 py-1 bg-rose-100/70 text-rose-600 text-xs font-bold border-r border-rose-200/50 hover:bg-rose-200/80 transition-colors"
+                                        className="px-2 py-1 bg-discount-btn text-xs font-bold transition-colors"
+                                        style={{ borderRight: '1px solid rgba(244, 63, 94, 0.2)' }}
                                     >
                                         {qManualDiscount.type === 'fixed' ? '₹' : '%'}
                                     </button>
                                     <input
                                         type="number"
-                                        className="w-12 lg:w-14 bg-transparent text-xs lg:text-sm font-bold text-rose-600 outline-none font-mono text-center py-0.5"
+                                        className="w-12 lg:w-14 bg-transparent text-xs lg:text-sm font-bold text-rose-600 dark:text-rose-400 outline-none font-mono text-center py-0.5"
                                         value={qManualDiscount.value || ''}
                                         onChange={(e) => setQManualDiscount({ ...qManualDiscount, value: Number(e.target.value) })}
                                         placeholder="0"
@@ -3466,34 +3556,34 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                         </div>
 
                         {/* Modern vertical separator */}
-                        <div className="w-[1px] h-8 bg-slate-200 self-center shrink-0" />
+                        <div className="w-[1px] h-8 bg-slate-200 dark:bg-slate-800 self-center shrink-0" />
 
                         {/* Payment Date Input */}
-                        <div className={`bg-slate-50/60 border p-1.5 rounded-lg focus-within:border-primary/50 focus-within:bg-white focus-within:shadow-sm transition-all shadow-sm group hover:border-slate-300 shrink-0 w-[150px] ${!qPaymentDate ? 'border-rose-300 bg-rose-50/20' : 'border-slate-200/80'}`}>
-                            <label className={`text-[9px] font-bold uppercase tracking-wider block mb-0.5 ${!qPaymentDate ? 'text-rose-500 font-extrabold' : 'text-slate-400'}`}>
+                        <div className={`bg-checkout-box rounded-lg p-1.5 focus-within:bg-white dark:focus-within:bg-slate-900 transition-all shadow-sm group shrink-0 w-[150px] ${!qPaymentDate ? 'bg-checkout-box-error' : ''}`}>
+                            <label className={`text-[9px] font-bold uppercase tracking-wider block mb-0.5 ${!qPaymentDate ? 'text-rose-500 font-extrabold' : 'text-slate-400 dark:text-slate-500'}`}>
                                 Payment Date <span className="text-rose-500 font-bold">*</span>
                             </label>
                             <input
                                 type="date"
                                 required
-                                className="bg-transparent text-xs font-bold outline-none uppercase text-slate-800 w-full cursor-pointer"
+                                className="bg-transparent text-xs font-bold outline-none uppercase text-slate-800 dark:text-slate-200 w-full cursor-pointer dark:[color-scheme:dark]"
                                 value={qPaymentDate}
                                 onChange={(e) => setQPaymentDate(e.target.value)}
                             />
                         </div>
 
                         {/* Modern vertical separator */}
-                        <div className="w-[1px] h-8 bg-slate-200 self-center shrink-0" />
+                        <div className="w-[1px] h-8 bg-slate-200 dark:bg-slate-800 self-center shrink-0" />
 
                         {/* Payment Inputs Row */}
                         <div className={`grid gap-1.5 lg:gap-2 shrink-0 ${qClient && qClientWalletBalance > 0 ? 'w-[330px] lg:w-[390px] xl:w-[420px] grid-cols-3' : 'w-[220px] lg:w-[260px] xl:w-[280px] grid-cols-2'}`}>
-                            <div className="bg-slate-50/60 border border-slate-200/80 p-1.5 rounded-lg focus-within:border-emerald-500/50 focus-within:bg-white focus-within:shadow-sm transition-all shadow-sm group hover:border-slate-300">
-                                <label className="text-[9px] font-bold text-slate-400 uppercase tracking-wider block mb-0.5 group-focus-within:text-emerald-600">Cash Payment</label>
+                            <div className="bg-checkout-box p-1.5 rounded-lg focus-within:bg-white dark:focus-within:bg-slate-900 transition-all shadow-sm group">
+                                <label className="text-[9px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider block mb-0.5 group-focus-within:text-emerald-500">Cash Payment</label>
                                 <div className="flex items-center gap-1.5">
                                     <Banknote className="w-4 h-4 text-emerald-500 shrink-0" />
                                     <input
                                         type="number"
-                                        className="w-full bg-transparent text-xs lg:text-sm font-bold text-slate-800 outline-none font-mono"
+                                        className="w-full bg-transparent text-xs lg:text-sm font-bold text-slate-800 dark:text-slate-200 outline-none font-mono"
                                         value={qPayments.cash || ''}
                                         onChange={(e) => {
                                             setIsPaymentEdited(true);
@@ -3503,13 +3593,13 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                                     />
                                 </div>
                             </div>
-                            <div className="bg-slate-50/60 border border-slate-200/80 p-1.5 rounded-lg focus-within:border-blue-500/50 focus-within:bg-white focus-within:shadow-sm transition-all shadow-sm group hover:border-slate-300">
-                                <label className="text-[9px] font-bold text-slate-400 uppercase tracking-wider block mb-0.5 group-focus-within:text-blue-500">Online/UPI</label>
+                            <div className="bg-checkout-box p-1.5 rounded-lg focus-within:bg-white dark:focus-within:bg-slate-900 transition-all shadow-sm group">
+                                <label className="text-[9px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider block mb-0.5 group-focus-within:text-blue-500">Online/UPI</label>
                                 <div className="flex items-center gap-1.5">
                                     <Smartphone className="w-4 h-4 text-blue-500 shrink-0" />
                                     <input
                                         type="number"
-                                        className="w-full bg-transparent text-xs lg:text-sm font-bold text-slate-800 outline-none font-mono"
+                                        className="w-full bg-transparent text-xs lg:text-sm font-bold text-slate-800 dark:text-slate-200 outline-none font-mono"
                                         value={qPayments.online || ''}
                                         onChange={(e) => {
                                             setIsPaymentEdited(true);
@@ -3520,14 +3610,14 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                                 </div>
                             </div>
                             {qClient && qClientWalletBalance > 0 && (
-                                <div className="bg-emerald-50/50 border border-emerald-100/80 p-1.5 rounded-lg focus-within:border-emerald-500 focus-within:bg-white focus-within:shadow-sm transition-all shadow-sm group hover:border-emerald-200">
-                                    <label className="text-[9px] font-bold text-emerald-600 uppercase tracking-wider block mb-0.5">Wallet (₹{qClientWalletBalance.toFixed(0)})</label>
+                                <div className="bg-emerald-50/50 dark:bg-emerald-950/20 border border-emerald-100/80 dark:border-emerald-900/60 p-1.5 rounded-lg focus-within:border-emerald-500 focus-within:bg-white dark:focus-within:bg-slate-900 focus-within:shadow-sm transition-all shadow-sm group hover:border-emerald-200 dark:hover:border-emerald-800 animate-pulse">
+                                    <label className="text-[9px] font-bold text-emerald-600 dark:text-emerald-500 uppercase tracking-wider block mb-0.5">Wallet (₹{qClientWalletBalance.toFixed(0)})</label>
                                     <div className="flex items-center justify-between gap-1.5">
                                         <div className="flex items-center gap-1.5 flex-1 min-w-0">
                                             <Wallet className="w-4 h-4 text-emerald-500 shrink-0" />
                                             <input
                                                 type="number"
-                                                className="w-full bg-transparent text-xs lg:text-sm font-bold text-emerald-600 outline-none font-mono"
+                                                className="w-full bg-transparent text-xs lg:text-sm font-bold text-emerald-600 dark:text-emerald-450 outline-none font-mono"
                                                 value={qRedeemWallet || ''}
                                                 onChange={(e) => setQRedeemWallet(Math.min(qClientWalletBalance, Math.min(totals.totalWithPrevDue, Number(e.target.value))))}
                                                 placeholder="0"
@@ -3539,7 +3629,7 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                                                 const maxRedeemable = Math.min(qClientWalletBalance, totals.totalWithPrevDue);
                                                 setQRedeemWallet(maxRedeemable);
                                             }}
-                                            className="text-[9px] font-black text-emerald-700 bg-emerald-100 hover:bg-emerald-200 px-1.5 py-1 rounded-md uppercase tracking-wider transition-colors shrink-0 shadow-sm"
+                                            className="text-[9px] font-black text-emerald-700 dark:text-emerald-300 bg-emerald-100 dark:bg-emerald-900/60 hover:bg-emerald-200 dark:hover:bg-emerald-800 px-1.5 py-1 rounded-md uppercase tracking-wider transition-colors shrink-0 shadow-sm"
                                         >
                                             USE WALLET
                                         </button>
@@ -3756,7 +3846,7 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                                         <input
                                             type="date"
                                             max={new Date().toISOString().split('T')[0]}
-                                            className="w-full bg-slate-50 border border-slate-200 p-3 text-[11px] font-bold text-slate-900 outline-none rounded-xl"
+                                            className="w-full bg-slate-50 border border-slate-200 p-3 text-[11px] font-bold text-slate-900 outline-none rounded-xl dark:[color-scheme:dark]"
                                             value={newClientForm.dob}
                                             onChange={(e) => setNewClientForm({ ...newClientForm, dob: e.target.value })}
                                         />
@@ -3766,7 +3856,7 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                                         <input
                                             type="date"
                                             max={new Date().toISOString().split('T')[0]}
-                                            className="w-full bg-slate-50 border border-slate-200 p-3 text-[11px] font-bold text-slate-900 outline-none rounded-xl"
+                                            className="w-full bg-slate-50 border border-slate-200 p-3 text-[11px] font-bold text-slate-900 outline-none rounded-xl dark:[color-scheme:dark]"
                                             value={newClientForm.anniversary}
                                             onChange={(e) => setNewClientForm({ ...newClientForm, anniversary: e.target.value })}
                                         />

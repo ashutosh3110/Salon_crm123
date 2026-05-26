@@ -228,9 +228,9 @@ export default function AdminLayout() {
                     margin-bottom: 0.5rem !important;
                     display: inline-block !important;
                 }
-                html:not(.dark) .admin-panel input, 
-                html:not(.dark) .admin-panel select, 
-                html:not(.dark) .admin-panel textarea {
+                html:not(.dark) .admin-panel input:not(.bg-transparent), 
+                html:not(.dark) .admin-panel select:not(.bg-transparent), 
+                html:not(.dark) .admin-panel textarea:not(.bg-transparent) {
                     font-size: 0.975rem !important;
                     font-weight: 400 !important;
                     padding: 0.75rem 1rem !important; /* Roomy, clickable fields */
@@ -268,9 +268,9 @@ export default function AdminLayout() {
                     box-shadow: 0 0 0 4px rgba(180, 145, 43, 0.12) !important;
                     outline: none !important;
                 }
-                .dark .admin-panel input, 
-                .dark .admin-panel select, 
-                .dark .admin-panel textarea {
+                .dark .admin-panel input:not(.bg-transparent), 
+                .dark .admin-panel select:not(.bg-transparent), 
+                .dark .admin-panel textarea:not(.bg-transparent) {
                     background-color: #1e293b !important;
                     border-color: rgba(255, 255, 255, 0.12) !important;
                     color: #ffffff !important;
@@ -555,15 +555,15 @@ export default function AdminLayout() {
                 .dark .admin-panel .bg-\[\#fafafa\],
                 .dark .admin-panel [class*="bg-[#fafafa]"],
                 .dark [class*="bg-[#fafafa]"],
-                .dark .admin-panel input,
-                .dark .admin-panel select,
-                .dark .admin-panel textarea,
-                .dark [role="dialog"] input,
-                .dark [role="dialog"] select,
-                .dark [role="dialog"] textarea,
-                .dark .fixed.inset-0 input,
-                .dark .fixed.inset-0 select,
-                .dark .fixed.inset-0 textarea {
+                .dark .admin-panel input:not(.bg-transparent),
+                .dark .admin-panel select:not(.bg-transparent),
+                .dark .admin-panel textarea:not(.bg-transparent),
+                .dark [role="dialog"] input:not(.bg-transparent),
+                .dark [role="dialog"] select:not(.bg-transparent),
+                .dark [role="dialog"] textarea:not(.bg-transparent),
+                .dark .fixed.inset-0 input:not(.bg-transparent),
+                .dark .fixed.inset-0 select:not(.bg-transparent),
+                .dark .fixed.inset-0 textarea:not(.bg-transparent) {
                     background-color: #121826 !important; /* slate-900 */
                 }
 

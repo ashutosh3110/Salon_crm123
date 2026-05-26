@@ -125,9 +125,9 @@ export default function BaseRoleLayout({ SidebarComponent, title, accentColor = 
                     margin-bottom: 0.5rem !important;
                     display: inline-block !important;
                 }
-                html:not(.dark) .admin-panel input, 
-                html:not(.dark) .admin-panel select, 
-                html:not(.dark) .admin-panel textarea {
+                html:not(.dark) .admin-panel input:not(.bg-transparent), 
+                html:not(.dark) .admin-panel select:not(.bg-transparent), 
+                html:not(.dark) .admin-panel textarea:not(.bg-transparent) {
                     font-size: 0.975rem !important;
                     font-weight: 400 !important;
                     padding: 0.75rem 1rem !important;
@@ -237,9 +237,9 @@ export default function BaseRoleLayout({ SidebarComponent, title, accentColor = 
                 .dark .admin-panel [class*="bg-slate-50"] {
                     background-color: #1e293b !important;
                 }
-                .dark .admin-panel input, 
-                .dark .admin-panel select, 
-                .dark .admin-panel textarea {
+                .dark .admin-panel input:not(.bg-transparent), 
+                .dark .admin-panel select:not(.bg-transparent), 
+                .dark .admin-panel textarea:not(.bg-transparent) {
                     background-color: #1e293b !important;
                     border-color: rgba(255, 255, 255, 0.12) !important;
                     color: #ffffff !important;

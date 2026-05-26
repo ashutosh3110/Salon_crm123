@@ -50,53 +50,53 @@ export default function SuperAdminLayout() {
                 /* --- Global Font Size Scale Amplifiers (Big, eye-catching & readable) --- */
                 .sa-panel .text-\[10px\],
                 .sa-panel .text-\[10px\] * {
-                    font-size: 13px !important;
+                    font-size: 11px !important;
                     letter-spacing: 0.04em !important;
                     font-weight: 700 !important;
                     text-transform: uppercase !important;
                 }
                 .sa-panel .text-\[11px\],
                 .sa-panel .text-\[11px\] * {
-                    font-size: 14px !important;
+                    font-size: 12px !important;
                     letter-spacing: 0.03em !important;
                     font-weight: 600 !important;
                 }
                 .sa-panel .text-xs,
                 .sa-panel .text-xs * {
-                    font-size: 0.95rem !important; /* Big & highly attractive */
-                    line-height: 1.45rem !important;
+                    font-size: 0.85rem !important; /* Adjusted */
+                    line-height: 1.25rem !important;
                 }
                 .sa-panel .text-sm,
                 .sa-panel .text-sm * {
-                    font-size: 1.05rem !important;
-                    line-height: 1.65rem !important;
+                    font-size: 0.95rem !important;
+                    line-height: 1.45rem !important;
                 }
                 .sa-panel .text-base,
                 .sa-panel .text-base * {
-                    font-size: 1.225rem !important;
-                    line-height: 1.85rem !important;
+                    font-size: 1.05rem !important;
+                    line-height: 1.55rem !important;
                 }
                 .sa-panel .text-lg,
                 .sa-panel .text-lg * {
-                    font-size: 1.4rem !important;
-                    line-height: 2rem !important;
+                    font-size: 1.15rem !important;
+                    line-height: 1.65rem !important;
                 }
                 .sa-panel .text-xl,
                 .sa-panel .text-xl * {
-                    font-size: 1.7rem !important;
-                    line-height: 2.35rem !important;
+                    font-size: 1.35rem !important;
+                    line-height: 1.85rem !important;
                 }
                 .sa-panel .text-2xl,
                 .sa-panel .text-2xl * {
-                    font-size: 2.15rem !important;
-                    line-height: 2.65rem !important;
+                    font-size: 1.6rem !important;
+                    line-height: 2.1rem !important;
                     font-weight: 850 !important;
                     letter-spacing: -0.03em !important;
                 }
                 .sa-panel .text-3xl,
                 .sa-panel .text-3xl * {
-                    font-size: 2.65rem !important;
-                    line-height: 3.25rem !important;
+                    font-size: 1.95rem !important;
+                    line-height: 2.5rem !important;
                     font-weight: 900 !important;
                     letter-spacing: -0.04em !important;
                 }
@@ -108,7 +108,7 @@ export default function SuperAdminLayout() {
                     width: 100% !important;
                 }
                 html:not(.dark) .sa-panel table th {
-                    font-size: 0.95rem !important;
+                    font-size: 0.85rem !important;
                     font-weight: 800 !important;
                     text-transform: uppercase !important;
                     letter-spacing: 0.08em !important;
@@ -119,7 +119,7 @@ export default function SuperAdminLayout() {
                     text-align: left;
                 }
                 html:not(.dark) .sa-panel table td {
-                    font-size: 1.05rem !important;
+                    font-size: 0.95rem !important;
                     padding: 1.35rem 1.6rem !important; /* Generous spacious padding for perfect readability */
                     color: #000000 !important; /* solid black */
                     border-bottom: 1px solid #f1f5f9 !important;
@@ -135,16 +135,16 @@ export default function SuperAdminLayout() {
 
                 /* --- Form Controls, Inputs & Labels --- */
                 html:not(.dark) .sa-panel label {
-                    font-size: 0.85rem !important; /* ~13.6px */
+                    font-size: 0.8rem !important; /* Adjusted */
                     font-weight: 600 !important;
                     color: #000000 !important; /* solid black */
                     margin-bottom: 0.5rem !important;
                     display: inline-block !important;
                 }
-                html:not(.dark) .sa-panel input, 
-                html:not(.dark) .sa-panel select, 
-                html:not(.dark) .sa-panel textarea {
-                    font-size: 0.975rem !important;
+                html:not(.dark) .sa-panel input:not(.bg-transparent), 
+                html:not(.dark) .sa-panel select:not(.bg-transparent), 
+                html:not(.dark) .sa-panel textarea:not(.bg-transparent) {
+                    font-size: 0.9rem !important;
                     font-weight: 400 !important;
                     padding: 0.75rem 1rem !important; /* Roomy, clickable fields */
                     border-radius: 0.75rem !important; /* Soft premium rounded corners */
@@ -179,7 +179,7 @@ export default function SuperAdminLayout() {
 
                 /* --- Sidebar & Navigation Items --- */
                 .sa-panel aside a {
-                    font-size: 0.95rem !important;
+                    font-size: 0.9rem !important;
                     font-weight: 600 !important;
                     padding: 0.75rem 1rem !important;
                 }
@@ -222,7 +222,7 @@ export default function SuperAdminLayout() {
                 .sa-panel .rounded-full.border {
                     padding: 0.25rem 0.75rem !important;
                     font-weight: 600 !important;
-                    font-size: 0.8rem !important;
+                    font-size: 0.75rem !important;
                 }       }
 
                 /* ==========================================
@@ -270,15 +270,15 @@ export default function SuperAdminLayout() {
                 .dark .sa-panel .bg-\[\#fafafa\],
                 .dark .sa-panel [class*="bg-[#fafafa]"],
                 .dark [class*="bg-[#fafafa]"],
-                .dark .sa-panel input,
-                .dark .sa-panel select,
-                .dark .sa-panel textarea,
-                .dark [role="dialog"] input,
-                .dark [role="dialog"] select,
-                .dark [role="dialog"] textarea,
-                .dark .fixed.inset-0 input,
-                .dark .fixed.inset-0 select,
-                .dark .fixed.inset-0 textarea {
+                .dark .sa-panel input:not(.bg-transparent),
+                .dark .sa-panel select:not(.bg-transparent),
+                .dark .sa-panel textarea:not(.bg-transparent),
+                .dark [role="dialog"] input:not(.bg-transparent),
+                .dark [role="dialog"] select:not(.bg-transparent),
+                .dark [role="dialog"] textarea:not(.bg-transparent),
+                .dark .fixed.inset-0 input:not(.bg-transparent),
+                .dark .fixed.inset-0 select:not(.bg-transparent),
+                .dark .fixed.inset-0 textarea:not(.bg-transparent) {
                     background-color: #121826 !important; /* slate-900 */
                 }
 
