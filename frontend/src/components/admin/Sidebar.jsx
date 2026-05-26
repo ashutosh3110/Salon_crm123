@@ -195,6 +195,7 @@ export default function Sidebar({ collapsed, setCollapsed, isHovered, setIsHover
                 category: 'CRM & Marketing',
                 subItems: [
                     { label: 'Directory', icon: Users, path: '/admin/crm/customers', permission: 'crm_directory' },
+                    { label: 'Consultations', icon: ClipboardList, path: '/admin/crm/consultations', permission: 'crm_directory' },
                     { label: 'Leads & Enquiries', icon: ClipboardList, path: '/admin/inquiries', permission: 'crm_inquiries' },
                     { label: 'Wallets', icon: Wallet, path: '/admin/crm/wallets', permission: 'crm_wallets' },
                     { label: 'Feedback', icon: Star, path: '/admin/crm/feedback', permission: 'crm_feedback' },
