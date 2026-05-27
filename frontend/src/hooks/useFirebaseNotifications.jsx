@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { onMessage } from 'firebase/messaging';
-import messaging, { registerToken } from '../services/firebase';
+import { getMessagingInstance, registerToken } from '../services/firebase';
 import { toast } from 'react-hot-toast'; // Assume react-hot-toast is used or similar
 
 /**
@@ -38,37 +38,44 @@ export const useFirebaseNotifications = (isAuthenticated) => {
 
     // 2. Listen for foreground messages - only if messaging is supported
     let unsubscribe = null;
-    if (messaging) {
-      unsubscribe = onMessage(messaging, (payload) => {
-        const { title, body, image } = payload.notification || {};
-        
-        // Rich Toast notification
-        toast.success(
-          <div style={{ cursor: 'pointer', display: 'flex', gap: '12px', alignItems: 'center' }}>
-            {image && <img src={image} alt="" style={{ width: '40px', height: '40px', borderRadius: '8px', objectCover: 'cover' }} />}
-            <div style={{ flex: 1 }}>
-              <p className="font-bold text-sm tracking-tight">{title || 'New Notification'}</p>
-              <p className="text-xs opacity-75 mt-0.5 line-clamp-2">{body}</p>
-              <div className="mt-1 text-[9px] font-bold text-[#C8956C] uppercase tracking-widest">View Details ➔</div>
-            </div>
-          </div>,
-          {
-            duration: 8000,
-            position: 'top-right',
-            id: 'foreground-push-' + Date.now(),
-            onClick: () => {
-               const url = payload.data?.url || payload.data?.click_action || '/app/notifications';
-               window.location.href = url;
-            }
-          }
-        );
+    let isActive = true;
 
-        // 3. Trigger a custom event for other components to react
-        window.dispatchEvent(new CustomEvent('notification_received', { detail: payload }));
-      });
-    }
+    getMessagingInstance().then((messagingInstance) => {
+      if (messagingInstance && isActive) {
+        unsubscribe = onMessage(messagingInstance, (payload) => {
+          const { title, body, image } = payload.notification || {};
+          
+          // Rich Toast notification
+          toast.success(
+            <div style={{ cursor: 'pointer', display: 'flex', gap: '12px', alignItems: 'center' }}>
+              {image && <img src={image} alt="" style={{ width: '40px', height: '40px', borderRadius: '8px', objectCover: 'cover' }} />}
+              <div style={{ flex: 1 }}>
+                <p className="font-bold text-sm tracking-tight">{title || 'New Notification'}</p>
+                <p className="text-xs opacity-75 mt-0.5 line-clamp-2">{body}</p>
+                <div className="mt-1 text-[9px] font-bold text-[#C8956C] uppercase tracking-widest">View Details ➔</div>
+              </div>
+            </div>,
+            {
+              duration: 8000,
+              position: 'top-right',
+              id: 'foreground-push-' + Date.now(),
+              onClick: () => {
+                 const url = payload.data?.url || payload.data?.click_action || '/app/notifications';
+                 window.location.href = url;
+              }
+            }
+          );
+
+          // 3. Trigger a custom event for other components to react
+          window.dispatchEvent(new CustomEvent('notification_received', { detail: payload }));
+        });
+      }
+    }).catch(err => {
+      console.error('[useFirebaseNotifications] Error setting up foreground message listener:', err.message);
+    });
 
     return () => {
+      isActive = false;
       if (typeof unsubscribe === 'function') unsubscribe();
     };
   }, [isAuthenticated]);

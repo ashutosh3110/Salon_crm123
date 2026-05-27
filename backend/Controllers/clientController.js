@@ -494,16 +494,16 @@ exports.sendManualPaymentReminder = async (req, res) => {
         const templateName = process.env.WHATSAPP_TEMPLATE_PAYMENT_REMINDER || 'payment_reminder';
         const salonName = salon.businessName || salon.name || 'Wapixo';
         
-        let sendResult;
-        if (process.env.WHATSAPP_TEMPLATE_PAYMENT_REMINDER) {
-            // Template parameters: [Customer Name, Dues Amount, Salon Name]
-            sendResult = await sendWapixoTemplate(client.phone, templateName, [
-                client.name,
-                String(client.dueAmount),
-                salonName
-            ]);
-        } else {
-            // Fallback to sending plain text message
+        // Always try to send as a WhatsApp template first to bypass Meta's 24-hour messaging window rule.
+        let sendResult = await sendWapixoTemplate(client.phone, templateName, [
+            client.name,
+            String(client.dueAmount),
+            salonName
+        ]);
+
+        // Fallback to plain text message ONLY if the template send fails
+        if (!sendResult.success) {
+            console.warn('[WhatsApp-Reminder] Template sending failed, trying plain text fallback...', sendResult.message);
             const msg = `Dear ${client.name}, this is a friendly reminder that you have a pending payment of ₹${client.dueAmount} outstanding at ${salonName}. Please settle this at your earliest convenience. Thank you!`;
             sendResult = await sendWhatsAppMessage(client.phone, msg);
         }

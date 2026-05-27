@@ -2,23 +2,33 @@ importScripts('https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js'
 importScripts('https://www.gstatic.com/firebasejs/10.7.1/firebase-messaging-compat.js');
 
   firebase.initializeApp({
-    apiKey: "AIzaSyBCuITeN78JfjIJSZ2Gnz2-93bDMZRaKYU",
-    authDomain: "salon-crm-d6c9e.firebaseapp.com",
-    projectId: "salon-crm-d6c9e",
-    storageBucket: "salon-crm-d6c9e.firebasestorage.app",
-    messagingSenderId: "813696718753",
-    appId: "1:813696718753:web:1f642f3d3efb36b7375de0"
+    apiKey: "AIzaSyD6SHK44FTvxRUiRFUiutVO6EVuw2HIzd0",
+    authDomain: "saloon-crm-baff4.firebaseapp.com",
+    projectId: "saloon-crm-baff4",
+    storageBucket: "saloon-crm-baff4.firebasestorage.app",
+    messagingSenderId: "606405940224",
+    appId: "1:606405940224:web:c6146f937bd707c46c34e5"
   });
 
 const messaging = firebase.messaging();
 
 messaging.onBackgroundMessage((payload) => {
   console.log('[firebase-messaging-sw.js] Received background message ', payload);
-  const notificationTitle = payload.notification.title;
-  const notificationOptions = {
-    body: payload.notification.body,
-    icon: payload.notification.image || '/logo192.png'
-  };
+  
+  // If the payload already has a 'notification' object, the FCM SDK displays it automatically.
+  // We do not need to show it manually to avoid duplicate notifications.
+  if (payload.notification) {
+    return;
+  }
 
-  self.registration.showNotification(notificationTitle, notificationOptions);
+  // Handle data-only messages manually if needed
+  if (payload.data) {
+    const notificationTitle = payload.data.title || 'New Notification';
+    const notificationOptions = {
+      body: payload.data.body || payload.data.message || '',
+      icon: payload.data.image || '/logo192.png',
+      data: payload.data
+    };
+    self.registration.showNotification(notificationTitle, notificationOptions);
+  }
 });

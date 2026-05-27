@@ -257,17 +257,16 @@ const initCronJobs = () => {
                     const templateName = process.env.WHATSAPP_TEMPLATE_PAYMENT_REMINDER || 'payment_reminder';
                     const salonName = salon.businessName || salon.name || 'Wapixo';
                     
-                    // Send using Wapixo template if WHATSAPP_TEMPLATE_PAYMENT_REMINDER is defined in process.env, otherwise fallback to plain message
-                    let sendResult;
-                    if (process.env.WHATSAPP_TEMPLATE_PAYMENT_REMINDER) {
-                        // Template parameters: [Customer Name, Dues Amount, Salon Name]
-                        sendResult = await sendWapixoTemplate(customer.phone, templateName, [
-                            customer.name,
-                            String(customer.dueAmount),
-                            salonName
-                        ]);
-                    } else {
-                        // Fallback to sending plain text message
+                    // Always try to send as a WhatsApp template first to bypass Meta's 24-hour messaging window rule.
+                    let sendResult = await sendWapixoTemplate(customer.phone, templateName, [
+                        customer.name,
+                        String(customer.dueAmount),
+                        salonName
+                    ]);
+
+                    // Fallback to plain text message ONLY if the template send fails
+                    if (!sendResult.success) {
+                        console.warn('[WhatsApp-AutoReminder] Template sending failed, trying plain text fallback...', sendResult.message);
                         const msg = `Dear ${customer.name}, this is a friendly reminder that you have a pending payment of ₹${customer.dueAmount} outstanding at ${salonName}. Please settle this at your earliest convenience. Thank you!`;
                         sendResult = await sendWhatsAppMessage(customer.phone, msg);
                     }
@@ -422,16 +421,33 @@ const initCronJobs = () => {
                             const canSend = await checkAndDeductWhatsAppCredit(hub.salonId);
                             if (canSend && b.clientPhone) {
                                 const phone = b.clientPhone.replace(/\D/g, '');
-                                let message = `Hi ${b.clientName}, `;
-                                if (r.daysBefore === 0) {
-                                    message += `Today is your big day! 👰✨ Your Bridal Service Booking (${b.service || 'Bridal Special'}) is scheduled for today. We are excited to make you look stunning for your wedding! - ${salonName}`;
-                                } else {
-                                    const formattedDate = eventDate.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
-                                    message += `Gentle reminder regarding your upcoming Bridal Service Booking (${b.service || 'Bridal Special'}) scheduled on ${formattedDate}. We look forward to serving you! - ${salonName}`;
+                                const templateName = process.env.WHATSAPP_TEMPLATE_BRIDAL || 'bridal_reminder';
+                                const daysInfo = r.daysBefore === 0 
+                                    ? "today" 
+                                    : `on ${eventDate.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}`;
+
+                                // Try to send as a WhatsApp template first to bypass Meta's 24-hour messaging window rule.
+                                let sendResult = await sendWapixoTemplate(phone, templateName, [
+                                    b.clientName,
+                                    b.service || 'Bridal Special',
+                                    daysInfo,
+                                    salonName
+                                ]);
+
+                                // Fallback to plain text message ONLY if the template send fails
+                                if (!sendResult.success) {
+                                    console.warn('[WhatsApp-BridalReminder] Template sending failed, trying plain text fallback...', sendResult.message);
+                                    let plainMsg = `Hi ${b.clientName}, `;
+                                    if (r.daysBefore === 0) {
+                                        plainMsg += `Today is your big day! 👰✨ Your Bridal Service Booking (${b.service || 'Bridal Special'}) is scheduled for today. We are excited to make you look stunning for your wedding! - ${salonName}`;
+                                    } else {
+                                        const formattedDate = eventDate.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+                                        plainMsg += `Gentle reminder regarding your upcoming Bridal Service Booking (${b.service || 'Bridal Special'}) scheduled on ${formattedDate}. We look forward to serving you! - ${salonName}`;
+                                    }
+                                    sendResult = await sendWhatsAppMessage(phone, plainMsg);
                                 }
 
-                                await sendWhatsAppMessage(phone, message);
-                                console.log(`[Bridal-Cron] Sent ${r.label} WhatsApp reminder to ${b.clientName} (${phone})`);
+                                console.log(`[Bridal-Cron] Dispatched ${r.label} WhatsApp reminder to ${b.clientName} (${phone}). Result:`, sendResult);
 
                                 r.sentAt = new Date();
                                 hubUpdated = true;

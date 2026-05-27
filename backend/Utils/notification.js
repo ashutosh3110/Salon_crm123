@@ -34,13 +34,16 @@ exports.sendNotification = async ({ customerId, salonId, title, message, image, 
             return { success: true, dbId: newNotification._id, message: 'Notification saved but customer not found for push' };
         }
 
-        const tokens = [];
+        let tokens = [];
         if (customer.fcmTokenWeb && Array.isArray(customer.fcmTokenWeb)) {
             tokens.push(...customer.fcmTokenWeb);
         }
         if (customer.fcmTokenMobile && Array.isArray(customer.fcmTokenMobile)) {
             tokens.push(...customer.fcmTokenMobile);
         }
+
+        // Deduplicate and filter out any empty tokens
+        tokens = [...new Set(tokens.filter(t => t && typeof t === 'string'))];
 
         if (tokens.length === 0) {
             return { success: true, dbId: newNotification._id, message: 'Notification saved but no FCM tokens found' };
@@ -123,9 +126,12 @@ exports.sendAdminNotification = async ({ salonId, title, message, image, type = 
 
         const results = [];
         for (const adminUser of admins) {
-            const tokens = [];
+            let tokens = [];
             if (adminUser.fcmTokenWeb) tokens.push(...(Array.isArray(adminUser.fcmTokenWeb) ? adminUser.fcmTokenWeb : [adminUser.fcmTokenWeb]));
             if (adminUser.fcmTokenMobile) tokens.push(...(Array.isArray(adminUser.fcmTokenMobile) ? adminUser.fcmTokenMobile : [adminUser.fcmTokenMobile]));
+
+            // Deduplicate and filter out any empty tokens
+            tokens = [...new Set(tokens.filter(t => t && typeof t === 'string'))];
 
             if (tokens.length > 0) {
                 try {

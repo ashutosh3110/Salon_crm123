@@ -21,7 +21,7 @@ const app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
 let messaging = null;
 
 // Function to safely get messaging instance
-const getMessagingInstance = async () => {
+export const getMessagingInstance = async () => {
   if (messaging) return messaging;
   if (await isSupported()) {
     messaging = getMessaging(app);
