@@ -484,7 +484,7 @@ export default function AdminLayout() {
                 .dark .admin-panel [class*="border-t"] button:not(aside *):disabled {
                     opacity: 0.25 !important;
                     background-color: #121826 !important;
-                    color: #64748b !important;
+                    color: #e6e8ebff !important;
                 }
 
                 /* --- Soft Badges --- */
