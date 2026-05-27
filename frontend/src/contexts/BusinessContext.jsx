@@ -68,6 +68,21 @@ const normalizeSupplier = (s) => {
     };
 };
 
+const normalizeBooking = (b) => {
+    if (!b) return null;
+    let staffObj = null;
+    if (b.staff) {
+        staffObj = Array.isArray(b.staff) ? b.staff[0] : b.staff;
+    } else if (b.staffId) {
+        staffObj = Array.isArray(b.staffId) ? b.staffId[0] : b.staffId;
+    }
+    return {
+        ...b,
+        staff: staffObj,
+        staffId: staffObj
+    };
+};
+
 export function BusinessProvider({ children }) {
     const { isAuthenticated, user, loading: authLoading } = useAuth();
     const { isCustomerAuthenticated, customer, setCustomer, loading: customerLoading } = useCustomerAuth();
@@ -332,7 +347,8 @@ export function BusinessProvider({ children }) {
     const fetchBookings = useCallback(async () => {
         try {
             const r = await api.get('/bookings');
-            setBookings(r.data?.results || r.data?.data || r.data || []);
+            const raw = r.data?.results || r.data?.data || r.data || [];
+            setBookings(raw.map(normalizeBooking));
         } catch { setBookings([]); }
     }, []);
 
@@ -982,7 +998,7 @@ export function BusinessProvider({ children }) {
         try {
             const r = await api.post('/bookings', d);
             const newBooking = r.data.data;
-            setBookings(p => [newBooking, ...p]);
+            setBookings(p => [normalizeBooking(newBooking), ...p]);
             toast.success('Appointment confirmed');
             return newBooking;
         } catch (err) {
@@ -996,7 +1012,7 @@ export function BusinessProvider({ children }) {
             const payload = typeof data === 'string' ? { status: data } : data;
             const r = await api.patch(`/bookings/${id}/status`, payload);
             const updated = r.data.data;
-            setBookings(p => p.map(b => b._id === id ? { ...b, ...updated } : b));
+            setBookings(p => p.map(b => b._id === id ? normalizeBooking({ ...b, ...updated }) : b));
             if (payload.status) toast.success(`Status updated: ${payload.status.toUpperCase()}`);
             if (payload.paymentStatus) toast.success(`Payment status: ${payload.paymentStatus.toUpperCase()}`);
             return updated;

@@ -67,6 +67,12 @@ function MarketingHubContent() {
     const [loading, setLoading] = useState(true);
 
     const [selectedCampaignIds, setSelectedCampaignIds] = useState([]);
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 5;
+
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [activeTab]);
 
     useEffect(() => {
         if (isCampaignModalOpen || isContactListOpen) {
@@ -186,6 +192,10 @@ function MarketingHubContent() {
         activeTab === 'whatsapp' ? (c.channel === 'whatsapp' || !c.channel) : (c.channel === 'notification')
     );
 
+    const totalPages = Math.ceil(filteredCampaigns.length / itemsPerPage);
+    const safeCurrentPage = Math.min(currentPage, Math.max(1, totalPages));
+    const paginatedCampaigns = filteredCampaigns.slice((safeCurrentPage - 1) * itemsPerPage, safeCurrentPage * itemsPerPage);
+
     return (
         <div className="space-y-6 pb-12">
             {/* Header */}
@@ -266,7 +276,7 @@ function MarketingHubContent() {
                                 ) : filteredCampaigns.length === 0 ? (
                                     <tr><td colSpan={5} className="px-6 py-12 text-center text-text-muted font-bold uppercase tracking-widest text-[10px]">No campaigns found</td></tr>
                                 ) : (
-                                    filteredCampaigns.map(c => (
+                                    paginatedCampaigns.map(c => (
                                         <tr key={c._id} className={`border-b border-border/50 hover:bg-surface/10 transition-colors ${selectedCampaignIds.includes(c._id) ? 'bg-primary/5' : ''}`}>
                                             <td className="px-6 py-5">
                                                 <button onClick={() => toggleSelect(c._id)} className={`w-4 h-4 border-2 rounded transition-all ${selectedCampaignIds.includes(c._id) ? 'bg-primary border-primary' : 'border-border'}`}>
@@ -299,6 +309,32 @@ function MarketingHubContent() {
                             </tbody>
                         </table>
                     </div>
+                    {/* Pagination Footer */}
+                    {filteredCampaigns.length > 0 && (
+                        <div className="bg-surface px-6 py-4 border-t border-border flex items-center justify-between">
+                            <span className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] font-mono italic">
+                                Showing {((safeCurrentPage - 1) * itemsPerPage) + 1} - {Math.min(safeCurrentPage * itemsPerPage, filteredCampaigns.length)} of {filteredCampaigns.length} Campaigns
+                            </span>
+                            <div className="flex gap-4">
+                                <button
+                                    type="button"
+                                    onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                                    disabled={safeCurrentPage === 1}
+                                    className="text-[10px] font-black text-text-muted uppercase tracking-widest hover:text-primary transition-colors disabled:opacity-20 cursor-pointer disabled:cursor-not-allowed"
+                                >
+                                    Previous
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                                    disabled={safeCurrentPage === totalPages || totalPages === 0}
+                                    className="text-[10px] font-black text-text-muted uppercase tracking-widest hover:text-primary transition-colors disabled:opacity-20 cursor-pointer disabled:cursor-not-allowed"
+                                >
+                                    Next
+                                </button>
+                            </div>
+                        </div>
+                    )}
                 </div>
             </div>
 

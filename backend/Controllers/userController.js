@@ -176,6 +176,19 @@ exports.updateUser = async (req, res) => {
             return res.status(404).json({ success: false, message: 'Staff member not found' });
         }
 
+        // Clean up body fields if they are sent as invalid stringified objects
+        if (req.body.outletId === '[object Object]') {
+            delete req.body.outletId;
+        } else if (req.body.outletId && typeof req.body.outletId === 'object') {
+            req.body.outletId = req.body.outletId._id || req.body.outletId;
+        }
+
+        if (req.body.roleId === '[object Object]') {
+            delete req.body.roleId;
+        } else if (req.body.roleId && typeof req.body.roleId === 'object') {
+            req.body.roleId = req.body.roleId._id || req.body.roleId;
+        }
+
         // Parse JSON fields if they come as strings from FormData
         if (typeof req.body.availability === 'string') {
             try { req.body.availability = JSON.parse(req.body.availability); } catch (e) {}

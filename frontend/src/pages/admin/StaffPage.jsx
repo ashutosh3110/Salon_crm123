@@ -18,7 +18,9 @@ import {
     Ban,
     Trash2,
     ShieldAlert,
-    ArrowRight
+    ArrowRight,
+    Eye,
+    Calendar
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { maskPhone } from '../../utils/phoneUtils';
@@ -76,6 +78,7 @@ export default function StaffPage() {
     const [outletFilter, setOutletFilter] = useState('all');
     const [showModal, setShowModal] = useState(false);
     const [editing, setEditing] = useState(null);
+    const [viewingStaff, setViewingStaff] = useState(null);
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 5;
 
@@ -144,7 +147,7 @@ export default function StaffPage() {
             result = result.filter(s => s.role === roleFilter);
         }
         if (outletFilter !== 'all') {
-            result = result.filter(s => s.outletId === outletFilter);
+            result = result.filter(s => (s.outletId?._id || s.outletId) === outletFilter);
         }
         setFilteredStaff(result);
         setCurrentPage(1);
@@ -277,7 +280,7 @@ export default function StaffPage() {
             phone: u.phone || '',
             role: u.role,
             roleId: u.roleId || '',
-            outletId: u.outletId || '',
+            outletId: u.outletId?._id || u.outletId || '',
             dob: u.dob || '',
             pan: hr.panNumber || u.pan || '',
             address: u.address || '',
@@ -429,7 +432,7 @@ export default function StaffPage() {
                                         <td className="px-4 py-2">
                                             <div className="flex items-center gap-1 text-[9px] font-black text-text-muted uppercase italic font-mono truncate max-w-[120px]">
                                                 <MapPin className="w-2.5 h-2.5" />
-                                                {outlets.find(o => o._id === s.outletId)?.name || 'Main Unit'}
+                                                {s.outletId?.name || outlets.find(o => o._id === (s.outletId?._id || s.outletId))?.name || 'Main Unit'}
                                             </div>
                                         </td>
                                         <td className="px-4 py-4 text-center">
@@ -440,6 +443,13 @@ export default function StaffPage() {
                                         </td>
                                         <td className="px-4 py-2 text-right">
                                             <div className="flex items-center justify-end gap-1">
+                                                <button
+                                                    onClick={() => setViewingStaff(s)}
+                                                    className="p-1.5 text-text-muted hover:text-primary transition-colors"
+                                                    title="View Details"
+                                                >
+                                                    <Eye className="w-3.5 h-3.5" />
+                                                </button>
                                                 <button
                                                     onClick={() => openEdit(s)}
                                                     className="p-1.5 text-text-muted hover:text-text transition-colors"
@@ -922,6 +932,215 @@ export default function StaffPage() {
                             </button>
                         </div>
                     </form>
+                </div>,
+                document.body
+            )}
+
+            {viewingStaff && createPortal(
+                <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 sm:p-6 overflow-y-auto bg-slate-900/60 backdrop-blur-sm transition-all" onClick={() => setViewingStaff(null)}>
+                    <div 
+                        className="bg-white dark:bg-slate-800 w-full max-w-2xl shadow-2xl relative border border-border flex flex-col my-auto rounded-none z-10 max-h-[90vh] overflow-y-auto admin-panel"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        {/* Modal Header */}
+                        <div className="flex items-center gap-4 p-6 border-b border-border shrink-0 bg-surface">
+                            <div className="w-12 h-12 bg-surface-alt border border-border flex items-center justify-center text-text font-black text-xs font-mono overflow-hidden">
+                                {viewingStaff.avatar ? (
+                                    <img
+                                        src={getImageUrl(viewingStaff.avatar)}
+                                        alt={viewingStaff.name}
+                                        className="w-full h-full object-cover"
+                                    />
+                                ) : (
+                                    viewingStaff.name?.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
+                                )}
+                            </div>
+                            <div className="text-left">
+                                <h2 className="text-xl font-black text-text uppercase italic font-mono leading-none">
+                                    {viewingStaff.name}
+                                </h2>
+                                <div className="flex items-center gap-2 mt-2">
+                                    <span className={`inline-flex items-center gap-1 px-2 py-0.5 text-[8px] font-black uppercase tracking-tighter border ${roleColors[viewingStaff.role] || 'bg-slate-50 text-slate-500'}`}>
+                                        <Shield className="w-2.5 h-2.5" /> {viewingStaff.role?.replace('_', ' ')}
+                                    </span>
+                                    <span className={`inline-flex items-center gap-1 px-2 py-0.5 text-[8px] font-black uppercase tracking-tighter border ${statusColors[viewingStaff.status || 'active'] || statusColors.active}`}>
+                                        {viewingStaff.status === 'active' || !viewingStaff.status ? <CheckCircle2 className="w-2.5 h-2.5" /> : <XCircle className="w-2.5 h-2.5" />}
+                                        {viewingStaff.status || 'active'}
+                                    </span>
+                                </div>
+                            </div>
+                            <button type="button" onClick={() => setViewingStaff(null)} className="ml-auto p-1.5 hover:bg-surface-alt transition-colors">
+                                <XCircle className="w-6 h-6 text-text-muted" />
+                            </button>
+                        </div>
+
+                        {/* Modal Body */}
+                        <div className="p-6 space-y-6 overflow-y-auto flex-1 custom-scrollbar text-left font-mono">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                {/* Left Column: Contact & Personal Details */}
+                                <div className="space-y-4">
+                                    <div>
+                                        <h3 className="text-[10px] font-black text-primary uppercase tracking-[0.2em] font-mono mb-2 border-b border-border pb-1">Contact & Info</h3>
+                                        <div className="space-y-2.5">
+                                            <div className="flex items-center gap-2.5">
+                                                <Mail className="w-4 h-4 text-text-muted shrink-0" />
+                                                <div>
+                                                    <p className="text-[8px] font-bold text-text-muted uppercase tracking-wider font-mono">Email Address</p>
+                                                    <p className="text-xs font-black text-text font-mono break-all">{viewingStaff.email}</p>
+                                                </div>
+                                            </div>
+                                            <div className="flex items-center gap-2.5">
+                                                <Phone className="w-4 h-4 text-text-muted shrink-0" />
+                                                <div>
+                                                    <p className="text-[8px] font-bold text-text-muted uppercase tracking-wider font-mono">Contact Number</p>
+                                                    <p className="text-xs font-black text-text font-mono">{viewingStaff.phone || '—'}</p>
+                                                </div>
+                                            </div>
+                                            <div className="flex items-center gap-2.5">
+                                                <Calendar className="w-4 h-4 text-text-muted shrink-0" />
+                                                <div>
+                                                    <p className="text-[8px] font-bold text-text-muted uppercase tracking-wider font-mono">Date of Birth</p>
+                                                    <p className="text-xs font-black text-text font-mono">{viewingStaff.dob || '—'}</p>
+                                                </div>
+                                            </div>
+                                            <div className="flex items-center gap-2.5">
+                                                <MapPin className="w-4 h-4 text-text-muted shrink-0" />
+                                                <div>
+                                                    <p className="text-[8px] font-bold text-text-muted uppercase tracking-wider font-mono">Assigned Salon</p>
+                                                    <p className="text-xs font-black text-text uppercase italic font-mono">
+                                                        {viewingStaff.outletId?.name || outlets.find(o => o._id === (viewingStaff.outletId?._id || viewingStaff.outletId))?.name || 'Main Unit'}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {viewingStaff.address && (
+                                        <div>
+                                            <h4 className="text-[8px] font-bold text-text-muted uppercase tracking-wider font-mono mb-1">Residential Address</h4>
+                                            <div className="bg-surface p-3 border border-border">
+                                                <p className="text-xs font-bold text-text-secondary uppercase font-mono">{viewingStaff.address}</p>
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+
+                                {/* Right Column: Payout & Professional Profile */}
+                                <div className="space-y-4">
+                                    <div>
+                                        <h3 className="text-[10px] font-black text-primary uppercase tracking-[0.2em] font-mono mb-2 border-b border-border pb-1">Payout & Bank</h3>
+                                        <div className="space-y-3 bg-surface p-4 border border-border">
+                                            <div className="flex justify-between items-center border-b border-border/60 pb-2">
+                                                <span className="text-[8px] font-bold text-text-muted uppercase tracking-wider font-mono">Base Salary</span>
+                                                <span className="text-sm font-black text-text font-mono">₹{viewingStaff.hrProfile?.baseSalary || viewingStaff.salary || '—'}</span>
+                                            </div>
+                                            <div className="flex justify-between items-center border-b border-border/60 pb-2">
+                                                <span className="text-[8px] font-bold text-text-muted uppercase tracking-wider font-mono">PAN Number</span>
+                                                <span className="text-xs font-black text-text font-mono uppercase">{viewingStaff.hrProfile?.panNumber || viewingStaff.pan || '—'}</span>
+                                            </div>
+                                            <div className="space-y-1.5 pt-1">
+                                                <span className="text-[8px] font-bold text-text-muted uppercase tracking-wider font-mono block">Bank Account Details</span>
+                                                <div className="grid grid-cols-2 gap-x-2 gap-y-1 text-xs">
+                                                    <div>
+                                                        <p className="text-[7px] font-bold text-text-muted uppercase tracking-widest font-mono">Institution</p>
+                                                        <p className="font-black text-text font-mono uppercase">{viewingStaff.hrProfile?.bankDetails?.bankName || viewingStaff.bankName || '—'}</p>
+                                                    </div>
+                                                    <div>
+                                                        <p className="text-[7px] font-bold text-text-muted uppercase tracking-widest font-mono">IFSC Code</p>
+                                                        <p className="font-black text-text font-mono uppercase">{viewingStaff.hrProfile?.bankDetails?.ifscCode || viewingStaff.ifsc || '—'}</p>
+                                                    </div>
+                                                    <div className="col-span-2 mt-1">
+                                                        <p className="text-[7px] font-bold text-text-muted uppercase tracking-widest font-mono">Account Number</p>
+                                                        <p className="font-black text-text font-mono">{viewingStaff.hrProfile?.bankDetails?.accountNumber || viewingStaff.accountNo || '—'}</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Public Stylist Profile Section if applicable */}
+                            {['stylist'].includes(viewingStaff.role?.toLowerCase()) && (
+                                <div className="border-t border-border pt-4">
+                                    <h3 className="text-[10px] font-black text-primary uppercase tracking-[0.2em] font-mono mb-3">Stylist Public Profile</h3>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-surface p-4 border border-border">
+                                        <div className="space-y-2">
+                                            <div>
+                                                <p className="text-[8px] font-bold text-text-muted uppercase tracking-wider font-mono">Experience</p>
+                                                <p className="text-xs font-black text-text font-mono">{viewingStaff.stylistExperience || viewingStaff.experience || '—'}</p>
+                                            </div>
+                                            <div>
+                                                <p className="text-[8px] font-bold text-text-muted uppercase tracking-wider font-mono mb-1">Specializations</p>
+                                                <div className="flex flex-wrap gap-1.5">
+                                                    {Array.isArray(viewingStaff.stylistSpecializations || viewingStaff.specializations) ? (
+                                                        (viewingStaff.stylistSpecializations || viewingStaff.specializations).map((spec, i) => (
+                                                            <span key={i} className="px-2 py-0.5 bg-white border border-border text-[8px] font-black text-primary uppercase tracking-wider font-mono">
+                                                                {spec}
+                                                            </span>
+                                                        ))
+                                                    ) : (
+                                                        (viewingStaff.stylistSpecializations || viewingStaff.specializations) ? (
+                                                            (viewingStaff.stylistSpecializations || viewingStaff.specializations).split(',').map((spec, i) => (
+                                                                <span key={i} className="px-2 py-0.5 bg-white border border-border text-[8px] font-black text-primary uppercase tracking-wider font-mono">
+                                                                    {spec.trim()}
+                                                                </span>
+                                                            ))
+                                                        ) : (
+                                                            <span className="text-xs font-bold text-text-muted italic">—</span>
+                                                        )
+                                                    )}
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <p className="text-[8px] font-bold text-text-muted uppercase tracking-wider font-mono">Professional Bio</p>
+                                            <p className="text-xs font-bold text-text-secondary font-mono italic leading-relaxed">
+                                                "{viewingStaff.stylistBio || viewingStaff.bio || 'No professional bio added yet.'}"
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Work Schedule / Weekly Availability Section */}
+                            {viewingStaff.availability?.days && (
+                                <div className="border-t border-border pt-4">
+                                    <h3 className="text-[10px] font-black text-primary uppercase tracking-[0.2em] font-mono mb-3">Work Schedule</h3>
+                                    <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-7 gap-2">
+                                        {Object.keys(viewingStaff.availability.days).map((day) => {
+                                            const daySlots = viewingStaff.availability.days[day] || [];
+                                            return (
+                                                <div key={day} className="bg-surface p-2 border border-border flex flex-col items-center text-center">
+                                                    <span className="text-[8px] font-black text-text uppercase tracking-wider font-mono border-b border-border/80 pb-1 w-full mb-1">{day.slice(0, 3)}</span>
+                                                    {daySlots.length === 0 ? (
+                                                        <span className="text-[8px] font-bold text-rose-500 uppercase font-mono italic py-1">OFF</span>
+                                                    ) : (
+                                                        daySlots.map((slot, idx) => (
+                                                            <span key={idx} className="text-[8px] font-black text-text-muted font-mono leading-none py-0.5">
+                                                                {slot.start} - {slot.end}
+                                                            </span>
+                                                        ))
+                                                    )}
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Modal Footer */}
+                        <div className="flex p-6 border-t border-slate-200 bg-surface shrink-0">
+                            <button
+                                type="button"
+                                onClick={() => setViewingStaff(null)}
+                                className="w-full bg-text text-white py-3 text-[10px] font-bold uppercase tracking-[0.2em] hover:bg-primary transition-all active:scale-95"
+                            >
+                                Close View
+                            </button>
+                        </div>
+                    </div>
                 </div>,
                 document.body
             )}
