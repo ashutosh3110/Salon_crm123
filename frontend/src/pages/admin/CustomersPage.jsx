@@ -1078,7 +1078,6 @@ function PaymentRemindersView({ onCustomerClick, setWhatsappModal, fetchCustomer
                     <label className="flex items-center gap-3 cursor-pointer select-none group">
                         <div
                             className={`relative w-11 h-6 rounded-full transition-all duration-300 ${autoReminder ? 'bg-primary' : 'bg-slate-200 dark:bg-slate-700'}`}
-                            onClick={() => setAutoReminder(!autoReminder)}
                         >
                             <div className={`absolute top-1 w-4 h-4 bg-white rounded-full shadow-sm transition-all duration-300 ${autoReminder ? 'left-6' : 'left-1'}`} />
                         </div>

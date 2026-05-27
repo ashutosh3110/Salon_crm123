@@ -1,8 +1,8 @@
-import { useState, useMemo, useEffect, useCallback } from 'react';
+import { useState, useMemo, useEffect, useCallback, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { 
     Plus, Search, Calendar, X, Edit2, Trash2, DollarSign, Clock, Check, 
-    Filter, RefreshCw, AlertCircle, User, Wallet, FileText, CheckCircle2 
+    Filter, RefreshCw, AlertCircle, User, Wallet, FileText, CheckCircle2, ChevronDown
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useBusiness } from '../../../contexts/BusinessContext';
@@ -34,6 +34,24 @@ export default function AdvanceSalaryManager() {
     // Modal states
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingAdvance, setEditingAdvance] = useState(null);
+
+    // Dropdown open states
+    const [monthOpen, setMonthOpen] = useState(false);
+    const [yearOpen, setYearOpen] = useState(false);
+    const [staffOpen, setStaffOpen] = useState(false);
+    const monthRef = useRef(null);
+    const yearRef = useRef(null);
+    const staffRef = useRef(null);
+
+    useEffect(() => {
+        const handleClickOutside = (e) => {
+            if (monthRef.current && !monthRef.current.contains(e.target)) setMonthOpen(false);
+            if (yearRef.current && !yearRef.current.contains(e.target)) setYearOpen(false);
+            if (staffRef.current && !staffRef.current.contains(e.target)) setStaffOpen(false);
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
     
     // Form fields
     const [form, setForm] = useState({
@@ -213,10 +231,9 @@ export default function AdvanceSalaryManager() {
     };
 
     return (
-        <div className="space-y-6 text-left bg-slate-50 dark:bg-slate-900 rounded-3xl p-6 border border-slate-200/60 dark:border-slate-800/80 transition-colors">
+        <div className="space-y-5 text-left bg-slate-50 dark:bg-slate-900 rounded-3xl p-4 sm:p-6 border border-slate-200/60 dark:border-slate-800/80 transition-colors">
             
-            {/* Summary Statistics Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
                 <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700/80 shadow-sm flex items-center justify-between group hover:border-violet-500 transition-all">
                     <div className="space-y-1">
                         <p className="text-[10px] font-black text-slate-450 dark:text-slate-500 uppercase tracking-widest">Total Advances Given</p>
@@ -249,61 +266,120 @@ export default function AdvanceSalaryManager() {
             </div>
 
             {/* Toolbar Panel */}
-            <div className="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-200/65 dark:border-slate-700/80 shadow-sm flex flex-wrap items-center justify-between gap-4 transition-colors">
-                
-                <div className="flex items-center flex-wrap gap-3">
-                    {/* Period selection */}
-                    <div className="flex items-center bg-slate-50 dark:bg-slate-750 border border-slate-200 dark:border-slate-700 rounded-xl px-2.5 py-1.5 shadow-sm text-xs font-bold text-slate-700 dark:text-slate-200 select-none">
-                        <Calendar className="w-4 h-4 mr-2 text-slate-400" />
-                        <select value={filterMonth} onChange={e => setFilterMonth(Number(e.target.value))}
-                            className="bg-transparent border-none p-0 pr-6 focus:ring-0 cursor-pointer outline-none font-bold text-slate-700 dark:text-slate-200 text-xs">
-                            {['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'].map((m, i) => (
-                                <option key={m} value={i + 1} className="bg-white dark:bg-slate-800">{m}</option>
-                            ))}
-                        </select>
-                        <select value={filterYear} onChange={e => setFilterYear(Number(e.target.value))}
-                            className="bg-transparent border-none p-0 pr-6 focus:ring-0 cursor-pointer outline-none font-bold text-slate-700 dark:text-slate-200 text-xs border-l border-slate-200/40 pl-2">
-                            {[2024, 2025, 2026, 2027].map(y => <option key={y} value={y} className="bg-white dark:bg-slate-800">{y}</option>)}
-                        </select>
+            <div className="bg-white dark:bg-slate-800 p-3 sm:p-4 rounded-2xl border border-slate-200/65 dark:border-slate-700/80 shadow-sm flex flex-col gap-3 transition-colors">
+
+                {/* Row 1: Period + Staff filter + Add button */}
+                <div className="flex items-center gap-2 flex-wrap">
+
+                    {/* Month custom dropdown */}
+                    <div className="relative" ref={monthRef}>
+                        <button
+                            type="button"
+                            onClick={() => { setMonthOpen(o => !o); setYearOpen(false); setStaffOpen(false); }}
+                            className="flex items-center gap-1.5 bg-slate-50 dark:bg-slate-750 border border-slate-200 dark:border-slate-700 rounded-xl px-2.5 py-2 text-xs font-bold text-slate-700 dark:text-slate-200 shadow-sm transition-colors select-none"
+                        >
+                            <Calendar className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                            <span>{['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][filterMonth - 1]}</span>
+                            <ChevronDown className={`w-3 h-3 text-slate-400 transition-transform ${monthOpen ? 'rotate-180' : ''}`} />
+                        </button>
+                        {monthOpen && (
+                            <div className="absolute left-0 top-full mt-1.5 z-50 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-xl overflow-hidden min-w-[100px] max-h-44 overflow-y-auto">
+                                {['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'].map((m, i) => (
+                                    <button key={m} type="button"
+                                        onClick={() => { setFilterMonth(i + 1); setMonthOpen(false); }}
+                                        className={`w-full text-left px-3.5 py-2.5 text-xs font-bold transition-colors ${
+                                            filterMonth === i + 1
+                                                ? 'bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary'
+                                                : 'text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700'
+                                        }`}
+                                    >{m}</button>
+                                ))}
+                            </div>
+                        )}
                     </div>
 
-                    {/* Staff selection */}
-                    <div className="flex items-center gap-2 bg-slate-50 dark:bg-slate-750 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-1.5 shadow-sm text-xs transition-colors">
-                        <Filter className="w-3.5 h-3.5 text-slate-400" />
-                        <select
-                            value={filterStaff}
-                            onChange={e => setFilterStaff(e.target.value)}
-                            className="bg-transparent border-none p-0 pr-6 focus:ring-0 cursor-pointer outline-none font-bold text-slate-700 dark:text-slate-200 text-xs"
+                    {/* Year custom dropdown */}
+                    <div className="relative" ref={yearRef}>
+                        <button
+                            type="button"
+                            onClick={() => { setYearOpen(o => !o); setMonthOpen(false); setStaffOpen(false); }}
+                            className="flex items-center gap-1.5 bg-slate-50 dark:bg-slate-750 border border-slate-200 dark:border-slate-700 rounded-xl px-2.5 py-2 text-xs font-bold text-slate-700 dark:text-slate-200 shadow-sm transition-colors select-none"
                         >
-                            <option value="All" className="bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 font-bold">All Employees</option>
-                            {activeStaffList.map(s => (
-                                <option key={s._id} value={s._id} className="bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 font-bold">
-                                    {s.name}
-                                </option>
-                            ))}
-                        </select>
+                            <span>{filterYear}</span>
+                            <ChevronDown className={`w-3 h-3 text-slate-400 transition-transform ${yearOpen ? 'rotate-180' : ''}`} />
+                        </button>
+                        {yearOpen && (
+                            <div className="absolute left-0 top-full mt-1.5 z-50 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-xl overflow-hidden min-w-[80px]">
+                                {[2024, 2025, 2026, 2027].map(y => (
+                                    <button key={y} type="button"
+                                        onClick={() => { setFilterYear(y); setYearOpen(false); }}
+                                        className={`w-full text-left px-3.5 py-2.5 text-xs font-bold transition-colors ${
+                                            filterYear === y
+                                                ? 'bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary'
+                                                : 'text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700'
+                                        }`}
+                                    >{y}</button>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Staff custom dropdown */}
+                    <div className="relative" ref={staffRef}>
+                        <button
+                            type="button"
+                            onClick={() => { setStaffOpen(o => !o); setMonthOpen(false); setYearOpen(false); }}
+                            className="flex items-center gap-1.5 bg-slate-50 dark:bg-slate-750 border border-slate-200 dark:border-slate-700 rounded-xl px-2.5 py-2 text-xs font-bold text-slate-700 dark:text-slate-200 shadow-sm transition-colors max-w-[160px] sm:max-w-none"
+                        >
+                            <Filter className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                            <span className="truncate">
+                                {filterStaff === 'All' ? 'All Employees' : activeStaffList.find(s => s._id === filterStaff)?.name || 'All Employees'}
+                            </span>
+                            <ChevronDown className={`w-3 h-3 text-slate-400 shrink-0 transition-transform ${staffOpen ? 'rotate-180' : ''}`} />
+                        </button>
+                        {staffOpen && (
+                            <div className="absolute left-0 top-full mt-1.5 z-50 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-xl overflow-hidden min-w-[160px] max-h-52 overflow-y-auto">
+                                <button type="button"
+                                    onClick={() => { setFilterStaff('All'); setStaffOpen(false); }}
+                                    className={`w-full text-left px-3.5 py-2.5 text-xs font-bold transition-colors ${
+                                        filterStaff === 'All'
+                                            ? 'bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary'
+                                            : 'text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700'
+                                    }`}
+                                >All Employees</button>
+                                {activeStaffList.map(s => (
+                                    <button key={s._id} type="button"
+                                        onClick={() => { setFilterStaff(s._id); setStaffOpen(false); }}
+                                        className={`w-full text-left px-3.5 py-2.5 text-xs font-bold transition-colors ${
+                                            filterStaff === s._id
+                                                ? 'bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary'
+                                                : 'text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700'
+                                        }`}
+                                    >{s.name}</button>
+                                ))}
+                            </div>
+                        )}
                     </div>
 
                     <button
                         onClick={() => setIsModalOpen(true)}
-                        className="px-4 py-2 bg-primary hover:bg-primary-dark text-white rounded-xl text-xs font-bold shadow-md hover:shadow-lg hover:shadow-primary/10 active:scale-95 transition-all flex items-center gap-1.5"
+                        className="ml-auto px-3 sm:px-4 py-2 bg-primary hover:bg-primary-dark text-white rounded-xl text-xs font-bold shadow-md hover:shadow-lg hover:shadow-primary/10 active:scale-95 transition-all flex items-center gap-1.5 whitespace-nowrap shrink-0"
                     >
                         <Plus className="w-4 h-4" />
                         Record Advance Salary
                     </button>
                 </div>
 
-                <div className="flex items-center gap-3">
-                    <div className="relative w-60">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-450" />
-                        <input
-                            type="text"
-                            placeholder="Search staff, reason..."
-                            className="w-full pl-9 pr-4 py-2 rounded-xl bg-slate-50 dark:bg-slate-755 border border-slate-200 dark:border-slate-700 text-xs font-semibold text-slate-700 dark:text-slate-200 focus:ring-2 focus:ring-primary/10 focus:border-primary outline-none transition-all placeholder-slate-400"
-                            value={searchTerm}
-                            onChange={e => setSearchTerm(e.target.value)}
-                        />
-                    </div>
+                {/* Row 2: Search */}
+                <div className="relative w-full">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" />
+                    <input
+                        type="text"
+                        placeholder="Search staff, reason..."
+                        className="w-full pl-8 pr-4 py-2 rounded-xl bg-slate-50 dark:bg-slate-750 border border-slate-200 dark:border-slate-700 text-xs font-semibold text-slate-700 dark:text-slate-200 focus:ring-2 focus:ring-primary/10 focus:border-primary outline-none transition-all placeholder-slate-400"
+                        value={searchTerm}
+                        onChange={e => setSearchTerm(e.target.value)}
+                    />
                 </div>
             </div>
 
@@ -320,7 +396,7 @@ export default function AdvanceSalaryManager() {
                 )}
 
                 <div className="overflow-x-auto">
-                    <table className="w-full text-left border-collapse">
+                    <table className="w-full text-left border-collapse min-w-[680px]">
                         <thead>
                             <tr className="bg-slate-50/50 dark:bg-slate-800/60 border-b border-slate-150 dark:border-slate-750 text-left">
                                 <th className="px-6 py-4 text-[10px] font-extrabold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Staff Details</th>
@@ -420,9 +496,9 @@ export default function AdvanceSalaryManager() {
                     </table>
                 </div>
 
-                <div className="px-6 py-3 border-t border-slate-150 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/40 flex items-center gap-2 transition-colors">
-                    <AlertCircle className="w-3.5 h-3.5 text-primary shrink-0" />
-                    <p className="text-[10px] text-slate-450 dark:text-slate-555 font-bold uppercase tracking-wider leading-none">
+                <div className="px-4 sm:px-6 py-3 border-t border-slate-150 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/40 flex items-start gap-2 transition-colors">
+                    <AlertCircle className="w-3.5 h-3.5 text-primary shrink-0 mt-0.5" />
+                    <p className="text-[10px] text-slate-450 dark:text-slate-555 font-bold uppercase tracking-wider leading-relaxed">
                         Advances registered in approved/paid status will automatically adjust on next payroll generation.
                     </p>
                 </div>

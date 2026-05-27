@@ -139,20 +139,43 @@ export default function SalesReports({ outletId }) {
     return (
         <div className="p-6 space-y-8 animate-reveal text-left font-sans text-text printing:p-0">
             {/* Header controls */}
-            <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-6 bg-surface p-6 border border-border shadow-sm rounded-xl">
-                <div className="space-y-1">
-                    <h2 className="text-2xl font-black uppercase tracking-tight text-text flex items-center gap-2">
-                        <FileText className="w-6 h-6 text-primary" />
-                        Sales Reports
-                    </h2>
-                    <p className="text-xs font-semibold text-text-muted uppercase tracking-wider">
-                        Analyze business income, stylist efficiency, and inventory sales performance.
-                    </p>
+            <div className="flex flex-col gap-4 bg-surface p-4 sm:p-6 border border-border shadow-sm rounded-xl">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div className="space-y-1">
+                        <h2 className="text-xl sm:text-2xl font-black uppercase tracking-tight text-text flex items-center gap-2">
+                            <FileText className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
+                            Sales Reports
+                        </h2>
+                        <p className="text-xs font-semibold text-text-muted uppercase tracking-wider">
+                            Analyze business income, stylist efficiency, and inventory sales performance.
+                        </p>
+                    </div>
+
+                    <div className="flex items-center gap-2 shrink-0">
+                        {/* Refresh */}
+                        <button
+                            onClick={loadReportData}
+                            disabled={loading}
+                            className="p-2.5 bg-surface border border-border hover:border-primary rounded-lg text-text-muted hover:text-primary transition-all cursor-pointer disabled:opacity-50"
+                            title="Refresh Report Data"
+                        >
+                            <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+                        </button>
+                        {/* Export Options */}
+                        <button
+                            onClick={exportToCSV}
+                            className="flex items-center gap-2 bg-surface border border-border px-3 sm:px-4 py-2.5 rounded-lg text-[10px] font-black uppercase tracking-widest hover:border-primary hover:text-primary transition-all cursor-pointer whitespace-nowrap"
+                        >
+                            <Download className="w-4 h-4 text-text-muted" />
+                            <span className="hidden sm:inline">CSV Export</span>
+                            <span className="sm:hidden">CSV</span>
+                        </button>
+                    </div>
                 </div>
 
-                <div className="flex flex-wrap items-center gap-3">
-                    {/* Period selection */}
-                    <div className="flex items-center bg-surface-alt border border-border p-1 rounded-lg">
+                {/* Period selection - scrollable on mobile */}
+                <div className="w-full overflow-x-auto no-scrollbar">
+                    <div className="flex items-center bg-surface-alt border border-border p-1 rounded-lg w-max min-w-full sm:w-auto">
                         {['daily', 'weekly', 'monthly', 'yearly'].map((p) => (
                             <button
                                 key={p}
@@ -160,7 +183,7 @@ export default function SalesReports({ outletId }) {
                                     setPeriod(p);
                                     setShowCustomDates(false);
                                 }}
-                                className={`px-4 py-2 text-[10px] font-black uppercase tracking-widest rounded-md transition-all cursor-pointer ${
+                                className={`px-3 sm:px-4 py-2 text-[10px] font-black uppercase tracking-widest rounded-md transition-all cursor-pointer whitespace-nowrap ${
                                     period === p && !showCustomDates
                                         ? 'bg-primary text-primary-foreground shadow-md shadow-primary/20'
                                         : 'text-text-muted hover:text-text'
@@ -171,7 +194,7 @@ export default function SalesReports({ outletId }) {
                         ))}
                         <button
                             onClick={() => setShowCustomDates(true)}
-                            className={`px-4 py-2 text-[10px] font-black uppercase tracking-widest rounded-md transition-all cursor-pointer ${
+                            className={`px-3 sm:px-4 py-2 text-[10px] font-black uppercase tracking-widest rounded-md transition-all cursor-pointer whitespace-nowrap ${
                                 showCustomDates
                                     ? 'bg-primary text-primary-foreground shadow-md shadow-primary/20'
                                     : 'text-text-muted hover:text-text'
@@ -180,59 +203,33 @@ export default function SalesReports({ outletId }) {
                             Custom
                         </button>
                     </div>
-
-                    {/* Refresh */}
-                    <button
-                        onClick={loadReportData}
-                        disabled={loading}
-                        className="p-2.5 bg-surface border border-border hover:border-primary rounded-lg text-text-muted hover:text-primary transition-all cursor-pointer disabled:opacity-50"
-                        title="Refresh Report Data"
-                    >
-                        <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-                    </button>
-
-                    {/* Seed Demo Data Button */}
-                  
-
-                    {/* Export Options */}
-                    <button
-                        onClick={exportToCSV}
-                        className="flex items-center gap-2 bg-surface border border-border px-4 py-2.5 rounded-lg text-[10px] font-black uppercase tracking-widest hover:border-primary hover:text-primary transition-all cursor-pointer"
-                    >
-                        <Download className="w-4 h-4 text-text-muted" />
-                        CSV Export
-                    </button>
                 </div>
             </div>
 
             {/* Custom Dates Expandable */}
             {showCustomDates && (
-                <div className="bg-surface border border-border p-4 rounded-xl shadow-sm flex flex-wrap items-end gap-4 animate-reveal">
-                    <div className="space-y-1.5">
+                <div className="bg-surface border border-border p-4 rounded-xl shadow-sm flex flex-col sm:flex-row sm:items-end gap-4 animate-reveal">
+                    <div className="space-y-1.5 flex-1">
                         <label className="text-[10px] font-black uppercase tracking-widest text-text-muted">Start Date</label>
-                        <div className="relative">
-                            <input 
-                                type="date" 
-                                value={startDate}
-                                onChange={(e) => setStartDate(e.target.value)}
-                                className="bg-surface-alt border border-border rounded-lg px-4 py-2 text-xs font-bold outline-none focus:border-primary transition-all"
-                            />
-                        </div>
+                        <input 
+                            type="date" 
+                            value={startDate}
+                            onChange={(e) => setStartDate(e.target.value)}
+                            className="w-full bg-surface-alt border border-border rounded-lg px-4 py-2 text-xs font-bold outline-none focus:border-primary transition-all"
+                        />
                     </div>
-                    <div className="space-y-1.5">
+                    <div className="space-y-1.5 flex-1">
                         <label className="text-[10px] font-black uppercase tracking-widest text-text-muted">End Date</label>
-                        <div className="relative">
-                            <input 
-                                type="date" 
-                                value={endDate}
-                                onChange={(e) => setEndDate(e.target.value)}
-                                className="bg-surface-alt border border-border rounded-lg px-4 py-2 text-xs font-bold outline-none focus:border-primary transition-all"
-                            />
-                        </div>
+                        <input 
+                            type="date" 
+                            value={endDate}
+                            onChange={(e) => setEndDate(e.target.value)}
+                            className="w-full bg-surface-alt border border-border rounded-lg px-4 py-2 text-xs font-bold outline-none focus:border-primary transition-all"
+                        />
                     </div>
                     <button
                         onClick={loadReportData}
-                        className="bg-primary text-primary-foreground px-6 py-2.5 rounded-lg text-[10px] font-black uppercase tracking-widest hover:bg-primary-dark transition-all cursor-pointer"
+                        className="bg-primary text-primary-foreground px-6 py-2.5 rounded-lg text-[10px] font-black uppercase tracking-widest hover:bg-primary-dark transition-all cursor-pointer w-full sm:w-auto"
                     >
                         Apply Dates
                     </button>
@@ -240,7 +237,7 @@ export default function SalesReports({ outletId }) {
             )}
 
             {/* KPI Summary Cards */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-4">
                 <KPICard 
                     title="Total Revenue" 
                     value={loading ? '...' : formatInr(kpis.totalSales)}
@@ -567,7 +564,7 @@ export default function SalesReports({ outletId }) {
 
                     {/* Sales Transaction List */}
                     <div className="bg-surface border border-border rounded-2xl shadow-sm overflow-hidden">
-                        <div className="p-6 border-b border-border flex flex-col md:flex-row md:items-center justify-between gap-4">
+                        <div className="p-4 sm:p-6 border-b border-border flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                             <div>
                                 <h3 className="text-sm font-black uppercase tracking-widest text-text">Recent Invoices</h3>
                                 <p className="text-[10px] font-bold text-text-muted uppercase tracking-wider mt-0.5">
@@ -575,11 +572,11 @@ export default function SalesReports({ outletId }) {
                                 </p>
                             </div>
                             
-                            <div className="relative max-w-md w-full md:w-64">
+                            <div className="relative w-full sm:w-64">
                                 <Search className="w-4 h-4 text-text-muted absolute left-3 top-2.5" />
                                 <input
                                     type="text"
-                                    placeholder="Search invoice number or customer..."
+                                    placeholder="Search invoices..."
                                     value={searchQuery}
                                     onChange={(e) => setSearchQuery(e.target.value)}
                                     className="w-full bg-surface-alt border border-border rounded-lg pl-9 pr-4 py-2 text-xs font-bold outline-none focus:border-primary transition-all placeholder:text-[10px] placeholder:font-black placeholder:uppercase placeholder:tracking-widest"

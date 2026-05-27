@@ -11,7 +11,7 @@ export default function ProductCategoriesPage() {
                 </div>
             </div>
 
-            <div className="bg-surface p-6 border border-border min-h-[600px]">
+            <div className="bg-surface p-4 md:p-6 border border-border min-h-[600px]">
                 <ProductCategoryManager />
             </div>
         </div>

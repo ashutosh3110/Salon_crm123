@@ -28,6 +28,7 @@ import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 
 import { useBusiness } from '../../contexts/BusinessContext';
+import CustomDropdown from '../../components/common/CustomDropdown';
 
 const STATUS_FLOW = {
     pending: { label: 'Pending', color: 'text-amber-500', bg: 'bg-amber-50', icon: Clock },
@@ -339,8 +340,8 @@ export default function ShopOrdersPage() {
             </div>
 
             {/* Filters Bar */}
-            <div className="flex flex-col md:flex-row gap-4 items-end">
-                <div className="relative flex-1 group">
+            <div className="flex flex-col md:flex-row gap-4 items-stretch md:items-end">
+                <div className="relative flex-1 group w-full">
                     <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-primary transition-colors" />
                     <input
                         type="text"
@@ -352,22 +353,19 @@ export default function ShopOrdersPage() {
                 </div>
 
                 {/* Outlet Filter */}
-                <div className="flex flex-col gap-2 min-w-[200px]">
-                    <span className="text-[9px] font-black uppercase tracking-widest text-text-muted pl-1">Target Outlet</span>
-                    <select
+                <div className="flex flex-col min-w-[200px] w-full md:w-auto">
+                    <CustomDropdown
+                        label="Target Outlet"
                         value={outletFilter}
-                        onChange={(e) => setOutletFilter(e.target.value)}
-                        className="w-full px-4 py-3 bg-surface border border-border text-[11px] font-black uppercase tracking-widest focus:outline-none focus:border-primary cursor-pointer appearance-none"
-                        style={{ backgroundImage: `url("data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2212%22%20height%3D%2212%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22currentColor%22%20stroke-width%3D%223%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpolyline%20points%3D%226%209%2012%2015%2018%209%22%3E%3C%2Fpolyline%3E%3C%2Fsvg%3E")`, backgroundRepeat: 'no-repeat', backgroundPosition: 'right 1rem center' }}
-                    >
-                        <option value="all">All Outlets</option>
-                        {outlets.map(o => (
-                            <option key={o._id} value={o._id}>{o.name}</option>
-                        ))}
-                    </select>
+                        onChange={(val) => setOutletFilter(val)}
+                        options={[
+                            { label: 'All Outlets', value: 'all' },
+                            ...outlets.map(o => ({ label: o.name, value: o._id }))
+                        ]}
+                    />
                 </div>
 
-                <div className="flex items-center gap-2 overflow-x-auto pb-1 md:pb-0 scrollbar-hide">
+                <div className="flex items-center gap-2 overflow-x-auto pb-2 md:pb-0 w-full md:w-auto scrollbar-hide">
                     {['all', 'pending', 'accepted', 'dispatched', 'out_for_delivery', 'delivered', 'rejected', 'cancelled'].map(s => (
                         <button
                             key={s}
@@ -500,174 +498,174 @@ export default function ShopOrdersPage() {
                                 transition={{ type: 'spring', damping: 25, stiffness: 200 }}
                                 className="relative w-full max-w-2xl bg-surface h-full shadow-2xl flex flex-col border-l border-border z-10"
                             >
-                            {/* Drawer Header */}
-                            <div className="p-6 bg-surface-alt border-b border-border flex items-center justify-between">
-                                <div className="font-mono">
-                                    <p className="text-[10px] font-black text-primary uppercase tracking-[0.3em] mb-1">Order Protocol Details</p>
-                                    <h2 className="text-xl font-black text-text uppercase italic tracking-tighter">ORD-{selectedOrder._id.slice(-6).toUpperCase()}</h2>
-                                </div>
-                                <button
-                                    onClick={() => setSelectedOrder(null)}
-                                    className="p-3 bg-surface border border-border hover:bg-rose-500 hover:text-white transition-all"
-                                >
-                                    <XCircle className="w-5 h-5" />
-                                </button>
-                            </div>
-
-                            {/* Drawer Content */}
-                            <div className="flex-1 overflow-y-auto p-8 space-y-8 custom-scrollbar">
-                                {/* Actions Section */}
-                                <div className="space-y-4">
-                                    <h3 className="text-[11px] font-black text-text-muted uppercase tracking-[0.2em] border-l-2 border-primary pl-3">Update Protocol Status</h3>
-                                    <div className="flex flex-wrap gap-2">
-                                        {getNextStatus(selectedOrder.status).map(s => (
-                                            <button
-                                                key={s}
-                                                disabled={updatingStatus}
-                                                onClick={() => handleUpdateStatus(selectedOrder._id, s)}
-                                                className={`px-6 py-3 text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2 border rounded-xl protocol-action-btn btn-${s === 'accepted' ? 'accepted' : s === 'rejected' ? 'rejected' : 'other'}`}
-                                            >
-                                                {updatingStatus && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
-                                                <span>
-                                                    {s === 'accepted' && 'APPROVE ORDER'}
-                                                    {s === 'rejected' && 'REJECT ORDER'}
-                                                    {s === 'dispatched' && 'MARK DISPATCHED'}
-                                                    {s === 'out_for_delivery' && 'OUT FOR DELIVERY'}
-                                                    {s === 'delivered' && 'CONFIRM DELIVERY'}
-                                                </span>
-                                            </button>
-                                        ))}
-                                        {(selectedOrder.status === 'cancelled' || selectedOrder.status === 'rejected' || selectedOrder.status === 'delivered') && (
-                                            <div className="text-[11px] font-black text-text-muted italic bg-surface-alt px-4 py-3 border border-border w-full text-center">
-                                                This order has reached a terminal status: {selectedOrder.status.toUpperCase()}
-                                            </div>
-                                        )}
+                                {/* Drawer Header */}
+                                <div className="p-6 bg-surface-alt border-b border-border flex items-center justify-between">
+                                    <div className="font-mono">
+                                        <p className="text-[10px] font-black text-primary uppercase tracking-[0.3em] mb-1">Order Protocol Details</p>
+                                        <h2 className="text-xl font-black text-text uppercase italic tracking-tighter">ORD-{selectedOrder._id.slice(-6).toUpperCase()}</h2>
                                     </div>
+                                    <button
+                                        onClick={() => setSelectedOrder(null)}
+                                        className="p-3 bg-surface border border-border hover:bg-rose-500 hover:text-white transition-all"
+                                    >
+                                        <XCircle className="w-5 h-5" />
+                                    </button>
                                 </div>
 
-                                {/* Order Breakdown */}
-                                <div className="space-y-4">
-                                    <h3 className="text-[11px] font-black text-text-muted uppercase tracking-[0.2em] border-l-2 border-primary pl-3">Asset Inventory</h3>
-                                    <div className="border border-border bg-background divide-y divide-border/30">
-                                        {selectedOrder.items.map((item, i) => (
-                                            <div key={i} className="p-4 flex items-center gap-4 group">
-                                                <div className="w-16 h-16 bg-surface border border-border overflow-hidden">
-                                                    <img src={item.productId?.image} className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all" alt="" />
+                                {/* Drawer Content */}
+                                <div className="flex-1 overflow-y-auto p-8 space-y-8 custom-scrollbar">
+                                    {/* Actions Section */}
+                                    <div className="space-y-4">
+                                        <h3 className="text-[11px] font-black text-text-muted uppercase tracking-[0.2em] border-l-2 border-primary pl-3">Update Protocol Status</h3>
+                                        <div className="flex flex-wrap gap-2">
+                                            {getNextStatus(selectedOrder.status).map(s => (
+                                                <button
+                                                    key={s}
+                                                    disabled={updatingStatus}
+                                                    onClick={() => handleUpdateStatus(selectedOrder._id, s)}
+                                                    className={`px-6 py-3 text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2 border rounded-xl protocol-action-btn btn-${s === 'accepted' ? 'accepted' : s === 'rejected' ? 'rejected' : 'other'}`}
+                                                >
+                                                    {updatingStatus && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
+                                                    <span>
+                                                        {s === 'accepted' && 'APPROVE ORDER'}
+                                                        {s === 'rejected' && 'REJECT ORDER'}
+                                                        {s === 'dispatched' && 'MARK DISPATCHED'}
+                                                        {s === 'out_for_delivery' && 'OUT FOR DELIVERY'}
+                                                        {s === 'delivered' && 'CONFIRM DELIVERY'}
+                                                    </span>
+                                                </button>
+                                            ))}
+                                            {(selectedOrder.status === 'cancelled' || selectedOrder.status === 'rejected' || selectedOrder.status === 'delivered') && (
+                                                <div className="text-[11px] font-black text-text-muted italic bg-surface-alt px-4 py-3 border border-border w-full text-center">
+                                                    This order has reached a terminal status: {selectedOrder.status.toUpperCase()}
                                                 </div>
-                                                <div className="flex-1">
-                                                    <h4 className="text-xs font-black uppercase tracking-tight text-text">{item.productId?.name}</h4>
-                                                    <p className="text-[10px] font-bold text-text-muted uppercase tracking-widest mt-1 italic">SKU: {item.productId?._id?.slice(-8).toUpperCase()}</p>
-                                                </div>
-                                                <div className="text-right">
-                                                    <p className="text-sm font-black text-text italic">₹{item.price * item.quantity}</p>
-                                                    <p className="text-[9px] font-black text-text-muted uppercase opacity-40">Qty: {item.quantity}</p>
-                                                </div>
-                                            </div>
-                                        ))}
-                                    </div>
-                                    <div className="p-6 bg-surface-alt border border-border space-y-3">
-                                        <div className="flex justify-between text-[10px] font-black text-text-muted uppercase tracking-widest">
-                                            <span>Subtotal</span>
-                                            <span>₹{selectedOrder.subtotal?.toLocaleString()}</span>
-                                        </div>
-                                        {selectedOrder.membershipDiscount > 0 && (
-                                            <div className="flex justify-between text-[10px] font-black text-rose-500 uppercase tracking-widest">
-                                                <span>Membership Discount</span>
-                                                <span>-₹{selectedOrder.membershipDiscount?.toLocaleString()}</span>
-                                            </div>
-                                        )}
-                                        <div className="flex justify-between text-[10px] font-black text-text-muted uppercase tracking-widest">
-                                            <span>Delivery / Logistics</span>
-                                            <span>+₹{selectedOrder.deliveryCharge?.toLocaleString()}</span>
-                                        </div>
-                                        <div className="flex justify-between text-[10px] font-black text-text-muted uppercase tracking-widest">
-                                            <span>GST / Tax</span>
-                                            <span>+₹{(selectedOrder.taxAmount > 0 ? selectedOrder.taxAmount : Math.round((selectedOrder.subtotal - (selectedOrder.membershipDiscount || 0)) * 0.12)).toLocaleString()}</span>
-                                        </div>
-                                        <div className="flex justify-between text-[10px] font-black text-primary uppercase tracking-widest pt-2 border-t border-border/40">
-                                            <span>Final Settlement</span>
-                                            <span className="text-lg italic">₹{selectedOrder.totalAmount?.toLocaleString()}</span>
+                                            )}
                                         </div>
                                     </div>
-                                </div>
 
-                                {/* Tracking Timeline */}
-                                <div className="space-y-4">
-                                    <h3 className="text-[11px] font-black text-text-muted uppercase tracking-[0.2em] border-l-2 border-primary pl-3">Timeline Trace</h3>
-                                    <div className="relative pl-6 space-y-6 before:absolute before:left-[11px] before:top-2 before:bottom-2 before:w-[1px] before:bg-border">
-                                        {(selectedOrder.timeline || []).slice().reverse().map((step, i) => (
-                                            <div key={i} className="relative">
-                                                <div className={`absolute -left-[22px] top-1 w-3 h-3 border-2 ${i === 0 ? 'bg-primary border-primary ring-4 ring-primary/10' : 'bg-background border-border'}`} />
-                                                <div className="flex flex-col">
-                                                    <div className="flex items-center gap-2">
-                                                        <span className={`text-[10px] font-black uppercase tracking-widest ${i === 0 ? 'text-primary' : 'text-text'}`}>{step.status}</span>
-                                                        <span className="text-[9px] font-bold text-text-muted opacity-40">{new Date(step.timestamp).toLocaleString()}</span>
+                                    {/* Order Breakdown */}
+                                    <div className="space-y-4">
+                                        <h3 className="text-[11px] font-black text-text-muted uppercase tracking-[0.2em] border-l-2 border-primary pl-3">Asset Inventory</h3>
+                                        <div className="border border-border bg-background divide-y divide-border/30">
+                                            {selectedOrder.items.map((item, i) => (
+                                                <div key={i} className="p-4 flex items-center gap-4 group">
+                                                    <div className="w-16 h-16 bg-surface border border-border overflow-hidden">
+                                                        <img src={item.productId?.image} className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all" alt="" />
                                                     </div>
-                                                    <p className="text-[11px] font-bold text-text-secondary mt-1 italic">"{step.note}"</p>
+                                                    <div className="flex-1">
+                                                        <h4 className="text-xs font-black uppercase tracking-tight text-text">{item.productId?.name}</h4>
+                                                        <p className="text-[10px] font-bold text-text-muted uppercase tracking-widest mt-1 italic">SKU: {item.productId?._id?.slice(-8).toUpperCase()}</p>
+                                                    </div>
+                                                    <div className="text-right">
+                                                        <p className="text-sm font-black text-text italic">₹{item.price * item.quantity}</p>
+                                                        <p className="text-[9px] font-black text-text-muted uppercase opacity-40">Qty: {item.quantity}</p>
+                                                    </div>
                                                 </div>
+                                            ))}
+                                        </div>
+                                        <div className="p-6 bg-surface-alt border border-border space-y-3">
+                                            <div className="flex justify-between text-[10px] font-black text-text-muted uppercase tracking-widest">
+                                                <span>Subtotal</span>
+                                                <span>₹{selectedOrder.subtotal?.toLocaleString()}</span>
                                             </div>
-                                        ))}
+                                            {selectedOrder.membershipDiscount > 0 && (
+                                                <div className="flex justify-between text-[10px] font-black text-rose-500 uppercase tracking-widest">
+                                                    <span>Membership Discount</span>
+                                                    <span>-₹{selectedOrder.membershipDiscount?.toLocaleString()}</span>
+                                                </div>
+                                            )}
+                                            <div className="flex justify-between text-[10px] font-black text-text-muted uppercase tracking-widest">
+                                                <span>Delivery / Logistics</span>
+                                                <span>+₹{selectedOrder.deliveryCharge?.toLocaleString()}</span>
+                                            </div>
+                                            <div className="flex justify-between text-[10px] font-black text-text-muted uppercase tracking-widest">
+                                                <span>GST / Tax</span>
+                                                <span>+₹{(selectedOrder.taxAmount > 0 ? selectedOrder.taxAmount : Math.round((selectedOrder.subtotal - (selectedOrder.membershipDiscount || 0)) * 0.12)).toLocaleString()}</span>
+                                            </div>
+                                            <div className="flex justify-between text-[10px] font-black text-primary uppercase tracking-widest pt-2 border-t border-border/40">
+                                                <span>Final Settlement</span>
+                                                <span className="text-lg italic">₹{selectedOrder.totalAmount?.toLocaleString()}</span>
+                                            </div>
+                                        </div>
                                     </div>
-                                </div>
 
-                                {/* Logistics Info */}
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                    <div className="p-6 border border-border bg-surface-alt space-y-4 col-span-1 sm:col-span-2">
-                                        <div className="flex items-center gap-2">
-                                            <Package className="w-3.5 h-3.5 text-primary" />
-                                            <h4 className="text-[10px] font-black uppercase tracking-widest text-text">Origin Outlet</h4>
-                                        </div>
-                                        <div className="space-y-1">
-                                            <p className="text-xs font-black text-text uppercase">
-                                                {outlets.find(o => String(o._id) === String(selectedOrder.outletId))?.name || 'Main Branch'}
-                                            </p>
-                                            <p className="text-[10px] font-bold text-text-muted uppercase italic">
-                                                Location ID: {selectedOrder.outletId || 'PRIMARY'}
-                                            </p>
-                                        </div>
-                                    </div>
-                                    <div className="p-6 border border-border bg-surface-alt space-y-4">
-                                        <div className="flex items-center gap-2">
-                                            <User className="w-3.5 h-3.5 text-primary" />
-                                            <h4 className="text-[10px] font-black uppercase tracking-widest text-text">Customer Profile</h4>
-                                        </div>
-                                        <div className="space-y-1">
-                                            <p className="text-xs font-black text-text uppercase">{selectedOrder.customerId?.name}</p>
-                                            <p className="text-[10px] font-bold text-text-muted">{selectedOrder.customerId?.phone}</p>
+                                    {/* Tracking Timeline */}
+                                    <div className="space-y-4">
+                                        <h3 className="text-[11px] font-black text-text-muted uppercase tracking-[0.2em] border-l-2 border-primary pl-3">Timeline Trace</h3>
+                                        <div className="relative pl-6 space-y-6 before:absolute before:left-[11px] before:top-2 before:bottom-2 before:w-[1px] before:bg-border">
+                                            {(selectedOrder.timeline || []).slice().reverse().map((step, i) => (
+                                                <div key={i} className="relative">
+                                                    <div className={`absolute -left-[22px] top-1 w-3 h-3 border-2 ${i === 0 ? 'bg-primary border-primary ring-4 ring-primary/10' : 'bg-background border-border'}`} />
+                                                    <div className="flex flex-col">
+                                                        <div className="flex items-center gap-2">
+                                                            <span className={`text-[10px] font-black uppercase tracking-widest ${i === 0 ? 'text-primary' : 'text-text'}`}>{step.status}</span>
+                                                            <span className="text-[9px] font-bold text-text-muted opacity-40">{new Date(step.timestamp).toLocaleString()}</span>
+                                                        </div>
+                                                        <p className="text-[11px] font-bold text-text-secondary mt-1 italic">"{step.note}"</p>
+                                                    </div>
+                                                </div>
+                                            ))}
                                         </div>
                                     </div>
-                                    <div className="p-6 border border-border bg-surface-alt space-y-4">
-                                        <div className="flex items-center gap-2">
-                                            <MapPin className="w-3.5 h-3.5 text-primary" />
-                                            <h4 className="text-[10px] font-black uppercase tracking-widest text-text">Target Location</h4>
-                                        </div>
-                                        {selectedOrder.deliveryPreference === 'home' ? (
+
+                                    {/* Logistics Info */}
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                        <div className="p-6 border border-border bg-surface-alt space-y-4 col-span-1 sm:col-span-2">
+                                            <div className="flex items-center gap-2">
+                                                <Package className="w-3.5 h-3.5 text-primary" />
+                                                <h4 className="text-[10px] font-black uppercase tracking-widest text-text">Origin Outlet</h4>
+                                            </div>
                                             <div className="space-y-1">
-                                                <p className="text-[10px] font-black text-text uppercase tracking-tight leading-tight">{selectedOrder.address?.street}</p>
-                                                <p className="text-[10px] font-bold text-text-muted uppercase">{selectedOrder.address?.city}, {selectedOrder.address?.zip}</p>
+                                                <p className="text-xs font-black text-text uppercase">
+                                                    {outlets.find(o => String(o._id) === String(selectedOrder.outletId))?.name || 'Main Branch'}
+                                                </p>
+                                                <p className="text-[10px] font-bold text-text-muted uppercase italic">
+                                                    Location ID: {selectedOrder.outletId || 'PRIMARY'}
+                                                </p>
                                             </div>
-                                        ) : (
-                                            <p className="text-[10px] font-black text-emerald-500 uppercase italic">In-Salon Pickup Registry</p>
-                                        )}
+                                        </div>
+                                        <div className="p-6 border border-border bg-surface-alt space-y-4">
+                                            <div className="flex items-center gap-2">
+                                                <User className="w-3.5 h-3.5 text-primary" />
+                                                <h4 className="text-[10px] font-black uppercase tracking-widest text-text">Customer Profile</h4>
+                                            </div>
+                                            <div className="space-y-1">
+                                                <p className="text-xs font-black text-text uppercase">{selectedOrder.customerId?.name}</p>
+                                                <p className="text-[10px] font-bold text-text-muted">{selectedOrder.customerId?.phone}</p>
+                                            </div>
+                                        </div>
+                                        <div className="p-6 border border-border bg-surface-alt space-y-4">
+                                            <div className="flex items-center gap-2">
+                                                <MapPin className="w-3.5 h-3.5 text-primary" />
+                                                <h4 className="text-[10px] font-black uppercase tracking-widest text-text">Target Location</h4>
+                                            </div>
+                                            {selectedOrder.deliveryPreference === 'home' ? (
+                                                <div className="space-y-1">
+                                                    <p className="text-[10px] font-black text-text uppercase tracking-tight leading-tight">{selectedOrder.address?.street}</p>
+                                                    <p className="text-[10px] font-bold text-text-muted uppercase">{selectedOrder.address?.city}, {selectedOrder.address?.zip}</p>
+                                                </div>
+                                            ) : (
+                                                <p className="text-[10px] font-black text-emerald-500 uppercase italic">In-Salon Pickup Registry</p>
+                                            )}
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
 
-                            {/* Drawer Footer */}
-                            <div className="p-6 bg-surface border-t border-border">
-                                <button
-                                    onClick={() => downloadManifest(selectedOrder)}
-                                    className="w-full py-4 bg-text text-background font-black text-[10px] uppercase tracking-[0.3em] hover:bg-primary hover:text-white transition-all flex items-center justify-center gap-3 shadow-lg shadow-black/10"
-                                >
-                                    <Download className="w-4 h-4" /> Download Manifest PDF
-                                </button>
-                            </div>
-                        </motion.div>
-                    </div>
-                )}
-            </AnimatePresence>,
-            document.body
-        )}
+                                {/* Drawer Footer */}
+                                <div className="p-6 bg-surface border-t border-border">
+                                    <button
+                                        onClick={() => downloadManifest(selectedOrder)}
+                                        className="w-full py-4 bg-text text-background font-black text-[10px] uppercase tracking-[0.3em] hover:bg-primary hover:text-white transition-all flex items-center justify-center gap-3 shadow-lg shadow-black/10"
+                                    >
+                                        <Download className="w-4 h-4" /> Download Manifest PDF
+                                    </button>
+                                </div>
+                            </motion.div>
+                        </div>
+                    )}
+                </AnimatePresence>,
+                document.body
+            )}
         </div>
     );
 }

@@ -355,33 +355,6 @@ export default function Sidebar({ collapsed, setCollapsed, isHovered, setIsHover
                     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
                     font-style: normal !important;
                 }
-
-                /* Light Mode Specific Sidebar Icon & Text Visibility Overrides */
-                html:not(.dark) .sidebar-container svg {
-                    color: #000000 !important;
-                    stroke: #000000 !important;
-                    fill: none !important;
-                    opacity: 1 !important;
-                }
-
-                /* Active / Hover states for items in Light Mode */
-                html:not(.dark) .sidebar-container a:hover svg,
-                html:not(.dark) .sidebar-container button:hover svg {
-                    color: #000000 !important;
-                    stroke: #000000 !important;
-                }
-
-                /* Active elements with gold background must have solid black icons & text */
-                html:not(.dark) .sidebar-container a[class*="bg-[#B4912B]"] svg,
-                html:not(.dark) .sidebar-container button[class*="bg-[#B4912B]"] svg {
-                    color: #000000 !important;
-                    stroke: #000000 !important;
-                }
-
-                html:not(.dark) .sidebar-container a[class*="bg-[#B4912B]"] span,
-                html:not(.dark) .sidebar-container button[class*="bg-[#B4912B]"] span {
-                    color: #ffffff !important;
-                }
             `}</style>
 
 
@@ -496,14 +469,7 @@ export default function Sidebar({ collapsed, setCollapsed, isHovered, setIsHover
                                                                     : 'text-slate-500 dark:text-slate-400 hover:text-[#B4912B] hover:bg-[#B4912B]/10'
                                                                 } ${isLocked ? 'opacity-40 !pointer-events-none !cursor-not-allowed !select-none' : ''}`}
                                                         >
-                                                            <div className="flex items-center gap-2.5">
-                                                                {sub.icon && (
-                                                                    <sub.icon
-                                                                        className={`w-4 h-4 shrink-0 ${isSubActive ? 'text-white' : 'text-slate-400 dark:text-slate-500 group-hover:text-[#B4912B]'}`}
-                                                                    />
-                                                                )}
-                                                                <span className="font-bold">{sub.label}</span>
-                                                            </div>
+                                                            <span className="font-bold">{sub.label}</span>
                                                             {!isLocked && sub.badge && (
                                                                 <span className={`px-1.5 py-0.5 rounded-md text-[9px] text-white font-semibold ${sub.badge.color}`}>
                                                                     {sub.badge.count}

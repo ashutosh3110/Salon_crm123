@@ -211,7 +211,7 @@ export default function OutletsPage() {
                                 </div>
 
                                 {/* Quick Action Icons - Floating */}
-                                <div className="absolute top-4 right-4 flex flex-col gap-2 translate-x-12 opacity-0 group-hover:translate-x-0 group-hover:opacity-100 transition-all duration-300">
+                                <div className="absolute top-4 right-4 flex flex-col gap-2 md:translate-x-12 md:opacity-0 opacity-100 translate-x-0 md:group-hover:translate-x-0 md:group-hover:opacity-100 transition-all duration-300">
                                     <button
                                         onClick={(e) => { e.stopPropagation(); navigate(`/admin/outlets/edit/${outlet._id}`); }}
                                         className="w-8 h-8 bg-white text-text flex items-center justify-center hover:bg-black hover:text-white transition-all shadow-xl rounded-lg"

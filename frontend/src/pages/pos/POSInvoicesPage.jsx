@@ -250,10 +250,10 @@ export const POSReceiptPDF = ({ invoice, salon }) => {
                     <Text style={{ textAlign: 'center', fontSize: 8 }}>========================================</Text>
 
                     {invoice.items?.map((item, i) => (
-                            <View key={i} style={{ flexDirection: 'row', fontSize: 7, marginTop: 4, alignItems: 'flex-start' }}>
-                                <Text style={{ width: 15 }}>{i + 1}</Text>
-                                <Text style={{ flex: 1.5 }}>{item.name || '-'} {item.isInclusiveTax ? '(INCL. GST)' : ''}</Text>
-                                <Text style={{ width: 45, fontSize: 6 }}>{item.stylistIds?.map(s => s.name || '-').join(', ') || '-'}</Text>
+                        <View key={i} style={{ flexDirection: 'row', fontSize: 7, marginTop: 4, alignItems: 'flex-start' }}>
+                            <Text style={{ width: 15 }}>{i + 1}</Text>
+                            <Text style={{ flex: 1.5 }}>{item.name || '-'} {item.isInclusiveTax ? '(INCL. GST)' : ''}</Text>
+                            <Text style={{ width: 45, fontSize: 6 }}>{item.stylistIds?.map(s => s.name || '-').join(', ') || '-'}</Text>
                             <Text style={{ width: 20, textAlign: 'center' }}>{item.quantity || 1}</Text>
                             <Text style={{ width: 35, textAlign: 'right' }}>{(item.price || 0).toFixed(2)}</Text>
                             <Text style={{ width: 40, textAlign: 'right' }}>{(item.total || (item.price * (item.quantity || 1))).toFixed(2)}</Text>
@@ -701,7 +701,7 @@ export default function POSInvoicesPage() {
     const sendEmailBill = async (inv) => {
         const email = inv.customerId?.email;
         if (!email) return toast('Customer email not found', { icon: 'ℹ️' });
-        
+
         setIsSendingEmail(inv._id);
         try {
             // Generate standard PDF
@@ -783,8 +783,8 @@ export default function POSInvoicesPage() {
                     </div>
 
                     <div className="flex flex-wrap items-center gap-3">
-                         {/* Outlet Selection */}
-                         <div className="relative group min-w-[220px]">
+                        {/* Outlet Selection */}
+                        <div className="relative group min-w-[220px]">
                             <select
                                 value={activeOutletId || ''}
                                 onChange={(e) => setActiveOutletId(e.target.value)}
@@ -801,9 +801,9 @@ export default function POSInvoicesPage() {
                     </div>
                 </div>
 
-                <div className="flex flex-wrap items-center justify-between gap-4 p-2 bg-surface border border-border shadow-sm">
+                <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 p-3 bg-surface border border-border shadow-sm rounded-xl">
                     {/* Date Filters */}
-                    <div className="flex gap-1">
+                    <div className="grid grid-cols-2 gap-2 w-full">
                         {[
                             { id: 'today', label: 'Today', icon: Calendar },
                             { id: 'all', label: 'All Time', icon: Clock }
@@ -811,15 +811,15 @@ export default function POSInvoicesPage() {
                             <button
                                 key={f.id}
                                 onClick={() => { setDateFilter(f.id); setPage(1); }}
-                                className={`flex items-center gap-2 px-8 py-3 text-[9px] font-black uppercase tracking-[0.2em] transition-all ${dateFilter === f.id ? 'bg-primary text-white shadow-xl shadow-primary/20' : 'text-text-secondary hover:text-text hover:bg-surface-alt'}`}
+                                className={`flex items-center justify-center gap-2 px-3 py-3.5 text-[9px] font-black uppercase tracking-[0.2em] transition-all rounded-lg w-full ${dateFilter === f.id ? 'bg-primary text-white shadow-xl shadow-primary/20' : 'text-text-secondary hover:text-text hover:bg-surface-alt border border-border/40'}`}
                             >
-                                <f.icon className="w-4 h-4" /> {f.label}
+                                <f.icon className="w-3.5 h-3.5 shrink-0" /> <span className="truncate">{f.label}</span>
                             </button>
                         ))}
                     </div>
 
                     {/* Type Filters */}
-                    <div className="flex gap-1 sm:border-l border-border/50 sm:pl-4">
+                    <div className="grid grid-cols-3 gap-2 w-full xl:border-l xl:border-border/50 xl:pl-4">
                         {[
                             { id: 'all', label: 'All Invoices', icon: FileText },
                             { id: 'service', label: 'Services', icon: Smartphone },
@@ -828,9 +828,9 @@ export default function POSInvoicesPage() {
                             <button
                                 key={f.id}
                                 onClick={() => { setTypeFilter(f.id); setPage(1); }}
-                                className={`flex items-center gap-2 px-8 py-3 text-[9px] font-black uppercase tracking-[0.2em] transition-all ${typeFilter === f.id ? 'bg-primary text-white shadow-xl shadow-primary/20' : 'text-text-secondary hover:text-text hover:bg-surface-alt'}`}
+                                className={`flex items-center justify-center gap-2 px-3 py-3.5 text-[9px] font-black uppercase tracking-[0.2em] transition-all rounded-lg w-full ${typeFilter === f.id ? 'bg-primary text-white shadow-xl shadow-primary/20' : 'text-text-secondary hover:text-text hover:bg-surface-alt border border-border/40'}`}
                             >
-                                <f.icon className="w-4 h-4" /> {f.label}
+                                <f.icon className="w-3.5 h-3.5 shrink-0" /> <span className="truncate">{f.label}</span>
                             </button>
                         ))}
                     </div>
@@ -981,9 +981,9 @@ export default function POSInvoicesPage() {
                                         </td>
                                         <td className="px-3 py-4 text-center">
                                             <div className="flex items-center justify-center gap-2">
-                                                <button 
-                                                    onClick={() => setSelectedInvoice(inv)} 
-                                                    className="px-4 py-1.5 border border-border bg-surface hover:bg-primary hover:text-white transition-all shadow-sm flex items-center gap-2 text-[10px] font-black uppercase tracking-widest" 
+                                                <button
+                                                    onClick={() => setSelectedInvoice(inv)}
+                                                    className="px-4 py-1.5 border border-border bg-surface hover:bg-primary hover:text-white transition-all shadow-sm flex items-center gap-2 text-[10px] font-black uppercase tracking-widest"
                                                     title="View Details"
                                                 >
                                                     <Eye className="w-3.5 h-3.5" />
@@ -1050,7 +1050,7 @@ export default function POSInvoicesPage() {
                                 <div className="bg-surface-alt/50 border border-border p-4">
                                     <p className="text-[9px] font-black text-text-muted uppercase tracking-widest mb-1">Staff</p>
                                     <p className="text-sm font-black text-text uppercase tracking-tight">
-                                        {[...new Set(selectedInvoice.items?.flatMap(item => 
+                                        {[...new Set(selectedInvoice.items?.flatMap(item =>
                                             item.stylistIds?.map(s => typeof s === 'object' ? s.name : s) || []
                                         ).filter(Boolean))].join(', ') || selectedInvoice.staffId?.name || 'System'}
                                     </p>
@@ -1093,9 +1093,9 @@ export default function POSInvoicesPage() {
                                 {selectedInvoice.cgst > 0 && (
                                     <div className="flex justify-between text-[10px] font-black text-text uppercase tracking-widest">
                                         <span>
-                                            CGST {selectedInvoice.items?.every(i => i.type === 'service') ? `(${(selectedInvoice.serviceGstPercent || selectedInvoice.gstPercent || 5) / 2}%)` : 
-                                                  selectedInvoice.items?.every(i => i.type === 'product') ? `(${(selectedInvoice.productGstPercent || selectedInvoice.gstPercent || 10) / 2}%)` : 
-                                                  (selectedInvoice.serviceGstPercent === selectedInvoice.productGstPercent) ? `(${(selectedInvoice.serviceGstPercent || selectedInvoice.gstPercent || 5) / 2}%)` : ''}
+                                            CGST {selectedInvoice.items?.every(i => i.type === 'service') ? `(${(selectedInvoice.serviceGstPercent || selectedInvoice.gstPercent || 5) / 2}%)` :
+                                                selectedInvoice.items?.every(i => i.type === 'product') ? `(${(selectedInvoice.productGstPercent || selectedInvoice.gstPercent || 10) / 2}%)` :
+                                                    (selectedInvoice.serviceGstPercent === selectedInvoice.productGstPercent) ? `(${(selectedInvoice.serviceGstPercent || selectedInvoice.gstPercent || 5) / 2}%)` : ''}
                                         </span>
                                         <span>{selectedInvoice.includingGst ? '(Included)' : `+Rs.${selectedInvoice.cgst?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}</span>
                                         {selectedInvoice.includingGst && <span>Rs.{selectedInvoice.cgst?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>}
@@ -1104,9 +1104,9 @@ export default function POSInvoicesPage() {
                                 {selectedInvoice.sgst > 0 && (
                                     <div className="flex justify-between text-[10px] font-black text-text uppercase tracking-widest">
                                         <span>
-                                            SGST {selectedInvoice.items?.every(i => i.type === 'service') ? `(${(selectedInvoice.serviceGstPercent || selectedInvoice.gstPercent || 5) / 2}%)` : 
-                                                  selectedInvoice.items?.every(i => i.type === 'product') ? `(${(selectedInvoice.productGstPercent || selectedInvoice.gstPercent || 10) / 2}%)` : 
-                                                  (selectedInvoice.serviceGstPercent === selectedInvoice.productGstPercent) ? `(${(selectedInvoice.serviceGstPercent || selectedInvoice.gstPercent || 5) / 2}%)` : ''}
+                                            SGST {selectedInvoice.items?.every(i => i.type === 'service') ? `(${(selectedInvoice.serviceGstPercent || selectedInvoice.gstPercent || 5) / 2}%)` :
+                                                selectedInvoice.items?.every(i => i.type === 'product') ? `(${(selectedInvoice.productGstPercent || selectedInvoice.gstPercent || 10) / 2}%)` :
+                                                    (selectedInvoice.serviceGstPercent === selectedInvoice.productGstPercent) ? `(${(selectedInvoice.serviceGstPercent || selectedInvoice.gstPercent || 5) / 2}%)` : ''}
                                         </span>
                                         <span>{selectedInvoice.includingGst ? '(Included)' : `+Rs.${selectedInvoice.sgst?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}</span>
                                         {selectedInvoice.includingGst && <span>Rs.{selectedInvoice.sgst?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>}

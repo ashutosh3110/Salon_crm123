@@ -246,65 +246,99 @@ export default function MembersListTab() {
         }
     };
 
+    const [outletDropdownOpen, setOutletDropdownOpen] = useState(false);
+    const outletDropdownRef = useRef(null);
+
+    useEffect(() => {
+        const handleOutletOutside = (e) => {
+            if (outletDropdownRef.current && !outletDropdownRef.current.contains(e.target)) {
+                setOutletDropdownOpen(false);
+            }
+        };
+        document.addEventListener('mousedown', handleOutletOutside);
+        return () => document.removeEventListener('mousedown', handleOutletOutside);
+    }, []);
+
     return (
-        <div className="space-y-6 italic">
-            <div className="flex flex-col gap-4">
-                {/* Row 1: Search & Primary Action */}
-                <div className="flex flex-col sm:flex-row gap-4 justify-between items-stretch sm:items-center">
-                    <div className="relative w-full sm:w-96 group text-left">
+        <div className="space-y-4 italic">
+            <div className="flex flex-col gap-3">
+                {/* Row 1: Search & Assign */}
+                <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center">
+                    <div className="relative flex-1 group text-left">
                         <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-primary transition-colors" />
                         <input
                             type="text"
                             placeholder="Search Members / Phone / Plan..."
                             value={searchTerm}
                             onChange={e => { setPage(1); setSearchTerm(e.target.value); }}
-                            className="w-full h-14 bg-surface border border-border/60 pl-12 pr-4 text-sm font-bold text-foreground focus:border-primary outline-none transition-all shadow-sm"
+                            className="w-full h-11 bg-surface border border-border/60 pl-11 pr-4 text-sm font-bold text-foreground focus:border-primary outline-none transition-all shadow-sm"
                         />
                     </div>
                     <button
                         onClick={() => setShowAssignModal(true)}
-                        className="px-6 h-14 bg-primary text-white border border-primary font-black text-[10px] uppercase tracking-[0.2em] transition-all hover:bg-primary-dark hover:scale-105 active:scale-95 shadow-lg shadow-primary/20 flex items-center justify-center gap-2"
+                        className="h-11 px-5 bg-primary text-white border border-primary font-black text-[10px] uppercase tracking-[0.2em] transition-all hover:bg-primary-dark active:scale-95 shadow-lg shadow-primary/20 flex items-center justify-center gap-2 whitespace-nowrap shrink-0"
                     >
                         <ShieldCheck className="w-4 h-4" />
                         Assign Plan
                     </button>
                 </div>
 
-                {/* Row 2: Filter Options */}
-                <div className="flex flex-col lg:flex-row gap-4 justify-between items-stretch lg:items-center border-t border-border/20 pt-4">
-                    <div className="flex flex-wrap items-center gap-2">
-                        {['all', 'active', 'expired'].map((f) => (
-                            <button
-                                key={f}
-                                onClick={() => { setFilter(f); setPage(1); }}
-                                className={`px-5 py-3 border font-black text-[9px] uppercase tracking-[0.2em] transition-all whitespace-nowrap ${filter === f
-                                    ? 'bg-primary text-white border-primary shadow-lg shadow-primary/20'
-                                    : 'text-text-muted border-border/40 hover:bg-surface-alt'
-                                    }`}
-                            >
-                                {f} Members
-                            </button>
-                        ))}
-                    </div>
+                {/* Row 2: Filter pills + Outlet + Export */}
+                <div className="flex items-center gap-2 flex-wrap border-t border-border/20 pt-3">
+                    {/* Filter pills */}
+                    {['all', 'active', 'expired'].map((f) => (
+                        <button
+                            key={f}
+                            onClick={() => { setFilter(f); setPage(1); }}
+                            className={`px-4 py-2 border font-black text-[9px] uppercase tracking-[0.2em] transition-all whitespace-nowrap ${filter === f
+                                ? 'bg-primary text-white border-primary shadow-lg shadow-primary/20'
+                                : 'text-text-muted border-border/40 hover:bg-surface-alt'
+                                }`}
+                        >
+                            {f} Members
+                        </button>
+                    ))}
 
-                    <div className="flex items-center gap-2 flex-wrap">
-                        {/* Outlet Filter */}
-                        <div className="flex items-center gap-2 border border-border/40 px-3 py-2 bg-surface">
-                            <Filter className="w-3.5 h-3.5 text-text-muted" />
-                            <select
-                                value={activeOutletId || ''}
-                                onChange={(e) => setActiveOutletId(e.target.value || null)}
-                                className="bg-transparent text-[9px] font-black uppercase tracking-widest outline-none focus:border-transparent transition-all min-w-[160px] text-foreground cursor-pointer"
+                    {/* Spacer */}
+                    <div className="flex items-center gap-2 ml-auto">
+                        {/* Outlet custom dropdown */}
+                        <div className="relative" ref={outletDropdownRef}>
+                            <button
+                                type="button"
+                                onClick={() => setOutletDropdownOpen(o => !o)}
+                                className="flex items-center gap-1.5 border border-border/40 px-3 py-2 bg-surface text-[9px] font-black uppercase tracking-widest text-foreground whitespace-nowrap max-w-[160px] sm:max-w-none"
                             >
-                                <option value="">All Outlets</option>
-                                {outlets.map(o => (
-                                    <option key={o._id || o.id} value={o._id || o.id} className="bg-surface">
-                                        {o.name}
-                                    </option>
-                                ))}
-                            </select>
+                                <Filter className="w-3.5 h-3.5 text-text-muted shrink-0" />
+                                <span className="truncate max-w-[100px] sm:max-w-none">
+                                    {activeOutletId ? (outlets.find(o => (o._id || o.id) === activeOutletId)?.name || 'Outlet') : 'All Outlets'}
+                                </span>
+                                <ChevronDown className={`w-3 h-3 text-text-muted shrink-0 transition-transform ${outletDropdownOpen ? 'rotate-180' : ''}`} />
+                            </button>
+                            {outletDropdownOpen && (
+                                <div className="absolute right-0 top-full mt-1 z-50 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-xl overflow-hidden min-w-[180px] max-h-52 overflow-y-auto">
+                                    <button
+                                        type="button"
+                                        onClick={() => { setActiveOutletId(null); setOutletDropdownOpen(false); }}
+                                        className={`w-full text-left px-4 py-2.5 text-[10px] font-black uppercase tracking-widest transition-colors ${!activeOutletId ? 'bg-primary/10 text-primary dark:bg-primary/20' : 'text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700'}`}
+                                    >All Outlets</button>
+                                    {outlets.map(o => (
+                                        <button
+                                            key={o._id || o.id}
+                                            type="button"
+                                            onClick={() => { setActiveOutletId(o._id || o.id); setOutletDropdownOpen(false); }}
+                                            className={`w-full text-left px-4 py-2.5 text-[10px] font-black uppercase tracking-widest transition-colors ${activeOutletId === (o._id || o.id) ? 'bg-primary/10 text-primary dark:bg-primary/20' : 'text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700'}`}
+                                        >{o.name}</button>
+                                    ))}
+                                </div>
+                            )}
                         </div>
-                        <button onClick={downloadCsv} className="p-3 border border-border/40 text-text-muted hover:text-primary hover:bg-primary/5 hover:border-primary/40 transition-all shadow-sm flex items-center justify-center bg-surface" title="Download CSV">
+
+                        {/* Export CSV */}
+                        <button
+                            onClick={downloadCsv}
+                            className="p-2 border border-border/40 text-text-muted hover:text-primary hover:bg-primary/5 hover:border-primary/40 transition-all shadow-sm flex items-center justify-center bg-surface"
+                            title="Download CSV"
+                        >
                             <Download size={16} />
                         </button>
                     </div>
@@ -313,7 +347,7 @@ export default function MembersListTab() {
 
             <div className="bg-surface border border-border/40 overflow-hidden text-left">
                 <div className="overflow-x-auto">
-                    <table className="w-full">
+                    <table className="w-full min-w-[640px]">
                         <thead className="bg-surface-alt border-b border-border/40">
                             <tr>
                                 <Th>Customer Identity</Th>

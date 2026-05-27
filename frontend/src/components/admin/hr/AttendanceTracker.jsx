@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect, useCallback } from 'react';
+import { useState, useMemo, useEffect, useCallback, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import {
     Calendar as CalendarIcon,
@@ -42,6 +42,18 @@ export default function AttendanceTracker() {
 
     const [remarkModal, setRemarkModal] = useState(null);
     const [remark, setRemark] = useState('');
+    const [outletDropdownOpen, setOutletDropdownOpen] = useState(false);
+    const outletDropdownRef = useRef(null);
+
+    useEffect(() => {
+        const handleClickOutside = (e) => {
+            if (outletDropdownRef.current && !outletDropdownRef.current.contains(e.target)) {
+                setOutletDropdownOpen(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
 
     const showToast = useCallback((msg) => {
         setToast(msg);
@@ -239,23 +251,24 @@ export default function AttendanceTracker() {
     return (
         <div className="space-y-5 text-left bg-slate-50 dark:bg-[#0f172a] rounded-3xl p-6 border border-slate-200/60 dark:border-slate-800/80 transition-colors">
 
-            {/* Top Toolbar: Fully Compacted date, search, filter and switchers */}
-            <div className="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-200/60 dark:border-slate-700/80 shadow-sm flex flex-wrap items-center justify-between gap-4 transition-colors">
+            {/* Top Toolbar */}
+            <div className="bg-white dark:bg-slate-800 p-3 sm:p-4 rounded-2xl border border-slate-200/60 dark:border-slate-700/80 shadow-sm flex flex-col gap-3 transition-colors">
 
-                {/* Date Navigation & Search */}
-                <div className="flex items-center flex-wrap gap-3">
-                    <div className="flex items-center bg-slate-50 dark:bg-slate-750 border border-slate-200 dark:border-slate-700 rounded-xl px-2.5 py-1.5 shadow-sm text-xs font-bold text-slate-700 dark:text-slate-200 transition-colors select-none">
+                {/* Row 1: Date nav + View switcher + Export */}
+                <div className="flex items-center justify-between gap-2 flex-wrap">
+                    {/* Date Navigation */}
+                    <div className="flex items-center bg-slate-50 dark:bg-slate-750 border border-slate-200 dark:border-slate-700 rounded-xl px-2 py-1.5 shadow-sm text-xs font-bold text-slate-700 dark:text-slate-200 transition-colors select-none">
                         <button type="button" onClick={() => changeDate(-1)} className="p-1 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-500 dark:text-slate-400 active:scale-90 transition-transform">
                             <ChevronLeft className="w-4 h-4" />
                         </button>
-                        <div className="flex items-center gap-1 mx-2">
-                            <CalendarIcon className="w-3.5 h-3.5 text-slate-400" />
+                        <div className="flex items-center gap-1 mx-1.5">
+                            <CalendarIcon className="w-3.5 h-3.5 text-slate-400 shrink-0" />
                             <input
                                 type="date"
                                 value={selectedDate}
                                 max={new Date().toISOString().split('T')[0]}
                                 onChange={e => setSelectedDate(e.target.value)}
-                                className="bg-transparent border-none p-0 focus:ring-0 cursor-pointer outline-none font-bold text-slate-700 dark:text-slate-200"
+                                className="bg-transparent border-none p-0 focus:ring-0 cursor-pointer outline-none font-bold text-slate-700 dark:text-slate-200 text-xs w-28"
                             />
                         </div>
                         <button type="button" onClick={() => changeDate(1)} className="p-1 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-500 dark:text-slate-400 active:scale-90 transition-transform">
@@ -263,60 +276,80 @@ export default function AttendanceTracker() {
                         </button>
                     </div>
 
-                    <div className="relative w-64">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                    {/* Right side: View switcher + Export */}
+                    <div className="flex items-center gap-2 ml-auto">
+                        {/* View Switcher */}
+                        <div className="flex items-center bg-slate-50 dark:bg-slate-750 p-1 border border-slate-200 dark:border-slate-700 rounded-xl shadow-inner text-xs transition-colors">
+                            <button
+                                onClick={() => setViewMode('daily')}
+                                className={`px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap ${viewMode === 'daily' ? 'bg-white dark:bg-slate-800 text-primary dark:text-slate-100 shadow-sm border border-slate-200/50 dark:border-slate-700/50' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}
+                            >
+                                Daily
+                            </button>
+                            <button
+                                onClick={() => setViewMode('summary')}
+                                className={`px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap ${viewMode === 'summary' ? 'bg-white dark:bg-slate-800 text-primary dark:text-slate-100 shadow-sm border border-slate-200/50 dark:border-slate-700/50' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}
+                            >
+                                Monthly
+                            </button>
+                        </div>
+
+                        <button
+                            onClick={exportCSV}
+                            className="flex items-center gap-1.5 px-2.5 sm:px-3 py-2 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-750 text-slate-700 dark:text-slate-200 rounded-xl text-xs font-bold transition-all shadow-sm active:scale-95 whitespace-nowrap"
+                        >
+                            <Download className="w-3.5 h-3.5 text-slate-400" />
+                            <span className="hidden sm:inline">Export</span>
+                        </button>
+                    </div>
+                </div>
+
+                {/* Row 2: Search + Outlet filter */}
+                <div className="flex items-center gap-2">
+                    <div className="relative flex-1">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" />
                         <input
                             type="text"
-                            placeholder="Search staff name or role..."
-                            className="w-full pl-9 pr-4 py-2 rounded-xl bg-slate-50 dark:bg-slate-750 border border-slate-200 dark:border-slate-700 text-xs font-semibold text-slate-700 dark:text-slate-200 focus:ring-2 focus:ring-primary/10 focus:border-primary outline-none transition-all placeholder-slate-400"
+                            placeholder="Search staff..."
+                            className="w-full pl-8 pr-4 py-2 rounded-xl bg-slate-50 dark:bg-slate-750 border border-slate-200 dark:border-slate-700 text-xs font-semibold text-slate-700 dark:text-slate-200 focus:ring-2 focus:ring-primary/10 focus:border-primary outline-none transition-all placeholder-slate-400"
                             value={searchTerm}
                             onChange={e => setSearchTerm(e.target.value)}
                         />
                     </div>
-                </div>
 
-                {/* Outlet & Status Filter Controls */}
-                <div className="flex items-center flex-wrap gap-3">
-
-                    {/* Outlet Dropdown Select */}
-                    <div className="flex items-center gap-2 bg-slate-50 dark:bg-slate-750 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-1.5 shadow-sm text-xs transition-colors">
-                        <Filter className="w-3.5 h-3.5 text-slate-400" />
-                        <select
-                            value={filterOutlet}
-                            onChange={e => setFilterOutlet(e.target.value)}
-                            className="bg-transparent border-none p-0 pr-6 focus:ring-0 cursor-pointer outline-none font-bold text-slate-700 dark:text-slate-200 text-xs"
-                        >
-                            {uniqueOutlets.map(o => (
-                                <option key={o} value={o} className="bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 font-bold">
-                                    {o === 'All' ? 'All Outlets' : o}
-                                </option>
-                            ))}
-                        </select>
-                    </div>
-
-                    {/* View Switcher: compact pills */}
-                    <div className="flex items-center bg-slate-50 dark:bg-slate-750 p-1 border border-slate-200 dark:border-slate-700 rounded-xl shadow-inner text-xs transition-colors">
+                    {/* Outlet Custom Dropdown */}
+                    <div className="relative shrink-0" ref={outletDropdownRef}>
                         <button
-                            onClick={() => setViewMode('daily')}
-                            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${viewMode === 'daily' ? 'bg-white dark:bg-slate-800 text-primary dark:text-slate-100 shadow-sm border border-slate-200/50 dark:border-slate-700/50' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}
+                            type="button"
+                            onClick={() => setOutletDropdownOpen(o => !o)}
+                            className="flex items-center gap-1.5 bg-slate-50 dark:bg-slate-750 border border-slate-200 dark:border-slate-700 rounded-xl px-2.5 py-2 shadow-sm text-xs font-bold text-slate-700 dark:text-slate-200 transition-colors max-w-[140px] sm:max-w-none"
                         >
-                            Daily Roll
+                            <Filter className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                            <span className="truncate max-w-[80px] sm:max-w-none">
+                                {filterOutlet === 'All' ? 'All Outlets' : filterOutlet}
+                            </span>
+                            <ChevronRight className={`w-3 h-3 text-slate-400 shrink-0 transition-transform ${outletDropdownOpen ? 'rotate-90' : ''}`} />
                         </button>
-                        <button
-                            onClick={() => setViewMode('summary')}
-                            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${viewMode === 'summary' ? 'bg-white dark:bg-slate-800 text-primary dark:text-slate-100 shadow-sm border border-slate-200/50 dark:border-slate-700/50' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}
-                        >
-                            Monthly Log
-                        </button>
-                    </div>
 
-                    <button
-                        onClick={exportCSV}
-                        className="flex items-center gap-1.5 px-3 py-2 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-750 text-slate-700 dark:text-slate-200 rounded-xl text-xs font-bold transition-all shadow-sm active:scale-95"
-                    >
-                        <Download className="w-3.5 h-3.5 text-slate-400" />
-                        Export
-                    </button>
+                        {outletDropdownOpen && (
+                            <div className="absolute right-0 top-full mt-1.5 z-50 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-xl overflow-hidden min-w-[160px]">
+                                {uniqueOutlets.map(o => (
+                                    <button
+                                        key={o}
+                                        type="button"
+                                        onClick={() => { setFilterOutlet(o); setOutletDropdownOpen(false); }}
+                                        className={`w-full text-left px-3.5 py-2.5 text-xs font-bold transition-colors ${
+                                            filterOutlet === o
+                                                ? 'bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary'
+                                                : 'text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700'
+                                        }`}
+                                    >
+                                        {o === 'All' ? 'All Outlets' : o}
+                                    </button>
+                                ))}
+                            </div>
+                        )}
+                    </div>
                 </div>
             </div>
 
@@ -353,8 +386,8 @@ export default function AttendanceTracker() {
                 )}
 
                 {viewMode === 'daily' ? (
-                    <div className="overflow-x-auto">
-                        <table className="w-full text-left border-collapse">
+                    <div className="overflow-x-auto no-scrollbar">
+                        <table className="w-full text-left border-collapse min-w-[640px]">
                             <thead>
                                 <tr className="bg-slate-50/50 dark:bg-slate-800/60 border-b border-slate-150 dark:border-slate-700 text-left">
                                     <th className="px-6 py-4 text-[10px] font-extrabold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Staff Member</th>
@@ -468,8 +501,8 @@ export default function AttendanceTracker() {
                         </table>
                     </div>
                 ) : (
-                    <div className="overflow-x-auto">
-                        <table className="w-full text-left border-collapse">
+                    <div className="overflow-x-auto no-scrollbar">
+                        <table className="w-full text-left border-collapse min-w-[600px]">
                             <thead>
                                 <tr className="bg-slate-50/50 dark:bg-slate-800/60 border-b border-slate-150 dark:border-slate-700 text-left">
                                     <th className="px-6 py-4 text-[10px] font-extrabold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Staff Member</th>
@@ -518,9 +551,9 @@ export default function AttendanceTracker() {
                 )}
 
                 {/* Clean Info Footer Row */}
-                <div className="px-6 py-3 border-t border-slate-150 dark:border-slate-700/80 bg-slate-50/50 dark:bg-slate-800/40 flex items-center gap-2 transition-colors">
-                    <AlertCircle className="w-3.5 h-3.5 text-primary shrink-0" />
-                    <p className="text-[10px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wider leading-none">
+                <div className="px-4 sm:px-6 py-3 border-t border-slate-150 dark:border-slate-700/80 bg-slate-50/50 dark:bg-slate-800/40 flex items-start gap-2 transition-colors">
+                    <AlertCircle className="w-3.5 h-3.5 text-primary shrink-0 mt-0.5" />
+                    <p className="text-[10px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wider leading-relaxed">
                         Changes are saved instantly in real-time. Logs are calculated for the selected date's monthly cycle.
                     </p>
                 </div>

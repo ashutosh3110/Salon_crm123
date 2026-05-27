@@ -22,9 +22,9 @@ export default function SupplierManager() {
     return (
         <div className="flex flex-col h-full slide-right overflow-hidden">
             {/* Header / Filter */}
-            <div className="p-6 border-b border-border bg-surface/30 flex flex-col md:flex-row justify-between items-center gap-4">
-                <div className="flex items-center gap-4 flex-1 w-full md:w-auto">
-                    <div className="relative flex-1 max-w-md group">
+            <div className="p-6 border-b border-border bg-surface/30 flex flex-col lg:flex-row justify-between items-stretch lg:items-center gap-4">
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 flex-1 w-full lg:w-auto">
+                    <div className="relative flex-1 group">
                         <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-primary transition-colors" />
                         <input
                             type="text"
@@ -32,14 +32,14 @@ export default function SupplierManager() {
                             className="w-full pl-10 pr-4 py-2.5 bg-white border border-border rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary/10 transition-all"
                         />
                     </div>
-                    <button className="flex items-center gap-2 px-4 py-2.5 bg-white border border-border rounded-xl text-xs font-bold text-text-secondary hover:bg-surface transition-all">
+                    <button className="flex items-center justify-center gap-2 px-4 py-2.5 bg-white border border-border rounded-xl text-xs font-bold text-text-secondary hover:bg-surface transition-all whitespace-nowrap">
                         <Filter className="w-4 h-4" />
                         Status
                     </button>
                 </div>
                 <button
                     onClick={handleAddClick}
-                    className="flex items-center gap-2 bg-primary text-white px-5 py-2.5 rounded-xl text-sm font-bold hover:shadow-lg hover:shadow-primary/30 transition-all scale-active"
+                    className="flex items-center justify-center gap-2 bg-primary text-white px-5 py-2.5 rounded-xl text-sm font-bold hover:shadow-lg hover:shadow-primary/30 transition-all scale-active w-full lg:w-auto whitespace-nowrap"
                 >
                     <Plus className="w-4 h-4" />
                     {view === 'list' ? 'Add New Supplier' : 'Back to List'}
@@ -105,7 +105,7 @@ export default function SupplierManager() {
 
 function SupplierTable({ suppliers, onEdit, onDelete }) {
     return (
-        <div className="p-0 animate-fadeIn table-responsive">
+        <div className="p-0 animate-fadeIn w-full overflow-x-auto no-scrollbar">
             <table className="w-full text-left border-collapse min-w-[1000px]">
                 <thead>
                     <tr className="bg-surface/50 border-b border-border">
