@@ -13,7 +13,8 @@ import {
     Filter,
     ShieldAlert,
     CheckCircle2,
-    BookOpen
+    BookOpen,
+    Eye
 } from 'lucide-react';
 import { useBusiness } from '../../contexts/BusinessContext';
 import { useAuth } from '../../contexts/AuthContext';
@@ -41,6 +42,10 @@ export default function ConsultationsPage() {
     const [showFormModal, setShowFormModal] = useState(false);
     const [selectedConsultation, setSelectedConsultation] = useState(null);
     const [formLoading, setFormLoading] = useState(false);
+    
+    // View Modal state
+    const [showViewModal, setShowViewModal] = useState(false);
+    const [viewConsultation, setViewConsultation] = useState(null);
     
     // Selected outlet customer fetching
     const [outletCustomers, setOutletCustomers] = useState([]);
@@ -146,6 +151,12 @@ export default function ConsultationsPage() {
             followUpDate: consultation.followUpDate ? consultation.followUpDate.split('T')[0] : ''
         });
         setShowFormModal(true);
+    };
+
+    // Open view modal
+    const handleOpenViewModal = (consultation) => {
+        setViewConsultation(consultation);
+        setShowViewModal(true);
     };
 
     // Handle submit (Create or Update)
@@ -335,9 +346,16 @@ export default function ConsultationsPage() {
                                             </td>
                                             <td className="p-4 text-right flex items-center justify-end gap-2 mt-1">
                                                 <button
+                                                    onClick={() => handleOpenViewModal(c)}
+                                                    className="p-2.5 text-text-muted hover:text-primary border border-border hover:bg-surface-alt transition-all"
+                                                    title="View Details"
+                                                >
+                                                    <Eye className="w-4 h-4" />
+                                                </button>
+                                                <button
                                                     onClick={() => handleOpenEditModal(c)}
                                                     className="p-2.5 text-text-muted hover:text-primary border border-border hover:bg-surface-alt transition-all"
-                                                    title="Edit / View Details"
+                                                    title="Edit Log"
                                                 >
                                                     <Edit className="w-4 h-4" />
                                                 </button>
@@ -539,6 +557,143 @@ export default function ConsultationsPage() {
                                 </button>
                             </div>
                         </form>
+                    </div>
+                </div>
+            )}
+
+            {/* Modal: View Consultation Details */}
+            {showViewModal && viewConsultation && (
+                <div className="fixed inset-0 z-[200] bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-300">
+                    <div className="bg-white rounded-none border border-border w-full max-w-2xl shadow-2xl relative flex flex-col max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+                        {/* Modal Header */}
+                        <div className="p-6 border-b border-border flex justify-between items-center bg-white sticky top-0 z-10">
+                            <div>
+                                <h4 className="text-[12px] font-black text-text uppercase flex items-center gap-2 tracking-widest">
+                                    <ClipboardList className="w-4.5 h-4.5 text-primary" />
+                                    Consultation File Registry
+                                </h4>
+                                <p className="text-[8px] font-black text-text-muted mt-1 uppercase tracking-widest opacity-60">Record ID: #{viewConsultation._id}</p>
+                            </div>
+                            <button
+                                type="button"
+                                onClick={() => setShowViewModal(false)}
+                                className="p-1 border border-border hover:bg-rose-500 hover:text-white transition-colors"
+                            >
+                                <X className="w-4 h-4" />
+                            </button>
+                        </div>
+
+                        {/* Modal Body */}
+                        <div className="p-6 space-y-6 text-left">
+                            
+                            {/* Grid metadata */}
+                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                                <div className="p-4 bg-surface-alt/25 border border-border/60">
+                                    <span className="text-[8px] font-black text-text-muted uppercase tracking-widest block mb-1">Consultation Date</span>
+                                    <span className="text-xs font-black text-text">
+                                        {new Date(viewConsultation.date || viewConsultation.createdAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}
+                                    </span>
+                                    <span className="block text-[10px] text-text-muted mt-0.5">
+                                        {new Date(viewConsultation.date || viewConsultation.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                    </span>
+                                </div>
+                                <div className="p-4 bg-surface-alt/25 border border-border/60">
+                                    <span className="text-[8px] font-black text-text-muted uppercase tracking-widest block mb-1">Target Outlet</span>
+                                    <span className="text-xs font-black text-text uppercase">
+                                        {viewConsultation.outletId?.name || 'General Outlet'}
+                                    </span>
+                                </div>
+                                <div className="p-4 bg-surface-alt/25 border border-border/60">
+                                    <span className="text-[8px] font-black text-text-muted uppercase tracking-widest block mb-1">Status Registry</span>
+                                    <div>
+                                        <span className={`inline-block px-2.5 py-0.5 text-[9px] font-black uppercase border mt-0.5 rounded ${
+                                            viewConsultation.status === 'completed' ? 'bg-green-500/10 text-green-600 border-green-500/20' :
+                                            viewConsultation.status === 'in_progress' ? 'bg-indigo-500/10 text-indigo-600 border-indigo-500/20' :
+                                            'bg-amber-500/10 text-amber-600 border-amber-500/20'
+                                        }`}>
+                                            {viewConsultation.status === 'in_progress' ? 'In Progress' : viewConsultation.status}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Client Identification Card */}
+                            <div className="p-5 border border-border bg-slate-50 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                                <div className="flex items-center gap-4">
+                                    <div className="w-12 h-12 bg-text text-white flex items-center justify-center font-black text-lg shadow-sm">
+                                        {viewConsultation.customerId?.name?.charAt(0) || '?'}
+                                    </div>
+                                    <div>
+                                        <p className="text-[8px] font-black text-text-muted uppercase tracking-widest leading-none mb-1.5">Client Information</p>
+                                        <h5 className="text-base font-black text-text uppercase tracking-tight leading-none mb-1.5">{viewConsultation.customerId?.name || 'Standard Client'}</h5>
+                                        <p className="text-xs font-bold text-text-muted tracking-wide flex items-center gap-1.5">
+                                            <span>Phone: {maskPhone(viewConsultation.customerId?.phone || '', user?.role)}</span>
+                                            {viewConsultation.customerId?.email && (
+                                                <>
+                                                    <span className="opacity-30">•</span>
+                                                    <span>Email: {viewConsultation.customerId.email}</span>
+                                                </>
+                                            )}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Title Block */}
+                            <div className="space-y-1.5">
+                                <span className="text-[8px] font-black text-text-muted uppercase tracking-widest block">Consultation Category / Title</span>
+                                <h3 className="text-lg font-black text-text uppercase tracking-tight">{viewConsultation.title}</h3>
+                            </div>
+
+                            <div className="h-px bg-border"></div>
+
+                            {/* Problem description and Solution */}
+                            <div className="space-y-5">
+                                <div className="space-y-2">
+                                    <span className="text-[8px] font-black text-[#B4912B] uppercase tracking-widest block">1. Problem & Notes Description</span>
+                                    <div className="p-4 bg-slate-50 border-l-4 border-slate-400 text-xs font-bold text-slate-800 leading-relaxed whitespace-pre-wrap">
+                                        {viewConsultation.notes}
+                                    </div>
+                                </div>
+
+                                <div className="space-y-2">
+                                    <span className="text-[8px] font-black text-green-600 uppercase tracking-widest block">2. Recommended Solution & Treatment guidelines</span>
+                                    <div className="p-4 bg-emerald-50/40 border-l-4 border-emerald-500 text-xs font-bold text-slate-800 leading-relaxed whitespace-pre-wrap">
+                                        {viewConsultation.solution}
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Internal Admin Notes */}
+                            {viewConsultation.adminNotes && (
+                                <div className="space-y-2 p-4 bg-amber-500/5 border border-amber-500/25">
+                                    <span className="text-[8px] font-black text-amber-600 uppercase tracking-widest block">Stylist internal remarks (Internal Only)</span>
+                                    <p className="text-xs font-bold text-slate-700 italic">"{viewConsultation.adminNotes}"</p>
+                                </div>
+                            )}
+
+                        </div>
+
+                        {/* Modal Footer */}
+                        <div className="p-5 border-t border-border flex justify-end gap-3 bg-white sticky bottom-0 z-10">
+                            <button
+                                type="button"
+                                onClick={() => setShowViewModal(false)}
+                                className="px-6 py-3 border-2 border-text font-black text-[10px] uppercase tracking-widest italic bg-white hover:bg-surface-alt/20 transition-all rounded-none text-text-muted"
+                            >
+                                Close File
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    setShowViewModal(false);
+                                    handleOpenEditModal(viewConsultation);
+                                }}
+                                className="px-6 py-3 bg-text text-white border-2 border-text font-black text-[10px] uppercase tracking-widest italic hover:bg-primary hover:border-primary hover:text-white transition-all rounded-none shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:translate-x-0.5 active:translate-y-0.5 active:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]"
+                            >
+                                Edit Record
+                            </button>
+                        </div>
                     </div>
                 </div>
             )}
