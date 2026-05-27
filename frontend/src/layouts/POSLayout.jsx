@@ -1,4 +1,4 @@
-import { useState , useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Outlet } from 'react-router-dom';
 import Sidebar from '../components/admin/Sidebar';
 import POSTopbar from '../components/pos/POSTopbar';
@@ -391,7 +391,7 @@ export default function POSLayout() {
                 .dark [role="dialog"] [class*="text-text-secondary"],
                 .dark .fixed.inset-0 .text-text-secondary,
                 .dark .fixed.inset-0 [class*="text-text-secondary"] {
-                    color: #94a3b8 !important; /* slate-400 */
+                    color: #e6e8bff!important; /* slate-400 */
                 }
 
                 .dark .admin-panel .text-text-muted,
@@ -402,7 +402,7 @@ export default function POSLayout() {
                 .dark [role="dialog"] [class*="text-text-muted"],
                 .dark .fixed.inset-0 .text-text-muted,
                 .dark .fixed.inset-0 [class*="text-text-muted"] {
-                    color: #64748b !important; /* slate-500 */
+                    color: #e6e8bff !important; /* slate-500 */
                 }
 
                 /* Ensure dark mode input placeholders and borders are clearly visible */
@@ -427,7 +427,7 @@ export default function POSLayout() {
 
                 /* --- Spacious & Beautiful Tables in Dark Mode --- */
                 .dark .admin-panel table th {
-                    color: #94a3b8 !important; /* slate-400 */
+                    color: #e6e8bff!important; /* slate-400 */
                     background-color: #121826 !important; /* slate-900 */
                     border-bottom: 2px solid rgba(255, 255, 255, 0.08) !important;
                 }
@@ -441,7 +441,7 @@ export default function POSLayout() {
 
                 /* --- Form Controls in Dark Mode --- */
                 .dark .admin-panel label {
-                    color: #94a3b8 !important; /* slate-400 */
+                    color: #e6e8bff!important; /* slate-400 */
                 }
                 .dark .admin-panel input:focus, 
                 .dark .admin-panel select:focus, 

@@ -139,7 +139,7 @@ export default function MembersListTab() {
                 setSearchingCustomers(false);
             }
         }, 300);
-        
+
         return () => clearTimeout(delayDebounceFn);
     }, [searchCustomerTerm, selectedCustomerId]);
 
@@ -174,11 +174,11 @@ export default function MembersListTab() {
             if (res.data?.success) {
                 setSuccessMessage('Membership plan assigned successfully!');
                 const createdInvoiceId = res.data?.data?.invoiceId;
-                
+
                 // Reload list
                 setRefreshTrigger(prev => prev + 1);
                 setPage(1);
-                
+
                 setTimeout(async () => {
                     setShowAssignModal(false);
                     setSelectedCustomerId('');
@@ -186,7 +186,7 @@ export default function MembersListTab() {
                     setSelectedPlanId('');
                     setSearchCustomerTerm('');
                     setSuccessMessage('');
-                    
+
                     if (createdInvoiceId) {
                         try {
                             const invRes = await api.get(`/pos/invoices/${createdInvoiceId}`);
@@ -286,7 +286,7 @@ export default function MembersListTab() {
                             </button>
                         ))}
                     </div>
-                    
+
                     <div className="flex items-center gap-2 flex-wrap">
                         {/* Outlet Filter */}
                         <div className="flex items-center gap-2 border border-border/40 px-3 py-2 bg-surface">
@@ -363,7 +363,7 @@ export default function MembersListTab() {
                                         <td className="px-6 py-5 text-right">
                                             <div className="flex items-center justify-end gap-2">
                                                 {member.invoiceId && (
-                                                    <button 
+                                                    <button
                                                         onClick={() => fetchAndShowInvoice(member.invoiceId)}
                                                         className="p-2 text-text-muted hover:text-primary hover:bg-primary/5 border border-transparent hover:border-primary/20 transition-all"
                                                         title="Print Invoice / Bill"
@@ -371,7 +371,7 @@ export default function MembersListTab() {
                                                         <Printer size={16} />
                                                     </button>
                                                 )}
-                                                <button 
+                                                <button
                                                     onClick={() => setSelectedMember(member)}
                                                     className="p-2 text-text-muted hover:text-primary hover:bg-primary/5 border border-transparent hover:border-primary/20 transition-all"
                                                     title="View Details"
@@ -394,7 +394,7 @@ export default function MembersListTab() {
             {/* Member Details Modal */}
             <AnimatePresence>
                 {selectedMember && createPortal(
-                    <div 
+                    <div
                         className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm"
                         onClick={() => setSelectedMember(null)}
                     >
@@ -411,8 +411,8 @@ export default function MembersListTab() {
                                     <ShieldCheck className="w-5 h-5 text-primary" />
                                     <h3 className="text-sm font-black text-slate-900 uppercase tracking-widest italic">Member Protocol Details</h3>
                                 </div>
-                                <button 
-                                    onClick={() => setSelectedMember(null)} 
+                                <button
+                                    onClick={() => setSelectedMember(null)}
                                     className="p-2 rounded-full hover:bg-slate-100 text-slate-400 hover:text-rose-500 transition-colors"
                                 >
                                     <X size={20} />
@@ -475,7 +475,7 @@ export default function MembersListTab() {
 
                             {/* Modal Footer */}
                             <div className="bg-slate-50 border-t border-slate-100 px-6 py-4 flex justify-end">
-                                <button 
+                                <button
                                     onClick={() => setSelectedMember(null)}
                                     className="px-6 py-2.5 bg-slate-900 hover:bg-primary text-white text-[10px] font-black uppercase tracking-[0.2em] transition-all shadow-lg rounded-none"
                                 >
@@ -491,7 +491,7 @@ export default function MembersListTab() {
             {/* Assign Membership Plan Modal */}
             <AnimatePresence>
                 {showAssignModal && createPortal(
-                    <div 
+                    <div
                         className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm"
                         onClick={() => {
                             setShowAssignModal(false);
@@ -516,7 +516,7 @@ export default function MembersListTab() {
                                     <ShieldCheck className="w-5 h-5 text-primary" />
                                     <h3 className="text-sm font-black text-slate-900 uppercase tracking-widest italic">Assign Subscription Plan</h3>
                                 </div>
-                                <button 
+                                <button
                                     onClick={() => {
                                         setShowAssignModal(false);
                                         setSelectedCustomerId('');
@@ -525,7 +525,7 @@ export default function MembersListTab() {
                                         setSearchCustomerTerm('');
                                         setErrorMessage('');
                                         setSuccessMessage('');
-                                    }} 
+                                    }}
                                     className="p-2 rounded-full hover:bg-slate-100 text-slate-400 hover:text-rose-500 transition-colors"
                                 >
                                     <X size={20} />
@@ -567,7 +567,7 @@ export default function MembersListTab() {
                                             className="w-full h-12 bg-slate-50 border border-slate-200 pl-12 pr-10 text-xs font-bold text-slate-900 focus:border-primary outline-none transition-all shadow-sm rounded-none"
                                         />
                                         {selectedCustomerId ? (
-                                            <button 
+                                            <button
                                                 type="button"
                                                 onClick={() => {
                                                     setSelectedCustomerId('');
@@ -580,7 +580,7 @@ export default function MembersListTab() {
                                                 <X size={16} />
                                             </button>
                                         ) : (
-                                            <button 
+                                            <button
                                                 type="button"
                                                 onClick={() => setShowDropdown(!showDropdown)}
                                                 className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-900"
@@ -589,7 +589,7 @@ export default function MembersListTab() {
                                             </button>
                                         )}
                                     </div>
-                                    
+
                                     {showDropdown && (
                                         <div className="absolute z-20 w-full mt-1 max-h-48 overflow-y-auto bg-white border border-slate-200 shadow-2xl divide-y divide-slate-100">
                                             {searchCustomerTerm ? (
@@ -720,7 +720,7 @@ export default function MembersListTab() {
                                     if (paymentMethod !== 'wallet' || !selectedCustomer || !selectedPlanId) return null;
                                     const selectedPlan = plans.find(p => String(p._id || p.id) === String(selectedPlanId));
                                     if (!selectedPlan) return null;
-                                    
+
                                     const basePrice = Number(selectedPlan.price || 0);
                                     const taxRate = Number(selectedPlan.taxRate || 0);
                                     let calculatedTotal = 0;
@@ -795,7 +795,7 @@ export default function MembersListTab() {
 
                             {/* Modal Footer / Actions */}
                             <div className="bg-slate-50 border-t border-slate-100 px-8 py-4 flex justify-end gap-3 shrink-0">
-                                <button 
+                                <button
                                     type="button"
                                     onClick={() => {
                                         setShowAssignModal(false);
@@ -810,10 +810,10 @@ export default function MembersListTab() {
                                 >
                                     Cancel
                                 </button>
-                                <button 
+                                <button
                                     type="submit"
                                     disabled={
-                                        assigning || 
+                                        assigning ||
                                         (paymentMethod === 'wallet' && selectedCustomer && (() => {
                                             const selectedPlan = plans.find(p => String(p._id || p.id) === String(selectedPlanId));
                                             if (!selectedPlan) return false;
@@ -837,7 +837,7 @@ export default function MembersListTab() {
             {/* Invoice Preview Modal (Standard/Thermal) */}
             <AnimatePresence>
                 {selectedInvoice && createPortal(
-                    <div 
+                    <div
                         className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm no-print"
                         onClick={() => setSelectedInvoice(null)}
                     >
@@ -854,8 +854,8 @@ export default function MembersListTab() {
                                     <FileText className="w-5 h-5 text-primary" />
                                     <h3 className="text-sm font-black text-slate-900 uppercase tracking-widest italic">Invoice Billing Ledger</h3>
                                 </div>
-                                <button 
-                                    onClick={() => setSelectedInvoice(null)} 
+                                <button
+                                    onClick={() => setSelectedInvoice(null)}
                                     className="p-2 rounded-full hover:bg-slate-100 text-slate-400 hover:text-rose-500 transition-colors"
                                 >
                                     <X size={20} />
@@ -866,21 +866,19 @@ export default function MembersListTab() {
                             <div className="flex border-b border-slate-100 bg-slate-50 p-1 shrink-0">
                                 <button
                                     onClick={() => setInvoiceTab('standard')}
-                                    className={`flex-1 py-3 text-center text-[10px] font-black uppercase tracking-widest transition-all rounded-none ${
-                                        invoiceTab === 'standard'
+                                    className={`flex-1 py-3 text-center text-[10px] font-black uppercase tracking-widest transition-all rounded-none ${invoiceTab === 'standard'
                                             ? 'bg-white text-slate-900 border border-slate-200 font-extrabold shadow-sm'
                                             : 'text-slate-400 hover:text-slate-950'
-                                    }`}
+                                        }`}
                                 >
                                     Standard Invoice (A4)
                                 </button>
                                 <button
                                     onClick={() => setInvoiceTab('thermal')}
-                                    className={`flex-1 py-3 text-center text-[10px] font-black uppercase tracking-widest transition-all rounded-none ${
-                                        invoiceTab === 'thermal'
+                                    className={`flex-1 py-3 text-center text-[10px] font-black uppercase tracking-widest transition-all rounded-none ${invoiceTab === 'thermal'
                                             ? 'bg-white text-slate-900 border border-slate-200 font-extrabold shadow-sm'
                                             : 'text-slate-400 hover:text-slate-950'
-                                    }`}
+                                        }`}
                                 >
                                     Thermal POS Receipt (80mm)
                                 </button>

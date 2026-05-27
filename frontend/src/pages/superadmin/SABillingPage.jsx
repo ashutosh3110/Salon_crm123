@@ -92,9 +92,9 @@ function InvoiceModal({ onClose, onSend }) {
                 <div className="p-6 space-y-4">
                     <div>
                         <label className={labelCls}>Select Salon (Tenant) *</label>
-                        <select 
-                            className={inputCls} 
-                            value={form.tenantId} 
+                        <select
+                            className={inputCls}
+                            value={form.tenantId}
                             onChange={e => set('tenantId', e.target.value)}
                         >
                             <option value="">-- Choose a Salon --</option>
@@ -301,10 +301,10 @@ export default function SABillingPage() {
     const filteredPayments = payments.filter(p => {
         const q = search.trim().toLowerCase();
         const salonName = p.tenantId?.name || p.salonName || '';
-        const matchQ = !q || 
-                      salonName.toLowerCase().includes(q) || 
-                      p.invoiceNumber?.toLowerCase().includes(q) || 
-                      (p.planName || '').toLowerCase().includes(q);
+        const matchQ = !q ||
+            salonName.toLowerCase().includes(q) ||
+            p.invoiceNumber?.toLowerCase().includes(q) ||
+            (p.planName || '').toLowerCase().includes(q);
         const matchS = !statusFilter || p.status === statusFilter;
         const matchD = isInPeriod(p.createdAt, datePeriod, customFrom, customTo);
         return matchQ && matchS && matchD;
@@ -326,7 +326,7 @@ export default function SABillingPage() {
 
     /* KPIs */
     const { totalAmount, collectedAmount, pendingAmount, refundedAmount, monthlyRevenue, planDistribution } = stats;
-    
+
     const latestMonth = monthlyRevenue.length > 0 ? monthlyRevenue[monthlyRevenue.length - 1] : null;
     const mrr = latestMonth?.revenue || 0;
     const mrrSubtotal = latestMonth?.subtotal || 0;
@@ -436,8 +436,8 @@ export default function SABillingPage() {
                 ].map(k => {
                     const isSalonsCard = k.label === 'Subscribed Salons';
                     return (
-                        <div 
-                            key={k.label} 
+                        <div
+                            key={k.label}
                             onClick={() => {
                                 if (isSalonsCard) navigate('/superadmin/tenants');
                                 else if (k.label === 'Total Revenue') setTab('reports');
@@ -446,22 +446,22 @@ export default function SABillingPage() {
                             }}
                             className="bg-white rounded-2xl border border-border shadow-sm p-5 hover:shadow-md transition-all cursor-pointer hover:border-primary/20"
                         >
-                        <div className="flex items-center justify-between mb-3">
-                            <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${k.gradient} flex items-center justify-center shadow-lg ${k.shadow}`}>
-                                <k.icon className="w-5 h-5 text-white" />
+                            <div className="flex items-center justify-between mb-3">
+                                <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${k.gradient} flex items-center justify-center shadow-lg ${k.shadow}`}>
+                                    <k.icon className="w-5 h-5 text-white" />
+                                </div>
+                                {k.change !== 0 && k.change !== null && (
+                                    <span className={`text-[11px] font-bold px-2 py-0.5 rounded-full ${k.change >= 0 ? 'bg-emerald-50 text-emerald-600' : 'bg-red-50 text-red-500'}`}>
+                                        {k.change >= 0 ? '↑' : '↓'} {Math.abs(k.change)}%
+                                    </span>
+                                )}
                             </div>
-                            {k.change !== 0 && k.change !== null && (
-                                <span className={`text-[11px] font-bold px-2 py-0.5 rounded-full ${k.change >= 0 ? 'bg-emerald-50 text-emerald-600' : 'bg-red-50 text-red-500'}`}>
-                                    {k.change >= 0 ? '↑' : '↓'} {Math.abs(k.change)}%
-                                </span>
-                            )}
+                            <div className="text-xl font-black text-text">{k.value}</div>
+                            <div className="text-xs text-text-muted mt-0.5">{k.label}</div>
                         </div>
-                        <div className="text-xl font-black text-text">{k.value}</div>
-                        <div className="text-xs text-text-muted mt-0.5">{k.label}</div>
-                        </div>
-                        );
-                    })}
-                </div>
+                    );
+                })}
+            </div>
 
             {/* ── Date Filter Presets and Custom Picker ── */}
             <div className="bg-white rounded-2xl border border-border p-4 shadow-sm flex flex-col lg:flex-row lg:items-center justify-between gap-4">
@@ -481,11 +481,10 @@ export default function SABillingPage() {
                         <button
                             key={p.key}
                             onClick={() => applyPreset(p.key)}
-                            className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all border ${
-                                datePeriod === p.key
+                            className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all border ${datePeriod === p.key
                                     ? 'bg-primary text-white border-primary shadow-md shadow-primary/20 scale-95'
                                     : 'bg-white text-text-secondary border-border hover:border-primary/45 hover:text-primary hover:bg-primary/5'
-                            }`}
+                                }`}
                         >
                             {p.label}
                         </button>
@@ -527,11 +526,10 @@ export default function SABillingPage() {
                         <button
                             key={t.id}
                             onClick={() => { setTab(t.id); setSF(''); }}
-                            className={`flex items-center gap-2 px-5 py-3 border-b-2 text-sm font-bold transition-all ${
-                                isActive
+                            className={`flex items-center gap-2 px-5 py-3 border-b-2 text-sm font-bold transition-all ${isActive
                                     ? 'border-primary text-primary font-black animate-in fade-in duration-200'
                                     : 'border-transparent text-text-muted hover:text-text hover:border-border'
-                            }`}
+                                }`}
                         >
                             <Icon className="w-4 h-4" />
                             {t.label}
@@ -606,7 +604,7 @@ export default function SABillingPage() {
                                                 </td>
                                                 <td className="px-4 py-3.5 text-right whitespace-nowrap">
                                                     <div className="flex items-center justify-end gap-2">
-                                                        <button 
+                                                        <button
                                                             onClick={() => handleDownloadIndividualInvoice(p)}
                                                             className="p-1.5 rounded-lg bg-slate-100 text-slate-600 hover:bg-slate-200 transition-all"
                                                             title="Download PDF"
@@ -614,7 +612,7 @@ export default function SABillingPage() {
                                                             <Download className="w-3.5 h-3.5" />
                                                         </button>
                                                         {(p.status === 'pending' || p.status === 'created') && (
-                                                            <button 
+                                                            <button
                                                                 onClick={() => handleUpdateStatus(p._id, 'captured')}
                                                                 className="text-[10px] font-bold bg-emerald-600 text-white px-2 py-1 rounded-lg hover:bg-emerald-700 transition-all shadow-sm"
                                                             >
@@ -723,7 +721,7 @@ export default function SABillingPage() {
                                                 </td>
                                                 <td className="px-4 py-3.5 text-right whitespace-nowrap">
                                                     <div className="flex items-center justify-end gap-2">
-                                                        <button 
+                                                        <button
                                                             onClick={() => handleDownloadIndividualInvoice(inv)}
                                                             className="p-1.5 rounded-lg bg-slate-100 text-slate-600 hover:bg-slate-200 transition-all"
                                                             title="Download PDF"
@@ -731,7 +729,7 @@ export default function SABillingPage() {
                                                             <Download className="w-3.5 h-3.5" />
                                                         </button>
                                                         {(inv.status === 'pending' || inv.status === 'created') && (
-                                                            <button 
+                                                            <button
                                                                 onClick={() => handleUpdateStatus(inv.rawId, 'captured')}
                                                                 className="text-[10px] font-bold bg-emerald-600 text-white px-2 py-1 rounded-lg hover:bg-emerald-700 transition-all shadow-sm"
                                                             >
@@ -796,7 +794,7 @@ export default function SABillingPage() {
                             <p className="text-xs text-text-muted mb-4">Current month breakdown</p>
                             <div className="space-y-3">
                                 {planDistribution.map((p, idx) => {
-                                    const COLORS = ['#B4912B', '#DFCE9D', '#94a3b8', '#64748b'];
+                                    const COLORS = ['#B4912B', '#DFCE9D', '#94a3b8', '#e6e8bff'];
                                     const maxRev = Math.max(...planDistribution.map(x => x.revenue));
                                     const pct = maxRev > 0 ? (p.revenue / maxRev) * 100 : 0;
                                     const color = COLORS[idx % COLORS.length];
@@ -875,14 +873,13 @@ export default function SABillingPage() {
 
             {/* Toast Notification */}
             {toast && (
-                <div className={`fixed bottom-6 right-6 z-[100] flex items-center gap-3 px-5 py-3.5 rounded-2xl shadow-2xl border ${
-                    toast.type === 'error' ? 'bg-red-50 border-red-200 text-red-700' : 
-                    toast.type === 'info' ? 'bg-slate-900 border-slate-800 text-white' :
-                    'bg-white border-border text-text'
-                } animate-in fade-in slide-in-from-bottom-4 duration-300`}>
-                    {toast.type === 'error' ? <XCircle className="w-5 h-5 text-red-500" /> : 
-                     toast.type === 'info' ? <Download className="w-5 h-5 text-blue-400" /> :
-                     <CheckCircle className="w-5 h-5 text-emerald-500" />}
+                <div className={`fixed bottom-6 right-6 z-[100] flex items-center gap-3 px-5 py-3.5 rounded-2xl shadow-2xl border ${toast.type === 'error' ? 'bg-red-50 border-red-200 text-red-700' :
+                        toast.type === 'info' ? 'bg-slate-900 border-slate-800 text-white' :
+                            'bg-white border-border text-text'
+                    } animate-in fade-in slide-in-from-bottom-4 duration-300`}>
+                    {toast.type === 'error' ? <XCircle className="w-5 h-5 text-red-500" /> :
+                        toast.type === 'info' ? <Download className="w-5 h-5 text-blue-400" /> :
+                            <CheckCircle className="w-5 h-5 text-emerald-500" />}
                     <span className="text-sm font-bold">{toast.msg}</span>
                 </div>
             )}

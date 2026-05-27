@@ -670,7 +670,7 @@ export default function MarketingCMSPage() {
                                 <form className="space-y-3 text-left" onSubmit={handlePublish}>
                                     {modalType === 'banner' ? (
                                         <>
-                                            <div className="grid grid-cols-2 gap-4">
+                                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                                 <div className="space-y-1">
                                                     <label className="text-[10px] font-black text-text-muted uppercase tracking-widest pl-1">Main text *</label>
                                                     <input 
@@ -700,7 +700,7 @@ export default function MarketingCMSPage() {
                                                 </div>
                                             </div>
 
-                                            <div className="grid grid-cols-2 gap-4">
+                                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                                 <div className="space-y-1">
                                                     <label className="text-[10px] font-black text-text-muted uppercase tracking-widest pl-1">Button label</label>
                                                     <input 

@@ -102,8 +102,8 @@ export default function InvoicesPage() {
 
                         {/* Pagination Footer */}
                         {filtered.length > 0 && (
-                            <div className="bg-surface-alt/50 px-6 py-4 border-t border-border flex items-center justify-between">
-                                <span className="text-[10px] font-black text-text-muted uppercase tracking-widest italic">
+                            <div className="bg-surface-alt/50 px-6 py-4 border-t border-border flex flex-col sm:flex-row items-center justify-between gap-4">
+                                <span className="text-[10px] font-black text-text-muted uppercase tracking-widest italic text-center sm:text-left">
                                     Showing {(currentPage - 1) * itemsPerPage + 1} - {Math.min(currentPage * itemsPerPage, filtered.length)} of {filtered.length} Invoices
                                 </span>
                                 <div className="flex gap-4">

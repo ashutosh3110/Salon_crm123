@@ -39,8 +39,8 @@ export default function AppOrderDetailsPage() {
     const membershipDiscount = order?.membershipDiscount || 0;
 
     const discountableAmount = itemsTotal - membershipDiscount - promoDiscount;
-    const calculatedGstPercent = discountableAmount > 0 && taxAmount > 0 
-        ? Math.round((taxAmount / discountableAmount) * 100) 
+    const calculatedGstPercent = discountableAmount > 0 && taxAmount > 0
+        ? Math.round((taxAmount / discountableAmount) * 100)
         : 12; // default fallback
 
     const statusConfig = {
@@ -50,7 +50,7 @@ export default function AppOrderDetailsPage() {
         dispatched: { color: '#6366F1', label: 'Dispatched', icon: Truck, bg: 'rgba(99,102,241,0.1)' },
         out_for_delivery: { color: '#8B5CF6', label: 'Out for Delivery', icon: Truck, bg: 'rgba(139,92,246,0.1)' },
         delivered: { color: '#10B981', label: 'Delivered', icon: CheckCircle, bg: 'rgba(16,185,129,0.1)' },
-        cancelled: { color: '#64748B', label: 'Cancelled', icon: Hash, bg: 'rgba(100,116,139,0.1)' },
+        cancelled: { color: '#e6e8bff', label: 'Cancelled', icon: Hash, bg: 'rgba(100,116,139,0.1)' },
     };
 
     const status = statusConfig[order?.status] || statusConfig.pending;
@@ -75,8 +75,8 @@ export default function AppOrderDetailsPage() {
         <div className="min-h-svh pb-12" style={{ background: colors.bg }}>
             {/* Header */}
             <header className="fixed top-0 inset-x-0 z-[100] h-16 px-6 flex items-center justify-between" style={{ background: colors.bg, borderBottom: `1px solid ${colors.border}` }}>
-                <button 
-                    onClick={() => navigate(-1)} 
+                <button
+                    onClick={() => navigate(-1)}
                     style={{ color: colors.text }}
                     className="w-10 h-10 rounded-2xl bg-black/5 dark:bg-white/5 flex items-center justify-center border border-black/5 dark:border-white/5 active:scale-90 transition-all"
                 >
@@ -88,7 +88,7 @@ export default function AppOrderDetailsPage() {
 
             <main className="pt-20 px-6 space-y-6">
                 {/* Status Card */}
-                <motion.div 
+                <motion.div
                     initial={{ y: 20, opacity: 0 }}
                     animate={{ y: 0, opacity: 1 }}
                     className="p-8 rounded-[40px] flex items-center gap-6 relative overflow-hidden"
@@ -131,16 +131,16 @@ export default function AppOrderDetailsPage() {
                         <Truck size={18} className="text-[#C8956C]" />
                         <h3 className="text-xs font-black uppercase tracking-[0.2em]" style={{ color: colors.text }}>Order Tracking</h3>
                     </div>
-                    
+
                     <div className="relative pl-6 space-y-8 before:absolute before:left-[11px] before:top-2 before:bottom-2 before:w-[2px] before:bg-black/5 dark:before:bg-white/5">
                         {(order.timeline || [{ status: 'pending', note: 'Order placed', timestamp: order.createdAt }]).slice().reverse().map((step, i) => {
                             const config = statusConfig[step.status] || statusConfig.pending;
                             const StepIcon = config.icon;
                             return (
                                 <div key={i} className="relative">
-                                    <div 
+                                    <div
                                         className="absolute -left-[23px] top-0.5 w-4 h-4 rounded-full border-2 flex items-center justify-center z-10 shadow-sm"
-                                        style={{ 
+                                        style={{
                                             background: i === 0 ? config.color : colors.card,
                                             borderColor: i === 0 ? config.color : colors.border
                                         }}
@@ -194,7 +194,7 @@ export default function AppOrderDetailsPage() {
                 {/* Summary & Payment Info */}
                 <div className="p-8 rounded-[40px] space-y-4" style={{ background: colors.card, border: `1px solid ${colors.border}` }}>
                     <h3 className="text-[10px] font-black uppercase tracking-[0.2em] opacity-40 mb-2">Order Summary</h3>
-                    
+
                     <div className="flex justify-between items-center text-sm">
                         <span className="opacity-60 font-bold uppercase text-[10px] tracking-widest">Items Total</span>
                         <span className="font-black italic tracking-tighter" style={{ color: colors.text }}>₹{itemsTotal.toLocaleString()}</span>
@@ -253,13 +253,13 @@ export default function AppOrderDetailsPage() {
 
                     <div className="pt-4 mt-2 border-t border-dashed space-y-4" style={{ borderTopColor: colors.border }}>
                         <div className="flex justify-between items-center">
-                             <div className="flex flex-col">
+                            <div className="flex flex-col">
                                 <span className="opacity-100 font-black uppercase text-[12px] tracking-widest" style={{ color: colors.text }}>Total Amount</span>
                                 <p className="text-[9px] font-bold opacity-40 uppercase tracking-widest">
                                     Paid via {order.paymentMethod === 'cod' ? 'In-Salon' : order.paymentMethod?.toUpperCase()}
                                 </p>
-                             </div>
-                             <span className="text-2xl font-black italic tracking-tighter pr-2" style={{ color: '#C8956C' }}>₹{totalAmount.toLocaleString()}</span>
+                            </div>
+                            <span className="text-2xl font-black italic tracking-tighter pr-2" style={{ color: '#C8956C' }}>₹{totalAmount.toLocaleString()}</span>
                         </div>
                     </div>
                 </div>
@@ -324,5 +324,5 @@ export default function AppOrderDetailsPage() {
 }
 
 function Info({ size, className }) {
-    return <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>;
+    return <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><circle cx="12" cy="12" r="10" /><path d="M12 16v-4" /><path d="M12 8h.01" /></svg>;
 }

@@ -156,24 +156,24 @@ export default function DashboardPage() {
 
             <div className="grid grid-cols-1 gap-6 text-left">
                 <div className="bg-white rounded-2xl border border-border shadow-sm overflow-hidden group hover:shadow-md transition-all">
-                    <div className="px-6 py-4.5 border-b border-border bg-surface-alt/10 flex items-center justify-between">
+                    <div className="px-4 sm:px-6 py-4.5 border-b border-border bg-surface-alt/10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-0">
                         <h3 className="text-base font-bold text-text tracking-tight">Recent Activity Stream</h3>
-                        <Link to="/pos/invoices" className="flex items-center gap-2 text-xs font-bold text-primary uppercase tracking-widest hover:underline">
+                        <Link to="/pos/invoices" className="flex items-center gap-1 sm:gap-2 text-[10px] sm:text-xs font-bold text-primary uppercase tracking-widest hover:underline whitespace-nowrap">
                             View All Invoices <ArrowRight className="w-4 h-4" />
                         </Link>
                     </div>
                     <div className="divide-y divide-border/50 text-left">
                         {filteredRecentActivity.map((activity, i) => (
-                            <div key={i} className="px-6 py-4 flex items-center justify-between hover:bg-surface-alt/30 transition-colors">
-                                <div className="flex items-center gap-4 text-left">
-                                    <div className={`w-10 h-10 rounded-xl border flex items-center justify-center font-bold ${activity.isLive ? 'border-primary text-primary' : 'border-border text-text-muted'}`}>{activity.client ? activity.client[0] : 'G'}</div>
-                                    <div className="text-left">
-                                        <p className="text-[14px] font-bold text-text">{activity.client}</p>
-                                        <p className="text-xs text-text-muted font-medium">{activity.service}</p>
+                            <div key={i} className="px-4 sm:px-6 py-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-0 hover:bg-surface-alt/30 transition-colors">
+                                <div className="flex items-center gap-3 sm:gap-4 text-left">
+                                    <div className={`w-8 h-8 sm:w-10 sm:h-10 shrink-0 rounded-xl border flex items-center justify-center font-bold ${activity.isLive ? 'border-primary text-primary' : 'border-border text-text-muted'}`}>{activity.client ? activity.client[0] : 'G'}</div>
+                                    <div className="text-left min-w-0">
+                                        <p className="text-[13px] sm:text-[14px] font-bold text-text truncate">{activity.client}</p>
+                                        <p className="text-[11px] sm:text-xs text-text-muted font-medium truncate">{activity.service}</p>
                                     </div>
                                 </div>
-                                <div className="text-right">
-                                    <p className="text-xs font-black text-text uppercase">{activity.amount}</p>
+                                <div className="w-full sm:w-auto text-left sm:text-right pl-11 sm:pl-0">
+                                    <p className="text-[11px] sm:text-xs font-black text-text uppercase">{activity.amount}</p>
                                     <p className="text-[9px] text-text-muted font-bold tracking-widest uppercase">{activity.time}</p>
                                 </div>
                             </div>
@@ -187,7 +187,7 @@ export default function DashboardPage() {
 
             {showLowCreditAlert && (
                 <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-[9999] flex items-center justify-center p-4 text-left">
-                    <div className="bg-white dark:bg-slate-800 rounded-2xl w-full max-w-md shadow-2xl relative overflow-hidden border border-rose-200 dark:border-rose-900 p-8 text-left">
+                    <div className="bg-white dark:bg-slate-800 rounded-2xl w-full max-w-md mx-4 shadow-2xl relative overflow-hidden border border-rose-200 dark:border-rose-900 p-6 sm:p-8 text-left">
                         <div className="flex items-center gap-4 mb-6">
                             <div className="p-4 bg-rose-50 dark:bg-rose-950/30 text-rose-600 dark:text-rose-450 border border-rose-100 dark:border-rose-900 rounded-xl">
                                 <MessageSquare className="w-8 h-8 animate-bounce text-rose-600 dark:text-rose-400" />

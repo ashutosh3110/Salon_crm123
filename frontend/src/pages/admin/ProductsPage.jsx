@@ -226,7 +226,7 @@ export default function ProductsPage() {
                                 <label className="text-[10px] font-black text-text-muted uppercase tracking-widest italic">Asset Designation *</label>
                                 <input type="text" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required className="w-full px-5 py-3 bg-surface-alt border border-border/60 text-sm font-black italic focus:border-primary outline-none" />
                             </div>
-                            <div className="grid grid-cols-2 gap-6">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                                 <div className="space-y-1">
                                     <label className="text-[10px] font-black text-text-muted uppercase tracking-widest italic">SKU Vector</label>
                                     <input type="text" value={form.sku} onChange={(e) => setForm({ ...form, sku: e.target.value })} className="w-full px-5 py-3 bg-surface-alt border border-border/60 text-sm font-black italic focus:border-primary outline-none" />
@@ -236,7 +236,7 @@ export default function ProductsPage() {
                                     <input type="text" value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} className="w-full px-5 py-3 bg-surface-alt border border-border/60 text-sm font-black italic focus:border-primary outline-none" />
                                 </div>
                             </div>
-                            <div className="grid grid-cols-3 gap-6">
+                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
                                 <div className="space-y-1">
                                     <label className="text-[10px] font-black text-text-muted uppercase tracking-widest italic">Valuation (₹)</label>
                                     <input type="number" value={form.price} onChange={(e) => setForm({ ...form, price: e.target.value })} required className="w-full px-5 py-3 bg-surface-alt border border-border/60 text-sm font-black italic focus:border-primary outline-none" />

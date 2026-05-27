@@ -72,7 +72,7 @@ export default function FinanceDashboard({ data, loading, error, onRetry }) {
                             Data: <span className="font-mono">GET /finance/dashboard</span>
                         </p>
                     </div>
-                    <div className="flex items-center gap-4 bg-white p-4 rounded-none border border-border shadow-sm text-left">
+                    <div className="flex flex-wrap items-center gap-4 bg-surface p-4 rounded-2xl border border-border shadow-sm text-left w-full md:w-auto justify-between md:justify-start">
                         <div className="flex flex-col items-end text-right font-black">
                             <span className="text-[9px] font-black text-text-muted uppercase tracking-[0.2em]">Opening cash</span>
                             <span className="text-lg font-black text-text">
@@ -95,20 +95,20 @@ export default function FinanceDashboard({ data, loading, error, onRetry }) {
 
             <div className="p-8 grid grid-cols-1 lg:grid-cols-3 gap-8 text-left font-black">
                 <div className="lg:col-span-2 space-y-6 text-left font-black">
-                    <div className="bg-surface/30 border border-border rounded-none p-8 h-[400px] flex flex-col text-left">
-                        <div className="flex justify-between items-center mb-10 text-left">
+                    <div className="bg-surface/30 border border-border rounded-3xl p-8 h-[400px] flex flex-col text-left">
+                        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-10 gap-4 text-left">
                             <h3 className="text-[10px] font-black text-text uppercase tracking-[0.2em] text-left">
                                 Revenue vs expense (12 months)
                             </h3>
-                            <div className="flex gap-6 text-left">
+                            <div className="flex flex-wrap gap-4 sm:gap-6 text-left">
                                 <div className="flex items-center gap-2">
-                                    <div className="w-3 h-3 rounded-none bg-primary" />
+                                    <div className="w-3 h-3 rounded-md bg-primary" />
                                     <span className="text-[9px] font-black text-text-muted uppercase tracking-tighter">
                                         Inflow (invoices)
                                     </span>
                                 </div>
                                 <div className="flex items-center gap-2">
-                                    <div className="w-3 h-3 rounded-none bg-amber-500" />
+                                    <div className="w-3 h-3 rounded-md bg-amber-500" />
                                     <span className="text-[9px] font-black text-text-muted uppercase tracking-tighter">
                                         Outflow (expenses)
                                     </span>
@@ -152,7 +152,7 @@ export default function FinanceDashboard({ data, loading, error, onRetry }) {
                 </div>
 
                 <div className="space-y-6 text-left font-black">
-                    <div className="bg-white border border-border rounded-none p-6 flex flex-col gap-6 shadow-sm text-left">
+                    <div className="bg-surface border border-border rounded-3xl p-6 flex flex-col gap-6 shadow-sm text-left">
                         <h3 className="text-[10px] font-black text-text uppercase tracking-[0.2em] text-left">Recent activity</h3>
                         <div className="space-y-4 text-left">
                             {recent.length === 0 ? (
@@ -172,14 +172,14 @@ export default function FinanceDashboard({ data, loading, error, onRetry }) {
                         </div>
                         <button
                             type="button"
-                            className="w-full py-4 bg-surface border border-border rounded-none text-[9px] font-black text-text uppercase tracking-[0.3em] hover:bg-primary hover:text-white transition-all"
+                            className="w-full py-4 bg-surface-alt border border-border rounded-2xl text-[9px] font-black text-text uppercase tracking-[0.3em] hover:bg-primary hover:text-white transition-all active:scale-[0.98]"
                             onClick={() => navigate('/admin/finance/transactions')}
                         >
                             View Transactions
                         </button>
                     </div>
 
-                    <div className="bg-surface/20 border border-border/50 rounded-none p-6 space-y-6 text-left">
+                    <div className="bg-surface border border-border/50 rounded-3xl p-6 space-y-6 text-left">
                         <h3 className="text-[10px] font-black text-text uppercase tracking-[0.2em] text-left">
                             Cost allocation (90d expenses)
                         </h3>
@@ -215,7 +215,7 @@ function TransactionRow({ label, amount, type, staff, time }) {
         <div className="flex justify-between items-center group cursor-default text-left font-black">
             <div className="flex gap-3 items-center text-left min-w-0">
                 <div
-                    className={`w-1.5 h-1.5 rounded-none shrink-0 ${type === 'income' ? 'bg-emerald-500' : type === 'expense' ? 'bg-rose-500' : 'bg-blue-500'}`}
+                    className={`w-2 h-2 rounded-full shrink-0 ${type === 'income' ? 'bg-emerald-500' : type === 'expense' ? 'bg-rose-500' : 'bg-blue-500'}`}
                 />
                 <div className="flex flex-col text-left min-w-0">
                     <span className="text-[11px] font-black text-text group-hover:text-primary transition-colors uppercase tracking-tight text-left truncate">
@@ -238,8 +238,8 @@ function ProgressItem({ label, percentage, color }) {
                 <span className="truncate">{label}</span>
                 <span>{percentage}%</span>
             </div>
-            <div className="w-full h-1.5 bg-border rounded-none overflow-hidden">
-                <div className={`h-full ${color} rounded-none`} style={{ width: `${Math.min(100, percentage)}%` }} />
+            <div className="w-full h-2 bg-surface-alt rounded-full overflow-hidden border border-border/40">
+                <div className={`h-full ${color} rounded-full`} style={{ width: `${Math.min(100, percentage)}%` }} />
             </div>
         </div>
     );

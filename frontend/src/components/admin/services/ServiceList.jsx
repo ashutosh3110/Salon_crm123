@@ -206,20 +206,20 @@ export default function ServiceList({ services = [], onDelete, onToggleStatus, o
             />
 
             {/* View Toggle & Count Toolbar */}
-            <div className="flex items-center justify-between bg-white p-3 rounded-2xl border border-border shadow-sm">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 bg-surface p-4 rounded-3xl border border-border/40 shadow-sm">
                 <div className="flex items-center gap-2">
                     <span className="text-[10px] font-black text-text-muted uppercase tracking-widest pl-2">
                         {filteredServices.length} {filteredServices.length === 1 ? 'Service' : 'Services'} Found
                     </span>
                 </div>
-                <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-xl border border-border/50">
+                <div className="flex items-center gap-1 bg-surface-alt p-1.5 rounded-2xl border border-border/40">
                     <button
                         type="button"
                         onClick={() => setViewMode('grid')}
-                        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all duration-200 cursor-pointer ${
+                        className={`flex-1 flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all duration-200 cursor-pointer ${
                             viewMode === 'grid'
-                                ? 'bg-white text-primary shadow-sm'
-                                : 'text-text-muted hover:text-text'
+                                ? 'bg-surface text-primary shadow-sm border border-border/40'
+                                : 'text-text-muted hover:text-foreground'
                         }`}
                     >
                         <LayoutGrid className="w-3.5 h-3.5" />
@@ -228,10 +228,10 @@ export default function ServiceList({ services = [], onDelete, onToggleStatus, o
                     <button
                         type="button"
                         onClick={() => setViewMode('table')}
-                        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all duration-200 cursor-pointer ${
+                        className={`flex-1 flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all duration-200 cursor-pointer ${
                             viewMode === 'table'
-                                ? 'bg-white text-primary shadow-sm'
-                                : 'text-text-muted hover:text-text'
+                                ? 'bg-surface text-primary shadow-sm border border-border/40'
+                                : 'text-text-muted hover:text-foreground'
                         }`}
                     >
                         <List className="w-3.5 h-3.5" />

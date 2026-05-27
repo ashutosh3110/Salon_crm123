@@ -1,4 +1,5 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
     TrendingUp,
     Users,
@@ -9,6 +10,7 @@ import {
     BarChart3,
     Activity,
     Package,
+    ChevronDown,
 } from 'lucide-react';
 import {
     PieChart,
@@ -37,6 +39,60 @@ function formatInrShort(n) {
     if (n == null || Number.isNaN(Number(n))) return '₹0';
     const v = Number(n);
     return `₹${Math.round(v).toLocaleString('en-IN')}`;
+}
+
+function CustomDropdown({ value, onChange, options, placeholder }) {
+    const [isOpen, setIsOpen] = useState(false);
+    const ref = useRef(null);
+    useEffect(() => {
+        const handleClickOutside = (e) => {
+            if (ref.current && !ref.current.contains(e.target)) setIsOpen(false);
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
+    return (
+        <div className="relative w-full sm:w-auto" ref={ref}>
+            <button
+                onClick={() => setIsOpen(!isOpen)}
+                className="flex items-center justify-between w-full sm:min-w-[180px] gap-3 bg-surface border border-border px-6 py-3.5 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] text-text hover:border-primary transition-all shadow-sm active:scale-[0.98]"
+            >
+                <span className="truncate">
+                    {options.find(o => o.value === value)?.label || placeholder}
+                </span>
+                <ChevronDown className={`w-3.5 h-3.5 text-text-muted shrink-0 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
+            </button>
+            <AnimatePresence>
+                {isOpen && (
+                    <motion.div
+                        initial={{ opacity: 0, y: -5, scale: 0.95 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: -5, scale: 0.95 }}
+                        transition={{ duration: 0.15 }}
+                        className="absolute left-0 sm:right-0 sm:left-auto mt-2 w-full sm:w-64 bg-surface border border-border/40 rounded-xl shadow-lg z-[100] overflow-hidden"
+                    >
+                        <div className="py-1 max-h-60 overflow-y-auto custom-scrollbar">
+                            <button
+                                onClick={() => { onChange('all'); setIsOpen(false); }}
+                                className={`w-full text-left px-4 py-3 text-[10px] font-black uppercase tracking-[0.1em] transition-colors ${value === 'all' ? 'bg-primary/10 text-primary' : 'text-foreground hover:bg-surface-alt hover:text-primary'}`}
+                            >
+                                {placeholder}
+                            </button>
+                            {options.map(o => (
+                                <button
+                                    key={o.value}
+                                    onClick={() => { onChange(o.value); setIsOpen(false); }}
+                                    className={`w-full text-left px-4 py-3 text-[10px] font-black uppercase tracking-[0.1em] transition-colors ${value === o.value ? 'bg-primary/10 text-primary' : 'text-foreground hover:bg-surface-alt hover:text-primary'}`}
+                                >
+                                    {o.label}
+                                </button>
+                            ))}
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+        </div>
+    );
 }
 
 export default function FinancePage({ tab = 'dashboard' }) {
@@ -114,31 +170,24 @@ export default function FinancePage({ tab = 'dashboard' }) {
                                 </span>
                             </p>
                         </div>
-                        <div className="flex flex-wrap items-center gap-4 text-left font-black">
+                        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 text-left font-black w-full lg:w-auto mt-4 lg:mt-0">
                             {outlets.length > 0 && (
-                                <select
+                                <CustomDropdown
                                     value={selectedOutletId}
-                                    onChange={(e) => setSelectedOutletId(e.target.value)}
-                                    className="bg-surface border border-border px-6 py-3.5 rounded-none text-[10px] font-black uppercase tracking-[0.2em] text-text hover:border-primary transition-all focus:outline-none focus:border-primary cursor-pointer shadow-sm"
-                                >
-                                    <option value="all">All Outlets</option>
-                                    {outlets.map((o) => (
-                                        <option key={o._id} value={o._id}>
-                                            {o.name}
-                                        </option>
-                                    ))}
-                                </select>
+                                    onChange={setSelectedOutletId}
+                                    options={outlets.map(o => ({ value: o._id, label: o.name }))}
+                                    placeholder="All Outlets"
+                                />
                             )}
                             <button
                                 type="button"
                                 onClick={loadFinance}
                                 disabled={financeLoading}
-                                className="flex items-center gap-3 bg-surface border border-border px-8 py-3.5 rounded-none text-[10px] font-black uppercase tracking-[0.2em] text-text-muted hover:text-primary hover:border-primary transition-all shadow-sm disabled:opacity-50"
+                                className="flex justify-center items-center gap-3 bg-surface border border-border px-8 py-3.5 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] text-text-muted hover:text-primary hover:border-primary transition-all shadow-sm disabled:opacity-50 active:scale-[0.98]"
                             >
                                 <DownloadCloud className="w-4 h-4" />
                                 Refresh data
                             </button>
-                         
                         </div>
                     </div>
 
@@ -182,19 +231,13 @@ export default function FinancePage({ tab = 'dashboard' }) {
                         </p>
                     </div>
                     {outlets.length > 0 && (
-                        <div className="flex flex-wrap items-center gap-4 text-left font-black">
-                            <select
+                        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 text-left font-black w-full lg:w-auto mt-4 lg:mt-0">
+                            <CustomDropdown
                                 value={selectedOutletId}
-                                onChange={(e) => setSelectedOutletId(e.target.value)}
-                                className="bg-surface border border-border px-6 py-3.5 rounded-none text-[10px] font-black uppercase tracking-[0.2em] text-text hover:border-primary transition-all focus:outline-none focus:border-primary cursor-pointer shadow-sm"
-                            >
-                                <option value="all">All Outlets</option>
-                                {outlets.map((o) => (
-                                    <option key={o._id} value={o._id}>
-                                        {o.name}
-                                    </option>
-                                ))}
-                            </select>
+                                onChange={setSelectedOutletId}
+                                options={outlets.map(o => ({ value: o._id, label: o.name }))}
+                                placeholder="All Outlets"
+                            />
                         </div>
                     )}
                 </div>

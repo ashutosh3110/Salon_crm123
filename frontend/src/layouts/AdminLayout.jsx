@@ -168,7 +168,7 @@ export default function AdminLayout() {
                 .dark .admin-panel table th {
                     background-color: #121826 !important;
                     border-bottom: 2px solid rgba(255, 255, 255, 0.08) !important;
-                    color: #94a3b8 !important;
+                    color: #e6e8bff!important;
                 }
                 .dark .admin-panel table td {
                     color: #cbd5e1 !important;
@@ -371,7 +371,7 @@ export default function AdminLayout() {
                 html:not(.dark) .admin-panel button:has(svg.lucide-settings):not(aside *):not(.bg-primary):hover,
                 html:not(.dark) .admin-panel button:has(svg.lucide-printer):not(aside *):not(.bg-primary):hover {
                     background-color: #f8fafc !important;
-                    border-color: #94a3b8 !important;
+                    border-color: #e6e8bff!important;
                     color: #0f172a !important;
                     transform: translateY(-1px) !important;
                     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05) !important;
@@ -461,7 +461,7 @@ export default function AdminLayout() {
                     opacity: 0.3 !important;
                     transform: none !important;
                     border-color: #cbd5e1 !important;
-                    color: #94a3b8 !important;
+                    color: #e6e8bff!important;
                     background-color: #f1f5f9 !important;
                 }
                 
@@ -629,7 +629,7 @@ export default function AdminLayout() {
                 .dark [role="dialog"] [class*="text-text-secondary"],
                 .dark .fixed.inset-0 .text-text-secondary,
                 .dark .fixed.inset-0 [class*="text-text-secondary"] {
-                    color: #94a3b8 !important; /* slate-400 */
+                    color: #e6e8bff!important; /* slate-400 */
                 }
 
                 .dark .admin-panel .text-text-muted,
@@ -640,7 +640,7 @@ export default function AdminLayout() {
                 .dark [role="dialog"] [class*="text-text-muted"],
                 .dark .fixed.inset-0 .text-text-muted,
                 .dark .fixed.inset-0 [class*="text-text-muted"] {
-                    color: #64748b !important; /* slate-500 */
+                    color: #e6e8bff !important; /* slate-500 */
                 }
 
                 /* Ensure dark mode input placeholders and borders are clearly visible */
@@ -667,7 +667,7 @@ export default function AdminLayout() {
 
                 /* --- Spacious & Beautiful Tables in Dark Mode --- */
                 .dark .admin-panel table th {
-                    color: #94a3b8 !important; /* slate-400 */
+                    color: #e6e8bff!important; /* slate-400 */
                     background-color: #121826 !important; /* slate-900 */
                     border-bottom: 2px solid rgba(255, 255, 255, 0.08) !important;
                 }
@@ -681,7 +681,7 @@ export default function AdminLayout() {
 
                 /* --- Form Controls in Dark Mode --- */
                 .dark .admin-panel label {
-                    color: #94a3b8 !important; /* slate-400 */
+                    color: #e6e8bff!important; /* slate-400 */
                 }
                 .dark .admin-panel input:focus, 
                 .dark .admin-panel select:focus, 
@@ -696,7 +696,7 @@ export default function AdminLayout() {
                     stroke: rgba(255, 255, 255, 0.08) !important;
                 }
                 .dark .admin-panel .recharts-text {
-                    fill: #94a3b8 !important;
+                    fill: #e6e8bff!important;
                 }
                                 .dark .admin-panel .recharts-legend-item-text {
                     color: #cbd5e1 !important;

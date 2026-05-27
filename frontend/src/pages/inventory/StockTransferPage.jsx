@@ -8,7 +8,7 @@ export default function StockTransferPage() {
     const { products, outlets, transfers, transferStock } = useInventory();
 
     const [isModalOpen, setIsModalOpen] = useState(false);
-    
+
     useEffect(() => {
         document.body.style.overflow = isModalOpen ? 'hidden' : 'unset';
         return () => {
@@ -31,7 +31,7 @@ export default function StockTransferPage() {
         if (outlets && outlets.length > 0) {
             const firstId = outlets[0]._id || outlets[0].id || '';
             setFromOutlet(prev => prev && outlets.some(o => (o._id === prev || o.id === prev)) ? prev : firstId);
-            
+
             if (outlets.length > 1) {
                 const secondId = outlets[1]._id || outlets[1].id || '';
                 setToOutlet(prev => prev && outlets.some(o => (o._id === prev || o.id === prev)) ? prev : secondId);
@@ -80,12 +80,12 @@ export default function StockTransferPage() {
         }
 
         setSubmitting(true);
-        const res = await transferStock({ 
-            sku: selectedSku, 
-            qty: qtyNum, 
-            fromOutlet, 
-            toOutlet, 
-            reason 
+        const res = await transferStock({
+            sku: selectedSku,
+            qty: qtyNum,
+            fromOutlet,
+            toOutlet,
+            reason
         });
         setSubmitting(false);
         setResult(res);
@@ -173,10 +173,10 @@ export default function StockTransferPage() {
                     color: #cbd5e1 !important; /* slate-300 */
                 }
                 html:not(.dark) .st-modal-subtitle {
-                    color: #64748b !important; /* slate-500 */
+                    color: #e6e8bff !important; /* slate-500 */
                 }
                 .dark .st-modal-subtitle {
-                    color: #94a3b8 !important; /* slate-450 */
+                    color: #e6e8bff!important; /* slate-450 */
                 }
                 html:not(.dark) .st-warning-text {
                     color: #B4912B !important; /* Premium Gold */
@@ -195,13 +195,13 @@ export default function StockTransferPage() {
 
                 /* General overrides for light mode inside the modal to cancel global white text resets */
                 html:not(.dark) .st-modal-container label {
-                    color: #64748b !important; /* slate-500 */
+                    color: #e6e8bff !important; /* slate-500 */
                 }
                 html:not(.dark) .st-modal-container input {
                     color: #0f172a !important; /* slate-900 */
                 }
                 html:not(.dark) .st-modal-container input::placeholder {
-                    color: #94a3b8 !important; /* slate-400 */
+                    color: #e6e8bff!important; /* slate-400 */
                 }
                 html:not(.dark) .st-modal-container select {
                     color: #0f172a !important; /* slate-900 */
@@ -214,7 +214,7 @@ export default function StockTransferPage() {
                 html:not(.dark) .st-modal-container svg.text-slate-400,
                 html:not(.dark) .st-modal-container button.text-slate-400,
                 html:not(.dark) .st-modal-container button.text-slate-400 * {
-                    color: #94a3b8 !important;
+                    color: #e6e8bff!important;
                 }
                 html:not(.dark) .st-modal-container [class*="text-[#B4912B]"] {
                     color: #B4912B !important;
@@ -360,7 +360,7 @@ export default function StockTransferPage() {
                                 onClick={() => setIsModalOpen(false)} className="absolute inset-0 bg-slate-900/50 backdrop-blur-sm" />
                             <motion.div initial={{ opacity: 0, scale: 0.95, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95 }}
                                 className="bg-white dark:bg-slate-900 w-full max-w-lg rounded-[24px] border border-slate-150 dark:border-slate-800 shadow-2xl overflow-hidden relative st-modal-container z-10">
-                                
+
                                 {/* Header */}
                                 <div className="px-6 py-5 border-b border-slate-100 dark:border-slate-800/80 flex items-center justify-between bg-slate-50/50 dark:bg-slate-900/50">
                                     <div className="flex items-center gap-3">
@@ -392,7 +392,7 @@ export default function StockTransferPage() {
                                                 onFocus={() => setIsSearchFocused(true)}
                                                 onBlur={() => setTimeout(() => setIsSearchFocused(false), 250)} />
                                         </div>
-                                        
+
                                         {/* Product Dropdown Selection */}
                                         {!selectedSku && (isSearchFocused || productSearch) && (
                                             <div className="rounded-xl border border-slate-250 dark:border-slate-800 overflow-hidden bg-white dark:bg-slate-900 divide-y divide-slate-100 dark:divide-slate-800 max-h-40 overflow-y-auto mt-1 shadow-lg absolute left-0 right-0 z-50">
@@ -413,7 +413,7 @@ export default function StockTransferPage() {
                                                 )}
                                             </div>
                                         )}
-                                        
+
                                         {/* Selected Product Banner */}
                                         {selectedProduct && (
                                             <div className="p-3 bg-[#B4912B]/5 rounded-xl border border-[#B4912B]/10 flex items-center gap-3">
@@ -534,8 +534,8 @@ export default function StockTransferPage() {
                                                         {((selectedProduct.stockByOutlet instanceof Map)
                                                             ? (selectedProduct.stockByOutlet.get(toOutlet) || 0)
                                                             : (selectedProduct.stockByOutlet?.[toOutlet] || 0))} → {((selectedProduct.stockByOutlet instanceof Map)
-                                                            ? (selectedProduct.stockByOutlet.get(toOutlet) || 0)
-                                                            : (selectedProduct.stockByOutlet?.[toOutlet] || 0)) + Number(qty)}
+                                                                ? (selectedProduct.stockByOutlet.get(toOutlet) || 0)
+                                                                : (selectedProduct.stockByOutlet?.[toOutlet] || 0)) + Number(qty)}
                                                     </p>
                                                 </div>
                                             </div>

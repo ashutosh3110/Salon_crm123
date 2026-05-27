@@ -230,7 +230,7 @@ export default function ServicesPage({ tab = 'list' }) {
             {activeTab === 'list' && (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 animate-in fade-in slide-in-from-top-4 duration-300">
                     {stats.map((stat, i) => (
-                        <div key={i} className="bg-white p-6 border border-border shadow-sm group hover:shadow-xl transition-all relative overflow-hidden rounded-2xl">
+                        <div key={i} className="bg-surface p-6 border border-border/40 shadow-sm group hover:shadow-xl transition-all relative overflow-hidden rounded-3xl">
                             <div className={`absolute -right-4 -top-4 w-16 h-16 bg-primary/5 rounded-full blur-2xl group-hover:bg-primary/10 transition-all`} />
                             <div className="relative z-10 flex flex-col gap-3">
                                 <div className="flex items-center justify-between">
@@ -251,37 +251,37 @@ export default function ServicesPage({ tab = 'list' }) {
 
             {/* Toolbar */}
             {activeTab === 'list' && (
-                <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 bg-white p-4 rounded-2xl border border-border shadow-sm">
+                <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 bg-surface p-4 rounded-3xl border border-border/40 shadow-sm">
                     <div className="relative flex-1 max-w-full lg:max-w-md">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
+                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
                         <input
                             type="text"
                             placeholder="Search services by name..."
-                            className="w-full pl-10 pr-4 py-3 rounded-xl border border-border bg-slate-50 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all font-medium"
+                            className="w-full pl-11 pr-4 py-3.5 rounded-2xl border border-border/40 bg-surface-alt text-foreground text-xs focus:outline-none focus:border-primary transition-all font-bold placeholder-text-muted"
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
                         />
                     </div>
 
-                    <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+                    <div className="flex flex-wrap items-center gap-3">
                         <CustomDropdown
                             value={filterCategory}
                             onChange={setFilterCategory}
                             options={categoriesList}
-                            className="flex-1 lg:flex-none min-w-[120px] lg:min-w-[150px]"
+                            className="flex-1 lg:flex-none min-w-[120px]"
                         />
 
                         <CustomDropdown
                             value={filterOutlet}
                             onChange={setFilterOutlet}
                             options={outletOptions}
-                            className="flex-1 lg:flex-none min-w-[140px] lg:min-w-[180px]"
+                            className="flex-1 lg:flex-none min-w-[140px]"
                         />
 
-                        <div className="flex items-center gap-2 w-full sm:w-auto mt-2 sm:mt-0">
+                        <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
                             <button
                                 onClick={handleRefresh}
-                                className="flex-1 sm:flex-none p-2.5 rounded-xl bg-surface border border-border text-text-muted hover:text-primary hover:border-primary transition-all active:scale-95 flex justify-center items-center"
+                                className="flex-1 sm:flex-none p-3.5 rounded-2xl bg-surface-alt border border-border/40 text-text-muted hover:text-primary hover:border-primary transition-all active:scale-95 flex justify-center items-center"
                                 title="Refresh List"
                             >
                                 <RefreshCcw className="w-4 h-4" />
@@ -289,7 +289,7 @@ export default function ServicesPage({ tab = 'list' }) {
 
                             <button
                                 onClick={handleDownloadTemplate}
-                                className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/30 text-amber-700 dark:text-amber-400 hover:bg-amber-100 dark:hover:bg-amber-500/20 transition-all active:scale-95 text-[11px] font-bold uppercase tracking-tight group"
+                                className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-500 hover:bg-amber-500/20 transition-all active:scale-95 text-[11px] font-black uppercase tracking-widest group"
                                 title="Download Sample Template"
                             >
                                 <Download className="w-3.5 h-3.5 group-hover:scale-110 transition-transform" />
@@ -307,7 +307,7 @@ export default function ServicesPage({ tab = 'list' }) {
                                 <button
                                     onClick={() => document.getElementById('bulk-upload-top').click()}
                                     disabled={importing}
-                                    className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/30 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-emerald-500/20 transition-all active:scale-95 text-[11px] font-bold uppercase tracking-tight disabled:opacity-50 group"
+                                    className="w-full flex items-center justify-center gap-2 px-4 py-3.5 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 hover:bg-emerald-500/20 transition-all active:scale-95 text-[11px] font-black uppercase tracking-widest disabled:opacity-50 group"
                                 >
                                     {importing ? <RefreshCcw className="w-3.5 h-3.5 animate-spin" /> : <Upload className="w-3.5 h-3.5 group-hover:scale-110 transition-transform" />}
                                     <span>{importing ? 'Importing...' : 'Import'}</span>
@@ -316,7 +316,7 @@ export default function ServicesPage({ tab = 'list' }) {
 
                             <button
                                 onClick={handleAddClick}
-                                className="flex-[2] sm:flex-none flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-primary text-white text-[12px] font-bold uppercase tracking-tight shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all"
+                                className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-3.5 rounded-2xl bg-text text-surface hover:bg-primary text-[11px] font-black uppercase tracking-widest shadow-lg shadow-primary/20 transition-all active:scale-95"
                             >
                                 <Plus className="w-4 h-4" /> Add Service
                             </button>
@@ -326,11 +326,11 @@ export default function ServicesPage({ tab = 'list' }) {
             )}
 
             {activeTab === 'categories' && (
-                <div className="flex flex-col lg:flex-row lg:items-center justify-end gap-4 bg-white p-4 rounded-2xl border border-border shadow-sm">
+                <div className="flex flex-col lg:flex-row lg:items-center justify-end gap-4 bg-surface p-4 rounded-3xl border border-border/40 shadow-sm">
                     <div className="flex flex-wrap items-center gap-2 sm:gap-3">
                         <button
                             onClick={handleRefresh}
-                            className="flex-1 sm:flex-none p-2.5 rounded-xl bg-white border border-border text-text-muted hover:text-primary transition-all active:scale-95 flex justify-center items-center"
+                            className="flex-1 sm:flex-none p-3.5 rounded-2xl bg-surface-alt border border-border/40 text-text-muted hover:text-primary transition-all active:scale-95 flex justify-center items-center"
                             title="Refresh List"
                         >
                             <RefreshCcw className="w-4 h-4" />
@@ -338,7 +338,7 @@ export default function ServicesPage({ tab = 'list' }) {
 
                         <button
                             onClick={handleDownloadCategoryTemplate}
-                            className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-white border border-border text-text hover:text-primary transition-all active:scale-95 text-[11px] font-bold uppercase tracking-tight"
+                            className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-5 py-3.5 rounded-2xl bg-surface-alt border border-border/40 text-foreground hover:text-primary transition-all active:scale-95 text-[11px] font-black uppercase tracking-widest"
                         >
                             <Download className="w-3.5 h-3.5" /> Sample
                         </button>
@@ -354,7 +354,7 @@ export default function ServicesPage({ tab = 'list' }) {
                             <button
                                 onClick={() => document.getElementById('category-bulk-upload').click()}
                                 disabled={importing}
-                                className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-white border border-border text-text hover:text-primary transition-all active:scale-95 text-[11px] font-bold uppercase tracking-tight disabled:opacity-50"
+                                className="w-full flex items-center justify-center gap-2 px-5 py-3.5 rounded-2xl bg-text text-surface border border-transparent hover:bg-primary transition-all active:scale-95 text-[11px] font-black uppercase tracking-widest disabled:opacity-50"
                             >
                                 {importing ? <RefreshCcw className="w-3.5 h-3.5 animate-spin" /> : <Upload className="w-3.5 h-3.5" />}
                                 {importing ? 'Importing...' : 'Bulk Upload'}
@@ -366,14 +366,14 @@ export default function ServicesPage({ tab = 'list' }) {
 
             {/* Outlet Filter */}
             {activeTab === 'list' && (
-                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 bg-white/50 p-4 border border-border/40 rounded-2xl">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 bg-surface-alt p-4 border border-border/40 rounded-3xl">
                     <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
-                            <Layers className="w-4 h-4" />
+                        <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
+                            <Layers className="w-5 h-5" />
                         </div>
                         <div>
                             <p className="text-[10px] font-black uppercase text-text-muted tracking-widest leading-none mb-1">View Scope</p>
-                            <p className="text-[11px] font-black uppercase text-text tracking-tighter">Filter by Outlet</p>
+                            <p className="text-[11px] font-black uppercase text-foreground tracking-widest">Filter by Outlet</p>
                         </div>
                     </div>
 
@@ -389,9 +389,9 @@ export default function ServicesPage({ tab = 'list' }) {
                     />
 
                     {selectedOutletId !== 'all' && (
-                        <div className="flex items-center gap-2 px-3 py-1.5 bg-emerald-50 border border-emerald-100 animate-in fade-in slide-in-from-left-2 rounded-xl">
-                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                            <span className="text-[9px] font-black text-emerald-700 uppercase tracking-widest italic">
+                        <div className="flex items-center gap-2 px-3 py-1.5 bg-primary/10 border border-primary/20 animate-in fade-in slide-in-from-left-2 rounded-xl">
+                            <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
+                            <span className="text-[9px] font-black text-primary uppercase tracking-widest italic">
                                 Showing specific + common services
                             </span>
                         </div>

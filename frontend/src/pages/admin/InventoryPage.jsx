@@ -91,7 +91,7 @@ export default function InventoryPage({ tab = 'products' }) {
             {/* Analytics Grid - Compact */}
             {activeTab === 'overview' && (
                 <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 animate-in fade-in slide-in-from-top-2 duration-300">
-                    <div className="lg:col-span-2 grid grid-cols-2 gap-3">
+                    <div className="lg:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <InventoryStatCard title="Total SKU" value={stats.totalProducts} icon={TrendingUp} color="blue" trend="Catalog" to="/admin/inventory/products" />
                         <InventoryStatCard title="Critical" value={stats.lowStockCount} icon={AlertTriangle} color="rose" trend="Replenish" to="/admin/inventory/stock-overview" />
                         <InventoryStatCard title="Live" value={products.filter(p => p.status === 'active').length} icon={ArrowUpRight} color="emerald" trend="Active" to="/admin/inventory/products" />

@@ -611,8 +611,8 @@ export default function ShopOrdersPage() {
                                 </div>
 
                                 {/* Logistics Info */}
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div className="p-6 border border-border bg-surface-alt space-y-4 col-span-2">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <div className="p-6 border border-border bg-surface-alt space-y-4 col-span-1 sm:col-span-2">
                                         <div className="flex items-center gap-2">
                                             <Package className="w-3.5 h-3.5 text-primary" />
                                             <h4 className="text-[10px] font-black uppercase tracking-widest text-text">Origin Outlet</h4>

@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect, useCallback } from 'react';
+import { useState, useMemo, useEffect, useCallback, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { 
     Calculator, FileText, Download, CheckCircle2, Search, 
@@ -30,6 +30,31 @@ export default function PayrollManager() {
     const [year, setYear] = useState(new Date().getFullYear());
     const [records, setRecords] = useState([]);
     const [filterOutlet, setFilterOutlet] = useState('All');
+    
+    const [isOutletDropdownOpen, setIsOutletDropdownOpen] = useState(false);
+    const dropdownRef = useRef(null);
+    
+    const [isMonthDropdownOpen, setIsMonthDropdownOpen] = useState(false);
+    const monthRef = useRef(null);
+    
+    const [isYearDropdownOpen, setIsYearDropdownOpen] = useState(false);
+    const yearRef = useRef(null);
+
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+                setIsOutletDropdownOpen(false);
+            }
+            if (monthRef.current && !monthRef.current.contains(event.target)) {
+                setIsMonthDropdownOpen(false);
+            }
+            if (yearRef.current && !yearRef.current.contains(event.target)) {
+                setIsYearDropdownOpen(false);
+            }
+        };
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => document.removeEventListener("mousedown", handleClickOutside);
+    }, []);
 
     const [individualForm, setIndividualForm] = useState({
         staffId: '',
@@ -415,7 +440,7 @@ export default function PayrollManager() {
     };
 
     return (
-        <div className="space-y-6 text-left bg-slate-50 dark:bg-slate-900 rounded-3xl p-6 border border-slate-200/60 dark:border-slate-800/80 transition-colors">
+        <div className="space-y-6 text-left bg-surface rounded-3xl p-6 border border-border/40 transition-colors">
 
             {/* Dynamic Outlet-wise Payout Cards */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -451,55 +476,165 @@ export default function PayrollManager() {
             </div>
 
             {/* Toolbar Panel */}
-            <div className="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-200/65 dark:border-slate-700/80 shadow-sm flex flex-wrap items-center justify-between gap-4 transition-colors">
+            <div className="bg-surface-alt p-4 rounded-2xl border border-border/40 shadow-sm flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4 transition-colors">
 
-                <div className="flex items-center flex-wrap gap-3">
+                <div className="flex items-center flex-col sm:flex-row gap-3">
                     {/* Period selection */}
-                    <div className="flex items-center bg-slate-50 dark:bg-slate-750 border border-slate-200 dark:border-slate-700 rounded-xl px-2.5 py-1.5 shadow-sm text-xs font-bold text-slate-700 dark:text-slate-200 select-none">
-                        <Calendar className="w-4 h-4 mr-2 text-slate-400" />
-                        <select value={month} onChange={e => setMonth(Number(e.target.value))}
-                            className="bg-transparent border-none p-0 pr-6 focus:ring-0 cursor-pointer outline-none font-bold text-slate-700 dark:text-slate-200 text-xs">
-                            {['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'].map((m, i) => (
-                                <option key={m} value={i + 1} className="bg-white dark:bg-slate-800">{m}</option>
-                            ))}
-                        </select>
-                        <select value={year} onChange={e => setYear(Number(e.target.value))}
-                            className="bg-transparent border-none p-0 pr-6 focus:ring-0 cursor-pointer outline-none font-bold text-slate-700 dark:text-slate-200 text-xs border-l border-slate-200/40 pl-2">
-                            {[2024, 2025, 2026, 2027].map(y => <option key={y} value={y} className="bg-white dark:bg-slate-800">{y}</option>)}
-                        </select>
+                    <div className="flex w-full sm:w-auto items-center gap-2">
+                        {/* Month Custom Dropdown */}
+                        <div className="relative w-full sm:w-auto" ref={monthRef}>
+                            <button
+                                onClick={() => setIsMonthDropdownOpen(!isMonthDropdownOpen)}
+                                className="flex items-center justify-between w-full sm:min-w-[100px] gap-2 bg-surface border border-border/40 rounded-xl px-3 py-1.5 shadow-sm text-xs transition-colors hover:bg-surface-alt active:scale-[0.98]"
+                            >
+                                <div className="flex items-center gap-2">
+                                    <Calendar className="w-3.5 h-3.5 text-text-muted" />
+                                    <span className="font-bold text-foreground">
+                                        {['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][month - 1]}
+                                    </span>
+                                </div>
+                                <ChevronDown className={`w-3.5 h-3.5 text-text-muted transition-transform duration-200 ${isMonthDropdownOpen ? 'rotate-180' : ''}`} />
+                            </button>
+                            
+                            <AnimatePresence>
+                                {isMonthDropdownOpen && (
+                                    <motion.div
+                                        initial={{ opacity: 0, y: -5, scale: 0.95 }}
+                                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                                        exit={{ opacity: 0, y: -5, scale: 0.95 }}
+                                        transition={{ duration: 0.15 }}
+                                        className="absolute left-0 mt-2 w-full sm:w-32 bg-surface border border-border/40 rounded-xl shadow-lg z-[100] overflow-hidden"
+                                    >
+                                        <div className="py-1 max-h-60 overflow-y-auto custom-scrollbar">
+                                            {['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'].map((m, i) => (
+                                                <button
+                                                    key={m}
+                                                    onClick={() => {
+                                                        setMonth(i + 1);
+                                                        setIsMonthDropdownOpen(false);
+                                                    }}
+                                                    className={`w-full text-left px-4 py-2.5 text-xs font-bold transition-colors ${
+                                                        month === i + 1
+                                                            ? 'bg-primary/10 text-primary' 
+                                                            : 'text-foreground hover:bg-surface-alt hover:text-primary'
+                                                    }`}
+                                                >
+                                                    {m}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </motion.div>
+                                )}
+                            </AnimatePresence>
+                        </div>
+
+                        {/* Year Custom Dropdown */}
+                        <div className="relative w-full sm:w-auto" ref={yearRef}>
+                            <button
+                                onClick={() => setIsYearDropdownOpen(!isYearDropdownOpen)}
+                                className="flex items-center justify-between w-full sm:min-w-[90px] gap-2 bg-surface border border-border/40 rounded-xl px-3 py-1.5 shadow-sm text-xs transition-colors hover:bg-surface-alt active:scale-[0.98]"
+                            >
+                                <span className="font-bold text-foreground mx-auto">
+                                    {year}
+                                </span>
+                                <ChevronDown className={`w-3.5 h-3.5 text-text-muted transition-transform duration-200 ${isYearDropdownOpen ? 'rotate-180' : ''}`} />
+                            </button>
+                            
+                            <AnimatePresence>
+                                {isYearDropdownOpen && (
+                                    <motion.div
+                                        initial={{ opacity: 0, y: -5, scale: 0.95 }}
+                                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                                        exit={{ opacity: 0, y: -5, scale: 0.95 }}
+                                        transition={{ duration: 0.15 }}
+                                        className="absolute left-0 mt-2 w-full sm:w-32 bg-surface border border-border/40 rounded-xl shadow-lg z-[100] overflow-hidden"
+                                    >
+                                        <div className="py-1 max-h-60 overflow-y-auto custom-scrollbar">
+                                            {[2024, 2025, 2026, 2027].map(y => (
+                                                <button
+                                                    key={y}
+                                                    onClick={() => {
+                                                        setYear(y);
+                                                        setIsYearDropdownOpen(false);
+                                                    }}
+                                                    className={`w-full text-left px-4 py-2.5 text-xs font-bold transition-colors ${
+                                                        year === y
+                                                            ? 'bg-primary/10 text-primary' 
+                                                            : 'text-foreground hover:bg-surface-alt hover:text-primary'
+                                                    }`}
+                                                >
+                                                    {y}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </motion.div>
+                                )}
+                            </AnimatePresence>
+                        </div>
                     </div>
 
-                    {/* Outlet selection */}
-                    <div className="flex items-center gap-2 bg-slate-50 dark:bg-slate-750 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-1.5 shadow-sm text-xs transition-colors">
-                        <Filter className="w-3.5 h-3.5 text-slate-400" />
-                        <select
-                            value={filterOutlet}
-                            onChange={e => setFilterOutlet(e.target.value)}
-                            className="bg-transparent border-none p-0 pr-6 focus:ring-0 cursor-pointer outline-none font-bold text-slate-700 dark:text-slate-200 text-xs"
+                    {/* Outlet selection - Custom Dropdown */}
+                    <div className="relative w-full sm:w-auto" ref={dropdownRef}>
+                        <button
+                            onClick={() => setIsOutletDropdownOpen(!isOutletDropdownOpen)}
+                            className="flex items-center justify-between w-full sm:min-w-[140px] gap-2 bg-surface border border-border/40 rounded-xl px-3 py-1.5 shadow-sm text-xs transition-colors hover:bg-surface-alt active:scale-[0.98]"
                         >
-                            {uniqueOutlets.map(o => (
-                                <option key={o} value={o} className="bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 font-bold">
-                                    {o === 'All' ? 'All Outlets' : o}
-                                </option>
-                            ))}
-                        </select>
+                            <div className="flex items-center gap-2">
+                                <Filter className="w-3.5 h-3.5 text-text-muted" />
+                                <span className="font-bold text-foreground">
+                                    {filterOutlet === 'All' ? 'All Outlets' : filterOutlet}
+                                </span>
+                            </div>
+                            <ChevronDown className={`w-3.5 h-3.5 text-text-muted transition-transform duration-200 ${isOutletDropdownOpen ? 'rotate-180' : ''}`} />
+                        </button>
+                        
+                        <AnimatePresence>
+                            {isOutletDropdownOpen && (
+                                <motion.div
+                                    initial={{ opacity: 0, y: -5, scale: 0.95 }}
+                                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                                    exit={{ opacity: 0, y: -5, scale: 0.95 }}
+                                    transition={{ duration: 0.15 }}
+                                    className="absolute left-0 mt-2 w-full sm:w-48 bg-surface border border-border/40 rounded-xl shadow-lg z-[100] overflow-hidden"
+                                >
+                                    <div className="py-1 max-h-60 overflow-y-auto custom-scrollbar">
+                                        {uniqueOutlets.map(o => (
+                                            <button
+                                                key={o}
+                                                onClick={() => {
+                                                    setFilterOutlet(o);
+                                                    setIsOutletDropdownOpen(false);
+                                                }}
+                                                className={`w-full text-left px-4 py-2.5 text-xs font-bold transition-colors ${
+                                                    filterOutlet === o 
+                                                        ? 'bg-primary/10 text-primary' 
+                                                        : 'text-foreground hover:bg-surface-alt hover:text-primary'
+                                                }`}
+                                            >
+                                                {o === 'All' ? 'All Outlets' : o}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
                     </div>
 
                     <button
                         onClick={() => setIndividualModal(true)}
-                        className="px-4 py-2 bg-primary hover:bg-primary-dark text-white rounded-xl text-xs font-bold shadow-md hover:shadow-lg hover:shadow-primary/10 active:scale-95 transition-all"
+                        className="flex w-full sm:w-auto justify-center px-4 py-2 bg-primary hover:bg-primary-dark text-white rounded-xl text-xs font-bold shadow-md hover:shadow-lg hover:shadow-primary/10 active:scale-95 transition-all"
                     >
                         Create Pay Slip
                     </button>
                 </div>
 
-                <div className="flex items-center gap-3">
-                    <div className="relative w-60">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-450" />
+                <div className="flex items-center flex-col sm:flex-row gap-3">
+                    <div className="relative w-full sm:w-60">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
                         <input
                             type="text"
                             placeholder="Search employee name..."
-                            className="w-full pl-9 pr-4 py-2 rounded-xl bg-slate-50 dark:bg-slate-750 border border-slate-200 dark:border-slate-700 text-xs font-semibold text-slate-700 dark:text-slate-200 focus:ring-2 focus:ring-primary/10 focus:border-primary outline-none transition-all placeholder-slate-400"
+                            className="w-full pl-9 pr-4 py-2 rounded-xl bg-surface border border-border/40 text-xs font-semibold text-foreground focus:ring-2 focus:ring-primary/10 focus:border-primary outline-none transition-all placeholder-text-muted"
                             value={searchTerm}
                             onChange={e => setSearchTerm(e.target.value)}
                         />
@@ -507,36 +642,36 @@ export default function PayrollManager() {
 
                     <button
                         onClick={exportCSV}
-                        className="flex items-center gap-1.5 px-3 py-2 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-755 text-slate-750 dark:text-slate-200 rounded-xl text-xs font-bold transition-all shadow-sm active:scale-95"
+                        className="flex w-full sm:w-auto items-center justify-center gap-1.5 px-3 py-2 border border-border/40 hover:bg-surface-alt text-foreground rounded-xl text-xs font-bold transition-all shadow-sm active:scale-95"
                     >
-                        <Download className="w-3.5 h-3.5 text-slate-405" />
+                        <Download className="w-3.5 h-3.5 text-text-muted" />
                         Export
                     </button>
                 </div>
             </div>
 
             {/* Payroll Sheet Table */}
-            <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200/80 dark:border-slate-700 shadow-sm overflow-hidden relative min-h-[300px] transition-colors">
+            <div className="bg-surface rounded-2xl border border-border/40 shadow-sm overflow-hidden relative min-h-[300px] transition-colors">
 
                 {loading && (
-                    <div className="absolute inset-0 z-10 bg-white/70 dark:bg-slate-800/70 backdrop-blur-[1px] flex items-center justify-center">
-                        <div className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-750 rounded-xl border border-slate-100 dark:border-slate-700 shadow-md">
+                    <div className="absolute inset-0 z-10 bg-surface/70 backdrop-blur-[1px] flex items-center justify-center">
+                        <div className="flex items-center gap-2 px-4 py-2 bg-surface-alt rounded-xl border border-border/40 shadow-md">
                             <RefreshCw className="w-4 h-4 text-primary animate-spin" />
-                            <span className="text-xs font-bold text-slate-500 dark:text-slate-450 uppercase tracking-widest animate-pulse">Syncing Payroll...</span>
+                            <span className="text-xs font-bold text-text-muted uppercase tracking-widest animate-pulse">Syncing Payroll...</span>
                         </div>
                     </div>
                 )}
 
-                <div className="overflow-x-auto">
-                    <table className="w-full text-left border-collapse">
+                <div className="overflow-x-auto w-full max-w-[100vw]">
+                    <table className="w-full text-left border-collapse min-w-[900px]">
                         <thead>
-                            <tr className="bg-slate-50/50 dark:bg-slate-800/60 border-b border-slate-150 dark:border-slate-750 text-left">
-                                <th className="px-6 py-4 text-[10px] font-extrabold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Employee Details</th>
-                                <th className="px-6 py-4 text-[10px] font-extrabold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Attendance Cycle</th>
-                                <th className="px-6 py-4 text-[10px] font-extrabold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Base Salary</th>
-                                <th className="px-6 py-4 text-[10px] font-extrabold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Net Settlement</th>
-                                <th className="px-6 py-4 text-[10px] font-extrabold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Status</th>
-                                <th className="px-6 py-4 text-[10px] font-extrabold text-slate-400 dark:text-slate-500 uppercase tracking-widest text-right">Actions</th>
+                            <tr className="bg-surface-alt border-b border-border/40 text-left">
+                                <th className="px-6 py-4 text-[10px] font-extrabold text-text-muted uppercase tracking-widest whitespace-nowrap">Employee Details</th>
+                                <th className="px-6 py-4 text-[10px] font-extrabold text-text-muted uppercase tracking-widest whitespace-nowrap">Attendance Cycle</th>
+                                <th className="px-6 py-4 text-[10px] font-extrabold text-text-muted uppercase tracking-widest whitespace-nowrap">Base Salary</th>
+                                <th className="px-6 py-4 text-[10px] font-extrabold text-text-muted uppercase tracking-widest whitespace-nowrap">Net Settlement</th>
+                                <th className="px-6 py-4 text-[10px] font-extrabold text-text-muted uppercase tracking-widest whitespace-nowrap">Status</th>
+                                <th className="px-6 py-4 text-[10px] font-extrabold text-text-muted uppercase tracking-widest text-right whitespace-nowrap">Actions</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-100 dark:divide-slate-750/50">

@@ -43,6 +43,7 @@ import BookingModal from '../../components/admin/BookingModal';
 import MiniCalendar from '../../components/admin/MiniCalendar';
 import { useAuth } from '../../contexts/AuthContext';
 import { maskPhone } from '../../utils/phoneUtils';
+import CustomDropdown from '../../components/common/CustomDropdown';
 
 const statusColors = {
     upcoming: 'bg-blue-50 dark:bg-blue-950/30 text-blue-600 dark:text-blue-400 border-blue-100 dark:border-blue-900',
@@ -337,20 +338,38 @@ export default function BookingsPage() {
                 </div>
 
                 <div className="flex flex-wrap items-center gap-2 w-full xl:w-auto">
-                    {[
-                        { value: dateFilter, onChange: setDateFilter, options: [{ v: 'all', l: 'All Dates' }, { v: 'today', l: 'Today' }, { v: 'week', l: 'Week' }, { v: 'month', l: 'Month' }] },
-                        { value: staffFilter, onChange: setStaffFilter, options: [{ v: 'all', l: 'All Staff' }, ...staff.map(s => ({ v: s._id, l: s.name }))] },
-                        { value: statusFilter, onChange: setStatusFilter, options: [{ v: 'all', l: 'All Status' }, { v: 'pending', l: 'Pending' }, { v: 'confirmed', l: 'Confirmed' }, { v: 'completed', l: 'Completed' }, { v: 'cancelled', l: 'Cancelled' }] }
-                    ].map((sel, idx) => (
-                        <select
-                            key={idx}
-                            className="px-3 py-2.5 border border-border bg-surface text-[9px] font-black uppercase tracking-wider outline-none focus:border-primary cursor-pointer transition-all text-text"
-                            value={sel.value}
-                            onChange={(e) => sel.onChange(e.target.value)}
-                        >
-                            {sel.options.map(opt => <option key={opt.v} value={opt.v}>{opt.l.toUpperCase()}</option>)}
-                        </select>
-                    ))}
+                    <CustomDropdown
+                        value={dateFilter}
+                        onChange={setDateFilter}
+                        options={[
+                            { value: 'all', label: 'ALL DATES' },
+                            { value: 'today', label: 'TODAY' },
+                            { value: 'week', label: 'WEEK' },
+                            { value: 'month', label: 'MONTH' }
+                        ]}
+                        className="w-full xl:w-40"
+                    />
+                    <CustomDropdown
+                        value={staffFilter}
+                        onChange={setStaffFilter}
+                        options={[
+                            { value: 'all', label: 'ALL STAFF' },
+                            ...staff.map(s => ({ value: s._id, label: s.name.toUpperCase() }))
+                        ]}
+                        className="w-full xl:w-40"
+                    />
+                    <CustomDropdown
+                        value={statusFilter}
+                        onChange={setStatusFilter}
+                        options={[
+                            { value: 'all', label: 'ALL STATUS' },
+                            { value: 'pending', label: 'PENDING' },
+                            { value: 'confirmed', label: 'CONFIRMED' },
+                            { value: 'completed', label: 'COMPLETED' },
+                            { value: 'cancelled', label: 'CANCELLED' }
+                        ]}
+                        className="w-full xl:w-40"
+                    />
                 </div>
             </div>
 
@@ -360,9 +379,9 @@ export default function BookingsPage() {
                     Loading bookings...
                 </div>
             ) : view === 'calendar' ? (
-                <div className="flex bg-surface-alt border border-border overflow-hidden shadow-lg h-[700px] animate-reveal">
+                <div className="flex flex-col lg:flex-row bg-surface-alt border border-border overflow-hidden shadow-lg lg:h-[700px] animate-reveal">
                     {/* Calendar Sidebar */}
-                    <div className="w-72 bg-surface flex flex-col border-r border-border">
+                    <div className="w-full lg:w-72 shrink-0 bg-surface flex flex-col border-b lg:border-b-0 lg:border-r border-border">
                         <div className="p-5 border-b border-border bg-surface-alt/50">
                             <h3 className="text-[10px] font-black text-text uppercase tracking-widest flex items-center gap-2">
                                 <Calendar className="w-3.5 h-3.5 text-primary" />
@@ -433,7 +452,7 @@ export default function BookingsPage() {
                         </div>
                     </div>
 
-                    <div className="flex-1 flex flex-col bg-background">
+                    <div className="flex-1 flex flex-col bg-background min-h-[500px] lg:min-h-0">
                         <BookingCalendar
                             bookings={filteredBookings}
                             staff={staff}

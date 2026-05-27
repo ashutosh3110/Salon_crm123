@@ -346,7 +346,7 @@ export default function SettingsPage({ section: propSection }) {
                                 <p className="text-xs text-text-muted font-medium mt-1">Your login identity (saved on the server).</p>
                             </div>
 
-                            <div className="flex items-center gap-6 p-6 rounded-2xl bg-surface-alt/10 border border-border">
+                            <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6 p-6 rounded-2xl bg-surface-alt/10 border border-border text-center sm:text-left">
                                 <div 
                                     onClick={handleAvatarClick}
                                     className={`w-24 h-24 rounded-2xl bg-primary/5 flex items-center justify-center text-2xl font-bold text-primary border border-primary/20 shadow-sm relative overflow-hidden group cursor-pointer hover:border-primary transition-all ${isUploading ? 'animate-pulse' : ''}`}
@@ -387,13 +387,13 @@ export default function SettingsPage({ section: propSection }) {
                                         accept="image/*"
                                     />
                                 </div>
-                                <div className="space-y-2">
+                                <div className="space-y-2 w-full flex flex-col items-center sm:items-start">
                                     <h3 className="font-bold text-2xl text-text leading-tight tracking-tight">{user?.name || '—'}</h3>
-                                    <div className="flex flex-wrap items-center gap-2">
+                                    <div className="flex flex-col sm:flex-row items-center gap-2">
                                         <p className="text-[11px] font-bold text-primary uppercase tracking-wider inline-flex items-center px-3 py-1 rounded-full bg-primary/10 border border-primary/20">
                                             {user?.role || 'ADMIN'}
                                         </p>
-                                        <p className="text-[10px] font-bold text-text-muted uppercase tracking-widest px-3 py-1 bg-surface border border-border rounded-full">
+                                        <p className="text-[10px] font-bold text-text-muted uppercase tracking-widest px-3 py-1 bg-surface border border-border rounded-full break-all">
                                             {user?.email}
                                         </p>
                                     </div>
@@ -671,7 +671,7 @@ export default function SettingsPage({ section: propSection }) {
                                 <label className="text-[10px] font-black text-text-muted uppercase tracking-widest mb-3 block">
                                     Add a new term or condition
                                 </label>
-                                <div className="flex gap-3">
+                                <div className="flex flex-col sm:flex-row gap-3">
                                     <input
                                         type="text"
                                         value={newTerm}
@@ -683,7 +683,7 @@ export default function SettingsPage({ section: propSection }) {
                                     <button
                                         type="button"
                                         onClick={handleAddTerm}
-                                        className="px-5 py-3 bg-primary text-primary-foreground rounded-xl font-bold text-xs uppercase tracking-widest shadow-lg shadow-primary/20 hover:shadow-primary/30 active:scale-95 transition-all flex items-center gap-2 shrink-0"
+                                        className="px-5 py-3 bg-primary text-primary-foreground rounded-xl font-bold text-xs uppercase tracking-widest shadow-lg shadow-primary/20 hover:shadow-primary/30 active:scale-95 transition-all flex items-center justify-center gap-2 shrink-0 w-full sm:w-auto"
                                     >
                                         <Plus className="w-4 h-4" /> Add
                                     </button>
@@ -758,14 +758,14 @@ export default function SettingsPage({ section: propSection }) {
                                         ))}
                                     </div>
 
-                                    <div className="flex items-center justify-between pt-4 border-t border-border">
+                                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pt-4 border-t border-border">
                                         <p className="text-[10px] font-bold text-text-muted">
                                             {termsList.length} term{termsList.length !== 1 ? 's' : ''} — will appear as an ordered list on invoices
                                         </p>
                                         <button
                                             type="submit"
                                             disabled={isSaving}
-                                            className="px-8 py-3.5 bg-primary text-primary-foreground rounded-xl font-bold text-xs uppercase tracking-widest shadow-xl shadow-primary/20 disabled:opacity-50 hover:shadow-primary/30 active:scale-95 transition-all"
+                                            className="px-8 py-3.5 w-full sm:w-auto bg-primary text-primary-foreground rounded-xl font-bold text-xs uppercase tracking-widest shadow-xl shadow-primary/20 disabled:opacity-50 hover:shadow-primary/30 active:scale-95 transition-all text-center"
                                         >
                                             {isSaving ? 'Saving…' : 'Save Terms & Conditions'}
                                         </button>

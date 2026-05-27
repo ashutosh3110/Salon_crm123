@@ -344,7 +344,7 @@ export default function SuperAdminLayout() {
                 .dark [role="dialog"] [class*="text-text-secondary"],
                 .dark .fixed.inset-0 .text-text-secondary,
                 .dark .fixed.inset-0 [class*="text-text-secondary"] {
-                    color: #94a3b8 !important; /* slate-400 */
+                    color: #e6e8bff!important; /* slate-400 */
                 }
 
                 .dark .sa-panel .text-text-muted,
@@ -355,7 +355,7 @@ export default function SuperAdminLayout() {
                 .dark [role="dialog"] [class*="text-text-muted"],
                 .dark .fixed.inset-0 .text-text-muted,
                 .dark .fixed.inset-0 [class*="text-text-muted"] {
-                    color: #64748b !important; /* slate-500 */
+                    color: #e6e8bff !important; /* slate-500 */
                 }
 
                 /* Ensure dark mode input placeholders and borders are clearly visible */
@@ -393,7 +393,7 @@ export default function SuperAdminLayout() {
 
                 /* --- Spacious & Beautiful Tables in Dark Mode --- */
                 .dark .sa-panel table th {
-                    color: #94a3b8 !important; /* slate-400 */
+                    color: #e6e8bff!important; /* slate-400 */
                     background-color: #121826 !important; /* slate-900 */
                     border-bottom: 2px solid rgba(255, 255, 255, 0.08) !important;
                 }
@@ -407,7 +407,7 @@ export default function SuperAdminLayout() {
 
                 /* --- Form Controls in Dark Mode --- */
                 .dark .sa-panel label {
-                    color: #94a3b8 !important; /* slate-400 */
+                    color: #e6e8bff!important; /* slate-400 */
                 }
                 .dark .sa-panel input:focus, 
                 .dark .sa-panel select:focus, 
@@ -422,7 +422,7 @@ export default function SuperAdminLayout() {
                     stroke: rgba(255, 255, 255, 0.08) !important;
                 }
                 .dark .sa-panel .recharts-text {
-                    fill: #94a3b8 !important;
+                    fill: #e6e8bff!important;
                 }
                  .sa-panel .recharts-legend-item-text {
                     color: #cbd5e1 !important;
@@ -696,7 +696,7 @@ export default function SuperAdminLayout() {
                 .dark .sa-panel table td span[class*="bg-slate-50"] {
                     background-color: rgba(148, 163, 184, 0.12) !important;
                     border-color: rgba(148, 163, 184, 0.2) !important;
-                    color: #94a3b8 !important;
+                    color: #e6e8bff!important;
                 }
                 /* Table header white/slate bg */
                 .dark .sa-panel table thead tr[class*="bg-slate-50"],

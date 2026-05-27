@@ -379,7 +379,7 @@ export default function RemindersPage() {
                             </div>
                             <div className="space-y-6">
                                 <h2 className="text-2xl font-black uppercase italic text-left">Action Hub</h2>
-                                <div className="bg-white border-2 border-text overflow-hidden">
+                                <div className="bg-white border-2 border-text overflow-x-auto">
                                      <table className="w-full text-left font-black">
                                         <thead className="bg-surface uppercase text-[9px] border-b-2 border-text">
                                             <tr><th className="p-4">Client</th><th className="p-4">Protocol</th><th className="p-4 text-right">Action</th></tr>

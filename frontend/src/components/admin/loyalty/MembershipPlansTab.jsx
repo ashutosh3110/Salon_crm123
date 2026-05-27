@@ -91,7 +91,7 @@ export default function MembershipPlansTab() {
 
     return (
         <div className="space-y-8 italic">
-            <div className="flex justify-between items-center text-left">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center text-left gap-4">
                 <div className="flex items-center gap-3">
                     <div className="w-1.5 h-8 bg-primary" />
                     <div>
@@ -101,7 +101,7 @@ export default function MembershipPlansTab() {
                 </div>
                 <button
                     onClick={() => { setEditingPlan(null); setShowModal(true); }}
-                    className="flex items-center gap-2 px-6 py-3 bg-primary text-white font-black text-xs uppercase tracking-widest hover:scale-105 transition-all shadow-xl shadow-primary/20"
+                    className="flex items-center justify-center gap-2 px-6 py-3 bg-primary text-white font-black text-xs uppercase tracking-widest hover:scale-105 transition-all shadow-xl shadow-primary/20 w-full sm:w-auto"
                 >
                     <Plus className="w-4 h-4" /> Create New Plan
                 </button>

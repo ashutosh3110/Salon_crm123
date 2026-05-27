@@ -76,7 +76,7 @@ export default function SAAnalyticsPage() {
             const params = {};
             if (startDate) params.startDate = startDate;
             if (endDate) params.endDate = endDate;
-            
+
             const res = await api.get('/dashboard/superadmin/analytics', { params });
             if (res.data.success) {
                 setData(res.data.data);
@@ -167,7 +167,7 @@ export default function SAAnalyticsPage() {
 
     const { kpis, growth, planDistribution, geoDistribution } = data;
 
-    const COLORS = ['#B4912B', '#DFCE9D', '#94a3b8', '#64748b', '#475569'];
+    const COLORS = ['#B4912B', '#DFCE9D', '#94a3b8', '#e6e8bff', '#475569'];
 
     return (
         <div className="space-y-6 pb-8">
@@ -212,11 +212,10 @@ export default function SAAnalyticsPage() {
                         <button
                             key={p.key}
                             onClick={() => applyPreset(p.key)}
-                            className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all border ${
-                                activePreset === p.key
+                            className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all border ${activePreset === p.key
                                     ? 'bg-primary text-white border-primary shadow-md shadow-primary/20 scale-95'
                                     : 'bg-white text-text-secondary border-border hover:border-primary/45 hover:text-primary hover:bg-primary/5'
-                            }`}
+                                }`}
                         >
                             {p.label}
                         </button>
@@ -299,16 +298,16 @@ export default function SAAnalyticsPage() {
                         <div className="flex flex-col items-center">
                             <div className="w-full min-w-0 overflow-hidden">
                                 <ResponsiveContainer width="100%" height={200} minWidth={0}>
-                                <PieChart>
-                                    <Pie data={planDistribution} cx="50%" cy="50%" innerRadius={60} outerRadius={80} paddingAngle={5} dataKey="value" stroke="none">
-                                        {planDistribution.map((entry, index) => (
-                                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                                        ))}
-                                    </Pie>
-                                    <Tooltip tooltip={CustomTooltip} />
-                                </PieChart>
-                            </ResponsiveContainer>
-                    </div>
+                                    <PieChart>
+                                        <Pie data={planDistribution} cx="50%" cy="50%" innerRadius={60} outerRadius={80} paddingAngle={5} dataKey="value" stroke="none">
+                                            {planDistribution.map((entry, index) => (
+                                                <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                                            ))}
+                                        </Pie>
+                                        <Tooltip tooltip={CustomTooltip} />
+                                    </PieChart>
+                                </ResponsiveContainer>
+                            </div>
                             <div className="w-full mt-4 space-y-2">
                                 {planDistribution.map((p, index) => (
                                     <div key={p.name} className="flex items-center justify-between text-xs">

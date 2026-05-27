@@ -215,7 +215,7 @@ export default function BaseRoleLayout({ SidebarComponent, title, accentColor = 
                 html:not(.dark) .admin-panel button:has(svg.lucide-eye):not(aside *):hover,
                 html:not(.dark) .admin-panel button:has(svg.lucide-edit):not(aside *):hover {
                     background-color: #f8fafc !important;
-                    border-color: #94a3b8 !important;
+                    border-color: #e6e8bff!important;
                     color: #0f172a !important;
                     transform: translateY(-1px) !important;
                 }
@@ -245,12 +245,12 @@ export default function BaseRoleLayout({ SidebarComponent, title, accentColor = 
                     color: #ffffff !important;
                 }
                 .dark .admin-panel label {
-                    color: #94a3b8 !important;
+                    color: #e6e8bff!important;
                 }
                 .dark .admin-panel table th {
                     background-color: #121826 !important;
                     border-bottom: 2px solid rgba(255, 255, 255, 0.08) !important;
-                    color: #94a3b8 !important;
+                    color: #e6e8bff!important;
                 }
                 .dark .admin-panel table td {
                     color: #cbd5e1 !important;
@@ -333,7 +333,7 @@ export default function BaseRoleLayout({ SidebarComponent, title, accentColor = 
 
                         {/* Notifications */}
                         <div className="relative" ref={notificationRef}>
-                            <button 
+                            <button
                                 onClick={() => setShowNotifications(!showNotifications)}
                                 className={`relative w-10 h-10 sm:w-11 sm:h-11 flex items-center justify-center transition-all border border-border/40 ${showNotifications ? 'bg-primary text-white' : 'bg-surface dark:bg-surface-alt hover:bg-surface-alt text-text-secondary'}`}
                             >
@@ -358,7 +358,7 @@ export default function BaseRoleLayout({ SidebarComponent, title, accentColor = 
                                                 <p className="text-[9px] font-bold text-text-muted uppercase tracking-widest">{unreadCount} Unread Alerts</p>
                                             </div>
                                             <div className="flex items-center gap-2">
-                                                <button 
+                                                <button
                                                     onClick={markAllRead}
                                                     className="text-[9px] font-black text-primary uppercase tracking-widest hover:underline"
                                                 >
@@ -380,29 +380,28 @@ export default function BaseRoleLayout({ SidebarComponent, title, accentColor = 
                                                     <p className="text-[10px] font-black text-text-muted uppercase tracking-widest leading-relaxed">No Recent Notifications Found In Sector</p>
                                                 </div>
                                             ) : notifications.map((n) => (
-                                                <div 
-                                                    key={n._id} 
+                                                <div
+                                                    key={n._id}
                                                     onClick={() => {
                                                         if (!n.isRead) markAsRead(n._id);
                                                     }}
                                                     className={`px-5 py-4 hover:bg-surface-alt/50 transition-colors border-b border-border/10 last:border-0 group cursor-pointer ${!n.isRead ? 'bg-primary/[0.02]' : 'opacity-60'}`}
                                                 >
                                                     <div className="flex gap-4">
-                                                        <div className={`mt-1 w-8 h-8 flex items-center justify-center border ${
-                                                            n.type?.includes('warning') || n.type?.includes('low') ? 'bg-amber-500/10 border-amber-500/20 text-amber-500' :
-                                                            n.type?.includes('confirm') || n.type?.includes('success') || n.type?.includes('payment') ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-500' :
-                                                            'bg-primary/10 border-primary/20 text-primary'
-                                                        }`}>
+                                                        <div className={`mt-1 w-8 h-8 flex items-center justify-center border ${n.type?.includes('warning') || n.type?.includes('low') ? 'bg-amber-500/10 border-amber-500/20 text-amber-500' :
+                                                                n.type?.includes('confirm') || n.type?.includes('success') || n.type?.includes('payment') ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-500' :
+                                                                    'bg-primary/10 border-primary/20 text-primary'
+                                                            }`}>
                                                             {!n.isRead && <span className="absolute -top-1 -right-1 w-2 h-2 bg-rose-500 border-2 border-surface" />}
                                                             {n.type?.includes('warning') || n.type?.includes('low') ? <AlertTriangle className="w-4 h-4" /> :
-                                                             n.type?.includes('confirm') || n.type?.includes('success') || n.type?.includes('payment') ? <CheckCircle2 className="w-4 h-4" /> :
-                                                             <Info className="w-4 h-4" />}
+                                                                n.type?.includes('confirm') || n.type?.includes('success') || n.type?.includes('payment') ? <CheckCircle2 className="w-4 h-4" /> :
+                                                                    <Info className="w-4 h-4" />}
                                                         </div>
                                                         <div className="flex-1">
                                                             <div className="flex items-center justify-between mb-1">
                                                                 <h4 className={`text-[11px] font-black uppercase tracking-tight text-text transition-colors ${!n.isRead ? 'group-hover:text-primary' : 'text-text-muted'}`}>{n.title}</h4>
                                                                 <span className="flex items-center gap-1 text-[9px] font-bold text-text-muted">
-                                                                    <Clock className="w-2.5 h-2.5" /> 
+                                                                    <Clock className="w-2.5 h-2.5" />
                                                                     {new Date(n.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                                                 </span>
                                                             </div>

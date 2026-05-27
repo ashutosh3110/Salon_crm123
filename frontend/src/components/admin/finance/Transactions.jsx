@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
@@ -11,6 +11,7 @@ import {
     Calendar, 
     ChevronLeft, 
     ChevronRight, 
+    ChevronDown,
     RefreshCw, 
     X, 
     DollarSign, 
@@ -23,6 +24,63 @@ import { useBusiness } from '../../../contexts/BusinessContext';
 
 function todayIso() {
     return new Date().toISOString().split('T')[0];
+}
+
+function CustomDropdown({ value, onChange, options, placeholder, icon: Icon }) {
+    const [isOpen, setIsOpen] = useState(false);
+    const ref = useRef(null);
+    useEffect(() => {
+        const handleClickOutside = (e) => {
+            if (ref.current && !ref.current.contains(e.target)) setIsOpen(false);
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
+    return (
+        <div className="relative w-full sm:w-auto" ref={ref}>
+            <button
+                onClick={() => setIsOpen(!isOpen)}
+                className="flex items-center justify-between w-full sm:min-w-[140px] gap-2 bg-surface border border-border/40 rounded-xl px-3 py-1.5 shadow-sm text-xs transition-colors hover:bg-surface-alt active:scale-[0.98]"
+            >
+                <div className="flex items-center gap-2">
+                    {Icon && <Icon className="w-3.5 h-3.5 text-text-muted" />}
+                    <span className="font-bold text-foreground">
+                        {options.find(o => o.value === value)?.label || placeholder}
+                    </span>
+                </div>
+                <ChevronDown className={`w-3.5 h-3.5 text-text-muted transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
+            </button>
+            <AnimatePresence>
+                {isOpen && (
+                    <motion.div
+                        initial={{ opacity: 0, y: -5, scale: 0.95 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: -5, scale: 0.95 }}
+                        transition={{ duration: 0.15 }}
+                        className="absolute left-0 mt-2 w-full sm:w-48 bg-surface border border-border/40 rounded-xl shadow-lg z-[100] overflow-hidden"
+                    >
+                        <div className="py-1 max-h-60 overflow-y-auto custom-scrollbar">
+                            <button
+                                onClick={() => { onChange(''); setIsOpen(false); }}
+                                className={`w-full text-left px-4 py-2.5 text-xs font-bold transition-colors ${!value ? 'bg-primary/10 text-primary' : 'text-foreground hover:bg-surface-alt hover:text-primary'}`}
+                            >
+                                {placeholder}
+                            </button>
+                            {options.map(o => (
+                                <button
+                                    key={o.value}
+                                    onClick={() => { onChange(o.value); setIsOpen(false); }}
+                                    className={`w-full text-left px-4 py-2.5 text-xs font-bold transition-colors ${value === o.value ? 'bg-primary/10 text-primary' : 'text-foreground hover:bg-surface-alt hover:text-primary'}`}
+                                >
+                                    {o.label}
+                                </button>
+                            ))}
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+        </div>
+    );
 }
 
 export default function Transactions({ outletId }) {
@@ -214,47 +272,47 @@ export default function Transactions({ outletId }) {
             </div>
 
             {/* Filters Bar */}
-            <div className="px-8 py-5 border-b border-border bg-surface/10 flex flex-wrap gap-4 items-center">
-                <div className="flex items-center gap-2 text-text-muted text-xs font-bold uppercase tracking-wider">
+            <div className="px-8 py-5 border-b border-border bg-surface-alt flex flex-col sm:flex-row flex-wrap gap-4 items-stretch sm:items-center">
+                <div className="flex items-center gap-2 text-text-muted text-xs font-bold uppercase tracking-wider mb-2 sm:mb-0">
                     <Filter className="w-3.5 h-3.5" />
                     <span>Filters:</span>
                 </div>
 
-                <select
+                <CustomDropdown
                     value={filterType}
-                    onChange={(e) => { setFilterType(e.target.value); setPage(1); }}
-                    className="px-3 py-1.5 bg-white border border-border rounded-lg text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-primary/10"
-                >
-                    <option value="">All Types</option>
-                    <option value="income">Income</option>
-                    <option value="expense">Expense</option>
-                </select>
+                    onChange={(v) => { setFilterType(v); setPage(1); }}
+                    options={[
+                        { value: 'income', label: 'Income' },
+                        { value: 'expense', label: 'Expense' }
+                    ]}
+                    placeholder="All Types"
+                />
 
-                <select
+                <CustomDropdown
                     value={filterAccount}
-                    onChange={(e) => { setFilterAccount(e.target.value); setPage(1); }}
-                    className="px-3 py-1.5 bg-white border border-border rounded-lg text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-primary/10"
-                >
-                    <option value="">All Accounts</option>
-                    <option value="cash">Cash</option>
-                    <option value="bank">Bank</option>
-                </select>
+                    onChange={(v) => { setFilterAccount(v); setPage(1); }}
+                    options={[
+                        { value: 'cash', label: 'Cash' },
+                        { value: 'bank', label: 'Bank' }
+                    ]}
+                    placeholder="All Accounts"
+                />
 
-                <div className="flex items-center gap-2">
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full sm:w-auto">
                     <input
                         type="date"
                         value={filterStart}
                         placeholder="Start Date"
                         onChange={(e) => { setFilterStart(e.target.value); setPage(1); }}
-                        className="px-3 py-1.5 bg-white border border-border rounded-lg text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-primary/10"
+                        className="px-3 py-1.5 bg-surface border border-border/40 text-foreground rounded-lg text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-primary/10 w-full sm:w-auto"
                     />
-                    <span className="text-text-muted text-xs font-bold">to</span>
+                    <span className="text-text-muted text-xs font-bold text-center sm:text-left">to</span>
                     <input
                         type="date"
                         value={filterEnd}
                         placeholder="End Date"
                         onChange={(e) => { setFilterEnd(e.target.value); setPage(1); }}
-                        className="px-3 py-1.5 bg-white border border-border rounded-lg text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-primary/10"
+                        className="px-3 py-1.5 bg-surface border border-border/40 text-foreground rounded-lg text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-primary/10 w-full sm:w-auto"
                     />
                 </div>
 
@@ -283,7 +341,7 @@ export default function Transactions({ outletId }) {
                         <span>Loading transactions...</span>
                     </div>
                 ) : transactions.length === 0 ? (
-                    <div className="py-20 border border-dashed border-border rounded-3xl flex flex-col justify-center items-center text-center p-8 bg-surface/5">
+                    <div className="py-20 border border-dashed border-border rounded-3xl flex flex-col justify-center items-center text-center p-8 bg-surface-alt">
                         <ArrowDownUp className="w-12 h-12 text-text-muted mb-4 opacity-55" />
                         <h4 className="text-base font-bold text-text">No Transactions Found</h4>
                         <p className="text-xs text-text-secondary max-w-sm mt-1">
@@ -291,7 +349,7 @@ export default function Transactions({ outletId }) {
                         </p>
                     </div>
                 ) : (
-                    <div className="bg-white border border-border rounded-2xl overflow-hidden shadow-sm">
+                    <div className="bg-surface border border-border rounded-2xl overflow-hidden shadow-sm">
                         <div className="overflow-x-auto">
                             <table className="w-full text-left border-collapse">
                                 <thead>
@@ -414,22 +472,22 @@ export default function Transactions({ outletId }) {
                                 initial={{ opacity: 0, scale: 0.95 }} 
                                 animate={{ opacity: 1, scale: 1 }} 
                                 exit={{ opacity: 0, scale: 0.95 }}
-                                className="bg-white dark:bg-slate-800 border border-slate-205 dark:border-slate-700 w-full max-w-lg shadow-2xl rounded-3xl relative flex flex-col max-h-[90vh] transition-all text-left"
+                                className="bg-surface border border-border/40 w-full max-w-lg shadow-2xl rounded-3xl relative flex flex-col max-h-[90vh] transition-all text-left"
                                 onClick={e => e.stopPropagation()}
                             >
                                 {/* Modal Header */}
-                                <div className="p-6 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center bg-white dark:bg-slate-800 rounded-t-3xl">
+                                <div className="p-6 border-b border-border/40 flex justify-between items-center bg-surface rounded-t-3xl">
                                     <div>
-                                        <h3 className="text-base font-black text-slate-850 dark:text-slate-100 uppercase tracking-widest flex items-center gap-2">
+                                        <h3 className="text-base font-black text-foreground uppercase tracking-widest flex items-center gap-2">
                                             <ArrowDownUp className="w-5 h-5 text-primary" />
                                             Record New Transaction
                                         </h3>
-                                        <p className="text-[10px] text-slate-400 font-bold uppercase mt-1 tracking-wider">Lejhar entries manual add karein.</p>
+                                        <p className="text-[10px] text-text-muted font-bold uppercase mt-1 tracking-wider">Lejhar entries manual add karein.</p>
                                     </div>
                                     <button
                                         type="button"
                                         onClick={() => setIsOpen(false)}
-                                        className="p-2 text-slate-400 hover:text-rose-500 rounded-full hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+                                        className="p-2 text-text-muted hover:text-rose-500 rounded-full hover:bg-surface-alt transition-colors"
                                     >
                                         <X className="w-5 h-5" />
                                     </button>
@@ -444,7 +502,7 @@ export default function Transactions({ outletId }) {
                                     )}
 
                                     {/* Mode Selector tabs */}
-                                    <div className="grid grid-cols-4 gap-2 p-1 bg-slate-100 dark:bg-slate-700/60 border border-slate-200/40 dark:border-slate-600 rounded-xl">
+                                    <div className="grid grid-cols-4 gap-2 p-1 bg-surface-alt border border-border/40 rounded-xl">
                                         {[
                                             { key: 'income', label: 'Income' },
                                             { key: 'expense', label: 'Expense' },
@@ -457,8 +515,8 @@ export default function Transactions({ outletId }) {
                                                 onClick={() => setTxnMode(item.key)}
                                                 className={`py-2 text-[10px] font-extrabold uppercase tracking-wider rounded-lg transition-all ${
                                                     txnMode === item.key
-                                                        ? 'bg-white dark:bg-slate-800 text-slate-850 dark:text-slate-100 shadow-sm'
-                                                        : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'
+                                                        ? 'bg-surface text-foreground shadow-sm border border-border/40'
+                                                        : 'text-text-muted hover:text-foreground'
                                                 }`}
                                             >
                                                 {item.label}
@@ -469,39 +527,39 @@ export default function Transactions({ outletId }) {
                                     {/* Dynamic Category select */}
                                     {txnMode === 'income' && (
                                         <div className="space-y-1">
-                                            <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-1">Category</label>
+                                            <label className="text-[9px] font-black text-text-muted uppercase tracking-widest block mb-1">Category</label>
                                             <select
                                                 value={category}
                                                 onChange={(e) => setCategory(e.target.value)}
-                                                className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-750 border border-slate-205 dark:border-slate-700 rounded-xl text-xs font-bold text-slate-900 dark:text-slate-100 focus:border-primary outline-none cursor-pointer"
+                                                className="w-full px-4 py-3 bg-surface border border-border/40 rounded-xl text-xs font-bold text-foreground focus:border-primary outline-none cursor-pointer"
                                             >
-                                                <option value="Other Income" className="bg-white dark:bg-slate-800">Other Income</option>
-                                                <option value="Service Revenue" className="bg-white dark:bg-slate-800">Service Revenue (Non-POS)</option>
-                                                <option value="Product Sale" className="bg-white dark:bg-slate-800">Product Sale (Non-POS)</option>
+                                                <option value="Other Income" className="bg-surface">Other Income</option>
+                                                <option value="Service Revenue" className="bg-surface">Service Revenue (Non-POS)</option>
+                                                <option value="Product Sale" className="bg-surface">Product Sale (Non-POS)</option>
                                             </select>
                                         </div>
                                     )}
 
                                     {txnMode === 'expense' && (
                                         <div className="space-y-1">
-                                            <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-1">Category</label>
+                                            <label className="text-[9px] font-black text-text-muted uppercase tracking-widest block mb-1">Category</label>
                                             <select
                                                 value={category}
                                                 onChange={(e) => setCategory(e.target.value)}
-                                                className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-750 border border-slate-205 dark:border-slate-700 rounded-xl text-xs font-bold text-slate-900 dark:text-slate-100 focus:border-primary outline-none cursor-pointer"
+                                                className="w-full px-4 py-3 bg-surface border border-border/40 rounded-xl text-xs font-bold text-foreground focus:border-primary outline-none cursor-pointer"
                                             >
-                                                <option value="Other Expense" className="bg-white dark:bg-slate-800">Other Expense</option>
-                                                <option value="Rent" className="bg-white dark:bg-slate-800">Rent</option>
-                                                <option value="Utilities" className="bg-white dark:bg-slate-800">Utilities</option>
-                                                <option value="Salaries & Wages" className="bg-white dark:bg-slate-800">Salaries & Wages</option>
-                                                <option value="Marketing" className="bg-white dark:bg-slate-800">Marketing Expense</option>
+                                                <option value="Other Expense" className="bg-surface">Other Expense</option>
+                                                <option value="Rent" className="bg-surface">Rent</option>
+                                                <option value="Utilities" className="bg-surface">Utilities</option>
+                                                <option value="Salaries & Wages" className="bg-surface">Salaries & Wages</option>
+                                                <option value="Marketing" className="bg-surface">Marketing Expense</option>
                                             </select>
                                         </div>
                                     )}
 
                                     {txnMode === 'transfer' && (
                                         <div className="space-y-1">
-                                            <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-1">Transfer Mode</label>
+                                            <label className="text-[9px] font-black text-text-muted uppercase tracking-widest block mb-1">Transfer Mode</label>
                                             <select
                                                 value={category}
                                                 onChange={(e) => {
@@ -514,24 +572,24 @@ export default function Transactions({ outletId }) {
                                                         setPaymentMethod('bank_transfer');
                                                     }
                                                 }}
-                                                className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-750 border border-slate-205 dark:border-slate-700 rounded-xl text-xs font-bold text-slate-900 dark:text-slate-100 focus:border-primary outline-none cursor-pointer"
+                                                className="w-full px-4 py-3 bg-surface border border-border/40 rounded-xl text-xs font-bold text-foreground focus:border-primary outline-none cursor-pointer"
                                             >
-                                                <option value="Bank Deposit" className="bg-white dark:bg-slate-800">Deposit Cash to Bank (Cash → Bank)</option>
-                                                <option value="Bank Withdrawal" className="bg-white dark:bg-slate-800">Withdraw Cash from Bank (Bank → Cash)</option>
+                                                <option value="Bank Deposit" className="bg-surface">Deposit Cash to Bank (Cash → Bank)</option>
+                                                <option value="Bank Withdrawal" className="bg-surface">Withdraw Cash from Bank (Bank → Cash)</option>
                                             </select>
                                         </div>
                                     )}
 
                                     {txnMode === 'equity' && (
                                         <div className="space-y-1">
-                                            <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-1">Owner Action</label>
+                                            <label className="text-[9px] font-black text-text-muted uppercase tracking-widest block mb-1">Owner Action</label>
                                             <select
                                                 value={category}
                                                 onChange={(e) => setCategory(e.target.value)}
-                                                className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-750 border border-slate-205 dark:border-slate-700 rounded-xl text-xs font-bold text-slate-900 dark:text-slate-100 focus:border-primary outline-none cursor-pointer"
+                                                className="w-full px-4 py-3 bg-surface border border-border/40 rounded-xl text-xs font-bold text-foreground focus:border-primary outline-none cursor-pointer"
                                             >
-                                                <option value="Owner Investment" className="bg-white dark:bg-slate-800">Owner Investment (Equity Inflow)</option>
-                                                <option value="Owner Withdrawal" className="bg-white dark:bg-slate-800">Owner Withdrawal (Drawings Outflow)</option>
+                                                <option value="Owner Investment" className="bg-surface">Owner Investment (Equity Inflow)</option>
+                                                <option value="Owner Withdrawal" className="bg-surface">Owner Withdrawal (Drawings Outflow)</option>
                                             </select>
                                         </div>
                                     )}
@@ -539,29 +597,29 @@ export default function Transactions({ outletId }) {
                                     <div className="grid grid-cols-2 gap-4">
                                         {/* Amount */}
                                         <div className="space-y-1">
-                                            <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-1">Amount</label>
+                                            <label className="text-[9px] font-black text-text-muted uppercase tracking-widest block mb-1">Amount</label>
                                             <div className="relative">
-                                                <span className="absolute left-4 top-1/2 -translate-y-1/2 font-black text-slate-450 dark:text-slate-500">₹</span>
+                                                <span className="absolute left-4 top-1/2 -translate-y-1/2 font-black text-text-muted">₹</span>
                                                 <input
                                                     type="number"
                                                     value={amount}
                                                     required
                                                     onChange={(e) => setAmount(e.target.value)}
                                                     placeholder="1,000"
-                                                    className="w-full pl-10 pr-4 py-3 bg-slate-50 dark:bg-slate-750 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-bold text-slate-900 dark:text-slate-100 focus:border-primary outline-none"
+                                                    className="w-full pl-10 pr-4 py-3 bg-surface border border-border/40 rounded-xl text-xs font-bold text-foreground focus:border-primary outline-none"
                                                 />
                                             </div>
                                         </div>
 
                                         {/* Date */}
                                         <div className="space-y-1">
-                                            <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-1">Date</label>
+                                            <label className="text-[9px] font-black text-text-muted uppercase tracking-widest block mb-1">Date</label>
                                             <input
                                                 type="date"
                                                 value={date}
                                                 required
                                                 onChange={(e) => setDate(e.target.value)}
-                                                className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-750 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-bold text-slate-900 dark:text-slate-100 focus:border-primary outline-none cursor-pointer"
+                                                className="w-full px-4 py-3 bg-surface border border-border/40 rounded-xl text-xs font-bold text-foreground focus:border-primary outline-none cursor-pointer"
                                             />
                                         </div>
                                     </div>
@@ -569,7 +627,7 @@ export default function Transactions({ outletId }) {
                                     {/* Payment Mode */}
                                     {txnMode !== 'transfer' && (
                                         <div className="space-y-1">
-                                            <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-1">Payment Mode</label>
+                                            <label className="text-[9px] font-black text-text-muted uppercase tracking-widest block mb-1">Payment Mode</label>
                                             <select
                                                 value={accountType === 'cash' ? 'cash' : 'online'}
                                                 onChange={(e) => {
@@ -582,17 +640,17 @@ export default function Transactions({ outletId }) {
                                                         setPaymentMethod('online');
                                                     }
                                                 }}
-                                                className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-750 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-bold text-slate-900 dark:text-slate-100 focus:border-primary outline-none cursor-pointer"
+                                                className="w-full px-4 py-3 bg-surface border border-border/40 rounded-xl text-xs font-bold text-foreground focus:border-primary outline-none cursor-pointer"
                                             >
-                                                <option value="cash" className="bg-white dark:bg-slate-800">Cash</option>
-                                                <option value="online" className="bg-white dark:bg-slate-800">Online (UPI / QR / Card / Bank Transfer)</option>
+                                                <option value="cash" className="bg-surface">Cash</option>
+                                                <option value="online" className="bg-surface">Online (UPI / QR / Card / Bank Transfer)</option>
                                             </select>
                                         </div>
                                     )}
 
                                     {/* Help Info Box for Bank transfers */}
                                     {txnMode === 'transfer' && (
-                                        <div className="p-3.5 bg-blue-50/70 dark:bg-blue-900/10 border border-blue-200/50 dark:border-blue-800/30 text-blue-750 dark:text-blue-300 rounded-2xl flex items-start gap-2.5 text-xs font-bold leading-normal">
+                                        <div className="p-3.5 bg-blue-500/10 border border-blue-500/20 text-blue-500 rounded-2xl flex items-start gap-2.5 text-xs font-bold leading-normal">
                                             <Info className="w-4 h-4 shrink-0 mt-0.5" />
                                             <p>
                                                 Iss double-entry transfer se automatically do records banenge: Cash account se outflow aur Bank account me inflow (ya vice-versa).
@@ -602,15 +660,15 @@ export default function Transactions({ outletId }) {
 
                                     {/* Outlet select dropdown */}
                                     <div className="space-y-1">
-                                        <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-1">Outlet</label>
+                                        <label className="text-[9px] font-black text-text-muted uppercase tracking-widest block mb-1">Outlet</label>
                                         <select
                                             value={formOutletId}
                                             onChange={(e) => setFormOutletId(e.target.value)}
-                                            className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-750 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-bold text-slate-900 dark:text-slate-100 focus:border-primary outline-none cursor-pointer"
+                                            className="w-full px-4 py-3 bg-surface border border-border/40 rounded-xl text-xs font-bold text-foreground focus:border-primary outline-none cursor-pointer"
                                         >
-                                            <option value="" className="bg-white dark:bg-slate-800">All Outlets / Not Specified</option>
+                                            <option value="" className="bg-surface">All Outlets / Not Specified</option>
                                             {outlets.map((o) => (
-                                                <option key={o._id || o.id} value={o._id || o.id} className="bg-white dark:bg-slate-800">
+                                                <option key={o._id || o.id} value={o._id || o.id} className="bg-surface">
                                                     {o.name}
                                                 </option>
                                             ))}
@@ -619,29 +677,29 @@ export default function Transactions({ outletId }) {
 
                                     {/* Description */}
                                     <div className="space-y-1">
-                                        <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-1">Remarks</label>
+                                        <label className="text-[9px] font-black text-text-muted uppercase tracking-widest block mb-1">Remarks</label>
                                         <textarea
                                             value={description}
                                             onChange={(e) => setDescription(e.target.value)}
                                             placeholder="e.g. Rent payment, Electricity bill, Staff salary..."
-                                            className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-750 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-medium text-slate-900 dark:text-slate-100 focus:border-primary outline-none resize-none placeholder-slate-400"
+                                            className="w-full px-4 py-3 bg-surface border border-border/40 rounded-xl text-xs font-medium text-foreground focus:border-primary outline-none resize-none placeholder-text-muted"
                                             rows={2}
                                         />
                                     </div>
 
                                     {/* Action Buttons */}
-                                    <div className="pt-4 border-t border-slate-100 dark:border-slate-700 flex gap-3">
+                                    <div className="pt-4 border-t border-border/40 flex gap-3">
                                         <button
                                             type="button"
                                             onClick={() => setIsOpen(false)}
-                                            className="flex-1 py-3 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-350 text-xs font-bold rounded-xl hover:bg-slate-50 dark:hover:bg-slate-755 transition-colors"
+                                            className="flex-1 py-3 border border-border/40 text-text-muted text-xs font-bold rounded-xl hover:bg-surface-alt transition-colors"
                                         >
                                             Cancel
                                         </button>
                                         <button
                                             type="submit"
                                             disabled={saving}
-                                            className="flex-1 py-3 bg-slate-900 text-white hover:bg-primary text-xs font-bold rounded-xl hover:shadow-lg hover:shadow-primary/20 transition-all disabled:opacity-55"
+                                            className="flex-1 py-3 bg-text text-surface hover:bg-primary text-xs font-bold rounded-xl hover:shadow-lg hover:shadow-primary/20 transition-all disabled:opacity-55"
                                         >
                                             {saving ? 'Saving...' : 'Save Entry'}
                                         </button>

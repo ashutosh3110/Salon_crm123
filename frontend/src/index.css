@@ -528,7 +528,7 @@
   --sidebar-accent-foreground: hsl(240 5.9% 10%);
   --sidebar-border: hsl(220 13% 91%);
   --sidebar-ring: hsl(217.2 91.2% 59.8%);
-  --color-text-muted: #64748B;
+  --color-text-muted: #e6e8bff;
 }
 
 .dark {
@@ -1043,16 +1043,20 @@ html:not(.dark) .fixed.inset-0 button[type="submit"]:hover {
 .bg-slate-900 h3 *,
 [class*="bg-slate-900"] h3,
 [class*="bg-slate-900"] h3 * {
-    color: #fb7185 !important; /* Beautiful high-contrast rose color for heading */
+  color: #fb7185 !important;
+  /* Beautiful high-contrast rose color for heading */
 }
+
 .bg-slate-900 span,
 .bg-slate-900 label,
 .bg-slate-900 p,
 [class*="bg-slate-900"] span,
 [class*="bg-slate-900"] label,
 [class*="bg-slate-900"] p {
-    color: #ffffff !important; /* Crisp white for labels and indicators */
+  color: #ffffff !important;
+  /* Crisp white for labels and indicators */
 }
+
 .bg-slate-900 .text-emerald-500,
 html:not(.dark) .admin-panel .bg-slate-900 .text-emerald-400,
 html:not(.dark) .admin-panel .bg-slate-900 .text-rose-500,
@@ -1119,15 +1123,19 @@ html:not(.dark) .commission-dark-card .commission-status-text {
 html:not(.dark) .commission-dark-card .bg-rose-500 {
   background-color: #f43f5e !important;
 }
+
 html:not(.dark) .commission-dark-card .bg-slate-700 {
   background-color: #334155 !important;
 }
+
 html:not(.dark) .commission-dark-card .bg-white {
   background-color: #ffffff !important;
 }
+
 html:not(.dark) .commission-dark-card .text-slate-900 {
   color: #0f172a !important;
 }
+
 html:not(.dark) .commission-dark-card input,
 html:not(.dark) .admin-panel .commission-dark-card input,
 html:not(.dark) [role="dialog"] .commission-dark-card input,
@@ -1136,6 +1144,7 @@ html:not(.dark) .fixed.inset-0 .commission-dark-card input {
   background-color: #ffffff !important;
   border-color: rgba(0, 0, 0, 0.15) !important;
 }
+
 html:not(.dark) .commission-dark-card input::placeholder {
   color: rgba(0, 0, 0, 0.4) !important;
 }
@@ -1170,7 +1179,8 @@ html:not(.dark) .fixed.inset-0 .modal-close-btn svg {
 html:not(.dark) .admin-panel .modal-close-btn:hover,
 html:not(.dark) [role="dialog"] .modal-close-btn:hover,
 html:not(.dark) .fixed.inset-0 .modal-close-btn:hover {
-  background-color: #ffe4e6 !important; /* Soft rose background on hover */
+  background-color: #ffe4e6 !important;
+  /* Soft rose background on hover */
   color: #f43f5e !important;
 }
 
@@ -1187,7 +1197,8 @@ html:not(.dark) .fixed.inset-0 .modal-close-btn:hover svg {
 .admin-panel .pos-quick-action-card,
 html:not(.dark) .admin-panel .pos-quick-action-card,
 html:not(.dark) .pos-quick-action-card {
-  background-color: #0f172a !important; /* Rich deep slate background for premium high-contrast contrast in both modes */
+  background-color: #0f172a !important;
+  /* Rich deep slate background for premium high-contrast contrast in both modes */
   border: 1px solid rgba(255, 255, 255, 0.1) !important;
 }
 
@@ -1267,6 +1278,7 @@ html:not(.dark) .pos-billing-close-btn {
   transition: all 0.2s ease !important;
   box-shadow: none !important;
 }
+
 .pos-billing-close-btn svg,
 html:not(.dark) .admin-panel .pos-billing-close-btn svg,
 html:not(.dark) .pos-billing-close-btn svg {
@@ -1275,12 +1287,14 @@ html:not(.dark) .pos-billing-close-btn svg {
   width: 20px !important;
   height: 20px !important;
 }
+
 .pos-billing-close-btn:hover,
 html:not(.dark) .admin-panel .pos-billing-close-btn:hover,
 html:not(.dark) .pos-billing-close-btn:hover {
   background-color: #f43f5e !important;
   border-color: #f43f5e !important;
 }
+
 .pos-billing-close-btn:hover svg,
 html:not(.dark) .admin-panel .pos-billing-close-btn:hover svg,
 html:not(.dark) .pos-billing-close-btn:hover svg {
@@ -1292,21 +1306,27 @@ html:not(.dark) .pos-billing-close-btn:hover svg {
 .pos-stock-alert-banner,
 html:not(.dark) .admin-panel .pos-stock-alert-banner,
 html:not(.dark) .pos-stock-alert-banner {
-  background-color: #fffbeb !important; /* Warm amber light bg for light mode */
+  background-color: #fffbeb !important;
+  /* Warm amber light bg for light mode */
   border: 1px solid #fde68a !important;
 }
+
 .dark .pos-stock-alert-banner {
-  background-color: rgba(120, 53, 15, 0.2) !important; /* Deep rich dark amber bg for dark mode */
+  background-color: rgba(120, 53, 15, 0.2) !important;
+  /* Deep rich dark amber bg for dark mode */
   border: 1px solid rgba(245, 158, 11, 0.3) !important;
 }
 
 .pos-stock-alert-title,
 html:not(.dark) .admin-panel .pos-stock-alert-title,
 html:not(.dark) .pos-stock-alert-title {
-  color: #78350f !important; /* Dark amber text for maximum contrast in light mode */
+  color: #78350f !important;
+  /* Dark amber text for maximum contrast in light mode */
 }
+
 .dark .pos-stock-alert-title {
-  color: #fbbf24 !important; /* Beautiful gold text in dark mode */
+  color: #fbbf24 !important;
+  /* Beautiful gold text in dark mode */
 }
 
 .pos-stock-alert-desc,
@@ -1314,6 +1334,7 @@ html:not(.dark) .admin-panel .pos-stock-alert-desc,
 html:not(.dark) .pos-stock-alert-desc {
   color: #92400e !important;
 }
+
 .dark .pos-stock-alert-desc {
   color: #f3f4f6 !important;
 }
@@ -1327,11 +1348,13 @@ html:not(.dark) .pos-stock-alert-btn {
   border: 1px solid #78350f !important;
   transition: all 0.2s ease !important;
 }
+
 .dark .pos-stock-alert-btn {
   background-color: rgba(251, 191, 36, 0.2) !important;
   color: #fbbf24 !important;
   border: 1px solid rgba(251, 191, 36, 0.3) !important;
 }
+
 .pos-stock-alert-btn:hover,
 html:not(.dark) .admin-panel .pos-stock-alert-btn:hover,
 html:not(.dark) .pos-stock-alert-btn:hover {
@@ -1339,6 +1362,7 @@ html:not(.dark) .pos-stock-alert-btn:hover {
   border-color: #92400e !important;
   color: #ffffff !important;
 }
+
 .dark .pos-stock-alert-btn:hover {
   background-color: #fbbf24 !important;
   color: #000000 !important;
@@ -1351,16 +1375,19 @@ html:not(.dark) .pos-stock-alert-close {
   border-color: rgba(120, 53, 15, 0.2) !important;
   color: #78350f !important;
 }
+
 .dark .pos-stock-alert-close {
   border-color: rgba(251, 191, 36, 0.2) !important;
   color: #fbbf24 !important;
 }
+
 .pos-stock-alert-close:hover,
 html:not(.dark) .admin-panel .pos-stock-alert-close:hover,
 html:not(.dark) .pos-stock-alert-close:hover {
   background-color: rgba(120, 53, 15, 0.1) !important;
   color: #78350f !important;
 }
+
 .dark .pos-stock-alert-close:hover {
   background-color: rgba(251, 191, 36, 0.1) !important;
   color: #fbbf24 !important;
@@ -1382,20 +1409,23 @@ html:not(.dark) .pos-billing-cart-total-box *,
 .pos-billing-cart-total-box span,
 .pos-billing-cart-total-box p,
 .pos-billing-cart-total-box * {
-  color: #ffffff !important; /* Force white text for subtotal, total, numbers */
+  color: #ffffff !important;
+  /* Force white text for subtotal, total, numbers */
 }
 
 /* Accent colors inside total box */
 html:not(.dark) .admin-panel .pos-billing-cart-total-box .text-emerald-400,
 html:not(.dark) .pos-billing-cart-total-box .text-emerald-400,
 .pos-billing-cart-total-box .text-emerald-400 {
-  color: #34d399 !important; /* Force emerald green for TOTAL label, discount, etc. */
+  color: #34d399 !important;
+  /* Force emerald green for TOTAL label, discount, etc. */
 }
 
 html:not(.dark) .admin-panel .pos-billing-cart-total-box .text-rose-400,
 html:not(.dark) .pos-billing-cart-total-box .text-rose-400,
 .pos-billing-cart-total-box .text-rose-400 {
-  color: #fb7185 !important; /* Force rose red for dues, overpaid */
+  color: #fb7185 !important;
+  /* Force rose red for dues, overpaid */
 }
 
 /* Portal Modals Input text visibility overrides in Light Mode */
@@ -1443,7 +1473,7 @@ button[class*="bg-emerald-"] * {
 
 /* Search bar placeholder and input text in admin panels - light mode */
 html:not(.dark) .admin-panel input[type="text"]::placeholder {
-  color: #94a3b8 !important;
+  color: #e6e8bff !important;
 }
 
 /* Fix select text color in light mode globally - prevents white-on-white issue */
@@ -1480,6 +1510,113 @@ html:not(.dark) select option {
 
 .dark input::placeholder,
 .dark textarea::placeholder {
-  color: #64748b !important;
+  color: #e6e8bff !important;
 }
-
+
+/* Global Mobile Responsiveness - Scale down everything proportionally on mobile screens */
+@media (max-width: 768px) {
+  html {
+    font-size: 14px;
+    /* 12.5% smaller globally on tablets/large phones */
+  }
+
+  /* Super Admin Panel specific mobile compacting */
+  .sa-panel .text-2xl,
+  .sa-panel h1 {
+    font-size: 1.25rem !important;
+    line-height: 1.5rem !important;
+  }
+
+  .sa-panel .text-xl,
+  .sa-panel h2 {
+    font-size: 1.125rem !important;
+    line-height: 1.5rem !important;
+  }
+
+  .sa-panel .text-lg,
+  .sa-panel h3 {
+    font-size: 1rem !important;
+    line-height: 1.25rem !important;
+  }
+
+  .sa-panel .text-base,
+  .sa-panel p {
+    font-size: 0.875rem !important;
+    line-height: 1.25rem !important;
+  }
+
+  .sa-panel .p-4,
+  .sa-panel .p-5,
+  .sa-panel .p-6,
+  .sa-panel .p-8 {
+    padding: 0.75rem !important;
+  }
+
+  .sa-panel .gap-4,
+  .sa-panel .gap-5,
+  .sa-panel .gap-6,
+  .sa-panel .gap-8 {
+    gap: 0.5rem !important;
+  }
+
+  .sa-panel table th,
+  .sa-panel table td {
+    padding: 0.5rem !important;
+    font-size: 0.75rem !important;
+  }
+
+  .sa-panel .w-11 {
+    width: 2rem !important;
+    height: 2rem !important;
+  }
+
+  .sa-panel .h-11 {
+    width: 2rem !important;
+    height: 2rem !important;
+  }
+
+  .sa-panel svg.w-5 {
+    width: 1rem !important;
+    height: 1rem !important;
+  }
+}
+
+@media (max-width: 480px) {
+  html {
+    font-size: 12px;
+    /* 25% smaller globally on normal/small phones */
+  }
+
+  /* Ultra compact Super Admin on small phones */
+  .sa-panel .text-2xl,
+  .sa-panel h1 {
+    font-size: 1.125rem !important;
+    line-height: 1.25rem !important;
+  }
+
+  .sa-panel .text-xl,
+  .sa-panel h2 {
+    font-size: 1rem !important;
+    line-height: 1.25rem !important;
+  }
+
+  .sa-panel .text-lg,
+  .sa-panel h3 {
+    font-size: 0.875rem !important;
+    line-height: 1.125rem !important;
+  }
+
+  .sa-panel .text-sm {
+    font-size: 0.7rem !important;
+  }
+
+  .sa-panel .text-xs {
+    font-size: 0.65rem !important;
+  }
+
+  .sa-panel [class*="text-["] {
+    font-size: 0.65rem !important;
+  }
+
+  /* Override hardcoded pixels */
+}
