@@ -92,7 +92,7 @@ export default function LoyaltyMembershipPage({ tab: initialTab = 'plans' }) {
                             {isActive && (
                                 <motion.div
                                     layoutId="activeTabGlow"
-                                    className="absolute inset-0 bg-white/10 rounded-xl"
+                                    className="absolute inset-0 bg-[#ffffff1a] rounded-xl"
                                 />
                             )}
                         </button>

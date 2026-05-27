@@ -311,22 +311,22 @@ function MarketingHubContent() {
                                 initial={{ opacity: 0, scale: 0.95, y: 20 }}
                                 animate={{ opacity: 1, scale: 1, y: 0 }}
                                 exit={{ opacity: 0, scale: 0.95, y: 20 }}
-                                className="bg-white rounded-[2rem] border border-slate-200 w-full max-w-lg shadow-2xl relative overflow-hidden flex flex-col max-h-[90vh] md:max-h-[85vh]"
+                                className="bg-white dark:bg-slate-900 rounded-[2rem] border border-slate-200 dark:border-slate-800 w-full max-w-lg shadow-2xl relative overflow-hidden flex flex-col max-h-[90vh] md:max-h-[85vh]"
                             >
                                 {/* Form Side */}
                                 <div className="flex-1 flex flex-col min-h-0">
-                                    <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between shrink-0">
+                                    <div className="px-5 py-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between shrink-0">
                                         <div>
-                                            <h3 className="text-base font-black text-slate-900 uppercase tracking-tight">Create {activeTab === 'whatsapp' ? 'WhatsApp' : 'Push'} Campaign</h3>
+                                            <h3 className="text-base font-black text-slate-900 dark:text-white uppercase tracking-tight">Create {activeTab === 'whatsapp' ? 'WhatsApp' : 'Push'} Campaign</h3>
                                             <p className="text-[8px] text-slate-400 font-bold uppercase tracking-widest mt-1">Fill details and send instantly</p>
                                         </div>
                                         {!isSending && (
                                             <div
                                                 role="button"
                                                 onClick={() => setIsCampaignModalOpen(false)}
-                                                className="p-2 hover:bg-slate-100 rounded-full transition-colors cursor-pointer flex items-center justify-center"
+                                                className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors cursor-pointer flex items-center justify-center"
                                             >
-                                                <XCircle className="w-6 h-6 text-slate-400" />
+                                                <XCircle className="w-6 h-6 text-slate-400 dark:text-slate-500" />
                                             </div>
                                         )}
                                     </div>
@@ -344,12 +344,12 @@ function MarketingHubContent() {
                                                             className="text-primary"
                                                         />
                                                     </svg>
-                                                    <div className="absolute inset-0 flex items-center justify-center text-2xl font-black text-slate-900">
+                                                    <div className="absolute inset-0 flex items-center justify-center text-2xl font-black text-slate-900 dark:text-white">
                                                         {Math.round(sendingProgress)}%
                                                     </div>
                                                 </div>
                                                 <div>
-                                                    <h3 className="text-xl font-black text-slate-900 uppercase tracking-tight">Sending Messages...</h3>
+                                                    <h3 className="text-xl font-black text-slate-900 dark:text-white uppercase tracking-tight">Sending Messages...</h3>
                                                     <p className="text-sm text-slate-400 mt-2 font-medium">Processing campaign for your selected audience...</p>
                                                 </div>
                                             </div>
@@ -361,7 +361,7 @@ function MarketingHubContent() {
                                                     <input
                                                         type="text"
                                                         placeholder={activeTab === 'whatsapp' ? 'e.g. Summer Offer' : 'Notification Title...'}
-                                                        className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-black uppercase tracking-tight focus:outline-none focus:border-primary transition-all text-slate-900"
+                                                        className="w-full bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-sm font-black uppercase tracking-tight focus:outline-none focus:border-primary transition-all text-slate-900 dark:text-white"
                                                         value={campaignForm.name}
                                                         onChange={(e) => setCampaignForm({ ...campaignForm, name: e.target.value })}
                                                     />
@@ -382,16 +382,16 @@ function MarketingHubContent() {
                                                                 className={`p-3 rounded-xl border-2 transition-all text-left flex items-center gap-3 ${
                                                                     campaignForm.type === t.id
                                                                         ? 'border-primary bg-primary/5'
-                                                                        : 'border-slate-200 hover:border-slate-300 bg-white'
+                                                                        : 'border-slate-200 hover:border-slate-300 bg-white dark:border-slate-700 dark:hover:border-slate-600 dark:bg-slate-800/50'
                                                                 }`}
                                                             >
                                                                 <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${
-                                                                    campaignForm.type === t.id ? 'bg-primary text-white' : 'bg-slate-100 text-slate-400'
+                                                                    campaignForm.type === t.id ? 'bg-primary text-white' : 'bg-slate-100 text-slate-400 dark:bg-slate-800 dark:text-slate-300'
                                                                 }`}>
                                                                     <t.icon className="w-4 h-4" />
                                                                 </div>
                                                                 <div>
-                                                                    <div className="text-[10px] font-black text-slate-800 uppercase tracking-tight">{t.label}</div>
+                                                                    <div className="text-[10px] font-black text-slate-800 dark:text-white uppercase tracking-tight">{t.label}</div>
                                                                     <div className="text-[8px] text-slate-400 font-bold mt-0.5 uppercase tracking-wider">{t.desc}</div>
                                                                 </div>
                                                             </button>
@@ -399,14 +399,14 @@ function MarketingHubContent() {
                                                     </div>
 
                                                     {campaignForm.type === 'selective' && (
-                                                        <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 flex items-center justify-between">
+                                                        <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 flex items-center justify-between">
                                                             <div>
-                                                                <div className="text-sm font-black text-slate-900">{campaignForm.selectedCustomers.length} selected</div>
+                                                                <div className="text-sm font-black text-slate-900 dark:text-white">{campaignForm.selectedCustomers.length} selected</div>
                                                             </div>
                                                             <button
                                                                 type="button"
                                                                 onClick={() => setIsContactListOpen(true)}
-                                                                className="px-4 py-2 bg-white border border-slate-200 rounded-xl text-[10px] font-black text-primary uppercase tracking-widest hover:border-primary/50 transition-all"
+                                                                className="px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-[10px] font-black text-primary uppercase tracking-widest hover:border-primary/50 transition-all"
                                                             >
                                                                 Select Customers
                                                             </button>
@@ -420,7 +420,7 @@ function MarketingHubContent() {
                                                     <textarea
                                                         rows={3}
                                                         placeholder="Type your message here... (Use {{name}} for customer name)"
-                                                        className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary/20 resize-none transition-all text-slate-900"
+                                                        className="w-full bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary/20 resize-none transition-all text-slate-900 dark:text-white"
                                                         value={campaignForm.message}
                                                         onChange={(e) => setCampaignForm({ ...campaignForm, message: e.target.value })}
                                                     />
@@ -433,7 +433,7 @@ function MarketingHubContent() {
                                         )}
                                     </div>
 
-                                    <div className="p-5 border-t border-slate-100 bg-slate-50 shrink-0">
+                                    <div className="p-5 border-t border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 shrink-0">
                                         <button
                                             type="button"
                                             onClick={handleSendCampaign}

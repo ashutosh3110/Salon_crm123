@@ -1,6 +1,7 @@
 import { useState, useMemo, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import {
-    Plus, Search, LifeBuoy, MessageSquare, 
+    Plus, Search, LifeBuoy, MessageSquare,
     CheckCircle, Clock, AlertCircle, ChevronDown,
     Filter, Download, HelpCircle, ArrowRight, ArrowUpCircle,
     X, Send, RefreshCw, User as UserIcon, MoreHorizontal
@@ -212,13 +213,13 @@ export default function SupportPage() {
                 </div>
                 <div className="flex items-center gap-3">
                     <div className="flex bg-surface p-1 rounded-xl border border-border mr-2">
-                        <button 
+                        <button
                             onClick={() => setActiveTab('customer')}
                             className={`px-4 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'customer' ? 'bg-primary text-white shadow-md' : 'text-text-muted hover:text-text'}`}
                         >
                             Customer Issues
                         </button>
-                        <button 
+                        <button
                             onClick={() => setActiveTab('platform')}
                             className={`px-4 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'platform' ? 'bg-primary text-white shadow-md' : 'text-text-muted hover:text-text'}`}
                         >
@@ -304,8 +305,8 @@ export default function SupportPage() {
                                         filtered.map((t) => {
                                             const stStyle = STATUS_STYLES[t.status] || STATUS_STYLES.pending;
                                             return (
-                                                <tr 
-                                                    key={t._id} 
+                                                <tr
+                                                    key={t._id}
                                                     className="hover:bg-primary/[0.02] transition-colors group"
                                                 >
                                                     <td className="px-5 py-4 cursor-pointer" onClick={() => handleSelectTicket(t._id)}>
@@ -347,7 +348,7 @@ export default function SupportPage() {
                                                     <td className="px-5 py-4 text-right">
                                                         <div className="flex items-center justify-end gap-2">
                                                             {activeTab === 'customer' && t.status !== 'escalated' && t.status !== 'resolved' && t.status !== 'closed' && (
-                                                                <button 
+                                                                <button
                                                                     onClick={(e) => { e.stopPropagation(); handleEscalate(t._id); }}
                                                                     className="flex items-center gap-1.5 px-3 py-1 bg-rose-50 text-rose-600 border border-rose-200 text-[10px] font-bold uppercase tracking-wider rounded-lg hover:bg-rose-100 transition-all shadow-sm"
                                                                 >
@@ -405,9 +406,9 @@ export default function SupportPage() {
             </div>
 
             {/* Chat Detail Drawer */}
-            {selectedTicket && (
-                <div className="fixed inset-0 z-[60] overflow-hidden pointer-events-none">
-                    <div 
+            {selectedTicket && createPortal(
+                <div className="fixed inset-0 z-[9999] overflow-hidden pointer-events-none">
+                    <div
                         className="absolute inset-0 bg-black/20 backdrop-blur-[2px] transition-opacity pointer-events-auto cursor-pointer"
                         onClick={() => setSelectedTicket(null)}
                     />
@@ -432,7 +433,7 @@ export default function SupportPage() {
                                 {['admin', 'manager', 'superadmin'].includes(userRole) && (
                                     <div className="flex items-center gap-2 pr-4 border-r border-border mr-2">
                                         {selectedTicket.status !== 'resolved' && (
-                                            <button 
+                                            <button
                                                 onClick={() => handleUpdateStatus(selectedTicket._id, 'resolved')}
                                                 className="px-3 py-1.5 text-[9px] font-bold uppercase tracking-wider bg-emerald-50 text-emerald-600 border border-emerald-200 rounded-lg hover:bg-emerald-100 transition-all"
                                             >
@@ -440,7 +441,7 @@ export default function SupportPage() {
                                             </button>
                                         )}
                                         {selectedTicket.status !== 'closed' && (
-                                            <button 
+                                            <button
                                                 onClick={() => handleUpdateStatus(selectedTicket._id, 'closed')}
                                                 className="px-3 py-1.5 text-[9px] font-bold uppercase tracking-wider bg-slate-50 text-slate-600 border border-slate-200 rounded-lg hover:bg-slate-100 transition-all"
                                             >
@@ -486,7 +487,7 @@ export default function SupportPage() {
                                         {selectedTicket.responses?.map((msg, i) => {
                                             const isMe = msg.userId?._id === user?._id;
                                             const role = msg.userId?.role || 'user';
-                                            
+
                                             return (
                                                 <div key={i} className={`flex gap-3 ${isMe ? 'flex-row-reverse' : ''}`}>
                                                     {!isMe && (
@@ -504,11 +505,10 @@ export default function SupportPage() {
                                                             </span>
                                                             <span className="text-[9px] text-text-muted">{new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                                                         </div>
-                                                        <div className={`px-4 py-3 rounded-2xl shadow-sm text-[13px] font-medium leading-relaxed ${
-                                                            isMe 
-                                                                ? 'bg-text text-white rounded-tr-none' 
-                                                                : 'bg-white border border-border text-text-secondary rounded-tl-none'
-                                                        }`}>
+                                                        <div className={`px-4 py-3 rounded-2xl shadow-sm text-[13px] font-medium leading-relaxed ${isMe
+                                                            ? 'bg-text text-white rounded-tr-none'
+                                                            : 'bg-white border border-border text-text-secondary rounded-tl-none'
+                                                            }`}>
                                                             {msg.message}
                                                         </div>
                                                     </div>
@@ -548,7 +548,7 @@ export default function SupportPage() {
                                             <div className="text-[8px] font-bold bg-text text-white px-1 py-0.5 rounded uppercase">Enter</div>
                                         </div>
                                     </div>
-                                    <button 
+                                    <button
                                         type="submit"
                                         disabled={!reply.trim() || sending}
                                         className="w-12 h-12 bg-text text-white rounded-xl flex items-center justify-center hover:bg-primary transition-all active:scale-95 disabled:opacity-30 disabled:pointer-events-none"
@@ -568,22 +568,23 @@ export default function SupportPage() {
                             </div>
                         )}
                     </div>
-                </div>
+                </div>,
+                document.body
             )}
 
             {/* Modal */}
-            {showModal && (
-                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={() => setShowModal(false)}>
+            {showModal && createPortal(
+                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[9999] flex items-center justify-center p-4" onClick={() => setShowModal(false)}>
                     <div className="bg-white w-full max-w-md p-8 shadow-2xl relative border border-border overflow-hidden rounded-2xl" onClick={(e) => e.stopPropagation()}>
                         <div className="flex items-center gap-5 mb-8 pb-5 border-b border-border">
-                            <div className="w-12 h-12 bg-text text-white flex items-center justify-center rounded-xl">
-                                <LifeBuoy className="w-7 h-7" />
+                            <div className="w-12 h-12 flex items-center justify-center rounded-xl" style={{ backgroundColor: '#1e293b', color: '#ffffff' }}>
+                                <LifeBuoy className="w-7 h-7" style={{ color: '#ffffff' }} />
                             </div>
                             <div className="text-left">
                                 <h2 className="text-xl font-bold text-text leading-none transition-colors">New Support Request</h2>
                                 <p className="text-[11px] font-medium text-text-muted uppercase tracking-wider mt-2">
-                                    {['admin', 'superadmin', 'manager'].includes(user?.role?.toLowerCase()) 
-                                        ? 'Send a message to our support team' 
+                                    {['admin', 'superadmin', 'manager'].includes(user?.role?.toLowerCase())
+                                        ? 'Send a message to our support team'
                                         : 'Send a message to your manager'}
                                 </p>
                             </div>
@@ -592,20 +593,20 @@ export default function SupportPage() {
                         <form onSubmit={handleSubmit} className="space-y-5">
                             <div className="space-y-2 text-left">
                                 <label className="text-[11px] font-bold text-text-muted uppercase tracking-wider ml-1">Subject</label>
-                                <input 
-                                    type="text" 
-                                    value={form.subject} 
-                                    onChange={(e) => setForm({ ...form, subject: e.target.value })} 
-                                    required 
-                                    className="w-full px-4 py-3 bg-surface border border-border text-[13px] font-medium outline-none focus:border-primary rounded-xl transition-all" 
-                                    placeholder="Brief summary of the issue" 
+                                <input
+                                    type="text"
+                                    value={form.subject}
+                                    onChange={(e) => setForm({ ...form, subject: e.target.value })}
+                                    required
+                                    className="w-full px-4 py-3 bg-surface border border-border text-[13px] font-medium outline-none focus:border-primary rounded-xl transition-all"
+                                    placeholder="Brief summary of the issue"
                                 />
                             </div>
                             <div className="space-y-2 text-left">
                                 <label className="text-[11px] font-bold text-text-muted uppercase tracking-wider ml-1">Category</label>
-                                <select 
-                                    value={form.category} 
-                                    onChange={(e) => setForm({ ...form, category: e.target.value })} 
+                                <select
+                                    value={form.category}
+                                    onChange={(e) => setForm({ ...form, category: e.target.value })}
                                     className="w-full px-4 py-3 bg-surface border border-border text-[13px] font-bold outline-none focus:border-primary rounded-xl appearance-none cursor-pointer"
                                 >
                                     {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
@@ -613,24 +614,25 @@ export default function SupportPage() {
                             </div>
                             <div className="space-y-2 text-left">
                                 <label className="text-[11px] font-bold text-text-muted uppercase tracking-wider ml-1">Detailed Description</label>
-                                <textarea 
-                                    value={form.description} 
-                                    onChange={(e) => setForm({ ...form, description: e.target.value })} 
-                                    required 
-                                    className="w-full px-4 py-3 bg-surface border border-border text-[13px] font-medium outline-none focus:border-primary rounded-xl resize-none h-28 transition-all" 
-                                    placeholder="Explain your problem or request in detail..." 
+                                <textarea
+                                    value={form.description}
+                                    onChange={(e) => setForm({ ...form, description: e.target.value })}
+                                    required
+                                    className="w-full px-4 py-3 bg-surface border border-border text-[13px] font-medium outline-none focus:border-primary rounded-xl resize-none h-28 transition-all"
+                                    placeholder="Explain your problem or request in detail..."
                                 />
                             </div>
 
                             <div className="flex gap-4 pt-6 border-t border-border mt-2">
                                 <button type="button" onClick={() => setShowModal(false)} className="flex-1 py-3 text-[12px] font-bold uppercase tracking-wider text-text-muted hover:bg-surface rounded-xl transition-colors">Cancel</button>
-                                <button type="submit" className="flex-1 bg-text text-white py-3 shadow-lg flex items-center justify-center gap-2 hover:bg-primary rounded-xl transition-all active:scale-95">
-                                    <span className="text-[12px] font-bold uppercase tracking-wider">Submit Request</span>
+                                <button type="submit" className="flex-1 py-3 shadow-lg flex items-center justify-center gap-2 hover:bg-primary rounded-xl transition-all active:scale-95" style={{ backgroundColor: '#1e293b', color: '#ffffff' }}>
+                                    <span className="text-[12px] font-bold uppercase tracking-wider" style={{ color: '#ffffff' }}>Submit Request</span>
                                 </button>
                             </div>
                         </form>
                     </div>
-                </div>
+                </div>,
+                document.body
             )}
             {/* Toast Notification */}
             <AnimatePresence>
