@@ -21,6 +21,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import api from '../../services/api';
 import { toast } from 'react-hot-toast';
 import { maskPhone } from '../../utils/phoneUtils';
+import CustomDropdown from '../../components/common/CustomDropdown';
 
 export default function ConsultationsPage() {
     const { user } = useAuth();
@@ -229,36 +230,30 @@ export default function ConsultationsPage() {
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4 bg-surface p-5 border border-border shadow-sm">
                 <div className="space-y-1 text-left">
                     <label className="text-[9px] font-black text-text-muted uppercase tracking-wider block ml-1">Filter by Outlet</label>
-                    <div className="relative">
-                        <Store className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
-                        <select
-                            value={filterOutlet}
-                            onChange={(e) => setFilterOutlet(e.target.value)}
-                            className="w-full pl-9 pr-4 py-3 bg-surface-alt border border-border text-xs font-black uppercase tracking-wider outline-none cursor-pointer"
-                        >
-                            <option value="">All Outlets</option>
-                            {outlets.map(o => (
-                                <option key={o._id || o.id} value={o._id || o.id}>{o.name}</option>
-                            ))}
-                        </select>
-                    </div>
+                    <CustomDropdown
+                        value={filterOutlet}
+                        onChange={setFilterOutlet}
+                        options={[
+                            { value: '', label: 'ALL OUTLETS' },
+                            ...outlets.map(o => ({ value: o._id || o.id, label: o.name.toUpperCase() }))
+                        ]}
+                        className="w-full"
+                    />
                 </div>
 
                 <div className="space-y-1 text-left">
                     <label className="text-[9px] font-black text-text-muted uppercase tracking-wider block ml-1">Filter by Status</label>
-                    <div className="relative">
-                        <Filter className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
-                        <select
-                            value={filterStatus}
-                            onChange={(e) => setFilterStatus(e.target.value)}
-                            className="w-full pl-9 pr-4 py-3 bg-surface-alt border border-border text-xs font-black uppercase tracking-wider outline-none cursor-pointer"
-                        >
-                            <option value="">All Statuses</option>
-                            <option value="pending">Pending</option>
-                            <option value="in_progress">In Progress</option>
-                            <option value="completed">Completed</option>
-                        </select>
-                    </div>
+                    <CustomDropdown
+                        value={filterStatus}
+                        onChange={setFilterStatus}
+                        options={[
+                            { value: '', label: 'ALL STATUSES' },
+                            { value: 'pending', label: 'PENDING' },
+                            { value: 'in_progress', label: 'IN PROGRESS' },
+                            { value: 'completed', label: 'COMPLETED' }
+                        ]}
+                        className="w-full"
+                    />
                 </div>
 
                 {/* Free Text Search for Customer */}

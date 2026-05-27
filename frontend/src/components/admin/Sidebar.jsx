@@ -355,6 +355,33 @@ export default function Sidebar({ collapsed, setCollapsed, isHovered, setIsHover
                     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
                     font-style: normal !important;
                 }
+
+                /* Light Mode Specific Sidebar Icon & Text Visibility Overrides */
+                html:not(.dark) .sidebar-container svg {
+                    color: #000000 !important;
+                    stroke: #000000 !important;
+                    fill: none !important;
+                    opacity: 1 !important;
+                }
+
+                /* Active / Hover states for items in Light Mode */
+                html:not(.dark) .sidebar-container a:hover svg,
+                html:not(.dark) .sidebar-container button:hover svg {
+                    color: #000000 !important;
+                    stroke: #000000 !important;
+                }
+
+                /* Active elements with gold background must have solid black icons & text */
+                html:not(.dark) .sidebar-container a[class*="bg-[#B4912B]"] svg,
+                html:not(.dark) .sidebar-container button[class*="bg-[#B4912B]"] svg {
+                    color: #000000 !important;
+                    stroke: #000000 !important;
+                }
+
+                html:not(.dark) .sidebar-container a[class*="bg-[#B4912B]"] span,
+                html:not(.dark) .sidebar-container button[class*="bg-[#B4912B]"] span {
+                    color: #ffffff !important;
+                }
             `}</style>
 
 
@@ -419,12 +446,12 @@ export default function Sidebar({ collapsed, setCollapsed, isHovered, setIsHover
                                             ${effectiveCollapsed ? 'justify-center h-11 w-11 mx-auto' : 'px-4 py-3 gap-3'}
                                             ${active
                                                 ? 'bg-[#B4912B] text-white shadow-sm border border-[#B4912B]'
-                                                : 'border border-transparent text-[#e6e8bff] hover:bg-[#B4912B]/10 hover:text-[#B4912B]'
-                                            } ${isLocked ? 'opacity-40 grayscale !pointer-events-none !cursor-not-allowed !select-none' : ''}`}
+                                                : 'border border-transparent text-slate-500 hover:bg-[#B4912B]/10 hover:text-[#B4912B]'
+                                            } ${isLocked ? 'opacity-40 !pointer-events-none !cursor-not-allowed !select-none' : ''}`}
                                     >
                                         <div className="flex items-center gap-3">
                                             <item.icon
-                                                className={`w-5 h-5 shrink-0 ${active ? 'text-white' : 'text-[#e6e8bff] group-hover:text-[#B4912B]'}`}
+                                                className={`w-5 h-5 shrink-0 ${active ? 'text-white' : 'text-slate-500 group-hover:text-[#B4912B]'}`}
                                             />
                                             {!effectiveCollapsed && <span className="whitespace-nowrap font-bold">{item.label}</span>}
                                         </div>
@@ -466,10 +493,17 @@ export default function Sidebar({ collapsed, setCollapsed, isHovered, setIsHover
                                                             className={`flex items-center justify-between py-2.5 px-4 rounded-xl text-[13px] font-bold transition-all duration-200 relative
                                                                 ${isSubActive
                                                                     ? 'bg-[#B4912B] text-white shadow-sm'
-                                                                    : 'text-[#e6e8bff] dark:text-slate-400 hover:text-[#B4912B] hover:bg-[#B4912B]/10'
-                                                                } ${isLocked ? 'opacity-40 grayscale !pointer-events-none !cursor-not-allowed !select-none' : ''}`}
+                                                                    : 'text-slate-500 dark:text-slate-400 hover:text-[#B4912B] hover:bg-[#B4912B]/10'
+                                                                } ${isLocked ? 'opacity-40 !pointer-events-none !cursor-not-allowed !select-none' : ''}`}
                                                         >
-                                                            <span className="font-bold">{sub.label}</span>
+                                                            <div className="flex items-center gap-2.5">
+                                                                {sub.icon && (
+                                                                    <sub.icon
+                                                                        className={`w-4 h-4 shrink-0 ${isSubActive ? 'text-white' : 'text-slate-400 dark:text-slate-500 group-hover:text-[#B4912B]'}`}
+                                                                    />
+                                                                )}
+                                                                <span className="font-bold">{sub.label}</span>
+                                                            </div>
                                                             {!isLocked && sub.badge && (
                                                                 <span className={`px-1.5 py-0.5 rounded-md text-[9px] text-white font-semibold ${sub.badge.color}`}>
                                                                     {sub.badge.count}
@@ -494,8 +528,8 @@ export default function Sidebar({ collapsed, setCollapsed, isHovered, setIsHover
                                             ${effectiveCollapsed ? 'justify-center h-11 w-11 mx-auto' : 'px-4 py-3 gap-3'}
                                             ${currentActive
                                                 ? 'bg-[#B4912B] text-white shadow-sm border border-[#B4912B]'
-                                                : 'border border-transparent text-[#e6e8bff] dark:text-slate-400 hover:bg-[#B4912B]/10 hover:text-[#B4912B] dark:hover:text-[#C5A23C]'
-                                            } ${isLocked ? 'opacity-40 grayscale !pointer-events-none !cursor-not-allowed !select-none' : ''}`;
+                                                : 'border border-transparent text-slate-500 dark:text-slate-400 hover:bg-[#B4912B]/10 hover:text-[#B4912B] dark:hover:text-[#C5A23C]'
+                                            } ${isLocked ? 'opacity-40 !pointer-events-none !cursor-not-allowed !select-none' : ''}`;
                                     }}
                                 >
                                     {({ isActive: isItemActive }) => {
@@ -503,7 +537,7 @@ export default function Sidebar({ collapsed, setCollapsed, isHovered, setIsHover
                                         return (
                                             <>
                                                 <item.icon
-                                                    className={`w-5 h-5 shrink-0 ${currentActive ? 'text-white' : 'text-[#e6e8bff] group-hover:text-[#B4912B]'}`}
+                                                    className={`w-5 h-5 shrink-0 ${currentActive ? 'text-white' : 'text-slate-500 group-hover:text-[#B4912B]'}`}
                                                 />
                                                 {!effectiveCollapsed && (
                                                     <div className="flex items-center justify-between flex-1">
@@ -536,7 +570,7 @@ export default function Sidebar({ collapsed, setCollapsed, isHovered, setIsHover
                         </div>
                         <div className="flex-1 min-w-0">
                             <div className="text-xs font-bold text-[#0f172a] truncate">{user?.name || salon?.name || 'Admin'}</div>
-                            <div className="text-[10px] text-[#e6e8bff] truncate">{user?.email || 'admin@saloncrm.io'}</div>
+                            <div className="text-[10px] text-slate-500 truncate">{user?.email || 'admin@saloncrm.io'}</div>
                         </div>
                         <div className="w-2 h-2 rounded-full bg-emerald-400 shrink-0" title="Online" />
                     </div>
@@ -547,11 +581,11 @@ export default function Sidebar({ collapsed, setCollapsed, isHovered, setIsHover
             <div className={`border-t border-[#e2e8f0] dark:border-slate-700/50 ${effectiveCollapsed ? 'p-2' : 'px-4 py-3'}`}>
                 <button
                     onClick={logout}
-                    className={`flex items-center rounded-2xl text-[15px] font-bold text-[#e6e8bff] dark:text-slate-400 hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-600 transition-all duration-200 group cursor-pointer border-0
+                    className={`flex items-center rounded-2xl text-[15px] font-bold text-slate-500 dark:text-slate-400 hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-600 transition-all duration-200 group cursor-pointer border-0
                         ${effectiveCollapsed ? 'justify-center h-11 w-11 mx-auto relative' : 'w-full px-4 py-3 gap-3'}`}
                     title={effectiveCollapsed ? 'Logout' : undefined}
                 >
-                    <LogOut className="shrink-0 w-5 h-5 text-[#e6e8bff] dark:text-slate-400 group-hover:text-red-600 transition-colors" />
+                    <LogOut className="shrink-0 w-5 h-5 text-slate-500 dark:text-slate-400 group-hover:text-red-600 transition-colors" />
                     {!effectiveCollapsed && <span className="animate-in fade-in slide-in-from-left-2 duration-300 font-bold">Logout</span>}
                     {effectiveCollapsed && (
                         <div className="absolute left-[52px] px-2.5 py-1.5 rounded-lg bg-slate-900 dark:bg-surface-alt text-white text-[11px] whitespace-nowrap opacity-0 group-hover:opacity-100 pointer-events-none z-[100] shadow-xl transition-opacity border border-slate-700 dark:border-border">
@@ -574,7 +608,7 @@ export default function Sidebar({ collapsed, setCollapsed, isHovered, setIsHover
                 {/* Collapse toggle */}
                 <button
                     onClick={() => setCollapsed(!collapsed)}
-                    className="hidden lg:flex absolute -right-3 top-[28px] w-6 h-6 rounded-full bg-white border border-[#e2e8f0] items-center justify-center shadow-md hover:shadow-lg hover:scale-110 hover:text-[#0f172a] transition-all duration-200 z-50 cursor-pointer text-[#e6e8bff]"
+                    className="hidden lg:flex absolute -right-3 top-[28px] w-6 h-6 rounded-full bg-white border border-[#e2e8f0] items-center justify-center shadow-md hover:shadow-lg hover:scale-110 hover:text-[#0f172a] transition-all duration-200 z-50 cursor-pointer text-slate-500"
                     title={collapsed ? "Expand Sidebar" : "Collapse Sidebar"}
                 >
                     {collapsed ? (
@@ -602,3 +636,4 @@ export default function Sidebar({ collapsed, setCollapsed, isHovered, setIsHover
         </>
     );
 }
+

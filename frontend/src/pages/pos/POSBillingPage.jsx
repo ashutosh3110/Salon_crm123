@@ -3016,7 +3016,7 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                 `}</style>
 
                 {/* Header */}
-                <div className="p-4 bg-checkout-header flex items-center justify-between">
+                <div className="px-4 py-2.5 bg-checkout-header flex items-center justify-between border-b border-slate-100/50">
                     <div className="flex items-center gap-4">
                         <div className="bg-emerald-600 p-2 rounded-xl text-white">
                             <Sparkles className="w-5 h-5" />
@@ -3255,7 +3255,7 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                         </div>
 
                         {/* Tab Switcher */}
-                        <div className="px-4 pt-4 shrink-0">
+                        <div className="px-2.5 pt-2.5 shrink-0">
                             <div className="flex bg-slate-100 dark:bg-slate-950/60 p-1 rounded-xl">
                                 <button
                                     onClick={() => { setQActiveTab('services'); setQSelectedCategory(null); }}
@@ -3281,7 +3281,7 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                         </div>
 
                         {/* Service/Product Selection Section */}
-                        <div className="flex-1 overflow-hidden flex flex-col p-4 space-y-3">
+                        <div className="flex-1 overflow-hidden flex flex-col p-2.5 space-y-2">
                             <div className="flex items-center justify-between shrink-0">
                                 <div className="flex items-center gap-2">
                                     {qSelectedCategory && (
@@ -3385,7 +3385,7 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
 
                     {/* Right Panel: Invoice Summary */}
                     <div className="w-full lg:w-[480px] bg-checkout-right-panel flex flex-col border-t lg:border-t-0 lg:border-l border-slate-200 overflow-hidden h-[300px] lg:h-full min-h-0">
-                        <div className="p-4 border-b border-slate-200 bg-checkout-header flex items-center justify-between shrink-0">
+                        <div className="p-2.5 border-b border-slate-200 bg-checkout-header flex items-center justify-between shrink-0">
                             <div className="flex items-center gap-2">
                                 <ShoppingCart className="w-4 h-4 text-primary" />
                                 <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider">Cart Items ({qCart.length})</h3>
@@ -3402,7 +3402,7 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                             </button>
                         </div>
 
-                        <div className="flex-1 overflow-y-auto p-4 space-y-3 scrollbar-thin">
+                        <div className="flex-1 overflow-y-auto p-2.5 space-y-2 scrollbar-thin">
                             {qCart.length === 0 ? (
                                 <div className="h-full flex flex-col items-center justify-center opacity-30 italic text-slate-400 text-center space-y-3">
                                     <div className="w-16 h-16 bg-checkout-box rounded-full flex items-center justify-center border-2 border-dashed border-slate-200">
@@ -3411,7 +3411,7 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                                     <p className="text-xs font-bold uppercase tracking-wider">Select services to begin</p>
                                 </div>
                             ) : qCart.map((item, idx) => (
-                                <div key={idx} className="bg-checkout-box p-4 rounded-xl shadow-sm space-y-3 relative">
+                                <div key={idx} className="bg-checkout-box p-3 rounded-xl shadow-sm space-y-2 relative">
                                     <div className="flex justify-between items-start">
                                         <div className="flex-1 pr-10">
                                             <p className="text-base md:text-lg font-black text-slate-900 uppercase leading-tight line-clamp-1">{item.name}</p>
@@ -3665,7 +3665,7 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
 
                 {/* Bottom Billing Row */}
                 <div className="flex-shrink-0 bg-checkout-bar shadow-[0_-8px_30px_rgba(0,0,0,0.08)] z-20 w-full overflow-hidden" style={{ borderTop: '1px solid rgba(128, 128, 128, 0.15)' }}>
-                    <div className="w-full px-3 py-3 flex items-center justify-between gap-3 overflow-x-auto whitespace-nowrap scrollbar-thin">
+                    <div className="w-full px-3 py-1.5 flex items-center justify-start gap-4 lg:gap-6 overflow-x-auto whitespace-nowrap scrollbar-thin">
                         {/* Totals Breakdown */}
                         <div className="flex items-center gap-2 lg:gap-3 xl:gap-4 px-1 shrink-0">
                             <div className="flex flex-col shrink-0">
@@ -3833,16 +3833,16 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                         </div>
 
                         {/* Grand Total & Finalize Unified Checkout Card */}
-                        <div className="flex flex-col bg-gradient-to-br from-slate-900 via-slate-950 to-slate-900 text-white rounded-xl p-2 lg:p-2.5 shadow-xl border border-slate-800 shrink-0 w-[190px] lg:w-[220px] xl:w-[245px]">
+                        <div className="flex flex-col bg-gradient-to-br from-slate-900 via-slate-950 to-slate-900 text-white rounded-xl p-1.5 lg:p-2 shadow-xl border border-slate-800 shrink-0 w-[190px] lg:w-[220px] xl:w-[245px] ml-auto">
                             {/* Top row: Net Bill & Total to Pay */}
-                            <div className="flex items-center justify-between border-b border-white/10 pb-2 mb-2">
+                            <div className="flex items-center justify-between border-b border-white/10 pb-1 mb-1">
                                 <div className="flex flex-col items-start pr-3">
                                     <span className="text-xs font-medium uppercase tracking-wider text-white/40 leading-none">Net Bill</span>
-                                    <span className="text-sm md:text-base font-bold font-mono text-white leading-none mt-1">₹{totals.total.toFixed(2)}</span>
+                                    <span className="text-sm md:text-base font-bold font-mono text-white leading-none mt-0.5">₹{totals.total.toFixed(2)}</span>
                                 </div>
                                 <div className="flex flex-col items-end">
                                     <span className="text-xs font-medium uppercase tracking-wider text-white/50 leading-none">Total to Pay</span>
-                                    <span className="text-base lg:text-lg xl:text-xl font-bold font-mono leading-none mt-1">₹{totals.totalWithPrevDue.toFixed(2)}</span>
+                                    <span className="text-base lg:text-lg xl:text-xl font-bold font-mono leading-none mt-0.5">₹{totals.totalWithPrevDue.toFixed(2)}</span>
                                 </div>
                             </div>
 
@@ -3876,7 +3876,7 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                             <button
                                 onClick={handleConfirm}
                                 disabled={isProcessing || qCart.length === 0 || isOverpaid}
-                                className="w-full py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs uppercase tracking-wider transition-all rounded-lg disabled:opacity-50 flex items-center justify-center gap-1.5 shadow-lg shadow-emerald-600/20 relative overflow-hidden group"
+                                className="w-full py-1 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs uppercase tracking-wider transition-all rounded-lg disabled:opacity-50 flex items-center justify-center gap-1.5 shadow-lg shadow-emerald-600/20 relative overflow-hidden group"
                             >
                                 <div className="absolute top-0 left-0 w-full h-full bg-white/10 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700" />
                                 {isProcessing ? <Loader2 className="w-4 h-4 animate-spin" /> : (

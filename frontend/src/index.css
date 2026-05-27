@@ -1473,7 +1473,7 @@ button[class*="bg-emerald-"] * {
 
 /* Search bar placeholder and input text in admin panels - light mode */
 html:not(.dark) .admin-panel input[type="text"]::placeholder {
-  color: #e6e8bff !important;
+  color: #94a3b8 !important;
 }
 
 /* Fix select text color in light mode globally - prevents white-on-white issue */
@@ -1510,7 +1510,7 @@ html:not(.dark) select option {
 
 .dark input::placeholder,
 .dark textarea::placeholder {
-  color: #e6e8bff !important;
+  color: #94a3b8 !important;
 }
 
 /* Global Mobile Responsiveness - Scale down everything proportionally on mobile screens */
