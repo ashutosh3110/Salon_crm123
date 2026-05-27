@@ -1,4 +1,6 @@
 const Staff = require('../Models/Staff');
+const Outlet = require('../Models/Outlet');
+
 
 // @desc    Get all staff members for current salon
 // @route   GET /api/users
@@ -200,7 +202,8 @@ exports.updateUser = async (req, res) => {
             data: updatedStaff
         });
     } catch (err) {
-        res.status(500).json({ success: false, message: 'Server Error' });
+        console.error('Update user error:', err);
+        res.status(500).json({ success: false, message: err.message || 'Server Error' });
     }
 };
 

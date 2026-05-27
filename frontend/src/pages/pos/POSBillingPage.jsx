@@ -3628,8 +3628,20 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                                                                 </div>
                                                             </div>
                                                             <div className="max-h-[180px] overflow-y-auto scrollbar-thin">
-                                                                {qFilteredStaff.filter(s => s.name.toLowerCase().includes(staffSearch.toLowerCase())).length > 0 ? (
-                                                                    qFilteredStaff.filter(s => s.name.toLowerCase().includes(staffSearch.toLowerCase())).map(s => {
+                                                                {qFilteredStaff.filter(s => {
+                                                                    const matchesSearch = s.name.toLowerCase().includes(staffSearch.toLowerCase());
+                                                                    const matchesRole = item.type === 'service' 
+                                                                        ? (s.role && s.role.toLowerCase() === 'stylist')
+                                                                        : true;
+                                                                    return matchesSearch && matchesRole;
+                                                                }).length > 0 ? (
+                                                                    qFilteredStaff.filter(s => {
+                                                                        const matchesSearch = s.name.toLowerCase().includes(staffSearch.toLowerCase());
+                                                                        const matchesRole = item.type === 'service' 
+                                                                            ? (s.role && s.role.toLowerCase() === 'stylist')
+                                                                            : true;
+                                                                        return matchesSearch && matchesRole;
+                                                                    }).map(s => {
                                                                         const isSelected = (item.staffIds || []).includes(String(s._id));
                                                                         return (
                                                                             <button
