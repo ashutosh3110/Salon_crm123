@@ -750,15 +750,25 @@ exports.verifyPayment = async (req, res) => {
 exports.getCustomerBookings = async (req, res) => {
     try {
         const { customerId } = req.params;
+        const page = parseInt(req.query.page, 10) || 1;
+        const limit = parseInt(req.query.limit, 10) || 10;
+        const skip = (page - 1) * limit;
+
+        const totalCount = await Booking.countDocuments({ clientId: customerId });
         const bookings = await Booking.find({ clientId: customerId })
             .populate('serviceId', 'name price duration')
             .populate('staffId', 'name profileImage')
             .populate('outletId', 'name address city')
             .populate('salonId', 'name logo')
-            .sort({ appointmentDate: -1 });
+            .sort({ appointmentDate: -1 })
+            .skip(skip)
+            .limit(limit);
 
         res.json({
             success: true,
+            totalCount,
+            totalPages: Math.ceil(totalCount / limit),
+            currentPage: page,
             data: bookings
         });
     } catch (err) {

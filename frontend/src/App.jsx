@@ -131,6 +131,8 @@ const OutletDetailPage = lazy(() => import('./pages/admin/OutletDetailPage'));
 const ServiceDetailPage = lazy(() => import('./pages/admin/ServiceDetailPage'));
 const OutletForm = lazy(() => import('./components/admin/outlets/OutletForm'));
 const CustomersPage = lazy(() => import('./pages/admin/CustomersPage'));
+const CustomerDetailPage = lazy(() => import('./pages/admin/CustomerDetailPage'));
+const ConsultationsPage = lazy(() => import('./pages/admin/ConsultationsPage'));
 const PromotionsPage = lazy(() => import('./pages/admin/PromotionsPage'));
 const InvoicesPage = lazy(() => import('./pages/admin/InvoicesPage'));
 const SettingsPage = lazy(() => import('./pages/admin/SettingsPage'));
@@ -219,6 +221,7 @@ const NearbyOutletsPage = lazy(() => import('./pages/app/NearbyOutletsPage'));
 const AppOrderDetailsPage = lazy(() => import('./pages/app/AppOrderDetailsPage'));
 const AppTransactionHistoryPage = lazy(() => import('./pages/app/AppTransactionHistoryPage'));
 const AppReviewsPage = lazy(() => import('./pages/app/AppReviewsPage'));
+const AppConsultationPage = lazy(() => import('./pages/app/AppConsultationPage'));
 const AppTermsPage = lazy(() => import('./pages/app/AppTermsPage'));
 const CustomerAppWrapper = lazy(() => import('./layouts/CustomerAppWrapper'));
 
@@ -393,6 +396,8 @@ function App() {
                             {/* CRM Routes */}
                             <Route element={<ProtectedRoute feature="crm" permission="crm_directory" />}>
                                 <Route path="/admin/crm/customers" element={<CustomersPage tab="directory" />} />
+                                <Route path="/admin/crm/customers/:id" element={<CustomerDetailPage />} />
+                                <Route path="/admin/crm/consultations" element={<ConsultationsPage />} />
                                 <Route path="/admin/crm" element={<CustomersPage tab="directory" />} />
                             </Route>
                             <Route element={<ProtectedRoute feature="crm" permission="crm_wallets" />}>
@@ -715,6 +720,7 @@ function App() {
                             <Route path="/app/orders/:id" element={<AppOrderDetailsPage />} />
                             <Route path="/app/referrals" element={<AppReferralPage />} />
                             <Route path="/app/profile" element={<AppProfilePage />} />
+                            <Route path="/app/consultation" element={<AppConsultationPage />} />
                             <Route path="/app/shop" element={<AppShopPage />} />
                             <Route path="/app/categories" element={<AppProductCategoriesPage />} />
                             <Route path="/app/product/:id" element={<AppProductDetailsPage />} />

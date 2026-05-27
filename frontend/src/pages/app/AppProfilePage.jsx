@@ -220,6 +220,7 @@ export default function AppProfilePage() {
 
     const secondaryLinks = [
         { icon: History, label: 'Transaction History', path: '/app/transactions' },
+        { icon: MessageSquare, label: 'Consultation Records', path: '/app/consultation' },
         { icon: Star, label: 'My Reviews', path: '/app/reviews' },
         { icon: Users, label: 'Refer & Earn', path: '/app/referrals' },
         { icon: Shield, label: 'Privacy Policy', path: '/app/privacy' },

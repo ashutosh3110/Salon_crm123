@@ -28,6 +28,9 @@ exports.getClients = async (req, res) => {
                 { anniversaryWishSent: true }
             ];
         }
+        if (req.query.outletId) {
+            matchQuery.lastOutletId = new mongoose.Types.ObjectId(req.query.outletId);
+        }
 
         const findQuery = { salonId };
         if (req.query.wishesSentOnly === 'true') {
@@ -35,6 +38,9 @@ exports.getClients = async (req, res) => {
                 { birthdayWishSent: true },
                 { anniversaryWishSent: true }
             ];
+        }
+        if (req.query.outletId) {
+            findQuery.lastOutletId = req.query.outletId;
         }
 
         // Search parameter filtering support

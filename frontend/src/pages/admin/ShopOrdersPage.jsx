@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import { useLocation } from 'react-router-dom';
 import { createPortal } from 'react-dom';
 import {
     Search,
@@ -40,9 +41,10 @@ const STATUS_FLOW = {
 
 export default function ShopOrdersPage() {
     const { outlets, fetchOutlets } = useBusiness();
+    const location = useLocation();
     const [orders, setOrders] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [search, setSearch] = useState('');
+    const [search, setSearch] = useState(location.state?.search || '');
     const [statusFilter, setStatusFilter] = useState('all');
     const [outletFilter, setOutletFilter] = useState('all');
     const [selectedOrder, setSelectedOrder] = useState(null);
@@ -52,6 +54,16 @@ export default function ShopOrdersPage() {
         fetchOrders();
         if (outlets.length === 0) fetchOutlets();
     }, []);
+
+    // Pop open the detailed order drawer on navigation from other views (like CRM profile)
+    useEffect(() => {
+        if (location.state?.search && orders.length > 0) {
+            const ord = orders.find(o => String(o._id) === String(location.state.search));
+            if (ord) {
+                setSelectedOrder(ord);
+            }
+        }
+    }, [orders, location.state]);
 
     const fetchOrders = async () => {
         try {
