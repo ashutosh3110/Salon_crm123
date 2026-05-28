@@ -36,7 +36,7 @@ export default function CustomDropdown({ options = [], value, onChange, label, c
             <button
                 type="button"
                 onClick={() => setIsOpen(!isOpen)}
-                className={`custom-dropdown-trigger w-full flex items-center justify-between gap-3 px-4 py-2.5 bg-white border transition-all duration-200 text-left
+                className={`custom-dropdown-trigger w-full flex items-center justify-between gap-2 px-3 py-2 bg-white border transition-all duration-200 text-left
                     ${isOpen
                         ? 'border-primary shadow-[0_0_0_3px_rgba(var(--color-primary-rgb,99,102,241),0.12)]'
                         : 'border-border hover:border-primary/40 shadow-sm hover:shadow-md'
@@ -63,7 +63,7 @@ export default function CustomDropdown({ options = [], value, onChange, label, c
                     {/* Top accent bar */}
                     <div className="h-0.5 w-full bg-gradient-to-r from-primary via-primary/60 to-transparent" />
 
-                    <div className="py-1 max-h-56 overflow-y-auto">
+                    <div className="py-1 max-h-48 overflow-y-auto scrollbar-thin scrollbar-thumb-slate-200 scrollbar-track-transparent hover:scrollbar-thumb-slate-300">
                         {normalizedOptions.map((opt, idx) => {
                             const isSelected = value === opt.value;
                             return (
@@ -74,19 +74,19 @@ export default function CustomDropdown({ options = [], value, onChange, label, c
                                         onChange(opt.value);
                                         setIsOpen(false);
                                     }}
-                                    className={`custom-dropdown-option w-full flex items-center justify-between px-4 py-2.5 text-left transition-colors duration-150 group
+                                    className={`custom-dropdown-option w-full flex items-center justify-between px-3 py-1.5 text-left transition-colors duration-150 group border-b border-border/10 last:border-0
                                         ${isSelected
                                             ? 'bg-primary/5 text-primary'
-                                            : 'text-text-secondary hover:bg-surface-alt hover:text-text'
+                                            : 'text-text-secondary hover:bg-slate-50 hover:text-text'
                                         }
                                     `}
                                 >
-                                    <div className="flex items-center gap-3">
+                                    <div className="flex items-center gap-2">
                                         {/* Left accent dot */}
                                         <span
                                             className={`w-1 h-1 rounded-full shrink-0 transition-colors ${isSelected ? 'bg-primary' : 'bg-border group-hover:bg-primary/40'}`}
                                         />
-                                        <span className="text-[11px] font-black uppercase tracking-[0.12em] leading-none">
+                                        <span className="text-[10px] font-bold tracking-wider leading-none">
                                             {opt.label}
                                         </span>
                                     </div>
@@ -99,9 +99,9 @@ export default function CustomDropdown({ options = [], value, onChange, label, c
                     </div>
 
                     {/* Bottom label */}
-                    <div className="px-4 py-2 border-t border-border/40 bg-surface-alt/50 flex items-center gap-1.5">
+                    <div className="px-3 py-1.5 border-t border-border/40 bg-slate-50 flex items-center gap-1.5">
                         <span className="w-1 h-1 rounded-full bg-primary animate-pulse" />
-                        <span className="text-[9px] font-black text-text-muted uppercase tracking-[0.18em]">Select an option</span>
+                        <span className="text-[9px] font-bold text-text-muted uppercase tracking-wider">Select an option</span>
                     </div>
                 </div>
             )}

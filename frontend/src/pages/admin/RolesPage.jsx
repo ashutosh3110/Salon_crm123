@@ -1,12 +1,12 @@
 import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { 
-    Shield, 
-    Plus, 
-    Search, 
-    Edit, 
-    Trash2, 
-    CheckCircle2, 
+import {
+    Shield,
+    Plus,
+    Search,
+    Edit,
+    Trash2,
+    CheckCircle2,
     XCircle,
     Info,
     LayoutDashboard,
@@ -215,7 +215,7 @@ export default function RolesPage() {
     }, [showModal]);
     const [editingRole, setEditingRole] = useState(null);
     const [search, setSearch] = useState('');
-    
+
     const [form, setForm] = useState({
         name: '',
         description: '',
@@ -328,7 +328,7 @@ export default function RolesPage() {
         });
     };
 
-    const filteredRoles = roles.filter(r => 
+    const filteredRoles = roles.filter(r =>
         r.name.toLowerCase().includes(search.toLowerCase())
     );
 
@@ -391,7 +391,7 @@ export default function RolesPage() {
                                         <p className="text-[9px] font-bold text-text-muted uppercase tracking-tighter opacity-60 truncate max-w-[150px]">{role.description || 'Custom business role'}</p>
                                     </div>
                                 </div>
-                                
+
                                 <div className="col-span-12 md:col-span-6 flex flex-wrap gap-1.5">
                                     {(role.permissions || []).map(perm => {
                                         const p = AVAILABLE_PERMISSIONS.find(ap => ap.id === perm);
@@ -407,14 +407,14 @@ export default function RolesPage() {
                                 </div>
 
                                 <div className="col-span-12 md:col-span-3 flex items-center justify-end gap-2 text-right">
-                                    <button 
+                                    <button
                                         onClick={() => handleEdit(role)}
                                         className="p-2 text-text-muted hover:text-primary transition-colors hover:bg-white border border-transparent hover:border-border"
                                     >
                                         <Edit className="w-4 h-4" />
                                     </button>
                                     {!role.isDefault && (
-                                        <button 
+                                        <button
                                             onClick={() => handleDelete(role._id)}
                                             className="p-2 text-text-muted hover:text-rose-500 transition-colors hover:bg-white border border-transparent hover:border-border"
                                         >
@@ -439,13 +439,13 @@ export default function RolesPage() {
             {/* Role Modal - Simple High-Density Design */}
             {showModal && createPortal(
                 <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm transition-all overflow-hidden" onClick={() => setShowModal(false)}>
-                    
-                    <form 
+
+                    <form
                         onSubmit={handleSubmit}
-                        className="relative bg-white dark:bg-slate-800 shadow-[0_40px_100px_-20px_rgba(0,0,0,0.4)] w-full max-w-2xl flex flex-col animate-reveal rounded-none border-2 border-text dark:border-slate-700 max-h-[90vh] overflow-hidden admin-panel" 
+                        className="relative bg-white dark:bg-slate-800 shadow-[0_40px_100px_-20px_rgba(0,0,0,0.4)] w-full max-w-2xl flex flex-col animate-reveal rounded-none border-2 border-text dark:border-slate-700 max-h-[90vh] overflow-hidden admin-panel"
                         onClick={(e) => e.stopPropagation()}
                     >
-                        
+
                         {/* Simple Header */}
                         <div className="flex items-center justify-between px-8 py-5 border-b-2 border-border dark:border-slate-700 bg-white dark:bg-slate-800 sticky top-0 z-20">
                             <div className="flex items-center gap-4 text-left">
@@ -457,18 +457,18 @@ export default function RolesPage() {
                                     <p className="text-[9px] font-black uppercase tracking-widest text-text-muted opacity-60 italic leading-none font-mono">Role Details & Permissions</p>
                                 </div>
                             </div>
-                            <button 
+                            <button
                                 type="button"
                                 onClick={() => setShowModal(false)}
-                                className="p-2 text-text-muted hover:text-rose-500 transition-colors"
+                                className="p-2 !text-red-500 hover:!text-red-600 transition-colors !bg-transparent !border-none outline-none"
                             >
-                                <XCircle className="w-6 h-6" />
+                                <XCircle className="w-6 h-6 !stroke-red-500" />
                             </button>
                         </div>
 
                         {/* Form Content */}
                         <div className="flex-1 overflow-y-auto p-8 space-y-8 custom-scrollbar text-left font-mono">
-                            
+
                             {/* Basic Info */}
                             <div className="grid grid-cols-1 gap-6">
                                 <div className="space-y-2 text-left">
@@ -476,7 +476,7 @@ export default function RolesPage() {
                                     <input
                                         required
                                         value={form.name}
-                                        onChange={(e) => setForm({...form, name: e.target.value})}
+                                        onChange={(e) => setForm({ ...form, name: e.target.value })}
                                         placeholder="Enter role name"
                                         className="w-full px-4 py-3 bg-surface-alt border border-border text-sm font-black tracking-widest focus:border-text outline-none transition-all placeholder:text-text-muted/40 rounded-none italic shadow-inner"
                                     />
@@ -485,7 +485,7 @@ export default function RolesPage() {
                                     <label className="text-[10px] font-black text-text-muted uppercase tracking-widest font-mono">Role Description</label>
                                     <textarea
                                         value={form.description}
-                                        onChange={(e) => setForm({...form, description: e.target.value})}
+                                        onChange={(e) => setForm({ ...form, description: e.target.value })}
                                         placeholder="What is this role for?"
                                         rows={2}
                                         className="w-full px-4 py-3 bg-surface-alt border border-border text-sm font-black tracking-widest focus:border-text outline-none transition-all placeholder:text-text-muted/40 rounded-none italic shadow-inner resize-none"
@@ -505,18 +505,18 @@ export default function RolesPage() {
                                         const isGroupChecked = form.permissions.includes(group.id);
                                         const groupSubIds = (group.subPermissions || []).map(sp => sp.id);
                                         const checkedSubCount = (group.subPermissions || []).filter(sp => form.permissions.includes(sp.id)).length;
-                                        
+
                                         return (
                                             <div key={group.id} className="border border-border bg-slate-50/50 p-4 rounded-none">
                                                 {/* Parent Header */}
-                                                <div 
+                                                <div
                                                     role="button"
                                                     onClick={() => handleToggleParent(group)}
                                                     className="flex items-center justify-between pb-3 border-b border-border mb-3 cursor-pointer select-none"
                                                 >
                                                     <div className="flex items-center gap-3">
-                                                        <div className={`p-2 transition-colors duration-200 ${isGroupChecked || checkedSubCount > 0 ? 'bg-primary text-white' : 'bg-white text-text-muted border border-border'}`}>
-                                                            <group.icon className="w-4 h-4" />
+                                                        <div className="p-2 transition-colors duration-200 bg-transparent flex items-center justify-center">
+                                                            <group.icon className={`w-5 h-5 ${isGroupChecked || checkedSubCount > 0 ? '!stroke-primary' : '!stroke-black dark:!stroke-white'}`} />
                                                         </div>
                                                         <div className="text-left">
                                                             <p className={`text-[11px] font-black uppercase tracking-widest leading-none mb-1 ${(isGroupChecked || checkedSubCount > 0) ? 'text-primary font-bold' : 'text-text'}`}>
@@ -531,7 +531,7 @@ export default function RolesPage() {
                                                                 {checkedSubCount}/{groupSubIds.length} Selected
                                                             </span>
                                                         )}
-                                                        <input 
+                                                        <input
                                                             type="checkbox"
                                                             checked={isGroupChecked}
                                                             readOnly
@@ -550,19 +550,19 @@ export default function RolesPage() {
                                                                     key={sub.id}
                                                                     role="button"
                                                                     onClick={() => handleToggleSub(sub.id, group)}
-                                                                    className={`flex items-center gap-2.5 p-2 transition-all text-left border cursor-pointer ${isSubChecked 
-                                                                        ? 'bg-white border-2 border-primary shadow-sm' 
+                                                                    className={`flex items-center gap-2.5 p-2 transition-all text-left border cursor-pointer ${isSubChecked
+                                                                        ? 'bg-white border-2 border-primary shadow-sm'
                                                                         : 'bg-white/40 border-border/60 hover:bg-white hover:border-text-muted'
-                                                                    }`}
+                                                                        }`}
                                                                 >
-                                                                    <div className={`p-1.5 transition-all ${isSubChecked ? 'bg-primary/20 text-primary' : 'bg-white text-text-muted border border-border'}`}>
-                                                                        <sub.icon className="w-3.5 h-3.5" />
+                                                                    <div className="p-1.5 transition-all bg-transparent flex items-center justify-center">
+                                                                        <sub.icon className={`w-4 h-4 ${isSubChecked ? '!stroke-primary' : '!stroke-black dark:!stroke-white'}`} />
                                                                     </div>
                                                                     <div className="flex-1 min-w-0 pr-2">
                                                                         <p className={`text-[9px] font-bold uppercase tracking-widest leading-none mb-0.5 ${isSubChecked ? 'text-primary' : 'text-text'}`}>{sub.label}</p>
                                                                         <p className="text-[7px] font-medium text-text-muted uppercase tracking-wider leading-none opacity-50 italic">{sub.description}</p>
                                                                     </div>
-                                                                    <input 
+                                                                    <input
                                                                         type="checkbox"
                                                                         checked={isSubChecked}
                                                                         readOnly
@@ -584,8 +584,8 @@ export default function RolesPage() {
                         <div className="px-8 py-6 border-t-2 border-text dark:border-slate-700 bg-white dark:bg-slate-800 flex flex-col sm:flex-row items-center justify-between gap-4">
                             <div className="flex items-center gap-2">
                                 <div className="w-16 h-1 bg-surface-alt border border-border">
-                                    <div 
-                                        className="h-full bg-primary transition-all duration-500" 
+                                    <div
+                                        className="h-full bg-primary transition-all duration-500"
                                         style={{ width: `${(form.permissions.length / AVAILABLE_PERMISSIONS.length) * 100}%` }}
                                     />
                                 </div>
