@@ -20,6 +20,7 @@ import {
 } from 'lucide-react';
 import { useBusiness } from '../../../contexts/BusinessContext';
 import { GoogleMap, MarkerF, useJsApiLoader } from '@react-google-maps/api';
+import CustomDropdown from '../../common/CustomDropdown';
 
 const DAYS = [
     { label: 'Mon', full: 'Monday' },
@@ -347,9 +348,9 @@ export default function OutletForm() {
     };
 
     return (
-        <div className="max-w-5xl mx-auto space-y-8 animate-reveal pb-20 px-4 md:px-0 text-left">
+        <div className="max-w-5xl mx-auto space-y-5 animate-reveal pb-20 px-4 md:px-0 text-left">
             {/* Header Section */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div className="flex items-center gap-4">
                     <button
                         type="button"
@@ -363,7 +364,7 @@ export default function OutletForm() {
                             <div className="w-2 h-2 rounded-full bg-black animate-pulse" />
                             <span className="text-xs font-bold text-text-muted uppercase tracking-[0.2em]">Outlet Configuration</span>
                         </div>
-                        <h1 className="text-3xl font-black text-text uppercase tracking-tight leading-none">
+                        <h1 className="text-2xl font-black text-text uppercase tracking-tight leading-none">
                             {isEdit ? 'Update' : 'Add New'} <span className="text-text-muted opacity-50">Outlet</span>
                         </h1>
                     </div>
@@ -371,21 +372,21 @@ export default function OutletForm() {
             </div>
 
             {/* Main Form Grid */}
-            <form onSubmit={handleSubmit} className="space-y-8">
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <form onSubmit={handleSubmit} className="space-y-5">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
 
                     {/* Left Column: Basic Info, Resources, Logic & Timing */}
-                    <div className="lg:col-span-2 space-y-6">
+                    <div className="lg:col-span-2 space-y-4">
 
                         {/* Salon Identity Card */}
-                        <div className="relative overflow-hidden bg-white border border-border rounded-xl p-6 shadow-sm hover:border-black transition-all duration-300">
-                            <div className="space-y-6">
+                        <div className="relative overflow-hidden bg-white border border-border rounded-xl p-4 shadow-sm hover:border-black transition-all duration-300">
+                            <div className="space-y-4">
                                 <div className="flex items-center gap-3">
-                                    <div className="w-10 h-10 rounded-lg bg-slate-50 border border-border flex items-center justify-center">
+                                    <div className="w-8 h-8 rounded-lg bg-slate-50 border border-border flex items-center justify-center">
                                         <Store className="w-5 h-5 text-primary" />
                                     </div>
                                     <div>
-                                        <h2 className="text-lg font-black text-text uppercase tracking-tight">General Identity</h2>
+                                        <h2 className="text-base font-black text-text uppercase tracking-tight">General Identity</h2>
                                         <p className="text-xs text-text-muted uppercase tracking-wider">Core brand information for this location</p>
                                     </div>
                                 </div>
@@ -399,7 +400,7 @@ export default function OutletForm() {
                                             value={form.name}
                                             onChange={handleChange}
                                             placeholder="e.g. Wapixo Salon - Mumbai Main"
-                                            className="w-full px-4 py-3 rounded-lg bg-slate-50 border border-border text-sm font-bold text-text focus:bg-white outline-none transition-all"
+                                            className="w-full px-4 py-2 rounded-lg bg-slate-50 border border-border text-sm font-bold text-text focus:bg-white outline-none transition-all"
                                         />
                                     </div>
                                     <div className="space-y-2">
@@ -412,7 +413,7 @@ export default function OutletForm() {
                                             value={form.phone}
                                             onChange={handleChange}
                                             placeholder="10-digit number"
-                                            className="w-full px-4 py-3 rounded-lg bg-slate-50 border border-border text-sm font-bold text-text focus:bg-white outline-none transition-all"
+                                            className="w-full px-4 py-2 rounded-lg bg-slate-50 border border-border text-sm font-bold text-text focus:bg-white outline-none transition-all"
                                         />
                                     </div>
                                     <div className="space-y-2">
@@ -423,7 +424,7 @@ export default function OutletForm() {
                                             value={form.email}
                                             onChange={handleChange}
                                             placeholder="outlet@wapixo.com"
-                                            className="w-full px-4 py-3 rounded-lg bg-slate-50 border border-border text-sm font-bold text-text focus:bg-white outline-none transition-all"
+                                            className="w-full px-4 py-2 rounded-lg bg-slate-50 border border-border text-sm font-bold text-text focus:bg-white outline-none transition-all"
                                         />
                                     </div>
                                 </div>
@@ -431,14 +432,14 @@ export default function OutletForm() {
                         </div>
 
                         {/* Resources Card (Stations) */}
-                        <div className="bg-white border border-border rounded-xl p-6 shadow-sm hover:border-black transition-all duration-300">
-                            <div className="flex items-center justify-between mb-6">
+                        <div className="bg-white border border-border rounded-xl p-4 shadow-sm hover:border-black transition-all duration-300">
+                            <div className="flex items-center justify-between mb-4">
                                 <div className="flex items-center gap-3">
-                                    <div className="w-10 h-10 rounded-lg bg-slate-50 border border-border flex items-center justify-center">
+                                    <div className="w-8 h-8 rounded-lg bg-slate-50 border border-border flex items-center justify-center">
                                         <Users className="w-5 h-5 text-primary" />
                                     </div>
                                     <div>
-                                        <h2 className="text-lg font-black text-text uppercase tracking-tight">Resource Setup</h2>
+                                        <h2 className="text-base font-black text-text uppercase tracking-tight">Resource Setup</h2>
                                         <p className="text-xs text-text-muted uppercase tracking-wider">Chairs and Beds configuration</p>
                                     </div>
                                 </div>
@@ -465,7 +466,7 @@ export default function OutletForm() {
                                             <div key={chair.id} className="relative p-4 bg-slate-50 rounded-lg border border-border flex items-center justify-between group hover:border-black hover:bg-white transition-all">
                                                 <div className="flex items-center gap-3 flex-1">
                                                     <div className="w-8 h-8 rounded-lg bg-white border border-border flex items-center justify-center text-xs font-bold text-text-muted">{chair.id}</div>
-                                                    <input value={chair.name} onChange={(e) => handleChairNameChange(chair.id, e.target.value)} className="flex-1 bg-transparent border-none text-sm font-bold text-text outline-none uppercase" />
+                                                    <input value={chair.name} onChange={(e) => handleChairNameChange(chair.id, e.target.value)} className="flex-1 bg-transparent border-0 focus:ring-0 focus:outline-none focus:border-transparent !border-none !shadow-none text-sm font-bold text-text uppercase" />
                                                 </div>
                                                 <div role="button" onClick={() => handleRemoveChair(chair.id)} className="p-1.5 text-rose-500 hover:bg-rose-50 rounded-lg cursor-pointer"><X className="w-4 h-4 text-rose-500" /></div>
                                             </div>
@@ -485,7 +486,7 @@ export default function OutletForm() {
                                             <div key={bed.id} className="relative p-4 bg-slate-50 rounded-lg border border-border flex items-center justify-between group hover:border-black hover:bg-white transition-all">
                                                 <div className="flex items-center gap-3 flex-1">
                                                     <div className="w-8 h-8 rounded-lg bg-white border border-border flex items-center justify-center text-xs font-bold text-text-muted">{bed.id}</div>
-                                                    <input value={bed.name} onChange={(e) => handleBedNameChange(bed.id, e.target.value)} className="flex-1 bg-transparent border-none text-sm font-bold text-text outline-none uppercase" />
+                                                    <input value={bed.name} onChange={(e) => handleBedNameChange(bed.id, e.target.value)} className="flex-1 bg-transparent border-0 focus:ring-0 focus:outline-none focus:border-transparent !border-none !shadow-none text-sm font-bold text-text uppercase" />
                                                 </div>
                                                 <div role="button" onClick={() => handleRemoveBed(bed.id)} className="p-1.5 text-rose-500 hover:bg-rose-50 rounded-lg cursor-pointer"><X className="w-4 h-4 text-rose-500" /></div>
                                             </div>
@@ -496,17 +497,17 @@ export default function OutletForm() {
                         </div>
 
                         {/* Operational Logic Card */}
-                        <div className="bg-white border border-border rounded-xl p-6 shadow-sm hover:border-black transition-all duration-300">
-                            <div className="flex items-center gap-3 mb-6">
-                                <div className="w-10 h-10 rounded-lg bg-slate-50 border border-border flex items-center justify-center">
+                        <div className="bg-white border border-border rounded-xl p-4 shadow-sm hover:border-black transition-all duration-300">
+                            <div className="flex items-center gap-3 mb-4">
+                                <div className="w-8 h-8 rounded-lg bg-slate-50 border border-border flex items-center justify-center">
                                     <Activity className="w-5 h-5 text-primary" />
                                 </div>
                                 <div>
-                                    <h2 className="text-lg font-black text-text uppercase tracking-tight">Operational Logic</h2>
+                                    <h2 className="text-base font-black text-text uppercase tracking-tight">Operational Logic</h2>
                                     <p className="text-xs text-text-muted uppercase tracking-wider">Configure status and services</p>
                                 </div>
                             </div>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div className="space-y-2">
                                     <label className="text-xs font-bold text-text-muted uppercase tracking-wider">Active Status</label>
                                     <div className="flex p-1 bg-slate-100 rounded-lg border border-border">
@@ -534,39 +535,49 @@ export default function OutletForm() {
                                         </div>
                                         <div
                                             onClick={() => setForm({ ...form, config: { ...form.config, enableDelivery: !form.config?.enableDelivery } })}
-                                            className={`w-12 h-6 rounded-full p-0.5 cursor-pointer transition-all duration-300 flex items-center justify-start ${form.config?.enableDelivery ? 'bg-black border border-black' : 'bg-slate-300 border border-slate-300'}`}
+                                            className={`w-12 h-6 rounded-full p-0.5 cursor-pointer transition-all duration-300 flex items-center justify-start ${form.config?.enableDelivery ? 'bg-black' : 'bg-slate-300'}`}
                                         >
                                             <div className={`w-5 h-5 rounded-full bg-white shadow-md transform transition-all duration-300 ${form.config?.enableDelivery ? 'translate-x-6' : 'translate-x-0'}`} />
                                         </div>
                                     </div>
                                     {form.config?.enableDelivery && (
-                                        <input type="number" value={form.config?.deliveryCharge || 0} onChange={(e) => setForm({ ...form, config: { ...form.config, deliveryCharge: Number(e.target.value) } })} placeholder="Fee (₹)" className="w-full bg-slate-50 border border-border rounded-lg px-4 py-3 text-sm font-bold outline-none" />
+                                        <input type="number" value={form.config?.deliveryCharge || 0} onChange={(e) => setForm({ ...form, config: { ...form.config, deliveryCharge: Number(e.target.value) } })} placeholder="Fee (₹)" className="w-full bg-slate-50 border border-border rounded-lg px-4 py-2 text-sm font-bold outline-none" />
                                     )}
                                 </div>
                             </div>
                         </div>
 
                         {/* Shift Dynamics Card */}
-                        <div className="bg-white border border-border rounded-xl p-6 shadow-sm hover:border-black transition-all duration-300">
-                            <div className="space-y-6">
+                        <div className="bg-white border border-border rounded-xl p-4 shadow-sm hover:border-black transition-all duration-300">
+                            <div className="space-y-4">
                                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                                     <div className="flex items-center gap-3">
-                                        <div className="w-10 h-10 rounded-lg bg-slate-50 border border-border flex items-center justify-center">
+                                        <div className="w-8 h-8 rounded-lg bg-slate-50 border border-border flex items-center justify-center">
                                             <Clock className="w-5 h-5 text-primary" />
                                         </div>
                                         <div>
-                                            <h2 className="text-lg font-black text-text uppercase tracking-tight">Shift Dynamics</h2>
+                                            <h2 className="text-base font-black text-text uppercase tracking-tight">Shift Dynamics</h2>
                                             <p className="text-xs text-text-muted uppercase tracking-wider">Global timing rules</p>
                                         </div>
                                     </div>
                                     <div className="flex items-center gap-3">
-                                        <select name="openingTime" value={form.openingTime} onChange={handleChange} className="bg-white border border-border rounded-lg px-3 py-2 text-xs font-bold text-text outline-none focus:border-black">
-                                            {TIME_SLOTS.map(t => <option key={t} value={t}>{t}</option>)}
-                                        </select>
+                                        <div className="w-[130px]">
+                                            <CustomDropdown
+                                                value={form.openingTime}
+                                                onChange={(val) => setForm({ ...form, openingTime: val })}
+                                                options={TIME_SLOTS.map(t => ({ label: t, value: t }))}
+                                                className="w-full [&>.custom-dropdown-trigger]:!py-2 [&>.custom-dropdown-trigger]:rounded-lg [&>.custom-dropdown-trigger]:dark:bg-slate-800 [&>.custom-dropdown-trigger]:text-xs"
+                                            />
+                                        </div>
                                         <span className="text-xs text-text-muted">to</span>
-                                        <select name="closingTime" value={form.closingTime} onChange={handleChange} className="bg-white border border-border rounded-lg px-3 py-2 text-xs font-bold text-text outline-none focus:border-black">
-                                            {TIME_SLOTS.map(t => <option key={t} value={t}>{t}</option>)}
-                                        </select>
+                                        <div className="w-[130px]">
+                                            <CustomDropdown
+                                                value={form.closingTime}
+                                                onChange={(val) => setForm({ ...form, closingTime: val })}
+                                                options={TIME_SLOTS.map(t => ({ label: t, value: t }))}
+                                                className="w-full [&>.custom-dropdown-trigger]:!py-2 [&>.custom-dropdown-trigger]:rounded-lg [&>.custom-dropdown-trigger]:dark:bg-slate-800 [&>.custom-dropdown-trigger]:text-xs"
+                                            />
+                                        </div>
                                     </div>
                                 </div>
                                 <div className="grid grid-cols-4 sm:grid-cols-7 gap-2">
@@ -577,7 +588,7 @@ export default function OutletForm() {
                                                 key={day.full}
                                                 role="button"
                                                 onClick={() => handleDayToggle(day.full)}
-                                                className={`py-3 rounded-lg flex flex-col items-center gap-1.5 transition-all cursor-pointer ${isActive ? 'bg-black text-white shadow-sm' : 'bg-slate-50 border border-border text-text-muted hover:bg-slate-200'}`}
+                                                className={`py-2 rounded-lg flex flex-col items-center gap-1.5 transition-all cursor-pointer ${isActive ? 'bg-black text-white shadow-sm' : 'bg-slate-50 border border-border text-text-muted hover:bg-slate-200'}`}
                                             >
                                                 <span className={`text-[10px] font-bold uppercase tracking-wider ${isActive ? 'text-white' : 'text-text-muted'}`}>{day.label}</span>
                                                 <div className={`w-1.5 h-1.5 rounded-full ${isActive ? 'bg-white' : 'bg-slate-300'}`} />
@@ -590,14 +601,14 @@ export default function OutletForm() {
                     </div>
 
                     {/* Right Column: Visuals & Location */}
-                    <div className="space-y-6">
+                    <div className="space-y-4">
                         {/* Visual Media Card */}
-                        <div className="bg-white border border-border rounded-xl p-6 shadow-sm hover:border-black transition-all duration-300">
-                            <div className="flex items-center gap-3 mb-6">
-                                <div className="w-10 h-10 rounded-lg bg-slate-50 border border-border flex items-center justify-center">
+                        <div className="bg-white border border-border rounded-xl p-4 shadow-sm hover:border-black transition-all duration-300">
+                            <div className="flex items-center gap-3 mb-4">
+                                <div className="w-8 h-8 rounded-lg bg-slate-50 border border-border flex items-center justify-center">
                                     <ImageIcon className="w-5 h-5 text-primary" />
                                 </div>
-                                <h2 className="text-lg font-black text-text uppercase tracking-tight">Visual Gallery</h2>
+                                <h2 className="text-base font-black text-text uppercase tracking-tight">Visual Gallery</h2>
                             </div>
                             <div className="grid grid-cols-2 gap-3">
                                 {(form.images || []).map((img, idx) => (
@@ -607,8 +618,8 @@ export default function OutletForm() {
                                     </div>
                                 ))}
                                 {(form.images?.length || 0) < 5 && (
-                                    <label className="flex flex-col items-center justify-center aspect-square rounded-lg border border-dashed border-border bg-slate-50 hover:bg-white cursor-pointer group relative overflow-hidden transition-colors">
-                                        <div className="flex flex-col items-center">
+                                    <label className="flex flex-col items-center justify-center w-full h-full aspect-square rounded-lg border border-dashed border-border bg-slate-50 hover:bg-white cursor-pointer group relative overflow-hidden transition-colors">
+                                        <div className="flex flex-col items-center justify-center">
                                             <div className="w-8 h-8 rounded-full bg-slate-100 text-text-muted flex items-center justify-center group-hover:bg-black group-hover:text-white transition-all"><Upload className="w-4 h-4 text-primary group-hover:text-white transition-colors" /></div>
                                             <p className="text-[10px] font-bold text-text-muted uppercase tracking-wider mt-2">Add Media</p>
                                         </div>
@@ -619,21 +630,21 @@ export default function OutletForm() {
                         </div>
 
                         {/* Geography & Map Card */}
-                        <div className="bg-white border border-border rounded-xl p-6 shadow-sm hover:border-black transition-all duration-300">
-                            <div className="flex items-center justify-between mb-6">
+                        <div className="bg-white border border-border rounded-xl p-4 shadow-sm hover:border-black transition-all duration-300">
+                            <div className="flex items-center justify-between mb-4">
                                 <div className="flex items-center gap-3">
-                                    <div className="w-10 h-10 rounded-lg bg-slate-50 border border-border flex items-center justify-center">
+                                    <div className="w-8 h-8 rounded-lg bg-slate-50 border border-border flex items-center justify-center">
                                         <MapPin className="w-5 h-5 text-primary" />
                                     </div>
-                                    <h2 className="text-lg font-black text-text uppercase tracking-tight">Geotagging</h2>
+                                    <h2 className="text-base font-black text-text uppercase tracking-tight">Geotagging</h2>
                                 </div>
-                                <div role="button" onClick={useCurrentLocation} className="text-[10px] font-bold text-black uppercase tracking-wider bg-slate-100 px-3 py-1.5 rounded-lg border border-border hover:bg-black hover:text-white transition-all cursor-pointer">Auto Locate</div>
+                                <div role="button" onClick={useCurrentLocation} className="shrink-0 ml-4 whitespace-nowrap text-[10px] font-bold text-neutral-800 dark:text-neutral-200 uppercase tracking-wider bg-slate-100 dark:bg-slate-800 px-3 py-1.5 rounded-lg border border-border hover:bg-black dark:hover:bg-white hover:text-white dark:hover:text-black transition-all cursor-pointer">Auto Locate</div>
                             </div>
                             <div className="space-y-4">
-                                <textarea name="address" required rows="2" value={form.address} onChange={handleChange} placeholder="Full Address" className="w-full px-4 py-3 rounded-lg bg-slate-50 border border-border text-sm font-bold text-text focus:bg-white outline-none transition-all resize-none" />
+                                <textarea name="address" required rows="2" value={form.address} onChange={handleChange} placeholder="Full Address" className="w-full px-4 py-2 rounded-lg bg-slate-50 border border-border text-sm font-bold text-text focus:bg-white outline-none transition-all resize-none" />
                                 <div className="grid grid-cols-2 gap-3">
-                                    <input name="city" required value={form.city} onChange={handleChange} placeholder="City" className="w-full px-4 py-3 rounded-lg bg-slate-50 border border-border text-sm font-bold focus:bg-white outline-none" />
-                                    <input name="pincode" required value={form.pincode} onChange={handleChange} placeholder="Pincode" maxLength="6" className="w-full px-4 py-3 rounded-lg bg-slate-50 border border-border text-sm font-bold focus:bg-white outline-none" />
+                                    <input name="city" required value={form.city} onChange={handleChange} placeholder="City" className="w-full px-4 py-2 rounded-lg bg-slate-50 border border-border text-sm font-bold focus:bg-white outline-none" />
+                                    <input name="pincode" required value={form.pincode} onChange={handleChange} placeholder="Pincode" maxLength="6" className="w-full px-4 py-2 rounded-lg bg-slate-50 border border-border text-sm font-bold focus:bg-white outline-none" />
                                 </div>
                                 <div className="relative rounded-lg overflow-hidden border border-border h-48 bg-slate-100">
                                     {isLoaded ? (
@@ -654,14 +665,14 @@ export default function OutletForm() {
                     <div
                         role="button"
                         onClick={() => navigate('/admin/outlets')}
-                        className="h-12 px-6 rounded-lg border border-slate-200 text-xs font-bold uppercase tracking-wider text-text-muted hover:text-black hover:border-black flex items-center justify-center transition-all cursor-pointer bg-white"
+                        className="h-10 px-6 rounded-lg border border-slate-200 text-xs font-bold uppercase tracking-wider text-text-muted hover:text-black hover:border-black flex items-center justify-center transition-all cursor-pointer bg-white"
                     >
                         Cancel
                     </div>
                     <button
                         type="submit"
                         disabled={saving}
-                        className="h-12 px-8 rounded-lg bg-black text-white text-xs font-bold uppercase tracking-wider shadow-lg hover:bg-neutral-800 transition-all flex items-center gap-2 active:scale-95 disabled:opacity-50"
+                        className="h-10 px-8 rounded-lg bg-black text-white text-xs font-bold uppercase tracking-wider shadow-lg hover:bg-neutral-800 transition-all flex items-center gap-2 active:scale-95 disabled:opacity-50"
                     >
                         {saving ? <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <Save className="w-4 h-4 text-white" />}
                         {isEdit ? 'Save Changes' : 'Create Outlet'}

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { X, Tag, Check, Plus } from 'lucide-react';
 
 export default function CategorySelectModal({ isOpen, onClose, onSave, service, categories }) {
@@ -27,15 +28,10 @@ export default function CategorySelectModal({ isOpen, onClose, onSave, service, 
         }
     };
 
-    return (
-        <div className="fixed inset-0 z-[110] flex items-end justify-center bg-black/60 backdrop-blur-sm animate-in fade-in duration-300">
-            <div className="bg-surface w-full max-w-sm rounded-t-[32px] sm:rounded-3xl sm:mb-8 shadow-2xl border border-border overflow-hidden animate-in slide-in-from-bottom duration-300">
-                {/* Drag Handle for Mobile */}
-                <div className="flex justify-center pt-3 pb-1 sm:hidden">
-                    <div className="w-12 h-1.5 bg-slate-200 rounded-full" />
-                </div>
-
-                <div className="p-6 pt-3 sm:pt-6 border-b border-border flex items-center justify-between bg-surface-alt/50">
+    return createPortal(
+        <div className="fixed inset-0 z-[110] flex items-center justify-center bg-black/60 backdrop-blur-md animate-in fade-in duration-300 p-4">
+            <div className="bg-surface w-full max-w-sm rounded-3xl shadow-2xl border border-border overflow-hidden animate-in zoom-in-95 duration-300">
+                <div className="p-6 border-b border-border flex items-center justify-between bg-surface-alt/50">
                     <div className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded-2xl bg-blue-500/10 flex items-center justify-center text-blue-500">
                             <Tag className="w-5 h-5" />
@@ -96,6 +92,7 @@ export default function CategorySelectModal({ isOpen, onClose, onSave, service, 
                     </button>
                 </div>
             </div>
-        </div>
+        </div>,
+        document.body
     );
 }

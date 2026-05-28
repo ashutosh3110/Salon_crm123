@@ -357,7 +357,6 @@ export default function SubscriptionPage() {
                             <div className="space-y-2">
                                 <div className="flex items-center justify-between">
                                     <h4 className="text-lg font-black uppercase italic tracking-tighter text-text">{plan.name}</h4>
-                                    {plan.popular && <Sparkles className="w-4 h-4 text-[#B4912B] animate-pulse" />}
                                 </div>
                                 <div className="flex flex-col">
                                     {plan.price === 0 || (plan.monthlyPrice === 0) ? (
