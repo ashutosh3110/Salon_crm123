@@ -20,9 +20,12 @@ export default function AdminLayout() {
 
     return (
         <div className="min-h-screen bg-surface admin-panel">
-            {/* ── Global premium typography & spacious design overrides for Admin panel ── */}
             <style>{`
                 /* --- Global Theme, Colors & Font Assignment --- */
+                html {
+                    overscroll-behavior-y: none !important;
+                }
+                
                 html:not(.dark) .admin-panel {
                     --primary: #B4912B !important;
                     --primary-foreground: #ffffff !important;

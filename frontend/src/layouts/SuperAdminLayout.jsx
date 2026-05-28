@@ -15,6 +15,10 @@ export default function SuperAdminLayout() {
                 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
 
                 /* --- Global Theme & Font Assignment --- */
+                html {
+                    overscroll-behavior-y: none !important;
+                }
+                
                 html:not(.dark) .sa-panel {
                     font-family: 'Inter', sans-serif !important;
                     background-color: #faf9f9 !important;

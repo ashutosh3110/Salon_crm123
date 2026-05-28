@@ -40,9 +40,12 @@ export default function BaseRoleLayout({ SidebarComponent, title, accentColor = 
             className="min-h-screen bg-background flex text-text transition-colors duration-300 admin-panel overflow-x-hidden"
             style={{ '--accent-color': activeAccentColor }}
         >
-            {/* Global clean typography, premium layout overrides & bulletproof accessibility rules for all roles */}
             <style>{`
                 /* --- Global Theme & Font Assignment --- */
+                html {
+                    overscroll-behavior-y: none !important;
+                }
+                
                 html:not(.dark) .admin-panel {
                     font-family: 'Inter', sans-serif !important;
                     background-color: #faf9f9 !important;

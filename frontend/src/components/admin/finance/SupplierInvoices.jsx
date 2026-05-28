@@ -904,7 +904,7 @@ export default function SupplierInvoices() {
 
                         return (
                             <div
-                                className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm no-print"
+                                className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-slate-950/50 backdrop-blur-sm no-print"
                                 onClick={() => { setPayingKey(null); setPaySendWhatsApp(false); }}
                             >
                                 <motion.div
@@ -916,7 +916,7 @@ export default function SupplierInvoices() {
                                 >
                                     <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-700 bg-white dark:bg-slate-800 flex justify-between items-center rounded-t-3xl">
                                         <div>
-                                            <h3 className="text-base font-black text-slate-850 dark:text-slate-100 uppercase tracking-widest flex items-center gap-2">
+                                            <h3 className="text-base font-black text-slate-800 dark:text-slate-100 uppercase tracking-widest flex items-center gap-2">
                                                 <IndianRupee className="w-5 h-5 text-primary" />
                                                 Record Supplier Payment
                                             </h3>
@@ -1071,7 +1071,7 @@ export default function SupplierInvoices() {
                 <AnimatePresence>
                     {showCreateModal && (
                         <div
-                            className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm no-print overflow-y-auto"
+                            className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-slate-950/50 backdrop-blur-sm no-print overflow-y-auto"
                             onClick={resetInvoiceForm}
                         >
                             <motion.div
@@ -1083,7 +1083,7 @@ export default function SupplierInvoices() {
                             >
                                 <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center bg-white dark:bg-slate-800 rounded-t-3xl text-left">
                                     <div>
-                                        <h3 className="text-base font-black text-slate-850 dark:text-slate-100 uppercase tracking-widest flex items-center gap-2">
+                                        <h3 className="text-base font-black text-slate-800 dark:text-slate-100 uppercase tracking-widest flex items-center gap-2">
                                             <Receipt className="w-5 h-5 text-primary" />
                                             Record New Supplier Invoice
                                         </h3>
@@ -1339,7 +1339,7 @@ export default function SupplierInvoices() {
                                             </div>
 
                                             <div className="flex justify-between items-center text-xs font-semibold border-t border-slate-200 dark:border-slate-700 pt-3">
-                                                <span className="font-bold text-slate-850 dark:text-slate-200">Total Invoice Amount:</span>
+                                                <span className="font-bold text-slate-800 dark:text-slate-200">Total Invoice Amount:</span>
                                                 <span className="font-extrabold text-sm text-slate-900 dark:text-slate-100 font-black">₹{totals.totalAmount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
                                             </div>
 

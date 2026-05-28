@@ -206,29 +206,35 @@ function PlanModal({ plan, onClose, onSave, saving }) {
                             )}
                         </div>
 
-                        <div className="grid grid-cols-3 gap-6 p-4 bg-surface rounded-xl border border-border">
-                            <label className="flex items-center gap-3 cursor-pointer select-none">
-                                <input 
-                                    type="checkbox" 
-                                    checked={form.billingCycle === 'forever'} 
-                                    onChange={e => {
-                                        if (e.target.checked) {
-                                            setForm(p => ({ ...p, billingCycle: 'forever', price: 0 }));
-                                        } else {
-                                            setForm(p => ({ ...p, billingCycle: 'monthly' }));
-                                        }
-                                    }} 
-                                    className="w-4 h-4 accent-primary" 
-                                />
-                                <span className="text-[11px] font-black uppercase text-text-secondary tracking-widest">Free Plan</span>
+                        <div className="flex items-center justify-between p-4 px-6 bg-surface rounded-xl border border-border">
+                            <label className="cursor-pointer select-none">
+                                <span className="flex items-center gap-3">
+                                    <input 
+                                        type="checkbox" 
+                                        checked={form.billingCycle === 'forever'} 
+                                        onChange={e => {
+                                            if (e.target.checked) {
+                                                setForm(p => ({ ...p, billingCycle: 'forever', price: 0 }));
+                                            } else {
+                                                setForm(p => ({ ...p, billingCycle: 'monthly' }));
+                                            }
+                                        }} 
+                                        className="w-4 h-4 accent-primary shrink-0" 
+                                    />
+                                    <span className="text-[11px] font-black uppercase text-text-secondary tracking-widest">Free Plan</span>
+                                </span>
                             </label>
-                            <label className="flex items-center gap-3 cursor-pointer select-none">
-                                <input type="checkbox" checked={form.popular} onChange={e => set('popular', e.target.checked)} className="w-4 h-4 accent-primary" />
-                                <span className="text-[11px] font-black uppercase text-text-secondary tracking-widest">Mark as Popular</span>
+                            <label className="cursor-pointer select-none">
+                                <span className="flex items-center gap-3">
+                                    <input type="checkbox" checked={form.popular} onChange={e => set('popular', e.target.checked)} className="w-4 h-4 accent-primary shrink-0" />
+                                    <span className="text-[11px] font-black uppercase text-text-secondary tracking-widest">Mark as Popular</span>
+                                </span>
                             </label>
-                            <label className="flex items-center gap-3 cursor-pointer select-none">
-                                <input type="checkbox" checked={form.isActive} onChange={e => set('isActive', e.target.checked)} className="w-4 h-4 accent-emerald-500" />
-                                <span className="text-[11px] font-black uppercase text-text-secondary tracking-widest">Active Plan</span>
+                            <label className="cursor-pointer select-none">
+                                <span className="flex items-center gap-3">
+                                    <input type="checkbox" checked={form.isActive} onChange={e => set('isActive', e.target.checked)} className="w-4 h-4 accent-emerald-500 shrink-0" />
+                                    <span className="text-[11px] font-black uppercase text-text-secondary tracking-widest">Active Plan</span>
+                                </span>
                             </label>
                         </div>
                     </div>
