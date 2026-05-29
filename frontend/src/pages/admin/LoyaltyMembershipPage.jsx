@@ -52,49 +52,41 @@ export default function LoyaltyMembershipPage({ tab: initialTab = 'plans' }) {
             {/* Header Section */}
             <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
                 <div>
-                    <h1 className="text-4xl font-black text-foreground tracking-tighter uppercase italic leading-none">
-                        Loyalty <span className="text-primary italic">&</span> Membership
+                    <h1 className="text-4xl font-black text-black tracking-tighter uppercase leading-none">
+                        LOYALTY & MEMBERSHIP
                     </h1>
-                    <p className="text-sm font-bold text-text-muted mt-2 tracking-wide uppercase opacity-70">
-                        Protocol Management / <span className="text-foreground italic font-black">{TABS.find(t => t.id === activeTab)?.label}</span>
+                    <p className="text-xs font-bold text-slate-500 mt-2 tracking-wide uppercase">
+                        PROTOCOL MANAGEMENT / <span className="text-slate-500 font-black">{TABS.find(t => t.id === activeTab)?.label}</span>
                     </p>
                 </div>
 
-                <div className="flex items-center gap-3">
-                    <div className="hidden sm:flex flex-col items-end px-4 border-r border-border/40">
-                        <span className="text-[10px] font-black text-text-muted uppercase tracking-widest leading-none">Status</span>
-                        <span className="text-xs font-black text-emerald-500 uppercase tracking-tighter">System Active</span>
-                    </div>
+                <div className="flex flex-col items-end">
+                    <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest leading-none mb-1">STATUS</span>
+                    <span className="text-[11px] font-black text-emerald-600 uppercase tracking-tighter flex items-center gap-1.5">
+                        SYSTEM ACTIVE <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 inline-block"></span>
+                    </span>
                 </div>
             </div>
 
             {/* Navigation Tabs - Horizontal Scrollable on Mobile */}
-            <div className="flex overflow-x-auto no-scrollbar gap-2 p-1.5 bg-surface-alt/50 border border-border/40 backdrop-blur-xl rounded-2xl">
-                {TABS.map((tab) => {
+            <div className="flex overflow-x-auto no-scrollbar bg-white border border-slate-200 rounded-md shadow-sm w-fit overflow-hidden">
+                {TABS.map((tab, idx) => {
                     const isActive = activeTab === tab.id;
                     const Icon = tab.icon;
                     return (
                         <button
                             key={tab.id}
                             onClick={() => navigate(`/admin/loyalty/${tab.id}`)}
-                            className={`flex items-center gap-3 px-6 py-4 transition-all duration-300 relative group whitespace-nowrap rounded-xl ${isActive
-                                ? 'bg-primary text-primary-foreground shadow-lg shadow-primary/20 z-10'
-                                : 'text-text-secondary hover:bg-surface hover:text-primary'
+                            className={`flex items-center gap-2 px-6 py-3.5 transition-all duration-300 relative group whitespace-nowrap ${isActive
+                                ? 'bg-[#cca839] text-white'
+                                : 'text-slate-800 hover:bg-slate-50'
                                 }`}
                         >
-                            <Icon className={`w-4 h-4 transition-colors duration-300 ${isActive ? 'text-primary-foreground' : 'text-primary'
+                            <Icon className={`w-4 h-4 transition-colors duration-300 ${isActive ? 'text-white' : 'text-slate-500 group-hover:text-black'
                                 }`} />
-                            <span className={`block text-[10px] font-black uppercase tracking-widest leading-none transition-colors duration-300 ${isActive ? 'text-primary-foreground' : 'group-hover:text-primary'
-                                }`}>
+                            <span className={`block text-[11px] font-black uppercase tracking-widest transition-colors duration-300`}>
                                 {tab.label}
                             </span>
-
-                            {isActive && (
-                                <motion.div
-                                    layoutId="activeTabGlow"
-                                    className="absolute inset-0 bg-[#ffffff1a] rounded-xl"
-                                />
-                            )}
                         </button>
                     );
                 })}

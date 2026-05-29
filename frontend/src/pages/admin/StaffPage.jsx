@@ -20,7 +20,8 @@ import {
     ShieldAlert,
     ArrowRight,
     Eye,
-    Calendar
+    Calendar,
+    ChevronDown
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { maskPhone } from '../../utils/phoneUtils';
@@ -297,13 +298,27 @@ export default function StaffPage() {
         setShowModal(true);
     };
 
+    const getAvatarColor = (name) => {
+        const colors = [
+            'bg-amber-50 text-amber-600',
+            'bg-purple-50 text-purple-600',
+            'bg-orange-50 text-orange-600',
+            'bg-emerald-50 text-emerald-600',
+            'bg-blue-50 text-blue-600'
+        ];
+        const initial = name ? name.charCodeAt(0) : 0;
+        return colors[initial % colors.length];
+    };
+
     return (
-        <div className="space-y-4 animate-reveal max-w-[1600px] mx-auto pb-8 text-left">
-            {/* Header - Compact */}
-            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 px-1">
+        <div className="space-y-4 animate-reveal max-w-[1600px] mx-auto pb-8 text-left p-4 md:p-6 bg-[#f8fafc] min-h-screen">
+            <div className="bg-white !rounded-[24px] shadow-sm border border-slate-200 p-6 md:p-8 !overflow-hidden">
+                {/* Header */}
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 px-2 mt-2 mb-8">
                 <div className="text-left leading-none">
-                    <h1 className="text-2xl font-black text-text tracking-tight italic uppercase">Our Team</h1>
-                    <p className="text-[10px] font-black text-text-muted mt-2 uppercase tracking-[0.2em] opacity-60">Manage Staff & Permissions</p>
+                    <h1 className="text-3xl font-black text-text tracking-tight uppercase">OUR TEAM</h1>
+                    <p className="text-[12px] font-bold text-slate-500 mt-2.5 uppercase tracking-widest">MANAGE STAFF & PERMISSIONS</p>
+                    <div className="w-12 h-[3px] bg-[#C69A20] mt-3"></div>
                 </div>
                 <button
                     onClick={() => {
@@ -311,9 +326,9 @@ export default function StaffPage() {
                         setForm({ name: '', email: '', phone: '', role: '', roleId: '', outletId: '', password: '', salary: '', bankName: '', accountNo: '', ifsc: '', avatar: '', stylistBio: '', stylistExperience: '', stylistSpecializations: '', availability: JSON.parse(JSON.stringify(DEFAULT_AVAILABILITY)) });
                         setShowModal(true);
                     }}
-                    className="flex items-center gap-2 bg-text text-white px-5 py-2.5 text-[10px] font-black uppercase tracking-widest shadow-xl hover:bg-primary transition-all italic active:scale-95"
+                    className="flex items-center gap-2 bg-[#cca839] text-white px-6 py-3.5 text-[11px] font-black uppercase tracking-widest rounded-full hover:bg-[#b59533] transition-all shadow-sm"
                 >
-                    <Plus className="w-4 h-4" /> Add New Member
+                    <Plus className="w-4 h-4" /> ADD NEW MEMBER
                 </button>
             </div>
 
@@ -321,7 +336,7 @@ export default function StaffPage() {
             {pendingExpertsCount > 0 && (
                 <div
                     onClick={() => navigate('/admin/marketing/cms')}
-                    className="bg-amber-500/10 border border-amber-500/20 p-2 shadow-sm flex items-center justify-between cursor-pointer group hover:bg-amber-500/15 transition-all text-left"
+                    className="bg-amber-500/10 border border-amber-500/20 p-2 shadow-sm flex items-center justify-between cursor-pointer group hover:bg-amber-500/15 transition-all text-left mb-6 rounded-lg mx-2"
                 >
                     <div className="flex items-center gap-3">
                         <div className="w-8 h-8 rounded-lg bg-amber-500 flex items-center justify-center text-white">
@@ -340,51 +355,59 @@ export default function StaffPage() {
                 </div>
             )}
 
-            {/* Filters - Compact */}
-            <div className="bg-white p-2 border border-border shadow-sm flex flex-col md:flex-row gap-2">
+            {/* Filters */}
+            <div className="flex flex-col md:flex-row gap-4 mb-6 mt-6">
                 <div className="relative flex-1">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-text-muted" />
+                    <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                     <input
                         type="text"
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
-                        placeholder="Search by name or email..."
-                        className="w-full pl-9 pr-3 py-2 bg-surface border border-border text-[10px] font-black uppercase tracking-widest focus:border-primary outline-none transition-all placeholder:text-[9px]"
+                        placeholder="SEARCH BY NAME OR EMAIL..."
+                        className="w-full pl-12 pr-5 py-3.5 bg-white border border-slate-200 rounded-full text-[11px] font-black uppercase tracking-widest focus:border-slate-300 outline-none transition-all placeholder:text-slate-300 text-text shadow-sm"
                     />
                 </div>
-                <div className="flex gap-2">
-                    <CustomSelect
-                        value={roleFilter === 'all' ? 'All Roles' : roleFilter.toUpperCase()}
-                        onChange={(val) => setRoleFilter(val === 'All Roles' ? 'all' : val.toLowerCase())}
-                        options={['All Roles', ...roles.map(r => r.name.toUpperCase())]}
-                        variant="compact"
-                        className="min-w-[120px]"
-                    />
-                    <CustomSelect
-                        value={outletFilter === 'all' ? 'All Salons' : outlets.find(o => o._id === outletFilter)?.name}
-                        onChange={(val) => setOutletFilter(val === 'All Salons' ? 'all' : outlets.find(o => o.name === val)?._id)}
-                        options={['All Salons', ...outlets.map(o => o.name)]}
-                        variant="compact"
-                        className="min-w-[150px]"
-                    />
+                <div className="flex gap-4">
+                    <div className="relative">
+                        <select
+                            value={roleFilter === 'all' ? 'All Roles' : roleFilter.toUpperCase()}
+                            onChange={(e) => setRoleFilter(e.target.value === 'All Roles' ? 'all' : e.target.value.toLowerCase())}
+                            className="pl-5 pr-10 py-3.5 bg-white border border-slate-200 rounded-full text-[11px] font-black tracking-widest outline-none focus:border-slate-300 transition-all appearance-none min-w-[160px] text-slate-700 shadow-sm"
+                        >
+                            <option value="All Roles">All Roles</option>
+                            {roles.map(r => <option key={r._id} value={r.name.toUpperCase()}>{r.name}</option>)}
+                        </select>
+                        <ChevronDown className="absolute right-5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+                    </div>
+                    <div className="relative">
+                        <select
+                            value={outletFilter === 'all' ? 'All Salons' : outlets.find(o => o._id === outletFilter)?.name}
+                            onChange={(e) => setOutletFilter(e.target.value === 'All Salons' ? 'all' : outlets.find(o => o.name === e.target.value)?._id)}
+                            className="pl-5 pr-10 py-3.5 bg-white border border-slate-200 rounded-full text-[11px] font-black tracking-widest outline-none focus:border-slate-300 transition-all appearance-none min-w-[160px] text-slate-700 shadow-sm"
+                        >
+                            <option value="All Salons">All Salons</option>
+                            {outlets.map(o => <option key={o._id} value={o.name}>{o.name}</option>)}
+                        </select>
+                        <ChevronDown className="absolute right-5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+                    </div>
                 </div>
             </div>
 
-            {/* Table - High Density */}
-            <div className="bg-white border border-border shadow-sm overflow-hidden min-h-[400px]">
+            {/* Table */}
+            <div className="bg-white !rounded-[24px] !border-[1.5px] border-slate-200 !overflow-hidden min-h-[400px] shadow-sm">
                 <div className="overflow-x-auto no-scrollbar">
                     <table className="w-full text-left border-collapse min-w-[900px]">
                         <thead>
-                            <tr className="bg-surface border-b border-border">
-                                <th className="px-4 py-4 text-[10px] font-bold text-text-muted uppercase tracking-wider">Staff Member</th>
-                                <th className="px-4 py-4 text-[10px] font-bold text-text-muted uppercase tracking-wider text-center">Contact Number</th>
-                                <th className="px-4 py-4 text-[10px] font-bold text-text-muted uppercase tracking-wider">Role</th>
-                                <th className="px-4 py-4 text-[10px] font-bold text-text-muted uppercase tracking-wider">Primary Salon</th>
-                                <th className="px-4 py-4 text-[10px] font-bold text-text-muted uppercase tracking-wider text-center">Status</th>
-                                <th className="px-4 py-4 text-[10px] font-bold text-text-muted uppercase tracking-wider text-right">Actions</th>
+                            <tr className="bg-slate-50 border-b border-slate-200">
+                                <th className="px-6 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">STAFF MEMBER</th>
+                                <th className="px-6 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">CONTACT NUMBER</th>
+                                <th className="px-6 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">ROLE</th>
+                                <th className="px-6 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">PRIMARY SALON</th>
+                                <th className="px-6 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">STATUS</th>
+                                <th className="px-6 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">ACTIONS</th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-border">
+                        <tbody className="divide-y divide-slate-50">
                             {filteredStaff.length === 0 ? (
                                 <tr>
                                     <td colSpan="6" className="px-6 py-20 text-center">
@@ -398,78 +421,73 @@ export default function StaffPage() {
                                 paginatedStaff.map((s, index) => (
                                     <tr
                                         key={s._id}
-                                        className="hover:bg-primary/[0.02] transition-colors group"
+                                        className="hover:bg-slate-50/50 transition-colors group"
                                     >
-                                        <td className="px-4 py-2">
-                                            <div className="flex items-center gap-3">
-                                                <div className="w-8 h-8 bg-surface-alt border border-border flex items-center justify-center text-text font-black text-[10px] font-mono group-hover:border-primary transition-colors overflow-hidden">
+                                        <td className="px-6 py-5">
+                                            <div className="flex items-center gap-4">
+                                                <div className={`w-10 h-10 rounded-full flex items-center justify-center font-black text-[14px] uppercase border border-slate-100 ${getAvatarColor(s.name)}`}>
                                                     {s.avatar ? (
                                                         <img
                                                             src={getImageUrl(s.avatar)}
                                                             alt={s.name}
-                                                            className="w-full h-full object-cover"
+                                                            className="w-full h-full rounded-full object-cover"
                                                         />
                                                     ) : (
-                                                        s.name?.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
+                                                        s.name?.charAt(0) || 'U'
                                                     )}
                                                 </div>
                                                 <div>
-                                                    <div className="font-black text-text text-[11px] group-hover:text-primary transition-colors italic uppercase font-mono">{s.name}</div>
-                                                    <div className="text-[9px] text-text-muted font-bold tracking-tight lowercase font-sans">{s.email}</div>
+                                                    <div className="font-black text-slate-700 text-[12px] uppercase">{s.name}</div>
+                                                    <div className="text-[11px] text-slate-500 font-bold lowercase mt-0.5">{s.email}</div>
                                                 </div>
                                             </div>
                                         </td>
-                                        <td className="px-4 py-4 text-center">
-                                            <span className="text-xs font-medium text-text-secondary tracking-tight">
+                                        <td className="px-6 py-5">
+                                            <span className="text-[12px] font-black text-slate-700 tracking-tight">
                                                 {maskPhone(s.phone, user?.role)}
                                             </span>
                                         </td>
-                                        <td className="px-4 py-2">
-                                            <div className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-none text-[8px] font-black uppercase tracking-tighter border border-transparent ${roleColors[s.role] || 'bg-slate-50 text-slate-500'}`}>
-                                                <Shield className="w-2.5 h-2.5" /> {s.role?.replace('_', ' ')}
+                                        <td className="px-6 py-5">
+                                            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-50 text-[10px] font-black text-slate-500 uppercase tracking-widest border border-slate-100">
+                                                <span className="w-1.5 h-1.5 rounded-full border border-slate-400 bg-transparent"></span> {s.role?.replace('_', ' ')}
                                             </div>
                                         </td>
-                                        <td className="px-4 py-2">
-                                            <div className="flex items-center gap-1 text-[9px] font-black text-text-muted uppercase italic font-mono truncate max-w-[120px]">
-                                                <MapPin className="w-2.5 h-2.5" />
-                                                {s.outletId?.name || outlets.find(o => o._id === (s.outletId?._id || s.outletId))?.name || 'Main Unit'}
+                                        <td className="px-6 py-5">
+                                            <div className="text-[11px] font-black text-slate-700 uppercase truncate max-w-[150px]">
+                                                {s.outletId?.name || outlets.find(o => o._id === (s.outletId?._id || s.outletId))?.name || 'MAIN UNIT'}
                                             </div>
                                         </td>
-                                        <td className="px-4 py-4 text-center">
-                                            <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 text-[10px] font-semibold border rounded-full uppercase tracking-wide ${statusColors[s.status] || statusColors.active}`}>
-                                                {s.status === 'active' ? <CheckCircle2 className="w-3 h-3" /> : <XCircle className="w-3 h-3" />}
-                                                {s.status || 'active'}
+                                        <td className="px-6 py-5">
+                                            <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-50 text-[10px] font-black text-emerald-500 uppercase tracking-widest border border-emerald-100">
+                                                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                                                {s.status || 'ACTIVE'}
                                             </span>
                                         </td>
-                                        <td className="px-4 py-2 text-right">
-                                            <div className="flex items-center justify-end gap-1">
+                                        <td className="px-6 py-5">
+                                            <div className="flex items-center justify-center gap-2">
                                                 <button
                                                     onClick={() => setViewingStaff(s)}
-                                                    className="p-1.5 text-text-muted hover:text-primary transition-colors"
-                                                    title="View Details"
+                                                    className="p-2 border border-slate-200 rounded-[12px] text-slate-500 hover:text-slate-800 hover:border-slate-300 transition-all bg-white shadow-sm"
                                                 >
-                                                    <Eye className="w-3.5 h-3.5" />
+                                                    <Eye className="w-4 h-4" />
                                                 </button>
                                                 <button
                                                     onClick={() => openEdit(s)}
-                                                    className="p-1.5 text-text-muted hover:text-text transition-colors"
-                                                    title="Edit"
+                                                    className="p-2 border border-slate-200 rounded-[12px] text-slate-500 hover:text-slate-800 hover:border-slate-300 transition-all bg-white shadow-sm"
                                                 >
-                                                    <Edit className="w-3.5 h-3.5" />
+                                                    <Edit className="w-4 h-4" />
                                                 </button>
                                                 <button
                                                     onClick={() => handleToggleStatus(s._id, s.status || 'active')}
-                                                    className="p-1.5 text-text-muted hover:text-rose-500 transition-colors"
-                                                    title="Toggle"
+                                                    className="p-2 border border-slate-200 rounded-[12px] text-slate-500 hover:text-slate-800 hover:border-slate-300 transition-all bg-white shadow-sm"
                                                 >
-                                                    <Ban className="w-3.5 h-3.5" />
+                                                    <Ban className="w-4 h-4" />
                                                 </button>
                                                 <button
                                                     onClick={() => handleDelete(s._id)}
-                                                    className="p-1.5 text-text-muted hover:text-rose-600 transition-colors"
-                                                    title="Delete"
+                                                    className="p-2 border border-slate-200 rounded-[12px] text-slate-500 hover:text-rose-500 hover:border-slate-300 transition-all bg-white shadow-sm"
                                                 >
-                                                    <Trash2 className="w-3.5 h-3.5" />
+                                                    <Trash2 className="w-4 h-4" />
                                                 </button>
                                             </div>
                                         </td>
@@ -480,29 +498,30 @@ export default function StaffPage() {
                     </table>
                 </div>
 
-                {/* Footer - Compact */}
-                <div className="bg-surface px-4 py-2 border-t border-border flex items-center justify-between">
-                    <span className="text-[8px] font-black text-text-muted uppercase tracking-[0.2em] font-mono italic">
-                        Showing {(currentPage - 1) * itemsPerPage + 1} - {Math.min(currentPage * itemsPerPage, filteredStaff.length)} of {filteredStaff.length} Members
+                {/* Footer */}
+                <div className="bg-white px-6 py-4 flex items-center justify-between border-t border-slate-200">
+                    <span className="text-[11px] font-black text-slate-500 uppercase tracking-widest">
+                        SHOWING {(currentPage - 1) * itemsPerPage + 1} - {Math.min(currentPage * itemsPerPage, filteredStaff.length)} OF {filteredStaff.length} MEMBERS
                     </span>
-                    <div className="flex gap-4">
+                    <div className="flex gap-2">
                         <button
                             type="button"
                             onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
                             disabled={currentPage === 1}
-                            className="text-[8px] font-black text-text-muted uppercase tracking-widest hover:text-primary transition-colors disabled:opacity-20"
+                            className="px-5 py-2.5 border border-slate-200 rounded-full text-[10px] font-black text-slate-400 uppercase tracking-widest hover:border-slate-300 transition-all disabled:opacity-30 bg-white"
                         >
-                            Previous
+                            PREVIOUS
                         </button>
                         <button
                             type="button"
                             onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
                             disabled={currentPage === totalPages || totalPages === 0}
-                            className="text-[8px] font-black text-text-muted uppercase tracking-widest hover:text-primary transition-colors disabled:opacity-20"
+                            className="px-5 py-2.5 border border-slate-200 rounded-full text-[10px] font-black text-slate-400 uppercase tracking-widest hover:border-slate-300 transition-all disabled:opacity-30 bg-white"
                         >
-                            Next
+                            NEXT
                         </button>
                     </div>
+                </div>
                 </div>
             </div>
 

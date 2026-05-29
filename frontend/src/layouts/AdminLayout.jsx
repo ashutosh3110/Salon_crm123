@@ -283,14 +283,15 @@ export default function AdminLayout() {
                 html:not(.dark) .admin-panel .bg-surface,
                 html:not(.dark) .admin-panel .bg-white {
                     background-color: #ffffff !important;
-                    border: 1px solid #f1f5f9 !important;
-                    border-radius: 1.25rem !important;
+                    border: 2px solid #e2e8f0 !important;
+                    border-radius: 1.5rem !important;
                     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.03), 0 2px 4px -2px rgba(0, 0, 0, 0.03) !important;
                 }
                 .dark .admin-panel .bg-surface,
                 .dark .admin-panel .bg-white {
                     background-color: #1e293b !important;
-                    border-color: rgba(255, 255, 255, 0.06) !important;
+                    border: 2px solid rgba(255, 255, 255, 0.10) !important;
+                    border-radius: 1.5rem !important;
                 }
 
                 /* --- Dynamic & Premium Buttons --- */
@@ -1242,6 +1243,20 @@ export default function AdminLayout() {
                 /* Fix dark mode: recharts text fill for axis ticks */
                 .admin-panel .recharts-text tspan {
                     fill: currentColor !important;
+                }
+
+                /* =============================================
+                   ✅ DASHBOARD STAT CARDS — FORCED ROUND EDGES
+                   ============================================= */
+                .admin-panel .dash-stat-card,
+                html:not(.dark) .admin-panel .dash-stat-card,
+                .dark .admin-panel .dash-stat-card {
+                    border-radius: 1.25rem !important;
+                    border: 1.5px solid #e2e8f0 !important;
+                    overflow: hidden;
+                }
+                html:not(.dark) .admin-panel .dash-stat-card {
+                    background-color: #ffffff !important;
                 }
 
             `}</style>

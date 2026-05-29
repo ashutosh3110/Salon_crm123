@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { useNavigate } from 'react-router-dom';
+
 import {
     Plus,
     Edit2,
@@ -17,7 +17,7 @@ import {
     Calendar,
     Settings
 } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { AnimatePresence } from 'framer-motion';
 import api from '../../../services/api';
 import toast from 'react-hot-toast';
 
@@ -76,7 +76,7 @@ export default function MembershipPlansTab() {
             api.delete(`/loyalty/membership-plans/${id}`).then(() => {
                 toast.success('Plan deleted');
                 loadPlans();
-            }).catch(e => toast.error('Failed to delete'));
+            }).catch(() => toast.error('Failed to delete'));
         }
     };
 
@@ -86,31 +86,31 @@ export default function MembershipPlansTab() {
         api.patch(`/loyalty/membership-plans/${id}`, { isActive: !item.isActive }).then(() => {
             toast.success(`Plan ${item.isActive ? 'Paused' : 'Activated'}`);
             loadPlans();
-        }).catch(e => toast.error('Failed to update status'));
+        }).catch(() => toast.error('Failed to update status'));
     };
 
     return (
-        <div className="space-y-8 italic">
+        <div className="space-y-8">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center text-left gap-4">
                 <div className="flex items-center gap-3">
-                    <div className="w-1.5 h-8 bg-primary" />
+                    <div className="w-[3px] h-6 bg-[#cca839]" />
                     <div>
-                        <h2 className="text-2xl font-black text-foreground uppercase italic tracking-tighter leading-none">Membership Plans</h2>
-                        <p className="text-[10px] font-black text-text-muted uppercase tracking-widest mt-1">Manage your customer loyalty tiers and benefits</p>
+                        <h2 className="text-[22px] font-black text-slate-900 uppercase tracking-tighter leading-none">MEMBERSHIP PLANS</h2>
+                        <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-1.5">MANAGE YOUR CUSTOMER LOYALTY TIERS AND BENEFITS</p>
                     </div>
                 </div>
                 <button
                     onClick={() => { setEditingPlan(null); setShowModal(true); }}
-                    className="flex items-center justify-center gap-2 px-6 py-3 bg-primary text-white font-black text-xs uppercase tracking-widest hover:scale-105 transition-all shadow-xl shadow-primary/20 w-full sm:w-auto"
+                    className="flex items-center justify-center gap-2 px-6 py-2.5 bg-[#cca839] text-white font-bold text-[11px] uppercase tracking-widest hover:bg-[#b89531] transition-all rounded-full shadow-sm w-full sm:w-auto"
                 >
-                    <Plus className="w-4 h-4" /> Create New Plan
+                    <Plus className="w-4 h-4" /> CREATE NEW PLAN
                 </button>
             </div>
 
             {loading ? (
                 <div className="py-20 text-center text-sm font-bold text-text-muted italic opacity-40">Syncing Membership Tiers...</div>
             ) : (
-                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {plans.map((plan) => (
                         <MembershipCard
                             key={plan.id}
@@ -153,55 +153,88 @@ export default function MembershipPlansTab() {
 }
 
 function MembershipCard({ plan, onEdit, onDelete, onToggle }) {
+    const isPro = plan.name.toLowerCase().includes('pro');
+    const isPremium = plan.name.toLowerCase().includes('premium');
     const Icon = plan.icon === 'gem' ? Gem : (plan.icon === 'crown' ? Crown : Star);
+    
+    // Determine colors based on tier
+    let topBorder = 'bg-slate-200';
+    let iconColor = 'text-slate-400 bg-slate-100';
+    let checkColor = 'text-slate-400';
+    let badgeBg = 'bg-slate-100 text-slate-700';
+    
+    if (isPro) {
+        topBorder = 'bg-[#cca839]';
+        iconColor = 'text-[#cca839] bg-[#cca839]/10';
+        checkColor = 'text-[#cca839]';
+        badgeBg = 'bg-[#cca839]/10 text-[#cca839]';
+    } else if (isPremium) {
+        topBorder = 'bg-slate-800';
+        iconColor = 'text-slate-800 bg-slate-100';
+        checkColor = 'text-[#cca839]';
+        badgeBg = 'bg-slate-200/60 text-slate-800';
+    }
+
     return (
-        <motion.div layout className={`relative group bg-surface border overflow-hidden transition-all duration-500 ${plan.isActive ? 'border-border/40' : 'border-rose-500/20 grayscale opacity-60 hover:shadow-[10px_10px_0px_#C8956C]'}`}>
-            <div style={{ background: plan.gradient }} className="h-2 w-full" />
-            <div className="p-8 text-left">
+        <div className={`relative bg-white border border-slate-200 rounded-2xl overflow-hidden transition-all shadow-sm hover:shadow-md`}>
+            <div className={`h-[6px] w-full ${topBorder}`} />
+            <div className="p-6 text-left">
                 <div className="flex justify-between items-start mb-6">
-                    <div className="p-3 bg-surface-alt border border-border/60 text-primary shadow-inner rounded-xl group-hover:scale-110 transition-transform duration-500"><Icon size={24} /></div>
+                    <div className={`p-3 rounded-full ${iconColor}`}>
+                        <Icon size={20} />
+                    </div>
                     <div className="flex gap-2">
-                        <button onClick={onEdit} className="p-2 rounded-lg hover:bg-primary/10 text-text-muted hover:text-primary transition-all"><Edit2 size={16} /></button>
-                        <button onClick={onDelete} className="p-2 rounded-lg hover:bg-rose-500/10 text-text-muted hover:text-rose-500 transition-all"><Trash2 size={16} /></button>
+                        <button onClick={onEdit} className="p-2 border border-slate-100 rounded-full hover:bg-slate-50 text-slate-400 hover:text-[#cca839] transition-all"><Edit2 size={14} /></button>
+                        <button onClick={onDelete} className="p-2 border border-slate-100 rounded-full hover:bg-slate-50 text-slate-400 hover:text-rose-500 transition-all"><Trash2 size={14} /></button>
                     </div>
                 </div>
+                
                 <div className="space-y-1 mb-6">
-                    <h3 className="text-xl font-black text-foreground uppercase italic tracking-tighter">{plan.name}</h3>
-                    <div className="flex items-center gap-2">
-                        <span className="text-2xl font-black text-foreground italic">₹{plan.price}</span>
-                        <span className="text-[10px] font-black text-text-muted uppercase tracking-widest">/ {plan.duration} Days</span>
+                    <h3 className="text-[15px] font-black text-slate-900 uppercase tracking-tighter">{plan.name}</h3>
+                    <div className="flex items-baseline gap-1.5">
+                        <span className="text-[22px] font-black text-slate-800 tracking-tighter">₹{plan.price}</span>
+                        <span className="text-[10px] font-bold text-slate-500 uppercase">/ {plan.duration} DAYS</span>
                     </div>
-                    <div className="text-[8px] font-black text-text-muted uppercase tracking-[0.15em] leading-none mt-1 opacity-70">
+                    <div className="text-[9px] font-bold text-slate-500 uppercase mt-1">
                         {plan.taxType === 'including' ? `INCL. ${plan.taxRate}% GST` : `EXCL. ${plan.taxRate}% GST`}
                     </div>
                 </div>
-                <div className="space-y-3 mb-8">
+                
+                <div className="space-y-3 mb-6">
                     {plan.benefits.slice(0, 4).map((benefit, i) => (
-                        <div key={i} className="flex items-center gap-3 text-xs font-bold text-text-muted italic group-hover:text-foreground transition-colors line-clamp-1">
-                            <Check size={14} className="text-primary shrink-0" />
-                            {benefit}
+                        <div key={i} className="flex items-start gap-2.5 text-[11px] font-bold text-slate-700">
+                            <Check size={14} className={`${checkColor} shrink-0 mt-0.5`} />
+                            <span>{benefit}</span>
                         </div>
                     ))}
-                    <div className="pt-4 mt-2 border-t border-border/30 space-y-3">
-                        <div className="flex justify-between items-center">
-                            <p className="text-[9px] font-black text-primary uppercase tracking-widest leading-none">All Services</p>
-                            <span className="px-2 py-1 text-[9px] font-black bg-primary/10 text-primary uppercase tracking-tighter italic">
-                                {plan.serviceDiscountValue}{plan.serviceDiscountType === 'percentage' ? '%' : '₹'} OFF
+                    
+                    <div className="pt-4 mt-2 space-y-2.5">
+                        <div className="flex justify-between items-center bg-slate-50 p-2.5 px-4 rounded-full border border-slate-100">
+                            <div className="flex items-center gap-2">
+                                <Layout size={12} className="text-slate-400" />
+                                <p className="text-[9px] font-black text-slate-700 uppercase tracking-wide">ALL SERVICES</p>
+                            </div>
+                            <span className={`px-2.5 py-1 text-[10px] font-black rounded-full uppercase ${badgeBg}`}>
+                                {plan.serviceDiscountValue}{plan.serviceDiscountType === 'percentage' ? '% OFF' : '₹ OFF'}
                             </span>
                         </div>
-                        <div className="flex justify-between items-center">
-                            <p className="text-[9px] font-black text-primary uppercase tracking-widest leading-none">All Products</p>
-                            <span className="px-2 py-1 text-[9px] font-black bg-primary/10 text-primary uppercase tracking-tighter italic">
-                                {plan.productDiscountValue}{plan.productDiscountType === 'percentage' ? '%' : '₹'} OFF
+                        <div className="flex justify-between items-center bg-slate-50 p-2.5 px-4 rounded-full border border-slate-100">
+                            <div className="flex items-center gap-2">
+                                <Layout size={12} className="text-slate-400" />
+                                <p className="text-[9px] font-black text-slate-700 uppercase tracking-wide">ALL PRODUCTS</p>
+                            </div>
+                            <span className={`px-2.5 py-1 text-[10px] font-black rounded-full uppercase ${badgeBg}`}>
+                                {plan.productDiscountValue}{plan.productDiscountType === 'percentage' ? '% OFF' : '₹ OFF'}
                             </span>
                         </div>
                     </div>
                 </div>
-                <button onClick={onToggle} className={`w-full py-3 border font-black text-[10px] uppercase tracking-[0.2em] transition-all ${plan.isActive ? 'bg-transparent text-emerald-500 border-emerald-500/30 hover:bg-emerald-500/5' : 'bg-rose-500/10 text-rose-500 border-rose-500/30 hover:bg-rose-500/20'}`}>
-                    {plan.isActive ? 'Status: Active' : 'Status: Paused'}
+                
+                <button onClick={onToggle} className={`w-full py-3 rounded-full font-bold text-[10px] uppercase tracking-widest transition-all ${plan.isActive ? 'bg-emerald-50 text-emerald-600 hover:bg-emerald-100' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'}`}>
+                    {plan.isActive ? 'STATUS: ACTIVE' : 'STATUS: PAUSED'}
                 </button>
             </div>
-        </motion.div>
+        </div>
     );
 }
 
@@ -266,10 +299,8 @@ function PlanModal({ plan, serviceOptions = [], onClose, onSave }) {
             className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm"
             onClick={onClose}
         >
-            <motion.div 
-                initial={{ opacity: 0, scale: 0.95, y: 20 }} 
-                animate={{ opacity: 1, scale: 1, y: 0 }} 
-                className="relative bg-white border border-slate-200 w-full max-w-lg shadow-2xl rounded-none flex flex-col max-h-[90vh] text-left"
+            <div 
+                className="relative bg-white border border-slate-200 w-full max-w-lg shadow-2xl rounded-2xl flex flex-col max-h-[90vh] text-left overflow-hidden"
                 onClick={e => e.stopPropagation()}
             >
                 {/* Modal Header */}
@@ -479,12 +510,12 @@ function PlanModal({ plan, serviceOptions = [], onClose, onSave }) {
                 <div className="p-6 border-t border-slate-100 bg-slate-50 shrink-0">
                     <button 
                         onClick={() => onSave(formData)} 
-                        className="w-full py-4 bg-slate-900 text-white font-black text-[10px] uppercase tracking-widest hover:bg-primary transition-all shadow-xl flex items-center justify-center gap-3 rounded-none"
+                        className="w-full py-4 bg-slate-900 text-white font-black text-[10px] uppercase tracking-widest hover:bg-primary transition-all shadow-xl flex items-center justify-center gap-3 rounded-full"
                     >
                         SAVE MEMBERSHIP PLAN <Save size={14} />
                     </button>
                 </div>
-            </motion.div>
+            </div>
         </div>,
         document.body
     );

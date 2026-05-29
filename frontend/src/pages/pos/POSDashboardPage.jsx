@@ -5,11 +5,11 @@ import {
     Banknote, CreditCard, Smartphone, Ban,
     Clock, ArrowRight, Zap, ShoppingCart, Users,
     AlertTriangle, Calendar, Printer, Package, RefreshCcw, X,
-    Store, ChevronDown
+    Store, ChevronDown, ChevronRight
 } from 'lucide-react';
 import {
-    BarChart,
-    Bar,
+    LineChart,
+    Line,
     XAxis,
     YAxis,
     CartesianGrid,
@@ -17,7 +17,8 @@ import {
     ResponsiveContainer,
     PieChart,
     Pie,
-    Cell
+    Cell,
+    Legend
 } from 'recharts';
 import { useBusiness } from '../../contexts/BusinessContext';
 import api from '../../services/api';
@@ -106,10 +107,10 @@ export default function POSDashboardPage() {
     };
 
     const statCards = [
-        { label: "TODAY'S REVENUE", value: `₹${stats.revenue.toLocaleString()}`, icon: DollarSign, trend: 'LIVE', positive: true },
-        { label: 'TOTAL INVOICES', value: stats.count, icon: Receipt, trend: 'REAL-TIME', positive: true },
-        { label: 'UNPAID BILLS', value: stats.unpaidCount, icon: Clock, trend: 'ACTION REQ', positive: false },
-        { label: 'AVG. TICKET', value: `₹${stats.avgBill.toLocaleString()}`, icon: TrendingUp, trend: 'CALCULATED', positive: true },
+        { label: "TODAY'S REVENUE", value: `₹${stats.revenue.toLocaleString()}`, icon: DollarSign, trend: 'LIVE', positive: true, iconBg: 'bg-indigo-50', iconColor: 'text-indigo-600', trendColor: 'text-emerald-500 bg-emerald-50 border border-emerald-100' },
+        { label: 'TOTAL INVOICES', value: stats.count, icon: Receipt, trend: 'REAL-TIME', positive: true, iconBg: 'bg-blue-50', iconColor: 'text-blue-500', trendColor: 'text-emerald-500 bg-emerald-50 border border-emerald-100' },
+        { label: 'UNPAID BILLS', value: stats.unpaidCount, icon: Clock, trend: 'ACTION REQ', positive: false, iconBg: 'bg-orange-50', iconColor: 'text-orange-500', trendColor: 'text-rose-500 bg-rose-50 border border-rose-100' },
+        { label: 'AVG. TICKET', value: `₹${stats.avgBill.toLocaleString()}`, icon: TrendingUp, trend: 'CALCULATED', positive: true, iconBg: 'bg-emerald-50', iconColor: 'text-emerald-500', trendColor: 'text-emerald-500 bg-emerald-50 border border-emerald-100' },
     ];
 
     const quickActions = [
@@ -120,28 +121,25 @@ export default function POSDashboardPage() {
     ];
 
     return (
-        <div className="space-y-8 animate-reveal pb-10 text-left font-black">
+        <div className="space-y-6 animate-reveal pb-10 text-left font-black bg-slate-50/50 min-h-screen">
             {/* Dashboard Header */}
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6 border-b border-border pb-6">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6 pb-2">
                 <div>
-                    <h1 className="text-2xl font-black text-text uppercase tracking-tight">POS Dashboard</h1>
-                    <p className="text-sm font-black text-text-muted mt-2 uppercase tracking-[0.2em] opacity-60 flex items-center gap-2">
-                        <span className="flex h-2 w-2 relative">
-                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                            <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-                        </span>
-                        Live Overview • {new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })}
+                    <h1 className="text-2xl font-black text-text uppercase tracking-tight flex items-center gap-3">POS Dashboard</h1>
+                    <p className="text-[11px] font-black text-slate-500 mt-2 uppercase tracking-widest flex items-center gap-2">
+                        <span className="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]"></span>
+                        LIVE OVERVIEW • {new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })}
                     </p>
                 </div>
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-4">
                     <div className="relative group">
                         <div className="absolute left-3 top-1/2 -translate-y-1/2">
-                            <Store className="w-3.5 h-3.5 text-primary" />
+                            <Store className="w-4 h-4 text-text-muted" />
                         </div>
                         <select
                             value={activeOutletId || ''}
                             onChange={(e) => setActiveOutletId(e.target.value)}
-                            className="pl-9 pr-8 py-3 bg-surface border border-border text-sm font-black uppercase tracking-widest outline-none focus:border-primary transition-all cursor-pointer appearance-none min-w-[180px]"
+                            className="pl-10 pr-8 py-3 bg-white border border-slate-200 rounded-lg text-[11px] font-black uppercase tracking-widest outline-none focus:border-primary transition-all cursor-pointer appearance-none min-w-[240px] shadow-sm text-text"
                         >
                             <option value="">All Outlets</option>
                             {(outlets || []).map(o => (
@@ -154,212 +152,226 @@ export default function POSDashboardPage() {
                     </div>
                     <button 
                         onClick={() => { setRefreshing(true); loadDashboard(); }} 
-                        className={`p-3 border border-border hover:bg-surface-alt transition-all ${refreshing ? 'animate-spin text-primary' : 'text-text-muted'}`}
+                        className={`p-3 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition-all shadow-sm ${refreshing ? 'animate-spin text-primary' : 'text-text-muted'}`}
                     >
                         <RefreshCcw className="w-4 h-4" />
                     </button>
-                    <button onClick={() => navigate('/pos/billing')} className="px-8 py-3 bg-primary text-white font-black text-sm uppercase tracking-[0.2em] hover:bg-primary-dark transition-all shadow-xl shadow-primary/20 flex items-center gap-3 active:scale-95">
-                        <Zap className="w-4 h-4" /> Create Bill
+                    <button onClick={() => navigate('/pos/billing')} className="px-6 py-3 bg-[#cca839] text-white rounded-lg font-black text-[11px] uppercase tracking-widest hover:bg-[#b59533] transition-all flex items-center gap-2 shadow-sm border-b-2 border-black/10">
+                        <Zap className="w-4 h-4" /> CREATE BILL
                     </button>
                 </div>
             </div>
+
             {/* Threshold Alerts */}
             {lowStockItems.length > 0 && showStockAlert && (
-                <div className="pos-stock-alert-banner bg-amber-500/10 dark:bg-amber-950/20 border border-amber-500/30 p-5 rounded-none flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                    <div className="flex items-center gap-5">
-                        <div className="w-12 h-12 bg-amber-500/20 dark:bg-amber-500/10 border border-amber-500/30 flex items-center justify-center shrink-0">
-                            <AlertTriangle className="w-6 h-6 text-amber-600 dark:text-amber-500" />
-                        </div>
+                <div className="bg-[#FFF8ED] border border-[#FDEBCE] rounded-lg p-4 flex items-center justify-between shadow-sm">
+                    <div className="flex items-center gap-4">
+                        <AlertTriangle className="w-5 h-5 text-orange-500" />
                         <div>
-                            <p className="pos-stock-alert-title text-sm font-black text-amber-900 dark:text-amber-400 uppercase tracking-widest">Low Stock Alert</p>
-                            <p className="pos-stock-alert-desc text-sm text-amber-800 dark:text-slate-300 font-bold uppercase tracking-wider mt-1">{lowStockItems.length} products are low in stock</p>
+                            <p className="text-[12px] font-black text-text uppercase tracking-[0.2em] leading-none">LOW STOCK ALERT</p>
+                            <p className="text-[10px] font-black text-text-muted mt-2 tracking-widest uppercase leading-none">{lowStockItems.length} products are low in stock</p>
                         </div>
                     </div>
-                    <div className="flex items-center gap-3 self-end sm:self-center">
+                    <div className="flex items-center gap-3">
                         <button 
                             onClick={() => navigate('/admin/inventory/stock-overview')} 
-                            className="pos-stock-alert-btn text-xs font-black text-amber-900 dark:text-amber-400 bg-amber-500/20 dark:bg-amber-500/10 border border-amber-500/30 hover:bg-amber-500 hover:text-white dark:hover:bg-amber-500 dark:hover:text-white uppercase tracking-widest px-6 py-2.5 active:scale-95 transition-all"
+                            className="text-[10px] font-black bg-[#9C4A28] text-white uppercase tracking-widest px-5 py-2.5 rounded-lg hover:bg-[#7D3A1F] transition-all shadow-sm"
                         >
-                            Check Stock
+                            CHECK STOCK
                         </button>
-                        <button 
-                            onClick={() => setShowStockAlert(false)} 
-                            className="pos-stock-alert-close p-2 border border-amber-500/20 hover:bg-amber-500/10 text-amber-800 dark:text-amber-500 transition-all rounded-none"
-                            title="Dismiss Alert"
-                        >
-                            <X className="w-4 h-4" />
+                        <button onClick={() => setShowStockAlert(false)} className="p-1.5 hover:bg-orange-100/50 border border-[#FDEBCE] rounded text-text-muted transition-colors bg-white/50">
+                            <X className="w-3.5 h-3.5" />
                         </button>
                     </div>
                 </div>
             )}
 
             {/* Stat Cards */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 {statCards.map((s, i) => (
-                    <div key={i} className="bg-surface p-6 rounded-none border border-border shadow-sm hover:border-primary/40 transition-all group overflow-hidden relative text-left">
-                        <div className="absolute top-0 right-0 w-24 h-24 bg-primary/5 -mr-8 -mt-8 rotate-45 pointer-events-none group-hover:bg-primary/10 transition-colors" />
-                        <div className="flex items-center justify-between mb-6 relative z-10 text-left">
-                            <div className="flex items-center gap-3 text-left font-black">
-                                <s.icon className="w-4 h-4 text-primary" />
-                                <p className="text-sm font-black text-text-muted uppercase tracking-[0.2em] text-left">{s.label}</p>
+                    <div key={i} className="bg-white p-5 rounded-xl border border-slate-100 shadow-[0_2px_10px_rgba(0,0,0,0.02)] flex flex-col">
+                        <div className="flex justify-between items-start mb-4">
+                            <div className="flex items-center gap-3">
+                                <div className={`w-9 h-9 rounded-full flex items-center justify-center ${s.iconBg}`}>
+                                    <s.icon className={`w-4 h-4 ${s.iconColor}`} />
+                                </div>
+                                <div className="flex flex-col gap-1">
+                                    <div className="flex items-center gap-3">
+                                        <p className="text-[11px] font-black text-text uppercase tracking-widest">{s.label}</p>
+                                        <span className={`text-[9px] font-black uppercase tracking-[0.2em] px-2 py-0.5 rounded-md ${s.trendColor}`}>
+                                            {s.trend}
+                                        </span>
+                                    </div>
+                                    <h3 className="text-2xl font-black text-text uppercase tracking-tight leading-none mt-2">{s.value}</h3>
+                                </div>
                             </div>
-                            <span className={`text-xs font-black uppercase tracking-widest px-2 py-0.5 border ${s.positive ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' : 'bg-rose-500/10 text-rose-500 border-rose-500/20'}`}>
-                                {s.trend}
-                            </span>
                         </div>
-                        <div className="flex items-end justify-between relative z-10 text-left font-black">
-                            <h3 className="text-3xl font-black text-text tracking-tighter uppercase text-left">{s.value}</h3>
+                        <div className="mt-2 flex justify-between items-center px-1">
+                            <span className="text-[11px] font-black text-slate-400 uppercase tracking-widest">vs Yesterday ₹0</span>
+                            <span className="text-[11px] font-black text-slate-400">--</span>
                         </div>
                     </div>
                 ))}
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 text-left font-black">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 text-left font-black">
                 {/* Visual Analytics */}
-                <div className="lg:col-span-2 bg-surface rounded-none border border-border shadow-sm flex flex-col p-8">
-                    <div className="flex items-center justify-between mb-10">
+                <div className="lg:col-span-2 bg-white rounded-xl border border-slate-100 shadow-[0_2px_10px_rgba(0,0,0,0.02)] flex flex-col p-6">
+                    <div className="flex items-center justify-between mb-8">
                         <div>
-                            <h3 className="text-sm font-black text-text tracking-[0.2em] uppercase">Payment Summary</h3>
-                            <p className="text-sm text-text-muted font-bold uppercase tracking-widest mt-1">Today's payment collection by method</p>
+                            <h3 className="text-[12px] font-black text-text tracking-[0.2em] uppercase">PAYMENT SUMMARY</h3>
+                            <p className="text-[10px] text-text-muted font-black uppercase tracking-widest mt-1">TODAY'S PAYMENT COLLECTION BY METHOD</p>
                         </div>
-                        <div className="flex gap-4">
-                            {paymentBreakdown.map(p => (
-                                <div key={p.name} className="flex items-center gap-2">
-                                    <div className="w-2.5 h-2.5 rounded-none" style={{ backgroundColor: p.color }} />
-                                    <span className="text-xs font-black text-text-muted uppercase">{p.name}</span>
-                                </div>
-                            ))}
+                        <div className="flex gap-6 items-center">
+                            <div className="flex gap-4 items-center">
+                                <div className="flex items-center gap-2"><div className="w-3 h-3 rounded-sm bg-emerald-500"/><span className="text-[10px] font-black uppercase tracking-widest text-text">CASH</span></div>
+                                <div className="flex items-center gap-2"><div className="w-3 h-3 rounded-sm bg-purple-500"/><span className="text-[10px] font-black uppercase tracking-widest text-text">UPI</span></div>
+                                <div className="flex items-center gap-2"><div className="w-3 h-3 rounded-sm bg-amber-500"/><span className="text-[10px] font-black uppercase tracking-widest text-text">UNPAID</span></div>
+                            </div>
+                            <div className="flex items-center gap-2 border border-slate-200 px-4 py-2 rounded-lg bg-white shadow-sm cursor-pointer text-[10px] font-black uppercase tracking-widest text-text hover:bg-slate-50">
+                                Today <ChevronDown className="w-4 h-4" />
+                            </div>
                         </div>
                     </div>
-                    <div className="h-[300px] w-full">
+                    <div className="h-[200px] w-full mt-2 relative">
                         <ResponsiveContainer width="100%" height="100%">
-                            <BarChart data={paymentBreakdown}>
-                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--color-border)" opacity={0.3} />
-                                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 12, fontWeight: 900, fill: 'var(--color-text-muted)' }} />
+                            <LineChart data={[
+                                { name: 'Cash', value: paymentBreakdown.find(p=>p.name==='Cash')?.value||0 },
+                                { name: 'UPI', value: paymentBreakdown.find(p=>p.name==='UPI')?.value||0 },
+                                { name: 'Unpaid', value: paymentBreakdown.find(p=>p.name==='Unpaid')?.value||0 }
+                            ]}>
+                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                                <XAxis dataKey="name" axisLine={{stroke: '#e2e8f0'}} tickLine={false} tick={{ fontSize: 9, fontWeight: 900, fill: '#64748b' }} dy={10} />
                                 <YAxis hide />
-                                <Tooltip
-                                    contentStyle={{
-                                        backgroundColor: 'var(--card)',
-                                        border: '1px solid var(--color-border)',
-                                        borderRadius: '0px',
-                                        fontSize: '12px',
-                                        fontWeight: '900',
-                                        textTransform: 'uppercase'
-                                    }}
-                                    cursor={{ fill: 'rgba(180, 145, 43, 0.08)' }}
+                                <Tooltip 
+                                    contentStyle={{ backgroundColor: '#fff', border: '1px solid #e2e8f0', borderRadius: '4px', fontSize: '10px', fontWeight: '900', textTransform: 'uppercase' }}
                                 />
-                                <Bar dataKey="value" barSize={40}>
-                                    {paymentBreakdown.map((entry, index) => (
-                                        <Cell key={`cell-${index}`} fill={entry.color} />
-                                    ))}
-                                </Bar>
-                            </BarChart>
+                                <Line type="monotone" dataKey="value" stroke="#8b5cf6" strokeWidth={2.5} dot={{ r: 5, fill: '#8b5cf6', stroke: '#fff', strokeWidth: 2 }} activeDot={{ r: 7 }} />
+                            </LineChart>
                         </ResponsiveContainer>
+                    </div>
+
+                    <div className="grid grid-cols-4 mt-12 pt-6 border-t border-slate-100 divide-x divide-slate-100 relative">
+                        <div className="flex items-center gap-4 px-4">
+                            <div className="w-10 h-10 rounded-lg bg-emerald-50 flex items-center justify-center border border-emerald-100 shrink-0"><DollarSign className="w-5 h-5 text-emerald-500"/></div>
+                            <div className="flex flex-col justify-center">
+                                <p className="text-base font-black text-text">₹{paymentBreakdown.find(p=>p.name==='Cash')?.value||0}</p>
+                                <p className="text-[9px] font-black text-text-muted uppercase tracking-widest mt-1">CASH COLLECTED</p>
+                            </div>
+                            <ChevronRight className="w-4 h-4 text-slate-300 absolute right-0 -mr-2 opacity-50" />
+                        </div>
+                        <div className="flex items-center gap-4 px-6 relative">
+                            <div className="w-10 h-10 rounded-lg bg-purple-50 flex items-center justify-center border border-purple-100 shrink-0"><Smartphone className="w-5 h-5 text-purple-500"/></div>
+                            <div className="flex flex-col justify-center">
+                                <p className="text-base font-black text-text">₹{paymentBreakdown.find(p=>p.name==='UPI')?.value||0}</p>
+                                <p className="text-[9px] font-black text-text-muted uppercase tracking-widest mt-1">UPI COLLECTED</p>
+                            </div>
+                            <ChevronRight className="w-4 h-4 text-slate-300 absolute right-0 -mr-2 opacity-50" />
+                        </div>
+                        <div className="flex items-center gap-4 px-6 relative">
+                            <div className="w-10 h-10 rounded-lg bg-orange-50 flex items-center justify-center border border-orange-100 shrink-0"><Receipt className="w-5 h-5 text-orange-500"/></div>
+                            <div className="flex flex-col justify-center">
+                                <p className="text-base font-black text-text">₹{paymentBreakdown.find(p=>p.name==='Unpaid')?.value||0}</p>
+                                <p className="text-[9px] font-black text-text-muted uppercase tracking-widest mt-1">UNPAID AMOUNT</p>
+                            </div>
+                            <ChevronRight className="w-4 h-4 text-slate-300 absolute right-0 -mr-2 opacity-50" />
+                        </div>
+                        <div className="flex items-center gap-4 px-6">
+                            <div className="w-10 h-10 rounded-lg bg-blue-50 flex items-center justify-center border border-blue-100 shrink-0"><RefreshCcw className="w-5 h-5 text-blue-500"/></div>
+                            <div className="flex flex-col justify-center">
+                                <p className="text-base font-black text-text">{stats.count||0}</p>
+                                <p className="text-[9px] font-black text-text-muted uppercase tracking-widest mt-1">TRANSACTIONS</p>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
-                {/* Right Column: Actions & Distribution */}
-                <div className="space-y-8 text-left font-black">
-                    <div className="bg-surface rounded-none border border-border shadow-sm p-8 space-y-8 flex flex-col">
-                        <h3 className="text-sm font-black text-text uppercase tracking-[0.2em] border-b border-border pb-4">
-                            Collections Split
-                        </h3>
-                        <div className="h-[220px] w-full relative">
+                {/* Right Column */}
+                <div className="space-y-6">
+                    <div className="bg-white rounded-xl border border-slate-100 shadow-[0_2px_10px_rgba(0,0,0,0.02)] p-6 flex flex-col">
+                        <h3 className="text-[12px] font-black text-text uppercase tracking-widest mb-4">COLLECTIONS SPLIT</h3>
+                        <div className="h-[200px] w-full relative">
                             <ResponsiveContainer width="100%" height="100%">
                                 <PieChart>
-                                    <Pie
-                                        data={paymentBreakdown}
-                                        cx="50%"
-                                        cy="50%"
-                                        innerRadius={60}
-                                        outerRadius={85}
-                                        paddingAngle={5}
-                                        dataKey="value"
-                                        stroke="transparent"
-                                    >
+                                    <Pie data={paymentBreakdown} cx="50%" cy="50%" innerRadius={70} outerRadius={85} paddingAngle={2} dataKey="value" stroke="none">
                                         {paymentBreakdown.map((entry, index) => (
-                                            <Cell key={`cell-${index}`} fill={entry.color} />
+                                            <Cell key={`cell-${index}`} fill={stats.revenue === 0 ? '#f1f5f9' : entry.color} />
                                         ))}
                                     </Pie>
-                                    <Tooltip
-                                        contentStyle={{
-                                            backgroundColor: 'var(--card)',
-                                            border: '1px solid var(--color-border)',
-                                            borderRadius: '0px',
-                                            fontSize: '12px',
-                                            fontWeight: '900',
-                                            textTransform: 'uppercase'
-                                        }}
-                                    />
                                 </PieChart>
                             </ResponsiveContainer>
                             <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                                <p className="text-xl font-black text-text uppercase">₹{Math.round(stats.revenue / 1000)}k</p>
-                                <p className="text-xs text-text-muted font-black uppercase">Today Total</p>
+                                <p className="text-2xl font-black text-text uppercase">₹{Math.round(stats.revenue/1000)}K</p>
+                                <p className="text-[10px] font-black text-text uppercase tracking-widest mt-1">TODAY TOTAL</p>
                             </div>
                         </div>
                     </div>
 
-                    {/* Quick Access Grid */}
-                    <div className="pos-quick-action-card bg-text p-8 rounded-none text-background shadow-2xl relative overflow-hidden group text-left">
-                        <div className="relative z-10 space-y-6">
-                            <h3 className="pos-quick-action-title text-sm font-black uppercase tracking-[0.3em] opacity-40">Quick Actions</h3>
-                            <div className="grid grid-cols-2 gap-3">
-                                {quickActions.map((action, i) => (
-                                    <button
-                                        key={i}
-                                        onClick={action.onClick || (() => navigate(action.path))}
-                                        className="pos-quick-action-btn p-5 bg-white/5 hover:bg-primary transition-all border border-white/10 flex flex-col items-center gap-3 active:scale-95 group/btn"
-                                    >
-                                        <action.icon className="w-5 h-5 text-primary group-hover/btn:text-white" />
-                                        <span className="text-xs font-black uppercase tracking-widest text-center group-hover/btn:text-white">{action.label}</span>
-                                    </button>
-                                ))}
-                            </div>
+                    <div className="bg-[#0f172a] rounded-xl shadow-lg p-6 flex flex-col h-[200px]">
+                        <h3 className="text-[11px] font-black text-white uppercase tracking-[0.1em] mb-4">QUICK ACTIONS</h3>
+                        <div className="grid grid-cols-2 gap-4 h-full">
+                            <button onClick={() => navigate('/pos/billing')} className="bg-[#cca839] hover:bg-[#b59533] transition-colors rounded-lg border-b-2 border-black/20 flex items-center justify-center gap-3 text-white shadow-sm h-full">
+                                <Receipt className="w-5 h-5" /> <span className="text-[11px] font-black uppercase tracking-widest pt-0.5">NEW BILL</span>
+                            </button>
+                            <button onClick={() => setShowAppointments(true)} className="bg-[#cca839] hover:bg-[#b59533] transition-colors rounded-lg border-b-2 border-black/20 flex items-center justify-center gap-3 text-white shadow-sm h-full">
+                                <Calendar className="w-5 h-5" /> <span className="text-[11px] font-black uppercase tracking-widest pt-0.5">APPOINTMENTS</span>
+                            </button>
+                            <button onClick={() => navigate('/pos/invoices')} className="bg-[#cca839] hover:bg-[#b59533] transition-colors rounded-lg border-b-2 border-black/20 flex items-center justify-center gap-3 text-white shadow-sm h-full">
+                                <Printer className="w-5 h-5" /> <span className="text-[11px] font-black uppercase tracking-widest pt-0.5">INVOICES</span>
+                            </button>
+                            <button onClick={() => navigate('/pos/billing')} className="bg-[#cca839] hover:bg-[#b59533] transition-colors rounded-lg border-b-2 border-black/20 flex items-center justify-center gap-3 text-white shadow-sm h-full">
+                                <Package className="w-5 h-5" /> <span className="text-[11px] font-black uppercase tracking-widest pt-0.5">PACKAGES</span>
+                            </button>
                         </div>
-                        <Zap className="absolute -right-8 -bottom-8 w-40 h-40 opacity-[0.03] group-hover:scale-110 transition-transform" />
                     </div>
                 </div>
             </div>
 
             {/* Invoices Table */}
-            <div className="bg-surface rounded-none border border-border shadow-sm overflow-hidden flex flex-col text-left">
-                <div className="px-8 py-6 border-b border-border flex items-center justify-between bg-surface-alt/50 text-left">
-                    <h3 className="text-sm font-black text-text tracking-[0.2em] uppercase flex items-center gap-3 text-left">
-                        <Receipt className="w-4 h-4 text-primary" /> Recent Invoices
+            <div className="bg-white rounded-xl border border-slate-100 shadow-[0_2px_10px_rgba(0,0,0,0.02)] overflow-hidden flex flex-col mb-4">
+                <div className="px-6 py-5 border-b border-slate-100 flex items-center justify-between">
+                    <h3 className="text-[12px] font-black text-text tracking-[0.2em] uppercase flex items-center gap-3">
+                        <Receipt className="w-5 h-5 text-text-muted" /> RECENT INVOICES
                     </h3>
-                    <button
-                        onClick={() => navigate('/pos/invoices')}
-                        className="text-sm font-black text-primary uppercase tracking-[0.2em] flex items-center gap-2 hover:underline"
-                    >
-                        View All <ArrowRight className="w-3.5 h-3.5" />
+                    <button onClick={() => navigate('/pos/invoices')} className="text-[11px] font-black text-text-muted uppercase tracking-[0.2em] flex items-center gap-1.5 hover:text-text">
+                        VIEW ALL <ArrowRight className="w-4 h-4" />
                     </button>
                 </div>
-                <div className="overflow-x-auto text-left font-black">
-                    <table className="w-full text-left min-w-[600px] border-collapse">
+                <div className="overflow-x-auto min-h-[160px]">
+                    <table className="w-full min-w-[600px] border-collapse">
                         <thead>
-                            <tr className="bg-surface-alt/80 text-sm font-black text-text-muted uppercase tracking-[0.2em] border-b border-border text-left">
-                                <th className="px-8 py-4 text-left">Invoice</th>
-                                <th className="px-8 py-4 text-left">Time</th>
-                                <th className="px-8 py-4 text-left">Customer</th>
-                                <th className="px-8 py-4 text-left">Payment Method</th>
-                                <th className="px-8 py-4 text-right">Amount</th>
+                            <tr className="bg-white text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-100 text-left">
+                                <th className="px-6 py-3 font-black">INVOICE</th>
+                                <th className="px-6 py-3 font-black text-center">TIME</th>
+                                <th className="px-6 py-3 font-black text-center">CUSTOMER</th>
+                                <th className="px-6 py-3 font-black text-center">PAYMENT METHOD</th>
+                                <th className="px-6 py-3 font-black text-right">AMOUNT</th>
+                                <th className="px-6 py-3 font-black text-right pr-12">STATUS</th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-border/30 text-left font-black">
-                            {invoices.slice(0, 6).map(inv => (
-                                <tr key={inv._id} className="hover:bg-surface-alt/50 transition-colors group text-left">
-                                    <td className="px-8 py-4 font-black text-primary uppercase text-xs tracking-tight text-left">{inv.invoiceNumber || '--'}</td>
-                                    <td className="px-8 py-4 text-text-muted text-sm font-black uppercase text-left flex items-center gap-2">
-                                        <Clock className="w-3.5 h-3.5 opacity-40 shrink-0" /> {formatTime(inv.createdAt)}
+                        <tbody>
+                            {invoices.length === 0 ? (
+                                <tr>
+                                    <td colSpan={6} className="px-6 py-12 text-center text-slate-400">
+                                        <Package className="w-10 h-10 mx-auto text-slate-200 mb-3" strokeWidth={1.5} />
+                                        <p className="text-[12px] uppercase tracking-widest text-text font-black">No invoices found for today</p>
+                                        <p className="text-[10px] mt-1 tracking-widest uppercase">Create a new bill to get started.</p>
                                     </td>
-                                    <td className="px-8 py-4 font-black text-text text-sm uppercase tracking-tight text-left">{inv.clientId?.name || inv.clientName || 'ANN_GUEST'}</td>
-                                    <td className="px-8 py-4 text-text-muted text-xs font-black uppercase tracking-widest text-left">
-                                        {inv.paymentMethod === 'online' ? 'UPI' : (inv.paymentMethod || 'Cash').toUpperCase()}
-                                    </td>
-                                    <td className="px-8 py-4 text-right font-black text-text tracking-tighter text-sm">₹{Number(inv.total || inv.totalAmount || 0).toLocaleString()}</td>
                                 </tr>
-                            ))}
+                            ) : (
+                                invoices.slice(0, 5).map(inv => (
+                                    <tr key={inv._id} className="border-b border-slate-50 hover:bg-slate-50/50 transition-colors">
+                                        <td className="px-6 py-4 text-[11px] font-black text-text uppercase tracking-widest">{inv.invoiceNumber || '--'}</td>
+                                        <td className="px-6 py-4 text-center text-[11px] font-black text-text-muted uppercase tracking-widest">{formatTime(inv.createdAt)}</td>
+                                        <td className="px-6 py-4 text-center text-[11px] font-black text-text uppercase tracking-widest">{inv.clientId?.name || inv.clientName || 'GUEST'}</td>
+                                        <td className="px-6 py-4 text-center text-[10px] font-black text-slate-500 uppercase tracking-widest">{inv.paymentMethod || 'CASH'}</td>
+                                        <td className="px-6 py-4 text-right text-[11px] font-black text-text tracking-widest">₹{Number(inv.total || inv.totalAmount || 0).toLocaleString()}</td>
+                                        <td className="px-6 py-4 text-right pr-12">
+                                            <span className="text-[10px] font-black text-emerald-500 bg-emerald-50 border border-emerald-100 rounded px-2 py-1 uppercase tracking-widest w-fit">PAID</span>
+                                        </td>
+                                    </tr>
+                                ))
+                            )}
                         </tbody>
                     </table>
                 </div>
@@ -367,37 +379,37 @@ export default function POSDashboardPage() {
 
             {/* Appointments Modal */}
             {showAppointments && (
-                <div className="fixed inset-0 bg-black/80 backdrop-blur-md z-[100] flex items-center justify-center p-4">
-                    <div className="bg-surface w-full max-w-lg rounded-none shadow-2xl p-0 border border-border">
-                        <div className="flex items-center justify-between p-8 border-b border-border bg-surface-alt">
-                            <h3 className="text-sm font-black text-text uppercase tracking-[0.2em] flex items-center gap-3">
-                                <Calendar className="w-5 h-5 text-primary" /> Upcoming Appointments
+                <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
+                    <div className="bg-white w-full max-w-lg rounded-xl shadow-2xl p-0 border border-slate-100 overflow-hidden">
+                        <div className="flex items-center justify-between p-6 border-b border-slate-100">
+                            <h3 className="text-[11px] font-black text-text uppercase tracking-[0.2em] flex items-center gap-3">
+                                <Calendar className="w-4 h-4 text-primary" /> Upcoming Appointments
                             </h3>
-                            <button onClick={() => setShowAppointments(false)} className="w-10 h-10 flex items-center justify-center border border-border hover:bg-background transition-colors">
-                                <X className="w-5 h-5 text-text-muted hover:text-text" />
+                            <button onClick={() => setShowAppointments(false)} className="w-8 h-8 rounded border border-slate-100 flex items-center justify-center hover:bg-slate-50 transition-colors">
+                                <X className="w-4 h-4 text-slate-400 hover:text-text" />
                             </button>
                         </div>
-                        <div className="p-8 space-y-4 max-h-[60vh] overflow-y-auto scrollbar-none bg-background text-left">
+                        <div className="p-6 space-y-3 max-h-[60vh] overflow-y-auto scrollbar-none bg-slate-50/50 text-left">
                             {appointments.map(app => (
-                                <div key={app._id} className="p-6 bg-surface border border-border flex items-center justify-between group hover:border-primary/60 transition-all text-left">
-                                    <div className="flex items-center gap-6 text-left">
-                                        <div className="w-16 h-16 bg-surface-alt border border-border flex flex-col items-center justify-center text-sm font-black text-primary leading-tight">
-                                            <span className="opacity-40 text-xs mb-1">TIME</span>
-                                            {app.time}
+                                <div key={app._id} className="p-4 bg-white border border-slate-100 rounded-lg flex items-center justify-between group hover:border-primary/40 transition-all shadow-sm">
+                                    <div className="flex items-center gap-4">
+                                        <div className="w-12 h-12 bg-slate-50 rounded border border-slate-100 flex flex-col items-center justify-center text-[10px] font-black text-primary leading-tight">
+                                            <span className="opacity-40 text-[8px] mb-0.5 tracking-widest">TIME</span>
+                                            {app.time.split(' ')[0]}
                                         </div>
-                                        <div className="text-left">
-                                            <p className="text-sm font-black text-text uppercase tracking-tight text-left">{app.clientName}</p>
-                                            <p className="text-sm font-black text-text-muted uppercase tracking-[0.2em] mt-1 text-left">{app.service}</p>
+                                        <div>
+                                            <p className="text-xs font-black text-text uppercase tracking-tight">{app.clientName}</p>
+                                            <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest mt-0.5">{app.service}</p>
                                         </div>
                                     </div>
-                                    <button onClick={() => { navigate('/pos/billing'); setShowAppointments(false); }} className="px-6 py-3 bg-primary text-white text-sm font-black uppercase tracking-widest shadow-xl shadow-primary/20 opacity-0 group-hover:opacity-100 transition-opacity active:scale-95">
-                                        Start Billing
+                                    <button onClick={() => { navigate('/pos/billing'); setShowAppointments(false); }} className="px-4 py-2 bg-[#C69A20] text-white rounded text-[9px] font-black uppercase tracking-widest shadow-sm hover:bg-[#B38918] transition-colors">
+                                        Start Bill
                                     </button>
                                 </div>
                             ))}
                         </div>
-                        <div className="p-8 border-t border-border bg-surface-alt flex justify-end">
-                            <button onClick={() => setShowAppointments(false)} className="px-8 py-3 text-sm font-black text-text-muted uppercase tracking-widest hover:text-text">Close</button>
+                        <div className="p-4 border-t border-slate-100 flex justify-end bg-white">
+                            <button onClick={() => setShowAppointments(false)} className="px-6 py-2 text-[10px] rounded border border-slate-200 font-black text-slate-500 uppercase tracking-widest hover:text-text hover:bg-slate-50">Close</button>
                         </div>
                     </div>
                 </div>

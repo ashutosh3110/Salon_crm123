@@ -288,14 +288,14 @@ export default function SubscriptionPage() {
             {/* Current Plan Banner */}
             <div className="relative group mb-8">
                 <div className="absolute inset-0 bg-gradient-to-r from-[#B4912B]/20 via-transparent to-transparent rounded-[1.5rem] blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
-                <div className="relative bg-white border border-border p-6 rounded-[1.5rem] overflow-hidden shadow-sm hover:shadow-xl transition-all duration-500">
+                <div className="relative !bg-white dark:!bg-slate-900 !rounded-[24px] !border-[1.5px] !border-[#e2e8f0] dark:!border-slate-800 p-6 !overflow-hidden shadow-sm hover:shadow-xl transition-all duration-500">
                     <div className="absolute top-0 right-0 w-48 h-48 bg-gradient-to-br from-[#B4912B]/5 to-transparent rounded-full -translate-y-1/2 translate-x-1/2" />
                     
                     <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
                         <div className="space-y-3">
                             <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 rounded-xl bg-[#B4912B]/10 flex items-center justify-center border border-[#B4912B]/20">
-                                    <Crown className="w-5 h-5 text-[#B4912B]" strokeWidth={1.5} />
+                                <div className="w-10 h-10 rounded-xl bg-[#B4912B]/15 flex items-center justify-center border border-[#B4912B]/30">
+                                    <Crown className="w-5 h-5 !text-[#8B6F23] dark:!text-[#B4912B]" strokeWidth={2.5} />
                                 </div>
                                 <div className="space-y-0.5">
                                     <div className="flex items-center gap-2">
@@ -346,7 +346,7 @@ export default function SubscriptionPage() {
                     return (
                         <div 
                             key={plan.id} 
-                            className={`group relative bg-white border rounded-[1.5rem] p-5 flex flex-col gap-5 transition-all duration-500 hover:-translate-y-1.5 ${isCurrent ? 'ring-2 ring-[#B4912B] shadow-xl shadow-[#B4912B]/5' : 'hover:shadow-lg border-border'}`}
+                            className={`group relative !bg-white dark:!bg-slate-900 !rounded-[24px] !border-[1.5px] p-5 flex flex-col gap-5 transition-all duration-500 hover:-translate-y-1.5 !overflow-hidden ${isCurrent ? 'ring-2 ring-[#B4912B] shadow-xl shadow-[#B4912B]/5 !border-transparent dark:!border-transparent' : 'hover:shadow-lg !border-[#e2e8f0] dark:!border-slate-800'}`}
                         >
                             {isCurrent && (
                                 <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-[#B4912B] text-white text-[8px] font-black uppercase tracking-[0.2em] px-3.5 py-1 rounded-full shadow-md">
@@ -383,8 +383,8 @@ export default function SubscriptionPage() {
                                     { icon: MessageSquare, label: `${plan.limits?.whatsappLimit || 0} AI Automations`, active: true },
                                 ].map((item, i) => (
                                     <li key={i} className="flex items-center gap-2">
-                                        <div className="w-5 h-5 rounded-md bg-emerald-50 flex items-center justify-center shrink-0 border border-emerald-100">
-                                            <item.icon className="w-2.5 h-2.5 text-emerald-600" />
+                                        <div className="w-5 h-5 rounded-md bg-emerald-100/80 dark:bg-emerald-900/40 flex items-center justify-center shrink-0 border border-emerald-200 dark:border-emerald-800">
+                                            <item.icon className="w-3 h-3 !text-emerald-700 dark:!text-emerald-400" strokeWidth={2.5} />
                                         </div>
                                         <span className="text-[9px] font-bold text-text uppercase tracking-wider">{item.label}</span>
                                     </li>

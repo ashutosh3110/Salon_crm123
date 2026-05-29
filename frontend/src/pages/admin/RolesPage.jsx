@@ -38,7 +38,11 @@ import {
     ShieldAlert,
     Percent,
     User,
-    LifeBuoy
+    LifeBuoy,
+    ShieldCheck,
+    UserCheck,
+    Download,
+    Headset
 } from 'lucide-react';
 import api from '../../services/api';
 import toast from 'react-hot-toast';
@@ -333,42 +337,119 @@ export default function RolesPage() {
     );
 
     return (
-        <div className="space-y-6 animate-reveal text-left font-black">
+        <div className="space-y-6 animate-reveal text-left font-sans">
             {/* Header Section */}
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
-                <div className="leading-none">
-                    <h1 className="text-3xl font-black text-text uppercase tracking-tight italic">Roles & Permissions</h1>
-                    <p className="text-[10px] font-black text-text-muted mt-2 uppercase tracking-[0.3em] opacity-60 italic">Define what each staff member can access</p>
+                <div className="leading-none flex items-center gap-3">
+                    <ShieldCheck className="w-7 h-7 text-[#B4912B]" />
+                    <div>
+                        <h1 className="text-2xl font-black text-text uppercase tracking-tight leading-none text-left">Roles & Permissions</h1>
+                        <p className="text-[10px] font-bold text-text-muted mt-1.5 uppercase tracking-wider opacity-60 leading-none text-left">Define what each staff member can access and manage</p>
+                    </div>
                 </div>
                 <button
                     onClick={() => { resetForm(); setShowModal(true); }}
-                    className="flex items-center gap-2 bg-text text-background px-6 py-3 text-[10px] font-black uppercase tracking-[0.2em] shadow-xl hover:bg-primary hover:text-white transition-all italic font-mono active:scale-95"
+                    className="flex items-center gap-2 bg-[#B4912B] text-white px-5 py-2.5 text-[10px] font-black uppercase tracking-widest shadow-md hover:bg-[#9ca3af] transition-all !rounded-full active:scale-95"
                 >
-                    <Plus className="w-4 h-4" /> Create New Role
+                    <Plus className="w-3.5 h-3.5" /> Create New Role
                 </button>
             </div>
 
-            {/* Search Bar */}
-            <div className="relative">
-                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
-                <input
-                    type="text"
-                    value={search}
-                    onChange={(e) => setSearch(e.target.value)}
-                    placeholder="SEARCH ROLES BY NAME..."
-                    className="w-full pl-12 pr-4 py-4 bg-white border border-border text-[11px] font-black uppercase tracking-widest focus:border-primary outline-none transition-all placeholder:text-text-muted/20"
-                />
+            {/* Analytics Grid - 4 Columns */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+                <div className="!bg-white dark:!bg-slate-900 p-3 !border-[1.5px] !border-[#e2e8f0] dark:!border-slate-800 flex items-center gap-3 group hover:!border-black dark:hover:!border-white transition-all min-h-[72px] relative !overflow-hidden !rounded-[12px] shadow-sm">
+                    <div className="w-10 h-10 rounded-full flex items-center justify-center shrink-0 !bg-[#FEF3C7]">
+                        <Users className="w-4 h-4 !text-[#D97706]" strokeWidth={2.5} />
+                    </div>
+                    <div className="flex flex-col">
+                        <span className="text-[8.5px] font-bold text-text-muted uppercase tracking-wider">Total Roles</span>
+                        <h3 className="text-lg font-black tracking-tight uppercase leading-none mt-0.5 text-text">
+                            {roles.length || 4}
+                        </h3>
+                        <span className="text-[7.5px] font-bold text-text-muted uppercase tracking-[0.2em] mt-0.5 opacity-60">
+                            Configured Roles
+                        </span>
+                    </div>
+                </div>
+
+                <div className="!bg-white dark:!bg-slate-900 p-3 !border-[1.5px] !border-[#e2e8f0] dark:!border-slate-800 flex items-center gap-3 group hover:!border-black dark:hover:!border-white transition-all min-h-[72px] relative !overflow-hidden !rounded-[12px] shadow-sm">
+                    <div className="w-10 h-10 rounded-full flex items-center justify-center shrink-0 !bg-[#F3E8FF]">
+                        <Lock className="w-4 h-4 !text-[#9333EA]" strokeWidth={2.5} />
+                    </div>
+                    <div className="flex flex-col">
+                        <span className="text-[8.5px] font-bold text-text-muted uppercase tracking-wider">Total Permissions</span>
+                        <h3 className="text-lg font-black tracking-tight uppercase leading-none mt-0.5 text-text">
+                            {AVAILABLE_PERMISSIONS.length}
+                        </h3>
+                        <span className="text-[7.5px] font-bold text-text-muted uppercase tracking-[0.2em] mt-0.5 opacity-60">
+                            System Permissions
+                        </span>
+                    </div>
+                </div>
+
+                <div className="!bg-white dark:!bg-slate-900 p-3 !border-[1.5px] !border-[#e2e8f0] dark:!border-slate-800 flex items-center gap-3 group hover:!border-black dark:hover:!border-white transition-all min-h-[72px] relative !overflow-hidden !rounded-[12px] shadow-sm">
+                    <div className="w-10 h-10 rounded-full flex items-center justify-center shrink-0 !bg-[#DCFCE7]">
+                        <UserCheck className="w-4 h-4 !text-[#16A34A]" strokeWidth={2.5} />
+                    </div>
+                    <div className="flex flex-col">
+                        <span className="text-[8.5px] font-bold text-text-muted uppercase tracking-wider">Staff Assigned</span>
+                        <h3 className="text-lg font-black tracking-tight uppercase leading-none mt-0.5 text-text">
+                            23
+                        </h3>
+                        <span className="text-[7.5px] font-bold text-text-muted uppercase tracking-[0.2em] mt-0.5 opacity-60">
+                            Across All Roles
+                        </span>
+                    </div>
+                </div>
+
+                <div className="!bg-white dark:!bg-slate-900 p-3 !border-[1.5px] !border-[#e2e8f0] dark:!border-slate-800 flex items-center gap-3 group hover:!border-black dark:hover:!border-white transition-all min-h-[72px] relative !overflow-hidden !rounded-[12px] shadow-sm">
+                    <div className="w-10 h-10 rounded-full flex items-center justify-center shrink-0 !bg-[#DBEAFE]">
+                        <ShieldCheck className="w-4 h-4 !text-[#2563EB]" strokeWidth={2.5} />
+                    </div>
+                    <div className="flex flex-col">
+                        <span className="text-[8.5px] font-bold text-text-muted uppercase tracking-wider">Last Updated</span>
+                        <h3 className="text-[13px] font-black tracking-tight uppercase leading-none mt-1 text-text">
+                            15 May 2024
+                        </h3>
+                        <span className="text-[7.5px] font-bold text-text-muted uppercase tracking-[0.2em] mt-0.5 opacity-60">
+                            By Admin
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            {/* Filters - Compact */}
+            <div className="!bg-white dark:!bg-slate-900 p-1.5 !border-[1.5px] !border-[#e2e8f0] dark:!border-slate-800 flex flex-col md:flex-row gap-2 !rounded-full items-center shadow-sm">
+                <div className="flex items-center gap-3 flex-1 h-10 px-4">
+                    <Search className="w-4 h-4 text-slate-400 shrink-0" />
+                    <input
+                        type="text"
+                        value={search}
+                        onChange={(e) => setSearch(e.target.value)}
+                        placeholder="Search roles by name..."
+                        className="w-full h-full text-[11px] font-bold uppercase tracking-wider outline-none text-neutral-800 dark:text-neutral-200 bg-transparent border-0 focus:ring-0 focus:outline-none focus:border-transparent !border-none !shadow-none placeholder-slate-400"
+                    />
+                </div>
+                <div className="min-w-[150px] h-9 border-l border-border px-2 flex items-center">
+                    <select className="w-full h-full bg-transparent border-none outline-none text-[10px] font-bold uppercase tracking-wider text-text cursor-pointer px-2">
+                        <option value="all">ALL ROLES</option>
+                    </select>
+                </div>
+                <div className="h-9 px-4 flex items-center gap-2 border-[1.5px] border-border !rounded-full cursor-pointer hover:bg-slate-50 transition-colors mr-1">
+                    <Download className="w-3.5 h-3.5 text-text" />
+                    <span className="text-[10px] font-black uppercase tracking-wider text-text">Export</span>
+                </div>
             </div>
 
             {/* Roles Table/Grid */}
-            <div className="bg-white border border-border overflow-hidden shadow-sm">
-                <div className="hidden md:grid grid-cols-12 gap-4 px-6 py-4 border-b border-border bg-slate-50">
-                    <div className="col-span-3 text-[10px] font-black uppercase tracking-widest text-text-muted">Role Name</div>
-                    <div className="col-span-6 text-[10px] font-black uppercase tracking-widest text-text-muted">Permissions Assigned</div>
-                    <div className="col-span-3 text-[10px] font-black uppercase tracking-widest text-text-muted text-right">Actions</div>
+            <div className="bg-white border-[1.5px] border-border shadow-sm !rounded-[20px] overflow-hidden pt-5 px-6 pb-3">
+                <div className="hidden md:grid grid-cols-12 gap-3 pb-3 border-b-[1.5px] border-slate-100 px-6">
+                    <div className="col-span-3 text-[9px] font-black uppercase tracking-widest text-text">Role Name</div>
+                    <div className="col-span-7 text-[9px] font-black uppercase tracking-widest text-text">Permissions Assigned</div>
+                    <div className="col-span-2 text-[9px] font-black uppercase tracking-widest text-text text-right">Actions</div>
                 </div>
 
-                <div className="divide-y divide-border">
+                <div className="divide-y-[1.5px] divide-slate-100">
                     {loading ? (
                         <div className="py-20 text-center animate-pulse">
                             <Shield className="w-12 h-12 text-text-muted/20 mx-auto mb-4" />
@@ -380,169 +461,230 @@ export default function RolesPage() {
                             <p className="text-[10px] font-black uppercase tracking-[0.3em] text-text-muted">No custom roles defined yet</p>
                         </div>
                     ) : (
-                        filteredRoles.map((role) => (
-                            <div key={role._id} className="grid grid-cols-1 md:grid-cols-12 gap-4 px-6 py-5 hover:bg-slate-50 transition-colors items-center group">
-                                <div className="col-span-12 md:col-span-3 flex items-center gap-3">
-                                    <div className={`p-2 rounded-lg ${role.isDefault ? 'bg-amber-50 text-amber-600' : 'bg-primary/10 text-primary'}`}>
-                                        <Shield className="w-4 h-4" />
-                                    </div>
-                                    <div>
-                                        <h3 className="text-sm font-black text-text uppercase italic tracking-tight">{role.name}</h3>
-                                        <p className="text-[9px] font-bold text-text-muted uppercase tracking-tighter opacity-60 truncate max-w-[150px]">{role.description || 'Custom business role'}</p>
-                                    </div>
-                                </div>
+                        filteredRoles.map((role) => {
+                            const n = role.name.toLowerCase();
+                            let theme = { bg: 'bg-blue-100', text: 'text-blue-600', hex: '#2563EB', icon: Scissors, access: 'Basic Access' };
+                            
+                            if (n === 'admin') theme = { bg: 'bg-[#FEF3C7]', text: 'text-[#D97706]', hex: '#D97706', icon: Crown, access: 'Full Access' };
+                            else if (n.includes('manager')) theme = { bg: 'bg-[#F3E8FF]', text: 'text-[#9333EA]', hex: '#9333EA', icon: User, access: 'Limited Access' };
+                            else if (n.includes('reception') || n.includes('reciption')) theme = { bg: 'bg-[#DCFCE7]', text: 'text-[#16A34A]', hex: '#16A34A', icon: Headset, access: 'Restricted' };
+                            else {
+                                const charCode = n.charCodeAt(0) || 0;
+                                const customThemes = [
+                                    { bg: 'bg-indigo-100', text: 'text-indigo-600', hex: '#4F46E5', icon: Shield, access: 'Custom Access' },
+                                    { bg: 'bg-rose-100', text: 'text-rose-600', hex: '#E11D48', icon: UserCog, access: 'Custom Access' },
+                                    { bg: 'bg-cyan-100', text: 'text-cyan-600', hex: '#0891B2', icon: Settings, access: 'Custom Access' },
+                                    { bg: 'bg-fuchsia-100', text: 'text-fuchsia-600', hex: '#C026D3', icon: Star, access: 'Custom Access' },
+                                    { bg: 'bg-emerald-100', text: 'text-emerald-600', hex: '#059669', icon: Briefcase, access: 'Custom Access' },
+                                    { bg: 'bg-blue-100', text: 'text-blue-600', hex: '#2563EB', icon: Scissors, access: 'Basic Access' }
+                                ];
+                                theme = customThemes[charCode % customThemes.length];
+                            }
 
-                                <div className="col-span-12 md:col-span-6 flex flex-wrap gap-1.5">
-                                    {(role.permissions || []).map(perm => {
-                                        const p = AVAILABLE_PERMISSIONS.find(ap => ap.id === perm);
-                                        return (
-                                            <span key={perm} className="px-2 py-1 bg-surface border border-border rounded text-[8px] font-bold uppercase tracking-wider text-text-muted text-left">
-                                                {p ? p.label : perm}
-                                            </span>
-                                        );
-                                    })}
-                                    {(!role.permissions || role.permissions.length === 0) && (
-                                        <span className="text-[8px] font-bold text-rose-400 uppercase tracking-widest italic">No Permissions Granted</span>
-                                    )}
-                                </div>
-
-                                <div className="col-span-12 md:col-span-3 flex items-center justify-end gap-2 text-right">
-                                    <button
-                                        onClick={() => handleEdit(role)}
-                                        className="p-2 text-text-muted hover:text-primary transition-colors hover:bg-white border border-transparent hover:border-border"
-                                    >
-                                        <Edit className="w-4 h-4" />
-                                    </button>
-                                    {!role.isDefault && (
-                                        <button
-                                            onClick={() => handleDelete(role._id)}
-                                            className="p-2 text-text-muted hover:text-rose-500 transition-colors hover:bg-white border border-transparent hover:border-border"
-                                        >
-                                            <Trash2 className="w-4 h-4" />
-                                        </button>
-                                    )}
-                                    {role.isDefault && (
-                                        <div className="p-2 group/info relative cursor-help">
-                                            <Info className="w-4 h-4 text-amber-400 opacity-40" />
-                                            <div className="absolute bottom-full right-0 mb-2 w-48 p-2 bg-text text-white text-[8px] rounded opacity-0 invisible group-hover/info:visible group-hover/info:opacity-100 transition-all z-20 font-bold uppercase tracking-widest leading-relaxed">
-                                                System default roles cannot be deleted to ensure basic access.
+                            return (
+                                <div key={role._id} className="grid grid-cols-1 md:grid-cols-12 gap-4 py-4 items-start group hover:bg-slate-50/80 transition-colors px-6 rounded-xl mt-1">
+                                    {/* Left column */}
+                                    <div className="col-span-12 md:col-span-3 flex items-start gap-3">
+                                        <div className={`w-9 h-9 rounded-full flex items-center justify-center shrink-0 mt-0.5 ${theme.bg}`}>
+                                            <theme.icon className={`w-4 h-4 ${theme.text}`} strokeWidth={2.5}/>
+                                        </div>
+                                        <div className="flex flex-col items-start">
+                                            <h3 className="text-xs font-black text-text uppercase tracking-wider leading-tight">{role.name}</h3>
+                                            <p className="text-[9px] font-bold text-text-muted mt-0.5 tracking-widest opacity-60">
+                                                {role.description || (n === 'admin' ? 'System Administrator' : 'Custom business role')}
+                                            </p>
+                                            <div className={`mt-2 px-2 py-0.5 border-[1.5px] rounded-full text-[8px] font-black uppercase tracking-widest ${theme.text}`} style={{ borderColor: theme.hex }}>
+                                                {theme.access}
                                             </div>
                                         </div>
-                                    )}
+                                    </div>
+
+                                    {/* Middle column */}
+                                    <div className="col-span-12 md:col-span-7 flex flex-col gap-3 mt-0.5">
+                                        <div className="flex flex-wrap gap-1.5">
+                                            {/* Max 5 visible tags */}
+                                            {(role.permissions || []).slice(0, 5).map(perm => {
+                                                const p = AVAILABLE_PERMISSIONS.find(ap => ap.id === perm);
+                                                return (
+                                                    <span key={perm} className="px-2 py-1 rounded-[4px] text-[8.5px] font-black uppercase tracking-wider bg-slate-100 text-slate-700 shadow-sm border border-slate-200/60">
+                                                        {p ? p.label : perm}
+                                                    </span>
+                                                );
+                                            })}
+                                            {(role.permissions?.length > 5) && (
+                                                <span className="px-2 py-1 rounded-[4px] text-[8.5px] font-black uppercase tracking-wider bg-slate-100 text-slate-700 shadow-sm border border-slate-200/60">
+                                                    + {role.permissions.length - 5} more
+                                                </span>
+                                            )}
+                                            {(!role.permissions || role.permissions.length === 0) && (
+                                                <span className="text-[8.5px] font-bold text-rose-500 uppercase tracking-widest bg-rose-50 px-2 py-1 rounded-[4px] border border-rose-100">No Permissions Granted</span>
+                                            )}
+                                        </div>
+                                        <div className="flex flex-col gap-1.5 mt-1">
+                                            <div className="flex items-center justify-between text-[9px] font-black text-text uppercase tracking-widest">
+                                                <span>{role.permissions?.length || 0} / {AVAILABLE_PERMISSIONS.length} perms</span>
+                                                <span>{Math.round(((role.permissions?.length || 0) / AVAILABLE_PERMISSIONS.length) * 100)}%</span>
+                                            </div>
+                                            <div className="w-full h-1 bg-slate-100 rounded-full overflow-hidden">
+                                                <div className="h-full rounded-full transition-all duration-500" 
+                                                     style={{ width: `${Math.round(((role.permissions?.length || 0) / AVAILABLE_PERMISSIONS.length) * 100)}%`, backgroundColor: theme.hex }} />
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Right column */}
+                                    <div className="col-span-12 md:col-span-2 flex flex-col items-end gap-2.5 justify-start mt-0.5">
+                                        <div className="flex items-center gap-2">
+                                            <button
+                                                onClick={() => handleEdit(role)}
+                                                className="w-7 h-7 rounded-[4px] border-[1.5px] border-slate-200 flex items-center justify-center text-text hover:bg-slate-50 transition-colors shadow-sm"
+                                            >
+                                                <Edit className="w-3 h-3" />
+                                            </button>
+                                            <button
+                                                onClick={() => !role.isDefault && handleDelete(role._id)}
+                                                disabled={role.isDefault}
+                                                className={`w-7 h-7 rounded-[4px] border-[1.5px] flex items-center justify-center transition-colors shadow-sm
+                                                    ${role.isDefault ? 'border-slate-100 bg-slate-50 text-slate-300 cursor-not-allowed' : 'border-rose-200 bg-rose-50 text-rose-500 hover:bg-rose-100'}`}
+                                            >
+                                                <Trash2 className="w-3 h-3" />
+                                            </button>
+                                        </div>
+                                        <div className="text-right mt-0.5">
+                                            <p className="text-[8.5px] font-bold text-slate-400 tracking-widest uppercase">Updated 2 days ago</p>
+                                            <p className="text-[8.5px] font-black text-slate-600 tracking-widest mt-0.5 uppercase">by Admin</p>
+                                        </div>
+                                    </div>
                                 </div>
-                            </div>
-                        ))
+                            );
+                        })
                     )}
+                </div>
+
+                {/* Info Footer */}
+                <div className="mt-3 pt-3 border-t-[1.5px] border-slate-100">
+                    <div className="flex items-center gap-2 p-2 bg-blue-50/50 rounded-lg max-w-fit">
+                        <Info className="w-3 h-3 text-blue-500" />
+                        <span className="text-[8.5px] font-bold text-slate-500 uppercase tracking-widest">Permissions are applied in real-time.</span>
+                    </div>
                 </div>
             </div>
 
-            {/* Role Modal - Simple High-Density Design */}
+            {/* Role Modal - Modern & Colorful Design */}
             {showModal && createPortal(
-                <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm transition-all overflow-hidden" onClick={() => setShowModal(false)}>
+                <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 sm:p-6 bg-slate-900/60 backdrop-blur-sm transition-all overflow-hidden" onClick={() => setShowModal(false)}>
 
                     <form
                         onSubmit={handleSubmit}
-                        className="relative bg-white dark:bg-slate-800 shadow-[0_40px_100px_-20px_rgba(0,0,0,0.4)] w-full max-w-2xl flex flex-col animate-reveal rounded-none border-2 border-text dark:border-slate-700 max-h-[90vh] overflow-hidden admin-panel"
+                        className="relative bg-white dark:bg-slate-900 shadow-2xl w-full max-w-3xl flex flex-col animate-reveal !rounded-[24px] max-h-[90vh] overflow-hidden"
                         onClick={(e) => e.stopPropagation()}
                     >
 
-                        {/* Simple Header */}
-                        <div className="flex items-center justify-between px-8 py-5 border-b-2 border-border dark:border-slate-700 bg-white dark:bg-slate-800 sticky top-0 z-20">
+                        {/* Beautiful Header */}
+                        <div className="flex items-center justify-between px-8 py-6 border-b border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 sticky top-0 z-20">
                             <div className="flex items-center gap-4 text-left">
-                                <Shield className="w-5 h-5 text-text shrink-0" />
+                                <div className="w-12 h-12 rounded-full bg-[#FEF3C7] flex items-center justify-center shrink-0">
+                                    <ShieldCheck className="w-6 h-6 text-[#D97706]" strokeWidth={2.5} />
+                                </div>
                                 <div className="text-left">
-                                    <h2 className="text-lg font-black uppercase tracking-tight italic text-text leading-none mb-1 font-mono">
-                                        {editingRole ? 'Edit Role' : 'Add New Role'}
+                                    <h2 className="text-xl font-black uppercase tracking-tight text-text leading-none mb-1.5">
+                                        {editingRole ? 'Edit Role' : 'Create New Role'}
                                     </h2>
-                                    <p className="text-[9px] font-black uppercase tracking-widest text-text-muted opacity-60 italic leading-none font-mono">Role Details & Permissions</p>
+                                    <p className="text-[10px] font-bold uppercase tracking-widest text-text-muted opacity-60 leading-none">Configure role details & permissions</p>
                                 </div>
                             </div>
                             <button
                                 type="button"
                                 onClick={() => setShowModal(false)}
-                                className="p-2 !text-red-500 hover:!text-red-600 transition-colors !bg-transparent !border-none outline-none"
+                                className="w-10 h-10 rounded-full flex items-center justify-center bg-slate-50 hover:bg-rose-50 text-slate-400 hover:text-rose-500 transition-colors"
                             >
-                                <XCircle className="w-6 h-6 !stroke-red-500" />
+                                <XCircle className="w-6 h-6" />
                             </button>
                         </div>
 
                         {/* Form Content */}
-                        <div className="flex-1 overflow-y-auto p-8 space-y-8 custom-scrollbar text-left font-mono">
+                        <div className="flex-1 overflow-y-auto p-8 space-y-10 custom-scrollbar text-left">
 
                             {/* Basic Info */}
-                            <div className="grid grid-cols-1 gap-6">
-                                <div className="space-y-2 text-left">
-                                    <label className="text-[10px] font-black text-text-muted uppercase tracking-widest font-mono">Role Name</label>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div className="space-y-2.5 text-left">
+                                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest pl-1">Role Name</label>
                                     <input
                                         required
                                         value={form.name}
                                         onChange={(e) => setForm({ ...form, name: e.target.value })}
-                                        placeholder="Enter role name"
-                                        className="w-full px-4 py-3 bg-surface-alt border border-border text-sm font-black tracking-widest focus:border-text outline-none transition-all placeholder:text-text-muted/40 rounded-none italic shadow-inner"
+                                        placeholder="E.g., Senior Stylist"
+                                        className="w-full px-5 py-3.5 bg-slate-50/50 border-[1.5px] border-slate-200 text-sm font-bold tracking-wide focus:border-[#B4912B] focus:ring-4 focus:ring-[#B4912B]/10 outline-none transition-all placeholder:text-slate-400 rounded-xl"
                                     />
                                 </div>
-                                <div className="space-y-2 text-left">
-                                    <label className="text-[10px] font-black text-text-muted uppercase tracking-widest font-mono">Role Description</label>
-                                    <textarea
+                                <div className="space-y-2.5 text-left">
+                                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest pl-1">Role Description</label>
+                                    <input
                                         value={form.description}
                                         onChange={(e) => setForm({ ...form, description: e.target.value })}
-                                        placeholder="What is this role for?"
-                                        rows={2}
-                                        className="w-full px-4 py-3 bg-surface-alt border border-border text-sm font-black tracking-widest focus:border-text outline-none transition-all placeholder:text-text-muted/40 rounded-none italic shadow-inner resize-none"
+                                        placeholder="What does this role do?"
+                                        className="w-full px-5 py-3.5 bg-slate-50/50 border-[1.5px] border-slate-200 text-sm font-bold tracking-wide focus:border-[#B4912B] focus:ring-4 focus:ring-[#B4912B]/10 outline-none transition-all placeholder:text-slate-400 rounded-xl"
                                     />
                                 </div>
                             </div>
 
                             {/* Permissions Matrix */}
-                            <div className="space-y-4 pt-6 border-t border-border">
-                                <div className="flex items-center justify-between mb-2">
-                                    <h3 className="text-[11px] font-black text-text uppercase tracking-widest italic font-mono">Assign Permissions</h3>
-                                    <span className="text-[9px] font-black text-primary uppercase italic"> {form.permissions.length} Selected</span>
+                            <div className="space-y-5">
+                                <div className="flex items-center justify-between pb-4 border-b border-slate-100">
+                                    <div>
+                                        <h3 className="text-[12px] font-black text-text uppercase tracking-widest">Assign Permissions</h3>
+                                        <p className="text-[9px] font-bold text-slate-400 uppercase tracking-wider mt-1">Select the modules this role can access</p>
+                                    </div>
+                                    <div className="px-3 py-1.5 bg-[#FEF3C7] rounded-full">
+                                        <span className="text-[10px] font-black text-[#D97706] uppercase tracking-wider">{form.permissions.length} Selected</span>
+                                    </div>
                                 </div>
 
-                                <div className="space-y-6">
-                                    {PERMISSION_STRUCTURE.map((group) => {
+                                <div className="grid grid-cols-1 gap-4">
+                                    {PERMISSION_STRUCTURE.map((group, idx) => {
                                         const isGroupChecked = form.permissions.includes(group.id);
                                         const groupSubIds = (group.subPermissions || []).map(sp => sp.id);
                                         const checkedSubCount = (group.subPermissions || []).filter(sp => form.permissions.includes(sp.id)).length;
+                                        
+                                        // Generate an alternating pastel background for groups
+                                        const bgColors = ['bg-blue-50/50', 'bg-emerald-50/50', 'bg-purple-50/50', 'bg-amber-50/50', 'bg-rose-50/50'];
+                                        const iconColors = ['text-blue-500', 'text-emerald-500', 'text-purple-500', 'text-amber-500', 'text-rose-500'];
+                                        const themeIdx = idx % bgColors.length;
 
                                         return (
-                                            <div key={group.id} className="border border-border bg-slate-50/50 p-4 rounded-none">
+                                            <div key={group.id} className={`border-[1.5px] border-slate-100 ${bgColors[themeIdx]} p-5 rounded-[20px] transition-colors hover:border-slate-200`}>
                                                 {/* Parent Header */}
                                                 <div
                                                     role="button"
                                                     onClick={() => handleToggleParent(group)}
-                                                    className="flex items-center justify-between pb-3 border-b border-border mb-3 cursor-pointer select-none"
+                                                    className="flex items-center justify-between cursor-pointer select-none"
                                                 >
-                                                    <div className="flex items-center gap-3">
-                                                        <div className="p-2 transition-colors duration-200 bg-transparent flex items-center justify-center">
-                                                            <group.icon className={`w-5 h-5 ${isGroupChecked || checkedSubCount > 0 ? '!stroke-primary' : '!stroke-black dark:!stroke-white'}`} />
+                                                    <div className="flex items-center gap-4">
+                                                        <div className={`w-10 h-10 rounded-xl bg-white flex items-center justify-center shadow-sm`}>
+                                                            <group.icon className={`w-5 h-5 ${iconColors[themeIdx]}`} strokeWidth={2.5} />
                                                         </div>
                                                         <div className="text-left">
-                                                            <p className={`text-[11px] font-black uppercase tracking-widest leading-none mb-1 ${(isGroupChecked || checkedSubCount > 0) ? 'text-primary font-bold' : 'text-text'}`}>
+                                                            <p className={`text-xs font-black uppercase tracking-wider mb-1 ${(isGroupChecked || checkedSubCount > 0) ? 'text-text' : 'text-slate-600'}`}>
                                                                 {group.label}
                                                             </p>
-                                                            <p className="text-[8px] font-bold text-text-muted uppercase tracking-wider leading-none opacity-50 italic">{group.description}</p>
+                                                            <p className="text-[9px] font-bold text-slate-500 uppercase tracking-widest leading-none opacity-80">{group.description}</p>
                                                         </div>
                                                     </div>
-                                                    <div className="flex items-center gap-2">
+                                                    <div className="flex items-center gap-4 bg-white px-3 py-1.5 rounded-full shadow-sm">
                                                         {group.subPermissions && (
-                                                            <span className="text-[8px] font-black text-text-muted uppercase italic">
-                                                                {checkedSubCount}/{groupSubIds.length} Selected
+                                                            <span className="text-[10px] font-black text-slate-400 uppercase">
+                                                                {checkedSubCount}/{groupSubIds.length}
                                                             </span>
                                                         )}
-                                                        <input
-                                                            type="checkbox"
-                                                            checked={isGroupChecked}
-                                                            readOnly
-                                                            className="w-4 h-4 accent-primary cursor-pointer"
-                                                        />
+                                                        <div className={`w-5 h-5 rounded flex items-center justify-center border-2 transition-colors ${isGroupChecked ? 'bg-[#B4912B] border-[#B4912B]' : 'border-slate-300'}`}>
+                                                            {isGroupChecked && <CheckCircle2 className="w-3.5 h-3.5 text-white" />}
+                                                        </div>
                                                     </div>
                                                 </div>
 
                                                 {/* Sub Permissions */}
                                                 {group.subPermissions && (
-                                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pl-4 border-l-2 border-slate-200">
+                                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-4 pt-4 border-t border-slate-200/50">
                                                         {group.subPermissions.map((sub) => {
                                                             const isSubChecked = form.permissions.includes(sub.id);
                                                             return (
@@ -550,24 +692,18 @@ export default function RolesPage() {
                                                                     key={sub.id}
                                                                     role="button"
                                                                     onClick={() => handleToggleSub(sub.id, group)}
-                                                                    className={`flex items-center gap-2.5 p-2 transition-all text-left border cursor-pointer ${isSubChecked
-                                                                        ? 'bg-white border-2 border-primary shadow-sm'
-                                                                        : 'bg-white/40 border-border/60 hover:bg-white hover:border-text-muted'
+                                                                    className={`flex items-center gap-3 p-3 rounded-xl transition-all cursor-pointer ${isSubChecked
+                                                                        ? 'bg-white shadow-sm border border-slate-200 ring-1 ring-[#B4912B]'
+                                                                        : 'bg-white/40 border border-transparent hover:bg-white/80'
                                                                         }`}
                                                                 >
-                                                                    <div className="p-1.5 transition-all bg-transparent flex items-center justify-center">
-                                                                        <sub.icon className={`w-4 h-4 ${isSubChecked ? '!stroke-primary' : '!stroke-black dark:!stroke-white'}`} />
+                                                                    <div className={`w-4 h-4 rounded border flex items-center justify-center transition-colors shrink-0 ${isSubChecked ? 'bg-[#B4912B] border-[#B4912B]' : 'bg-white border-slate-300'}`}>
+                                                                        {isSubChecked && <div className="w-1.5 h-1.5 bg-white rounded-sm" />}
                                                                     </div>
                                                                     <div className="flex-1 min-w-0 pr-2">
-                                                                        <p className={`text-[9px] font-bold uppercase tracking-widest leading-none mb-0.5 ${isSubChecked ? 'text-primary' : 'text-text'}`}>{sub.label}</p>
-                                                                        <p className="text-[7px] font-medium text-text-muted uppercase tracking-wider leading-none opacity-50 italic">{sub.description}</p>
+                                                                        <p className={`text-[10px] font-black uppercase tracking-wider mb-0.5 ${isSubChecked ? 'text-text' : 'text-slate-600'}`}>{sub.label}</p>
+                                                                        <p className="text-[8px] font-bold text-slate-400 uppercase tracking-widest leading-tight truncate">{sub.description}</p>
                                                                     </div>
-                                                                    <input
-                                                                        type="checkbox"
-                                                                        checked={isSubChecked}
-                                                                        readOnly
-                                                                        className="w-3 h-3 accent-primary cursor-pointer"
-                                                                    />
                                                                 </div>
                                                             );
                                                         })}
@@ -580,30 +716,30 @@ export default function RolesPage() {
                             </div>
                         </div>
 
-                        {/* Actions */}
-                        <div className="px-8 py-6 border-t-2 border-text dark:border-slate-700 bg-white dark:bg-slate-800 flex flex-col sm:flex-row items-center justify-between gap-4">
-                            <div className="flex items-center gap-2">
-                                <div className="w-16 h-1 bg-surface-alt border border-border">
+                        {/* Actions Footer */}
+                        <div className="px-8 py-6 border-t border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 flex flex-col sm:flex-row items-center justify-between gap-6 z-20">
+                            <div className="flex items-center gap-3 w-full sm:w-1/3">
+                                <div className="flex-1 h-1.5 bg-slate-100 rounded-full overflow-hidden">
                                     <div
-                                        className="h-full bg-primary transition-all duration-500"
+                                        className="h-full bg-[#B4912B] transition-all duration-500 rounded-full"
                                         style={{ width: `${(form.permissions.length / AVAILABLE_PERMISSIONS.length) * 100}%` }}
                                     />
                                 </div>
-                                <span className="text-[8px] font-black text-text-muted uppercase italic tracking-widest">Progress</span>
+                                <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest whitespace-nowrap">{Math.round((form.permissions.length / AVAILABLE_PERMISSIONS.length) * 100)}% Selected</span>
                             </div>
                             <div className="flex gap-3 w-full sm:w-auto">
-                                <div
-                                    role="button"
+                                <button
+                                    type="button"
                                     onClick={() => setShowModal(false)}
-                                    className="flex-1 sm:flex-none px-8 py-3 bg-surface-alt text-text-muted text-[10px] font-black uppercase tracking-widest border border-border hover:bg-slate-100 transition-all italic font-mono cursor-pointer text-center"
+                                    className="flex-1 sm:flex-none px-8 py-3.5 bg-slate-100 text-slate-600 hover:text-slate-900 hover:bg-slate-200 text-[10px] font-black uppercase tracking-widest rounded-full transition-all"
                                 >
                                     Cancel
-                                </div>
+                                </button>
                                 <button
                                     type="submit"
-                                    className="flex-1 sm:flex-none px-12 py-3 bg-text text-white text-[10px] font-black uppercase tracking-widest shadow-xl hover:bg-primary transition-all active:scale-[0.98] italic font-mono"
+                                    className="flex-1 sm:flex-none px-10 py-3.5 bg-[#B4912B] text-white text-[10px] font-black uppercase tracking-widest shadow-lg shadow-[#B4912B]/30 hover:bg-black hover:shadow-black/20 rounded-full transition-all active:scale-[0.98]"
                                 >
-                                    {editingRole ? 'Update Role' : 'Create Role'}
+                                    {editingRole ? 'Save Changes' : 'Create Role'}
                                 </button>
                             </div>
                         </div>

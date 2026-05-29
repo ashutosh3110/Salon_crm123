@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
 import { useAuth } from '../../contexts/AuthContext';
@@ -124,20 +124,6 @@ export default function SettingsPage({ section: propSection }) {
         }
     }, [salon]);
 
-    const states = useMemo(
-        () => [
-            { name: 'Maharashtra', code: '27' },
-            { name: 'Delhi', code: '07' },
-            { name: 'Karnataka', code: '29' },
-            { name: 'Tamil Nadu', code: '33' },
-            { name: 'Uttar Pradesh', code: '09' },
-            { name: 'West Bengal', code: '19' },
-            { name: 'Gujarat', code: '24' },
-            { name: 'Telangana', code: '36' },
-            { name: 'Rajasthan', code: '08' },
-        ],
-        []
-    );
 
     const handleProfileSubmit = async (e) => {
         e.preventDefault();
@@ -308,10 +294,9 @@ export default function SettingsPage({ section: propSection }) {
 
 
     const tabClass = (id) =>
-        `px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-widest transition-all border ${
-            activeTab === id
-                ? 'bg-primary text-primary-foreground border-primary shadow-lg shadow-primary/20'
-                : 'bg-surface text-text-muted border-border hover:border-primary/40'
+        `px-4 py-2 rounded-full text-xs font-bold uppercase tracking-widest transition-all border ${activeTab === id
+            ? 'bg-primary text-primary-foreground border-primary shadow-lg shadow-primary/20'
+            : 'bg-surface text-text-muted border-border hover:border-primary/40'
         }`;
 
     return (
@@ -340,21 +325,21 @@ export default function SettingsPage({ section: propSection }) {
             <div className="bg-surface rounded-2xl border border-border overflow-hidden shadow-sm transition-all">
                 <div className="p-6">
                     {activeTab === 'profile' && (
-                        <div className="space-y-8 max-w-2xl text-left">
+                        <div className="space-y-5 max-w-2xl text-left">
                             <div>
                                 <h2 className="text-lg font-bold text-text tracking-tight">Profile</h2>
                                 <p className="text-xs text-text-muted font-medium mt-1">Your login identity (saved on the server).</p>
                             </div>
 
-                            <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6 p-6 rounded-2xl bg-surface-alt/10 border border-border text-center sm:text-left">
-                                <div 
+                            <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 p-4 rounded-2xl bg-surface-alt/10 border border-border text-center sm:text-left">
+                                <div
                                     onClick={handleAvatarClick}
-                                    className={`w-24 h-24 rounded-2xl bg-primary/5 flex items-center justify-center text-2xl font-bold text-primary border border-primary/20 shadow-sm relative overflow-hidden group cursor-pointer hover:border-primary transition-all ${isUploading ? 'animate-pulse' : ''}`}
+                                    className={`w-16 h-16 rounded-2xl bg-primary/5 flex items-center justify-center text-xl font-bold text-primary border border-primary/20 shadow-sm relative overflow-hidden group cursor-pointer hover:border-primary transition-all flex-shrink-0 ${isUploading ? 'animate-pulse' : ''}`}
                                 >
                                     {user?.avatar ? (
-                                        <img 
-                                            src={getImageUrl(user.avatar)} 
-                                            alt={user.name} 
+                                        <img
+                                            src={getImageUrl(user.avatar)}
+                                            alt={user.name}
                                             className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                                         />
                                     ) : (
@@ -367,76 +352,76 @@ export default function SettingsPage({ section: propSection }) {
                                                 .slice(0, 2) || 'U'}
                                         </span>
                                     )}
-                                    
+
                                     <div className="absolute inset-0 bg-black/40 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                                        <Camera className="w-6 h-6 text-white mb-1" />
-                                        <span className="text-[8px] text-white font-black uppercase tracking-widest">Change</span>
+                                        <Camera className="w-5 h-5 text-white mb-0.5" />
+                                        <span className="text-[7px] text-white font-black uppercase tracking-widest">Change</span>
                                     </div>
 
                                     {isUploading && (
                                         <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
-                                            <div className="w-6 h-6 border-2 border-white/20 border-t-white rounded-full animate-spin" />
+                                            <div className="w-5 h-5 border-2 border-white/20 border-t-white rounded-full animate-spin" />
                                         </div>
                                     )}
 
-                                    <input 
-                                        type="file" 
+                                    <input
+                                        type="file"
                                         ref={fileInputRef}
                                         onChange={handleFileChange}
-                                        className="hidden" 
+                                        className="hidden"
                                         accept="image/*"
                                     />
                                 </div>
-                                <div className="space-y-2 w-full flex flex-col items-center sm:items-start">
-                                    <h3 className="font-bold text-2xl text-text leading-tight tracking-tight">{user?.name || '—'}</h3>
+                                <div className="space-y-1 w-full flex flex-col items-center sm:items-start justify-center h-16">
+                                    <h3 className="font-bold text-lg text-text leading-tight tracking-tight">{user?.name || '—'}</h3>
                                     <div className="flex flex-col sm:flex-row items-center gap-2">
-                                        <p className="text-[11px] font-bold text-primary uppercase tracking-wider inline-flex items-center px-3 py-1 rounded-full bg-primary/10 border border-primary/20">
+                                        <p className="text-[10px] font-bold text-primary uppercase tracking-wider inline-flex items-center px-2 py-0.5 rounded-full bg-primary/10 border border-primary/20">
                                             {user?.role || 'ADMIN'}
                                         </p>
-                                        <p className="text-[10px] font-bold text-text-muted uppercase tracking-widest px-3 py-1 bg-surface border border-border rounded-full break-all">
+                                        <p className="text-[9px] font-bold text-text-muted uppercase tracking-widest px-2 py-0.5 bg-surface border border-border rounded-full break-all">
                                             {user?.email}
                                         </p>
                                     </div>
                                 </div>
                             </div>
 
-                            <form onSubmit={handleProfileSubmit} className="space-y-6 pt-2">
-                                <div className="grid sm:grid-cols-2 gap-6">
-                                    <div className="space-y-2 text-left">
-                                        <label className="text-xs font-semibold text-text-muted pl-1">Full Name</label>
+                            <form onSubmit={handleProfileSubmit} className="space-y-4 pt-1">
+                                <div className="grid sm:grid-cols-2 gap-4">
+                                    <div className="space-y-1.5 text-left">
+                                        <label className="text-[11px] font-semibold text-text-muted pl-1">Full Name</label>
                                         <input
                                             type="text"
                                             value={profileForm.name}
                                             onChange={(e) => setProfileForm({ ...profileForm, name: e.target.value })}
-                                            className="w-full px-5 py-3.5 rounded-xl border border-border text-sm font-semibold focus:border-primary outline-none transition-all bg-surface hover:border-primary/40 focus:ring-4 focus:ring-primary/5"
+                                            className="w-full px-4 py-2.5 rounded-full border border-border text-sm font-semibold focus:border-primary outline-none transition-all bg-surface hover:border-primary/40 focus:ring-4 focus:ring-primary/5"
                                         />
                                     </div>
-                                    <div className="space-y-2 text-left">
-                                        <label className="text-xs font-semibold text-text-muted pl-1">Email</label>
+                                    <div className="space-y-1.5 text-left">
+                                        <label className="text-[11px] font-semibold text-text-muted pl-1">Email</label>
                                         <input
                                             type="email"
                                             value={profileForm.email}
                                             onChange={(e) => setProfileForm({ ...profileForm, email: e.target.value })}
-                                            className="w-full px-5 py-3.5 rounded-xl border border-border text-sm font-semibold focus:border-primary outline-none transition-all bg-surface hover:border-primary/40 focus:ring-4 focus:ring-primary/5"
+                                            className="w-full px-4 py-2.5 rounded-full border border-border text-sm font-semibold focus:border-primary outline-none transition-all bg-surface hover:border-primary/40 focus:ring-4 focus:ring-primary/5"
                                         />
                                     </div>
                                 </div>
-                                <div className="space-y-2 text-left">
-                                    <label className="text-xs font-semibold text-text-muted pl-1">Phone</label>
+                                <div className="space-y-1.5 text-left">
+                                    <label className="text-[11px] font-semibold text-text-muted pl-1">Phone</label>
                                     <input
                                         type="tel"
                                         value={profileForm.phone}
                                         onChange={(e) => setProfileForm({ ...profileForm, phone: e.target.value })}
-                                        className="w-full px-5 py-3.5 rounded-xl border border-border text-sm font-semibold focus:border-primary outline-none transition-all bg-surface hover:border-primary/40 focus:ring-4 focus:ring-primary/5"
+                                        className="w-full px-4 py-2.5 rounded-full border border-border text-sm font-semibold focus:border-primary outline-none transition-all bg-surface hover:border-primary/40 focus:ring-4 focus:ring-primary/5"
                                         placeholder="+91..."
                                     />
                                 </div>
 
-                                <div className="pt-6 flex justify-end border-t border-border">
+                                <div className="pt-4 flex justify-end border-t border-border">
                                     <button
                                         type="submit"
                                         disabled={isSaving}
-                                        className="px-8 py-3.5 bg-primary text-primary-foreground rounded-xl font-bold text-xs uppercase tracking-widest shadow-xl shadow-primary/20 hover:shadow-primary/30 active:scale-95 transition-all disabled:opacity-50"
+                                        className="px-6 py-2.5 bg-primary text-primary-foreground rounded-full font-bold text-[11px] uppercase tracking-widest shadow-lg shadow-primary/20 hover:shadow-primary/30 active:scale-95 transition-all disabled:opacity-50"
                                     >
                                         {isSaving ? 'Saving…' : 'Save profile'}
                                     </button>
@@ -483,7 +468,7 @@ export default function SettingsPage({ section: propSection }) {
                                     <button
                                         type="submit"
                                         disabled={isSaving || salonLoading}
-                                        className="px-8 py-3.5 bg-primary text-primary-foreground rounded-xl font-bold text-xs uppercase tracking-widest shadow-xl shadow-primary/20 disabled:opacity-50"
+                                        className="px-8 py-3.5 bg-primary text-primary-foreground rounded-full font-bold text-xs uppercase tracking-widest shadow-xl shadow-primary/20 disabled:opacity-50"
                                     >
                                         {isSaving ? 'Saving…' : 'Save notification preferences'}
                                     </button>
@@ -547,7 +532,7 @@ export default function SettingsPage({ section: propSection }) {
                                     <button
                                         type="submit"
                                         disabled={isSaving}
-                                        className="px-8 py-3.5 bg-primary text-primary-foreground rounded-xl font-bold text-xs uppercase tracking-widest shadow-xl shadow-primary/20 disabled:opacity-50"
+                                        className="px-8 py-3.5 bg-primary text-primary-foreground rounded-full font-bold text-xs uppercase tracking-widest shadow-xl shadow-primary/20 disabled:opacity-50"
                                     >
                                         {isSaving ? 'Updating…' : 'Update password'}
                                     </button>
@@ -639,7 +624,7 @@ export default function SettingsPage({ section: propSection }) {
                                     <button
                                         type="submit"
                                         disabled={isSaving || salonLoading}
-                                        className="px-8 py-3.5 bg-primary text-primary-foreground rounded-xl font-bold text-xs uppercase tracking-widest shadow-xl shadow-primary/20 disabled:opacity-50"
+                                        className="px-8 py-3.5 bg-primary text-primary-foreground rounded-full font-bold text-xs uppercase tracking-widest shadow-xl shadow-primary/20 disabled:opacity-50"
                                     >
                                         {isSaving ? 'Saving…' : 'Save business info'}
                                     </button>
@@ -654,7 +639,7 @@ export default function SettingsPage({ section: propSection }) {
                         <div className="space-y-8 max-w-2xl text-left">
                             <div>
                                 <div className="flex items-center gap-3">
-                                    <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
+                                    <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
                                         <FileText className="w-5 h-5 text-primary" />
                                     </div>
                                     <div>
@@ -678,12 +663,12 @@ export default function SettingsPage({ section: propSection }) {
                                         onChange={(e) => setNewTerm(e.target.value)}
                                         onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleAddTerm(); } }}
                                         placeholder="e.g. No refund after 24 hours of service."
-                                        className="flex-1 px-4 py-3 rounded-xl border border-border text-sm font-semibold focus:border-primary outline-none transition-all bg-surface hover:border-primary/40 focus:ring-4 focus:ring-primary/5"
+                                        className="flex-1 px-4 py-3 rounded-full border border-border text-sm font-semibold focus:border-primary outline-none transition-all bg-surface hover:border-primary/40 focus:ring-4 focus:ring-primary/5"
                                     />
                                     <button
                                         type="button"
                                         onClick={handleAddTerm}
-                                        className="px-5 py-3 bg-primary text-primary-foreground rounded-xl font-bold text-xs uppercase tracking-widest shadow-lg shadow-primary/20 hover:shadow-primary/30 active:scale-95 transition-all flex items-center justify-center gap-2 shrink-0 w-full sm:w-auto"
+                                        className="px-5 py-3 bg-primary text-primary-foreground rounded-full font-bold text-xs uppercase tracking-widest shadow-lg shadow-primary/20 hover:shadow-primary/30 active:scale-95 transition-all flex items-center justify-center gap-2 shrink-0 w-full sm:w-auto"
                                     >
                                         <Plus className="w-4 h-4" /> Add
                                     </button>
@@ -708,7 +693,7 @@ export default function SettingsPage({ section: propSection }) {
                                                 {/* Grip / Number */}
                                                 <div className="flex items-center gap-2 shrink-0">
                                                     <GripVertical className="w-4 h-4 text-text-muted/30 group-hover:text-text-muted/60 transition-colors" />
-                                                    <span className="w-7 h-7 rounded-lg bg-primary/10 text-primary text-[11px] font-black flex items-center justify-center">
+                                                    <span className="w-7 h-7 rounded-full bg-primary/10 text-primary text-[11px] font-black flex items-center justify-center">
                                                         {idx + 1}
                                                     </span>
                                                 </div>
@@ -731,7 +716,7 @@ export default function SettingsPage({ section: propSection }) {
                                                         type="button"
                                                         onClick={() => handleMoveTerm(idx, -1)}
                                                         disabled={idx === 0}
-                                                        className="p-1.5 rounded-lg hover:bg-surface-alt text-text-muted hover:text-primary disabled:opacity-20 disabled:cursor-not-allowed transition-all"
+                                                        className="p-1.5 rounded-full hover:bg-surface-alt text-text-muted hover:text-primary disabled:opacity-20 disabled:cursor-not-allowed transition-all"
                                                         title="Move up"
                                                     >
                                                         <ChevronUp className="w-3.5 h-3.5" />
@@ -740,7 +725,7 @@ export default function SettingsPage({ section: propSection }) {
                                                         type="button"
                                                         onClick={() => handleMoveTerm(idx, 1)}
                                                         disabled={idx === termsList.length - 1}
-                                                        className="p-1.5 rounded-lg hover:bg-surface-alt text-text-muted hover:text-primary disabled:opacity-20 disabled:cursor-not-allowed transition-all"
+                                                        className="p-1.5 rounded-full hover:bg-surface-alt text-text-muted hover:text-primary disabled:opacity-20 disabled:cursor-not-allowed transition-all"
                                                         title="Move down"
                                                     >
                                                         <ChevronDown className="w-3.5 h-3.5" />
@@ -748,7 +733,7 @@ export default function SettingsPage({ section: propSection }) {
                                                     <button
                                                         type="button"
                                                         onClick={() => handleRemoveTerm(idx)}
-                                                        className="p-1.5 rounded-lg hover:bg-rose-50 text-text-muted hover:text-rose-500 transition-all ml-1"
+                                                        className="p-1.5 rounded-full hover:bg-rose-50 text-text-muted hover:text-rose-500 transition-all ml-1"
                                                         title="Remove term"
                                                     >
                                                         <X className="w-3.5 h-3.5" />
@@ -765,7 +750,7 @@ export default function SettingsPage({ section: propSection }) {
                                         <button
                                             type="submit"
                                             disabled={isSaving}
-                                            className="px-8 py-3.5 w-full sm:w-auto bg-primary text-primary-foreground rounded-xl font-bold text-xs uppercase tracking-widest shadow-xl shadow-primary/20 disabled:opacity-50 hover:shadow-primary/30 active:scale-95 transition-all text-center"
+                                            className="px-8 py-3.5 w-full sm:w-auto bg-primary text-primary-foreground rounded-full font-bold text-xs uppercase tracking-widest shadow-xl shadow-primary/20 disabled:opacity-50 hover:shadow-primary/30 active:scale-95 transition-all text-center"
                                         >
                                             {isSaving ? 'Saving…' : 'Save Terms & Conditions'}
                                         </button>
@@ -794,7 +779,7 @@ export default function SettingsPage({ section: propSection }) {
                         <div className="space-y-8 max-w-3xl text-left">
                             <div>
                                 <div className="flex items-center gap-3">
-                                    <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center animate-pulse">
+                                    <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center animate-pulse">
                                         <Share2 className="w-5 h-5 text-primary" />
                                     </div>
                                     <div>
@@ -816,7 +801,7 @@ export default function SettingsPage({ section: propSection }) {
                                         type="text"
                                         readOnly
                                         value={`${window.location.origin}/app/booking?tenantId=${salon?._id || ''}`}
-                                        className="flex-1 px-4 py-3 rounded-xl border border-border text-sm font-mono focus:border-primary outline-none transition-all bg-surface hover:border-primary/40 focus:ring-4 focus:ring-primary/5 select-all"
+                                        className="flex-1 px-4 py-3 rounded-full border border-border text-sm font-mono focus:border-primary outline-none transition-all bg-surface hover:border-primary/40 focus:ring-4 focus:ring-primary/5 select-all"
                                     />
                                     <button
                                         type="button"
@@ -825,7 +810,7 @@ export default function SettingsPage({ section: propSection }) {
                                             navigator.clipboard.writeText(link);
                                             toast.success('Booking link copied to clipboard!');
                                         }}
-                                        className="px-6 py-3 bg-primary text-primary-foreground rounded-xl font-bold text-xs uppercase tracking-widest shadow-lg shadow-primary/20 hover:shadow-primary/30 active:scale-95 transition-all flex items-center justify-center gap-2 shrink-0"
+                                        className="px-6 py-3 bg-primary text-primary-foreground rounded-full font-bold text-xs uppercase tracking-widest shadow-lg shadow-primary/20 hover:shadow-primary/30 active:scale-95 transition-all flex items-center justify-center gap-2 shrink-0"
                                     >
                                         <Copy className="w-4 h-4" /> Copy Link
                                     </button>
