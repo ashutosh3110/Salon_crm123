@@ -4,8 +4,8 @@ import {
     MessageSquare, Mail, Share2, TrendingUp, Users, Send,
     Plus, Search, Filter, MoreVertical, CheckCircle, Clock,
     Eye, BarChart2, Smartphone, Facebook, Instagram,
-    Zap, Calendar, Layout, Trash2, Edit3, ArrowRight,Bell,
-    QrCode, Globe, Percent, XCircle, Save, Star, Download, CheckCircle2, Tag, Gift, ChevronRight, SmartphoneIcon, Target, Megaphone
+    Zap, Calendar, Layout, Trash2, Edit3, ArrowRight, Bell,
+    QrCode, Globe, Percent, XCircle, Save, Star, Download, CheckCircle2, Tag, Gift, ChevronRight, ChevronLeft, SmartphoneIcon, Target, Megaphone, RefreshCw
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import api from '../../services/api';
@@ -19,21 +19,26 @@ const SCROLLBAR_HIDE_STYLE = `
 
 /* ─── Components ───────────────────────────────────────────────────────── */
 
-function SectionHeader({ title, desc, icon: Icon, badge }) {
+function SectionHeader({ title, desc, icon: Icon, badge, onRefresh, iconColor = 'text-primary', iconBg = 'bg-primary/5' }) {
     return (
-        <div className="flex items-center justify-between mb-8">
-            <div className="flex items-center gap-5">
-                <div className="w-14 h-14 rounded-[1.25rem] bg-primary/5 border border-primary/10 flex items-center justify-center text-primary shadow-sm">
-                    <Icon className="w-7 h-7" />
+        <div className="flex items-center justify-between py-4 border-b border-border/40">
+            <div className="flex items-center gap-4">
+                <div className={`w-12 h-12 rounded-full border border-border/50 flex items-center justify-center ${iconBg} ${iconColor}`}>
+                    <Icon className="w-6 h-6" />
                 </div>
                 <div>
-                    <h2 className="text-2xl font-black text-text tracking-tight flex items-center gap-3">
+                    <h2 className="text-xl font-black text-text tracking-tight flex items-center gap-3">
                         {title}
-                        {badge && <span className="text-[9px] bg-primary text-white px-3 py-1 rounded-full uppercase tracking-[0.2em] font-black">{badge}</span>}
+                        {badge && <span className="text-[8px] bg-emerald-600 text-white px-2.5 py-1 rounded-md uppercase tracking-[0.15em] font-black">{badge}</span>}
                     </h2>
-                    <p className="text-xs text-text-muted font-bold uppercase tracking-widest mt-1 opacity-60">{desc}</p>
+                    <p className="text-[10px] text-text-muted font-medium uppercase tracking-widest mt-0.5">{desc}</p>
                 </div>
             </div>
+            {onRefresh && (
+                <button onClick={onRefresh} className="flex items-center gap-1.5 px-4 py-2 rounded-full border border-border text-xs font-medium text-text-muted hover:text-primary hover:border-primary/40 transition-all">
+                    <RefreshCw className="w-3.5 h-3.5" /> Refresh
+                </button>
+            )}
         </div>
     );
 }
@@ -184,8 +189,8 @@ function MarketingHubContent() {
     };
 
     const tabs = [
-        { id: 'whatsapp', label: 'WhatsApp', icon: MessageSquare },
-        { id: 'notification', label: 'App Notifications', icon: Bell },
+        { id: 'whatsapp', label: 'WhatsApp', icon: MessageSquare, iconColor: 'text-emerald-500', iconBg: 'bg-emerald-500/10' },
+        { id: 'notification', label: 'App Notifications', icon: Bell, iconColor: 'text-blue-500', iconBg: 'bg-blue-500/10' },
     ];
 
     const filteredCampaigns = campaigns.filter(c => 
@@ -197,111 +202,122 @@ function MarketingHubContent() {
     const paginatedCampaigns = filteredCampaigns.slice((safeCurrentPage - 1) * itemsPerPage, safeCurrentPage * itemsPerPage);
 
     return (
-        <div className="space-y-6 pb-12">
+        <div className="space-y-3 pb-6">
             {/* Header */}
-            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-8 text-left mb-4">
+            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3 text-left mb-2">
                 <div className="text-left font-black leading-none">
-                    <h1 className="text-3xl sm:text-4xl font-black text-text tracking-tighter uppercase italic leading-none">Marketing Hub</h1>
-                    <p className="text-[10px] sm:text-xs text-text-muted mt-3 uppercase tracking-[0.3em] opacity-50 leading-tight">Unified Audience Engagement & Retention Control</p>
+                    <h1 className="text-xl font-black text-text tracking-tight uppercase leading-none">Marketing Hub</h1>
+                    <p className="text-[10px] text-text-muted mt-1 uppercase tracking-[0.25em] opacity-50 leading-tight">Unified Audience Engagement & Retention Control</p>
                 </div>
-                <div className="flex flex-wrap items-center gap-4">
+                <div className="flex flex-wrap items-center gap-2">
                     {selectedCampaignIds.length > 0 && (
                         <button
                             onClick={handleBulkDelete}
-                            className="flex items-center justify-center gap-3 px-8 py-5 rounded-[1.25rem] bg-rose-500 text-white text-[10px] font-black uppercase tracking-[0.3em] hover:bg-rose-600 shadow-lg active:scale-[0.98] transition-all leading-none"
+                            className="flex items-center justify-center gap-2 px-4 py-2 rounded-full bg-rose-500 text-white text-[10px] font-black uppercase tracking-widest hover:bg-rose-600 shadow-md active:scale-[0.98] transition-all leading-none"
                         >
-                            <Trash2 className="w-4 h-4" /> Delete Selected ({selectedCampaignIds.length})
+                            <Trash2 className="w-3.5 h-3.5" /> Delete Selected ({selectedCampaignIds.length})
                         </button>
                     )}
                     <button
                         onClick={startCampaign}
-                        className="flex-1 lg:flex-none flex items-center justify-center gap-3 px-10 py-5 rounded-[1.25rem] bg-primary text-white text-[10px] font-black uppercase tracking-[0.3em] hover:brightness-110 shadow-[0_12px_24px_-8px_rgba(200,149,108,0.4)] active:scale-[0.98] transition-all leading-none"
+                        className="flex-1 lg:flex-none flex items-center justify-center gap-2 px-5 py-2 rounded-full bg-primary text-white text-[10px] font-black uppercase tracking-widest hover:brightness-110 shadow-md shadow-primary/30 active:scale-[0.98] transition-all leading-none"
                     >
-                        <Plus className="w-4 h-4" /> New {activeTab === 'whatsapp' ? 'WhatsApp' : 'Notification'}
+                        <Plus className="w-3.5 h-3.5" /> New {activeTab === 'whatsapp' ? 'WhatsApp' : 'Notification'}
                     </button>
                 </div>
             </div>
 
             {/* Tabs */}
-            <div className="flex items-center gap-2 border-b border-border/60 overflow-x-auto no-scrollbar">
+            <div className="flex items-center gap-1 border-b border-border/60 overflow-x-auto no-scrollbar">
                 {tabs.map(tab => (
                     <button
                         key={tab.id}
                         onClick={() => setActiveTab(tab.id)}
-                        className={`flex items-center gap-2.5 px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] transition-all relative whitespace-nowrap ${
-                            activeTab === tab.id ? 'text-primary' : 'text-text-muted hover:text-text'
+                        className={`flex items-center gap-2 px-4 py-2.5 text-[10px] font-black uppercase tracking-[0.15em] transition-all relative whitespace-nowrap ${
+                            activeTab === tab.id ? 'text-text' : 'text-text-muted hover:text-text'
                         }`}
                     >
-                        <tab.icon className={`w-4 h-4 transition-transform duration-300 ${activeTab === tab.id ? 'scale-110' : 'opacity-50'}`} />
+                        <tab.icon className={`w-3.5 h-3.5 transition-transform duration-300 ${activeTab === tab.id ? tab.iconColor + ' scale-110' : 'opacity-50'}`} />
                         {tab.label}
                         {activeTab === tab.id && (
-                            <motion.div layoutId="activeTab" className="absolute bottom-0 left-4 right-4 h-[3px] bg-primary rounded-t-full" />
+                            <motion.div layoutId="activeTab" className="absolute bottom-0 left-3 right-3 h-[2px] bg-text rounded-t-full" />
                         )}
                     </button>
                 ))}
             </div>
 
             {/* Tab Content: Campaign List */}
-            <div className="space-y-6">
+            <div className="space-y-3">
                 <SectionHeader
                     title={activeTab === 'whatsapp' ? 'WhatsApp Campaigns' : 'App Notifications'}
                     desc={activeTab === 'whatsapp' ? 'Direct messages to customer WhatsApp' : 'Push notifications to customer mobile app'}
-                    icon={activeTab === 'whatsapp' ? MessageSquare : Bell}
+                    icon={tabs.find(t => t.id === activeTab)?.icon || MessageSquare}
                     badge="Marketing"
+                    onRefresh={loadCampaigns}
+                    iconColor={tabs.find(t => t.id === activeTab)?.iconColor}
+                    iconBg={tabs.find(t => t.id === activeTab)?.iconBg}
                 />
 
-                <div className="bg-white rounded-3xl border border-border shadow-sm overflow-hidden">
-                    <div className="px-6 py-4 border-b border-border flex items-center justify-between bg-surface/30">
-                        <h3 className="text-xs font-black text-text uppercase tracking-widest leading-none">Sent History</h3>
-                        <button onClick={loadCampaigns} className="text-[10px] font-black text-primary hover:underline uppercase tracking-widest">Refresh</button>
+                <div className="bg-white rounded-2xl border border-border shadow-sm overflow-hidden">
+                    <div className="px-5 py-3 border-b border-border">
+                        <h3 className="text-[11px] font-black text-text uppercase tracking-widest leading-none">Sent History</h3>
                     </div>
                     <div className="overflow-x-auto">
-                        <table className="w-full min-w-[800px]">
+                        <table className="w-full min-w-[600px]">
                             <thead>
-                                <tr className="bg-surface/50 border-b border-border/60">
-                                    <th className="px-6 py-5 text-left w-10">
+                                <tr className="border-b border-border">
+                                    <th className="px-5 py-4 text-left w-10">
                                         <button onClick={toggleSelectAll} className={`w-4 h-4 border-2 rounded transition-all ${selectedCampaignIds.length === filteredCampaigns.length && filteredCampaigns.length > 0 ? 'bg-primary border-primary' : 'border-border'}`}>
                                             {selectedCampaignIds.length === filteredCampaigns.length && filteredCampaigns.length > 0 && <CheckCircle size={10} className="text-white mx-auto" />}
                                         </button>
                                     </th>
-                                    <th className="px-8 py-5 text-left text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Campaign Name</th>
-                                    <th className="px-8 py-5 text-center text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Status</th>
-                                    <th className="px-8 py-5 text-center text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Date</th>
-                                    <th className="px-8 py-5 text-right text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Action</th>
+                                    <th className="px-5 py-4 text-left text-[10px] font-black text-text-muted uppercase tracking-[0.15em]">Campaign Name</th>
+                                    <th className="px-5 py-4 text-left text-[10px] font-black text-text-muted uppercase tracking-[0.15em]">Status</th>
+                                    <th className="px-5 py-4 text-left text-[10px] font-black text-text-muted uppercase tracking-[0.15em]">Date</th>
+                                    <th className="px-5 py-4 text-center text-[10px] font-black text-text-muted uppercase tracking-[0.15em]">Action</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {loading ? (
-                                    <tr><td colSpan={5} className="px-6 py-12 text-center text-text-muted font-bold uppercase tracking-widest text-[10px]">Loading history...</td></tr>
+                                    <tr><td colSpan={5} className="px-5 py-12 text-center text-text-muted font-bold uppercase tracking-widest text-[10px]">Loading history...</td></tr>
                                 ) : filteredCampaigns.length === 0 ? (
-                                    <tr><td colSpan={5} className="px-6 py-12 text-center text-text-muted font-bold uppercase tracking-widest text-[10px]">No campaigns found</td></tr>
+                                    <tr><td colSpan={5} className="px-5 py-12 text-center text-text-muted font-bold uppercase tracking-widest text-[10px]">No campaigns found</td></tr>
                                 ) : (
                                     paginatedCampaigns.map(c => (
                                         <tr key={c._id} className={`border-b border-border/50 hover:bg-surface/10 transition-colors ${selectedCampaignIds.includes(c._id) ? 'bg-primary/5' : ''}`}>
-                                            <td className="px-6 py-5">
+                                            <td className="px-5 py-5">
                                                 <button onClick={() => toggleSelect(c._id)} className={`w-4 h-4 border-2 rounded transition-all ${selectedCampaignIds.includes(c._id) ? 'bg-primary border-primary' : 'border-border'}`}>
                                                     {selectedCampaignIds.includes(c._id) && <CheckCircle size={10} className="text-white mx-auto" />}
                                                 </button>
                                             </td>
-                                            <td className="px-8 py-5">
+                                            <td className="px-5 py-5">
                                                 <div className="text-xs font-black text-text uppercase tracking-tight">{c.name}</div>
-                                                <div className="text-[9px] text-text-muted font-bold truncate max-w-[300px] mt-1">{c.message}</div>
+                                                <div className="text-[9px] text-text-muted font-medium truncate max-w-[300px] mt-0.5">{c.message}</div>
                                             </td>
-                                            <td className="px-8 py-5 text-center">
-                                                <span className={`text-[9px] font-black px-3 py-1 rounded-full uppercase tracking-widest ${c.status === 'completed' ? 'bg-emerald-50 text-emerald-600' : 'bg-amber-50 text-amber-600'}`}>
+                                            <td className="px-5 py-5 text-left">
+                                                <span className={`inline-flex items-center gap-1.5 text-[9px] font-black uppercase tracking-widest ${c.status === 'completed' ? 'text-emerald-600' : 'text-amber-600'}`}>
+                                                    <span className={`w-2 h-2 rounded-full ${c.status === 'completed' ? 'bg-emerald-500' : 'bg-amber-500'}`} />
                                                     {c.status}
                                                 </span>
                                             </td>
-                                            <td className="px-8 py-5 text-center font-bold text-xs text-text-muted">
-                                                {new Date(c.createdAt).toLocaleDateString()}
+                                            <td className="px-5 py-5 text-left">
+                                                <div className="text-sm font-bold text-text">{new Date(c.createdAt).toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' })}</div>
+                                                <div className="text-[10px] text-text-muted font-medium mt-0.5">{new Date(c.createdAt).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true })}</div>
                                             </td>
-                                            <td className="px-8 py-5 text-right">
-                                                <button 
-                                                    onClick={() => handleDelete(c._id)}
-                                                    className="p-2 hover:bg-rose-50 text-text-muted hover:text-rose-500 rounded-lg transition-colors"
-                                                >
-                                                    <Trash2 className="w-4 h-4" />
-                                                </button>
+                                            <td className="px-5 py-5 text-center">
+                                                <div className="relative inline-block group">
+                                                    <button className="p-1 hover:bg-surface-alt rounded-md border border-border text-text-muted transition-colors">
+                                                        <MoreVertical className="w-4 h-4" />
+                                                    </button>
+                                                    <div className="absolute right-0 top-full mt-1 w-32 bg-white border border-border rounded-xl shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-10">
+                                                        <button
+                                                            onClick={() => handleDelete(c._id)}
+                                                            className="w-full flex items-center gap-2 px-3 py-2 text-[10px] font-bold text-rose-500 hover:bg-rose-50 rounded-xl transition-colors"
+                                                        >
+                                                            <Trash2 className="w-3 h-3" /> Delete
+                                                        </button>
+                                                    </div>
+                                                </div>
                                             </td>
                                         </tr>
                                     ))
@@ -311,26 +327,40 @@ function MarketingHubContent() {
                     </div>
                     {/* Pagination Footer */}
                     {filteredCampaigns.length > 0 && (
-                        <div className="bg-surface px-6 py-4 border-t border-border flex items-center justify-between">
-                            <span className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] font-mono italic">
-                                Showing {((safeCurrentPage - 1) * itemsPerPage) + 1} - {Math.min(safeCurrentPage * itemsPerPage, filteredCampaigns.length)} of {filteredCampaigns.length} Campaigns
+                        <div className="px-5 py-3 border-t border-border flex items-center justify-between">
+                            <span className="text-[10px] font-medium text-text-muted tracking-wide">
+                                Showing {((safeCurrentPage - 1) * itemsPerPage) + 1} to {Math.min(safeCurrentPage * itemsPerPage, filteredCampaigns.length)} of {filteredCampaigns.length} campaigns
                             </span>
-                            <div className="flex gap-4">
+                            <div className="flex items-center gap-1">
                                 <button
                                     type="button"
                                     onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
                                     disabled={safeCurrentPage === 1}
-                                    className="text-[10px] font-black text-text-muted uppercase tracking-widest hover:text-primary transition-colors disabled:opacity-20 cursor-pointer disabled:cursor-not-allowed"
+                                    className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-[10px] font-bold text-text-muted hover:text-primary hover:bg-surface-alt transition-all disabled:opacity-30 disabled:cursor-not-allowed"
                                 >
-                                    Previous
+                                    <ChevronLeft className="w-3 h-3" /> Previous
                                 </button>
+                                {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+                                    <button
+                                        key={page}
+                                        type="button"
+                                        onClick={() => setCurrentPage(page)}
+                                        className={`w-7 h-7 rounded-lg text-[10px] font-black transition-all ${
+                                            page === safeCurrentPage
+                                                ? 'bg-primary/10 text-primary border border-primary/30'
+                                                : 'text-text-muted hover:bg-surface-alt hover:text-text'
+                                        }`}
+                                    >
+                                        {page}
+                                    </button>
+                                ))}
                                 <button
                                     type="button"
                                     onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
                                     disabled={safeCurrentPage === totalPages || totalPages === 0}
-                                    className="text-[10px] font-black text-text-muted uppercase tracking-widest hover:text-primary transition-colors disabled:opacity-20 cursor-pointer disabled:cursor-not-allowed"
+                                    className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-[10px] font-bold text-text-muted hover:text-primary hover:bg-surface-alt transition-all disabled:opacity-30 disabled:cursor-not-allowed"
                                 >
-                                    Next
+                                    Next <ChevronRight className="w-3 h-3" />
                                 </button>
                             </div>
                         </div>

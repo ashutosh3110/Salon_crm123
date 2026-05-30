@@ -256,8 +256,8 @@ export default function PromotionsPage() {
         <div className="space-y-6 text-left font-black">
             <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6 text-left">
                 <div className="text-left font-black leading-none">
-                    <h1 className="text-2xl sm:text-3xl font-black text-text uppercase tracking-tight leading-none">Coupons & offers</h1>
-                    <p className="text-[10px] font-black text-text-muted mt-2 uppercase tracking-[0.3em] opacity-60 leading-none">{promos.length} offer{promos.length !== 1 ? 's' : ''} in your list</p>
+                    <h1 className="text-xl sm:text-2xl font-black text-text uppercase tracking-tight leading-none">Coupons & offers</h1>
+                    <p className="text-[9px] font-black text-text-muted mt-1 uppercase tracking-[0.2em] opacity-60 leading-none">{promos.length} offer{promos.length !== 1 ? 's' : ''} in your list</p>
                 </div>
                 <button
                     onClick={() => {
@@ -265,47 +265,49 @@ export default function PromotionsPage() {
                         setForm({ name: '', type: 'percentage', value: '', startDate: '', endDate: '', usageLimit: 1, usageLimitPerCustomer: 1, isActive: true, activationMode: 'AUTO', couponCode: '', applicableOn: 'BOTH', outletIds: [] });
                         setShowModal(true);
                     }}
-                    className="w-full lg:w-auto flex items-center justify-center gap-3 bg-primary text-primary-foreground border border-primary px-10 py-4 rounded-none text-[10px] font-black uppercase tracking-[0.2em] shadow-xl shadow-primary/20 hover:brightness-110 transition-all font-black"
+                    className="w-full lg:w-auto flex items-center justify-center gap-2 bg-primary/10 text-primary border border-primary px-6 py-2.5 rounded-2xl text-[10px] font-black uppercase tracking-[0.15em] shadow-[0_0_12px_rgba(234,179,8,0.4)] hover:shadow-[0_0_20px_rgba(234,179,8,0.6)] transition-all"
                 >
                     <Plus className="w-4 h-4" /> Add coupon
                 </button>
             </div>
 
             {!loading && promos.length > 0 && (
-                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 text-left font-black">
-                    <div className="md:col-span-1 bg-surface p-8 rounded-none border border-border shadow-sm text-left font-black flex flex-col justify-between">
-                        <div className="flex items-center justify-between mb-8 text-left">
-                            <span className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Discount amounts</span>
-                            <BarChart3 className="w-5 h-5 text-primary" />
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 text-left font-black">
+                    <div className="md:col-span-1 bg-surface p-5 rounded-2xl border border-border shadow-sm text-left font-black flex flex-col justify-between">
+                        <div className="flex items-center justify-between mb-4 text-left">
+                            <span className="text-[10px] font-black text-text-muted uppercase tracking-[0.15em]">Discount amounts</span>
+                            <div className="w-8 h-8 rounded-full bg-blue-500/10 flex items-center justify-center">
+                                <BarChart3 className="w-4 h-4 text-blue-500" />
+                            </div>
                         </div>
                         <div className="h-[150px] w-full text-left">
                             <ResponsiveContainer width="100%" height="100%">
                                 <BarChart data={chartData}>
-                                    <Bar dataKey="value" radius={0}>
+                                    <Bar dataKey="value" radius={[4, 4, 0, 0]}>
                                         {chartData.map((entry, index) => (
                                             <Cell key={`cell-${index}`} fill={entry.color} />
                                         ))}
                                     </Bar>
-                                    <Tooltip contentStyle={{ backgroundColor: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '0px', fontSize: '9px', fontWeight: '900', textTransform: 'uppercase' }} cursor={{ fill: 'transparent' }} />
+                                    <Tooltip contentStyle={{ backgroundColor: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '12px', fontSize: '9px', fontWeight: '900', textTransform: 'uppercase' }} cursor={{ fill: 'transparent' }} />
                                 </BarChart>
                             </ResponsiveContainer>
                         </div>
                     </div>
 
-                    <div className="md:col-span-1 xl:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4 text-left font-black">
+                    <div className="md:col-span-1 xl:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-3 text-left font-black">
                         {[
-                            { label: 'Active Matrix', value: promos.filter(p => p.isActive).length, icon: TrendingUp, color: 'emerald' },
-                            { label: 'Avg Magnitude', value: `${promos.length > 0 ? Math.round(promos.reduce((s, p) => s + Number(p.value), 0) / promos.length) : 0} units`, icon: Percent, color: 'blue' },
-                            { label: 'Expiring Soon', value: promos.filter(p => p.endDate && new Date(p.endDate) < new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)).length, icon: Calendar, color: 'rose' },
-                            { label: 'Total Volume', value: promos.length, icon: Tag, color: 'violet' }
+                            { label: 'Active Matrix', value: promos.filter(p => p.isActive).length, icon: TrendingUp, color: 'text-emerald-500', bg: 'bg-emerald-500/10' },
+                            { label: 'Avg Magnitude', value: `${promos.length > 0 ? Math.round(promos.reduce((s, p) => s + Number(p.value), 0) / promos.length) : 0} units`, icon: Percent, color: 'text-blue-500', bg: 'bg-blue-500/10' },
+                            { label: 'Expiring Soon', value: promos.filter(p => p.endDate && new Date(p.endDate) < new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)).length, icon: Calendar, color: 'text-rose-500', bg: 'bg-rose-500/10' },
+                            { label: 'Total Volume', value: promos.length, icon: Tag, color: 'text-violet-500', bg: 'bg-violet-500/10' }
                         ].map((stat, i) => (
-                            <div key={i} className="bg-surface p-6 rounded-none border border-border flex items-center gap-6 group hover:shadow-xl transition-all text-left">
-                                <div className={`p-4 rounded-none bg-primary/10 text-primary border border-primary/20 group-hover:scale-110 transition-transform`}>
-                                    <stat.icon className="w-6 h-6" />
+                            <div key={i} className="bg-surface p-4 rounded-2xl border border-border flex items-center gap-4 group hover:shadow-md transition-all text-left">
+                                <div className={`w-12 h-12 rounded-full flex items-center justify-center ${stat.bg} ${stat.color} group-hover:scale-110 transition-transform`}>
+                                    <stat.icon className="w-5 h-5" />
                                 </div>
                                 <div className="text-left leading-none font-black">
-                                    <p className="text-[9px] font-black text-text-muted uppercase tracking-[0.2em] mb-2 leading-none">{stat.label}</p>
-                                    <p className="text-2xl font-black text-text tracking-tighter leading-none">{stat.value}</p>
+                                    <p className="text-[9px] font-black text-text-muted uppercase tracking-[0.15em] mb-1.5 leading-none">{stat.label}</p>
+                                    <p className="text-xl font-black text-text tracking-tight leading-none">{stat.value}</p>
                                 </div>
                             </div>
                         ))}
@@ -313,49 +315,49 @@ export default function PromotionsPage() {
                 </div>
             )}
 
-            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 text-left font-black">
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 text-left font-black">
                 {loading ? (
-                    <div className="col-span-full flex flex-col items-center justify-center py-32 text-left">
-                        <div className="w-12 h-12 border border-primary/20 border-t-primary rounded-none animate-spin mb-4" />
-                        <p className="text-[10px] font-black text-text-muted uppercase tracking-[0.3em] animate-pulse">Loading offers...</p>
+                    <div className="col-span-full flex flex-col items-center justify-center py-20 text-left">
+                        <div className="w-10 h-10 border border-primary/20 border-t-primary rounded-full animate-spin mb-3" />
+                        <p className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] animate-pulse">Loading offers...</p>
                     </div>
                 ) : promos.length === 0 ? (
-                    <div className="col-span-full text-center py-32 bg-surface rounded-none border border-border border-dashed text-left">
-                        <Tag className="w-16 h-16 text-text-muted/20 mx-auto mb-8" />
-                        <h3 className="text-sm font-black text-text uppercase tracking-[0.3em]">No coupons yet</h3>
+                    <div className="col-span-full text-center py-20 bg-surface rounded-2xl border border-border border-dashed text-left">
+                        <Tag className="w-12 h-12 text-text-muted/20 mx-auto mb-4" />
+                        <h3 className="text-xs font-black text-text uppercase tracking-[0.2em]">No coupons yet</h3>
                     </div>
                 ) : (
                     promos.map((p) => {
                         const showShare = p.outletIds.length === 0 || !user?.outletId || p.outletIds.includes(String(user?.outletId));
                         return (
-                            <div key={p._id} className="bg-surface rounded-none border border-border p-8 hover:shadow-2xl hover:translate-y-[-4px] transition-all group relative overflow-hidden text-left font-black">
-                                <div className="flex items-start justify-between mb-8 text-left">
-                                    <span className={`text-[10px] font-black px-4 py-1.5 rounded-none uppercase tracking-widest ${typeColors[p.type] || 'bg-gray-50 text-gray-500'} bg-opacity-5 border border-current`}>{typeLabels[p.type]}</span>
-                                    <div className="flex gap-2">
+                            <div key={p._id} className="bg-surface rounded-2xl border border-border p-5 hover:shadow-md hover:translate-y-[-2px] transition-all group relative overflow-hidden text-left font-black">
+                                <div className="flex items-start justify-between mb-5 text-left">
+                                    <span className={`text-[9px] font-black px-3 py-1 rounded-md uppercase tracking-wider ${typeColors[p.type] || 'bg-gray-50 text-gray-500'} bg-opacity-10 border border-current`}>{typeLabels[p.type]}</span>
+                                    <div className="flex gap-1.5">
                                         {showShare && (
-                                            <button onClick={() => handleOpenShare(p)} className="p-3 rounded-none bg-surface border border-border text-text-muted hover:text-emerald-500 transition-all" title="Share on WhatsApp">
-                                                <Share2 className="w-4 h-4" />
+                                            <button onClick={() => handleOpenShare(p)} className="p-2 rounded-xl bg-surface border border-border text-emerald-500 hover:bg-emerald-50 transition-all hover:shadow-[0_0_8px_rgba(16,185,129,0.3)]" title="Share on WhatsApp">
+                                                <Share2 className="w-3.5 h-3.5" />
                                             </button>
                                         )}
-                                        <button onClick={() => openEdit(p)} className="p-3 rounded-none bg-surface border border-border text-text-muted hover:text-primary transition-all"><Edit className="w-4 h-4" /></button>
-                                        <button onClick={() => handleDelete(p._id)} className="p-3 rounded-none bg-surface border border-border text-text-muted hover:text-rose-600 transition-all"><Trash2 className="w-4 h-4" /></button>
+                                        <button onClick={() => openEdit(p)} className="p-2 rounded-xl bg-surface border border-border text-blue-500 hover:bg-blue-50 transition-all hover:shadow-[0_0_8px_rgba(59,130,246,0.3)]"><Edit className="w-3.5 h-3.5" /></button>
+                                        <button onClick={() => handleDelete(p._id)} className="p-2 rounded-xl bg-surface border border-border text-rose-500 hover:bg-rose-50 transition-all hover:shadow-[0_0_8px_rgba(244,63,94,0.3)]"><Trash2 className="w-3.5 h-3.5" /></button>
                                     </div>
                                 </div>
-                                <h3 className="text-xl font-black text-text uppercase tracking-tight text-left leading-tight mb-2">{p.name}</h3>
-                                <div className="text-5xl font-black text-primary tracking-tighter text-left leading-none mb-6">{p.type === 'percentage' ? `${p.value}%` : `₹${p.value}`}</div>
+                                <h3 className="text-lg font-black text-text uppercase tracking-tight text-left leading-tight mb-1">{p.name}</h3>
+                                <div className="text-3xl font-black text-primary tracking-tighter text-left leading-none mb-4">{p.type === 'percentage' ? `${p.value}%` : `₹${p.value}`}</div>
 
-                                <div className="space-y-3 pt-6 border-t border-border/40 text-left font-black">
-                                    <div className="flex items-center gap-3 text-[10px] font-black text-text-muted uppercase tracking-widest text-left">
-                                        <Calendar className="w-4 h-4 opacity-40" />
+                                <div className="space-y-2.5 pt-4 border-t border-border/40 text-left font-black">
+                                    <div className="flex items-center gap-2.5 text-[9px] font-black text-text-muted uppercase tracking-wider text-left">
+                                        <Calendar className="w-3.5 h-3.5 text-blue-500" />
                                         {p.startDate ? new Date(p.startDate).toLocaleDateString('en-IN') : '—'} → {p.endDate ? new Date(p.endDate).toLocaleDateString('en-IN') : '—'}
                                     </div>
-                                    <div className="flex items-start gap-3 text-[10px] font-black text-text-muted uppercase tracking-widest text-left">
-                                        <Tag className="w-4 h-4 opacity-40 mt-0.5" />
-                                        <span>Applies to: <strong className="text-primary">{p.applicableOn === 'SERVICE' ? 'Services Only' : (p.applicableOn === 'PRODUCT' ? 'Products Only' : 'Both')}</strong></span>
+                                    <div className="flex items-start gap-2.5 text-[9px] font-black text-text-muted uppercase tracking-wider text-left">
+                                        <Tag className="w-3.5 h-3.5 text-purple-500 mt-0.5" />
+                                        <span>Applies to: <strong className="text-text">{p.applicableOn === 'SERVICE' ? 'Services Only' : (p.applicableOn === 'PRODUCT' ? 'Products Only' : 'Both')}</strong></span>
                                     </div>
-                                    <div className="flex items-start gap-3 text-[10px] font-black text-text-muted uppercase tracking-widest text-left">
-                                        <TrendingUp className="w-4 h-4 opacity-40 mt-0.5" />
-                                        <span className="line-clamp-2">Outlets: <strong className="text-primary">{p.outletIds.length === 0 ? 'All Outlets' : p.outletIds.map(id => outlets.find(o => o._id === id)?.name || 'Outlet').join(', ')}</strong></span>
+                                    <div className="flex items-start gap-2.5 text-[9px] font-black text-text-muted uppercase tracking-wider text-left">
+                                        <TrendingUp className="w-3.5 h-3.5 text-emerald-500 mt-0.5" />
+                                        <span className="line-clamp-2">Outlets: <strong className="text-text">{p.outletIds.length === 0 ? 'All Outlets' : p.outletIds.map(id => outlets.find(o => o._id === id)?.name || 'Outlet').join(', ')}</strong></span>
                                     </div>
                                 </div>
 
@@ -478,47 +480,47 @@ export default function PromotionsPage() {
             )}
 
             {shareModalOpen && sharingPromo && createPortal(
-                <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-[9999] flex items-center justify-center p-4 text-left" onClick={() => setShareModalOpen(false)}>
-                    <div className="bg-white dark:bg-slate-850 rounded-none w-full max-w-md shadow-2xl relative overflow-hidden border border-slate-200 dark:border-slate-700 max-h-[90vh] flex flex-col" onClick={(e) => e.stopPropagation()}>
+                <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[9999] flex items-center justify-center p-4 text-left" onClick={() => setShareModalOpen(false)}>
+                    <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl relative overflow-hidden border border-border max-h-[90vh] flex flex-col" onClick={(e) => e.stopPropagation()}>
                         {/* Modal Header */}
-                        <div className="flex items-center justify-between px-6 pt-6 pb-4 border-b border-slate-100 dark:border-slate-700">
+                        <div className="flex items-center justify-between px-6 pt-6 pb-4 border-b border-border bg-surface/50">
                             <div>
-                                <h2 className="text-xs font-black uppercase tracking-[0.2em] text-slate-900 dark:text-white flex items-center gap-2">
+                                <h2 className="text-xs font-black uppercase tracking-[0.2em] text-text flex items-center gap-2">
                                     <Share2 className="w-4 h-4 text-emerald-500 animate-pulse" />
                                     Share Promotion
                                 </h2>
-                                <p className="text-[9px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mt-1">Send "{sharingPromo.name}" on WhatsApp</p>
+                                <p className="text-[9px] font-bold text-text-muted uppercase tracking-widest mt-1">Send "{sharingPromo.name}" on WhatsApp</p>
                             </div>
-                            <button type="button" onClick={() => setShareModalOpen(false)} className="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-400 hover:text-rose-500 transition-all">
+                            <button type="button" onClick={() => setShareModalOpen(false)} className="p-2 rounded-full hover:bg-surface text-text-muted hover:text-rose-500 transition-all">
                                 <X className="w-5 h-5" />
                             </button>
                         </div>
 
                         {/* Modal Content */}
-                        <div className="p-6 overflow-y-auto space-y-4 flex-1 text-slate-800 dark:text-slate-200">
+                        <div className="p-6 overflow-y-auto space-y-4 flex-1 text-text">
                             {/* Searchable Customer Dropdown */}
                             <div className="space-y-1">
-                                <label className="text-[9px] font-black text-slate-500 dark:text-slate-450 ml-1 uppercase tracking-widest block mb-1">Select Customer</label>
+                                <label className="text-[9px] font-black text-text-muted ml-1 uppercase tracking-widest block mb-1">Select Customer</label>
                                 
                                 {/* Search Input */}
                                 <div className="relative mb-2">
-                                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" />
+                                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-text-muted" />
                                     <input
                                         type="text"
                                         placeholder="Search customer name or phone..."
                                         value={customerSearch}
                                         onChange={(e) => setCustomerSearch(e.target.value)}
-                                        className="w-full pl-9 pr-4 py-2.5 rounded-none bg-slate-50 dark:bg-slate-750 border border-slate-200 dark:border-slate-700 text-xs font-bold uppercase tracking-wider focus:border-primary outline-none text-slate-900 dark:text-white"
+                                        className="w-full pl-9 pr-4 py-2.5 rounded-lg bg-surface border border-border text-xs font-bold uppercase tracking-wider focus:border-primary outline-none text-text"
                                     />
                                 </div>
 
                                 {/* Customer List Dropdown Select */}
                                 {customersLoading ? (
-                                    <div className="text-center py-8 text-[10px] font-black text-slate-400 uppercase tracking-widest animate-pulse">Loading Customers...</div>
+                                    <div className="text-center py-8 text-[10px] font-black text-text-muted uppercase tracking-widest animate-pulse">Loading Customers...</div>
                                 ) : (
-                                    <div className="border border-slate-200 dark:border-slate-700 max-h-[180px] overflow-y-auto divide-y divide-slate-100 dark:divide-slate-750 bg-slate-50 dark:bg-slate-750 rounded-none">
+                                    <div className="border border-border max-h-[180px] overflow-y-auto divide-y divide-border bg-surface rounded-lg">
                                         {filteredCustomers.length === 0 ? (
-                                            <div className="p-4 text-center text-[10px] font-bold text-slate-400 uppercase tracking-widest">No customers found</div>
+                                            <div className="p-4 text-center text-[10px] font-bold text-text-muted uppercase tracking-widest">No customers found</div>
                                         ) : (
                                             filteredCustomers.map(c => {
                                                 const isSelected = selectedCustomerId === c._id;
@@ -526,7 +528,7 @@ export default function PromotionsPage() {
                                                     <div 
                                                         key={c._id} 
                                                         onClick={() => setSelectedCustomerId(c._id)}
-                                                        className={`p-3 text-xs font-bold uppercase cursor-pointer hover:bg-primary/5 hover:text-primary transition-all flex items-center justify-between ${isSelected ? 'bg-primary/10 text-primary border-l-2 border-primary' : 'text-slate-700 dark:text-slate-350'}`}
+                                                        className={`p-3 text-xs font-bold uppercase cursor-pointer hover:bg-primary/5 hover:text-primary transition-all flex items-center justify-between ${isSelected ? 'bg-primary/10 text-primary border-l-2 border-primary' : 'text-text'}`}
                                                     >
                                                         <div className="text-left">
                                                             <p className="font-extrabold">{c.name}</p>
@@ -543,13 +545,13 @@ export default function PromotionsPage() {
                         </div>
 
                         {/* Modal Footer */}
-                        <div className="p-6 border-t border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/40 flex gap-3 shrink-0">
-                            <button type="button" onClick={() => setShareModalOpen(false)} className="flex-1 py-3 border border-slate-200 dark:border-slate-700 text-[10px] font-bold uppercase tracking-[0.2em] text-slate-600 dark:text-slate-350 hover:bg-slate-100 dark:hover:bg-slate-700 transition-all">Cancel</button>
+                        <div className="p-6 border-t border-border bg-surface/50 flex gap-3 shrink-0">
+                            <button type="button" onClick={() => setShareModalOpen(false)} className="flex-1 py-3 border border-border rounded-xl text-[10px] font-bold uppercase tracking-[0.2em] text-text-muted hover:bg-surface transition-all">Cancel</button>
                             <button 
                                 type="button" 
                                 onClick={handleSendPromo}
                                 disabled={!selectedCustomerId || sendingWhatsApp}
-                                className="flex-1 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[10px] uppercase tracking-[0.2em] shadow-lg disabled:opacity-50 transition-all flex items-center justify-center gap-1.5"
+                                className="flex-1 py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold text-[10px] uppercase tracking-[0.2em] shadow-lg disabled:opacity-50 transition-all flex items-center justify-center gap-1.5"
                             >
                                 {sendingWhatsApp ? 'Sending...' : 'Send WhatsApp'}
                             </button>
