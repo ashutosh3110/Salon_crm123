@@ -183,7 +183,7 @@ export default function FinancePage({ tab = 'dashboard' }) {
                                 type="button"
                                 onClick={loadFinance}
                                 disabled={financeLoading}
-                                className="flex justify-center items-center gap-3 bg-surface border border-border px-8 py-3.5 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] text-text-muted hover:text-primary hover:border-primary transition-all shadow-sm disabled:opacity-50 active:scale-[0.98]"
+                                className="flex justify-center items-center gap-3 bg-primary/10 border border-primary/30 px-8 py-3.5 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] text-primary hover:bg-primary hover:text-primary-foreground hover:shadow-[0_0_15px_rgba(var(--color-primary),0.4)] transition-all shadow-sm disabled:opacity-50 active:scale-[0.98]"
                             >
                                 <DownloadCloud className="w-4 h-4" />
                                 Refresh data
@@ -262,7 +262,7 @@ export default function FinancePage({ tab = 'dashboard' }) {
                 </div>
             ) : null}
 
-            <div className="bg-surface rounded-none border border-border shadow-sm overflow-hidden min-h-[650px] text-left font-black">
+            <div className="bg-surface rounded-2xl border border-border shadow-sm overflow-hidden min-h-[650px] text-left font-black">
                 {activeTab === 'dashboard' && (
                     <FinanceDashboard
                         data={financeData}
@@ -307,16 +307,24 @@ function FinanceKPICard({ title, value, icon: Icon, color, trend, className = ''
 
     const trendText = trend != null ? String(trend) : '—';
 
+    const bgColors = {
+        blue: 'bg-blue-500/10',
+        rose: 'bg-rose-500/10',
+        orange: 'bg-orange-500/10',
+        emerald: 'bg-emerald-500/10',
+        violet: 'bg-violet-500/10',
+    };
+
     const content = (
         <>
             <div className={`absolute -right-4 -top-4 w-20 h-20 bg-primary/5 rotate-12 transition-all ${to ? 'group-hover:bg-primary/10' : ''}`} />
             <div className="flex justify-between items-start gap-2 mb-4 text-left font-black min-h-[2.75rem]">
-                <div className={`shrink-0 p-3 rounded-none ${colors[color]} border border-current bg-surface shadow-inner ${to ? 'group-hover:scale-105' : ''} transition-transform`}>
-                    <Icon className="w-5 h-5 font-black" />
+                <div className={`shrink-0 w-12 h-12 flex items-center justify-center rounded-xl ${colors[color]} ${bgColors[color]} ${to ? 'group-hover:scale-105' : ''} transition-transform`}>
+                    <Icon className="w-6 h-6 font-black" />
                 </div>
                 <span
                     title={trendText}
-                    className={`text-[8px] sm:text-[9px] font-black uppercase tracking-wider px-2 py-1 rounded-none border max-w-[58%] min-w-0 text-right leading-snug line-clamp-3 ${trendBadgeClass(color)}`}
+                    className={`text-[8px] sm:text-[9px] font-black uppercase tracking-wider px-2 py-1 rounded-md border max-w-[58%] min-w-0 text-right leading-snug line-clamp-3 ${trendBadgeClass(color)}`}
                 >
                     {trendText}
                 </span>
@@ -330,7 +338,7 @@ function FinanceKPICard({ title, value, icon: Icon, color, trend, className = ''
         </>
     );
 
-    const cardClasses = `bg-surface p-5 sm:p-6 rounded-none border border-border shadow-sm ${
+    const cardClasses = `bg-surface p-5 sm:p-6 rounded-2xl border border-border shadow-sm ${
         to ? 'hover:shadow-xl hover:translate-y-[-2px] cursor-pointer' : ''
     } transition-all group relative overflow-hidden text-left font-black flex flex-col min-h-[160px] ${className}`;
 
