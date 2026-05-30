@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
     Bell,
     Cake,
@@ -9,7 +9,9 @@ import {
     AlertCircle,
     CheckCircle,
     User,
-    Phone
+    Phone,
+    ChevronDown,
+    Check
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import api from '../../../services/api';
@@ -25,6 +27,19 @@ export default function BirthdayAnniversaryRemindersView() {
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
     const [totalCount, setTotalCount] = useState(0);
+
+    const [isOutletDropdownOpen, setIsOutletDropdownOpen] = useState(false);
+    const outletDropdownRef = useRef(null);
+
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (outletDropdownRef.current && !outletDropdownRef.current.contains(event.target)) {
+                setIsOutletDropdownOpen(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
 
     const loadWishes = async () => {
         setLoading(true);
@@ -129,14 +144,14 @@ export default function BirthdayAnniversaryRemindersView() {
     return (
         <div className="p-8 space-y-6 animate-reveal">
             {/* Header / Actions */}
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-surface-alt/10 p-6 border border-border">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-surface-alt/10 p-6 border border-border rounded-3xl">
                 <div className="text-left">
                     <h4 className="text-xs font-black uppercase tracking-widest text-text">Birthday & Anniversary Wishes History</h4>
                     <p className="text-[11px] font-semibold text-text-muted">View records of sent wishes, automated reminders, and celebratory loyalty awards.</p>
                 </div>
                 <button
                     onClick={loadWishes}
-                    className="border-2 border-text bg-white hover:bg-slate-50 px-4 py-2 text-[10px] font-black uppercase tracking-wider flex items-center gap-2 cursor-pointer"
+                    className="border border-border bg-surface shadow-sm hover:shadow-md hover:bg-surface-alt px-5 py-3 rounded-2xl text-[10px] font-black uppercase tracking-wider flex items-center gap-2 cursor-pointer transition-all"
                 >
                     <RefreshCw className="w-3.5 h-3.5" /> Refresh List
                 </button>
@@ -144,22 +159,22 @@ export default function BirthdayAnniversaryRemindersView() {
 
             {/* Filter / Search Bar */}
             <div className="flex flex-col md:flex-row gap-4 justify-between items-stretch md:items-center">
-                <div className="flex border border-border p-1 bg-surface-alt/10 max-w-md w-full">
+                <div className="flex border border-border p-1.5 bg-surface-alt/10 max-w-md w-full rounded-2xl">
                     <button
                         onClick={() => setCategoryFilter('all')}
-                        className={`flex-1 py-2 text-[9px] font-black uppercase tracking-widest transition-all ${categoryFilter === 'all' ? 'bg-primary text-white' : 'text-text-muted hover:bg-white'}`}
+                        className={`flex-1 py-2.5 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all ${categoryFilter === 'all' ? 'bg-primary text-primary-foreground shadow-sm' : 'text-text-muted hover:bg-surface'}`}
                     >
                         All Wishes
                     </button>
                     <button
                         onClick={() => setCategoryFilter('birthday')}
-                        className={`flex-1 py-2 text-[9px] font-black uppercase tracking-widest transition-all ${categoryFilter === 'birthday' ? 'bg-primary text-white' : 'text-text-muted hover:bg-white'}`}
+                        className={`flex-1 py-2.5 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all ${categoryFilter === 'birthday' ? 'bg-primary text-primary-foreground shadow-sm' : 'text-text-muted hover:bg-surface'}`}
                     >
                         Birthdays
                     </button>
                     <button
                         onClick={() => setCategoryFilter('anniversary')}
-                        className={`flex-1 py-2 text-[9px] font-black uppercase tracking-widest transition-all ${categoryFilter === 'anniversary' ? 'bg-primary text-white' : 'text-text-muted hover:bg-white'}`}
+                        className={`flex-1 py-2.5 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all ${categoryFilter === 'anniversary' ? 'bg-primary text-primary-foreground shadow-sm' : 'text-text-muted hover:bg-surface'}`}
                     >
                         Anniversaries
                     </button>
@@ -167,34 +182,56 @@ export default function BirthdayAnniversaryRemindersView() {
 
                 <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
                     {/* Outlet Filter Select */}
-                    <div className="relative min-w-[200px]">
-                        <select
-                            value={outletFilter}
-                            onChange={(e) => setOutletFilter(e.target.value)}
-                            className="w-full px-4 py-2.5 bg-white border-2 border-text text-xs font-bold outline-none appearance-none cursor-pointer"
+                    <div className="relative min-w-[200px]" ref={outletDropdownRef}>
+                        <div 
+                            onClick={() => setIsOutletDropdownOpen(!isOutletDropdownOpen)}
+                            className="w-full px-4 py-3 bg-surface border border-border text-[11px] font-black uppercase tracking-widest outline-none cursor-pointer rounded-2xl shadow-sm flex items-center justify-between group hover:border-primary transition-all"
                         >
-                            <option value="all">All Outlets</option>
-                            {(outlets || []).map((o) => (
-                                <option key={o._id || o.id} value={o._id || o.id}>
-                                    {o.name}
-                                </option>
-                            ))}
-                        </select>
-                        <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-text">
-                            <svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
-                                <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/>
-                            </svg>
+                            <span className="text-text truncate pr-4">
+                                {outletFilter === 'all' 
+                                    ? 'All Outlets' 
+                                    : (outlets?.find(o => (o._id || o.id) === outletFilter)?.name || 'All Outlets')}
+                            </span>
+                            <ChevronDown className={`w-4 h-4 text-text-muted group-hover:text-primary transition-transform duration-200 ${isOutletDropdownOpen ? 'rotate-180' : ''}`} />
                         </div>
+                        
+                        {isOutletDropdownOpen && (
+                            <div className="absolute top-full left-0 mt-2 w-full bg-surface border border-border rounded-2xl shadow-lg z-50 overflow-hidden py-2 animate-in fade-in slide-in-from-top-2 duration-200">
+                                <div 
+                                    onClick={() => {
+                                        setOutletFilter('all');
+                                        setIsOutletDropdownOpen(false);
+                                    }}
+                                    className={`px-4 py-3 text-[10px] font-black uppercase tracking-widest cursor-pointer flex items-center justify-between hover:bg-surface-alt transition-colors ${outletFilter === 'all' ? 'text-primary bg-primary/5' : 'text-text-muted'}`}
+                                >
+                                    All Outlets
+                                    {outletFilter === 'all' && <Check className="w-4 h-4" />}
+                                </div>
+                                {(outlets || []).map((o) => (
+                                    <div
+                                        key={o._id || o.id}
+                                        onClick={() => {
+                                            setOutletFilter(o._id || o.id);
+                                            setIsOutletDropdownOpen(false);
+                                        }}
+                                        className={`px-4 py-3 text-[10px] font-black uppercase tracking-widest cursor-pointer flex items-center justify-between hover:bg-surface-alt transition-colors ${(outletFilter === (o._id || o.id)) ? 'text-primary bg-primary/5' : 'text-text-muted'}`}
+                                    >
+                                        <span className="truncate pr-4">{o.name}</span>
+                                        {(outletFilter === (o._id || o.id)) && <Check className="w-4 h-4 shrink-0" />}
+                                    </div>
+                                ))}
+                            </div>
+                        )}
                     </div>
 
                     <div className="relative w-full sm:w-72 group">
-                        <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
+                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
                         <input
                             type="text"
                             placeholder="Search by name or phone..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            className="w-full pl-10 pr-4 py-2.5 bg-white border-2 border-text text-xs font-bold outline-none"
+                            className="w-full pl-11 pr-4 py-3 bg-surface border border-border text-xs font-bold outline-none rounded-2xl shadow-sm focus:border-primary transition-all"
                         />
                     </div>
                 </div>
@@ -207,11 +244,11 @@ export default function BirthdayAnniversaryRemindersView() {
                 </div>
             ) : (
                 <div className="space-y-4">
-                    <div className="bg-white border-2 border-text shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] overflow-hidden">
+                    <div className="bg-surface border border-border shadow-sm overflow-hidden rounded-3xl">
                         <div className="overflow-x-auto">
                             <table className="w-full text-left border-collapse">
                                 <thead>
-                                    <tr className="bg-surface border-b-2 border-text text-[10px] font-black uppercase tracking-widest text-text-muted">
+                                    <tr className="bg-surface-alt/50 border-b border-border text-[10px] font-black uppercase tracking-widest text-text-muted">
                                         <th className="px-6 py-4">Customer</th>
                                         <th className="px-6 py-4">Phone</th>
                                         <th className="px-6 py-4">Type</th>
@@ -221,7 +258,7 @@ export default function BirthdayAnniversaryRemindersView() {
                                         <th className="px-6 py-4 text-right">Action</th>
                                     </tr>
                                 </thead>
-                                <tbody className="divide-y-2 divide-border text-xs font-bold text-text-secondary">
+                                <tbody className="divide-y divide-border text-xs font-bold text-text-secondary">
                                     {wishItems.length === 0 ? (
                                         <tr className="hover:bg-slate-50 transition-colors">
                                             <td className="px-6 py-4 font-black uppercase text-text text-sm whitespace-nowrap">—</td>
@@ -235,7 +272,7 @@ export default function BirthdayAnniversaryRemindersView() {
                                             <td className="px-6 py-4 font-bold text-text-muted uppercase whitespace-nowrap">—</td>
                                             <td className="px-6 py-4 font-bold text-text-muted whitespace-nowrap">—</td>
                                             <td className="px-6 py-4 text-right whitespace-nowrap">
-                                                <button disabled className="opacity-30 bg-slate-300 text-white font-black text-[9px] uppercase tracking-widest py-2 px-4 shadow-sm inline-flex items-center gap-1.5 cursor-not-allowed">
+                                                <button disabled className="opacity-30 bg-slate-300 text-white font-black text-[9px] uppercase tracking-widest py-2 px-4 rounded-xl shadow-sm inline-flex items-center gap-1.5 cursor-not-allowed">
                                                     Resend Wish
                                                 </button>
                                             </td>
@@ -250,7 +287,7 @@ export default function BirthdayAnniversaryRemindersView() {
                                                     {item.client.phone}
                                                 </td>
                                                 <td className="px-6 py-4 whitespace-nowrap">
-                                                    <span className={`inline-block border text-[9px] font-black uppercase px-2 py-0.5 tracking-wider ${item.badgeStyle}`}>
+                                                    <span className={`inline-block border text-[9px] font-black uppercase px-2.5 py-1 rounded-xl tracking-wider ${item.badgeStyle}`}>
                                                         {item.label}
                                                     </span>
                                                 </td>
@@ -269,7 +306,7 @@ export default function BirthdayAnniversaryRemindersView() {
                                                 <td className="px-6 py-4 text-right whitespace-nowrap">
                                                     <button
                                                         onClick={() => handleSendManualWhatsApp(item.client, item.type)}
-                                                        className="bg-emerald-500 hover:bg-emerald-600 text-white font-black text-[9px] uppercase tracking-widest py-2 px-4 shadow-sm inline-flex items-center gap-1.5 transition-colors cursor-pointer"
+                                                        className="bg-emerald-500 hover:bg-emerald-600 text-white font-black text-[9px] uppercase tracking-widest py-2 px-4 rounded-xl shadow-sm inline-flex items-center gap-1.5 transition-colors cursor-pointer"
                                                     >
                                                         <MessageSquare className="w-3.5 h-3.5" />
                                                         Resend Wish
@@ -285,15 +322,15 @@ export default function BirthdayAnniversaryRemindersView() {
 
                     {/* Pagination Controls */}
                     {totalPages > 1 && (
-                        <div className="py-4 border-t border-border bg-surface-alt/10 flex items-center justify-between">
-                            <div className="text-[10px] font-black text-text-muted uppercase tracking-widest">
+                        <div className="py-4 bg-surface-alt/10 flex items-center justify-between">
+                            <div className="text-[10px] font-black text-text-muted uppercase tracking-widest pl-4">
                                 Showing {filteredClients.length} of {totalCount} records
                             </div>
-                            <div className="flex items-center gap-3">
+                            <div className="flex items-center gap-3 pr-4">
                                 <button
                                     onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
                                     disabled={currentPage === 1}
-                                    className="px-4 py-2 border border-border bg-white text-[10px] font-black uppercase tracking-wider disabled:opacity-30 hover:bg-slate-50 transition-all cursor-pointer"
+                                    className="px-4 py-2 border border-border rounded-xl bg-surface text-[10px] font-black uppercase tracking-wider disabled:opacity-30 hover:bg-surface-alt transition-all cursor-pointer shadow-sm"
                                 >
                                     Prev
                                 </button>
@@ -303,7 +340,7 @@ export default function BirthdayAnniversaryRemindersView() {
                                 <button
                                     onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
                                     disabled={currentPage >= totalPages}
-                                    className="px-4 py-2 border border-border bg-white text-[10px] font-black uppercase tracking-wider disabled:opacity-30 hover:bg-slate-50 transition-all cursor-pointer"
+                                    className="px-4 py-2 border border-border rounded-xl bg-surface text-[10px] font-black uppercase tracking-wider disabled:opacity-30 hover:bg-surface-alt transition-all cursor-pointer shadow-sm"
                                 >
                                     Next
                                 </button>

@@ -620,7 +620,7 @@ function WalletMonitor({ customers, onCustomerClick, customersMetadata, currentP
 
             {activeSubTab === 'directory' && (
                 <>
-                    <div className="bg-surface border border-border p-5 flex flex-col md:flex-row items-center gap-6 shadow-sm">
+                    <div className="bg-surface border border-border p-6 rounded-3xl flex flex-col md:flex-row items-center gap-6 shadow-sm mb-6">
                         <div className="flex-1 w-full">
                             <div className="flex flex-wrap items-end gap-4">
                                 <div className="flex flex-col md:flex-row gap-4 flex-1">
@@ -632,7 +632,7 @@ function WalletMonitor({ customers, onCustomerClick, customersMetadata, currentP
                                             disabled={selectedIds.length === 0}
                                             value={bulkAmount}
                                             onChange={e => setBulkAmount(e.target.value)}
-                                            className="w-full md:w-48 !p-3 bg-surface-alt border border-border font-black !text-[10px] !leading-none outline-none focus:border-primary transition-all disabled:opacity-70 !h-11"
+                                            className="w-full md:w-48 !p-3 rounded-2xl bg-surface-alt border border-border font-black !text-[10px] !leading-none outline-none focus:border-primary transition-all disabled:opacity-70 !h-11 shadow-sm"
                                         />
                                     </div>
                                     <div className="space-y-1.5 text-left flex-1 md:flex-initial">
@@ -643,7 +643,7 @@ function WalletMonitor({ customers, onCustomerClick, customersMetadata, currentP
                                             disabled={selectedIds.length === 0}
                                             value={bulkNote}
                                             onChange={e => setBulkNote(e.target.value)}
-                                            className="w-full md:w-64 !p-3 bg-surface-alt border border-border font-black !text-[10px] uppercase !leading-none outline-none focus:border-primary transition-all disabled:opacity-70 !h-11"
+                                            className="w-full md:w-64 !p-3 rounded-2xl bg-surface-alt border border-border font-black !text-[10px] uppercase !leading-none outline-none focus:border-primary transition-all disabled:opacity-70 !h-11 shadow-sm"
                                         />
                                     </div>
                                     <div className="space-y-1.5 text-left flex-1 md:flex-initial">
@@ -654,14 +654,14 @@ function WalletMonitor({ customers, onCustomerClick, customersMetadata, currentP
                                             value={bulkExpiry}
                                             min={new Date().toISOString().split('T')[0]}
                                             onChange={e => setBulkExpiry(e.target.value)}
-                                            className="w-full md:w-44 !p-3 bg-surface-alt border border-border font-black !text-[10px] !leading-none outline-none focus:border-primary transition-all disabled:opacity-70 !h-11"
+                                            className="w-full md:w-44 !p-3 rounded-2xl bg-surface-alt border border-border font-black !text-[10px] !leading-none outline-none focus:border-primary transition-all disabled:opacity-70 !h-11 shadow-sm"
                                         />
                                     </div>
                                 </div>
                                 <button
                                     onClick={() => handleBulkRecharge()}
                                     disabled={isProcessing || !bulkAmount || selectedIds.length === 0}
-                                    className="bg-primary text-white px-10 py-4 text-[10px] font-black uppercase tracking-widest shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-95 disabled:opacity-50 disabled:scale-100 transition-all whitespace-nowrap h-11 flex items-center justify-center"
+                                    className="bg-primary text-primary-foreground px-10 py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-[0_0_15px_rgba(var(--color-primary),0.3)] hover:brightness-110 hover:shadow-[0_0_20px_rgba(var(--color-primary),0.5)] hover:scale-[1.02] active:scale-95 disabled:opacity-50 disabled:scale-100 transition-all whitespace-nowrap h-11 flex items-center justify-center"
                                 >
                                     {isProcessing ? 'Processing...' : `Apply to ${selectedIds.length} Selected`}
                                 </button>
@@ -672,7 +672,7 @@ function WalletMonitor({ customers, onCustomerClick, customersMetadata, currentP
 
                     </div>
 
-                    <div className="table-responsive border border-border">
+                    <div className="table-responsive border border-border rounded-3xl overflow-hidden shadow-sm">
                         <table className="w-full text-left min-w-[800px]">
                             <thead className="bg-surface-alt border-b border-border">
                                 <tr>
@@ -701,8 +701,8 @@ function WalletMonitor({ customers, onCustomerClick, customersMetadata, currentP
                                     <tr key={c._id} className="hover:bg-surface transition-colors">
                                         <td className="p-3"><input type="checkbox" checked={selectedIds.includes(c._id)} onChange={() => setSelectedIds(prev => prev.includes(c._id) ? prev.filter(i => i !== c._id) : [...prev, c._id])} /></td>
                                         <td className="p-3" onClick={() => onCustomerClick(c)}>
-                                            <div className="flex items-center gap-3 cursor-pointer">
-                                                <div className="w-8 h-8 bg-text text-white flex items-center justify-center font-black text-xs">{c.name?.charAt(0) || '?'}</div>
+                                            <div className="flex items-center gap-4 cursor-pointer">
+                                                <div className="w-10 h-10 bg-primary/10 text-primary rounded-xl flex items-center justify-center font-black text-sm">{c.name?.charAt(0) || '?'}</div>
                                                 <div>
                                                     <p className="text-sm font-black text-text uppercase tracking-tight">{c.name}</p>
                                                     <p className="text-[10px] text-text-muted font-bold tracking-widest">{c.phone}</p>
@@ -726,7 +726,7 @@ function WalletMonitor({ customers, onCustomerClick, customersMetadata, currentP
                                 <button
                                     onClick={() => onPageChange(p => Math.max(1, p - 1))}
                                     disabled={currentPage === 1}
-                                    className="px-6 py-3 border border-border bg-surface text-[10px] font-black uppercase tracking-widest disabled:opacity-30 hover:bg-surface-alt transition-all"
+                                    className="px-6 py-3 rounded-xl border border-border bg-surface text-[10px] font-black uppercase tracking-widest disabled:opacity-30 hover:bg-surface-alt transition-all shadow-sm"
                                 >
                                     Prev
                                 </button>
@@ -736,7 +736,7 @@ function WalletMonitor({ customers, onCustomerClick, customersMetadata, currentP
                                 <button
                                     onClick={() => onPageChange(p => Math.min(customersMetadata.totalPages || 1, p + 1))}
                                     disabled={currentPage >= (customersMetadata.totalPages || 1)}
-                                    className="px-6 py-3 border border-border bg-surface text-[10px] font-black uppercase tracking-widest disabled:opacity-30 hover:bg-surface-alt transition-all"
+                                    className="px-6 py-3 rounded-xl border border-border bg-surface text-[10px] font-black uppercase tracking-widest disabled:opacity-30 hover:bg-surface-alt transition-all shadow-sm"
                                 >
                                     Next
                                 </button>
@@ -810,16 +810,19 @@ function CelebrationReminders({ customers, onSendWhatsApp }) {
 
 function KPICard({ title, value, icon: Icon, color, trend }) {
     const colors = {
-        blue: 'text-primary border-primary/10',
-        purple: 'text-purple-600 border-purple-100',
-        green: 'text-emerald-600 border-emerald-100',
-        red: 'text-rose-600 border-rose-100'
+        blue: 'text-primary bg-primary/10 border-primary/20',
+        purple: 'text-purple-600 bg-purple-500/10 border-purple-500/20',
+        green: 'text-emerald-600 bg-emerald-500/10 border-emerald-500/20',
+        red: 'text-rose-600 bg-rose-500/10 border-rose-500/20'
     };
     return (
-        <div className="bg-surface p-5 border border-border shadow-sm hover:shadow-md transition-all group relative overflow-hidden text-left">
-            <div className={`p-2.5 rounded-none border w-fit ${colors[color]} mb-4`}><Icon className="w-4 h-4" /></div>
-            <h3 className="text-text-secondary text-[10px] font-bold uppercase tracking-widest opacity-60">{title}</h3>
-            <div className="text-2xl font-bold text-text">{value}</div>
+        <div className="bg-surface p-6 border border-border rounded-3xl shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all group relative overflow-hidden text-left">
+            <div className={`w-12 h-12 flex items-center justify-center rounded-2xl border ${colors[color]} mb-4`}>
+                <Icon className="w-5 h-5" />
+            </div>
+            <h3 className="text-text-muted text-[10px] font-black uppercase tracking-widest">{title}</h3>
+            <div className="text-2xl font-black text-text mt-1">{value}</div>
+            {trend && <div className="text-[10px] font-bold text-rose-500 mt-2 bg-rose-50 px-2 py-0.5 rounded-xl border border-rose-100 w-fit uppercase tracking-wider">{trend}</div>}
         </div>
     );
 }
