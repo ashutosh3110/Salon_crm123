@@ -29,17 +29,17 @@ export default function SupplierManager() {
                         <input
                             type="text"
                             placeholder="Search suppliers by name or GSTIN..."
-                            className="w-full pl-10 pr-4 py-2.5 bg-white border border-border rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary/10 transition-all"
+                            className="w-full pl-10 pr-4 py-2.5 bg-white border border-border allow-curve rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary/10 transition-all"
                         />
                     </div>
-                    <button className="flex items-center justify-center gap-2 px-4 py-2.5 bg-white border border-border rounded-xl text-xs font-bold text-text-secondary hover:bg-surface transition-all whitespace-nowrap">
+                    <button className="flex items-center justify-center gap-2 px-4 py-2.5 bg-white border border-border allow-curve rounded-xl text-xs font-bold text-text-secondary hover:bg-surface transition-all whitespace-nowrap">
                         <Filter className="w-4 h-4" />
                         Status
                     </button>
                 </div>
                 <button
                     onClick={handleAddClick}
-                    className="flex items-center justify-center gap-2 bg-primary text-white px-5 py-2.5 rounded-xl text-sm font-bold hover:shadow-lg hover:shadow-primary/30 transition-all scale-active w-full lg:w-auto whitespace-nowrap"
+                    className="flex items-center justify-center gap-2 bg-primary text-white px-5 py-2.5 allow-curve rounded-xl text-sm font-bold hover:shadow-lg hover:shadow-primary/30 transition-all scale-active w-full lg:w-auto whitespace-nowrap"
                 >
                     <Plus className="w-4 h-4" />
                     {view === 'list' ? 'Add New Supplier' : 'Back to List'}
@@ -147,11 +147,11 @@ function SupplierTable({ suppliers, onEdit, onDelete }) {
                                 </div>
                             </td>
                             <td className="px-8 py-5">
-                                <span className="text-[10px] font-bold text-text-secondary bg-surface px-2 py-1 rounded border border-border">{supplier.gstin}</span>
+                                <span className="text-[10px] font-bold text-text-secondary bg-surface px-2 py-1 allow-curve rounded-lg border border-border">{supplier.gstin}</span>
                             </td>
 
                             <td className="px-8 py-5">
-                                <span className={`px-2.5 py-1 rounded-lg text-[9px] font-bold uppercase tracking-widest border ${supplier.status === 'Overdue' ? 'bg-rose-50 text-rose-600 border-rose-100' : 'bg-emerald-50 text-emerald-600 border-emerald-100'
+                                <span className={`px-2.5 py-1 allow-curve rounded-xl text-[9px] font-bold uppercase tracking-widest border ${supplier.status === 'Overdue' ? 'bg-rose-50 text-rose-600 border-rose-100' : 'bg-emerald-50 text-emerald-600 border-emerald-100'
                                     }`}>
                                     {supplier.status}
                                 </span>
@@ -160,7 +160,7 @@ function SupplierTable({ suppliers, onEdit, onDelete }) {
                                 <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                                     <button
                                         onClick={() => onEdit(supplier)}
-                                        className="p-2 rounded-none border border-border bg-white text-text-secondary hover:bg-primary/10 hover:text-primary transition-all"
+                                        className="p-2 allow-curve rounded-xl border border-border bg-white text-text-secondary hover:bg-primary/10 hover:text-primary transition-all"
                                         title="Edit Profile"
                                     >
                                         <FileText className="w-4 h-4" />
@@ -169,12 +169,12 @@ function SupplierTable({ suppliers, onEdit, onDelete }) {
                                         type="button"
                                         title="Delete"
                                         onClick={() => onDelete(rowId)}
-                                        className="p-2 rounded-none border border-border bg-white text-text-secondary hover:bg-rose-500/10 hover:text-rose-500 transition-all"
+                                        className="p-2 allow-curve rounded-xl border border-border bg-white text-text-secondary hover:bg-rose-500/10 hover:text-rose-500 transition-all"
                                     >
                                         <Trash2 className="w-4 h-4" />
                                     </button>
                                     <button 
-                                        className="p-2 rounded-none border border-border bg-white text-text-secondary hover:bg-primary/10 hover:text-primary transition-all"
+                                        className="p-2 allow-curve rounded-xl border border-border bg-white text-text-secondary hover:bg-primary/10 hover:text-primary transition-all"
                                         title="More Actions"
                                     >
                                         <MoreHorizontal className="w-4 h-4" />
@@ -230,7 +230,7 @@ function SupplierForm({ supplier, saving, onSave, onCancel }) {
                             onChange={handleChange}
                             placeholder="e.g. Glossy Cosmetics Ltd"
                             required
-                            className="w-full px-4 py-2.5 bg-surface border border-border rounded-xl text-sm font-bold focus:outline-none focus:ring-2 focus:ring-primary/10 transition-all"
+                            className="w-full px-4 py-2.5 bg-surface border border-border allow-curve rounded-xl text-sm font-bold focus:outline-none focus:ring-2 focus:ring-primary/10 transition-all"
                         />
                     </div>
                     <div className="space-y-2">
@@ -242,7 +242,7 @@ function SupplierForm({ supplier, saving, onSave, onCancel }) {
                             onChange={handleChange}
                             placeholder="Full Name"
                             required
-                            className="w-full px-4 py-2.5 bg-surface border border-border rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary/10 transition-all"
+                            className="w-full px-4 py-2.5 bg-surface border border-border allow-curve rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary/10 transition-all"
                         />
                     </div>
                     <div className="space-y-2">
@@ -253,7 +253,7 @@ function SupplierForm({ supplier, saving, onSave, onCancel }) {
                             value={formData.gstin}
                             onChange={handleChange}
                             placeholder="27XXXX"
-                            className="w-full px-4 py-2.5 bg-surface border border-border rounded-xl text-sm font-bold uppercase tracking-widest focus:outline-none focus:ring-2 focus:ring-primary/10 transition-all"
+                            className="w-full px-4 py-2.5 bg-surface border border-border allow-curve rounded-xl text-sm font-bold uppercase tracking-widest focus:outline-none focus:ring-2 focus:ring-primary/10 transition-all"
                         />
                     </div>
                     <div className="space-y-2">
@@ -267,7 +267,7 @@ function SupplierForm({ supplier, saving, onSave, onCancel }) {
                                 onChange={handleChange}
                                 placeholder="+91 XXXX"
                                 required
-                                className="w-full pl-10 pr-4 py-2.5 bg-surface border border-border rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary/10 transition-all"
+                                className="w-full pl-10 pr-4 py-2.5 bg-surface border border-border allow-curve rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary/10 transition-all"
                             />
                         </div>
                     </div>
@@ -282,7 +282,7 @@ function SupplierForm({ supplier, saving, onSave, onCancel }) {
                                 onChange={handleChange}
                                 placeholder="name@company.com"
                                 required
-                                className="w-full pl-10 pr-4 py-2.5 bg-surface border border-border rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary/10 transition-all"
+                                className="w-full pl-10 pr-4 py-2.5 bg-surface border border-border allow-curve rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary/10 transition-all"
                             />
                         </div>
                     </div>
@@ -296,7 +296,7 @@ function SupplierForm({ supplier, saving, onSave, onCancel }) {
                                 onChange={handleChange}
                                 placeholder="Full address..."
                                 rows={3}
-                                className="w-full pl-10 pr-4 py-3 bg-surface border border-border rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary/10 transition-all resize-none"
+                                className="w-full pl-10 pr-4 py-3 bg-surface border border-border allow-curve rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary/10 transition-all resize-none"
                             />
                         </div>
                     </div>
@@ -306,14 +306,14 @@ function SupplierForm({ supplier, saving, onSave, onCancel }) {
                     <button
                         type="button"
                         onClick={onCancel}
-                        className="flex-1 px-6 py-3.5 rounded-xl border border-border text-sm font-bold text-text-secondary hover:bg-surface transition-all"
+                        className="flex-1 px-6 py-3.5 allow-curve rounded-xl border border-border text-sm font-bold text-text-secondary hover:bg-surface transition-all"
                     >
                         Cancel
                     </button>
                     <button
                         type="submit"
                         disabled={saving}
-                        className="flex-1 flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl bg-primary text-white text-sm font-bold hover:shadow-lg hover:shadow-primary/30 transition-all scale-active disabled:opacity-60"
+                        className="flex-1 flex items-center justify-center gap-2 px-6 py-3.5 allow-curve rounded-xl bg-primary text-white text-sm font-bold hover:shadow-lg hover:shadow-primary/30 transition-all scale-active disabled:opacity-60"
                     >
                         {saving ? 'Saving…' : supplier ? 'Update Supplier' : 'Save Supplier Profile'}
                     </button>
