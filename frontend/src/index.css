@@ -877,7 +877,7 @@ html:not(.dark) .sa-panel button[type="submit"] svg:not([class*="text-green"]):n
    Cards, buttons, inputs — no more rounded corners
    (rounded-full preserved for pills/dots/avatars)
    ============================================= */
-.admin-panel *:not([class*="rounded-full"]):not(input[type="checkbox"]):not(input[type="radio"]) {
+.admin-panel *:not([class*="rounded-full"]):not([class*="rounded-3xl"]):not([class*="rounded-2xl"]):not(input[type="checkbox"]):not(input[type="radio"]) {
   border-radius: 0 !important;
 }
 

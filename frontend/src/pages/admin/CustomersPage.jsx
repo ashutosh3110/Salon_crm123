@@ -29,7 +29,11 @@ import {
     Upload,
     FileSpreadsheet,
     Bell,
-    IndianRupee
+    IndianRupee,
+    RefreshCw,
+    Filter,
+    ChevronDown,
+    MessageCircle
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { createPortal } from 'react-dom';
@@ -201,10 +205,20 @@ export default function CustomersPage({ tab = 'directory' }) {
                 {/* Header */}
                 <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6 pb-2">
                     {activeTab === 'payment-reminders' ? (
-                        <div>
-                            <h1 className="text-3xl sm:text-4xl font-black text-text uppercase tracking-tighter leading-none">Payment Reminders</h1>
-                            <p className="text-[10px] font-black text-text-muted mt-3 uppercase tracking-[0.3em] opacity-60 leading-none">Operations • POS Outstanding Balances</p>
-                        </div>
+                        <>
+                            <div>
+                                <h1 className="text-3xl sm:text-4xl font-black text-slate-900 uppercase tracking-tighter leading-none">Payment Reminders</h1>
+                                <p className="text-[10px] font-black text-slate-500 mt-3 uppercase tracking-[0.3em] leading-none">Operations • POS Outstanding Balances</p>
+                            </div>
+                            <div className="flex flex-col sm:flex-row items-center gap-3">
+                                <button onClick={() => window.location.reload()} className="flex items-center justify-center gap-2 px-5 py-3 border border-slate-200 bg-white rounded-2xl text-[10px] font-black text-slate-700 uppercase tracking-widest shadow-sm hover:bg-slate-50 transition-all w-full sm:w-auto">
+                                    <RefreshCw className="w-4 h-4 text-slate-500" /> Refresh
+                                </button>
+                                <button className="flex items-center justify-center gap-2 px-6 py-3 bg-[#B4912B] hover:bg-[#9c7d23] text-white rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-sm transition-all w-full sm:w-auto">
+                                    <FileText className="w-4 h-4" /> Create Reminder Campaign
+                                </button>
+                            </div>
+                        </>
                     ) : (
                         <>
                             <div>
@@ -380,100 +394,100 @@ export default function CustomersPage({ tab = 'directory' }) {
 
             </div>
 
-                {/* Add Customer Modal (Portal) */}
-                {showAddModal && createPortal(
-                    <div className="fixed inset-0 bg-[#0f172a]/80 backdrop-blur-sm z-[200] flex items-center justify-center p-4 animate-in fade-in duration-300" onClick={() => setShowAddModal(false)}>
-                        <div className="bg-white dark:bg-[#1e293b] rounded-3xl w-full max-w-md mx-4 shadow-2xl relative overflow-y-auto max-h-[90vh] hide-scrollbar animate-in slide-in-from-top-4 duration-300 border border-slate-200/50 dark:border-slate-800" onClick={(e) => e.stopPropagation()}>
-                            <div className="p-5 bg-white dark:bg-[#1e293b] border-b border-slate-100 dark:border-slate-800 flex justify-between items-center">
-                                <h4 className="text-[11px] font-black text-slate-900 dark:text-white uppercase flex items-center gap-2 tracking-widest">
-                                    <UserPlus className="w-4 h-4 text-slate-800 dark:text-slate-200" /> Add Customer
-                                </h4>
-                                <button type="button" onClick={() => setShowAddModal(false)} className="p-1 border-2 border-slate-900 dark:border-slate-700 text-slate-900 dark:text-slate-300 hover:bg-rose-500 hover:text-white dark:hover:bg-rose-600 transition-colors"><X className="w-4 h-4" /></button>
+            {/* Add Customer Modal (Portal) */}
+            {showAddModal && createPortal(
+                <div className="fixed inset-0 bg-[#0f172a]/80 backdrop-blur-sm z-[200] flex items-center justify-center p-4 animate-in fade-in duration-300" onClick={() => setShowAddModal(false)}>
+                    <div className="bg-white dark:bg-[#1e293b] rounded-3xl w-full max-w-md mx-4 shadow-2xl relative overflow-y-auto max-h-[90vh] hide-scrollbar animate-in slide-in-from-top-4 duration-300 border border-slate-200/50 dark:border-slate-800" onClick={(e) => e.stopPropagation()}>
+                        <div className="p-5 bg-white dark:bg-[#1e293b] border-b border-slate-100 dark:border-slate-800 flex justify-between items-center">
+                            <h4 className="text-[11px] font-black text-slate-900 dark:text-white uppercase flex items-center gap-2 tracking-widest">
+                                <UserPlus className="w-4 h-4 text-slate-800 dark:text-slate-200" /> Add Customer
+                            </h4>
+                            <button type="button" onClick={() => setShowAddModal(false)} className="p-1 border-2 border-slate-900 dark:border-slate-700 text-slate-900 dark:text-slate-300 hover:bg-rose-500 hover:text-white dark:hover:bg-rose-600 transition-colors"><X className="w-4 h-4" /></button>
+                        </div>
+
+                        <form onSubmit={handleAddCustomer} className="p-6">
+                            <div className="space-y-4">
+                                <div className="space-y-1.5 text-left">
+                                    <label className="text-[10px] font-black text-slate-600 dark:text-slate-400 uppercase tracking-wider">Customer Name</label>
+                                    <input
+                                        type="text"
+                                        required
+                                        placeholder="e.g. John Doe"
+                                        value={newCustomerForm.name}
+                                        onChange={(e) => setNewCustomerForm({ ...newCustomerForm, name: e.target.value.replace(/[^a-zA-Z\s]/g, '') })}
+                                        className="w-full bg-slate-50 dark:bg-slate-800 border-2 border-slate-900 dark:border-slate-700 p-3 text-xs font-black text-slate-900 dark:text-white outline-none focus:bg-white dark:focus:bg-slate-900 focus:border-primary transition-all uppercase rounded-none placeholder:text-slate-400 dark:placeholder:text-slate-500"
+                                    />
+                                </div>
+                                <div className="space-y-1.5 text-left">
+                                    <label className="text-[10px] font-black text-slate-600 dark:text-slate-400 uppercase tracking-wider">Phone Number</label>
+                                    <input
+                                        type="tel"
+                                        required
+                                        placeholder="10-digit mobile"
+                                        value={newCustomerForm.phone}
+                                        onChange={(e) => {
+                                            const val = e.target.value.replace(/\D/g, '');
+                                            if (val.length <= 10) setNewCustomerForm({ ...newCustomerForm, phone: val });
+                                        }}
+                                        className="w-full bg-slate-50 dark:bg-slate-800 border-2 border-slate-900 dark:border-slate-700 p-3 text-xs font-black text-slate-900 dark:text-white outline-none focus:bg-white dark:focus:bg-slate-900 focus:border-primary transition-all rounded-none placeholder:text-slate-400 dark:placeholder:text-slate-500"
+                                    />
+                                </div>
+                                <div className="space-y-1.5 text-left">
+                                    <label className="text-[10px] font-black text-slate-600 dark:text-slate-400 uppercase tracking-wider">Referral Code (Optional)</label>
+                                    <input
+                                        type="text"
+                                        placeholder="e.g. WAP-XXXXXX"
+                                        value={newCustomerForm.appliedReferralCode || ''}
+                                        onChange={(e) => setNewCustomerForm({ ...newCustomerForm, appliedReferralCode: e.target.value.toUpperCase().trim() })}
+                                        className="w-full bg-slate-50 dark:bg-slate-800 border-2 border-slate-900 dark:border-slate-700 p-3 text-xs font-black text-slate-900 dark:text-white outline-none focus:bg-white dark:focus:bg-slate-900 focus:border-primary transition-all uppercase rounded-none placeholder:text-slate-400 dark:placeholder:text-slate-500"
+                                    />
+                                </div>
+                                <div className="grid grid-cols-2 gap-4 text-left">
+                                    <div className="space-y-1.5">
+                                        <label className="text-[10px] font-black text-slate-600 dark:text-slate-400 uppercase tracking-wider">Birth Date</label>
+                                        <input
+                                            type="date"
+                                            max={new Date().toISOString().split('T')[0]}
+                                            value={newCustomerForm.dob}
+                                            onChange={(e) => setNewCustomerForm({ ...newCustomerForm, dob: e.target.value })}
+                                            className="w-full bg-[#f8fafc] dark:bg-[#1e293b] border-2 border-slate-900 dark:border-slate-700 p-3 text-xs font-black outline-none focus:border-primary transition-all rounded-none"
+                                            style={{ color: 'var(--date-input-color, #0f172a)' }}
+                                        />
+                                    </div>
+                                    <div className="space-y-1.5">
+                                        <label className="text-[10px] font-black text-slate-600 dark:text-slate-400 uppercase tracking-wider">Anniversary</label>
+                                        <input
+                                            type="date"
+                                            max={new Date().toISOString().split('T')[0]}
+                                            value={newCustomerForm.anniversary}
+                                            onChange={(e) => setNewCustomerForm({ ...newCustomerForm, anniversary: e.target.value })}
+                                            className="w-full bg-[#f8fafc] dark:bg-[#1e293b] border-2 border-slate-900 dark:border-slate-700 p-3 text-xs font-black outline-none focus:border-primary transition-all rounded-none"
+                                            style={{ color: 'var(--date-input-color, #0f172a)' }}
+                                        />
+                                    </div>
+                                </div>
                             </div>
 
-                            <form onSubmit={handleAddCustomer} className="p-6">
-                                <div className="space-y-4">
-                                    <div className="space-y-1.5 text-left">
-                                        <label className="text-[10px] font-black text-slate-600 dark:text-slate-400 uppercase tracking-wider">Customer Name</label>
-                                        <input
-                                            type="text"
-                                            required
-                                            placeholder="e.g. John Doe"
-                                            value={newCustomerForm.name}
-                                            onChange={(e) => setNewCustomerForm({ ...newCustomerForm, name: e.target.value.replace(/[^a-zA-Z\s]/g, '') })}
-                                            className="w-full bg-slate-50 dark:bg-slate-800 border-2 border-slate-900 dark:border-slate-700 p-3 text-xs font-black text-slate-900 dark:text-white outline-none focus:bg-white dark:focus:bg-slate-900 focus:border-primary transition-all uppercase rounded-none placeholder:text-slate-400 dark:placeholder:text-slate-500"
-                                        />
-                                    </div>
-                                    <div className="space-y-1.5 text-left">
-                                        <label className="text-[10px] font-black text-slate-600 dark:text-slate-400 uppercase tracking-wider">Phone Number</label>
-                                        <input
-                                            type="tel"
-                                            required
-                                            placeholder="10-digit mobile"
-                                            value={newCustomerForm.phone}
-                                            onChange={(e) => {
-                                                const val = e.target.value.replace(/\D/g, '');
-                                                if (val.length <= 10) setNewCustomerForm({ ...newCustomerForm, phone: val });
-                                            }}
-                                            className="w-full bg-slate-50 dark:bg-slate-800 border-2 border-slate-900 dark:border-slate-700 p-3 text-xs font-black text-slate-900 dark:text-white outline-none focus:bg-white dark:focus:bg-slate-900 focus:border-primary transition-all rounded-none placeholder:text-slate-400 dark:placeholder:text-slate-500"
-                                        />
-                                    </div>
-                                    <div className="space-y-1.5 text-left">
-                                        <label className="text-[10px] font-black text-slate-600 dark:text-slate-400 uppercase tracking-wider">Referral Code (Optional)</label>
-                                        <input
-                                            type="text"
-                                            placeholder="e.g. WAP-XXXXXX"
-                                            value={newCustomerForm.appliedReferralCode || ''}
-                                            onChange={(e) => setNewCustomerForm({ ...newCustomerForm, appliedReferralCode: e.target.value.toUpperCase().trim() })}
-                                            className="w-full bg-slate-50 dark:bg-slate-800 border-2 border-slate-900 dark:border-slate-700 p-3 text-xs font-black text-slate-900 dark:text-white outline-none focus:bg-white dark:focus:bg-slate-900 focus:border-primary transition-all uppercase rounded-none placeholder:text-slate-400 dark:placeholder:text-slate-500"
-                                        />
-                                    </div>
-                                    <div className="grid grid-cols-2 gap-4 text-left">
-                                        <div className="space-y-1.5">
-                                            <label className="text-[10px] font-black text-slate-600 dark:text-slate-400 uppercase tracking-wider">Birth Date</label>
-                                            <input
-                                                type="date"
-                                                max={new Date().toISOString().split('T')[0]}
-                                                value={newCustomerForm.dob}
-                                                onChange={(e) => setNewCustomerForm({ ...newCustomerForm, dob: e.target.value })}
-                                                className="w-full bg-[#f8fafc] dark:bg-[#1e293b] border-2 border-slate-900 dark:border-slate-700 p-3 text-xs font-black outline-none focus:border-primary transition-all rounded-none"
-                                                style={{ color: 'var(--date-input-color, #0f172a)' }}
-                                            />
-                                        </div>
-                                        <div className="space-y-1.5">
-                                            <label className="text-[10px] font-black text-slate-600 dark:text-slate-400 uppercase tracking-wider">Anniversary</label>
-                                            <input
-                                                type="date"
-                                                max={new Date().toISOString().split('T')[0]}
-                                                value={newCustomerForm.anniversary}
-                                                onChange={(e) => setNewCustomerForm({ ...newCustomerForm, anniversary: e.target.value })}
-                                                className="w-full bg-[#f8fafc] dark:bg-[#1e293b] border-2 border-slate-900 dark:border-slate-700 p-3 text-xs font-black outline-none focus:border-primary transition-all rounded-none"
-                                                style={{ color: 'var(--date-input-color, #0f172a)' }}
-                                            />
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div className="flex gap-4 pt-6">
-                                    <button
-                                        type="button"
-                                        onClick={() => setShowAddModal(false)}
-                                        className="flex-1 py-3.5 border-2 border-slate-900 dark:border-slate-700 font-black text-[10px] uppercase tracking-widest italic bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 transition-all rounded-none text-slate-700 dark:text-slate-300"
-                                    >
-                                        Cancel
-                                    </button>
-                                    <button
-                                        type="submit"
-                                        className="flex-1 bg-[#B4912B] hover:bg-[#a37f20] text-white border-2 border-[#B4912B] dark:bg-[#B4912B] dark:hover:bg-[#a37f20] dark:border-[#B4912B] py-3.5 font-black text-[10px] uppercase tracking-widest italic hover:text-white transition-all rounded-none shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,0.15)] active:translate-x-0.5 active:translate-y-0.5 active:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]"
-                                    >
-                                        Add Customer
-                                    </button>
-                                </div>
-                            </form>
-                        </div>
-                    </div>,
-                    document.body
-                )}
+                            <div className="flex gap-4 pt-6">
+                                <button
+                                    type="button"
+                                    onClick={() => setShowAddModal(false)}
+                                    className="flex-1 py-3.5 border-2 border-slate-900 dark:border-slate-700 font-black text-[10px] uppercase tracking-widest italic bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 transition-all rounded-none text-slate-700 dark:text-slate-300"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    type="submit"
+                                    className="flex-1 bg-[#B4912B] hover:bg-[#a37f20] text-white border-2 border-[#B4912B] dark:bg-[#B4912B] dark:hover:bg-[#a37f20] dark:border-[#B4912B] py-3.5 font-black text-[10px] uppercase tracking-widest italic hover:text-white transition-all rounded-none shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,0.15)] active:translate-x-0.5 active:translate-y-0.5 active:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]"
+                                >
+                                    Add Customer
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>,
+                document.body
+            )}
 
             {/* WhatsApp Message Modal (Portal) */}
             {whatsappModal.isOpen && createPortal(
@@ -678,15 +692,15 @@ function WalletMonitor({ customers, onCustomerClick, customersMetadata, currentP
                                             {selectedIds.length > 0 && !isSelectingAll && <span className="text-[7px] font-black text-emerald-600 uppercase italic whitespace-nowrap">{selectedIds.length} IDs</span>}
                                         </div>
                                     </th>
-                                    <th className="p-4 text-[10px] font-black uppercase text-text-muted tracking-widest">Customer Directory</th>
-                                    <th className="p-4 text-[10px] font-black uppercase text-text-muted tracking-widest text-right">Available Balance</th>
+                                    <th className="p-3 text-[10px] font-black uppercase text-text-muted tracking-widest">Customer Directory</th>
+                                    <th className="p-3 text-[10px] font-black uppercase text-text-muted tracking-widest text-right">Available Balance</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-border">
                                 {customers.map(c => (
                                     <tr key={c._id} className="hover:bg-surface transition-colors">
-                                        <td className="p-4"><input type="checkbox" checked={selectedIds.includes(c._id)} onChange={() => setSelectedIds(prev => prev.includes(c._id) ? prev.filter(i => i !== c._id) : [...prev, c._id])} /></td>
-                                        <td className="p-4" onClick={() => onCustomerClick(c)}>
+                                        <td className="p-3"><input type="checkbox" checked={selectedIds.includes(c._id)} onChange={() => setSelectedIds(prev => prev.includes(c._id) ? prev.filter(i => i !== c._id) : [...prev, c._id])} /></td>
+                                        <td className="p-3" onClick={() => onCustomerClick(c)}>
                                             <div className="flex items-center gap-3 cursor-pointer">
                                                 <div className="w-8 h-8 bg-text text-white flex items-center justify-center font-black text-xs">{c.name?.charAt(0) || '?'}</div>
                                                 <div>
@@ -695,7 +709,7 @@ function WalletMonitor({ customers, onCustomerClick, customersMetadata, currentP
                                                 </div>
                                             </div>
                                         </td>
-                                        <td className="p-4 text-right">
+                                        <td className="p-3 text-right">
                                             <span className="text-sm font-black text-emerald-600">₹{(c.walletBalance || 0).toLocaleString()}</span>
                                         </td>
                                     </tr>
@@ -762,7 +776,7 @@ function CelebrationReminders({ customers, onSendWhatsApp }) {
                 {reminders.map(c => {
                     const isBday = c.dob && new Date(c.dob).getMonth() === currentMonth;
                     const type = isBday ? 'birthday' : 'anniversary';
-                    const defaultMsg = isBday 
+                    const defaultMsg = isBday
                         ? `Happy Birthday ${c.name}! We wish you a fantastic year ahead filled with joy and beauty.`
                         : `Happy Anniversary ${c.name}! Celebrating your beautiful journey together.`;
 
@@ -779,8 +793,8 @@ function CelebrationReminders({ customers, onSendWhatsApp }) {
                                     </p>
                                 </div>
                             </div>
-                            <button 
-                                onClick={() => onSendWhatsApp(c, defaultMsg, type)} 
+                            <button
+                                onClick={() => onSendWhatsApp(c, defaultMsg, type)}
                                 className="flex items-center gap-1.5 px-3 py-2 bg-emerald-500 hover:bg-emerald-600 text-white shadow-lg shadow-emerald-500/30 transition-all group-hover:scale-105 active:scale-95"
                                 title="Send WhatsApp message"
                             >
@@ -989,7 +1003,7 @@ function PaymentRemindersView({ onCustomerClick, setWhatsappModal, fetchCustomer
         return () => window.removeEventListener('payment-reminder-sent', handler);
     }, [page, selectedOutlet, fetchDueClients]);
 
-    const filtered = dueClients.filter(c => 
+    const filtered = dueClients.filter(c =>
         (c.name && c.name.toLowerCase().includes(search.toLowerCase())) ||
         (c.phone && c.phone.includes(search))
     );
@@ -1024,95 +1038,121 @@ function PaymentRemindersView({ onCustomerClick, setWhatsappModal, fetchCustomer
     };
 
     return (
-        <div className="p-8 space-y-6 animate-reveal">
+        <div className="p-4 md:p-6 space-y-4 animate-reveal max-w-7xl mx-auto">
             {/* KPI Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="bg-surface p-5 border border-border shadow-sm flex flex-col gap-3 relative overflow-hidden group hover:border-primary/30 transition-all">
-                    <div className="flex items-center justify-between">
-                        <span className="text-[9px] font-black uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">Outstanding Clients</span>
-                        <div className="w-8 h-8 bg-primary/10 flex items-center justify-center">
-                            <Users className="w-4 h-4 text-primary" />
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                <div className="bg-white p-5 border border-slate-200 rounded-3xl shadow-sm flex flex-col gap-1 relative group hover:border-emerald-300 transition-all">
+                    <div className="flex items-center gap-4">
+                        <div className="w-12 h-12 rounded-2xl bg-emerald-50 flex items-center justify-center flex-shrink-0">
+                            <Users className="w-6 h-6 text-emerald-600" />
+                        </div>
+                        <div>
+                            <span className="text-[10px] font-black uppercase tracking-widest text-slate-800">Outstanding Clients</span>
+                            <div className="text-3xl font-black text-slate-900 leading-none mt-1">{dueMetadata.totalCount}</div>
                         </div>
                     </div>
-                    <div className="text-3xl font-black text-slate-900 dark:text-white">{dueMetadata.totalCount}</div>
-                    <div className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Customers with pending dues</div>
-                    <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary/20 group-hover:bg-primary transition-all duration-300" />
+                    <div className="text-[10px] font-bold text-slate-500 mt-3">Customers with pending dues</div>
+                    <button className="text-[10px] font-black text-emerald-600 hover:text-emerald-700 text-left mt-3 flex items-center gap-1 transition-colors w-fit">
+                        View clients <ChevronRight className="w-3 h-3" />
+                    </button>
                 </div>
-                <div className="bg-surface p-5 border border-border shadow-sm flex flex-col gap-3 relative overflow-hidden group hover:border-rose-300 transition-all">
-                    <div className="flex items-center justify-between">
-                        <span className="text-[9px] font-black uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">Total Dues (Page)</span>
-                        <div className="w-8 h-8 bg-rose-50 dark:bg-rose-500/10 flex items-center justify-center">
-                            <IndianRupee className="w-4 h-4 text-rose-500" />
+                <div className="bg-white p-5 border border-slate-200 rounded-3xl shadow-sm flex flex-col gap-1 relative group hover:border-rose-300 transition-all">
+                    <div className="flex items-center gap-4">
+                        <div className="w-12 h-12 rounded-2xl bg-rose-50 flex items-center justify-center flex-shrink-0">
+                            <IndianRupee className="w-6 h-6 text-rose-500" />
+                        </div>
+                        <div>
+                            <span className="text-[10px] font-black uppercase tracking-widest text-slate-800">Total Dues (Page)</span>
+                            <div className="text-3xl font-black text-slate-900 leading-none mt-1">₹{totalOutstanding.toLocaleString()}</div>
                         </div>
                     </div>
-                    <div className="text-3xl font-black text-rose-600">₹{totalOutstanding.toLocaleString()}</div>
-                    <div className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Pending balance this page</div>
-                    <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-rose-200 group-hover:bg-rose-500 transition-all duration-300" />
+                    <div className="text-[10px] font-bold text-slate-500 mt-3">Pending balance this page</div>
+                    <button className="text-[10px] font-black text-rose-600 hover:text-rose-700 text-left mt-3 flex items-center gap-1 transition-colors w-fit">
+                        View all invoices <ChevronRight className="w-3 h-3" />
+                    </button>
                 </div>
-                <div className="bg-surface p-5 border border-border shadow-sm flex flex-col gap-3 relative overflow-hidden group hover:border-amber-300 transition-all">
-                    <div className="flex items-center justify-between">
-                        <span className="text-[9px] font-black uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">Dues Status</span>
-                        <div className="w-8 h-8 bg-amber-50 dark:bg-amber-500/10 flex items-center justify-center">
-                            <Bell className="w-4 h-4 text-amber-500" />
+                <div className="bg-white p-5 border border-slate-200 rounded-3xl shadow-sm flex flex-col relative group hover:border-amber-300 transition-all">
+                    <div className="flex items-start justify-between">
+                        <div className="flex items-start gap-4">
+                            <div className="w-12 h-12 rounded-2xl bg-amber-50 flex items-center justify-center flex-shrink-0">
+                                <ShieldAlert className="w-6 h-6 text-amber-500" />
+                            </div>
+                            <div className="pt-1">
+                                <span className="text-[10px] font-black uppercase tracking-widest text-slate-800">Dues Status</span>
+                                <div className="mt-3 space-y-2">
+                                    <div className="flex items-center gap-6 text-[11px] font-black">
+                                        <span className="text-slate-800 w-24">Action Required</span>
+                                        <span className="text-rose-600">{dueMetadata.totalCount}</span>
+                                    </div>
+                                    <div className="flex items-center gap-6 text-[11px] font-black">
+                                        <span className="text-slate-800 w-24">Send Reminders</span>
+                                        <span className="text-amber-500">{dueMetadata.totalCount}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div className="w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center flex-shrink-0">
+                            <Bell className="w-4 h-4 text-slate-600" />
                         </div>
                     </div>
-                    <div className="text-[13px] font-black text-amber-600 uppercase tracking-widest mt-1">Action Required</div>
-                    <div className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Send reminders to clear dues</div>
-                    <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-amber-200 group-hover:bg-amber-500 transition-all duration-300" />
+                    <button className="text-[10px] font-black text-amber-500 hover:text-amber-600 text-left mt-auto pt-3 flex items-center gap-1 transition-colors w-fit">
+                        View settings <ChevronRight className="w-3 h-3" />
+                    </button>
                 </div>
             </div>
 
             {/* Auto Reminder Settings Card */}
-            <div className="bg-gradient-to-r from-primary/5 via-primary/3 to-transparent dark:from-primary/10 dark:via-primary/5 border border-primary/20 p-5 flex flex-col lg:flex-row lg:items-center gap-5">
+            <div className="bg-white border border-slate-100 rounded-xl p-4 shadow-sm flex flex-col lg:flex-row lg:items-center justify-between gap-4">
                 <div className="flex items-start gap-4 flex-1">
-                    <div className="w-10 h-10 bg-primary/10 flex items-center justify-center flex-shrink-0 mt-0.5">
-                        <Bell className="w-5 h-5 text-primary" />
+                    <div className="w-12 h-12 bg-emerald-50 rounded-2xl flex items-center justify-center flex-shrink-0">
+                        <Bell className="w-6 h-6 text-emerald-500" />
                     </div>
-                    <div className="space-y-1">
-                        <h4 className="text-xs font-black uppercase tracking-[0.15em] text-slate-900 dark:text-white">Automated Payment Reminders</h4>
-                        <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed max-w-md">Configure the system to automatically send WhatsApp payment reminders to customers with pending balances.</p>
+                    <div className="space-y-1.5 pt-1">
+                        <h4 className="text-xs font-black uppercase tracking-[0.15em] text-slate-900">Automated Payment Reminders</h4>
+                        <p className="text-[11px] text-slate-500 leading-relaxed max-w-md">Configure the system to automatically send WhatsApp payment reminders to customers with pending balances.</p>
                     </div>
                 </div>
-                <div className="flex flex-wrap items-center gap-4 lg:gap-6">
+                <div className="flex flex-wrap items-center gap-6">
                     {/* Toggle Switch */}
                     <label className="flex items-center gap-3 cursor-pointer select-none group">
                         <div
-                            className={`relative w-11 h-6 rounded-full transition-all duration-300 ${autoReminder ? 'bg-primary' : 'bg-slate-200 dark:bg-slate-700'}`}
+                            className={`relative w-11 h-6 rounded-full transition-all duration-300 ${autoReminder ? 'bg-emerald-500' : 'bg-slate-200'}`}
                         >
                             <div className={`absolute top-1 w-4 h-4 bg-white rounded-full shadow-sm transition-all duration-300 ${autoReminder ? 'left-6' : 'left-1'}`} />
                         </div>
-                        <div>
-                            <div className="text-[10px] font-black uppercase tracking-wider text-slate-900 dark:text-white">Auto Reminders</div>
-                            <div className="text-[9px] text-slate-400 uppercase tracking-wider">{autoReminder ? 'Enabled' : 'Disabled'}</div>
+                        <div className="flex flex-col">
+                            <div className="text-[10px] font-black uppercase tracking-wider text-slate-700">Auto Reminders</div>
+                            <div className={`text-[9px] font-bold uppercase tracking-wider ${autoReminder ? 'text-emerald-500' : 'text-slate-400'}`}>{autoReminder ? 'Enabled' : 'Disabled'}</div>
                         </div>
                         <input type="checkbox" className="hidden" checked={autoReminder} onChange={(e) => setAutoReminder(e.target.checked)} />
                     </label>
 
                     {/* Interval */}
                     {autoReminder && (
-                        <div className="flex items-center gap-2 bg-white dark:bg-slate-800 border border-border px-4 py-2.5">
-                            <span className="text-[9px] font-black uppercase tracking-wider text-slate-500">Every</span>
-                            <input
-                                type="number"
-                                min="1"
-                                value={reminderInterval}
-                                onChange={(e) => setReminderInterval(Math.max(1, Number(e.target.value) || 1))}
-                                className="w-12 text-sm font-black text-center outline-none bg-transparent text-slate-900 dark:text-white"
-                                style={{ color: 'inherit' }}
-                            />
-                            <span className="text-[9px] font-black uppercase tracking-wider text-slate-500">Days</span>
+                        <div className="flex items-center gap-2 bg-white">
+                            <span className="text-[9px] font-black uppercase tracking-wider text-slate-700">Every</span>
+                            <div className="flex items-center border border-slate-200 rounded-xl px-2 py-2 bg-white">
+                                <input
+                                    type="number"
+                                    min="1"
+                                    value={reminderInterval}
+                                    onChange={(e) => setReminderInterval(Math.max(1, Number(e.target.value) || 1))}
+                                    className="w-8 text-sm font-black text-center outline-none bg-transparent text-slate-900"
+                                />
+                                <ChevronDown className="w-4 h-4 text-slate-400 mr-1" />
+                            </div>
+                            <span className="text-[9px] font-black uppercase tracking-wider text-slate-700 ml-1">Days</span>
                         </div>
                     )}
 
                     <button
                         onClick={handleSaveSettings}
                         disabled={savingSettings}
-                        className="flex items-center gap-2 px-5 py-2.5 bg-primary hover:bg-primary/90 text-white text-[9px] font-black uppercase tracking-widest disabled:opacity-50 transition-all shadow-lg shadow-primary/20 active:scale-95"
-                        style={{ color: '#ffffff' }}
+                        className="flex items-center gap-2 px-6 py-3 bg-transparent hover:bg-[#B4912B]/5 border-2 border-[#B4912B] text-[#B4912B] rounded-2xl text-[10px] font-black uppercase tracking-widest disabled:opacity-50 transition-all active:scale-95 ml-2"
                     >
                         {savingSettings ? (
                             <>
-                                <span className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                <span className="w-3.5 h-3.5 border-2 border-[#B4912B]/30 border-t-[#B4912B] rounded-full animate-spin" />
                                 Saving...
                             </>
                         ) : (
@@ -1122,89 +1162,97 @@ function PaymentRemindersView({ onCustomerClick, setWhatsappModal, fetchCustomer
                 </div>
             </div>
 
-            {/* Search Bar & Outlet Filter */}
+            {/* Search Bar & Actions */}
             <div className="flex flex-col md:flex-row gap-3">
-                <div className="relative flex-1">
-                    <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none text-slate-400 dark:text-slate-500" />
+                <div className="relative flex-1 group">
+                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none text-slate-400 group-focus-within:text-[#B4912B] transition-colors" />
                     <input
                         type="text"
-                        placeholder="Search due clients by name or phone..."
+                        placeholder="Search due clients by name, phone or invoice number..."
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
-                        className="w-full pl-10 pr-4 py-3 bg-surface border border-border text-sm font-bold outline-none focus:border-primary transition-all text-slate-900 dark:text-white"
+                        className="w-full pl-11 pr-4 py-3.5 bg-white border border-slate-200 rounded-2xl text-[11px] font-black outline-none focus:border-[#B4912B] transition-all text-slate-800 placeholder:text-slate-400 shadow-sm"
                     />
                 </div>
-                {filteredOutlets && filteredOutlets.length > 0 && (
-                    <select
-                        value={selectedOutlet}
-                        onChange={(e) => {
-                            setSelectedOutlet(e.target.value);
-                            setPage(1);
-                        }}
-                        className="px-4 py-3 bg-surface border border-border text-xs font-black uppercase tracking-widest outline-none min-w-[200px] cursor-pointer"
-                    >
-                        <option value="">All Outlets</option>
-                        {filteredOutlets.map(o => (
-                            <option key={o._id || o.id} value={o._id || o.id}>
-                                {o.name}
-                            </option>
-                        ))}
-                    </select>
-                )}
+                <div className="flex items-center gap-3 w-full md:w-auto">
+                    {filteredOutlets && filteredOutlets.length > 0 && (
+                        <select
+                            value={selectedOutlet}
+                            onChange={(e) => {
+                                setSelectedOutlet(e.target.value);
+                                setPage(1);
+                            }}
+                            className="flex-1 md:flex-none px-6 py-3.5 bg-white border border-slate-200 rounded-2xl text-[11px] font-black uppercase tracking-widest outline-none min-w-[200px] cursor-pointer shadow-sm text-slate-800"
+                        >
+                            <option value="">All Outlets</option>
+                            {filteredOutlets.map(o => (
+                                <option key={o._id || o.id} value={o._id || o.id}>
+                                    {o.name}
+                                </option>
+                            ))}
+                        </select>
+                    )}
+                    <button className="flex items-center justify-center gap-2 px-6 py-3.5 bg-white border border-slate-200 rounded-2xl text-[11px] font-black uppercase tracking-widest text-slate-800 shadow-sm hover:bg-slate-50 transition-all flex-shrink-0">
+                        <Filter className="w-4 h-4 text-slate-600" /> Filters
+                    </button>
+                </div>
             </div>
 
             {/* Table */}
-            <div className="table-responsive border border-border bg-surface">
+            <div className="table-responsive border border-slate-200 bg-white rounded-3xl overflow-hidden shadow-sm">
                 {loading ? (
-                    <div className="text-center py-12 text-xs font-bold text-text-muted uppercase tracking-widest">
+                    <div className="text-center py-12 text-xs font-bold text-slate-400 uppercase tracking-widest">
                         Loading unpaid dues...
                     </div>
                 ) : filtered.length === 0 ? (
-                    <div className="text-center py-12 text-xs font-bold text-text-muted uppercase tracking-widest">
+                    <div className="text-center py-12 text-xs font-bold text-slate-400 uppercase tracking-widest">
                         No customers with pending payments found
                     </div>
                 ) : (
                     <table className="w-full text-left min-w-[800px]">
-                        <thead className="bg-surface-alt border-b border-border">
+                        <thead className="border-b border-slate-100">
                             <tr>
-                                <th className="p-4 text-[10px] font-black uppercase text-text-muted tracking-widest">Customer Details</th>
-                                <th className="p-4 text-[10px] font-black uppercase text-text-muted tracking-widest text-right">Dues Amount</th>
-                                <th className="p-4 text-[10px] font-black uppercase text-text-muted tracking-widest text-center">Reminders Sent</th>
-                                <th className="p-4 text-[10px] font-black uppercase text-text-muted tracking-widest text-center">Last Reminded</th>
-                                <th className="p-4 text-[10px] font-black uppercase text-text-muted tracking-widest text-right">Actions</th>
+                                <th className="p-3 text-[10px] font-black uppercase text-slate-400 tracking-widest">Customer Details</th>
+                                <th className="p-3 text-[10px] font-black uppercase text-slate-400 tracking-widest text-right">Dues Amount</th>
+                                <th className="p-3 text-[10px] font-black uppercase text-slate-400 tracking-widest text-center">Reminders Sent</th>
+                                <th className="p-3 text-[10px] font-black uppercase text-slate-400 tracking-widest text-center">Last Reminded</th>
+                                <th className="p-3 text-[10px] font-black uppercase text-slate-400 tracking-widest text-right">Actions</th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-border">
+                        <tbody className="divide-y divide-slate-100">
                             {filtered.map(c => (
-                                <tr key={c._id} className="hover:bg-surface-alt/20 transition-colors">
-                                    <td className="p-4">
-                                        <div className="flex items-center gap-3 cursor-pointer" onClick={() => onCustomerClick(c)}>
-                                            <div className="w-8 h-8 bg-text text-white flex items-center justify-center font-black text-xs">
+                                <tr key={c._id} className="hover:bg-slate-50 transition-colors group">
+                                    <td className="p-3">
+                                        <div className="flex items-center gap-4 cursor-pointer" onClick={() => onCustomerClick(c)}>
+                                            <div className="w-10 h-10 bg-[#1e293b] text-white rounded-xl flex items-center justify-center font-black text-sm">
                                                 {c.name?.charAt(0) || '?'}
                                             </div>
                                             <div>
-                                                <p className="text-sm font-black text-text uppercase tracking-tight">{c.name}</p>
-                                                <p className="text-[10px] text-text-muted font-bold tracking-widest">{c.phone}</p>
+                                                <p className="text-sm font-black text-slate-900 uppercase tracking-tight">{c.name}</p>
+                                                <p className="text-[10px] text-slate-500 font-bold tracking-widest mt-0.5">{c.phone}</p>
                                             </div>
                                         </div>
                                     </td>
-                                    <td className="p-4 text-right font-black text-rose-600">
+                                    <td className="p-3 text-right font-black text-rose-600">
                                         ₹{(c.dueAmount || 0).toLocaleString()}
                                     </td>
-                                    <td className="p-4 text-center font-bold text-xs">
-                                        <span className={`px-2 py-1 text-[10px] font-black border ${c.paymentReminderCount > 0 ? 'bg-amber-500/10 text-amber-600 border-amber-500/20' : 'bg-slate-100 text-slate-400 border-slate-200'}`}>
+                                    <td className="p-3 font-bold text-rose-600 text-xs text-center">
+                                        <span className={`px-3 py-1 text-[10px] font-bold border rounded-full ${c.paymentReminderCount > 0 ? 'bg-[#fff4e5] text-[#ed6c02] border-[#ffe0b2]' : 'bg-slate-50 text-slate-900 border-slate-200'}`}>
                                             {c.paymentReminderCount || 0} Sent
                                         </span>
                                     </td>
-                                    <td className="p-4 text-center text-xs font-bold text-text-muted">
+                                    <td className="p-3 text-center text-[11px] font-medium text-slate-500">
                                         {formatDate(c.lastPaymentReminderSentAt)}
                                     </td>
-                                    <td className="p-4 text-right">
+                                    <td className="p-3 text-right">
                                         <button
                                             onClick={() => handleSendReminder(c)}
-                                            className="bg-emerald-500 text-white hover:bg-emerald-600 px-6 py-2.5 text-[9px] font-black uppercase tracking-widest flex items-center gap-2 ml-auto shadow-md hover:shadow-lg transition-all"
+                                            className="bg-white border border-slate-200 text-slate-800 hover:bg-slate-50 rounded-md px-4 py-2 text-[11px] font-bold flex items-center justify-center gap-2 ml-auto transition-all shadow-sm"
                                         >
-                                            <MessageSquare className="w-3.5 h-3.5" /> Send Reminder
+                                            <svg viewBox="0 0 24 24" width="16" height="16" fill="#43b581" className="w-4 h-4">
+                                                <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.095 3.2 5.077 4.487 2.03.88 2.772.942 3.784.788 1.125-.17 3.3-1.345 3.766-2.645.466-1.3.466-2.416.326-2.647-.139-.23-.538-.372-.835-.521ZM12 21.605c-1.624 0-3.197-.436-4.577-1.254l-.328-.194-3.4.89 1.34-3.313-.213-.338C4.015 15.932 3.6 14 3.6 12 3.6 7.37 7.372 3.6 12 3.6c4.63 0 8.4 3.77 8.4 8.4 0 4.63-3.77 8.405-8.4 8.405ZM12 2C6.477 2 2 6.477 2 12c0 1.765.46 3.483 1.328 5.01L2 22l5.12-1.34A9.957 9.957 0 0 0 12 22c5.522 0 10-4.478 10-10S17.522 2 12 2Z" />
+                                            </svg>
+                                            SEND REMINDER
                                         </button>
                                     </td>
                                 </tr>
@@ -1215,25 +1263,25 @@ function PaymentRemindersView({ onCustomerClick, setWhatsappModal, fetchCustomer
 
                 {/* Pagination Controls */}
                 {dueMetadata.totalPages > 1 && (
-                    <div className="px-8 py-6 border-t border-border bg-surface-alt/10 flex items-center justify-between">
-                        <div className="text-[10px] font-black text-text-muted uppercase tracking-widest">
+                    <div className="px-6 py-4 border-t border-slate-100 bg-slate-50/50 flex items-center justify-between">
+                        <div className="text-[10px] font-black text-slate-500 uppercase tracking-widest">
                             Displaying {filtered.length} of {dueMetadata.totalCount} accounts
                         </div>
                         <div className="flex items-center gap-3">
                             <button
                                 onClick={() => setPage(p => Math.max(1, p - 1))}
                                 disabled={page === 1}
-                                className="px-6 py-3 border border-border bg-surface text-[10px] font-black uppercase tracking-widest disabled:opacity-30 hover:bg-surface-alt transition-all"
+                                className="px-4 py-2 border border-slate-200 bg-white rounded-xl text-[10px] font-black uppercase tracking-widest disabled:opacity-30 hover:bg-slate-50 transition-all text-slate-700 shadow-sm"
                             >
                                 Prev
                             </button>
-                            <div className="px-4 text-xs font-black">
-                                Page {page} of {dueMetadata.totalPages || 1}
+                            <div className="px-2 text-xs font-black text-slate-700">
+                                {page} / {dueMetadata.totalPages || 1}
                             </div>
                             <button
                                 onClick={() => setPage(p => Math.min(dueMetadata.totalPages || 1, p + 1))}
                                 disabled={page >= (dueMetadata.totalPages || 1)}
-                                className="px-6 py-3 border border-border bg-surface text-[10px] font-black uppercase tracking-widest disabled:opacity-30 hover:bg-surface-alt transition-all"
+                                className="px-4 py-2 border border-slate-200 bg-white rounded-xl text-[10px] font-black uppercase tracking-widest disabled:opacity-30 hover:bg-slate-50 transition-all text-slate-700 shadow-sm"
                             >
                                 Next
                             </button>

@@ -3,7 +3,7 @@ import {
     Search, Calendar, Eye, X, Download,
     Clock, CreditCard, Banknote, Smartphone, Ban,
     ChevronLeft, ChevronRight, FileText, Loader2, Store, ChevronDown, Printer,
-    Mail, MessageSquare, MessageCircle, Send
+    Mail, MessageSquare, MessageCircle, Send, Filter, RefreshCw, MapPin, Box, PlusCircle
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import api from '../../services/api';
@@ -11,6 +11,11 @@ import { useBusiness } from '../../contexts/BusinessContext';
 import {
     Document, Page, Text, View, StyleSheet, pdf, Font
 } from '@react-pdf/renderer';
+import {
+    BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, Legend, ResponsiveContainer,
+    PieChart, Pie, Cell,
+    AreaChart, Area
+} from 'recharts';
 
 // Register a custom font that supports the Rupee symbol (built-in fonts like Helvetica do not)
 Font.register({
@@ -750,6 +755,41 @@ export default function POSInvoicesPage() {
         });
     }, [invoices, search, dateFilter, typeFilter]);
 
+    const paymentData = useMemo(() => {
+        const grouped = {};
+        invoices.forEach(inv => {
+            const d = new Date(inv.createdAt).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' });
+            if(!grouped[d]) grouped[d] = { name: d, Cash: 0, UPI: 0, Unpaid: 0 };
+            const cash = inv.payments?.filter(p=>p.method==='cash').reduce((s,p)=>s+p.amount,0) || 0;
+            const upi = inv.payments?.filter(p=>['online','card','upi'].includes(p.method)).reduce((s,p)=>s+p.amount,0) || 0;
+            const fallbackTotal = inv.total || 0;
+            grouped[d].Cash += cash > 0 ? cash : (inv.paymentMethod === 'cash' ? fallbackTotal : 0);
+            grouped[d].UPI += upi > 0 ? upi : (['online','card','upi'].includes(inv.paymentMethod) ? fallbackTotal : 0);
+            if((inv.paymentStatus || '').toLowerCase() !== 'paid') grouped[d].Unpaid += (inv.dueAmount || fallbackTotal);
+        });
+        const arr = Object.values(grouped).slice(-5);
+        if(arr.length === 0) return [{ name: 'Today', Cash: 0, UPI: 0, Unpaid: 0 }];
+        return arr;
+    }, [invoices]);
+
+    const donutData = useMemo(() => {
+        let cash = 0, upi = 0, unpaid = 0;
+        invoices.forEach(inv => {
+            const cashAmt = inv.payments?.filter(p=>p.method==='cash').reduce((s,p)=>s+p.amount,0) || 0;
+            const upiAmt = inv.payments?.filter(p=>['online','card','upi'].includes(p.method)).reduce((s,p)=>s+p.amount,0) || 0;
+            const fallbackTotal = inv.total || 0;
+            cash += cashAmt > 0 ? cashAmt : (inv.paymentMethod === 'cash' ? fallbackTotal : 0);
+            upi += upiAmt > 0 ? upiAmt : (['online','card','upi'].includes(inv.paymentMethod) ? fallbackTotal : 0);
+            if((inv.paymentStatus || '').toLowerCase() !== 'paid') unpaid += (inv.dueAmount || fallbackTotal);
+        });
+        return [
+            { name: 'Cash', value: cash },
+            { name: 'UPI', value: upi },
+            { name: 'Unpaid', value: unpaid }
+        ];
+    }, [invoices]);
+    const DONUT_COLORS = ['#10b981', '#8b5cf6', '#f97316'];
+
     const totalPages = Math.ceil(filtered.length / perPage);
     const paginated = filtered.slice((page - 1) * perPage, page * perPage);
 
@@ -770,220 +810,280 @@ export default function POSInvoicesPage() {
         }
     };
     return (
-        <div className="space-y-10 animate-in fade-in duration-700 pb-10">
+        <div className="space-y-6 animate-in fade-in duration-700 pb-10 bg-[#F8F9FA] min-h-screen px-4 md:px-8 py-6 rounded-3xl">
             {/* Header Area */}
-            <div className="flex flex-col gap-8">
-                <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-6">
-                    <div>
-                        <h1 className="text-4xl font-black text-text uppercase tracking-tighter leading-none">Invoices</h1>
-                        <p className="text-[10px] font-black text-text-muted mt-3 uppercase tracking-[0.3em] opacity-40 flex items-center gap-2">
-                            <span className="w-6 h-[1px] bg-primary" />
-                            History Ledger & Financial Analytics
-                        </p>
-                    </div>
-
-                    <div className="flex flex-wrap items-center gap-3">
-                        {/* Outlet Selection */}
-                        <div className="relative group min-w-[220px]">
-                            <select
-                                value={activeOutletId || ''}
-                                onChange={(e) => setActiveOutletId(e.target.value)}
-                                className="w-full pl-9 pr-10 py-3.5 bg-surface border border-border text-[10px] font-black uppercase tracking-widest outline-none focus:border-primary transition-all cursor-pointer appearance-none shadow-sm hover:shadow-md hover:border-primary/40 text-slate-900 dark:text-white"
-                            >
-                                <option value="">All Outlets</option>
-                                {(outlets || []).map(o => (
-                                    <option key={o._id} value={o._id}>{o.name}</option>
-                                ))}
-                            </select>
-                            <Store className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-primary pointer-events-none" />
-                            <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-text-muted group-hover:text-primary transition-colors pointer-events-none" />
-                        </div>
-                    </div>
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6 mb-2">
+                <div>
+                    <h1 className="text-3xl font-black text-slate-800 uppercase tracking-tighter leading-none">Invoices</h1>
+                    <p className="text-[10px] font-black text-slate-500 mt-1 uppercase tracking-widest flex items-center gap-2">
+                        History Ledger & Financial Analytics
+                    </p>
                 </div>
 
-                <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 p-3 bg-surface border border-border shadow-sm rounded-xl">
-                    {/* Date Filters */}
-                    <div className="grid grid-cols-2 gap-2 w-full">
-                        {[
-                            { id: 'today', label: 'Today', icon: Calendar },
-                            { id: 'all', label: 'All Time', icon: Clock }
-                        ].map(f => (
-                            <button
-                                key={f.id}
-                                onClick={() => { setDateFilter(f.id); setPage(1); }}
-                                className={`flex items-center justify-center gap-2 px-3 py-3.5 text-[9px] font-black uppercase tracking-[0.2em] transition-all rounded-lg w-full ${dateFilter === f.id ? 'bg-primary text-white shadow-xl shadow-primary/20' : 'text-text-secondary hover:text-text hover:bg-surface-alt border border-border/40'}`}
-                            >
-                                <f.icon className="w-3.5 h-3.5 shrink-0" /> <span className="truncate">{f.label}</span>
-                            </button>
-                        ))}
+                <div className="flex flex-wrap items-center gap-3">
+                    {/* Outlet Selection */}
+                    <div className="relative group min-w-[220px]">
+                        <select
+                            value={activeOutletId || ''}
+                            onChange={(e) => setActiveOutletId(e.target.value)}
+                            className="w-full pl-9 pr-10 py-2.5 bg-white border border-slate-200 rounded-2xl text-[10px] font-black uppercase tracking-widest outline-none focus:border-[#B4912B] transition-all cursor-pointer appearance-none shadow-sm text-slate-900"
+                        >
+                            <option value="">All Outlets</option>
+                            {(outlets || []).map(o => (
+                                <option key={o._id} value={o._id}>{o.name}</option>
+                            ))}
+                        </select>
+                        <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 pointer-events-none" />
+                        <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 pointer-events-none" />
                     </div>
-
-                    {/* Type Filters */}
-                    <div className="grid grid-cols-3 gap-2 w-full xl:border-l xl:border-border/50 xl:pl-4">
-                        {[
-                            { id: 'all', label: 'All Invoices', icon: FileText },
-                            { id: 'service', label: 'Services', icon: Smartphone },
-                            { id: 'product', label: 'Products', icon: CreditCard }
-                        ].map(f => (
-                            <button
-                                key={f.id}
-                                onClick={() => { setTypeFilter(f.id); setPage(1); }}
-                                className={`flex items-center justify-center gap-2 px-3 py-3.5 text-[9px] font-black uppercase tracking-[0.2em] transition-all rounded-lg w-full ${typeFilter === f.id ? 'bg-primary text-white shadow-xl shadow-primary/20' : 'text-text-secondary hover:text-text hover:bg-surface-alt border border-border/40'}`}
-                            >
-                                <f.icon className="w-3.5 h-3.5 shrink-0" /> <span className="truncate">{f.label}</span>
-                            </button>
-                        ))}
-                    </div>
+                    <button className="w-10 h-10 bg-white border border-slate-200 rounded-2xl flex items-center justify-center text-slate-500 hover:text-slate-800 hover:border-slate-300 transition-all shadow-sm">
+                        <RefreshCw className="w-4 h-4" />
+                    </button>
+                    <button className="px-5 py-2.5 bg-[#B4912B] text-white text-[10px] font-black uppercase tracking-widest rounded-2xl shadow-sm hover:bg-[#9c7d24] transition-all flex items-center gap-2">
+                        <FileText className="w-3.5 h-3.5" />
+                        Create Bill
+                    </button>
                 </div>
+            </div>
+
+            {/* Unified Tabs Row */}
+            <div className="flex items-center gap-2 bg-white p-1.5 rounded-3xl border border-slate-200 shadow-sm overflow-x-auto no-scrollbar">
+                {[
+                    { id: 'today', label: 'Today', icon: Calendar, filterType: 'date' },
+                    { id: 'all_time', label: 'All Time', icon: FileText, filterType: 'date' },
+                    { id: 'all_inv', label: 'All Invoices', icon: FileText, filterType: 'type' },
+                    { id: 'service', label: 'Services', icon: FileText, filterType: 'type' },
+                    { id: 'product', label: 'Products', icon: Box, filterType: 'type' }
+                ].map(f => {
+                    const isActive = (f.filterType === 'date' && dateFilter === (f.id === 'all_time' ? 'all' : f.id)) ||
+                                     (f.filterType === 'type' && typeFilter === (f.id === 'all_inv' ? 'all' : f.id));
+                    return (
+                        <button
+                            key={f.id}
+                            onClick={() => {
+                                if (f.filterType === 'date') setDateFilter(f.id === 'all_time' ? 'all' : f.id);
+                                if (f.filterType === 'type') setTypeFilter(f.id === 'all_inv' ? 'all' : f.id);
+                                setPage(1);
+                            }}
+                            className={`flex-1 min-w-[120px] flex items-center justify-center gap-2 px-4 py-3 text-[10px] font-black uppercase tracking-widest transition-all rounded-2xl whitespace-nowrap ${isActive ? 'bg-[#B4912B] text-white shadow-md' : 'text-slate-500 hover:text-slate-800 hover:bg-slate-50'}`}
+                        >
+                            <f.icon className="w-3.5 h-3.5 shrink-0" /> {f.label}
+                        </button>
+                    );
+                })}
             </div>
 
             {/* Earning Stats */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-                <div className="bg-surface border border-border p-8 shadow-sm group hover:border-primary transition-all duration-300 relative overflow-hidden">
-                    <div className="absolute top-0 right-0 p-3 opacity-5 group-hover:opacity-20 transition-opacity">
-                        <Banknote className="w-16 h-16" />
-                    </div>
-                    <div className="relative z-10">
-                        <div className="flex items-center gap-3 mb-6">
-                            <div className="p-2.5 bg-primary/10 text-primary">
-                                <Banknote className="w-5 h-5" />
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                {[
+                    { title: "Total Revenue", badge: "Overall", value: `₹${invoices.reduce((s, i) => s + (i.total || 0), 0).toLocaleString()}`, subtitle: "vs Yesterday ₹0 (0%)", icon: Banknote, color: "text-emerald-500", bg: "bg-emerald-50" },
+                    { title: "Today's Earnings", badge: "Today", value: `₹${invoices.filter(i => new Date(i.createdAt).toDateString() === new Date().toDateString()).reduce((s, i) => s + (i.total || 0), 0).toLocaleString()}`, subtitle: "vs Yesterday ₹0 (0%)", icon: Calendar, color: "text-emerald-500", bg: "bg-emerald-50" },
+                    { title: "UPI / Card", badge: "Digital", value: `₹${invoices.filter(i => ['online', 'card', 'upi'].includes(i.paymentMethod)).reduce((s, i) => s + (i.total || 0), 0).toLocaleString()}`, subtitle: "vs Yesterday ₹0 (0%)", icon: Smartphone, color: "text-blue-500", bg: "bg-blue-50" },
+                    { title: "Cash Collected", badge: "Physical", value: `₹${invoices.filter(i => i.paymentMethod === 'cash' || !i.paymentMethod).reduce((s, i) => s + (i.total || 0), 0).toLocaleString()}`, subtitle: "vs Yesterday ₹0 (0%)", icon: Banknote, color: "text-orange-500", bg: "bg-orange-50" }
+                ].map((stat, i) => (
+                    <div key={i} className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm flex flex-col justify-between relative overflow-hidden group">
+                        <div className="flex justify-between items-start mb-4">
+                            <div>
+                                <div className="flex items-center gap-2 mb-2">
+                                    <h3 className="text-[10px] font-black text-slate-800 uppercase tracking-widest">{stat.title}</h3>
+                                    <span className={`text-[8px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded ${stat.bg} ${stat.color}`}>{stat.badge}</span>
+                                </div>
+                                <p className="text-2xl font-black text-slate-800 tracking-tighter">{stat.value}</p>
+                                <p className="text-[9px] font-bold text-slate-400 mt-1">{stat.subtitle}</p>
                             </div>
-                            <span className="text-[8px] font-black text-primary uppercase tracking-[0.2em] bg-primary/10 px-2 py-0.5">Overall</span>
-                        </div>
-                        <p className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Total Revenue</p>
-                        <h3 className="text-3xl font-black text-text mt-2 tracking-tighter">₹{invoices.reduce((s, i) => s + (i.total || 0), 0).toLocaleString()}</h3>
-                    </div>
-                </div>
-
-                <div className="bg-surface border border-border p-8 shadow-sm group hover:border-emerald-500 transition-all duration-300 relative overflow-hidden">
-                    <div className="absolute top-0 right-0 p-3 opacity-5 group-hover:opacity-20 transition-opacity">
-                        <Calendar className="w-16 h-16" />
-                    </div>
-                    <div className="relative z-10">
-                        <div className="flex items-center gap-3 mb-6">
-                            <div className="p-2.5 bg-emerald-500/10 text-emerald-500">
-                                <Calendar className="w-5 h-5" />
+                            <div className={`w-10 h-10 rounded-full flex items-center justify-center ${stat.bg} ${stat.color}`}>
+                                <stat.icon className="w-5 h-5" />
                             </div>
-                            <span className="text-[8px] font-black text-emerald-500 uppercase tracking-[0.2em] bg-emerald-500/10 px-2 py-0.5">Today</span>
                         </div>
-                        <p className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Today's Earnings</p>
-                        <h3 className="text-3xl font-black text-text mt-2 tracking-tighter">
-                            ₹{invoices.filter(i => new Date(i.createdAt).toDateString() === new Date().toDateString()).reduce((s, i) => s + (i.total || 0), 0).toLocaleString()}
-                        </h3>
-                    </div>
-                </div>
-
-                <div className="bg-surface border border-border p-8 shadow-sm group hover:border-blue-500 transition-all duration-300 relative overflow-hidden">
-                    <div className="absolute top-0 right-0 p-3 opacity-5 group-hover:opacity-20 transition-opacity">
-                        <Smartphone className="w-16 h-16" />
-                    </div>
-                    <div className="relative z-10">
-                        <div className="flex items-center gap-3 mb-6">
-                            <div className="p-2.5 bg-blue-500/10 text-blue-500">
-                                <Smartphone className="w-5 h-5" />
-                            </div>
-                            <span className="text-[8px] font-black text-blue-500 uppercase tracking-[0.2em] bg-blue-500/10 px-2 py-0.5">Digital</span>
+                        <div className="h-10 w-full mt-2 -mb-2 -mx-2 w-[calc(100%+16px)]">
+                            <ResponsiveContainer width="100%" height="100%">
+                                <AreaChart data={[{v:2},{v:3},{v:1},{v:4},{v:2},{v:5}]}>
+                                    <defs>
+                                        <linearGradient id={`color${i}`} x1="0" y1="0" x2="0" y2="1">
+                                            <stop offset="5%" stopColor={stat.color.includes('emerald') ? '#10b981' : stat.color.includes('blue') ? '#3b82f6' : '#f97316'} stopOpacity={0.2}/>
+                                            <stop offset="95%" stopColor={stat.color.includes('emerald') ? '#10b981' : stat.color.includes('blue') ? '#3b82f6' : '#f97316'} stopOpacity={0}/>
+                                        </linearGradient>
+                                    </defs>
+                                    <Area type="monotone" dataKey="v" stroke={stat.color.includes('emerald') ? '#10b981' : stat.color.includes('blue') ? '#3b82f6' : '#f97316'} fillOpacity={1} fill={`url(#color${i})`} strokeWidth={2} />
+                                </AreaChart>
+                            </ResponsiveContainer>
                         </div>
-                        <p className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">UPI / Card</p>
-                        <h3 className="text-3xl font-black text-text mt-2 tracking-tighter">
-                            ₹{invoices.filter(i => ['online', 'card', 'upi'].includes(i.paymentMethod)).reduce((s, i) => s + (i.total || 0), 0).toLocaleString()}
-                        </h3>
                     </div>
-                </div>
-
-                <div className="bg-surface border border-border p-8 shadow-sm group hover:border-amber-500 transition-all duration-300 relative overflow-hidden">
-                    <div className="absolute top-0 right-0 p-3 opacity-5 group-hover:opacity-20 transition-opacity">
-                        <Banknote className="w-16 h-16" />
-                    </div>
-                    <div className="relative z-10">
-                        <div className="flex items-center gap-3 mb-6">
-                            <div className="p-2.5 bg-amber-500/10 text-amber-500">
-                                <Banknote className="w-5 h-5" />
-                            </div>
-                            <span className="text-[8px] font-black text-amber-500 uppercase tracking-[0.2em] bg-amber-500/10 px-2 py-0.5">Physical</span>
-                        </div>
-                        <p className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Cash Collected</p>
-                        <h3 className="text-3xl font-black text-text mt-2 tracking-tighter">
-                            ₹{invoices.filter(i => i.paymentMethod === 'cash' || !i.paymentMethod).reduce((s, i) => s + (i.total || 0), 0).toLocaleString()}
-                        </h3>
-                    </div>
-                </div>
+                ))}
             </div>
 
             {/* Search Bar */}
-            <div className="relative max-w-2xl mx-auto group">
-                <Search className="absolute left-6 top-1/2 -translate-y-1/2 w-5 h-5 text-text-muted/40 group-focus-within:text-primary transition-colors" />
+            <div className="relative max-w-2xl mx-auto group w-full">
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-[#B4912B] transition-colors" />
                 <input
                     type="text"
                     value={search}
                     onChange={(e) => { setSearch(e.target.value); setPage(1); }}
                     placeholder="Search by invoice number, customer name, or phone..."
-                    className="w-full pl-16 pr-8 py-5 bg-surface border border-border text-[12px] font-black uppercase tracking-widest placeholder:opacity-20 focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/5 transition-all shadow-sm"
+                    className="w-full pl-11 pr-4 py-3 bg-white border border-slate-200 rounded-2xl text-[10px] font-black text-slate-800 placeholder:text-slate-400 focus:outline-none focus:border-[#B4912B] transition-all shadow-sm uppercase tracking-widest"
                 />
             </div>
 
+            {/* Analytics Grid */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                {/* Payment Summary */}
+                <div className="lg:col-span-2 bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+                    <div className="flex justify-between items-start mb-6">
+                        <div>
+                            <h3 className="text-[10px] font-black text-slate-800 uppercase tracking-widest">Payment Summary</h3>
+                            <p className="text-[9px] font-bold text-slate-500 mt-1">Today's payment collection by method</p>
+                        </div>
+                        <button className="flex items-center gap-2 px-3 py-1.5 border border-slate-200 rounded-2xl text-[9px] font-black text-slate-600 uppercase tracking-widest hover:bg-slate-50 transition-all">
+                            This Month <ChevronDown className="w-3 h-3" />
+                        </button>
+                    </div>
+                    <div className="h-48 w-full">
+                        <ResponsiveContainer width="100%" height="100%">
+                            <BarChart data={paymentData} margin={{ top: 0, right: 0, left: -20, bottom: 0 }} barGap={2}>
+                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
+                                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 9, fontWeight: 700, fill: '#64748b' }} dy={10} />
+                                <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 9, fontWeight: 700, fill: '#64748b' }} tickFormatter={(val) => '₹'+val} />
+                                <RechartsTooltip cursor={{fill: 'transparent'}} contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)', fontSize: '10px', fontWeight: 'bold' }} />
+                                <Legend wrapperStyle={{ fontSize: '9px', fontWeight: 'bold', textTransform: 'uppercase', color: '#64748b' }} iconType="square" iconSize={8} />
+                                <Bar dataKey="Cash" fill="#10b981" radius={[4, 4, 0, 0]} maxBarSize={12} />
+                                <Bar dataKey="UPI" fill="#8b5cf6" radius={[4, 4, 0, 0]} maxBarSize={12} />
+                                <Bar dataKey="Unpaid" fill="#f97316" radius={[4, 4, 0, 0]} maxBarSize={12} />
+                            </BarChart>
+                        </ResponsiveContainer>
+                    </div>
+                    <div className="flex justify-between mt-4 border-t border-slate-100 pt-4 px-2">
+                        <div className="flex items-center gap-2">
+                            <span className="text-[10px] font-black text-slate-800 uppercase tracking-widest">Cash</span>
+                            <span className="text-[10px] font-black text-emerald-500 tracking-tighter">₹{donutData[0].value}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <span className="text-[10px] font-black text-slate-800 uppercase tracking-widest">UPI</span>
+                            <span className="text-[10px] font-black text-purple-500 tracking-tighter">₹{donutData[1].value}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <span className="text-[10px] font-black text-slate-800 uppercase tracking-widest">Unpaid</span>
+                            <span className="text-[10px] font-black text-orange-500 tracking-tighter">₹{donutData[2].value}</span>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Collections Split */}
+                <div className="lg:col-span-1 bg-white border border-slate-200 rounded-2xl p-6 shadow-sm flex flex-col">
+                    <h3 className="text-[10px] font-black text-slate-800 uppercase tracking-widest mb-6">Collections Split</h3>
+                    <div className="flex-1 flex flex-col items-center justify-center relative">
+                        <div className="h-40 w-full">
+                            <ResponsiveContainer width="100%" height="100%">
+                                <PieChart>
+                                    <Pie data={donutData} innerRadius={50} outerRadius={70} paddingAngle={2} dataKey="value" stroke="none">
+                                        {donutData.map((entry, index) => (
+                                            <Cell key={`cell-${index}`} fill={DONUT_COLORS[index % DONUT_COLORS.length]} />
+                                        ))}
+                                    </Pie>
+                                    <RechartsTooltip contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)', fontSize: '10px', fontWeight: 'bold' }} />
+                                </PieChart>
+                            </ResponsiveContainer>
+                        </div>
+                        <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none mt-4">
+                            <span className="text-sm font-black text-slate-800">₹{(donutData[0].value + donutData[1].value).toLocaleString()}</span>
+                            <span className="text-[7px] font-bold text-slate-500 uppercase tracking-widest">Total Collection</span>
+                        </div>
+                    </div>
+                    <div className="mt-4 space-y-2">
+                        {donutData.map((entry, i) => {
+                            const total = donutData[0].value + donutData[1].value + donutData[2].value;
+                            const pct = total === 0 ? 0 : Math.round((entry.value / total) * 100);
+                            return (
+                                <div key={i} className="flex items-center justify-between text-[9px] font-black tracking-widest">
+                                    <div className="flex items-center gap-2 text-slate-700 uppercase">
+                                        <div className="w-2 h-2 rounded-full" style={{ backgroundColor: DONUT_COLORS[i] }}></div>
+                                        {entry.name}
+                                    </div>
+                                    <div className="flex items-center gap-3">
+                                        <span className="text-slate-400">{pct}%</span>
+                                        <span className="text-slate-800">₹{entry.value}</span>
+                                    </div>
+                                </div>
+                            );
+                        })}
+                        <div className="flex items-center justify-between text-[10px] font-black text-slate-800 uppercase tracking-widest pt-2 border-t border-slate-100 mt-2">
+                            <span>Total</span>
+                            <span>₹{donutData[0].value + donutData[1].value + donutData[2].value}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             {/* Table */}
-            <div className="bg-surface rounded-none border border-border shadow-sm overflow-hidden min-h-[400px] flex flex-col">
+            <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden min-h-[400px] flex flex-col p-2">
+                <div className="p-4 flex items-center justify-between border-b border-slate-100">
+                    <div className="flex items-center gap-2">
+                        <div className="p-1.5 bg-slate-100 rounded-2xl text-slate-500">
+                            <FileText className="w-4 h-4" />
+                        </div>
+                        <h3 className="text-[10px] font-black text-slate-800 uppercase tracking-widest">Invoice List</h3>
+                    </div>
+                    <button className="text-[9px] font-black text-slate-500 hover:text-slate-800 uppercase tracking-widest transition-colors">
+                        View All →
+                    </button>
+                </div>
                 {loading ? (
-                    <div className="flex-1 flex flex-col items-center justify-center py-24 text-center bg-background">
-                        <p className="text-[10px] font-black text-text-muted uppercase tracking-[0.3em]">Loading invoice ledger...</p>
+                    <div className="flex-1 flex flex-col items-center justify-center py-24 text-center">
+                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em]">Loading invoice ledger...</p>
                     </div>
                 ) : paginated.length === 0 ? (
-                    <div className="flex-1 flex flex-col items-center justify-center py-24 text-center bg-background">
-                        <div className="w-16 h-16 bg-surface border border-border flex items-center justify-center mb-4 opacity-50">
-                            <Search className="w-8 h-8 text-text-muted" />
+                    <div className="flex-1 flex flex-col items-center justify-center py-24 text-center">
+                        <div className="w-16 h-16 bg-slate-50 border border-slate-200 rounded-2xl flex items-center justify-center mb-4 text-slate-300">
+                            <Search className="w-8 h-8" />
                         </div>
-                        <p className="text-[10px] font-black text-text-muted uppercase tracking-[0.3em]">No matching invoices found</p>
+                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em]">No matching invoices found</p>
                     </div>
                 ) : (
-                    <div className="bg-background flex-1 overflow-hidden">
-                        <table className="w-full text-left border-collapse table-fixed">
+                    <div className="flex-1 overflow-x-auto">
+                        <table className="w-full text-left border-collapse min-w-[800px]">
                             <thead>
-                                <tr className="bg-surface-alt/80 text-[9px] font-black text-text-muted uppercase tracking-[0.2em] border-b border-border">
-                                    <th className="px-3 py-4 w-[12%]">Invoice</th>
-                                    <th className="px-3 py-4 w-[15%]">Date & Time</th>
-                                    <th className="px-3 py-4 w-[15%]">Customer</th>
-                                    <th className="px-3 py-4 w-[12%]">Outlet</th>
-                                    <th className="px-3 py-4 w-[12%]">Payment</th>
-                                    <th className="px-3 py-4 w-[12%] text-right">Amount</th>
-                                    <th className="px-3 py-4 w-[8%] text-center">Status</th>
-                                    <th className="px-3 py-4 w-[14%] text-center">Action</th>
+                                <tr className="text-[9px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-100">
+                                    <th className="px-4 py-4 w-[15%]">Invoice No.</th>
+                                    <th className="px-4 py-4 w-[15%]">Date & Time</th>
+                                    <th className="px-4 py-4 w-[20%]">Customer</th>
+                                    <th className="px-4 py-4 w-[15%]">Payment Method</th>
+                                    <th className="px-4 py-4 w-[15%] text-right">Amount</th>
+                                    <th className="px-4 py-4 w-[10%] text-center">Status</th>
+                                    <th className="px-4 py-4 w-[10%] text-center">Action</th>
                                 </tr>
                             </thead>
-                            <tbody className="divide-y divide-border/30">
+                            <tbody className="divide-y divide-slate-100/50">
                                 {paginated.map(inv => (
-                                    <tr key={inv._id} className="hover:bg-surface-alt/50 transition-colors group">
-                                        <td className="px-3 py-4 font-black text-primary uppercase tracking-tighter truncate" title={inv.invoiceNumber}>{inv.invoiceNumber}</td>
-                                        <td className="px-3 py-4 text-text-muted text-[10px] font-bold uppercase tracking-tight truncate">
+                                    <tr key={inv._id} className="hover:bg-slate-50 transition-colors group">
+                                        <td className="px-4 py-4 font-black text-slate-800 uppercase tracking-tighter truncate" title={inv.invoiceNumber}>{inv.invoiceNumber}</td>
+                                        <td className="px-4 py-4 text-slate-500 text-[10px] font-bold uppercase tracking-tight truncate">
                                             {formatDate(inv.createdAt)}
                                         </td>
-                                        <td className="px-3 py-4 truncate">
-                                            <div className="font-black text-text text-[10px] uppercase tracking-tight truncate" title={inv.customerId?.name || 'Guest'}>
+                                        <td className="px-4 py-4 truncate">
+                                            <div className="font-black text-slate-800 text-[10px] uppercase tracking-tight truncate" title={inv.customerId?.name || 'Guest'}>
                                                 {inv.customerId?.name || 'Guest'}
                                             </div>
                                             {inv.customerId?.phone && (
-                                                <div className="text-[9px] font-bold text-text-muted mt-0.5 tracking-tight">
+                                                <div className="text-[9px] font-bold text-slate-400 mt-0.5 tracking-tight">
                                                     {inv.customerId.phone}
                                                 </div>
                                             )}
                                         </td>
-                                        <td className="px-3 py-4 text-text-muted text-[9px] font-black uppercase tracking-widest truncate">{inv.outletId?.name || '-'}</td>
-                                        <td className="px-3 py-4">
-                                            <span className="flex items-center gap-1.5 font-black text-text text-[9px] uppercase tracking-widest">
+                                        <td className="px-4 py-4">
+                                            <span className="flex items-center gap-1.5 font-black text-slate-700 text-[9px] uppercase tracking-widest">
                                                 {inv.paymentMethod === 'online' ? 'UPI' : (inv.paymentMethod || 'Cash').toUpperCase()}
                                             </span>
                                         </td>
-                                        <td className="px-3 py-4 text-right font-black text-text tracking-tighter text-sm">₹{Number(inv.total || 0).toLocaleString()}</td>
-                                        <td className="px-3 py-4 text-center">
-                                            <span className={`inline-flex items-center px-2 py-0.5 text-[8px] font-black uppercase tracking-widest border ${(inv.paymentStatus || '').toLowerCase() === 'paid' ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20' : 'bg-orange-500/10 text-orange-600 border-orange-500/20'}`}>
+                                        <td className="px-4 py-4 text-right font-black text-slate-800 tracking-tighter text-sm">₹{Number(inv.total || 0).toLocaleString()}</td>
+                                        <td className="px-4 py-4 text-center">
+                                            <span className={`inline-flex items-center px-2 py-0.5 text-[8px] font-black uppercase tracking-widest rounded ${(inv.paymentStatus || '').toLowerCase() === 'paid' ? 'bg-emerald-50 text-emerald-600' : 'bg-orange-50 text-orange-600'}`}>
                                                 {(inv.paymentStatus || '').toLowerCase() === 'paid' ? 'Paid' : 'Pend'}
                                             </span>
                                         </td>
-                                        <td className="px-3 py-4 text-center">
+                                        <td className="px-4 py-4 text-center">
                                             <div className="flex items-center justify-center gap-2">
                                                 <button
                                                     onClick={() => setSelectedInvoice(inv)}
-                                                    className="px-4 py-1.5 border border-border bg-surface hover:bg-primary hover:text-white transition-all shadow-sm flex items-center gap-2 text-[10px] font-black uppercase tracking-widest"
+                                                    className="px-4 py-1.5 border border-slate-200 bg-white hover:bg-[#B4912B] hover:text-white transition-all shadow-sm flex items-center gap-2 text-[10px] font-black uppercase tracking-widest rounded-2xl text-slate-600"
                                                     title="View Details"
                                                 >
                                                     <Eye className="w-3.5 h-3.5" />
@@ -999,16 +1099,16 @@ export default function POSInvoicesPage() {
 
                 {/* Pagination */}
                 {totalPages > 1 && (
-                    <div className="px-8 py-6 border-t border-border flex items-center justify-between bg-surface-alt/30">
-                        <p className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Total Invoices: {filtered.length}</p>
+                    <div className="px-6 py-4 border-t border-slate-100 flex items-center justify-between bg-slate-50/50">
+                        <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">Total Invoices: {filtered.length}</p>
                         <div className="flex gap-2">
-                            <button disabled={page <= 1} onClick={() => setPage(p => p - 1)} className="px-4 py-2 rounded-none border border-border bg-surface text-text-muted hover:text-primary hover:border-primary disabled:opacity-20 transition-all active:scale-95 shadow-sm uppercase font-black text-[9px] tracking-widest">
+                            <button disabled={page <= 1} onClick={() => setPage(p => p - 1)} className="px-4 py-2 rounded-2xl border border-slate-200 bg-white text-slate-500 hover:text-[#B4912B] hover:border-[#B4912B] disabled:opacity-30 transition-all active:scale-95 shadow-sm uppercase font-black text-[9px] tracking-widest">
                                 <ChevronLeft className="w-4 h-4" />
                             </button>
-                            <div className="px-6 py-2 rounded-none border border-border bg-surface flex items-center shadow-sm">
-                                <span className="text-[10px] font-black text-text uppercase tracking-widest">Page {page} <span className="text-text-muted mx-2 opacity-30">/</span> {totalPages}</span>
+                            <div className="px-6 py-2 rounded-2xl border border-slate-200 bg-white flex items-center shadow-sm">
+                                <span className="text-[10px] font-black text-slate-800 uppercase tracking-widest">Page {page} <span className="text-slate-300 mx-2">/</span> {totalPages}</span>
                             </div>
-                            <button disabled={page >= totalPages} onClick={() => setPage(p => p + 1)} className="px-4 py-2 rounded-none border border-border bg-surface text-text-muted hover:text-primary hover:border-primary disabled:opacity-20 transition-all active:scale-95 shadow-sm uppercase font-black text-[9px] tracking-widest">
+                            <button disabled={page >= totalPages} onClick={() => setPage(p => p + 1)} className="px-4 py-2 rounded-2xl border border-slate-200 bg-white text-slate-500 hover:text-[#B4912B] hover:border-[#B4912B] disabled:opacity-30 transition-all active:scale-95 shadow-sm uppercase font-black text-[9px] tracking-widest">
                                 <ChevronRight className="w-4 h-4" />
                             </button>
                         </div>

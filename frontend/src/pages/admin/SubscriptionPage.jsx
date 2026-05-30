@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { 
+import {
     CheckCircle, XCircle, Crown, Zap, Shield, CreditCard, ArrowRight, Package, Calendar, Users, Store, Smartphone, BarChart2, MessageSquare, Heart, Target, Activity, Star, DollarSign, Sparkles,
     Megaphone, Briefcase, Layout, ClipboardList, Bell, UserCog, Check
 } from 'lucide-react';
@@ -86,10 +86,10 @@ export default function SubscriptionPage() {
                         yearlyId: p._id
                     };
                 });
-                
-                setPlans(normalized.sort((a,b) => (PLAN_RANK[a.name.toLowerCase()] || 0) - (PLAN_RANK[b.name.toLowerCase()] || 0)));
+
+                setPlans(normalized.sort((a, b) => (PLAN_RANK[a.name.toLowerCase()] || 0) - (PLAN_RANK[b.name.toLowerCase()] || 0)));
             }
-        } catch (e) { 
+        } catch (e) {
             console.error('Error fetching plans:', e);
             setPlans([]);
         } finally { setLoadingPlans(false); }
@@ -140,15 +140,15 @@ export default function SubscriptionPage() {
     const activePlanId = effectiveSalon?.subscriptionPlanId || user?.subscriptionPlanId;
     const currentPlanName = effectiveSalon?.subscriptionPlan || '';
     const displayPlans = plans || [];
-    
+
     const currentPlan = displayPlans.find(p => {
         // Match by Name (case-insensitive, trimmed)
-        const nameMatch = currentPlanName && p.name && 
+        const nameMatch = currentPlanName && p.name &&
             p.name.trim().toLowerCase() === currentPlanName.trim().toLowerCase();
-        
+
         // Match by ID
         const idMatch = activePlanId && (String(p.id) === String(activePlanId) || String(p._id) === String(activePlanId));
-        
+
         return nameMatch || idMatch;
     }) || null;
 
@@ -185,7 +185,7 @@ export default function SubscriptionPage() {
             });
 
             if (!data.success) throw new Error(data.message);
-            
+
             // Handle Direct Activation (Free Plans)
             if (data.isFree) {
                 setShowSuccess(true);
@@ -290,7 +290,7 @@ export default function SubscriptionPage() {
                 <div className="absolute inset-0 bg-gradient-to-r from-[#B4912B]/20 via-transparent to-transparent rounded-[1.5rem] blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
                 <div className="relative !bg-white dark:!bg-slate-900 !rounded-[24px] !border-[1.5px] !border-[#e2e8f0] dark:!border-slate-800 p-6 !overflow-hidden shadow-sm hover:shadow-xl transition-all duration-500">
                     <div className="absolute top-0 right-0 w-48 h-48 bg-gradient-to-br from-[#B4912B]/5 to-transparent rounded-full -translate-y-1/2 translate-x-1/2" />
-                    
+
                     <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
                         <div className="space-y-3">
                             <div className="flex items-center gap-3">
@@ -308,8 +308,8 @@ export default function SubscriptionPage() {
                                     </div>
                                     <h2 className="text-2xl font-black text-text tracking-tighter uppercase italic">
                                         {currentPlan ? currentPlan.name : (
-                                            effectiveSalon?.status === 'pending' ? 'Application Under Review' : 
-                                            (effectiveSalon?.status === 'trial' ? 'Trial Period' : 'No Active Plan')
+                                            effectiveSalon?.status === 'pending' ? 'Application Under Review' :
+                                                (effectiveSalon?.status === 'trial' ? 'Trial Period' : 'No Active Plan')
                                         )}
                                     </h2>
                                 </div>
@@ -327,8 +327,8 @@ export default function SubscriptionPage() {
                                 </p>
                                 <p className="text-lg font-black text-text tracking-tighter">
                                     {(effectiveSalon?.subscriptionExpiry && (currentPlan || effectiveSalon?.status === 'trial'))
-                                        ? (new Date(effectiveSalon.subscriptionExpiry).getFullYear() > new Date().getFullYear() + 50 
-                                            ? 'Life Time' 
+                                        ? (new Date(effectiveSalon.subscriptionExpiry).getFullYear() > new Date().getFullYear() + 50
+                                            ? 'Life Time'
                                             : new Date(effectiveSalon.subscriptionExpiry).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }))
                                         : '—'}
                                 </p>
@@ -344,9 +344,9 @@ export default function SubscriptionPage() {
                     const isCurrent = currentPlanName?.toLowerCase() === plan.name?.toLowerCase();
 
                     return (
-                        <div 
-                            key={plan.id} 
-                            className={`group relative !bg-white dark:!bg-slate-900 !rounded-[24px] !border-[1.5px] p-5 flex flex-col gap-5 transition-all duration-500 hover:-translate-y-1.5 !overflow-hidden ${isCurrent ? 'ring-2 ring-[#B4912B] shadow-xl shadow-[#B4912B]/5 !border-transparent dark:!border-transparent' : 'hover:shadow-lg !border-[#e2e8f0] dark:!border-slate-800'}`}
+                        <div
+                            key={plan.id}
+                            className={`group relative !bg-white dark:!bg-slate-900 !rounded-[24px] !border-[1.5px] p-5 flex flex-col gap-5 transition-all duration-500 hover:-translate-y-1.5 ${isCurrent ? 'ring-2 ring-[#B4912B] shadow-xl shadow-[#B4912B]/5 !border-transparent dark:!border-transparent' : 'hover:shadow-lg !border-[#e2e8f0] dark:!border-slate-800'}`}
                         >
                             {isCurrent && (
                                 <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-[#B4912B] text-white text-[8px] font-black uppercase tracking-[0.2em] px-3.5 py-1 rounded-full shadow-md">
@@ -391,25 +391,24 @@ export default function SubscriptionPage() {
                                 ))}
                             </ul>
 
-                            <button 
-                                onClick={() => handleUpgrade(plan)} 
+                            <button
+                                onClick={() => handleUpgrade(plan)}
                                 disabled={isCurrent || (effectiveSalon?.isActive && currentPlan && currentPlan.price > 0 && !isCurrent) || upgrading === plan.id}
-                                className={`w-full h-10 rounded-xl text-[9px] font-black uppercase tracking-[0.3em] transition-all duration-500 shadow-md ${
-                                    isCurrent
-                                    ? 'bg-surface text-text-muted cursor-default' 
-                                    : (effectiveSalon?.isActive && currentPlan?.price > 0 && !isCurrent)
-                                        ? 'bg-slate-100 text-slate-400 cursor-not-allowed border-dashed border-2 border-slate-200 shadow-none'
-                                        : upgrading === plan.id 
-                                            ? 'bg-[#B4912B]/50 text-white cursor-wait'
-                                            : 'bg-text text-white hover:bg-[#B4912B] hover:shadow-[#B4912B]/20 active:scale-95'
-                                }`}
+                                className={`w-full h-10 rounded-full text-[9px] font-black uppercase tracking-[0.3em] transition-all duration-500 shadow-md ${isCurrent
+                                        ? 'bg-surface text-text-muted cursor-default'
+                                        : (effectiveSalon?.isActive && currentPlan?.price > 0 && !isCurrent)
+                                            ? 'bg-slate-100 text-slate-400 cursor-not-allowed border-dashed border-2 border-slate-200 shadow-none'
+                                            : upgrading === plan.id
+                                                ? 'bg-[#B4912B]/50 text-white cursor-wait'
+                                                : 'bg-text text-white hover:bg-[#B4912B] hover:shadow-[#B4912B]/20 active:scale-95'
+                                    }`}
                             >
-                                {isCurrent 
-                                    ? 'Current Plan' 
+                                {isCurrent
+                                    ? 'Current Plan'
                                     : (effectiveSalon?.isActive && currentPlan && currentPlan.price > 0 && !isCurrent)
                                         ? 'Subscription Active'
-                                        : upgrading === plan.id 
-                                            ? 'Processing...' 
+                                        : upgrading === plan.id
+                                            ? 'Processing...'
                                             : 'Upgrade'}
                             </button>
                         </div>
