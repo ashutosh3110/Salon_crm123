@@ -38,15 +38,19 @@ exports.getSalonDashboard = async (req, res) => {
 
         const whatsappCredits = salonDoc?.whatsappSettings?.whatsappCredits ?? 0;
 
-        // Get revenue data for chart (last 7 days)
-        const sevenDaysAgo = new Date();
-        sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+        // Get dynamic range
+        const range = req.query.range || 'week';
+        const daysToFetch = range === 'month' ? 30 : 7;
+
+        // Get revenue data for chart
+        const rangeAgo = new Date();
+        rangeAgo.setDate(rangeAgo.getDate() - daysToFetch);
 
         const revenueData = await Booking.aggregate([
             { 
                 $match: { 
                     salonId, 
-                    createdAt: { $gte: sevenDaysAgo },
+                    createdAt: { $gte: rangeAgo },
                     status: 'completed'
                 } 
             },
@@ -63,19 +67,70 @@ exports.getSalonDashboard = async (req, res) => {
         // Format revenue data for recharts
         const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
         const chartData = [];
-        for (let i = 0; i < 7; i++) {
+        for (let i = 0; i < daysToFetch; i++) {
             const date = new Date();
-            date.setDate(date.getDate() - (6 - i));
+            date.setDate(date.getDate() - (daysToFetch - 1 - i));
             const dateString = date.toISOString().split('T')[0];
-            const dayName = days[date.getDay()];
+            
+            let label = '';
+            if (range === 'month') {
+                label = date.toLocaleDateString([], { month: 'short', day: 'numeric' });
+            } else {
+                label = days[date.getDay()];
+            }
             
             const match = revenueData.find(d => d._id === dateString);
             chartData.push({
-                name: dayName,
+                name: label,
                 revenue: match ? match.revenue : 0,
                 appointments: match ? match.appointments : 0
             });
         }
+
+        // Calculate comparison stats for bottom cards (This Week, Last Week, This Month, Last Month)
+        const sixtyDaysAgo = new Date();
+        sixtyDaysAgo.setDate(sixtyDaysAgo.getDate() - 60);
+
+        const completedBookings = await Booking.find({
+            salonId,
+            status: 'completed',
+            createdAt: { $gte: sixtyDaysAgo }
+        }).select('totalPrice createdAt');
+
+        const now = new Date();
+        const startOfThisWeek = new Date();
+        startOfThisWeek.setDate(now.getDate() - 7);
+
+        const startOfLastWeek = new Date();
+        startOfLastWeek.setDate(now.getDate() - 14);
+
+        const startOfThisMonth = new Date();
+        startOfThisMonth.setDate(now.getDate() - 30);
+
+        const startOfLastMonth = new Date();
+        startOfLastMonth.setDate(now.getDate() - 60);
+
+        let thisWeekRev = 0;
+        let lastWeekRev = 0;
+        let thisMonthRev = 0;
+        let lastMonthRev = 0;
+
+        completedBookings.forEach(booking => {
+            const date = new Date(booking.createdAt);
+            const amt = booking.totalPrice || 0;
+
+            if (date >= startOfThisWeek) {
+                thisWeekRev += amt;
+            } else if (date >= startOfLastWeek) {
+                lastWeekRev += amt;
+            }
+
+            if (date >= startOfThisMonth) {
+                thisMonthRev += amt;
+            } else if (date >= startOfLastMonth) {
+                lastMonthRev += amt;
+            }
+        });
 
         // Get recent activity (last 5 bookings)
         const recentBookings = await Booking.find({ salonId })
@@ -89,6 +144,7 @@ exports.getSalonDashboard = async (req, res) => {
             service: b.serviceId?.name || 'N/A',
             amount: `₹${b.totalPrice || 0}`,
             time: new Date(b.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+            createdAt: b.createdAt,
             isLive: b.status === 'confirmed' || b.status === 'pending'
         }));
 
@@ -101,7 +157,11 @@ exports.getSalonDashboard = async (req, res) => {
                     clients: customersCount,
                     staff: staffCount,
                     walletLiability: walletLiability,
-                    whatsappCredits: whatsappCredits
+                    whatsappCredits: whatsappCredits,
+                    thisWeekRev,
+                    lastWeekRev,
+                    thisMonthRev,
+                    lastMonthRev
                 },
                 revenueWeek: chartData,
                 recentActivity,
