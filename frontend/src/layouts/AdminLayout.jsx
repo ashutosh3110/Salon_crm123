@@ -1062,16 +1062,29 @@ export default function AdminLayout() {
                     color: inherit !important;
                 }
 
-                /* === PROTECT CHILD ELEMENTS INSIDE DARK-BG BUTTONS === */
-                /* Span and div inside buttons with dark backgrounds get #000000 from index.css span/div overrides */
-                html:not(.dark) .admin-panel button.bg-primary span,
+                /* === FLOATING ACTION BUTTON SVG ICON VISIBILITY FIX ===
+                   Force explicit stroke on SVGs inside bg-white buttons.
+                   This bypasses all currentColor cascade issues — directly sets stroke. */
+                html:not(.dark) .admin-panel button.bg-white:not(aside *) svg {
+                    color: #1e293b !important;
+                    stroke: #1e293b !important;
+                    fill: none !important;
+                    opacity: 1 !important;
+                }
+                /* Trash/delete button with rose color */
+                html:not(.dark) .admin-panel button.bg-white.text-rose-500:not(aside *) svg {
+                    color: #f43f5e !important;
+                    stroke: #f43f5e !important;
+                    fill: none !important;
+                    opacity: 1 !important;
+                }
+                /* === PROTECT CHILD ELEMENTS INSIDE DARK-BG BUTTONS ===
+                   Span and div inside buttons with dark backgrounds get #000000 from index.css span/div overrides */
                 html:not(.dark) .admin-panel button.bg-primary div,
                 html:not(.dark) .admin-panel button[class*="bg-primary"] span,
                 html:not(.dark) .admin-panel button[class*="bg-primary"] div,
                 html:not(.dark) .admin-panel button.bg-black span,
                 html:not(.dark) .admin-panel button.bg-black div,
-                html:not(.dark) .admin-panel button[class*="bg-black"] span,
-                html:not(.dark) .admin-panel button[class*="bg-black"] div,
                 html:not(.dark) .admin-panel button.bg-slate-900 span,
                 html:not(.dark) .admin-panel button.bg-slate-900 div,
                 html:not(.dark) .admin-panel button[class*="bg-slate-8"] span,
@@ -1134,7 +1147,6 @@ export default function AdminLayout() {
                 html:not(.dark) .admin-panel button.bg-primary svg,
                 html:not(.dark) .admin-panel button[class*="bg-primary"] svg,
                 html:not(.dark) .admin-panel button.bg-black svg,
-                html:not(.dark) .admin-panel button[class*="bg-black"] svg,
                 html:not(.dark) .admin-panel button.bg-slate-900 svg,
                 html:not(.dark) .admin-panel button[class*="bg-slate-8"] svg,
                 html:not(.dark) .admin-panel button[class*="bg-slate-9"] svg,

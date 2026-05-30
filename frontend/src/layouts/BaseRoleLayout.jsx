@@ -226,10 +226,10 @@ export default function BaseRoleLayout({ SidebarComponent, title, accentColor = 
                 .admin-panel button.bg-primary,
                 .admin-panel a.bg-primary,
                 .admin-panel .bg-primary,
-                .admin-panel button[type="submit"],
+                .admin-panel button[type="submit"]:not([class*="bg-black"]):not([class*="bg-neutral"]):not([class*="bg-slate"]):not([class*="bg-white"]):not([class*="bg-rose"]):not([class*="bg-emerald"]):not([class*="bg-blue"]),
                 .admin-panel button[class*="bg-primary"],
                 .admin-panel .inline-flex[class*="bg-primary"],
-                .admin-panel button:has(svg.lucide-plus) {
+                .admin-panel button:has(svg.lucide-plus):not([class*="bg-black"]):not([class*="bg-neutral"]):not([class*="bg-white"]):not([class*="bg-rose"]):not([class*="bg-emerald"]):not([class*="bg-blue"]):not([class*="bg-slate"]) {
                     background: var(--accent-color, #000000) !important;
                     color: #ffffff !important;
                     border: 1px solid var(--accent-color, #000000) !important;
@@ -238,12 +238,40 @@ export default function BaseRoleLayout({ SidebarComponent, title, accentColor = 
                 .admin-panel button.bg-primary:hover,
                 .admin-panel a.bg-primary:hover,
                 .admin-panel .bg-primary:hover,
-                .admin-panel button[type="submit"]:hover,
+                .admin-panel button[type="submit"]:not([class*="bg-black"]):not([class*="bg-neutral"]):not([class*="bg-slate"]):not([class*="bg-white"]):not([class*="bg-rose"]):not([class*="bg-emerald"]):not([class*="bg-blue"]):hover,
                 .admin-panel button[class*="bg-primary"]:hover,
                 .admin-panel .inline-flex[class*="bg-primary"]:hover,
-                .admin-panel button:has(svg.lucide-plus):hover {
+                .admin-panel button:has(svg.lucide-plus):not([class*="bg-black"]):not([class*="bg-neutral"]):not([class*="bg-white"]):not([class*="bg-rose"]):not([class*="bg-emerald"]):not([class*="bg-blue"]):not([class*="bg-slate"]):hover {
                     opacity: 0.9 !important;
                     transform: translateY(-1.5px) !important;
+                }
+
+                /* Black & Neutral Buttons — Always visible in light mode */
+                /* Use exact class selectors (.bg-black) not substring [class*="bg-black"]
+                   to avoid matching hover:bg-black and breaking hover-only dark buttons */
+                html:not(.dark) .admin-panel button.bg-black,
+                html:not(.dark) .admin-panel a.bg-black {
+                    background-color: #000000 !important;
+                    color: #ffffff !important;
+                    border-color: #000000 !important;
+                }
+                html:not(.dark) .admin-panel button.bg-black *,
+                html:not(.dark) .admin-panel a.bg-black * {
+                    color: #ffffff !important;
+                }
+                html:not(.dark) .admin-panel button.bg-neutral-800,
+                html:not(.dark) .admin-panel button.bg-neutral-900,
+                html:not(.dark) .admin-panel a.bg-neutral-800,
+                html:not(.dark) .admin-panel a.bg-neutral-900 {
+                    background-color: #1a1a1a !important;
+                    color: #ffffff !important;
+                    border-color: #1a1a1a !important;
+                }
+                html:not(.dark) .admin-panel button.bg-neutral-800 *,
+                html:not(.dark) .admin-panel button.bg-neutral-900 *,
+                html:not(.dark) .admin-panel a.bg-neutral-800 *,
+                html:not(.dark) .admin-panel a.bg-neutral-900 * {
+                    color: #ffffff !important;
                 }
 
                 /* ==========================================
@@ -271,7 +299,7 @@ export default function BaseRoleLayout({ SidebarComponent, title, accentColor = 
                     color: #ffffff !important;
                 }
                 .dark .admin-panel label {
-                    color: #e6e8bff!important;
+                    color: #cbd5e1 !important;
                 }
 
 
