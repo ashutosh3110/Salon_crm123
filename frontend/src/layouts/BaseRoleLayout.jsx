@@ -82,47 +82,105 @@ export default function BaseRoleLayout({ SidebarComponent, title, accentColor = 
                 html:not(.dark) [role="dialog"] h5,
                 html:not(.dark) [role="dialog"] h6 {
                     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
-                    font-weight: 800 !important;
                     font-style: normal !important;
-                    color: #000000 !important;
                 }
 
                 /* --- Spacious & Beautiful Tables --- */
-                html:not(.dark) .admin-panel table {
+                .admin-panel table {
                     border-collapse: separate !important;
                     border-spacing: 0 !important;
                     width: 100% !important;
                 }
-                html:not(.dark) .admin-panel table th {
+                .admin-panel table th {
                     font-family: 'Inter', sans-serif !important;
-                    font-size: 0.825rem !important;
                     font-weight: 700 !important;
                     text-transform: uppercase !important;
                     letter-spacing: 0.08em !important;
+                    text-align: left;
+                    vertical-align: middle !important;
+                    padding: 10px 16px !important;
+                    font-size: 11px !important;
+                    height: 42px !important;
+                    max-height: 42px !important;
+                    box-sizing: border-box !important;
+                }
+                .admin-panel table td {
+                    vertical-align: middle !important;
+                    line-height: 1.4 !important;
+                    padding: 10px 16px !important;
+                    font-size: 12px !important;
+                    height: 62px !important;
+                    max-height: 62px !important;
+                    box-sizing: border-box !important;
+                }
+                .admin-panel table tr {
+                    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+                    height: 62px !important;
+                    box-sizing: border-box !important;
+                }
+
+                /* Fine-grained table font-size & weight overrides to bypass global amplifiers */
+                .admin-panel table .text-\\[10px\\],
+                .admin-panel table [class*="text-\\[10px\\]"] {
+                    font-size: 11.5px !important;
+                    font-weight: 700 !important;
+                    letter-spacing: 0.03em !important;
+                }
+                .admin-panel table .text-\\[11px\\],
+                .admin-panel table [class*="text-\\[11px\\]"] {
+                    font-size: 12.5px !important;
+                    font-weight: 700 !important;
+                    letter-spacing: 0.01em !important;
+                }
+                .admin-panel table .text-\\[9px\\],
+                .admin-panel table [class*="text-\\[9px\\]"] {
+                    font-size: 10px !important;
+                    font-weight: 700 !important;
+                    letter-spacing: 0.04em !important;
+                }
+                .admin-panel table .text-xs,
+                .admin-panel table [class*="text-xs"] {
+                    font-size: 12.5px !important;
+                }
+                .admin-panel table .text-sm,
+                .admin-panel table [class*="text-sm"] {
+                    font-size: 13.5px !important;
+                }
+                .admin-panel table .text-base,
+                .admin-panel table [class*="text-base"] {
+                    font-size: 14.5px !important;
+                }
+
+                /* Light Mode Table Colors */
+                html:not(.dark) .admin-panel table th {
                     color: #000000 !important;
                     background-color: #f8fafc !important;
-                    padding: 1.2rem 1.5rem !important;
                     border-bottom: 2px solid #e2e8f0 !important;
-                    text-align: left;
                 }
                 html:not(.dark) .admin-panel table td {
-                    font-size: 0.95rem !important;
-                    padding: 1.35rem 1.5rem !important;
                     color: #000000 !important;
                     border-bottom: 1px solid #f1f5f9 !important;
-                    vertical-align: middle !important;
-                    line-height: 1.5 !important;
-                }
-                html:not(.dark) .admin-panel table tr {
-                    transition: all 0.2s ease-in-out !important;
                 }
                 html:not(.dark) .admin-panel table tr:hover td {
                     background-color: #f8fafc !important;
                 }
+                
+                /* Dark Mode Table Colors */
+                .dark .admin-panel table th {
+                    background-color: #121826 !important;
+                    border-bottom: 2px solid rgba(255, 255, 255, 0.08) !important;
+                    color: #cbd5e1 !important;
+                }
+                .dark .admin-panel table td {
+                    color: #cbd5e1 !important;
+                    border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+                }
+                .dark .admin-panel table tr:hover td {
+                    background-color: #1e293b !important;
+                }
 
                 /* --- Form Controls, Inputs & Labels --- */
                 html:not(.dark) .admin-panel label {
-                    font-size: 0.85rem !important;
                     font-weight: 600 !important;
                     color: #000000 !important;
                     margin-bottom: 0.5rem !important;
@@ -131,9 +189,6 @@ export default function BaseRoleLayout({ SidebarComponent, title, accentColor = 
                 html:not(.dark) .admin-panel input:not(.bg-transparent), 
                 html:not(.dark) .admin-panel select:not(.bg-transparent), 
                 html:not(.dark) .admin-panel textarea:not(.bg-transparent) {
-                    font-size: 0.975rem !important;
-                    font-weight: 400 !important;
-                    padding: 0.75rem 1rem !important;
                     border-radius: 0.75rem !important;
                     border: 1px solid #cbd5e1 !important;
                     color: #000000 !important;
@@ -153,8 +208,6 @@ export default function BaseRoleLayout({ SidebarComponent, title, accentColor = 
                 html:not(.dark) .admin-panel .bg-surface,
                 html:not(.dark) .admin-panel .bg-white {
                     background-color: #ffffff !important;
-                    border: 1px solid #f1f5f9 !important;
-                    border-radius: 1.25rem !important;
                     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.03), 0 2px 4px -2px rgba(0, 0, 0, 0.03) !important;
                 }
 
@@ -193,36 +246,6 @@ export default function BaseRoleLayout({ SidebarComponent, title, accentColor = 
                     transform: translateY(-1.5px) !important;
                 }
 
-                /* Target Light Mode Secondary, Outline & Text Buttons */
-                html:not(.dark) .admin-panel button.bg-secondary:not(aside *),
-                html:not(.dark) .admin-panel button.border:not(aside *),
-                html:not(.dark) .admin-panel a.border:not(aside *),
-                html:not(.dark) .admin-panel button[class*="border-"]:not(aside *),
-                html:not(.dark) .admin-panel button[class*="bg-white"]:not(aside *),
-                html:not(.dark) .admin-panel button.bg-white:not(aside *),
-                html:not(.dark) .admin-panel [class*="border-border"] button:not(aside *):not(.bg-primary):not([class*="bg-primary"]),
-                html:not(.dark) .admin-panel button:has(svg.lucide-eye):not(aside *),
-                html:not(.dark) .admin-panel button:has(svg.lucide-edit):not(aside *) {
-                    background-color: #ffffff !important;
-                    border: 1px solid #cbd5e1 !important;
-                    color: #000000 !important;
-                    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04) !important;
-                }
-                html:not(.dark) .admin-panel button.bg-secondary:not(aside *):hover,
-                html:not(.dark) .admin-panel button.border:not(aside *):hover,
-                html:not(.dark) .admin-panel a.border:not(aside *):hover,
-                html:not(.dark) .admin-panel button[class*="border-"]:not(aside *):hover,
-                html:not(.dark) .admin-panel button[class*="bg-white"]:not(aside *):hover,
-                html:not(.dark) .admin-panel button.bg-white:not(aside *):hover,
-                html:not(.dark) .admin-panel [class*="border-border"] button:not(aside *):not(.bg-primary):not([class*="bg-primary"]):hover,
-                html:not(.dark) .admin-panel button:has(svg.lucide-eye):not(aside *):hover,
-                html:not(.dark) .admin-panel button:has(svg.lucide-edit):not(aside *):hover {
-                    background-color: #f8fafc !important;
-                    border-color: #e6e8bff!important;
-                    color: #0f172a !important;
-                    transform: translateY(-1px) !important;
-                }
-
                 /* ==========================================
                    🎨 PREMIUM DARK MODE OVERRIDES
                    ========================================== */
@@ -250,18 +273,7 @@ export default function BaseRoleLayout({ SidebarComponent, title, accentColor = 
                 .dark .admin-panel label {
                     color: #e6e8bff!important;
                 }
-                .dark .admin-panel table th {
-                    background-color: #121826 !important;
-                    border-bottom: 2px solid rgba(255, 255, 255, 0.08) !important;
-                    color: #e6e8bff!important;
-                }
-                .dark .admin-panel table td {
-                    color: #cbd5e1 !important;
-                    border-bottom: 1px solid rgba(255, 255, 255, 0.04) !important;
-                }
-                .dark .admin-panel table tr:hover td {
-                    background-color: #121826 !important;
-                }
+
 
                 /* Secondary/Outline Buttons in Dark Mode */
                 .dark .admin-panel button.bg-secondary:not(aside *),

@@ -219,40 +219,40 @@ export default function BookingsPage() {
                 value: safeBookings.length, 
                 subtext: "All time bookings",
                 icon: CalendarDays, 
-                iconBg: "bg-purple-50 border border-purple-100",
-                iconColor: "text-purple-500",
-                linkColor: "text-purple-600",
-                linkText: "View all bookings"
+                iconColorClass: '!text-[#7C3AED] dark:!text-[#A78BFA]',
+                iconBgClass: '!bg-[#EDE9FE] dark:!bg-[#7C3AED]/20',
+                cardBgClass: '!bg-[#FAF5FF] dark:!bg-[#7C3AED]/5',
+                cardBorderClass: '!border-[#F3E8FF] dark:!border-[#7C3AED]/15 hover:!border-[#D8B4FE] dark:hover:!border-[#A78BFA]/50',
             },
             { 
                 label: 'ACCEPTED', 
                 value: safeBookings.filter(b => b.status === 'confirmed').length, 
                 subtext: "Confirmed bookings",
                 icon: CheckCircle2, 
-                iconBg: "bg-emerald-50 border border-emerald-100",
-                iconColor: "text-emerald-500",
-                linkColor: "text-emerald-600",
-                linkText: "View accepted"
+                iconColorClass: '!text-[#059669] dark:!text-[#34D399]',
+                iconBgClass: '!bg-[#D1FAE5] dark:!bg-[#059669]/20',
+                cardBgClass: '!bg-[#F0FDF4] dark:!bg-[#059669]/5',
+                cardBorderClass: '!border-[#DCFCE7] dark:!border-[#059669]/15 hover:!border-[#86EFAC] dark:hover:!border-[#34D399]/50',
             },
             { 
                 label: 'COMPLETION RATE', 
                 value: `${safeBookings.length ? Math.round((safeBookings.filter(b => b.status === 'completed').length / safeBookings.length) * 100) : 0}%`, 
                 subtext: "Bookings completed",
                 icon: TrendingUp, 
-                iconBg: "bg-blue-50 border border-blue-100",
-                iconColor: "text-blue-500",
-                linkColor: "text-blue-600",
-                linkText: "View analytics"
+                iconColorClass: '!text-[#2563EB] dark:!text-[#60A5FA]',
+                iconBgClass: '!bg-[#DBEAFE] dark:!bg-[#2563EB]/20',
+                cardBgClass: '!bg-[#EFF6FF] dark:!bg-[#2563EB]/5',
+                cardBorderClass: '!border-[#DBEAFE] dark:!border-[#2563EB]/15 hover:!border-[#93C5FD] dark:hover:!border-[#60A5FA]/50',
             },
             { 
                 label: 'CANCELLED', 
                 value: safeBookings.filter(b => b.status === 'cancelled').length, 
                 subtext: "Cancelled bookings",
                 icon: XCircle, 
-                iconBg: "bg-rose-50 border border-rose-100",
-                iconColor: "text-rose-500",
-                linkColor: "text-rose-600",
-                linkText: "View cancelled"
+                iconColorClass: '!text-[#EA580C] dark:!text-[#FB923C]',
+                iconBgClass: '!bg-[#FFEDD5] dark:!bg-[#EA580C]/20',
+                cardBgClass: '!bg-[#FFF7ED] dark:!bg-[#EA580C]/5',
+                cardBorderClass: '!border-[#FFEDD5] dark:!border-[#EA580C]/15 hover:!border-[#FDBA74] dark:hover:!border-[#FB923C]/50',
             },
         ];
     }, [bookings]);
@@ -305,26 +305,50 @@ export default function BookingsPage() {
             <div className="grid grid-cols-2 lg:grid-cols-6 gap-3">
                 {/* KPI Stats */}
                 {stats.map((stat, i) => (
-                    <div key={i} className="bg-white px-4 py-5 border border-slate-200 allow-curve rounded-2xl shadow-sm hover:shadow-md transition-all group flex flex-col h-full">
-                        <div className="flex items-center gap-3 mb-3">
-                            <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${stat.iconBg}`}>
-                                <stat.icon className={`w-4 h-4 ${stat.iconColor}`} />
+                    <div
+                        key={i}
+                        className={`!rounded-[16px] !border p-3.5 shadow-[0_2px_8px_-3px_rgba(0,0,0,0.04)] group flex flex-col justify-between min-h-[118px] transition-all hover:-translate-y-0.5 hover:shadow-md ${stat.cardBgClass} ${stat.cardBorderClass}`}
+                    >
+                        {/* Upper Section: Icon on Left, Column of Labels on Right */}
+                        <div className="flex !items-start gap-3 !text-left">
+                            {/* Circle Icon */}
+                            <div className={`w-9 h-9 rounded-full flex items-center justify-center shrink-0 ${stat.iconBgClass}`}>
+                                <stat.icon className={`w-4 h-4 ${stat.iconColorClass}`} strokeWidth={2} />
                             </div>
-                            <span className="text-[9px] font-black text-slate-500 uppercase tracking-wider leading-tight">{stat.label}</span>
+                            
+                            {/* Label + Value + Subtitle */}
+                            <div className="flex flex-col !items-start !text-left">
+                                <span 
+                                    style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '0.03em' }} 
+                                    className="uppercase text-slate-500 dark:text-slate-450 leading-none mb-1.5 !text-left"
+                                >
+                                   {stat.label}
+                                </span>
+                                <h3 
+                                    style={{ fontSize: '24px', fontWeight: 850 }} 
+                                    className="text-slate-800 dark:text-slate-55 leading-none tracking-tight !text-left"
+                                >
+                                    {typeof stat.value === 'string' ? stat.value : <AnimatedCounter value={stat.value} />}
+                                </h3>
+                                <span 
+                                    style={{ fontSize: '12px', fontWeight: 500 }} 
+                                    className="text-slate-500 dark:text-slate-400 mt-1.5 !text-left"
+                                >
+                                    {stat.subtext}
+                                </span>
+                            </div>
                         </div>
-                        <div className="text-2xl font-black text-slate-900 tracking-tighter leading-none">
-                            {typeof stat.value === 'string' ? stat.value : <AnimatedCounter value={stat.value} />}
-                        </div>
-                        <p className="text-[10px] font-semibold text-slate-400 mt-1">{stat.subtext}</p>
-                        <button className={`mt-auto pt-4 text-[10px] font-black uppercase tracking-wider flex items-center gap-1 hover:underline ${stat.linkColor}`}>
-                            {stat.linkText} <ArrowRight className="w-3 h-3" />
-                        </button>
                     </div>
                 ))}
 
                 {/* Status Pie Chart */}
-                <div className="bg-white px-4 py-5 border border-slate-200 allow-curve rounded-2xl shadow-sm flex flex-col h-full">
-                    <span className="text-[9px] font-black text-slate-500 uppercase tracking-wider mb-3">STATUS MIX</span>
+                <div className="!bg-white dark:!bg-slate-900 p-4 !rounded-[24px] !border !border-slate-100 dark:!border-slate-800 shadow-[0_2px_12px_-3px_rgba(0,0,0,0.04)] group hover:shadow-md transition-all !overflow-hidden flex flex-col h-full justify-between">
+                    <span 
+                        style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '0.03em' }} 
+                        className="uppercase text-slate-500 dark:text-slate-450 leading-none mb-3 !text-left block"
+                    >
+                        STATUS MIX
+                    </span>
                     <div className="flex items-center gap-3 flex-1">
                         <div className="w-14 h-14 shrink-0 relative">
                             <ResponsiveContainer width="100%" height="100%">
@@ -342,30 +366,29 @@ export default function BookingsPage() {
                             {statusData.map(d => (
                                 <div key={d.name} className="flex items-center gap-1.5">
                                     <div className="w-2 h-2 rounded-sm shrink-0" style={{ backgroundColor: d.color }} />
-                                    <span className="text-[9px] font-bold text-slate-500 whitespace-nowrap"><span className="font-black text-slate-800">{d.value}</span> {d.name}</span>
+                                    <span className="text-[9px] font-bold text-slate-500 whitespace-nowrap"><span className="font-black text-slate-800 dark:text-slate-200">{d.value}</span> {d.name}</span>
                                 </div>
                             ))}
                         </div>
                     </div>
-                    <button className="mt-auto pt-4 text-[10px] font-black uppercase tracking-wider flex items-center gap-1 hover:underline text-blue-600">
-                        View details <ArrowRight className="w-3 h-3" />
-                    </button>
                 </div>
 
                 {/* Source Chart */}
-                <div className="bg-white px-4 py-5 border border-slate-200 allow-curve rounded-2xl shadow-sm flex flex-col h-full">
+                <div className="!bg-white dark:!bg-slate-900 p-4 !rounded-[24px] !border !border-slate-100 dark:!border-slate-800 shadow-[0_2px_12px_-3px_rgba(0,0,0,0.04)] group hover:shadow-md transition-all !overflow-hidden flex flex-col h-full justify-between">
                     <div className="flex items-center gap-3 mb-3">
-                        <div className="w-10 h-10 rounded-full flex items-center justify-center shrink-0 bg-yellow-50 border border-yellow-100">
-                            <Briefcase className="w-4 h-4 text-yellow-500" />
+                        <div className="w-9 h-9 rounded-full flex items-center justify-center shrink-0 bg-yellow-50 dark:bg-yellow-500/10 border border-yellow-100 dark:border-yellow-900/20">
+                            <Briefcase className="w-4 h-4 text-yellow-550 dark:text-yellow-400" />
                         </div>
-                        <span className="text-[9px] font-black text-slate-500 uppercase tracking-wider leading-tight">SOURCES</span>
+                        <span 
+                            style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '0.03em' }} 
+                            className="uppercase text-slate-500 dark:text-slate-450 leading-none !text-left"
+                        >
+                            SOURCES
+                        </span>
                     </div>
                     <div className="flex-1 flex items-center justify-center">
-                        <span className="text-[10px] font-black uppercase text-slate-300 tracking-widest">ENTRY ANALYSIS</span>
+                        <span className="text-[10px] font-black uppercase text-slate-300 dark:text-slate-700 tracking-widest">ENTRY ANALYSIS</span>
                     </div>
-                    <button className="mt-auto pt-4 text-[10px] font-black uppercase tracking-wider flex items-center gap-1 hover:underline text-yellow-600">
-                        View sources <ArrowRight className="w-3 h-3" />
-                    </button>
                 </div>
             </div>
 
