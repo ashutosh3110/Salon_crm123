@@ -57,6 +57,7 @@ const hideScrollbarStyle = `
 
 export default function CustomersPage({ tab = 'directory' }) {
     const navigate = useNavigate();
+    const fileInputRef = React.useRef(null);
     const { user } = useAuth();
     const {
         customers: rawCustomers,
@@ -201,14 +202,14 @@ export default function CustomersPage({ tab = 'directory' }) {
     return (
         <>
             <style>{hideScrollbarStyle}</style>
-            <div className="space-y-6 animate-reveal text-left">
+            <div className="space-y-4 animate-reveal text-left">
                 {/* Header */}
-                <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6 pb-2">
+                <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 pb-1">
                     {activeTab === 'payment-reminders' ? (
                         <>
                             <div>
-                                <h1 className="text-3xl sm:text-4xl font-black text-slate-900 uppercase tracking-tighter leading-none">Payment Reminders</h1>
-                                <p className="text-[10px] font-black text-slate-500 mt-3 uppercase tracking-[0.3em] leading-none">Operations • POS Outstanding Balances</p>
+                                <h1 className="text-2xl sm:text-3xl font-black text-slate-900 uppercase tracking-tighter leading-none">Payment Reminders</h1>
+                                <p className="text-[10px] font-black text-slate-500 mt-2 uppercase tracking-[0.3em] leading-none">Operations • POS Outstanding Balances</p>
                             </div>
                             <div className="flex flex-col sm:flex-row items-center gap-3">
                                 <button onClick={() => window.location.reload()} className="flex items-center justify-center gap-2 px-5 py-3 bg-white border border-slate-200 text-slate-700 text-xs font-semibold allow-curve rounded-xl shadow-sm hover:bg-slate-50 transition-all w-full sm:w-auto shrink-0">
@@ -222,41 +223,45 @@ export default function CustomersPage({ tab = 'directory' }) {
                     ) : (
                         <>
                             <div>
-                                <h1 className="text-3xl sm:text-4xl font-black text-text uppercase tracking-tighter leading-none">Customers</h1>
-                                <p className="text-[10px] font-black text-text-muted mt-3 uppercase tracking-[0.3em] opacity-60 leading-none">Intelligence Hub • CRM • Wallet Matrix</p>
+                                <h1 className="text-2xl sm:text-3xl font-black text-text uppercase tracking-tighter leading-none">Customers</h1>
+                                <p className="text-[10px] font-black text-text-muted mt-2 uppercase tracking-[0.3em] opacity-60 leading-none">Intelligence Hub • CRM • Wallet Matrix</p>
                             </div>
 
                             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
                                 {/* Secondary Actions Group */}
-                                <div className="flex items-center bg-surface border border-border p-1 shadow-sm">
+                                <div className="flex items-center bg-surface border border-border p-0.5 shadow-sm rounded-xl h-10">
                                     <button
                                         onClick={handleExport}
                                         title="Export Directory"
-                                        className="p-3 text-text-muted hover:text-primary hover:bg-surface-alt transition-all group"
+                                        className="w-9 h-9 flex items-center justify-center text-text-muted hover:text-primary hover:bg-surface-alt transition-all rounded-lg"
                                     >
                                         <Download className="w-4 h-4" />
                                     </button>
-                                    <div className="w-px h-4 bg-border mx-1" />
+                                    <div className="w-px h-4 bg-border mx-0.5" />
                                     <button
                                         onClick={downloadSampleCSV}
                                         title="Download Sample CSV"
-                                        className="px-4 py-3 text-[10px] font-black text-text-muted hover:text-primary hover:bg-surface-alt transition-all uppercase tracking-widest flex items-center gap-2"
+                                        className="px-3 h-9 text-[10px] font-black text-text-muted hover:text-primary hover:bg-surface-alt transition-all uppercase tracking-widest flex items-center gap-1.5 rounded-lg"
                                     >
                                         <FileSpreadsheet className="w-4 h-4" />
                                         <span className="hidden xl:inline">Sample</span>
                                     </button>
-                                    <div className="w-px h-4 bg-border mx-1" />
-                                    <label className="px-4 py-3 text-[10px] font-black text-text-muted hover:text-primary hover:bg-surface-alt transition-all uppercase tracking-widest flex items-center gap-2 cursor-pointer">
+                                    <div className="w-px h-4 bg-border mx-0.5" />
+                                    <button
+                                        onClick={() => fileInputRef.current?.click()}
+                                        title="Import Directory"
+                                        className="px-3 h-9 text-[10px] font-black text-text-muted hover:text-primary hover:bg-surface-alt transition-all uppercase tracking-widest flex items-center gap-1.5 rounded-lg"
+                                    >
                                         <Upload className="w-4 h-4" />
                                         <span className="hidden xl:inline">Import</span>
-                                        <input type="file" accept=".csv" onChange={handleImport} className="hidden" />
-                                    </label>
+                                    </button>
+                                    <input type="file" ref={fileInputRef} accept=".csv" onChange={handleImport} className="hidden" />
                                 </div>
 
                                 {/* Primary Action */}
                                 <button
                                     onClick={() => setShowAddModal(true)}
-                                    className="bg-primary text-primary-foreground px-8 py-4 rounded-none text-[10px] font-black uppercase tracking-[0.2em] shadow-xl shadow-primary/20 hover:bg-primary/90 hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-3"
+                                    className="bg-primary text-primary-foreground px-6 h-10 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] shadow-md shadow-primary/10 hover:bg-primary/90 hover:scale-[1.01] active:scale-95 transition-all flex items-center justify-center gap-2"
                                 >
                                     <UserPlus className="w-4 h-4" /> Add Customer
                                 </button>
@@ -265,7 +270,7 @@ export default function CustomersPage({ tab = 'directory' }) {
                     )}
                 </div>
 
-                {/* Celebration Reminders & KPI Cards (Only for CRM) */}
+                {/* Celebration Reminders & Sleek Metrics (Only for CRM) */}
                 {activeTab !== 'payment-reminders' && (
                     <>
                         <CelebrationReminders
@@ -273,11 +278,51 @@ export default function CustomersPage({ tab = 'directory' }) {
                             onSendWhatsApp={(c, msg, type) => setWhatsappModal({ isOpen: true, customer: c, message: msg, isCelebrationWish: true, celebrationType: type })}
                         />
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                            <KPICard title="Total Customers" value={globalStats.totalCount} icon={Users} color="blue" trend="" />
-                            <KPICard title="VIP Customers" value={globalStats.totalVIPs} icon={Star} color="purple" trend="" />
-                            <KPICard title="Total Revenue" value={`₹${(globalStats.totalRevenue || 0).toLocaleString()}`} icon={TrendingUp} color="green" trend="" />
-                            <KPICard title="Inactive" value={globalStats.totalInactive} icon={ShieldAlert} color="red" trend="Needs attention" />
+                        {/* Sleek, Compact Small Cards Grid */}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-left">
+                            <div className="bg-surface border border-border rounded-2xl p-4 flex items-center gap-4 shadow-sm hover:shadow-md transition-all">
+                                <div className="w-11 h-11 rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center flex-shrink-0">
+                                    <Users className="w-5 h-5" />
+                                </div>
+                                <div className="flex flex-col text-left">
+                                    <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest">Total Customers</span>
+                                    <span className="text-xl font-bold text-slate-800 dark:text-white mt-0.5 leading-none">{globalStats.totalCount}</span>
+                                    <span className="text-[10px] font-normal text-slate-400 dark:text-slate-500 mt-1.5 tracking-normal">Configured Base</span>
+                                </div>
+                            </div>
+
+                            <div className="bg-surface border border-border rounded-2xl p-4 flex items-center gap-4 shadow-sm hover:shadow-md transition-all">
+                                <div className="w-11 h-11 rounded-full bg-purple-500/10 text-purple-600 dark:text-purple-400 flex items-center justify-center flex-shrink-0">
+                                    <Star className="w-5 h-5 fill-purple-500/5" />
+                                </div>
+                                <div className="flex flex-col text-left">
+                                    <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest">VIP Customers</span>
+                                    <span className="text-xl font-bold text-slate-800 dark:text-white mt-0.5 leading-none">{globalStats.totalVIPs}</span>
+                                    <span className="text-[10px] font-normal text-slate-400 dark:text-slate-500 mt-1.5 tracking-normal">Premium Segment</span>
+                                </div>
+                            </div>
+
+                            <div className="bg-surface border border-border rounded-2xl p-4 flex items-center gap-4 shadow-sm hover:shadow-md transition-all">
+                                <div className="w-11 h-11 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center flex-shrink-0">
+                                    <IndianRupee className="w-5 h-5" />
+                                </div>
+                                <div className="flex flex-col text-left">
+                                    <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest">Total Revenue</span>
+                                    <span className="text-xl font-bold text-slate-800 dark:text-white mt-0.5 leading-none">₹{Math.round(globalStats.totalRevenue || 0).toLocaleString()}</span>
+                                    <span className="text-[10px] font-normal text-slate-400 dark:text-slate-500 mt-1.5 tracking-normal">Lifetime earnings</span>
+                                </div>
+                            </div>
+
+                            <div className="bg-surface border border-border rounded-2xl p-4 flex items-center gap-4 shadow-sm hover:shadow-md transition-all">
+                                <div className="w-11 h-11 rounded-full bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center flex-shrink-0">
+                                    <ShieldAlert className="w-5 h-5" />
+                                </div>
+                                <div className="flex flex-col text-left">
+                                    <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest">Inactive</span>
+                                    <span className="text-xl font-bold text-slate-800 dark:text-white mt-0.5 leading-none">{globalStats.totalInactive}</span>
+                                    <span className="text-[10px] font-normal text-slate-400 dark:text-slate-500 mt-1.5 tracking-normal">Needs re-engagement</span>
+                                </div>
+                            </div>
                         </div>
                     </>
                 )}
@@ -767,12 +812,12 @@ function CelebrationReminders({ customers, onSendWhatsApp }) {
     if (reminders.length === 0) return null;
 
     return (
-        <div className="bg-gradient-to-r from-primary/5 via-amber-50/50 to-primary/5 dark:from-primary/10 dark:via-amber-500/5 dark:to-primary/10 border border-primary/20 p-5 flex flex-col gap-4 animate-in fade-in slide-in-from-top-2 duration-500">
-            <h3 className="text-[11px] font-black text-primary uppercase tracking-[0.3em] flex items-center gap-3">
-                <Cake className="w-4 h-4" /> Birthdays &amp; Anniversaries
-                <span className="ml-auto text-[9px] font-black text-primary/60 uppercase tracking-wider bg-primary/10 px-2 py-1">{reminders.length} upcoming</span>
+        <div className="bg-amber-500/5 dark:bg-amber-500/10 border border-amber-500/20 p-3 rounded-xl flex flex-col gap-2.5 animate-in fade-in slide-in-from-top-2 duration-300">
+            <h3 className="text-[10px] font-black text-amber-600 dark:text-amber-400 uppercase tracking-[0.2em] flex items-center gap-2">
+                <Cake className="w-3.5 h-3.5" /> Birthdays &amp; Anniversaries
+                <span className="ml-auto text-[8px] font-black text-amber-600/70 dark:text-amber-400/60 uppercase bg-amber-500/10 px-2 py-0.5 rounded-full">{reminders.length} UPCOMING</span>
             </h3>
-            <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
+            <div className="flex gap-2.5 overflow-x-auto pb-1 hide-scrollbar">
                 {reminders.map(c => {
                     const isBday = c.dob && new Date(c.dob).getMonth() === currentMonth;
                     const type = isBday ? 'birthday' : 'anniversary';
@@ -781,24 +826,24 @@ function CelebrationReminders({ customers, onSendWhatsApp }) {
                         : `Happy Anniversary ${c.name}! Celebrating your beautiful journey together.`;
 
                     return (
-                        <div key={c._id} className="flex-shrink-0 min-w-[280px] p-4 bg-white dark:bg-slate-800/60 border border-primary/15 dark:border-primary/20 flex items-center justify-between group hover:border-primary hover:shadow-md hover:shadow-primary/10 transition-all duration-200">
-                            <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 bg-primary/10 dark:bg-primary/20 text-primary flex items-center justify-center font-black text-sm border border-primary/20">
+                        <div key={c._id} className="flex-shrink-0 min-w-[240px] p-2.5 bg-surface border border-border/80 rounded-lg flex items-center justify-between hover:border-amber-500/30 transition-all duration-200">
+                            <div className="flex items-center gap-2">
+                                <div className="w-7 h-7 bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center font-black text-xs rounded-full border border-amber-500/25">
                                     {c.name?.charAt(0) || '?'}
                                 </div>
-                                <div>
-                                    <p className="text-xs font-black text-slate-900 dark:text-white uppercase tracking-tight">{c.name}</p>
-                                    <p className="text-[9px] font-bold text-slate-500 dark:text-slate-400 mt-0.5 uppercase">
-                                        {isBday ? '🎂 Upcoming Birthday' : '🎉 Upcoming Anniversary'}
+                                <div className="text-left">
+                                    <p className="text-[11px] font-black text-text uppercase tracking-tight leading-tight">{c.name}</p>
+                                    <p className="text-[8px] font-bold text-text-muted mt-0.5 uppercase tracking-wider">
+                                        {isBday ? '🎂 Birthday' : '🎉 Anniversary'}
                                     </p>
                                 </div>
                             </div>
                             <button
                                 onClick={() => onSendWhatsApp(c, defaultMsg, type)}
-                                className="flex items-center gap-1.5 px-3 py-2 bg-emerald-500 hover:bg-emerald-600 text-white shadow-lg shadow-emerald-500/30 transition-all group-hover:scale-105 active:scale-95"
-                                title="Send WhatsApp message"
+                                className="flex items-center justify-center w-7 h-7 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg transition-all active:scale-95 shadow-sm shadow-emerald-500/10"
+                                title="Send WhatsApp Message"
                             >
-                                <MessageSquare className="w-3.5 h-3.5 text-white" style={{ color: '#ffffff' }} />
+                                <MessageSquare className="w-3.5 h-3.5 text-white" />
                             </button>
                         </div>
                     );
@@ -831,19 +876,19 @@ function CustomerDirectory({ customers, onCustomerClick, onDelete, onUpdate, sea
     const filtered = customers;
 
     return (
-        <div className="p-4 flex flex-col h-full gap-4 slide-right overflow-y-auto no-scrollbar">
+        <div className="p-3 flex flex-col h-full gap-3 slide-right overflow-y-auto no-scrollbar">
             <div className="relative group">
-                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
+                <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-text-muted group-focus-within:text-primary transition-colors" />
                 <input
                     type="text"
                     placeholder="Search by name or phone..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full pl-11 pr-4 py-3 bg-surface-alt border border-border text-sm font-bold outline-none"
+                    className="w-full pl-9 pr-4 py-2 bg-surface-alt border border-border rounded-xl text-xs font-bold outline-none focus:border-primary/50 focus:bg-surface transition-all placeholder:text-text-muted/60"
                 />
             </div>
 
-            <div className="table-responsive border border-border">
+            <div className="table-responsive border border-border rounded-xl overflow-hidden bg-surface shadow-sm">
                 <table className="w-full text-left border-collapse min-w-[900px]">
                     <thead>
                         <tr className="bg-surface-alt border-b border-border">
@@ -857,26 +902,30 @@ function CustomerDirectory({ customers, onCustomerClick, onDelete, onUpdate, sea
                         {filtered.map(c => (
                             <tr key={c._id} className="hover:bg-surface-alt/50 transition-colors group cursor-pointer" onClick={() => onCustomerClick(c)}>
                                 <td className="px-4 py-3">
-                                    <div className="flex items-center gap-4">
-                                        <div className="relative">
-                                            <div className="w-10 h-10 bg-primary/5 border border-primary/10 flex items-center justify-center text-primary font-bold">
+                                    <div className="flex items-center gap-3">
+                                        <div className="relative flex-shrink-0">
+                                            <div className="w-8 h-8 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center text-primary font-black text-xs uppercase shadow-sm">
                                                 {c.name?.charAt(0) || '?'}
                                             </div>
                                             {c.isVIP && (
-                                                <div className="absolute -top-1 -right-1 bg-amber-500 text-white p-0.5 rounded-none border border-white">
-                                                    <Star className="w-2.5 h-2.5 fill-current" />
+                                                <div className="absolute -top-0.5 -right-0.5 bg-amber-500 text-white p-0.5 rounded-full border border-white dark:border-slate-900 shadow-sm">
+                                                    <Star className="w-2 h-2 fill-current" />
                                                 </div>
                                             )}
                                         </div>
                                         <div>
                                             <div className="flex items-center gap-2">
-                                                <div className="font-bold text-text group-hover:text-primary transition-colors text-sm">{c.name}</div>
-                                                {c.status === 'inactive' && <span className="text-[8px] bg-rose-500 text-white px-1 font-black">INACTIVE</span>}
+                                                <div className="font-bold text-text group-hover:text-primary transition-colors text-sm leading-tight">{c.name}</div>
+                                                {c.status === 'inactive' && (
+                                                    <span className="text-[7.5px] bg-rose-500 text-white px-1.5 py-0.5 rounded-md font-black tracking-wider uppercase leading-none shadow-sm shadow-rose-500/10">
+                                                        INACTIVE
+                                                    </span>
+                                                )}
                                             </div>
-                                            <div className="text-[10px] text-text-muted font-bold tracking-widest flex flex-wrap items-center gap-2">
+                                            <div className="text-[10px] text-text-muted font-bold tracking-widest flex flex-wrap items-center gap-2 mt-0.5">
                                                 <span>{c.phone}</span>
                                                 {Number(c.dueAmount || 0) > 0 && (
-                                                    <span className="text-[9px] font-black text-rose-600 bg-rose-50 border border-rose-100 px-1.5 py-0.5 rounded uppercase tracking-tighter">
+                                                    <span className="text-[9px] font-black text-rose-600 bg-rose-500/5 dark:bg-rose-500/10 border border-rose-500/20 px-1.5 py-0.2 rounded-md uppercase tracking-tight">
                                                         Due: ₹{Number(c.dueAmount).toFixed(0)}
                                                     </span>
                                                 )}
@@ -888,35 +937,37 @@ function CustomerDirectory({ customers, onCustomerClick, onDelete, onUpdate, sea
                                     {c.lastLogin ? new Date(c.lastLogin).toLocaleDateString() : '-'}
                                 </td>
                                 <td className="px-4 py-3 text-sm font-bold text-text">₹{(c.totalSpend ?? 0).toLocaleString()}</td>
-                                <td className="px-4 py-3 text-right flex items-center justify-end gap-2">
-                                    <button
-                                        onClick={e => { e.stopPropagation(); onUpdate(c._id, { status: c.status === 'active' ? 'inactive' : 'active' }); }}
-                                        className={`p-2.5 border transition-all ${c.status === 'inactive' ? 'bg-rose-500 text-white border-rose-500' : 'text-text-muted hover:text-rose-500 border-border'}`}
-                                        title={c.status === 'active' ? "Deactivate Customer" : "Activate Customer"}
-                                    >
-                                        <ShieldAlert className="w-4 h-4" />
-                                    </button>
-                                    <button
-                                        onClick={e => { e.stopPropagation(); onUpdate(c._id, { isVIP: !c.isVIP }); }}
-                                        className={`p-2.5 border transition-all ${c.isVIP ? 'bg-amber-500 text-white border-amber-500' : 'text-text-muted hover:text-amber-500 border-border'}`}
-                                        title={c.isVIP ? "Remove VIP Status" : "Mark as VIP"}
-                                    >
-                                        <Star className={`w-4 h-4 ${c.isVIP ? 'fill-current' : ''}`} />
-                                    </button>
-                                    <button
-                                        onClick={e => { e.stopPropagation(); onCustomerClick(c); }}
-                                        className="p-2.5 text-text-muted hover:text-primary border border-border transition-all"
-                                        title="View Profile"
-                                    >
-                                        <Eye className="w-4 h-4" />
-                                    </button>
-                                    <button
-                                        onClick={e => { e.stopPropagation(); if (confirm('Are you sure you want to delete this customer?')) onDelete(c._id); }}
-                                        className="p-2.5 text-text-muted hover:text-rose-500 border border-border transition-all"
-                                        title="Delete Customer"
-                                    >
-                                        <Trash2 className="w-4 h-4" />
-                                    </button>
+                                <td className="px-4 py-3 text-right">
+                                    <div className="flex items-center justify-end gap-1.5" onClick={e => e.stopPropagation()}>
+                                        <button
+                                            onClick={() => onUpdate(c._id, { status: c.status === 'active' ? 'inactive' : 'active' })}
+                                            className={`w-7 h-7 flex items-center justify-center border rounded-lg transition-all duration-200 ${c.status === 'inactive' ? 'bg-rose-500 border-rose-500 text-white shadow-sm shadow-rose-500/20' : 'border-border text-text-muted hover:text-rose-500 hover:bg-rose-50/50 dark:hover:bg-rose-950/20'}`}
+                                            title={c.status === 'active' ? "Deactivate Customer" : "Activate Customer"}
+                                        >
+                                            <ShieldAlert className="w-3.5 h-3.5" />
+                                        </button>
+                                        <button
+                                            onClick={() => onUpdate(c._id, { isVIP: !c.isVIP })}
+                                            className={`w-7 h-7 flex items-center justify-center border rounded-lg transition-all duration-200 ${c.isVIP ? 'bg-amber-500 border-amber-500 text-white shadow-sm shadow-amber-500/20' : 'border-border text-text-muted hover:text-amber-500 hover:bg-amber-50/50 dark:hover:bg-amber-950/20'}`}
+                                            title={c.isVIP ? "Remove VIP Status" : "Mark as VIP"}
+                                        >
+                                            <Star className={`w-3.5 h-3.5 ${c.isVIP ? 'fill-current' : ''}`} />
+                                        </button>
+                                        <button
+                                            onClick={() => onCustomerClick(c)}
+                                            className="w-7 h-7 flex items-center justify-center border border-border rounded-lg text-text-muted hover:text-primary hover:bg-primary/5 transition-all duration-200"
+                                            title="View Profile"
+                                        >
+                                            <Eye className="w-3.5 h-3.5" />
+                                        </button>
+                                        <button
+                                            onClick={() => { if (confirm('Are you sure you want to delete this customer?')) onDelete(c._id); }}
+                                            className="w-7 h-7 flex items-center justify-center border border-border rounded-lg text-text-muted hover:text-rose-500 hover:bg-rose-50/50 dark:hover:bg-rose-950/20 transition-all duration-200"
+                                            title="Delete Customer"
+                                        >
+                                            <Trash2 className="w-3.5 h-3.5" />
+                                        </button>
+                                    </div>
                                 </td>
                             </tr>
                         ))}
