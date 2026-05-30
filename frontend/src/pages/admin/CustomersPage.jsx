@@ -211,10 +211,10 @@ export default function CustomersPage({ tab = 'directory' }) {
                                 <p className="text-[10px] font-black text-slate-500 mt-3 uppercase tracking-[0.3em] leading-none">Operations • POS Outstanding Balances</p>
                             </div>
                             <div className="flex flex-col sm:flex-row items-center gap-3">
-                                <button onClick={() => window.location.reload()} className="flex items-center justify-center gap-2 px-5 py-3 border border-slate-200 bg-white rounded-2xl text-[10px] font-black text-slate-700 uppercase tracking-widest shadow-sm hover:bg-slate-50 transition-all w-full sm:w-auto">
-                                    <RefreshCw className="w-4 h-4 text-slate-500" /> Refresh
+                                <button onClick={() => window.location.reload()} className="flex items-center justify-center gap-2 px-5 py-3 bg-white border border-slate-200 text-slate-700 text-xs font-semibold allow-curve rounded-xl shadow-sm hover:bg-slate-50 transition-all w-full sm:w-auto shrink-0">
+                                    <RefreshCw className="w-4 h-4" /> Refresh
                                 </button>
-                                <button className="flex items-center justify-center gap-2 px-6 py-3 bg-[#B4912B] hover:bg-[#9c7d23] text-white rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-sm transition-all w-full sm:w-auto">
+                                <button className="flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white allow-curve rounded-xl text-xs font-bold uppercase tracking-wider shadow-md shadow-amber-500/20 transition-all w-full sm:w-auto">
                                     <FileText className="w-4 h-4" /> Create Reminder Campaign
                                 </button>
                             </div>
@@ -1040,42 +1040,42 @@ function PaymentRemindersView({ onCustomerClick, setWhatsappModal, fetchCustomer
     return (
         <div className="p-4 md:p-6 space-y-4 animate-reveal max-w-7xl mx-auto">
             {/* KPI Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                <div className="bg-white p-5 border border-slate-200 rounded-3xl shadow-sm flex flex-col gap-1 relative group hover:border-emerald-300 transition-all">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="bg-white p-6 border border-slate-200 allow-curve rounded-2xl shadow-sm flex flex-col gap-1 relative group hover:border-purple-300 transition-all">
                     <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 rounded-2xl bg-emerald-50 flex items-center justify-center flex-shrink-0">
-                            <Users className="w-6 h-6 text-emerald-600" />
+                        <div className="w-12 h-12 rounded-full bg-purple-50 flex items-center justify-center flex-shrink-0">
+                            <Users className="w-5 h-5 text-purple-600" />
                         </div>
                         <div>
                             <span className="text-[10px] font-black uppercase tracking-widest text-slate-800">Outstanding Clients</span>
                             <div className="text-3xl font-black text-slate-900 leading-none mt-1">{dueMetadata.totalCount}</div>
                         </div>
                     </div>
-                    <div className="text-[10px] font-bold text-slate-500 mt-3">Customers with pending dues</div>
-                    <button className="text-[10px] font-black text-emerald-600 hover:text-emerald-700 text-left mt-3 flex items-center gap-1 transition-colors w-fit">
-                        View clients <ChevronRight className="w-3 h-3" />
+                    <div className="text-[11px] font-semibold text-slate-500 mt-4">Customers with pending dues</div>
+                    <button className="text-[11px] font-bold text-purple-700 hover:text-purple-800 text-left mt-3 flex items-center gap-1 transition-colors w-fit">
+                        View clients →
                     </button>
                 </div>
-                <div className="bg-white p-5 border border-slate-200 rounded-3xl shadow-sm flex flex-col gap-1 relative group hover:border-rose-300 transition-all">
+                <div className="bg-white p-6 border border-slate-200 allow-curve rounded-2xl shadow-sm flex flex-col gap-1 relative group hover:border-emerald-300 transition-all">
                     <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 rounded-2xl bg-rose-50 flex items-center justify-center flex-shrink-0">
-                            <IndianRupee className="w-6 h-6 text-rose-500" />
+                        <div className="w-12 h-12 rounded-full bg-emerald-50 flex items-center justify-center flex-shrink-0">
+                            <IndianRupee className="w-5 h-5 text-emerald-600" />
                         </div>
                         <div>
                             <span className="text-[10px] font-black uppercase tracking-widest text-slate-800">Total Dues (Page)</span>
                             <div className="text-3xl font-black text-slate-900 leading-none mt-1">₹{totalOutstanding.toLocaleString()}</div>
                         </div>
                     </div>
-                    <div className="text-[10px] font-bold text-slate-500 mt-3">Pending balance this page</div>
-                    <button className="text-[10px] font-black text-rose-600 hover:text-rose-700 text-left mt-3 flex items-center gap-1 transition-colors w-fit">
-                        View all invoices <ChevronRight className="w-3 h-3" />
+                    <div className="text-[11px] font-semibold text-slate-500 mt-4">Pending balance this page</div>
+                    <button className="text-[11px] font-bold text-emerald-700 hover:text-emerald-800 text-left mt-3 flex items-center gap-1 transition-colors w-fit">
+                        View all invoices →
                     </button>
                 </div>
-                <div className="bg-white p-5 border border-slate-200 rounded-3xl shadow-sm flex flex-col relative group hover:border-amber-300 transition-all">
+                <div className="bg-white p-6 border border-slate-200 allow-curve rounded-2xl shadow-sm flex flex-col relative group hover:border-blue-300 transition-all">
                     <div className="flex items-start justify-between">
                         <div className="flex items-start gap-4">
-                            <div className="w-12 h-12 rounded-2xl bg-amber-50 flex items-center justify-center flex-shrink-0">
-                                <ShieldAlert className="w-6 h-6 text-amber-500" />
+                            <div className="w-12 h-12 rounded-full bg-blue-50 flex items-center justify-center flex-shrink-0">
+                                <ShieldAlert className="w-5 h-5 text-blue-600" />
                             </div>
                             <div className="pt-1">
                                 <span className="text-[10px] font-black uppercase tracking-widest text-slate-800">Dues Status</span>
@@ -1091,12 +1091,9 @@ function PaymentRemindersView({ onCustomerClick, setWhatsappModal, fetchCustomer
                                 </div>
                             </div>
                         </div>
-                        <div className="w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center flex-shrink-0">
-                            <Bell className="w-4 h-4 text-slate-600" />
-                        </div>
                     </div>
-                    <button className="text-[10px] font-black text-amber-500 hover:text-amber-600 text-left mt-auto pt-3 flex items-center gap-1 transition-colors w-fit">
-                        View settings <ChevronRight className="w-3 h-3" />
+                    <button className="text-[11px] font-bold text-blue-700 hover:text-blue-800 text-left mt-auto pt-4 flex items-center gap-1 transition-colors w-fit">
+                        View settings →
                     </button>
                 </div>
             </div>
@@ -1166,43 +1163,45 @@ function PaymentRemindersView({ onCustomerClick, setWhatsappModal, fetchCustomer
             </div>
 
             {/* Search Bar & Actions */}
-            <div className="flex flex-col md:flex-row gap-3">
-                <div className="relative flex-1 group">
-                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none text-slate-400 group-focus-within:text-[#B4912B] transition-colors" />
+            <div className="flex flex-col xl:flex-row gap-3 items-center">
+                <div className="relative flex-1 w-full bg-white border border-slate-200 allow-curve rounded-xl shadow-sm">
+                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                     <input
                         type="text"
                         placeholder="Search due clients by name, phone or invoice number..."
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
-                        className="w-full pl-11 pr-4 py-3.5 bg-white border border-slate-200 rounded-2xl text-[11px] font-black outline-none focus:border-[#B4912B] transition-all text-slate-800 placeholder:text-slate-400 shadow-sm"
+                        className="w-full pl-10 pr-4 py-3 bg-transparent text-xs font-semibold placeholder:text-slate-400 text-slate-900 focus:outline-none allow-curve rounded-xl"
                     />
                 </div>
-                <div className="flex items-center gap-3 w-full md:w-auto">
+                <div className="flex flex-wrap items-center gap-3 w-full xl:w-auto">
                     {filteredOutlets && filteredOutlets.length > 0 && (
-                        <select
-                            value={selectedOutlet}
-                            onChange={(e) => {
-                                setSelectedOutlet(e.target.value);
-                                setPage(1);
-                            }}
-                            className="flex-1 md:flex-none px-6 py-3.5 bg-white border border-slate-200 rounded-2xl text-[11px] font-black uppercase tracking-widest outline-none min-w-[200px] cursor-pointer shadow-sm text-slate-800"
-                        >
-                            <option value="">All Outlets</option>
-                            {filteredOutlets.map(o => (
-                                <option key={o._id || o.id} value={o._id || o.id}>
-                                    {o.name}
-                                </option>
-                            ))}
-                        </select>
+                        <div className="bg-white border border-slate-200 allow-curve rounded-xl shadow-sm px-4 flex-1 xl:flex-none">
+                            <select
+                                value={selectedOutlet}
+                                onChange={(e) => {
+                                    setSelectedOutlet(e.target.value);
+                                    setPage(1);
+                                }}
+                                className="w-full xl:w-36 py-3 bg-transparent text-xs font-semibold text-slate-700 outline-none cursor-pointer appearance-none"
+                            >
+                                <option value="">All Outlets</option>
+                                {filteredOutlets.map(o => (
+                                    <option key={o._id || o.id} value={o._id || o.id}>
+                                        {o.name}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
                     )}
-                    <button className="flex items-center justify-center gap-2 px-6 py-3.5 bg-white border border-slate-200 rounded-2xl text-[11px] font-black uppercase tracking-widest text-slate-800 shadow-sm hover:bg-slate-50 transition-all flex-shrink-0">
-                        <Filter className="w-4 h-4 text-slate-600" /> Filters
+                    <button className="flex items-center justify-center gap-2 px-5 py-3 bg-white border border-slate-200 text-slate-700 text-xs font-semibold allow-curve rounded-xl shadow-sm hover:bg-slate-50 transition-all flex-1 xl:flex-none shrink-0">
+                        <Filter className="w-4 h-4" /> Filters
                     </button>
                 </div>
             </div>
 
             {/* Table */}
-            <div className="table-responsive border border-slate-200 bg-white rounded-3xl overflow-hidden shadow-sm">
+            <div className="table-responsive border border-slate-200 bg-white allow-curve rounded-2xl overflow-hidden shadow-sm mt-4">
                 {loading ? (
                     <div className="text-center py-12 text-xs font-bold text-slate-400 uppercase tracking-widest">
                         Loading unpaid dues...
@@ -1213,50 +1212,56 @@ function PaymentRemindersView({ onCustomerClick, setWhatsappModal, fetchCustomer
                     </div>
                 ) : (
                     <table className="w-full text-left min-w-[800px]">
-                        <thead className="border-b border-slate-100">
+                        <thead className="bg-slate-50/50 border-b border-slate-200">
                             <tr>
-                                <th className="p-3 text-[10px] font-black uppercase text-slate-400 tracking-widest">Customer Details</th>
-                                <th className="p-3 text-[10px] font-black uppercase text-slate-400 tracking-widest text-right">Dues Amount</th>
-                                <th className="p-3 text-[10px] font-black uppercase text-slate-400 tracking-widest text-center">Reminders Sent</th>
-                                <th className="p-3 text-[10px] font-black uppercase text-slate-400 tracking-widest text-center">Last Reminded</th>
-                                <th className="p-3 text-[10px] font-black uppercase text-slate-400 tracking-widest text-right">Actions</th>
+                                <th className="px-5 py-4 text-[10px] font-black text-slate-500 uppercase tracking-wider">Customer Details</th>
+                                <th className="px-5 py-4 text-[10px] font-black text-slate-500 uppercase tracking-wider text-right">Dues Amount</th>
+                                <th className="px-5 py-4 text-[10px] font-black text-slate-500 uppercase tracking-wider text-center">Reminders Sent</th>
+                                <th className="px-5 py-4 text-[10px] font-black text-slate-500 uppercase tracking-wider text-center">Last Reminded</th>
+                                <th className="px-5 py-4 text-[10px] font-black text-slate-500 uppercase tracking-wider text-right">Actions</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-100">
                             {filtered.map(c => (
-                                <tr key={c._id} className="hover:bg-slate-50 transition-colors group">
-                                    <td className="p-3">
-                                        <div className="flex items-center gap-4 cursor-pointer" onClick={() => onCustomerClick(c)}>
-                                            <div className="w-10 h-10 bg-[#1e293b] text-white rounded-xl flex items-center justify-center font-black text-sm">
-                                                {c.name?.charAt(0) || '?'}
+                                <tr key={c._id} className="hover:bg-slate-50/50 transition-all cursor-pointer group" onClick={() => onCustomerClick(c)}>
+                                    <td className="px-5 py-4">
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-9 h-9 bg-purple-100 flex items-center justify-center text-[12px] font-black text-purple-600 flex-shrink-0 allow-curve rounded-lg">
+                                                {c.name?.charAt(0)?.toUpperCase() || '?'}
                                             </div>
-                                            <div>
-                                                <p className="text-sm font-black text-slate-900 uppercase tracking-tight">{c.name}</p>
-                                                <p className="text-[10px] text-slate-500 font-bold tracking-widest mt-0.5">{c.phone}</p>
+                                            <div className="flex flex-col min-w-0 gap-1">
+                                                <span className="text-[11px] font-black text-slate-900 uppercase tracking-tight leading-none truncate">{c.name}</span>
+                                                <span className="text-[10px] font-bold text-slate-500 tracking-wider leading-none flex items-center gap-1">{c.phone}</span>
                                             </div>
                                         </div>
                                     </td>
-                                    <td className="p-3 text-right font-black text-rose-600">
-                                        ₹{(c.dueAmount || 0).toLocaleString()}
+                                    <td className="px-5 py-4 text-right">
+                                        <span className="text-[12px] font-black text-slate-900">
+                                            ₹{(c.dueAmount || 0).toLocaleString()}
+                                        </span>
                                     </td>
-                                    <td className="p-3 font-bold text-rose-600 text-xs text-center">
-                                        <span className={`px-3 py-1 text-[10px] font-bold border rounded-full ${c.paymentReminderCount > 0 ? 'bg-[#fff4e5] text-[#ed6c02] border-[#ffe0b2]' : 'bg-slate-50 text-slate-900 border-slate-200'}`}>
+                                    <td className="px-5 py-4 text-center">
+                                        <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-[9px] font-black allow-curve rounded-lg uppercase tracking-wider ${c.paymentReminderCount > 0 ? 'bg-amber-50 text-amber-600 border border-amber-200' : 'bg-slate-100 text-slate-600 border border-slate-200'}`}>
+                                            <div className={`w-1.5 h-1.5 rounded-full ${c.paymentReminderCount > 0 ? 'bg-amber-500' : 'bg-slate-500'}`} />
                                             {c.paymentReminderCount || 0} Sent
                                         </span>
                                     </td>
-                                    <td className="p-3 text-center text-[11px] font-medium text-slate-500">
-                                        {formatDate(c.lastPaymentReminderSentAt)}
+                                    <td className="px-5 py-4 text-center">
+                                        <div className="flex flex-col items-center gap-1">
+                                            <span className="text-[11px] font-black text-slate-900 uppercase leading-none">
+                                                {c.lastPaymentReminderSentAt ? new Date(c.lastPaymentReminderSentAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : 'NEVER'}
+                                            </span>
+                                        </div>
                                     </td>
-                                    <td className="p-3 text-right">
-                                        <button
-                                            onClick={() => handleSendReminder(c)}
-                                            className="bg-white border border-slate-200 text-slate-800 hover:bg-slate-50 rounded-md px-4 py-2 text-[11px] font-bold flex items-center justify-center gap-2 ml-auto transition-all shadow-sm"
-                                        >
-                                            <svg viewBox="0 0 24 24" width="16" height="16" fill="#43b581" className="w-4 h-4">
-                                                <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.095 3.2 5.077 4.487 2.03.88 2.772.942 3.784.788 1.125-.17 3.3-1.345 3.766-2.645.466-1.3.466-2.416.326-2.647-.139-.23-.538-.372-.835-.521ZM12 21.605c-1.624 0-3.197-.436-4.577-1.254l-.328-.194-3.4.89 1.34-3.313-.213-.338C4.015 15.932 3.6 14 3.6 12 3.6 7.37 7.372 3.6 12 3.6c4.63 0 8.4 3.77 8.4 8.4 0 4.63-3.77 8.405-8.4 8.405ZM12 2C6.477 2 2 6.477 2 12c0 1.765.46 3.483 1.328 5.01L2 22l5.12-1.34A9.957 9.957 0 0 0 12 22c5.522 0 10-4.478 10-10S17.522 2 12 2Z" />
-                                            </svg>
-                                            SEND REMINDER
-                                        </button>
+                                    <td className="px-5 py-4 text-right">
+                                        <div className="flex items-center justify-end gap-2">
+                                            <button
+                                                onClick={(e) => { e.stopPropagation(); handleSendReminder(c); }}
+                                                className="flex items-center justify-center gap-2 px-4 py-2 bg-emerald-50 border border-emerald-200 text-emerald-700 allow-curve rounded-lg hover:bg-emerald-100 hover:text-emerald-800 transition-all shadow-sm text-[10px] font-black uppercase tracking-wider"
+                                            >
+                                                <Send className="w-3.5 h-3.5" /> Send Reminder
+                                            </button>
+                                        </div>
                                     </td>
                                 </tr>
                             ))}
@@ -1266,31 +1271,47 @@ function PaymentRemindersView({ onCustomerClick, setWhatsappModal, fetchCustomer
 
                 {/* Pagination Controls */}
                 {dueMetadata.totalPages > 1 && (
-                    <div className="px-6 py-4 border-t border-slate-100 bg-slate-50/50 flex items-center justify-between">
-                        <div className="text-[10px] font-black text-slate-500 uppercase tracking-widest">
-                            Displaying {filtered.length} of {dueMetadata.totalCount} accounts
-                        </div>
-                        <div className="flex items-center gap-3">
+                    <div className="bg-white px-6 py-4 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-4">
+                        <span className="text-[11px] font-semibold text-slate-500">
+                            Showing {(page - 1) * 10 + 1} to {Math.min(page * 10, dueMetadata.totalCount)} of {dueMetadata.totalCount} accounts
+                        </span>
+                        <div className="flex items-center gap-2">
                             <button
                                 onClick={() => setPage(p => Math.max(1, p - 1))}
                                 disabled={page === 1}
-                                className="px-4 py-2 border border-slate-200 bg-white rounded-xl text-[10px] font-black uppercase tracking-widest disabled:opacity-30 hover:bg-slate-50 transition-all text-slate-700 shadow-sm"
+                                className="flex items-center gap-1 text-[10px] font-black text-slate-400 uppercase tracking-wider hover:text-slate-900 transition-colors disabled:opacity-30"
                             >
-                                Prev
+                                <ChevronRight className="w-4 h-4 rotate-180" /> PREV
                             </button>
-                            <div className="px-2 text-xs font-black text-slate-700">
-                                {page} / {dueMetadata.totalPages || 1}
+                            <div className="px-3 py-1.5 border border-slate-300 text-slate-900 font-black text-[11px] allow-curve rounded-md mx-2">
+                                {page}
                             </div>
                             <button
                                 onClick={() => setPage(p => Math.min(dueMetadata.totalPages || 1, p + 1))}
                                 disabled={page >= (dueMetadata.totalPages || 1)}
-                                className="px-4 py-2 border border-slate-200 bg-white rounded-xl text-[10px] font-black uppercase tracking-widest disabled:opacity-30 hover:bg-slate-50 transition-all text-slate-700 shadow-sm"
+                                className="flex items-center gap-1 text-[10px] font-black text-slate-400 uppercase tracking-wider hover:text-slate-900 transition-colors disabled:opacity-30"
                             >
-                                Next
+                                NEXT <ChevronRight className="w-4 h-4" />
                             </button>
                         </div>
                     </div>
                 )}
+            </div>
+
+            {/* Stay Organized Banner */}
+            <div className="mt-8 bg-white border border-slate-200 allow-curve rounded-2xl shadow-sm p-6 relative overflow-hidden flex items-center justify-between">
+                <div className="flex items-start gap-4 z-10">
+                    <div className="w-6 h-6 rounded-full bg-blue-500 text-white flex items-center justify-center font-bold text-xs shrink-0 shadow-sm mt-0.5">
+                        i
+                    </div>
+                    <div>
+                        <h4 className="text-sm font-black text-slate-900">Stay organized!</h4>
+                        <p className="text-[11px] font-semibold text-slate-500 mt-1">Use filters and search to quickly find clients with pending dues. Send targeted reminders to improve your cash flow.</p>
+                    </div>
+                </div>
+                <div className="hidden md:block absolute right-6 -bottom-6 opacity-40 mix-blend-multiply pointer-events-none">
+                    <Calendar className="w-32 h-32 text-blue-100" />
+                </div>
             </div>
         </div>
     );

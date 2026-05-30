@@ -294,21 +294,21 @@ export default function SettingsPage({ section: propSection }) {
 
 
     const tabClass = (id) =>
-        `px-4 py-2 rounded-full text-xs font-bold uppercase tracking-widest transition-all border ${activeTab === id
-            ? 'bg-primary text-primary-foreground border-primary shadow-lg shadow-primary/20'
+        `px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest transition-all border ${activeTab === id
+            ? 'bg-primary text-primary-foreground border-primary shadow-md shadow-primary/20'
             : 'bg-surface text-text-muted border-border hover:border-primary/40'
         }`;
 
     return (
-        <div className="space-y-6">
+        <div className="space-y-3">
             <div>
-                <h1 className="text-3xl font-bold text-text tracking-tight">Settings</h1>
-                <p className="text-sm font-medium text-text-muted mt-1">
+                <h1 className="text-xl font-bold text-text tracking-tight">Settings</h1>
+                <p className="text-xs font-medium text-text-muted mt-0.5">
                     Profile, business & tax, notifications, and security — synced with your salon account.
                 </p>
             </div>
 
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap gap-1.5">
                 {[
                     { id: 'profile', label: 'Profile' },
                     { id: 'business', label: 'Business Info' },
@@ -323,18 +323,18 @@ export default function SettingsPage({ section: propSection }) {
             </div>
 
             <div className="bg-surface rounded-2xl border border-border overflow-hidden shadow-sm transition-all">
-                <div className="p-6">
+                <div className="p-4">
                     {activeTab === 'profile' && (
-                        <div className="space-y-5 max-w-2xl text-left">
+                        <div className="space-y-3 text-left">
                             <div>
-                                <h2 className="text-lg font-bold text-text tracking-tight">Profile</h2>
-                                <p className="text-xs text-text-muted font-medium mt-1">Your login identity (saved on the server).</p>
+                                <h2 className="text-sm font-bold text-text tracking-tight">Profile</h2>
+                                <p className="text-[10px] text-text-muted font-medium mt-0.5">Your login identity (saved on the server).</p>
                             </div>
 
-                            <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 p-4 rounded-2xl bg-surface-alt/10 border border-border text-center sm:text-left">
+                            <div className="flex flex-col sm:flex-row items-center sm:items-start gap-3 p-3 rounded-xl bg-surface-alt/10 border border-border text-center sm:text-left">
                                 <div
                                     onClick={handleAvatarClick}
-                                    className={`w-16 h-16 rounded-2xl bg-primary/5 flex items-center justify-center text-xl font-bold text-primary border border-primary/20 shadow-sm relative overflow-hidden group cursor-pointer hover:border-primary transition-all flex-shrink-0 ${isUploading ? 'animate-pulse' : ''}`}
+                                    className={`w-12 h-12 rounded-xl bg-primary/5 flex items-center justify-center text-base font-bold text-primary border border-primary/20 shadow-sm relative overflow-hidden group cursor-pointer hover:border-primary transition-all flex-shrink-0 ${isUploading ? 'animate-pulse' : ''}`}
                                 >
                                     {user?.avatar ? (
                                         <img
@@ -372,8 +372,8 @@ export default function SettingsPage({ section: propSection }) {
                                         accept="image/*"
                                     />
                                 </div>
-                                <div className="space-y-1 w-full flex flex-col items-center sm:items-start justify-center h-16">
-                                    <h3 className="font-bold text-lg text-text leading-tight tracking-tight">{user?.name || '—'}</h3>
+                                <div className="space-y-0.5 w-full flex flex-col items-center sm:items-start justify-center h-12">
+                                    <h3 className="font-bold text-sm text-text leading-tight tracking-tight">{user?.name || '—'}</h3>
                                     <div className="flex flex-col sm:flex-row items-center gap-2">
                                         <p className="text-[10px] font-bold text-primary uppercase tracking-wider inline-flex items-center px-2 py-0.5 rounded-full bg-primary/10 border border-primary/20">
                                             {user?.role || 'ADMIN'}
@@ -385,43 +385,43 @@ export default function SettingsPage({ section: propSection }) {
                                 </div>
                             </div>
 
-                            <form onSubmit={handleProfileSubmit} className="space-y-4 pt-1">
-                                <div className="grid sm:grid-cols-2 gap-4">
-                                    <div className="space-y-1.5 text-left">
+                            <form onSubmit={handleProfileSubmit} className="space-y-3 pt-1">
+                                <div className="grid sm:grid-cols-2 gap-3">
+                                    <div className="space-y-1 text-left">
                                         <label className="text-[11px] font-semibold text-text-muted pl-1">Full Name</label>
                                         <input
                                             type="text"
                                             value={profileForm.name}
                                             onChange={(e) => setProfileForm({ ...profileForm, name: e.target.value })}
-                                            className="w-full px-4 py-2.5 rounded-full border border-border text-sm font-semibold focus:border-primary outline-none transition-all bg-surface hover:border-primary/40 focus:ring-4 focus:ring-primary/5"
+                                            className="w-full px-3 py-2 rounded-full border border-border text-xs font-semibold focus:border-primary outline-none transition-all bg-surface hover:border-primary/40 focus:ring-4 focus:ring-primary/5"
                                         />
                                     </div>
-                                    <div className="space-y-1.5 text-left">
+                                    <div className="space-y-1 text-left">
                                         <label className="text-[11px] font-semibold text-text-muted pl-1">Email</label>
                                         <input
                                             type="email"
                                             value={profileForm.email}
                                             onChange={(e) => setProfileForm({ ...profileForm, email: e.target.value })}
-                                            className="w-full px-4 py-2.5 rounded-full border border-border text-sm font-semibold focus:border-primary outline-none transition-all bg-surface hover:border-primary/40 focus:ring-4 focus:ring-primary/5"
+                                            className="w-full px-3 py-2 rounded-full border border-border text-xs font-semibold focus:border-primary outline-none transition-all bg-surface hover:border-primary/40 focus:ring-4 focus:ring-primary/5"
                                         />
                                     </div>
                                 </div>
-                                <div className="space-y-1.5 text-left">
+                                <div className="space-y-1 text-left">
                                     <label className="text-[11px] font-semibold text-text-muted pl-1">Phone</label>
                                     <input
                                         type="tel"
                                         value={profileForm.phone}
                                         onChange={(e) => setProfileForm({ ...profileForm, phone: e.target.value })}
-                                        className="w-full px-4 py-2.5 rounded-full border border-border text-sm font-semibold focus:border-primary outline-none transition-all bg-surface hover:border-primary/40 focus:ring-4 focus:ring-primary/5"
+                                        className="w-full px-3 py-2 rounded-full border border-border text-xs font-semibold focus:border-primary outline-none transition-all bg-surface hover:border-primary/40 focus:ring-4 focus:ring-primary/5"
                                         placeholder="+91..."
                                     />
                                 </div>
 
-                                <div className="pt-4 flex justify-end border-t border-border">
+                                <div className="pt-3 flex justify-end border-t border-border">
                                     <button
                                         type="submit"
                                         disabled={isSaving}
-                                        className="px-6 py-2.5 bg-primary text-primary-foreground rounded-full font-bold text-[11px] uppercase tracking-widest shadow-lg shadow-primary/20 hover:shadow-primary/30 active:scale-95 transition-all disabled:opacity-50"
+                                        className="px-5 py-2 bg-primary text-primary-foreground rounded-full font-bold text-[10px] uppercase tracking-widest shadow-md shadow-primary/20 hover:shadow-primary/30 active:scale-95 transition-all disabled:opacity-50"
                                     >
                                         {isSaving ? 'Saving…' : 'Save profile'}
                                     </button>
@@ -431,20 +431,20 @@ export default function SettingsPage({ section: propSection }) {
                     )}
 
                     {activeTab === 'notifications' && (
-                        <div className="space-y-8 max-w-2xl text-left">
+                        <div className="space-y-4 text-left">
                             <div>
-                                <h2 className="text-lg font-bold text-text tracking-tight">Notifications</h2>
-                                <p className="text-xs text-text-muted font-medium mt-1">
+                                <h2 className="text-sm font-bold text-text tracking-tight">Notifications</h2>
+                                <p className="text-[10px] text-text-muted font-medium mt-0.5">
                                     Preferences are stored for your salon (tenant). Toggle and save.
                                 </p>
                             </div>
 
-                            <form onSubmit={handleNotificationsSave} className="space-y-6">
-                                <div className="divide-y divide-border border border-border rounded-2xl overflow-hidden">
+                            <form onSubmit={handleNotificationsSave} className="space-y-4">
+                                <div className="divide-y divide-border border border-border rounded-xl overflow-hidden">
                                     {NOTIFICATION_ITEMS.map((item) => (
                                         <div
                                             key={item.key}
-                                            className="flex items-center justify-between p-6 bg-surface hover:bg-surface-alt/20 transition-colors"
+                                            className="flex items-center justify-between px-4 py-3 bg-surface hover:bg-surface-alt/20 transition-colors"
                                         >
                                             <div className="space-y-1 text-left pr-4">
                                                 <span className="text-sm font-bold text-text tracking-wide block">{item.title}</span>
@@ -459,7 +459,7 @@ export default function SettingsPage({ section: propSection }) {
                                                         setNotifications((prev) => ({ ...prev, [item.key]: e.target.checked }))
                                                     }
                                                 />
-                                                <div className="w-12 h-6 bg-border rounded-none peer-checked:bg-primary transition-all duration-300 after:content-[''] after:absolute after:top-[4px] after:left-[4px] after:bg-white after:rounded-none after:h-4 after:w-4 after:transition-all peer-checked:after:translate-x-6 after:shadow-sm peer-checked:after:bg-white group-hover:after:scale-110" />
+                                                <div className="w-10 h-5 bg-border rounded-none peer-checked:bg-primary transition-all duration-300 after:content-[''] after:absolute after:top-[3px] after:left-[3px] after:bg-white after:rounded-none after:h-3.5 after:w-3.5 after:transition-all peer-checked:after:translate-x-5 after:shadow-sm peer-checked:after:bg-white group-hover:after:scale-110" />
                                             </label>
                                         </div>
                                     ))}
@@ -468,7 +468,7 @@ export default function SettingsPage({ section: propSection }) {
                                     <button
                                         type="submit"
                                         disabled={isSaving || salonLoading}
-                                        className="px-8 py-3.5 bg-primary text-primary-foreground rounded-full font-bold text-xs uppercase tracking-widest shadow-xl shadow-primary/20 disabled:opacity-50"
+                                        className="px-5 py-2 bg-primary text-primary-foreground rounded-full font-bold text-[10px] uppercase tracking-widest shadow-md shadow-primary/20 disabled:opacity-50"
                                     >
                                         {isSaving ? 'Saving…' : 'Save notification preferences'}
                                     </button>
@@ -478,14 +478,14 @@ export default function SettingsPage({ section: propSection }) {
                     )}
 
                     {activeTab === 'security' && (
-                        <div className="space-y-8 max-w-xl text-left">
+                        <div className="space-y-4 text-left">
                             <div>
-                                <h2 className="text-lg font-bold text-text tracking-tight">Security</h2>
-                                <p className="text-xs text-text-muted font-medium mt-1">Change your account password.</p>
+                                <h2 className="text-sm font-bold text-text tracking-tight">Security</h2>
+                                <p className="text-[10px] text-text-muted font-medium mt-0.5">Change your account password.</p>
                             </div>
 
-                            <form onSubmit={handlePasswordSubmit} className="space-y-6">
-                                <div className="space-y-2">
+                            <form onSubmit={handlePasswordSubmit} className="space-y-4">
+                                <div className="space-y-1.5">
                                     <label className="text-[10px] font-black text-text-muted uppercase tracking-widest pl-1">
                                         Current Password
                                     </label>
@@ -494,12 +494,12 @@ export default function SettingsPage({ section: propSection }) {
                                         onChange={(e) => setPasswordForm({ ...passwordForm, currentPassword: e.target.value })}
                                         placeholder="••••••••"
                                         required
-                                        inputClassName="w-full px-5 py-3.5 rounded-none border border-border text-sm font-bold focus:border-primary outline-none transition-all bg-surface-alt/50"
+                                        inputClassName="w-full px-4 py-2.5 allow-curve rounded-lg border border-border text-xs font-bold focus:border-primary outline-none transition-all bg-surface-alt/50"
                                         buttonClassName="text-text-muted hover:text-primary"
                                     />
                                 </div>
-                                <div className="grid sm:grid-cols-2 gap-6">
-                                    <div className="space-y-2">
+                                <div className="grid sm:grid-cols-2 gap-4">
+                                    <div className="space-y-1.5">
                                         <label className="text-[10px] font-black text-text-muted uppercase tracking-widest pl-1">
                                             New Password
                                         </label>
@@ -509,11 +509,11 @@ export default function SettingsPage({ section: propSection }) {
                                             placeholder="••••••••"
                                             required
                                             minLength={8}
-                                            inputClassName="w-full px-5 py-3.5 rounded-none border border-border text-sm font-bold focus:border-primary outline-none transition-all bg-surface-alt/50"
+                                            inputClassName="w-full px-4 py-2.5 allow-curve rounded-lg border border-border text-xs font-bold focus:border-primary outline-none transition-all bg-surface-alt/50"
                                             buttonClassName="text-text-muted hover:text-primary"
                                         />
                                     </div>
-                                    <div className="space-y-2">
+                                    <div className="space-y-1.5">
                                         <label className="text-[10px] font-black text-text-muted uppercase tracking-widest pl-1">
                                             Confirm Password
                                         </label>
@@ -522,17 +522,17 @@ export default function SettingsPage({ section: propSection }) {
                                             onChange={(e) => setPasswordForm({ ...passwordForm, confirmPassword: e.target.value })}
                                             placeholder="••••••••"
                                             required
-                                            inputClassName="w-full px-5 py-3.5 rounded-none border border-border text-sm font-bold focus:border-primary outline-none transition-all bg-surface-alt/50"
+                                            inputClassName="w-full px-4 py-2.5 allow-curve rounded-lg border border-border text-xs font-bold focus:border-primary outline-none transition-all bg-surface-alt/50"
                                             buttonClassName="text-text-muted hover:text-primary"
                                         />
                                     </div>
                                 </div>
 
-                                <div className="pt-6 flex justify-end border-t border-border">
+                                <div className="pt-3 flex justify-end border-t border-border">
                                     <button
                                         type="submit"
                                         disabled={isSaving}
-                                        className="px-8 py-3.5 bg-primary text-primary-foreground rounded-full font-bold text-xs uppercase tracking-widest shadow-xl shadow-primary/20 disabled:opacity-50"
+                                        className="px-5 py-2 bg-primary text-primary-foreground rounded-full font-bold text-[10px] uppercase tracking-widest shadow-md shadow-primary/20 disabled:opacity-50"
                                     >
                                         {isSaving ? 'Updating…' : 'Update password'}
                                     </button>
@@ -542,16 +542,16 @@ export default function SettingsPage({ section: propSection }) {
                     )}
 
                     {activeTab === 'business' && (
-                        <div className="space-y-10 max-w-2xl text-left">
+                        <div className="space-y-4 text-left">
                             <div>
-                                <h2 className="text-lg font-bold text-text tracking-tight">Business & Tax Info</h2>
-                                <p className="text-xs text-text-muted font-medium mt-1">
+                                <h2 className="text-sm font-bold text-text tracking-tight">Business & Tax Info</h2>
+                                <p className="text-[10px] text-text-muted font-medium mt-0.5">
                                     Legal name, GST, defaults — stored on your salon record (`PATCH /tenants/me`).
                                 </p>
                             </div>
 
-                            <form onSubmit={handleFiscalSubmit} className="space-y-6">
-                                <div className="space-y-2">
+                            <form onSubmit={handleFiscalSubmit} className="space-y-4">
+                                <div className="space-y-1.5">
                                     <label className="text-[10px] font-black text-text-muted uppercase tracking-widest pl-1">
                                         Legal Business Name
                                     </label>
@@ -559,12 +559,12 @@ export default function SettingsPage({ section: propSection }) {
                                         type="text"
                                         value={fiscal.businessName}
                                         onChange={(e) => setFiscal({ ...fiscal, businessName: e.target.value })}
-                                        className="w-full px-5 py-3.5 rounded-none border border-border text-sm font-bold focus:border-primary outline-none transition-all bg-surface-alt/50 uppercase"
+                                        className="w-full px-4 py-2.5 allow-curve rounded-lg border border-border text-xs font-bold focus:border-primary outline-none transition-all bg-surface-alt/50 uppercase"
                                     />
                                 </div>
 
-                                <div className="grid sm:grid-cols-2 gap-6">
-                                    <div className="space-y-2">
+                                <div className="grid sm:grid-cols-2 gap-4">
+                                    <div className="space-y-1.5">
                                         <label className="text-[10px] font-black text-text-muted uppercase tracking-widest pl-1">
                                             GSTIN Number
                                         </label>
@@ -573,13 +573,13 @@ export default function SettingsPage({ section: propSection }) {
                                             maxLength={15}
                                             value={fiscal.gstin}
                                             onChange={(e) => setFiscal({ ...fiscal, gstin: e.target.value.toUpperCase() })}
-                                            className="w-full px-5 py-3.5 rounded-none border border-border text-sm font-bold focus:border-primary outline-none transition-all bg-surface-alt/50"
+                                            className="w-full px-4 py-2.5 allow-curve rounded-lg border border-border text-xs font-bold focus:border-primary outline-none transition-all bg-surface-alt/50"
                                         />
                                     </div>
                                 </div>
 
-                                <div className="grid sm:grid-cols-2 gap-6 border-t border-border/40 pt-6">
-                                    <div className="space-y-2">
+                                <div className="grid sm:grid-cols-2 gap-4 border-t border-border/40 pt-4">
+                                    <div className="space-y-1.5">
                                         <label className="text-[10px] font-black text-text-muted uppercase tracking-widest pl-1">
                                             Birthday Gift (Loyalty Points)
                                         </label>
@@ -588,11 +588,11 @@ export default function SettingsPage({ section: propSection }) {
                                             min="0"
                                             value={fiscal.birthdayPoints}
                                             onChange={(e) => setFiscal({ ...fiscal, birthdayPoints: e.target.value })}
-                                            className="w-full px-5 py-3.5 rounded-none border border-border text-sm font-bold focus:border-primary outline-none transition-all bg-surface-alt/50"
+                                            className="w-full px-4 py-2.5 allow-curve rounded-lg border border-border text-xs font-bold focus:border-primary outline-none transition-all bg-surface-alt/50"
                                         />
                                         <p className="text-[10px] text-text-muted">Points sent to customer on birthday</p>
                                     </div>
-                                    <div className="space-y-2">
+                                    <div className="space-y-1.5">
                                         <label className="text-[10px] font-black text-text-muted uppercase tracking-widest pl-1">
                                             Anniversary Gift (Loyalty Points)
                                         </label>
@@ -601,7 +601,7 @@ export default function SettingsPage({ section: propSection }) {
                                             min="0"
                                             value={fiscal.anniversaryPoints}
                                             onChange={(e) => setFiscal({ ...fiscal, anniversaryPoints: e.target.value })}
-                                            className="w-full px-5 py-3.5 rounded-none border border-border text-sm font-bold focus:border-primary outline-none transition-all bg-surface-alt/50"
+                                            className="w-full px-4 py-2.5 allow-curve rounded-lg border border-border text-xs font-bold focus:border-primary outline-none transition-all bg-surface-alt/50"
                                         />
                                         <p className="text-[10px] text-text-muted">Points sent to customer on anniversary</p>
                                     </div>
@@ -620,11 +620,11 @@ export default function SettingsPage({ section: propSection }) {
                                     </label>
                                 </div>
 
-                                <div className="pt-6 flex justify-end border-t border-border">
+                                <div className="pt-3 flex justify-end border-t border-border">
                                     <button
                                         type="submit"
                                         disabled={isSaving || salonLoading}
-                                        className="px-8 py-3.5 bg-primary text-primary-foreground rounded-full font-bold text-xs uppercase tracking-widest shadow-xl shadow-primary/20 disabled:opacity-50"
+                                        className="px-5 py-2 bg-primary text-primary-foreground rounded-full font-bold text-[10px] uppercase tracking-widest shadow-md shadow-primary/20 disabled:opacity-50"
                                     >
                                         {isSaving ? 'Saving…' : 'Save business info'}
                                     </button>
@@ -636,14 +636,14 @@ export default function SettingsPage({ section: propSection }) {
                     )}
 
                     {activeTab === 'terms' && (
-                        <div className="space-y-8 max-w-2xl text-left">
+                        <div className="space-y-4 text-left">
                             <div>
                                 <div className="flex items-center gap-3">
-                                    <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                                        <FileText className="w-5 h-5 text-primary" />
+                                    <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+                                        <FileText className="w-4 h-4 text-primary" />
                                     </div>
                                     <div>
-                                        <h2 className="text-lg font-bold text-text tracking-tight">Terms & Conditions</h2>
+                                        <h2 className="text-sm font-bold text-text tracking-tight">Terms & Conditions</h2>
                                         <p className="text-xs text-text-muted font-medium mt-0.5">
                                             These terms will be printed at the bottom of your invoices / bills.
                                         </p>
@@ -652,23 +652,23 @@ export default function SettingsPage({ section: propSection }) {
                             </div>
 
                             {/* Add New Term */}
-                            <div className="bg-surface-alt/30 border border-border rounded-2xl p-5">
-                                <label className="text-[10px] font-black text-text-muted uppercase tracking-widest mb-3 block">
+                            <div className="bg-surface-alt/30 border border-border rounded-xl p-3">
+                                <label className="text-[10px] font-black text-text-muted uppercase tracking-widest mb-2 block">
                                     Add a new term or condition
                                 </label>
-                                <div className="flex flex-col sm:flex-row gap-3">
+                                <div className="flex flex-col sm:flex-row gap-2">
                                     <input
                                         type="text"
                                         value={newTerm}
                                         onChange={(e) => setNewTerm(e.target.value)}
                                         onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleAddTerm(); } }}
                                         placeholder="e.g. No refund after 24 hours of service."
-                                        className="flex-1 px-4 py-3 rounded-full border border-border text-sm font-semibold focus:border-primary outline-none transition-all bg-surface hover:border-primary/40 focus:ring-4 focus:ring-primary/5"
+                                        className="flex-1 px-3 py-2 rounded-full border border-border text-xs font-semibold focus:border-primary outline-none transition-all bg-surface hover:border-primary/40 focus:ring-4 focus:ring-primary/5"
                                     />
                                     <button
                                         type="button"
                                         onClick={handleAddTerm}
-                                        className="px-5 py-3 bg-primary text-primary-foreground rounded-full font-bold text-xs uppercase tracking-widest shadow-lg shadow-primary/20 hover:shadow-primary/30 active:scale-95 transition-all flex items-center justify-center gap-2 shrink-0 w-full sm:w-auto"
+                                        className="px-4 py-2 bg-primary text-primary-foreground rounded-full font-bold text-[10px] uppercase tracking-widest shadow-md shadow-primary/20 hover:shadow-primary/30 active:scale-95 transition-all flex items-center justify-center gap-1.5 shrink-0 w-full sm:w-auto"
                                     >
                                         <Plus className="w-4 h-4" /> Add
                                     </button>
@@ -677,23 +677,23 @@ export default function SettingsPage({ section: propSection }) {
 
                             {/* Terms Ordered List */}
                             {termsList.length === 0 ? (
-                                <div className="text-center py-16 border-2 border-dashed border-border rounded-2xl">
-                                    <FileText className="w-12 h-12 mx-auto text-text-muted/30 mb-3" />
+                                <div className="text-center py-10 border-2 border-dashed border-border rounded-xl">
+                                    <FileText className="w-8 h-8 mx-auto text-text-muted/30 mb-2" />
                                     <p className="text-sm font-bold text-text-muted/60">No terms added yet</p>
                                     <p className="text-xs text-text-muted/40 mt-1">Add terms above — they'll appear as a numbered list on your bills.</p>
                                 </div>
                             ) : (
                                 <form onSubmit={handleTermsSubmit} className="space-y-4">
-                                    <div className="bg-surface border border-border rounded-2xl overflow-hidden divide-y divide-border">
+                                    <div className="bg-surface border border-border rounded-xl overflow-hidden divide-y divide-border">
                                         {termsList.map((term, idx) => (
                                             <div
                                                 key={idx}
-                                                className="flex items-center gap-3 px-4 py-3.5 hover:bg-surface-alt/20 transition-colors group"
+                                                className="flex items-center gap-2 px-3 py-2.5 hover:bg-surface-alt/20 transition-colors group"
                                             >
                                                 {/* Grip / Number */}
-                                                <div className="flex items-center gap-2 shrink-0">
+                                                <div className="flex items-center gap-1.5 shrink-0">
                                                     <GripVertical className="w-4 h-4 text-text-muted/30 group-hover:text-text-muted/60 transition-colors" />
-                                                    <span className="w-7 h-7 rounded-full bg-primary/10 text-primary text-[11px] font-black flex items-center justify-center">
+                                                    <span className="w-6 h-6 rounded-full bg-primary/10 text-primary text-[10px] font-black flex items-center justify-center">
                                                         {idx + 1}
                                                     </span>
                                                 </div>
@@ -743,14 +743,14 @@ export default function SettingsPage({ section: propSection }) {
                                         ))}
                                     </div>
 
-                                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pt-4 border-t border-border">
+                                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pt-3 border-t border-border">
                                         <p className="text-[10px] font-bold text-text-muted">
                                             {termsList.length} term{termsList.length !== 1 ? 's' : ''} — will appear as an ordered list on invoices
                                         </p>
                                         <button
                                             type="submit"
                                             disabled={isSaving}
-                                            className="px-8 py-3.5 w-full sm:w-auto bg-primary text-primary-foreground rounded-full font-bold text-xs uppercase tracking-widest shadow-xl shadow-primary/20 disabled:opacity-50 hover:shadow-primary/30 active:scale-95 transition-all text-center"
+                                            className="px-5 py-2 w-full sm:w-auto bg-primary text-primary-foreground rounded-full font-bold text-[10px] uppercase tracking-widest shadow-md shadow-primary/20 disabled:opacity-50 hover:shadow-primary/30 active:scale-95 transition-all text-center"
                                         >
                                             {isSaving ? 'Saving…' : 'Save Terms & Conditions'}
                                         </button>
@@ -760,10 +760,10 @@ export default function SettingsPage({ section: propSection }) {
 
                             {/* Preview Card */}
                             {termsList.length > 0 && (
-                                <div className="mt-6">
-                                    <p className="text-[10px] font-black text-text-muted uppercase tracking-widest mb-3">Invoice Preview</p>
-                                    <div className="bg-white border border-border rounded-2xl p-6 shadow-sm">
-                                        <p className="text-[10px] font-black text-text-muted uppercase tracking-widest mb-2 border-b border-border pb-2">Terms & Conditions</p>
+                                <div className="mt-4">
+                                    <p className="text-[10px] font-black text-text-muted uppercase tracking-widest mb-2">Invoice Preview</p>
+                                    <div className="bg-white border border-border rounded-xl p-4 shadow-sm">
+                                        <p className="text-[10px] font-black text-text-muted uppercase tracking-widest mb-1.5 border-b border-border pb-1.5">Terms & Conditions</p>
                                         <ol className="list-decimal list-inside space-y-1.5 pl-1">
                                             {termsList.map((t, i) => (
                                                 <li key={i} className="text-[11px] font-medium text-text-muted leading-relaxed">{t}</li>
@@ -776,14 +776,14 @@ export default function SettingsPage({ section: propSection }) {
                     )}
 
                     {activeTab === 'booking-link' && (
-                        <div className="space-y-8 max-w-3xl text-left">
+                        <div className="space-y-4 text-left">
                             <div>
                                 <div className="flex items-center gap-3">
-                                    <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center animate-pulse">
-                                        <Share2 className="w-5 h-5 text-primary" />
+                                    <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center animate-pulse">
+                                        <Share2 className="w-4 h-4 text-primary" />
                                     </div>
                                     <div>
-                                        <h2 className="text-lg font-bold text-text tracking-tight">Online Appointment Booking Page</h2>
+                                        <h2 className="text-sm font-bold text-text tracking-tight">Online Appointment Booking Page</h2>
                                         <p className="text-xs text-text-muted font-medium mt-0.5">
                                             This is your dedicated online self-service page link. Copy and share it so customers can book directly.
                                         </p>
@@ -792,7 +792,7 @@ export default function SettingsPage({ section: propSection }) {
                             </div>
 
                             {/* Booking Link Copy Field */}
-                            <div className="bg-surface-alt/30 border border-border rounded-2xl p-6 space-y-4 shadow-sm">
+                            <div className="bg-surface-alt/30 border border-border rounded-xl p-4 space-y-3 shadow-sm">
                                 <label className="text-[10px] font-black text-text-muted uppercase tracking-widest block">
                                     Your Dedicated Booking Link
                                 </label>
@@ -801,7 +801,7 @@ export default function SettingsPage({ section: propSection }) {
                                         type="text"
                                         readOnly
                                         value={`${window.location.origin}/app/booking?tenantId=${salon?._id || ''}`}
-                                        className="flex-1 px-4 py-3 rounded-full border border-border text-sm font-mono focus:border-primary outline-none transition-all bg-surface hover:border-primary/40 focus:ring-4 focus:ring-primary/5 select-all"
+                                        className="flex-1 px-3 py-2 rounded-full border border-border text-xs font-mono focus:border-primary outline-none transition-all bg-surface hover:border-primary/40 focus:ring-4 focus:ring-primary/5 select-all"
                                     />
                                     <button
                                         type="button"
@@ -810,7 +810,7 @@ export default function SettingsPage({ section: propSection }) {
                                             navigator.clipboard.writeText(link);
                                             toast.success('Booking link copied to clipboard!');
                                         }}
-                                        className="px-6 py-3 bg-primary text-primary-foreground rounded-full font-bold text-xs uppercase tracking-widest shadow-lg shadow-primary/20 hover:shadow-primary/30 active:scale-95 transition-all flex items-center justify-center gap-2 shrink-0"
+                                        className="px-4 py-2 bg-primary text-primary-foreground rounded-full font-bold text-[10px] uppercase tracking-widest shadow-md shadow-primary/20 hover:shadow-primary/30 active:scale-95 transition-all flex items-center justify-center gap-1.5 shrink-0"
                                     >
                                         <Copy className="w-4 h-4" /> Copy Link
                                     </button>
@@ -818,18 +818,18 @@ export default function SettingsPage({ section: propSection }) {
                             </div>
 
                             {/* QR Code and Share Information */}
-                            <div className="grid md:grid-cols-2 gap-6">
-                                <div className="bg-surface border border-border rounded-2xl p-6 flex flex-col items-center justify-center text-center space-y-4 shadow-sm hover:border-primary/20 transition-all">
+                            <div className="grid md:grid-cols-2 gap-4">
+                                <div className="bg-surface border border-border rounded-xl p-4 flex flex-col items-center justify-center text-center space-y-3 shadow-sm hover:border-primary/20 transition-all">
                                     <h3 className="text-xs font-black text-text-muted uppercase tracking-widest">
                                         Scan or Download QR Code
                                     </h3>
-                                    <div className="p-3 bg-white rounded-2xl border border-border shadow-sm">
+                                    <div className="p-2 bg-white rounded-xl border border-border shadow-sm">
                                         <img
                                             src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(
                                                 `${window.location.origin}/app/booking?tenantId=${salon?._id || ''}`
                                             )}`}
                                             alt="Salon Booking QR Code"
-                                            className="w-44 h-44 object-contain"
+                                            className="w-36 h-36 object-contain"
                                         />
                                     </div>
                                     <a
@@ -844,11 +844,11 @@ export default function SettingsPage({ section: propSection }) {
                                     </a>
                                 </div>
 
-                                <div className="bg-surface border border-border rounded-2xl p-6 space-y-4 shadow-sm">
+                                <div className="bg-surface border border-border rounded-xl p-4 space-y-3 shadow-sm">
                                     <h3 className="text-xs font-black text-text-muted uppercase tracking-widest">
                                         How to share with customers?
                                     </h3>
-                                    <ul className="space-y-3.5 text-xs text-text-muted">
+                                    <ul className="space-y-2.5 text-xs text-text-muted">
                                         <li className="flex items-start gap-2.5">
                                             <span className="w-5 h-5 rounded-full bg-primary/10 text-primary flex items-center justify-center text-[10px] font-bold shrink-0 mt-0.5">1</span>
                                             <div>
@@ -875,7 +875,7 @@ export default function SettingsPage({ section: propSection }) {
                             </div>
 
                             {/* Customer Flow Walkthrough Explanation */}
-                            <div className="bg-surface-alt/10 border border-border rounded-3xl p-6 space-y-6 shadow-sm">
+                            <div className="bg-surface-alt/10 border border-border rounded-xl p-4 space-y-4 shadow-sm">
                                 <div>
                                     <h3 className="text-sm font-bold text-text uppercase tracking-wider">
                                         Customer Booking Flow Steps
@@ -885,7 +885,7 @@ export default function SettingsPage({ section: propSection }) {
                                     </p>
                                 </div>
 
-                                <div className="grid sm:grid-cols-5 gap-4">
+                                <div className="grid sm:grid-cols-5 gap-3">
                                     {[
                                         { step: '01', title: 'Details', desc: 'Name & Phone with quick OTP verification' },
                                         { step: '02', title: 'Outlet', desc: 'Choose Nearby or All branches' },
@@ -893,7 +893,7 @@ export default function SettingsPage({ section: propSection }) {
                                         { step: '04', title: 'Stylist', desc: 'Pick preferred staff expert' },
                                         { step: '05', title: 'Booking', desc: 'Select Date & Time slot, and confirm' },
                                     ].map((s) => (
-                                        <div key={s.step} className="bg-surface border border-border p-4 rounded-2xl flex flex-col justify-between space-y-3 hover:border-primary/20 transition-colors shadow-sm">
+                                        <div key={s.step} className="bg-surface border border-border p-3 rounded-xl flex flex-col justify-between space-y-2 hover:border-primary/20 transition-colors shadow-sm">
                                             <div className="flex items-center justify-between">
                                                 <span className="text-[10px] font-bold text-primary font-mono">{s.step}</span>
                                                 <span className="w-1.5 h-1.5 rounded-full bg-primary/40" />

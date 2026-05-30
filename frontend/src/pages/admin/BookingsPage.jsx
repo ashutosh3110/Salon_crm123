@@ -21,7 +21,14 @@ import {
     RotateCcw,
     PieChart as PieIcon,
     BarChart3,
-    Eye
+    Eye,
+    Briefcase,
+    ArrowRight,
+    Filter,
+    CalendarDays,
+    MoreHorizontal,
+    Copy,
+    CalendarClock
 } from 'lucide-react';
 import {
     PieChart,
@@ -207,10 +214,46 @@ export default function BookingsPage() {
     const stats = useMemo(() => {
         const safeBookings = Array.isArray(bookings) ? bookings : [];
         return [
-            { label: "Total Bookings", value: safeBookings.length, icon: Calendar, color: 'text-primary' },
-            { label: 'Accepted', value: safeBookings.filter(b => b.status === 'confirmed').length, icon: RotateCcw, color: 'text-blue-500' },
-            { label: 'Completion Rate', value: `${safeBookings.length ? Math.round((safeBookings.filter(b => b.status === 'completed').length / safeBookings.length) * 100) : 0}%`, icon: TrendingUp, color: 'text-emerald-500' },
-            { label: 'Cancelled', value: safeBookings.filter(b => b.status === 'cancelled').length, icon: AlertCircle, color: 'text-rose-500' },
+            { 
+                label: "TOTAL BOOKINGS", 
+                value: safeBookings.length, 
+                subtext: "All time bookings",
+                icon: CalendarDays, 
+                iconBg: "bg-purple-50 border border-purple-100",
+                iconColor: "text-purple-500",
+                linkColor: "text-purple-600",
+                linkText: "View all bookings"
+            },
+            { 
+                label: 'ACCEPTED', 
+                value: safeBookings.filter(b => b.status === 'confirmed').length, 
+                subtext: "Confirmed bookings",
+                icon: CheckCircle2, 
+                iconBg: "bg-emerald-50 border border-emerald-100",
+                iconColor: "text-emerald-500",
+                linkColor: "text-emerald-600",
+                linkText: "View accepted"
+            },
+            { 
+                label: 'COMPLETION RATE', 
+                value: `${safeBookings.length ? Math.round((safeBookings.filter(b => b.status === 'completed').length / safeBookings.length) * 100) : 0}%`, 
+                subtext: "Bookings completed",
+                icon: TrendingUp, 
+                iconBg: "bg-blue-50 border border-blue-100",
+                iconColor: "text-blue-500",
+                linkColor: "text-blue-600",
+                linkText: "View analytics"
+            },
+            { 
+                label: 'CANCELLED', 
+                value: safeBookings.filter(b => b.status === 'cancelled').length, 
+                subtext: "Cancelled bookings",
+                icon: XCircle, 
+                iconBg: "bg-rose-50 border border-rose-100",
+                iconColor: "text-rose-500",
+                linkColor: "text-rose-600",
+                linkText: "View cancelled"
+            },
         ];
     }, [bookings]);
 
@@ -229,30 +272,30 @@ export default function BookingsPage() {
             {/* Header */}
             <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
                 <div>
-                    <h1 className="text-2xl font-black text-text uppercase tracking-tight leading-none">Manage Bookings</h1>
-                    <p className="text-[10px] font-black text-text-muted mt-1.5 uppercase tracking-[0.3em] opacity-50">View and manage all salon appointments</p>
+                    <h1 className="text-2xl font-black text-slate-900 uppercase tracking-tight leading-none">Manage Bookings</h1>
+                    <p className="text-[10px] font-black text-slate-400 mt-1.5 uppercase tracking-[0.1em]">View and manage all salon appointments</p>
                 </div>
 
                 <div className="flex flex-wrap items-center gap-3">
                     <button
                         onClick={() => navigate('/admin/bookings/new')}
-                        className="flex items-center gap-2 px-5 py-3 bg-primary text-primary-foreground text-[10px] font-black uppercase tracking-[0.15em] shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all active:scale-95"
+                        className="flex items-center gap-2 px-5 py-2.5 bg-[#B8860B] hover:bg-[#997009] text-white text-[11px] font-black uppercase tracking-widest allow-curve rounded-lg transition-all shadow-sm"
                     >
-                        <Plus className="w-3.5 h-3.5" /> New Booking
+                        <Plus className="w-4 h-4" /> New Booking
                     </button>
 
-                    <div className="flex items-center bg-surface border border-border">
+                    <div className="flex items-center gap-2">
                         <button
                             onClick={() => setView('calendar')}
-                            className={`flex items-center gap-1.5 px-4 py-2.5 text-[9px] font-black uppercase tracking-wider transition-all ${view === 'calendar' ? 'bg-primary text-primary-foreground' : 'text-text-muted hover:bg-surface-alt'}`}
+                            className={`flex items-center gap-1.5 px-4 py-2.5 text-[10px] font-black uppercase tracking-wider transition-all allow-curve rounded-lg shadow-sm border ${view === 'calendar' ? 'bg-white text-slate-900 border-slate-300' : 'bg-white text-slate-500 border-slate-200 hover:border-slate-300 hover:text-slate-700'}`}
                         >
-                            <Calendar className="w-3 h-3" /> Calendar
+                            <CalendarClock className="w-3.5 h-3.5" /> Calendar
                         </button>
                         <button
                             onClick={() => setView('list')}
-                            className={`flex items-center gap-1.5 px-4 py-2.5 text-[9px] font-black uppercase tracking-wider transition-all ${view === 'list' ? 'bg-primary text-primary-foreground' : 'text-text-muted hover:bg-surface-alt'}`}
+                            className={`flex items-center gap-1.5 px-4 py-2.5 text-[10px] font-black uppercase tracking-wider transition-all allow-curve rounded-lg shadow-sm border ${view === 'list' ? 'bg-white text-slate-900 border-slate-300' : 'bg-white text-slate-500 border-slate-200 hover:border-slate-300 hover:text-slate-700'}`}
                         >
-                            <List className="w-3 h-3" /> List
+                            <List className="w-3.5 h-3.5" /> List
                         </button>
                     </div>
                 </div>
@@ -262,114 +305,127 @@ export default function BookingsPage() {
             <div className="grid grid-cols-2 lg:grid-cols-6 gap-3">
                 {/* KPI Stats */}
                 {stats.map((stat, i) => (
-                    <div key={i} className="bg-surface p-4 border border-border shadow-sm hover:shadow-md transition-all group relative overflow-hidden">
-                        <div className="flex items-center gap-2 mb-2">
-                            <stat.icon className={`w-3.5 h-3.5 ${stat.color}`} />
-                            <span className="text-[8px] font-black text-text-muted uppercase tracking-wider">{stat.label}</span>
+                    <div key={i} className="bg-white px-4 py-5 border border-slate-200 allow-curve rounded-2xl shadow-sm hover:shadow-md transition-all group flex flex-col h-full">
+                        <div className="flex items-center gap-3 mb-3">
+                            <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${stat.iconBg}`}>
+                                <stat.icon className={`w-4 h-4 ${stat.iconColor}`} />
+                            </div>
+                            <span className="text-[9px] font-black text-slate-500 uppercase tracking-wider leading-tight">{stat.label}</span>
                         </div>
-                        <div className="text-2xl font-black text-text tracking-tighter">
+                        <div className="text-2xl font-black text-slate-900 tracking-tighter leading-none">
                             {typeof stat.value === 'string' ? stat.value : <AnimatedCounter value={stat.value} />}
                         </div>
-                        <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary/10 group-hover:bg-primary/40 transition-all" />
+                        <p className="text-[10px] font-semibold text-slate-400 mt-1">{stat.subtext}</p>
+                        <button className={`mt-auto pt-4 text-[10px] font-black uppercase tracking-wider flex items-center gap-1 hover:underline ${stat.linkColor}`}>
+                            {stat.linkText} <ArrowRight className="w-3 h-3" />
+                        </button>
                     </div>
                 ))}
 
                 {/* Status Pie Chart */}
-                <div className="bg-surface p-4 border border-border shadow-sm">
-                    <div className="flex items-center justify-between mb-2">
-                        <span className="text-[8px] font-black text-text-muted uppercase tracking-wider">Status Mix</span>
-                        <PieIcon className="w-3 h-3 text-primary" />
+                <div className="bg-white px-4 py-5 border border-slate-200 allow-curve rounded-2xl shadow-sm flex flex-col h-full">
+                    <span className="text-[9px] font-black text-slate-500 uppercase tracking-wider mb-3">STATUS MIX</span>
+                    <div className="flex items-center gap-3 flex-1">
+                        <div className="w-14 h-14 shrink-0 relative">
+                            <ResponsiveContainer width="100%" height="100%">
+                                <PieChart>
+                                    <Pie data={statusData} innerRadius={16} outerRadius={26} paddingAngle={4} dataKey="value" stroke="transparent">
+                                        {statusData.map((entry, index) => (
+                                            <Cell key={`cell-${index}`} fill={entry.color} />
+                                        ))}
+                                    </Pie>
+                                    <Tooltip contentStyle={{ backgroundColor: 'white', border: '1px solid #e2e8f0', borderRadius: '8px', fontSize: '10px', fontWeight: '900', textTransform: 'uppercase', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }} />
+                                </PieChart>
+                            </ResponsiveContainer>
+                        </div>
+                        <div className="flex flex-col justify-center gap-1.5 flex-1">
+                            {statusData.map(d => (
+                                <div key={d.name} className="flex items-center gap-1.5">
+                                    <div className="w-2 h-2 rounded-sm shrink-0" style={{ backgroundColor: d.color }} />
+                                    <span className="text-[9px] font-bold text-slate-500 whitespace-nowrap"><span className="font-black text-slate-800">{d.value}</span> {d.name}</span>
+                                </div>
+                            ))}
+                        </div>
                     </div>
-                    <div className="h-[80px]">
-                        <ResponsiveContainer width="100%" height="100%">
-                            <PieChart>
-                                <Pie data={statusData} innerRadius={18} outerRadius={32} paddingAngle={4} dataKey="value" stroke="transparent">
-                                    {statusData.map((entry, index) => (
-                                        <Cell key={`cell-${index}`} fill={entry.color} />
-                                    ))}
-                                </Pie>
-                                <Tooltip contentStyle={{ backgroundColor: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '0px', fontSize: '9px', fontWeight: '900', textTransform: 'uppercase' }} />
-                            </PieChart>
-                        </ResponsiveContainer>
-                    </div>
-                    <div className="flex flex-wrap gap-1.5 mt-1">
-                        {statusData.map(d => (
-                            <div key={d.name} className="flex items-center gap-1">
-                                <div className="w-1.5 h-1.5" style={{ backgroundColor: d.color }} />
-                                <span className="text-[7px] font-black uppercase text-text-muted">{d.name}</span>
-                            </div>
-                        ))}
-                    </div>
+                    <button className="mt-auto pt-4 text-[10px] font-black uppercase tracking-wider flex items-center gap-1 hover:underline text-blue-600">
+                        View details <ArrowRight className="w-3 h-3" />
+                    </button>
                 </div>
 
                 {/* Source Chart */}
-                <div className="bg-surface p-4 border border-border shadow-sm">
-                    <div className="flex items-center justify-between mb-2">
-                        <span className="text-[8px] font-black text-text-muted uppercase tracking-wider">Sources</span>
-                        <BarChart3 className="w-3 h-3 text-primary" />
+                <div className="bg-white px-4 py-5 border border-slate-200 allow-curve rounded-2xl shadow-sm flex flex-col h-full">
+                    <div className="flex items-center gap-3 mb-3">
+                        <div className="w-10 h-10 rounded-full flex items-center justify-center shrink-0 bg-yellow-50 border border-yellow-100">
+                            <Briefcase className="w-4 h-4 text-yellow-500" />
+                        </div>
+                        <span className="text-[9px] font-black text-slate-500 uppercase tracking-wider leading-tight">SOURCES</span>
                     </div>
-                    <div className="h-[80px]">
-                        <ResponsiveContainer width="100%" height="100%">
-                            <BarChart data={sourceData}>
-                                <Bar dataKey="count" fill="var(--primary)" radius={0}>
-                                    {sourceData.map((entry, index) => (
-                                        <Cell key={`cell-${index}`} fill={index % 2 === 0 ? 'var(--primary)' : '#8B6F23'} />
-                                    ))}
-                                </Bar>
-                                <Tooltip contentStyle={{ backgroundColor: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '0px', fontSize: '9px', fontWeight: '900', textTransform: 'uppercase' }} cursor={{ fill: 'transparent' }} />
-                            </BarChart>
-                        </ResponsiveContainer>
+                    <div className="flex-1 flex items-center justify-center">
+                        <span className="text-[10px] font-black uppercase text-slate-300 tracking-widest">ENTRY ANALYSIS</span>
                     </div>
-                    <div className="text-[7px] font-black uppercase text-text-muted tracking-wider text-center opacity-40 mt-1">Entry Analysis</div>
+                    <button className="mt-auto pt-4 text-[10px] font-black uppercase tracking-wider flex items-center gap-1 hover:underline text-yellow-600">
+                        View sources <ArrowRight className="w-3 h-3" />
+                    </button>
                 </div>
             </div>
 
             {/* Filters Row */}
-            <div className="bg-surface p-3 border border-border shadow-sm flex flex-col xl:flex-row gap-3 items-center">
-                <div className="relative flex-1 w-full">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-text-muted" />
+            <div className="flex flex-col xl:flex-row gap-3 items-center">
+                <div className="relative flex-1 w-full bg-white border border-slate-200 allow-curve rounded-xl shadow-sm">
+                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                     <input
                         type="text"
-                        placeholder="Search by ID, Customer, Service, or Staff..."
+                        placeholder="Search by ID, customer, service, staff, or phone..."
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
-                        className="w-full pl-9 pr-4 py-2.5 border border-border bg-surface text-[10px] font-black uppercase tracking-wider focus:outline-none focus:border-primary transition-all text-text"
+                        className="w-full pl-10 pr-4 py-3 bg-transparent text-xs font-semibold placeholder:text-slate-400 text-slate-900 focus:outline-none allow-curve rounded-xl"
                     />
                 </div>
 
-                <div className="flex flex-wrap items-center gap-2 w-full xl:w-auto">
-                    <CustomDropdown
-                        value={dateFilter}
-                        onChange={setDateFilter}
-                        options={[
-                            { value: 'all', label: 'ALL DATES' },
-                            { value: 'today', label: 'TODAY' },
-                            { value: 'week', label: 'WEEK' },
-                            { value: 'month', label: 'MONTH' }
-                        ]}
-                        className="w-full xl:w-40"
-                    />
-                    <CustomDropdown
-                        value={staffFilter}
-                        onChange={setStaffFilter}
-                        options={[
-                            { value: 'all', label: 'ALL STAFF' },
-                            ...staff.map(s => ({ value: s._id, label: s.name.toUpperCase() }))
-                        ]}
-                        className="w-full xl:w-40"
-                    />
-                    <CustomDropdown
-                        value={statusFilter}
-                        onChange={setStatusFilter}
-                        options={[
-                            { value: 'all', label: 'ALL STATUS' },
-                            { value: 'pending', label: 'PENDING' },
-                            { value: 'confirmed', label: 'CONFIRMED' },
-                            { value: 'completed', label: 'COMPLETED' },
-                            { value: 'cancelled', label: 'CANCELLED' }
-                        ]}
-                        className="w-full xl:w-40"
-                    />
+                <div className="flex flex-wrap items-center gap-3 w-full xl:w-auto">
+                    <div className="bg-white border border-slate-200 allow-curve rounded-xl shadow-sm px-2 flex-1 xl:flex-none">
+                        <CustomDropdown
+                            value={dateFilter}
+                            onChange={setDateFilter}
+                            options={[
+                                { value: 'all', label: 'All Dates' },
+                                { value: 'today', label: 'Today' },
+                                { value: 'week', label: 'This Week' },
+                                { value: 'month', label: 'This Month' }
+                            ]}
+                            className="w-full xl:w-36 [&>button]:border-none [&>button]:shadow-none [&>button]:py-3 [&_span]:normal-case [&_span]:text-xs [&_span]:font-semibold [&_span]:text-slate-700"
+                            icon={<CalendarDays className="w-4 h-4 mr-1 text-slate-500" />}
+                        />
+                    </div>
+                    <div className="bg-white border border-slate-200 allow-curve rounded-xl shadow-sm px-2 flex-1 xl:flex-none">
+                        <CustomDropdown
+                            value={staffFilter}
+                            onChange={setStaffFilter}
+                            options={[
+                                { value: 'all', label: 'All Staff' },
+                                ...staff.map(s => ({ value: s._id, label: s.name }))
+                            ]}
+                            className="w-full xl:w-36 [&>button]:border-none [&>button]:shadow-none [&>button]:py-3 [&_span]:normal-case [&_span]:text-xs [&_span]:font-semibold [&_span]:text-slate-700"
+                        />
+                    </div>
+                    <div className="bg-white border border-slate-200 allow-curve rounded-xl shadow-sm px-2 flex-1 xl:flex-none">
+                        <CustomDropdown
+                            value={statusFilter}
+                            onChange={setStatusFilter}
+                            options={[
+                                { value: 'all', label: 'All Status' },
+                                { value: 'pending', label: 'Pending' },
+                                { value: 'confirmed', label: 'Confirmed' },
+                                { value: 'completed', label: 'Completed' },
+                                { value: 'cancelled', label: 'Cancelled' }
+                            ]}
+                            className="w-full xl:w-36 [&>button]:border-none [&>button]:shadow-none [&>button]:py-3 [&_span]:normal-case [&_span]:text-xs [&_span]:font-semibold [&_span]:text-slate-700"
+                        />
+                    </div>
+                    
+                    <button className="flex items-center justify-center gap-2 px-5 py-3 bg-white border border-slate-200 text-slate-700 text-xs font-semibold allow-curve rounded-xl shadow-sm hover:bg-slate-50 transition-all flex-1 xl:flex-none shrink-0">
+                        <Filter className="w-4 h-4" /> Filters
+                    </button>
                 </div>
             </div>
 
@@ -463,22 +519,22 @@ export default function BookingsPage() {
                     </div>
                 </div>
             ) : (
-                <div className="bg-surface border border-border shadow-sm overflow-hidden">
-                    <div className="table-responsive">
-                        <table className="w-full text-left border-collapse min-w-[900px]">
+                <div className="bg-white border border-slate-200 allow-curve rounded-2xl shadow-sm overflow-hidden mt-4">
+                    <div className="overflow-x-auto">
+                        <table className="w-full text-left border-collapse min-w-[1000px]">
                             <thead>
-                                <tr className="bg-surface-alt/50 border-b border-border">
-                                    <th className="px-4 py-3 text-[9px] font-black text-text-muted uppercase tracking-wider">ID</th>
-                                    <th className="px-4 py-3 text-[9px] font-black text-text-muted uppercase tracking-wider">Date & Time</th>
-                                    <th className="px-4 py-3 text-[9px] font-black text-text-muted uppercase tracking-wider">Customer</th>
-                                    <th className="px-4 py-3 text-[9px] font-black text-text-muted uppercase tracking-wider">Service</th>
-                                    <th className="px-4 py-3 text-[9px] font-black text-text-muted uppercase tracking-wider">Staff</th>
-                                    <th className="px-4 py-3 text-[9px] font-black text-text-muted uppercase tracking-wider">Outlet</th>
-                                    <th className="px-4 py-3 text-[9px] font-black text-text-muted uppercase tracking-wider">Status</th>
-                                    <th className="px-4 py-3 text-[9px] font-black text-text-muted uppercase tracking-wider text-right">Actions</th>
+                                <tr className="bg-slate-50/50 border-b border-slate-200">
+                                    <th className="px-5 py-4 text-[10px] font-black text-slate-500 uppercase tracking-wider">ID</th>
+                                    <th className="px-5 py-4 text-[10px] font-black text-slate-500 uppercase tracking-wider">Date & Time ↓</th>
+                                    <th className="px-5 py-4 text-[10px] font-black text-slate-500 uppercase tracking-wider">Customer</th>
+                                    <th className="px-5 py-4 text-[10px] font-black text-slate-500 uppercase tracking-wider">Service</th>
+                                    <th className="px-5 py-4 text-[10px] font-black text-slate-500 uppercase tracking-wider">Staff</th>
+                                    <th className="px-5 py-4 text-[10px] font-black text-slate-500 uppercase tracking-wider">Outlet</th>
+                                    <th className="px-5 py-4 text-[10px] font-black text-slate-500 uppercase tracking-wider">Status</th>
+                                    <th className="px-5 py-4 text-[10px] font-black text-slate-500 uppercase tracking-wider text-right">Actions</th>
                                 </tr>
                             </thead>
-                            <tbody className="divide-y divide-border/40">
+                            <tbody className="divide-y divide-slate-100">
                                 {filteredBookings.length === 0 ? (
                                     <tr>
                                         <td colSpan="8" className="px-4 py-20 text-center">
@@ -492,59 +548,82 @@ export default function BookingsPage() {
                                     paginatedBookings.map((b, index) => (
                                         <tr
                                             key={b._id}
-                                            className="hover:bg-surface-alt/50 transition-all cursor-pointer group"
+                                            className="hover:bg-slate-50/50 transition-all cursor-pointer group"
                                             onClick={() => navigate(`/admin/bookings/${b._id}`)}
                                         >
-                                            <td className="px-4 py-3.5 text-[10px] font-black text-text-muted/60 uppercase tracking-wider">#{b._id?.slice(-6).toUpperCase() || 'NULL'}</td>
-                                            <td className="px-4 py-3.5">
-                                                <div className="flex flex-col">
-                                                    <span className="text-[11px] font-black text-text uppercase leading-none">
-                                                        {b.appointmentDate ? new Date(b.appointmentDate).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' }) : 'N/A'}
-                                                    </span>
-                                                    <span className="text-[9px] text-primary font-black uppercase tracking-wider mt-1 leading-none">
-                                                        {b.appointmentDate ? new Date(b.appointmentDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '--:--'}
-                                                    </span>
+                                            <td className="px-5 py-4">
+                                                <div className="flex flex-col gap-1.5">
+                                                    <span className="text-[11px] font-black text-slate-700 uppercase tracking-wider">#{b._id?.slice(-6).toUpperCase() || 'NULL'}</span>
+                                                    <button onClick={(e) => { e.stopPropagation(); navigator.clipboard.writeText(b._id); }} className="text-slate-400 hover:text-slate-600 transition-colors w-fit"><Copy className="w-3.5 h-3.5" /></button>
                                                 </div>
                                             </td>
-                                            <td className="px-4 py-3.5">
-                                                <div className="flex items-center gap-2.5">
-                                                    <div className="w-8 h-8 bg-primary/5 border border-primary/20 flex items-center justify-center text-[9px] font-black text-primary flex-shrink-0">
-                                                        {b.client?.name?.[0] || 'C'}
-                                                    </div>
-                                                    <div className="flex flex-col min-w-0">
-                                                        <span className="text-[11px] font-black text-text uppercase tracking-tight leading-none truncate">{b.client?.name || 'UNKNOWN'}</span>
-                                                        <span className="text-[9px] font-bold text-text-muted tracking-wider mt-0.5 leading-none">{maskPhone(b.client?.phone, user?.role) || '—'}</span>
+                                            <td className="px-5 py-4">
+                                                <div className="flex items-start gap-2">
+                                                    <CalendarDays className="w-4 h-4 text-slate-500 mt-0.5" />
+                                                    <div className="flex flex-col gap-1">
+                                                        <span className="text-[11px] font-black text-slate-900 uppercase leading-none">
+                                                            {b.appointmentDate ? new Date(b.appointmentDate).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : 'N/A'}
+                                                        </span>
+                                                        <span className="text-[10px] font-black text-slate-500 uppercase tracking-wider leading-none">
+                                                            {b.appointmentDate ? new Date(b.appointmentDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '--:--'}
+                                                        </span>
                                                     </div>
                                                 </div>
                                             </td>
-                                            <td className="px-4 py-3.5 text-[10px] font-black text-text uppercase tracking-wider max-w-[120px] truncate">{b.service?.name}</td>
-                                            <td className="px-4 py-3.5">
+                                            <td className="px-5 py-4">
+                                                <div className="flex items-center gap-3">
+                                                    <div className="w-9 h-9 bg-purple-100 flex items-center justify-center text-[12px] font-black text-purple-600 flex-shrink-0 allow-curve rounded-lg">
+                                                        {b.client?.name?.[0]?.toUpperCase() || 'C'}
+                                                    </div>
+                                                    <div className="flex flex-col min-w-0 gap-1">
+                                                        <span className="text-[11px] font-black text-slate-900 uppercase tracking-tight leading-none truncate">{b.client?.name || 'UNKNOWN'}</span>
+                                                        <span className="text-[10px] font-bold text-slate-500 tracking-wider leading-none flex items-center gap-1">
+                                                            {maskPhone(b.client?.phone, user?.role) || '—'}
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td className="px-5 py-4">
                                                 <div className="flex items-center gap-1.5">
-                                                    <div className="w-5 h-5 rounded-full bg-surface-alt flex items-center justify-center text-[7px] font-black border border-border flex-shrink-0">
-                                                        {b.staff?.name?.split(' ').map(n => n[0]).join('') || '?'}
-                                                    </div>
-                                                    <span className="text-[10px] font-black text-text uppercase tracking-wide truncate">{b.staff?.name || 'Unassigned'}</span>
+                                                    <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                                                    <span className="text-[10px] font-black text-slate-700 uppercase tracking-wider max-w-[140px] truncate">{b.service?.name}</span>
                                                 </div>
                                             </td>
-                                            <td className="px-4 py-3.5">
-                                                <span className="text-[9px] font-black text-text uppercase leading-none">{b.outlet?.name || 'Main'}</span>
+                                            <td className="px-5 py-4">
+                                                <div className="flex items-center gap-2">
+                                                    <div className="w-6 h-6 rounded-full bg-emerald-100 flex items-center justify-center text-[9px] font-black text-emerald-700 flex-shrink-0">
+                                                        {b.staff?.name?.split(' ').map(n => n[0]).join('').toUpperCase() || '?'}
+                                                    </div>
+                                                    <span className="text-[10px] font-black text-slate-700 uppercase tracking-wide truncate">{b.staff?.name || 'UNASSIGNED'}</span>
+                                                </div>
                                             </td>
-                                            <td className="px-4 py-3.5">
-                                                <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 text-[8px] font-black border uppercase tracking-wider ${statusColors[b.status] || 'bg-surface text-text'}`}>
-                                                    <div className={`w-1.5 h-1.5 ${b.status === 'confirmed' ? 'bg-indigo-500' : b.status === 'completed' ? 'bg-emerald-500' : b.status === 'pending' ? 'bg-amber-500' : 'bg-rose-500'}`} />
+                                            <td className="px-5 py-4">
+                                                <span className="text-[10px] font-black text-slate-700 uppercase tracking-wide leading-none">{b.outlet?.name || 'MAIN OUTLET'}</span>
+                                            </td>
+                                            <td className="px-5 py-4">
+                                                <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-[9px] font-black allow-curve rounded-lg uppercase tracking-wider ${b.status === 'confirmed' ? 'bg-indigo-50 text-indigo-600 border border-indigo-200' : b.status === 'pending' ? 'bg-amber-50 text-amber-600 border border-amber-200' : b.status === 'completed' ? 'bg-emerald-50 text-emerald-600 border border-emerald-200' : 'bg-slate-100 text-slate-600 border border-slate-200'}`}>
+                                                    <div className={`w-1.5 h-1.5 rounded-full ${b.status === 'confirmed' ? 'bg-indigo-500' : b.status === 'pending' ? 'bg-amber-500' : b.status === 'completed' ? 'bg-emerald-500' : 'bg-slate-500'}`} />
                                                     {b.status}
                                                 </span>
                                             </td>
-                                            <td className="px-4 py-3.5 text-right">
-                                                <button 
-                                                    onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        navigate(`/admin/bookings/${b._id}`);
-                                                    }}
-                                                    className="p-2 bg-background border border-border text-text-muted hover:text-primary hover:border-primary transition-all"
-                                                >
-                                                    <Eye className="w-3.5 h-3.5" />
-                                                </button>
+                                            <td className="px-5 py-4 text-right">
+                                                <div className="flex items-center justify-end gap-2">
+                                                    <button 
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            navigate(`/admin/bookings/${b._id}`);
+                                                        }}
+                                                        className="p-2 bg-white border border-slate-200 text-slate-500 allow-curve rounded-lg hover:text-slate-900 hover:border-slate-300 transition-all shadow-sm"
+                                                    >
+                                                        <Eye className="w-3.5 h-3.5" />
+                                                    </button>
+                                                    <button 
+                                                        onClick={(e) => { e.stopPropagation(); }}
+                                                        className="p-2 bg-white border border-slate-200 text-slate-500 allow-curve rounded-lg hover:text-slate-900 hover:border-slate-300 transition-all shadow-sm"
+                                                    >
+                                                        <MoreHorizontal className="w-3.5 h-3.5" />
+                                                    </button>
+                                                </div>
                                             </td>
                                         </tr>
                                     ))
@@ -555,33 +634,51 @@ export default function BookingsPage() {
 
                     {/* Pagination Footer */}
                     {filteredBookings.length > 0 && (
-                        <div className="bg-surface-alt/50 px-4 py-3 border-t border-border flex items-center justify-between">
-                            <span className="text-[9px] font-black text-text-muted uppercase tracking-wider">
-                                {(currentPage - 1) * itemsPerPage + 1}–{Math.min(currentPage * itemsPerPage, filteredBookings.length)} of {filteredBookings.length}
+                        <div className="bg-white px-6 py-4 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-4">
+                            <span className="text-[11px] font-semibold text-slate-500">
+                                Showing {(currentPage - 1) * itemsPerPage + 1} to {Math.min(currentPage * itemsPerPage, filteredBookings.length)} of {filteredBookings.length} bookings
                             </span>
-                            <div className="flex gap-3">
+                            <div className="flex items-center gap-2">
                                 <button 
                                     type="button"
                                     onClick={(e) => { e.stopPropagation(); setCurrentPage(prev => Math.max(1, prev - 1)); }}
                                     disabled={currentPage === 1}
-                                    className="text-[9px] font-black text-text-muted uppercase tracking-wider hover:text-primary transition-colors disabled:opacity-20"
+                                    className="flex items-center gap-1 text-[10px] font-black text-slate-400 uppercase tracking-wider hover:text-slate-900 transition-colors disabled:opacity-30"
                                 >
-                                    Prev
+                                    <ChevronRight className="w-4 h-4 rotate-180" /> PREV
                                 </button>
-                                <span className="text-[9px] font-black text-text uppercase tracking-wider">{currentPage}/{totalPages || 1}</span>
+                                <div className="px-3 py-1.5 border border-slate-300 text-slate-900 font-black text-[11px] allow-curve rounded-md mx-2">
+                                    {currentPage}
+                                </div>
                                 <button 
                                     type="button"
                                     onClick={(e) => { e.stopPropagation(); setCurrentPage(prev => Math.min(totalPages, prev + 1)); }}
                                     disabled={currentPage === totalPages || totalPages === 0}
-                                    className="text-[9px] font-black text-text-muted uppercase tracking-wider hover:text-primary transition-colors disabled:opacity-20"
+                                    className="flex items-center gap-1 text-[10px] font-black text-slate-400 uppercase tracking-wider hover:text-slate-900 transition-colors disabled:opacity-30"
                                 >
-                                    Next
+                                    NEXT <ChevronRight className="w-4 h-4" />
                                 </button>
                             </div>
                         </div>
                     )}
                 </div>
             )}
+
+            {/* Stay Organized Banner */}
+            <div className="mt-8 bg-white border border-slate-200 allow-curve rounded-2xl shadow-sm p-6 relative overflow-hidden flex items-center justify-between">
+                <div className="flex items-start gap-4 z-10">
+                    <div className="w-6 h-6 rounded-full bg-blue-500 text-white flex items-center justify-center font-bold text-xs shrink-0 shadow-sm mt-0.5">
+                        i
+                    </div>
+                    <div>
+                        <h4 className="text-sm font-black text-slate-900">Stay organized!</h4>
+                        <p className="text-[11px] font-semibold text-slate-500 mt-1">Use filters and search to quickly find bookings. Click on a booking to view full details or take action.</p>
+                    </div>
+                </div>
+                <div className="hidden md:block absolute right-6 -bottom-6 opacity-40 mix-blend-multiply pointer-events-none">
+                    <CalendarDays className="w-32 h-32 text-blue-100" />
+                </div>
+            </div>
 
             {/* Modals */}
             {selectedBooking && (
