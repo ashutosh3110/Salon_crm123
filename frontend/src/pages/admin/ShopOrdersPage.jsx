@@ -329,143 +329,155 @@ export default function ShopOrdersPage() {
             {/* Header */}
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 px-1 border-b border-border pb-6">
                 <div className="text-left font-mono">
-                    <h1 className="text-2xl font-black text-text uppercase italic tracking-tight leading-none">Shop Order Registry</h1>
-                    <p className="text-[10px] font-black text-text-muted mt-2 uppercase tracking-[0.2em] italic">Operations :: Customer Product Orders</p>
+                    <h1 className="text-2xl font-black text-slate-900 uppercase italic tracking-tight leading-none">Shop Order Registry</h1>
+                    <p className="text-[10px] font-black text-slate-500 mt-2 uppercase tracking-[0.2em] italic">Operations :: Customer Product Orders</p>
                 </div>
                 <div className="flex items-center gap-2">
-                    <button onClick={fetchOrders} className="bg-surface border border-border px-4 py-2 text-[10px] font-black text-text-muted hover:bg-surface-alt transition-all uppercase tracking-widest font-mono">
+                    <button onClick={fetchOrders} className="bg-white border border-slate-200 px-5 py-2.5 text-[10px] font-black text-slate-600 hover:text-slate-900 hover:border-slate-300 transition-all uppercase tracking-widest font-mono allow-curve rounded-xl shadow-sm">
                         Refresh Log
                     </button>
                 </div>
             </div>
 
-            {/* Filters Bar */}
-            <div className="flex flex-col md:flex-row gap-4 items-stretch md:items-end">
-                <div className="relative flex-1 group w-full">
-                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-primary transition-colors" />
-                    <input
-                        type="text"
-                        placeholder="Search by Order ID, Customer Name or Phone..."
-                        className="w-full pl-12 pr-6 py-3 border border-border bg-surface text-[11px] font-black uppercase tracking-widest placeholder:opacity-30 focus:outline-none focus:border-primary transition-all shadow-sm"
-                        value={search}
-                        onChange={(e) => setSearch(e.target.value)}
-                    />
+            {/* Filters Section (Two Rows) */}
+            <div className="flex flex-col gap-4 mt-2">
+                
+                {/* Row 1: Search and Dropdown */}
+                <div className="flex flex-col md:flex-row gap-4 items-center w-full">
+                    
+                    {/* Search */}
+                    <div className="relative flex-1 w-full bg-white border border-slate-200 allow-curve rounded-2xl shadow-sm">
+                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                        <input
+                            type="text"
+                            placeholder="Search by Order ID, Customer Name..."
+                            className="w-full pl-11 pr-4 py-3.5 bg-transparent text-[11px] font-black uppercase tracking-widest text-slate-700 placeholder:text-slate-400 placeholder:opacity-70 focus:outline-none allow-curve rounded-2xl"
+                            value={search}
+                            onChange={(e) => setSearch(e.target.value)}
+                        />
+                    </div>
+
+                    {/* Outlet Filter */}
+                    <div className="w-full md:w-64 bg-white border border-slate-200 allow-curve rounded-2xl shadow-sm px-2 shrink-0">
+                        <CustomDropdown
+                            value={outletFilter}
+                            onChange={(val) => setOutletFilter(val)}
+                            options={[
+                                { label: 'All Outlets', value: 'all' },
+                                ...outlets.map(o => ({ label: o.name, value: o._id }))
+                            ]}
+                            className="w-full [&>button]:border-none [&>button]:bg-transparent [&>button]:shadow-none [&>button]:py-3.5 [&_span]:text-[10px] [&_span]:font-black [&_span]:uppercase [&_span]:tracking-widest"
+                        />
+                    </div>
                 </div>
 
-                {/* Outlet Filter */}
-                <div className="flex flex-col min-w-[200px] w-full md:w-auto">
-                    <CustomDropdown
-                        label="Target Outlet"
-                        value={outletFilter}
-                        onChange={(val) => setOutletFilter(val)}
-                        options={[
-                            { label: 'All Outlets', value: 'all' },
-                            ...outlets.map(o => ({ label: o.name, value: o._id }))
-                        ]}
-                    />
-                </div>
-
-                <div className="flex items-center gap-2 overflow-x-auto pb-2 md:pb-0 w-full md:w-auto scrollbar-hide">
+                {/* Row 2: Status Filters */}
+                <div className="flex items-center gap-2 overflow-x-auto w-full scrollbar-hide py-1">
                     {['all', 'pending', 'accepted', 'dispatched', 'out_for_delivery', 'delivered', 'rejected', 'cancelled'].map(s => (
                         <button
                             key={s}
                             onClick={() => setStatusFilter(s)}
-                            className={`px-4 py-2.5 text-[9px] font-black uppercase tracking-widest transition-all whitespace-nowrap border rounded-xl status-filter-btn ${statusFilter === s ? 'active-status' : ''}`}
+                            className={`px-6 py-3.5 text-[9px] font-black uppercase tracking-widest transition-all whitespace-nowrap allow-curve rounded-2xl border ${statusFilter === s ? 'bg-primary border-primary text-white shadow-md shadow-primary/20' : 'bg-white border-slate-200 text-slate-500 hover:bg-slate-50 hover:text-primary shadow-sm'}`}
                         >
-                            <span>{s}</span>
+                            {s}
                         </button>
                     ))}
                 </div>
             </div>
 
             {/* Orders Table */}
-            <div className="bg-surface border border-border shadow-sm overflow-hidden min-h-[500px]">
+            <div className="bg-white border border-slate-200 shadow-sm overflow-hidden min-h-[500px] allow-curve rounded-2xl mt-4">
                 {loading ? (
                     <div className="py-24 text-center space-y-4">
                         <Loader2 className="w-8 h-8 animate-spin mx-auto text-primary" />
-                        <p className="text-[10px] font-black text-text-muted uppercase tracking-[0.3em]">Accessing order archives...</p>
+                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em]">Accessing order archives...</p>
                     </div>
                 ) : filteredOrders.length === 0 ? (
-                    <div className="py-24 text-center bg-background/50">
-                        <Package className="w-12 h-12 text-text-muted mx-auto mb-4 opacity-20" />
-                        <p className="text-[10px] font-black text-text-muted uppercase tracking-[0.3em]">No active order transmissions found</p>
+                    <div className="py-24 text-center bg-slate-50/50">
+                        <Package className="w-12 h-12 text-slate-300 mx-auto mb-4" />
+                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em]">No active order transmissions found</p>
                     </div>
                 ) : (
                     <div className="overflow-x-auto">
                         <table className="w-full text-left border-collapse min-w-[1000px]">
                             <thead>
-                                <tr className="bg-surface-alt/80 text-[10px] font-black text-text-muted uppercase tracking-[0.2em] border-b border-border">
-                                    <th className="px-6 py-5">Order Reference</th>
-                                    <th className="px-6 py-5">Timestamp</th>
-                                    <th className="px-6 py-5">Customer Profile</th>
-                                    <th className="px-6 py-5">Delivery Method</th>
-                                    <th className="px-6 py-5">Origin Outlet</th>
-                                    <th className="px-6 py-5 text-right">Amount</th>
-                                    <th className="px-6 py-5">Current Status</th>
-                                    <th className="px-6 py-5 text-center">Protocol</th>
+                                <tr className="bg-slate-50 text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] border-b border-slate-200">
+                                    <th className="pl-12 pr-6 py-6">Order Reference</th>
+                                    <th className="px-6 py-6">Timestamp</th>
+                                    <th className="px-6 py-6">Customer Profile</th>
+                                    <th className="px-6 py-6">Delivery Method</th>
+                                    <th className="px-6 py-6">Origin Outlet</th>
+                                    <th className="px-6 py-6 text-right">Amount</th>
+                                    <th className="px-6 py-6">Current Status</th>
+                                    <th className="pr-12 pl-6 py-6 text-center">Protocol</th>
                                 </tr>
                             </thead>
-                            <tbody className="divide-y divide-border/30">
+                            <tbody className="divide-y divide-slate-100">
                                 {filteredOrders.map(order => {
                                     const statusInfo = STATUS_FLOW[order.status] || STATUS_FLOW.pending;
                                     const StatusIcon = statusInfo.icon;
 
                                     return (
-                                        <tr key={order._id} className="hover:bg-surface-alt/50 transition-colors group border-b border-border/10">
-                                            <td className="px-6 py-5">
+                                        <tr key={order._id} className="hover:bg-slate-50/80 transition-colors group">
+                                            <td className="pl-12 pr-6 py-5">
                                                 <div className="flex flex-col">
-                                                    <span className="font-black text-primary uppercase tracking-tighter text-sm">#{order._id.slice(-6).toUpperCase()}</span>
-                                                    <span className="text-[9px] font-black text-text-muted opacity-40">{order._id}</span>
+                                                    <span className="font-black text-slate-800 uppercase tracking-tighter text-sm">#{order._id.slice(-6).toUpperCase()}</span>
+                                                    <span className="text-[9px] font-bold text-slate-400">{order._id}</span>
                                                 </div>
                                             </td>
                                             <td className="px-6 py-5">
                                                 <div className="flex flex-col">
-                                                    <span className="text-[11px] font-black text-text uppercase tracking-tight">{new Date(order.createdAt).toLocaleDateString()}</span>
-                                                    <span className="text-[10px] font-bold text-text-muted uppercase tracking-tight">{new Date(order.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                                                    <span className="text-[11px] font-black text-slate-700 uppercase tracking-tight">{new Date(order.createdAt).toLocaleDateString()}</span>
+                                                    <span className="text-[10px] font-bold text-slate-500 uppercase tracking-tight">{new Date(order.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                                                 </div>
                                             </td>
                                             <td className="px-6 py-5">
                                                 <div className="flex items-center gap-3">
-                                                    <div className="w-8 h-8 bg-surface-alt border border-border flex items-center justify-center">
-                                                        <User className="w-4 h-4 text-text-muted" />
+                                                    <div className="w-10 h-10 bg-purple-100 allow-curve rounded-xl flex items-center justify-center shrink-0 shadow-sm">
+                                                        <User className="w-4 h-4 text-purple-600" />
                                                     </div>
                                                     <div className="flex flex-col">
-                                                        <span className="text-[11px] font-black text-text uppercase tracking-tight">{order.customerId?.name || 'Unknown'}</span>
-                                                        <span className="text-[10px] font-bold text-text-muted uppercase tracking-tight">{order.customerId?.phone || 'N/A'}</span>
+                                                        <span className="text-[11px] font-black text-slate-800 uppercase tracking-tight">{order.customerId?.name || 'Unknown'}</span>
+                                                        <span className="text-[10px] font-bold text-slate-500 uppercase tracking-tight">{order.customerId?.phone || 'N/A'}</span>
                                                     </div>
                                                 </div>
                                             </td>
                                             <td className="px-6 py-5">
                                                 <div className="flex items-center gap-2">
-                                                    <div className={`p-1 ${order.deliveryPreference === 'home' ? 'text-blue-500' : 'text-emerald-500'}`}>
-                                                        {order.deliveryPreference === 'home' ? <Truck className="w-3.5 h-3.5" /> : <MapPin className="w-3.5 h-3.5" />}
+                                                    <div className={`p-2 allow-curve rounded-xl shadow-sm ${order.deliveryPreference === 'home' ? 'bg-blue-100 text-blue-600' : 'bg-emerald-100 text-emerald-600'}`}>
+                                                        {order.deliveryPreference === 'home' ? <Truck className="w-4 h-4" /> : <MapPin className="w-4 h-4" />}
                                                     </div>
-                                                    <span className="text-[10px] font-black text-text uppercase tracking-widest">
+                                                    <span className="text-[10px] font-black text-slate-700 uppercase tracking-widest">
                                                         {order.deliveryPreference === 'home' ? 'Home Delivery' : 'In-Store Collect'}
                                                     </span>
                                                 </div>
                                             </td>
                                             <td className="px-6 py-5">
-                                                <div className="flex flex-col">
-                                                    <span className="text-[10px] font-black text-text uppercase tracking-widest">
-                                                        {outlets.find(out => String(out._id) === String(order.outletId))?.name || 'Main Branch'}
-                                                    </span>
-                                                    <span className="text-[8px] font-bold text-text-muted uppercase tracking-tighter opacity-40">
-                                                        ID: {order.outletId?.slice(-6) || 'N/A'}
-                                                    </span>
+                                                <div className="flex items-center gap-3">
+                                                    <div className="w-10 h-10 bg-orange-100 allow-curve rounded-xl flex items-center justify-center shrink-0 shadow-sm">
+                                                        <Package className="w-4 h-4 text-orange-600" />
+                                                    </div>
+                                                    <div className="flex flex-col">
+                                                        <span className="text-[10px] font-black text-slate-800 uppercase tracking-widest">
+                                                            {outlets.find(out => String(out._id) === String(order.outletId))?.name || 'Main Branch'}
+                                                        </span>
+                                                        <span className="text-[8px] font-bold text-slate-400 uppercase tracking-tighter">
+                                                            ID: {order.outletId?.slice(-6) || 'N/A'}
+                                                        </span>
+                                                    </div>
                                                 </div>
                                             </td>
-                                            <td className="px-6 py-5 text-right font-black text-text tracking-tighter text-base italic">₹{order.totalAmount?.toLocaleString()}</td>
+                                            <td className="px-6 py-5 text-right font-black text-slate-800 tracking-tighter text-base italic">₹{order.totalAmount?.toLocaleString()}</td>
                                             <td className="px-6 py-5">
-                                                <span className={`inline-flex items-center gap-2 px-3 py-1 text-[9px] font-black uppercase tracking-[0.2em] border ${statusInfo.bg} ${statusInfo.color} border-current/20`}>
-                                                    <StatusIcon className="w-3 h-3" />
+                                                <span className={`inline-flex items-center gap-2 px-3 py-1.5 text-[9px] font-black uppercase tracking-[0.2em] border ${statusInfo.bg} ${statusInfo.color} border-current/20 allow-curve rounded-xl shadow-sm`}>
+                                                    <StatusIcon className="w-3.5 h-3.5" />
                                                     {statusInfo.label}
                                                 </span>
                                             </td>
-                                            <td className="px-6 py-5 text-center">
+                                            <td className="pr-12 pl-6 py-5 text-center">
                                                 <button
                                                     onClick={() => setSelectedOrder(order)}
-                                                    className="p-2.5 border rounded-xl transition-all active:scale-95 shadow-sm eye-details-btn"
+                                                    className="p-2.5 bg-white border border-slate-200 allow-curve rounded-xl transition-all active:scale-95 shadow-sm text-slate-500 hover:text-slate-800 hover:border-slate-300"
                                                 >
                                                     <Eye className="w-4 h-4" />
                                                 </button>
@@ -479,11 +491,11 @@ export default function ShopOrdersPage() {
                 )}
             </div>
 
-            {/* Order Details Drawer/Modal */}
+            {/* Order Details Modal */}
             {createPortal(
                 <AnimatePresence>
                     {selectedOrder && (
-                        <div className="fixed inset-0 z-[999999] flex justify-end">
+                        <div className="fixed inset-0 z-[999999] flex items-center justify-center p-4 sm:p-6">
                             <motion.div
                                 initial={{ opacity: 0 }}
                                 animate={{ opacity: 1 }}
@@ -492,11 +504,11 @@ export default function ShopOrdersPage() {
                                 className="absolute inset-0 bg-[#0f172a]/65 backdrop-blur-[16px]"
                             />
                             <motion.div
-                                initial={{ x: '100%' }}
-                                animate={{ x: 0 }}
-                                exit={{ x: '100%' }}
-                                transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-                                className="relative w-full max-w-2xl bg-surface h-full shadow-2xl flex flex-col border-l border-border z-10"
+                                initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                                animate={{ opacity: 1, scale: 1, y: 0 }}
+                                exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                                transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+                                className="relative w-full max-w-3xl bg-surface max-h-[90vh] shadow-2xl flex flex-col allow-curve rounded-3xl border border-border z-10 overflow-hidden"
                             >
                                 {/* Drawer Header */}
                                 <div className="p-6 bg-surface-alt border-b border-border flex items-center justify-between">
@@ -523,7 +535,7 @@ export default function ShopOrdersPage() {
                                                     key={s}
                                                     disabled={updatingStatus}
                                                     onClick={() => handleUpdateStatus(selectedOrder._id, s)}
-                                                    className={`px-6 py-3 text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2 border rounded-xl protocol-action-btn btn-${s === 'accepted' ? 'accepted' : s === 'rejected' ? 'rejected' : 'other'}`}
+                                                    className={`px-6 py-3 text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2 border allow-curve rounded-xl protocol-action-btn btn-${s === 'accepted' ? 'accepted' : s === 'rejected' ? 'rejected' : 'other'}`}
                                                 >
                                                     {updatingStatus && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
                                                     <span>

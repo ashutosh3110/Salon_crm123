@@ -116,7 +116,7 @@ export default function ProductCategoryManager() {
     return (
         <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500 font-mono">
             {/* Header Area */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-surface p-6 border border-border">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-surface p-6 border border-border allow-curve rounded-2xl">
                 <div>
                     <h2 className="text-xl font-black text-text uppercase tracking-tighter italic">Product Classification</h2>
                     <p className="text-[9px] font-black text-text-muted mt-1 uppercase tracking-widest italic">Inventory :: Master Category Registry</p>
@@ -127,7 +127,7 @@ export default function ProductCategoryManager() {
                         setEditingId(null);
                         setFormData({ name: '', image: '', status: 'active' });
                     }}
-                    className="flex items-center gap-2 bg-text text-background px-6 py-2.5 text-[10px] font-black hover:bg-primary hover:text-white transition-all uppercase tracking-widest shadow-lg"
+                    className="flex items-center gap-2 bg-text text-background px-6 py-2.5 text-[10px] font-black hover:bg-primary hover:text-white transition-all uppercase tracking-widest shadow-lg allow-curve rounded-2xl"
                 >
                     <Plus className="w-4 h-4" /> Define New Category
                 </button>
@@ -140,27 +140,27 @@ export default function ProductCategoryManager() {
                     <input
                         type="text"
                         placeholder="SEARCH BY VECTOR NAME..."
-                        className="w-full pl-14 pr-6 py-5 bg-surface border border-border text-[11px] font-black focus:border-primary outline-none transition-all uppercase tracking-widest shadow-sm"
+                        className="w-full pl-14 pr-6 py-5 bg-surface border border-border text-[11px] font-black focus:border-primary outline-none transition-all uppercase tracking-widest shadow-sm allow-curve rounded-2xl"
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                     />
                 </div>
 
-                <div className="bg-surface border border-border shadow-xl overflow-hidden rounded-[32px]">
+                <div className="bg-surface border border-border shadow-xl overflow-hidden allow-curve rounded-[2rem]">
                     <div className="overflow-x-auto w-full">
                         <table className="w-full text-left border-collapse min-w-[800px]">
                             <thead>
                                 <tr className="bg-surface-alt/50 border-b border-border">
-                                    <th className="px-8 py-5 text-[10px] font-black text-text-muted uppercase tracking-widest">Metadata Vector</th>
-                                    <th className="px-8 py-5 text-[10px] font-black text-text-muted uppercase tracking-widest">Active Load</th>
-                                    <th className="px-8 py-5 text-[10px] font-black text-text-muted uppercase tracking-widest">Status Protocol</th>
-                                    <th className="px-8 py-5 text-[10px] font-black text-text-muted uppercase tracking-widest text-right">Operations</th>
+                                    <th className="pl-12 pr-4 py-5 text-[10px] font-black text-text-muted uppercase tracking-widest w-[35%]">Metadata Vector</th>
+                                    <th className="px-4 py-5 text-[10px] font-black text-text-muted uppercase tracking-widest w-[25%] text-left">Active Load</th>
+                                    <th className="px-4 py-5 text-[10px] font-black text-text-muted uppercase tracking-widest w-[20%] text-left">Status Protocol</th>
+                                    <th className="pr-8 pl-4 py-5 text-[10px] font-black text-text-muted uppercase tracking-widest w-[20%] text-left">Operations</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-border">
                                 {filteredCategories.length === 0 && (
                                     <tr>
-                                        <td colSpan={4} className="px-8 py-32 text-center">
+                                        <td colSpan={4} className="px-12 py-32 text-center">
                                             <div className="flex flex-col items-center gap-4 opacity-20">
                                                 <LayoutGrid className="w-12 h-12" />
                                                 <p className="text-[11px] font-black uppercase tracking-[0.3em] italic">No Data Points Found :: System Clear</p>
@@ -170,51 +170,53 @@ export default function ProductCategoryManager() {
                                 )}
                                 {filteredCategories.map(cat => (
                                     <tr key={cat._id} className="hover:bg-primary/[0.02] transition-all group">
-                                        <td className="px-8 py-6">
+                                        <td className="pl-12 pr-4 py-6">
                                             <div className="flex items-center gap-6">
-                                                <div className="w-16 h-16 rounded-2xl border border-border bg-background flex items-center justify-center overflow-hidden group-hover:border-primary transition-all shadow-sm">
+                                                <div className="w-16 h-16 allow-curve rounded-2xl border border-border bg-background flex items-center justify-center overflow-hidden group-hover:border-primary transition-all shadow-sm shrink-0">
                                                     {cat.image ? (
                                                         <img src={cat.image} className="w-full h-full object-cover" alt="" />
                                                     ) : (
                                                         <ImageIcon className="w-6 h-6 text-text-muted opacity-30" />
                                                     )}
                                                 </div>
-                                                <div>
-                                                    <p className="text-sm font-black text-text uppercase tracking-tight group-hover:text-primary transition-colors leading-none mb-1.5">{cat.name}</p>
-                                                    <p className="text-[9px] text-text-muted font-bold tracking-widest">REG_ID: {cat._id?.slice(-8).toUpperCase()}</p>
+                                                <div className="flex-1 min-w-0">
+                                                    <p className="text-sm font-black text-text uppercase tracking-tight group-hover:text-primary transition-colors leading-none mb-1.5 truncate">{cat.name}</p>
+                                                    <p className="text-[9px] text-text-muted font-bold tracking-widest truncate">REG_ID: {cat._id?.slice(-8).toUpperCase()}</p>
                                                 </div>
                                             </div>
                                         </td>
-                                        <td className="px-8 py-6">
-                                            <div className="flex flex-col gap-1">
-                                                <span className="text-[12px] font-black text-text uppercase font-mono italic">
+                                        <td className="px-4 py-6">
+                                            <div className="flex flex-col items-start gap-1.5 w-24">
+                                                <span className="text-[11px] font-black text-text uppercase font-mono tracking-tight leading-none text-left">
                                                     {getProductCount(cat.name)} UNITS
                                                 </span>
-                                                <div className="w-24 h-1 bg-surface-alt rounded-full overflow-hidden">
+                                                <div className="w-full h-1.5 bg-surface-alt rounded-full overflow-hidden border border-border/50">
                                                     <div
-                                                        className="h-full bg-primary"
+                                                        className="h-full bg-primary rounded-full transition-all duration-1000"
                                                         style={{ width: `${Math.min(100, (getProductCount(cat.name) / 20) * 100)}%` }}
                                                     />
                                                 </div>
                                             </div>
                                         </td>
-                                        <td className="px-8 py-6">
-                                            <button
-                                                onClick={() => toggleStatus(cat)}
-                                                className={`flex items-center gap-2 px-4 py-2 text-[9px] font-black uppercase tracking-widest border rounded-xl transition-all ${cat.status === 'active'
-                                                    ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20 hover:bg-emerald-500/20'
-                                                    : 'bg-rose-500/10 text-rose-600 border-rose-500/20 hover:bg-rose-500/20'
-                                                    }`}
-                                            >
-                                                <span className={`w-1.5 h-1.5 rounded-full ${cat.status === 'active' ? 'bg-emerald-500' : 'bg-rose-500'} animate-pulse`} />
-                                                {cat.status || 'Active'}
-                                            </button>
+                                        <td className="px-4 py-6">
+                                            <div className="flex justify-start">
+                                                <button
+                                                    onClick={() => toggleStatus(cat)}
+                                                    className={`flex items-center justify-start gap-2 px-4 py-2 w-max text-[9px] font-black uppercase tracking-widest border allow-curve rounded-xl transition-all ${cat.status === 'active'
+                                                        ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20 hover:bg-emerald-500/20'
+                                                        : 'bg-rose-500/10 text-rose-600 border-rose-500/20 hover:bg-rose-500/20'
+                                                        }`}
+                                                >
+                                                    <span className={`w-1.5 h-1.5 rounded-full ${cat.status === 'active' ? 'bg-emerald-500' : 'bg-rose-500'} animate-pulse shrink-0`} />
+                                                    {cat.status || 'Active'}
+                                                </button>
+                                            </div>
                                         </td>
-                                        <td className="px-8 py-6">
-                                            <div className="flex items-center justify-end gap-2 md:opacity-0 md:translate-x-4 opacity-100 translate-x-0 md:group-hover:opacity-100 md:group-hover:translate-x-0 transition-all duration-300">
+                                        <td className="pr-8 pl-4 py-6">
+                                            <div className="flex items-center justify-start gap-2">
                                                 <button
                                                     onClick={() => handleEdit(cat)}
-                                                    className="p-3 rounded-xl border border-border bg-surface text-text-muted hover:bg-text hover:text-background hover:border-text transition-all"
+                                                    className="p-2.5 allow-curve rounded-xl border border-border bg-surface text-text-muted hover:bg-text hover:text-background hover:border-text transition-all active:scale-95 shadow-sm shrink-0"
                                                     title="Edit Metadata"
                                                 >
                                                     <Edit2 className="w-4 h-4" />
@@ -225,7 +227,7 @@ export default function ProductCategoryManager() {
                                                             deleteProductCategory(cat._id);
                                                         }
                                                     }}
-                                                    className="p-3 rounded-xl border border-border bg-surface text-text-muted hover:bg-rose-500 hover:text-white hover:border-rose-500 transition-all"
+                                                    className="p-2.5 allow-curve rounded-xl border border-border bg-surface text-text-muted hover:bg-rose-500 hover:text-white hover:border-rose-500 transition-all active:scale-95 shadow-sm shrink-0"
                                                     title="Purge Entry"
                                                 >
                                                     <Trash2 className="w-4 h-4" />
