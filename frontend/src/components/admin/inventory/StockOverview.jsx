@@ -171,12 +171,12 @@ export default function StockOverview() {
 
     return (
         <div className="flex flex-col h-full slide-right overflow-hidden">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 px-2 pb-6 border-b border-border/40">
-                <div className="text-left font-black leading-none">
-                    <h2 className="text-lg font-black text-foreground uppercase tracking-tight italic">Global Density Matrix</h2>
-                    <p className="text-[10px] font-black text-text-muted mt-1 uppercase tracking-[0.2em] italic">
-                        Real-time Asset Distribution :: SKU x Outlet Vector
-                        <span className="ml-2 border-l border-border/60 pl-2 text-primary">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 px-1 pb-4 border-b border-border/40">
+                <div className="text-left leading-none">
+                    <h2 className="text-sm font-extrabold text-slate-800 dark:text-white uppercase tracking-tight">Global Density Matrix</h2>
+                    <p className="text-[9px] font-medium text-slate-400 dark:text-slate-500 mt-1.5 uppercase tracking-[0.1em]">
+                        Real-time Asset Distribution · SKU x Outlet Vector
+                        <span className="ml-2 border-l border-slate-200 dark:border-slate-800 pl-2 text-primary font-semibold">
                             {activeSKUs} MATCHING SKUs · {activeNodes} ACTIVE NODES
                         </span>
                     </p>
@@ -186,7 +186,7 @@ export default function StockOverview() {
                     onClick={() => {
                         fetchInventorySummary();
                     }}
-                    className="flex items-center gap-2 px-4 py-2 bg-surface-alt border border-border/40 text-[9px] font-black text-primary uppercase tracking-[0.2em] hover:bg-primary/5 transition-all italic shadow-sm"
+                    className="flex items-center gap-1.5 px-3 py-1.5 bg-surface-alt border border-border/40 text-[9px] font-semibold text-primary uppercase tracking-[0.1em] hover:bg-primary/5 transition-all shadow-sm allow-curve rounded-lg"
                 >
                     <RefreshCw className="w-3 h-3" />
                     Synchronize Registry
@@ -194,71 +194,71 @@ export default function StockOverview() {
             </div>
 
             {/* ── Stock Summary Cards ── */}
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 p-6 border-b border-border/40">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 p-4 border-b border-border/40">
                 {/* Total Products */}
-                <div className="relative overflow-hidden rounded-2xl border border-border/50 bg-gradient-to-br from-blue-500/10 via-surface to-surface p-5 group hover:shadow-lg hover:shadow-blue-500/5 transition-all duration-300">
-                    <div className="absolute top-3 right-3 w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-                        <Boxes className="w-5 h-5 text-blue-500" />
+                <div className="relative overflow-hidden allow-curve rounded-xl border border-border/50 bg-gradient-to-br from-blue-500/10 via-surface to-surface p-3.5 group hover:shadow-lg hover:shadow-blue-500/5 transition-all duration-300">
+                    <div className="absolute top-3 right-3 w-8 h-8 rounded-lg bg-blue-500/10 flex items-center justify-center group-hover:scale-105 transition-transform duration-300">
+                        <Boxes className="w-4 h-4 text-blue-500" />
                     </div>
-                    <p className="text-[10px] font-bold text-text-muted uppercase tracking-[0.15em]">Total Products</p>
-                    <p className="text-3xl font-black text-blue-500 mt-1 tracking-tight">{cardStats.totalProducts}</p>
-                    <div className="mt-2 h-1 w-12 rounded-full bg-blue-500/20" />
+                    <p className="text-[9px] font-bold text-text-muted uppercase tracking-[0.1em]">Total Products</p>
+                    <p className="text-2xl font-black text-blue-500 mt-0.5 tracking-tight">{cardStats.totalProducts}</p>
                 </div>
 
                 {/* In Stock */}
-                <div className="relative overflow-hidden rounded-2xl border border-border/50 bg-gradient-to-br from-emerald-500/10 via-surface to-surface p-5 group hover:shadow-lg hover:shadow-emerald-500/5 transition-all duration-300">
-                    <div className="absolute top-3 right-3 w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-                        <CheckCircle2 className="w-5 h-5 text-emerald-500" />
+                <div className="relative overflow-hidden allow-curve rounded-xl border border-border/50 bg-gradient-to-br from-emerald-500/10 via-surface to-surface p-3.5 group hover:shadow-lg hover:shadow-emerald-500/5 transition-all duration-300">
+                    <div className="absolute top-3 right-3 w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center group-hover:scale-105 transition-transform duration-300">
+                        <CheckCircle2 className="w-4 h-4 text-emerald-500" />
                     </div>
-                    <p className="text-[10px] font-bold text-text-muted uppercase tracking-[0.15em]">In Stock</p>
-                    <p className="text-3xl font-black text-emerald-500 mt-1 tracking-tight">{cardStats.inStock}</p>
-                    <div className="mt-2 h-1 w-12 rounded-full bg-emerald-500/20" />
+                    <p className="text-[9px] font-bold text-text-muted uppercase tracking-[0.1em]">In Stock</p>
+                    <p className="text-2xl font-black text-emerald-500 mt-0.5 tracking-tight">{cardStats.inStock}</p>
                 </div>
 
                 {/* Out of Stock */}
-                <div className="relative overflow-hidden rounded-2xl border border-border/50 bg-gradient-to-br from-rose-500/10 via-surface to-surface p-5 group hover:shadow-lg hover:shadow-rose-500/5 transition-all duration-300">
-                    <div className="absolute top-3 right-3 w-10 h-10 rounded-xl bg-rose-500/10 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-                        <XCircle className="w-5 h-5 text-rose-500" />
+                <div className="relative overflow-hidden allow-curve rounded-xl border border-border/50 bg-gradient-to-br from-rose-500/10 via-surface to-surface p-3.5 group hover:shadow-lg hover:shadow-rose-500/5 transition-all duration-300">
+                    <div className="absolute top-3 right-3 w-8 h-8 rounded-lg bg-rose-500/10 flex items-center justify-center group-hover:scale-105 transition-transform duration-300">
+                        <XCircle className="w-4 h-4 text-rose-500" />
                     </div>
-                    <p className="text-[10px] font-bold text-text-muted uppercase tracking-[0.15em]">Out of Stock</p>
-                    <p className="text-3xl font-black text-rose-500 mt-1 tracking-tight">{cardStats.outOfStock}</p>
-                    <div className="mt-2 h-1 w-12 rounded-full bg-rose-500/20" />
+                    <p className="text-[9px] font-bold text-text-muted uppercase tracking-[0.1em]">Out of Stock</p>
+                    <p className="text-2xl font-black text-rose-500 mt-0.5 tracking-tight">{cardStats.outOfStock}</p>
                 </div>
 
                 {/* Critical */}
-                <div className="relative overflow-hidden rounded-2xl border border-border/50 bg-gradient-to-br from-amber-500/10 via-surface to-surface p-5 group hover:shadow-lg hover:shadow-amber-500/5 transition-all duration-300">
-                    <div className="absolute top-3 right-3 w-10 h-10 rounded-xl bg-amber-500/10 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-                        <ShieldAlert className="w-5 h-5 text-amber-500" />
+                <div className="relative overflow-hidden allow-curve rounded-xl border border-border/50 bg-gradient-to-br from-amber-500/10 via-surface to-surface p-3.5 group hover:shadow-lg hover:shadow-amber-500/5 transition-all duration-300">
+                    <div className="absolute top-3 right-3 w-8 h-8 rounded-lg bg-amber-500/10 flex items-center justify-center group-hover:scale-105 transition-transform duration-300">
+                        <ShieldAlert className="w-4 h-4 text-amber-500" />
                     </div>
-                    <p className="text-[10px] font-bold text-text-muted uppercase tracking-[0.15em]">Critical</p>
-                    <p className="text-3xl font-black text-amber-500 mt-1 tracking-tight">{cardStats.critical}</p>
-                    <div className="mt-2 h-1 w-12 rounded-full bg-amber-500/20" />
+                    <p className="text-[9px] font-bold text-text-muted uppercase tracking-[0.1em]">Critical</p>
+                    <p className="text-2xl font-black text-amber-500 mt-0.5 tracking-tight">{cardStats.critical}</p>
                 </div>
 
                 {/* Expired Products */}
-                <div className="relative overflow-hidden rounded-2xl border border-border/50 bg-gradient-to-br from-rose-600/10 via-surface to-surface p-5 group hover:shadow-lg hover:shadow-rose-600/5 transition-all duration-300">
-                    <div className="absolute top-3 right-3 w-10 h-10 rounded-xl bg-rose-600/10 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-                        <ShieldAlert className="w-5 h-5 text-rose-600" />
+                <div className="relative overflow-hidden allow-curve rounded-xl border border-border/50 bg-gradient-to-br from-rose-600/10 via-surface to-surface p-3.5 group hover:shadow-lg hover:shadow-rose-600/5 transition-all duration-300">
+                    <div className="absolute top-3 right-3 w-8 h-8 rounded-lg bg-rose-600/10 flex items-center justify-center group-hover:scale-105 transition-transform duration-300">
+                        <ShieldAlert className="w-4 h-4 text-rose-600" />
                     </div>
-                    <p className="text-[10px] font-bold text-text-muted uppercase tracking-[0.15em]">Expired Products</p>
-                    <p className="text-3xl font-black text-rose-600 mt-1 tracking-tight">{cardStats.expiredCount}</p>
-                    <div className="mt-2 h-1 w-12 rounded-full bg-rose-600/20" />
+                    <p className="text-[9px] font-bold text-text-muted uppercase tracking-[0.1em]">Expired Products</p>
+                    <p className="text-2xl font-black text-rose-600 mt-0.5 tracking-tight">{cardStats.expiredCount}</p>
                 </div>
             </div>
 
             {/* Expired Products Cards Section */}
             {expiredProductsList.length > 0 && (
-                <div className="p-6 border-b border-border/40 bg-rose-500/5 animate-reveal">
-                    <div className="text-left font-mono mb-4 flex items-center justify-between">
-                        <div>
+                <div className="p-5 border border-rose-100 dark:border-rose-950/20 bg-rose-50/20 dark:bg-rose-950/5 allow-curve rounded-3xl animate-reveal mb-6 shadow-sm mx-2">
+                    <div className="text-left mb-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                        <div className="space-y-1">
                             <div className="flex items-center gap-2">
-                                <ShieldAlert className="w-5 h-5 text-rose-600 animate-pulse" />
-                                <h3 className="text-sm font-black text-rose-600 uppercase tracking-wider italic">Expired Products :: Quarantine Action Required</h3>
+                                <div className="w-8 h-8 rounded-lg bg-rose-100 dark:bg-rose-950/30 flex items-center justify-center">
+                                    <ShieldAlert className="w-4 h-4 text-rose-600" />
+                                </div>
+                                <div>
+                                    <h3 className="text-sm font-black text-slate-800 dark:text-white uppercase tracking-tight">Quarantine Registry</h3>
+                                    <p className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Expired items needing immediate replacement or disposal</p>
+                                </div>
                             </div>
-                            <p className="text-[9px] font-black text-text-muted mt-1 uppercase tracking-[0.2em] italic">The following inventory batches have exceeded their expiration thresholds</p>
                         </div>
-                        <span className="px-3 py-1 bg-rose-600 text-white text-[9px] font-black uppercase tracking-widest italic rounded-full shadow-sm animate-pulse">
-                            Critical Alert ({expiredProductsList.length})
+                        <span className="px-4 py-1.5 bg-rose-500 text-white text-[9px] font-black uppercase tracking-widest rounded-full shadow-sm flex items-center gap-1.5 shrink-0 self-start sm:self-center">
+                            <span className="w-1.5 h-1.5 rounded-full bg-white animate-ping" />
+                            {expiredProductsList.length} Expired Batches
                         </span>
                     </div>
                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
@@ -267,34 +267,34 @@ export default function StockOverview() {
                             return (
                                 <div 
                                     key={`expired-card-${item.productId}-${item.outletId}`} 
-                                    className="relative overflow-hidden rounded-xl border border-rose-500/30 bg-surface p-4 hover:shadow-md hover:border-rose-500 transition-all duration-300 group text-left"
+                                    className="relative overflow-hidden allow-curve rounded-2xl border border-slate-100 dark:border-slate-800 bg-surface p-4 hover:shadow-md hover:border-rose-200 dark:hover:border-rose-900/30 transition-all duration-300 group text-left shadow-sm flex flex-col justify-between"
                                 >
                                     <div className="absolute top-0 right-0 w-24 h-24 bg-rose-500/5 rounded-full blur-xl group-hover:bg-rose-500/10 transition-colors" />
-                                    <div className="flex justify-between items-start gap-2 relative z-10">
+                                    <div className="flex justify-between items-start gap-2 relative z-10 mb-3">
                                         <div className="flex flex-col">
-                                            <span className="font-bold text-sm text-text line-clamp-1 group-hover:text-rose-600 transition-colors">{item.name}</span>
-                                            <span className="text-[9px] font-bold text-text-muted uppercase tracking-widest mt-0.5">SKU: {item.sku}</span>
+                                            <span className="font-bold text-sm text-slate-800 dark:text-white line-clamp-1 group-hover:text-rose-600 transition-colors leading-snug">{item.name}</span>
+                                            <span className="text-[9px] font-medium text-slate-450 uppercase tracking-widest mt-0.5">SKU: {item.sku}</span>
                                         </div>
                                     </div>
-                                    <div className="mt-4 space-y-2 text-xs relative z-10">
-                                        <div className="flex justify-between items-center py-1 border-b border-border/20">
-                                            <span className="text-[9px] font-bold text-text-muted uppercase tracking-wider">Outlet</span>
-                                            <span className="font-bold text-text-secondary">{item.outletName}</span>
+                                    <div className="grid grid-cols-2 gap-x-4 gap-y-3 text-xs relative z-10 pt-2.5 border-t border-slate-50 dark:border-slate-800/40">
+                                        <div>
+                                            <span className="block text-[8px] font-medium text-slate-450 uppercase tracking-wider">Outlet</span>
+                                            <span className="font-normal text-slate-650 dark:text-slate-350 truncate block mt-0.5">{item.outletName}</span>
                                         </div>
-                                        <div className="flex justify-between items-center py-1 border-b border-border/20">
-                                            <span className="text-[9px] font-bold text-text-muted uppercase tracking-wider">Quantity</span>
-                                            <span className="font-black text-rose-600">{item.quantity} units</span>
+                                        <div>
+                                            <span className="block text-[8px] font-medium text-slate-450 uppercase tracking-wider">Quantity</span>
+                                            <span className="font-semibold text-rose-600 dark:text-rose-450 block mt-0.5">{item.quantity} units</span>
                                         </div>
-                                        <div className="flex justify-between items-center py-1 border-b border-border/20">
-                                            <span className="text-[9px] font-bold text-text-muted uppercase tracking-wider">Expired On</span>
-                                            <span className="font-bold text-text-secondary">{new Date(item.expiryDate).toLocaleDateString('en-IN', { dateStyle: 'medium' })}</span>
+                                        <div className="col-span-2">
+                                            <span className="block text-[8px] font-medium text-slate-450 uppercase tracking-wider">Expired On</span>
+                                            <span className="font-normal text-slate-650 dark:text-slate-350 block mt-0.5">{new Date(item.expiryDate).toLocaleDateString('en-IN', { dateStyle: 'medium' })}</span>
                                         </div>
-                                        <div className="flex justify-between items-center pt-1">
-                                            <span className="text-[9px] font-bold text-text-muted uppercase tracking-wider">Status</span>
-                                            <span className="px-2 py-0.5 bg-rose-500/15 text-rose-600 text-[9px] font-black rounded uppercase tracking-widest border border-rose-500/20">
-                                                Expired {daysAgo} days ago
-                                            </span>
-                                        </div>
+                                    </div>
+                                    <div className="mt-4 pt-2.5 border-t border-slate-50 dark:border-slate-800/40 flex justify-between items-center relative z-10">
+                                        <span className="text-[8px] font-medium text-slate-450 uppercase tracking-wider">Quarantine Status</span>
+                                        <span className="px-3 py-1 bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-450 text-[9px] font-semibold rounded-full uppercase tracking-widest border border-rose-200/50 dark:border-rose-900/30 text-center inline-flex items-center justify-center leading-tight">
+                                            Expired {daysAgo}d ago
+                                        </span>
                                     </div>
                                 </div>
                             );
