@@ -151,7 +151,7 @@ function ExpenseList({ onAdd, outletId }) {
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
                         placeholder="Search category, note, outlet…"
-                        className="w-full pl-10 pr-4 py-2.5 bg-white border border-border rounded-xl text-sm font-medium"
+                        className="w-full pl-10 pr-4 py-2.5 bg-white border border-border rounded-2xl text-xs font-bold focus:outline-none focus:ring-2 focus:ring-rose-500/10"
                     />
                 </div>
                 <div className="flex gap-2">
@@ -159,24 +159,24 @@ function ExpenseList({ onAdd, outletId }) {
                         type="button"
                         onClick={load}
                         disabled={loading}
-                        className="flex items-center gap-2 px-4 py-2.5 bg-white border border-border rounded-xl text-[10px] font-bold uppercase tracking-wider hover:bg-surface disabled:opacity-50"
+                        className="flex items-center gap-2 px-4 py-2.5 bg-white border border-border rounded-2xl text-[10px] font-black uppercase tracking-wider hover:bg-surface disabled:opacity-50"
                     >
-                        {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <RefreshCw className="w-4 h-4" />}
+                        {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <RefreshCw className="w-4 h-4 text-emerald-500" />}
                         Refresh
                     </button>
                     <button
                         type="button"
                         onClick={exportCsv}
                         disabled={!filtered.length}
-                        className="flex items-center gap-2 px-4 py-2.5 bg-white border border-border rounded-xl text-[10px] font-bold uppercase tracking-wider hover:bg-surface disabled:opacity-40"
+                        className="flex items-center gap-2 px-4 py-2.5 bg-white border border-border rounded-2xl text-[10px] font-black uppercase tracking-wider hover:bg-surface disabled:opacity-40"
                     >
-                        <Download className="w-3.5 h-3.5" />
+                        <Download className="w-3.5 h-3.5 text-blue-500" />
                         Export CSV
                     </button>
                     <button
                         type="button"
                         onClick={onAdd}
-                        className="flex items-center gap-2 px-4 py-2.5 bg-rose-600 text-white rounded-xl text-[10px] font-bold uppercase tracking-wider"
+                        className="flex items-center gap-2 px-4 py-2.5 bg-rose-500 text-white rounded-2xl text-[10px] font-black uppercase tracking-wider shadow-[0_0_10px_rgba(244,63,94,0.3)] hover:brightness-110"
                     >
                         <Plus className="w-3.5 h-3.5" />
                         New
@@ -309,19 +309,23 @@ function ExpenseForm({ onCancel, onSaved, outletId }) {
     };
 
     return (
-        <div className="p-10 max-w-2xl mx-auto animate-slideUp">
-            <form onSubmit={submit} className="space-y-8 bg-surface/20 p-8 rounded-3xl border border-border/50">
-                <div className="space-y-1">
-                    <h3 className="text-lg font-bold text-text tracking-tight flex items-center gap-2">
-                        <IndianRupee className="w-5 h-5 text-rose-600" />
-                        Record operational expense
-                    </h3>
-                    <p className="text-sm text-text-secondary font-medium">
-                        Saved to the finance ledger — appears in the dashboard expense mix and MTD totals.
-                    </p>
+        <div className="p-6 max-w-2xl mx-auto animate-slideUp">
+            <form onSubmit={submit} className="space-y-6 bg-surface p-6 rounded-3xl border border-border shadow-sm">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 mb-2">
+                    <div className="w-12 h-12 rounded-2xl bg-rose-500/10 flex items-center justify-center shrink-0">
+                        <IndianRupee className="w-6 h-6 text-rose-500" />
+                    </div>
+                    <div className="space-y-1">
+                        <h3 className="text-xl font-black text-text tracking-tight">
+                            Record Operational Expense
+                        </h3>
+                        <p className="text-[10px] text-text-muted font-bold uppercase tracking-widest">
+                            Saved to the finance ledger — appears in the dashboard expense mix.
+                        </p>
+                    </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
                         <label className="text-[10px] font-bold text-text-muted uppercase tracking-widest ml-1">Expense category</label>
                         <div className="relative group">
@@ -330,7 +334,7 @@ function ExpenseForm({ onCancel, onSaved, outletId }) {
                                 required
                                 value={category}
                                 onChange={(e) => setCategory(e.target.value)}
-                                className="w-full pl-10 pr-4 py-2.5 bg-white border border-border rounded-xl text-sm font-semibold text-text-secondary appearance-none focus:outline-none focus:ring-2 focus:ring-rose-500/10 transition-all"
+                                className="w-full pl-10 pr-4 py-2 bg-white border border-border rounded-2xl text-xs font-bold text-text-secondary appearance-none focus:outline-none focus:ring-2 focus:ring-rose-500/10 transition-all"
                             >
                                 {CATEGORY_OPTIONS.map((o) => (
                                     <option key={o.value} value={o.value}>
@@ -353,7 +357,7 @@ function ExpenseForm({ onCancel, onSaved, outletId }) {
                                 value={amount}
                                 onChange={(e) => setAmount(e.target.value)}
                                 placeholder="₹ 0.00"
-                                className="w-full pl-10 pr-4 py-2.5 bg-white border border-border rounded-xl text-sm font-bold focus:outline-none focus:ring-2 focus:ring-rose-500/10 transition-all"
+                                className="w-full pl-10 pr-4 py-2 bg-white border border-border rounded-2xl text-xs font-bold focus:outline-none focus:ring-2 focus:ring-rose-500/10 transition-all"
                             />
                         </div>
                     </div>
@@ -369,17 +373,19 @@ function ExpenseForm({ onCancel, onSaved, outletId }) {
                                     key={key}
                                     type="button"
                                     onClick={() => setPaymentMode(key)}
-                                    className={`flex-1 flex flex-col items-center gap-2 p-3 bg-white border rounded-xl transition-all ${
+                                    className={`flex-1 flex flex-col items-center gap-2 p-3 bg-white border rounded-2xl transition-all ${
                                         paymentMode === key
-                                            ? 'border-rose-500 bg-rose-50/50 ring-2 ring-rose-500/20'
+                                            ? 'border-rose-500 bg-rose-500/5 ring-2 ring-rose-500/20 shadow-sm'
                                             : 'border-border hover:border-rose-300'
                                     }`}
                                 >
-                                    {key === 'cash' ? (
-                                        <Wallet className="w-5 h-5 text-text-muted" />
-                                    ) : (
-                                        <CreditCard className="w-5 h-5 text-text-muted" />
-                                    )}
+                                    <div className={`w-8 h-8 rounded-full flex items-center justify-center ${paymentMode === key ? 'bg-rose-500/10' : 'bg-surface-alt'}`}>
+                                        {key === 'cash' ? (
+                                            <Wallet className={`w-4 h-4 ${paymentMode === key ? 'text-rose-500' : 'text-text-muted'}`} />
+                                        ) : (
+                                            <CreditCard className={`w-4 h-4 ${paymentMode === key ? 'text-rose-500' : 'text-text-muted'}`} />
+                                        )}
+                                    </div>
                                     <span className="text-[10px] font-bold text-text-secondary uppercase tracking-widest">{label}</span>
                                 </button>
                             ))}
@@ -393,7 +399,7 @@ function ExpenseForm({ onCancel, onSaved, outletId }) {
                             <select
                                 value={formOutletId}
                                 onChange={(e) => setFormOutletId(e.target.value)}
-                                className="w-full pl-10 pr-4 py-2.5 bg-white border border-border rounded-xl text-sm font-semibold text-text-secondary appearance-none transition-all"
+                                className="w-full pl-10 pr-4 py-2 bg-white border border-border rounded-2xl text-xs font-bold text-text-secondary appearance-none transition-all"
                             >
                                 <option value="">All / not specified</option>
                                 {(outlets || []).map((o) => (
@@ -414,7 +420,7 @@ function ExpenseForm({ onCancel, onSaved, outletId }) {
                                 required
                                 value={dateStr}
                                 onChange={(e) => setDateStr(e.target.value)}
-                                className="w-full pl-10 pr-4 py-2.5 bg-white border border-border rounded-xl text-sm font-medium transition-all"
+                                className="w-full pl-10 pr-4 py-2 bg-white border border-border rounded-2xl text-xs font-bold transition-all"
                             />
                         </div>
                     </div>
@@ -425,24 +431,24 @@ function ExpenseForm({ onCancel, onSaved, outletId }) {
                             value={notes}
                             onChange={(e) => setNotes(e.target.value)}
                             placeholder="Bill reference, vendor, etc."
-                            rows={3}
-                            className="w-full px-4 py-3 bg-white border border-border rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-rose-500/10 transition-all resize-none"
+                            rows={2}
+                            className="w-full px-4 py-3 bg-white border border-border rounded-2xl text-xs font-bold focus:outline-none focus:ring-2 focus:ring-rose-500/10 transition-all resize-none"
                         />
                     </div>
                 </div>
 
-                <div className="flex gap-4 pt-4">
+                <div className="flex gap-4 pt-2">
                     <button
                         type="button"
                         onClick={onCancel}
-                        className="flex-1 px-6 py-3.5 rounded-xl border border-border text-sm font-bold text-text-secondary hover:bg-white transition-all"
+                        className="flex-1 px-6 py-3 rounded-2xl border border-border text-[10px] font-black uppercase tracking-widest text-text hover:bg-surface-alt transition-all"
                     >
                         Cancel
                     </button>
                     <button
                         type="submit"
                         disabled={saving}
-                        className="flex-1 flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl bg-rose-600 text-white text-sm font-bold hover:shadow-lg hover:shadow-rose-600/30 transition-all disabled:opacity-50"
+                        className="flex-1 flex items-center justify-center gap-2 px-6 py-3 rounded-2xl bg-rose-500 text-white text-[10px] font-black uppercase tracking-widest shadow-[0_0_15px_rgba(244,63,94,0.3)] hover:brightness-110 hover:shadow-[0_0_20px_rgba(244,63,94,0.5)] transition-all disabled:opacity-50"
                     >
                         {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
                         Save expense

@@ -111,7 +111,7 @@ export default function ReEngagementTool() {
             {/* Metrics cards */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {/* Card 1: Inactive */}
-                <div className="bg-surface border border-border/80 p-6 rounded-none relative overflow-hidden group hover:border-[#B4912B]/40 transition-all">
+                <div className="bg-surface border border-border/80 p-6 rounded-3xl shadow-sm hover:shadow-md hover:-translate-y-0.5 relative overflow-hidden group hover:border-[#B4912B]/40 transition-all">
                     <div className="absolute top-0 right-0 w-24 h-24 bg-amber-500/5 rounded-full translate-x-8 -translate-y-8 group-hover:scale-110 transition-transform" />
                     <p className="text-[10px] font-black text-text-muted uppercase tracking-widest">Inactive (1–3 Months)</p>
                     <h4 className="text-3xl font-black text-amber-500 mt-2 tracking-tighter">{under3mCount}</h4>
@@ -119,7 +119,7 @@ export default function ReEngagementTool() {
                 </div>
 
                 {/* Card 2: Dormant */}
-                <div className="bg-surface border border-border/80 p-6 rounded-none relative overflow-hidden group hover:border-[#B4912B]/40 transition-all">
+                <div className="bg-surface border border-border/80 p-6 rounded-3xl shadow-sm hover:shadow-md hover:-translate-y-0.5 relative overflow-hidden group hover:border-[#B4912B]/40 transition-all">
                     <div className="absolute top-0 right-0 w-24 h-24 bg-rose-500/5 rounded-full translate-x-8 -translate-y-8 group-hover:scale-110 transition-transform" />
                     <p className="text-[10px] font-black text-text-muted uppercase tracking-widest">Dormant (3+ Months)</p>
                     <h4 className="text-3xl font-black text-rose-500 mt-2 tracking-tighter">{over3mCount}</h4>
@@ -127,7 +127,7 @@ export default function ReEngagementTool() {
                 </div>
 
                 {/* Card 3: Combined */}
-                <div className="bg-surface border border-border/80 p-6 rounded-none relative overflow-hidden group hover:border-[#B4912B]/40 transition-all">
+                <div className="bg-surface border border-border/80 p-6 rounded-3xl shadow-sm hover:shadow-md hover:-translate-y-0.5 relative overflow-hidden group hover:border-[#B4912B]/40 transition-all">
                     <div className="absolute top-0 right-0 w-24 h-24 bg-primary/5 rounded-full translate-x-8 -translate-y-8 group-hover:scale-110 transition-transform" />
                     <p className="text-[10px] font-black text-text-muted uppercase tracking-widest">Total Dormant Base</p>
                     <h4 className="text-3xl font-black text-primary mt-2 tracking-tighter">{inactiveClients.length}</h4>
@@ -136,14 +136,14 @@ export default function ReEngagementTool() {
             </div>
 
             {/* Filter controls */}
-            <div className="bg-surface-alt border border-border p-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="bg-surface-alt border border-border p-4 rounded-3xl flex flex-col md:flex-row md:items-center justify-between gap-4">
                 {/* Tabs */}
-                <div className="flex gap-2 p-1 bg-background border border-border/60">
+                <div className="flex gap-2 p-1.5 bg-background border border-border/60 rounded-2xl">
                     <button
                         onClick={() => setActiveTab('under_3m')}
-                        className={`px-6 py-2.5 text-[10px] font-black uppercase tracking-widest transition-all ${
+                        className={`px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
                             activeTab === 'under_3m'
-                                ? 'bg-primary text-white'
+                                ? 'bg-primary text-primary-foreground shadow-sm'
                                 : 'text-text-muted hover:text-text'
                         }`}
                     >
@@ -151,9 +151,9 @@ export default function ReEngagementTool() {
                     </button>
                     <button
                         onClick={() => setActiveTab('over_3m')}
-                        className={`px-6 py-2.5 text-[10px] font-black uppercase tracking-widest transition-all ${
+                        className={`px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
                             activeTab === 'over_3m'
-                                ? 'bg-primary text-white'
+                                ? 'bg-primary text-primary-foreground shadow-sm'
                                 : 'text-text-muted hover:text-text'
                         }`}
                     >
@@ -163,13 +163,13 @@ export default function ReEngagementTool() {
 
                 {/* Search */}
                 <div className="relative w-full md:w-80">
-                    <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
+                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
                     <input
                         type="text"
                         placeholder="SEARCH BY NAME OR PHONE..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        className="w-full pl-10 pr-4 py-2.5 border border-border/80 bg-background text-[11px] font-black uppercase tracking-widest outline-none focus:border-primary transition-all"
+                        className="w-full pl-11 pr-4 py-3 rounded-2xl border border-border/80 bg-background text-[11px] font-black uppercase tracking-widest outline-none focus:border-primary transition-all shadow-sm"
                     />
                 </div>
             </div>
@@ -191,11 +191,11 @@ export default function ReEngagementTool() {
                         {filtered.map((customer) => (
                             <div
                                 key={customer._id}
-                                className="bg-surface border border-border p-5 hover:border-primary transition-all flex flex-col md:flex-row md:items-center justify-between gap-6 group"
+                                className="bg-surface border border-border p-6 rounded-3xl hover:border-primary hover:shadow-md transition-all flex flex-col md:flex-row md:items-center justify-between gap-6 group"
                             >
                                 {/* Customer Profile */}
                                 <div className="flex items-center gap-4">
-                                    <div className="w-12 h-12 bg-background flex items-center justify-center text-text-muted font-black text-lg border border-border uppercase shrink-0">
+                                    <div className="w-12 h-12 bg-primary/10 rounded-2xl flex items-center justify-center text-primary font-black text-lg uppercase shrink-0">
                                         {customer.name.charAt(0)}
                                     </div>
                                     <div className="space-y-1">
@@ -203,11 +203,11 @@ export default function ReEngagementTool() {
                                             <h5 className="font-black text-text group-hover:text-primary transition-colors tracking-tight text-base uppercase">
                                                 {customer.name}
                                             </h5>
-                                            <span className="px-2.5 py-0.5 bg-surface-alt border border-border text-[9px] font-black text-text-muted tracking-widest">
+                                            <span className="px-2.5 py-0.5 bg-surface-alt rounded-md border border-border text-[9px] font-black text-text-muted tracking-widest">
                                                 {customer.phone}
                                             </span>
                                             {customer.email && (
-                                                <span className="px-2.5 py-0.5 bg-surface-alt border border-border text-[9px] font-black text-text-muted tracking-widest lowercase flex items-center gap-1">
+                                                <span className="px-2.5 py-0.5 bg-surface-alt rounded-md border border-border text-[9px] font-black text-text-muted tracking-widest lowercase flex items-center gap-1">
                                                     <Mail className="w-2.5 h-2.5" /> {customer.email}
                                                 </span>
                                             )}
@@ -222,7 +222,7 @@ export default function ReEngagementTool() {
                                                 })}
                                             </span>
                                             <span>•</span>
-                                            <span className="px-2 py-0.5 bg-background border border-border/80 text-[8px] font-black uppercase tracking-widest text-text-muted">
+                                            <span className="px-2 py-0.5 bg-background rounded-md border border-border/80 text-[8px] font-black uppercase tracking-widest text-text-muted">
                                                 {customer.lastActivityType}
                                             </span>
                                         </div>
@@ -242,21 +242,21 @@ export default function ReEngagementTool() {
                                     <div className="flex gap-2">
                                         <button
                                             onClick={() => handleWhatsApp(customer)}
-                                            className="p-3 bg-surface-alt text-text-muted hover:bg-[#25D366] hover:text-white transition-all border border-border active:scale-90"
+                                            className="p-3 rounded-2xl bg-surface-alt text-text-muted hover:bg-[#25D366] hover:text-white transition-all border border-border hover:border-[#25D366] active:scale-95 shadow-sm"
                                             title="Launch WhatsApp Campaign"
                                         >
                                             <MessageSquare className="w-4 h-4" />
                                         </button>
                                         <button
                                             onClick={() => handleCall(customer.phone)}
-                                            className="p-3 bg-surface-alt text-text-muted hover:bg-primary hover:text-white transition-all border border-border active:scale-90"
+                                            className="p-3 rounded-2xl bg-surface-alt text-text-muted hover:bg-primary hover:text-white transition-all border border-border hover:border-primary active:scale-95 shadow-sm"
                                             title="Call Customer"
                                         >
                                             <Phone className="w-4 h-4" />
                                         </button>
                                         <button
                                             onClick={() => handleMarkContacted(customer._id)}
-                                            className="flex items-center gap-2 bg-text text-white px-5 py-3 text-[9px] font-black uppercase tracking-widest hover:bg-primary transition-all active:scale-95"
+                                            className="flex items-center gap-2 bg-text text-white px-5 py-3 rounded-2xl text-[9px] font-black uppercase tracking-widest hover:bg-primary hover:shadow-md transition-all active:scale-95"
                                             title="Mark customer contacted to reset inactivity counter"
                                         >
                                             Mark Contacted

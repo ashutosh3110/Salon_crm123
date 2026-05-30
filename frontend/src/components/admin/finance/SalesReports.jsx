@@ -139,7 +139,7 @@ export default function SalesReports({ outletId }) {
     return (
         <div className="p-6 space-y-8 animate-reveal text-left font-sans text-text printing:p-0">
             {/* Header controls */}
-            <div className="flex flex-col gap-4 bg-surface p-4 sm:p-6 border border-border shadow-sm rounded-xl">
+            <div className="flex flex-col gap-4 bg-surface p-4 sm:p-6 border border-border shadow-sm rounded-3xl">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                     <div className="space-y-1">
                         <h2 className="text-xl sm:text-2xl font-black uppercase tracking-tight text-text flex items-center gap-2">
@@ -156,7 +156,7 @@ export default function SalesReports({ outletId }) {
                         <button
                             onClick={loadReportData}
                             disabled={loading}
-                            className="p-2.5 bg-surface border border-border hover:border-primary rounded-lg text-text-muted hover:text-primary transition-all cursor-pointer disabled:opacity-50"
+                            className="p-2.5 bg-surface border border-border hover:border-primary rounded-2xl text-text-muted hover:text-primary transition-all cursor-pointer disabled:opacity-50"
                             title="Refresh Report Data"
                         >
                             <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
@@ -164,7 +164,7 @@ export default function SalesReports({ outletId }) {
                         {/* Export Options */}
                         <button
                             onClick={exportToCSV}
-                            className="flex items-center gap-2 bg-surface border border-border px-3 sm:px-4 py-2.5 rounded-lg text-[10px] font-black uppercase tracking-widest hover:border-primary hover:text-primary transition-all cursor-pointer whitespace-nowrap"
+                            className="flex items-center gap-2 bg-surface border border-border px-3 sm:px-4 py-2.5 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:border-primary hover:text-primary transition-all cursor-pointer whitespace-nowrap"
                         >
                             <Download className="w-4 h-4 text-text-muted" />
                             <span className="hidden sm:inline">CSV Export</span>
@@ -175,7 +175,7 @@ export default function SalesReports({ outletId }) {
 
                 {/* Period selection - scrollable on mobile */}
                 <div className="w-full overflow-x-auto no-scrollbar">
-                    <div className="flex items-center bg-surface-alt border border-border p-1 rounded-lg w-max min-w-full sm:w-auto">
+                    <div className="flex items-center bg-surface-alt border border-border p-1 rounded-2xl w-max min-w-full sm:w-auto">
                         {['daily', 'weekly', 'monthly', 'yearly'].map((p) => (
                             <button
                                 key={p}
@@ -183,7 +183,7 @@ export default function SalesReports({ outletId }) {
                                     setPeriod(p);
                                     setShowCustomDates(false);
                                 }}
-                                className={`px-3 sm:px-4 py-2 text-[10px] font-black uppercase tracking-widest rounded-md transition-all cursor-pointer whitespace-nowrap ${
+                                className={`px-3 sm:px-4 py-2 text-[10px] font-black uppercase tracking-widest rounded-xl transition-all cursor-pointer whitespace-nowrap ${
                                     period === p && !showCustomDates
                                         ? 'bg-primary text-primary-foreground shadow-md shadow-primary/20'
                                         : 'text-text-muted hover:text-text'
@@ -194,7 +194,7 @@ export default function SalesReports({ outletId }) {
                         ))}
                         <button
                             onClick={() => setShowCustomDates(true)}
-                            className={`px-3 sm:px-4 py-2 text-[10px] font-black uppercase tracking-widest rounded-md transition-all cursor-pointer whitespace-nowrap ${
+                            className={`px-3 sm:px-4 py-2 text-[10px] font-black uppercase tracking-widest rounded-xl transition-all cursor-pointer whitespace-nowrap ${
                                 showCustomDates
                                     ? 'bg-primary text-primary-foreground shadow-md shadow-primary/20'
                                     : 'text-text-muted hover:text-text'
@@ -208,28 +208,28 @@ export default function SalesReports({ outletId }) {
 
             {/* Custom Dates Expandable */}
             {showCustomDates && (
-                <div className="bg-surface border border-border p-4 rounded-xl shadow-sm flex flex-col sm:flex-row sm:items-end gap-4 animate-reveal">
+                <div className="bg-surface border border-border p-4 rounded-3xl shadow-sm flex flex-col sm:flex-row sm:items-end gap-4 animate-reveal">
                     <div className="space-y-1.5 flex-1">
-                        <label className="text-[10px] font-black uppercase tracking-widest text-text-muted">Start Date</label>
+                        <label className="text-[10px] font-black uppercase tracking-widest text-text-muted ml-1">Start Date</label>
                         <input 
                             type="date" 
                             value={startDate}
                             onChange={(e) => setStartDate(e.target.value)}
-                            className="w-full bg-surface-alt border border-border rounded-lg px-4 py-2 text-xs font-bold outline-none focus:border-primary transition-all"
+                            className="w-full bg-surface-alt border border-border rounded-2xl px-4 py-2.5 text-xs font-bold outline-none focus:border-primary transition-all"
                         />
                     </div>
                     <div className="space-y-1.5 flex-1">
-                        <label className="text-[10px] font-black uppercase tracking-widest text-text-muted">End Date</label>
+                        <label className="text-[10px] font-black uppercase tracking-widest text-text-muted ml-1">End Date</label>
                         <input 
                             type="date" 
                             value={endDate}
                             onChange={(e) => setEndDate(e.target.value)}
-                            className="w-full bg-surface-alt border border-border rounded-lg px-4 py-2 text-xs font-bold outline-none focus:border-primary transition-all"
+                            className="w-full bg-surface-alt border border-border rounded-2xl px-4 py-2.5 text-xs font-bold outline-none focus:border-primary transition-all"
                         />
                     </div>
                     <button
                         onClick={loadReportData}
-                        className="bg-primary text-primary-foreground px-6 py-2.5 rounded-lg text-[10px] font-black uppercase tracking-widest hover:bg-primary-dark transition-all cursor-pointer w-full sm:w-auto"
+                        className="bg-primary text-primary-foreground px-6 py-2.5 rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-[0_0_15px_rgba(var(--color-primary),0.3)] hover:brightness-110 hover:shadow-[0_0_20px_rgba(var(--color-primary),0.5)] transition-all cursor-pointer w-full sm:w-auto h-[38px]"
                     >
                         Apply Dates
                     </button>
@@ -292,7 +292,7 @@ export default function SalesReports({ outletId }) {
 
             {/* Main reports grid */}
             {kpis.invoiceCount === 0 && !loading ? (
-                <div className="bg-surface border border-border p-12 text-center rounded-2xl shadow-sm max-w-xl mx-auto space-y-6">
+                <div className="bg-surface border border-border p-12 text-center rounded-3xl shadow-sm max-w-xl mx-auto space-y-6">
                     <div className="w-16 h-16 bg-amber-500/10 text-amber-500 rounded-full flex items-center justify-center mx-auto border border-amber-500/20">
                         <Sparkles className="w-8 h-8" />
                     </div>
@@ -305,7 +305,7 @@ export default function SalesReports({ outletId }) {
                     <button
                         onClick={handleSeedData}
                         disabled={seeding}
-                        className="bg-primary text-primary-foreground px-8 py-3 rounded-lg text-xs font-black uppercase tracking-widest hover:bg-primary-dark transition-all cursor-pointer shadow-lg shadow-primary/20 flex items-center gap-2 mx-auto disabled:opacity-50"
+                        className="bg-primary text-primary-foreground px-8 py-3 rounded-2xl text-xs font-black uppercase tracking-widest shadow-[0_0_15px_rgba(var(--color-primary),0.3)] hover:brightness-110 hover:shadow-[0_0_20px_rgba(var(--color-primary),0.5)] transition-all cursor-pointer flex items-center gap-2 mx-auto disabled:opacity-50"
                     >
                         <PlusCircle className="w-4 h-4" />
                         {seeding ? 'Generating Invoices...' : 'Generate Sample Data'}
@@ -316,7 +316,7 @@ export default function SalesReports({ outletId }) {
                     {/* Charts row */}
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                         {/* Revenue Trend Area Chart */}
-                        <div className="bg-surface border border-border p-6 rounded-2xl shadow-sm lg:col-span-2">
+                        <div className="bg-surface border border-border p-6 rounded-3xl shadow-sm lg:col-span-2">
                             <div className="flex items-center justify-between mb-6">
                                 <div>
                                     <h3 className="text-sm font-black uppercase tracking-widest text-text">Revenue Trend</h3>
@@ -381,7 +381,7 @@ export default function SalesReports({ outletId }) {
                         </div>
 
                         {/* Service vs Product Distribution Donut Chart */}
-                        <div className="bg-surface border border-border p-6 rounded-2xl shadow-sm flex flex-col justify-between">
+                        <div className="bg-surface border border-border p-6 rounded-3xl shadow-sm flex flex-col justify-between">
                             <div>
                                 <h3 className="text-sm font-black uppercase tracking-widest text-text mb-1">Sales Mix</h3>
                                 <p className="text-[10px] font-bold text-text-muted uppercase tracking-wider mb-6">
@@ -448,10 +448,10 @@ export default function SalesReports({ outletId }) {
                     {/* Rankings row */}
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                         {/* Service Wise Revenue */}
-                        <div className="bg-surface border border-border p-6 rounded-2xl shadow-sm">
+                        <div className="bg-surface border border-border p-6 rounded-3xl shadow-sm">
                             <div className="flex items-center gap-3 mb-6">
-                                <div className="p-2.5 bg-indigo-500/10 rounded-lg border border-indigo-500/20 text-indigo-500">
-                                    <Scissors className="w-4 h-4" />
+                                <div className="w-10 h-10 flex items-center justify-center bg-indigo-500/10 rounded-2xl border border-indigo-500/20 text-indigo-500 shrink-0">
+                                    <Scissors className="w-5 h-5" />
                                 </div>
                                 <div>
                                     <h3 className="text-xs font-black uppercase tracking-widest text-text">Top Services</h3>
@@ -486,10 +486,10 @@ export default function SalesReports({ outletId }) {
                         </div>
 
                         {/* Product Wise Revenue */}
-                        <div className="bg-surface border border-border p-6 rounded-2xl shadow-sm">
+                        <div className="bg-surface border border-border p-6 rounded-3xl shadow-sm">
                             <div className="flex items-center gap-3 mb-6">
-                                <div className="p-2.5 bg-amber-500/10 rounded-lg border border-amber-500/20 text-amber-500">
-                                    <ShoppingBag className="w-4 h-4" />
+                                <div className="w-10 h-10 flex items-center justify-center bg-amber-500/10 rounded-2xl border border-amber-500/20 text-amber-500 shrink-0">
+                                    <ShoppingBag className="w-5 h-5" />
                                 </div>
                                 <div>
                                     <h3 className="text-xs font-black uppercase tracking-widest text-text">Top Products</h3>
@@ -524,10 +524,10 @@ export default function SalesReports({ outletId }) {
                         </div>
 
                         {/* Staff Contribution */}
-                        <div className="bg-surface border border-border p-6 rounded-2xl shadow-sm">
+                        <div className="bg-surface border border-border p-6 rounded-3xl shadow-sm">
                             <div className="flex items-center gap-3 mb-6">
-                                <div className="p-2.5 bg-emerald-500/10 rounded-lg border border-emerald-500/20 text-emerald-500">
-                                    <Award className="w-4 h-4" />
+                                <div className="w-10 h-10 flex items-center justify-center bg-emerald-500/10 rounded-2xl border border-emerald-500/20 text-emerald-500 shrink-0">
+                                    <Award className="w-5 h-5" />
                                 </div>
                                 <div>
                                     <h3 className="text-xs font-black uppercase tracking-widest text-text">Top Stylists</h3>
@@ -563,7 +563,7 @@ export default function SalesReports({ outletId }) {
                     </div>
 
                     {/* Sales Transaction List */}
-                    <div className="bg-surface border border-border rounded-2xl shadow-sm overflow-hidden">
+                    <div className="bg-surface border border-border rounded-3xl shadow-sm overflow-hidden">
                         <div className="p-4 sm:p-6 border-b border-border flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                             <div>
                                 <h3 className="text-sm font-black uppercase tracking-widest text-text">Recent Invoices</h3>
@@ -579,7 +579,7 @@ export default function SalesReports({ outletId }) {
                                     placeholder="Search invoices..."
                                     value={searchQuery}
                                     onChange={(e) => setSearchQuery(e.target.value)}
-                                    className="w-full bg-surface-alt border border-border rounded-lg pl-9 pr-4 py-2 text-xs font-bold outline-none focus:border-primary transition-all placeholder:text-[10px] placeholder:font-black placeholder:uppercase placeholder:tracking-widest"
+                                    className="w-full bg-surface-alt border border-border rounded-2xl pl-9 pr-4 py-2 text-xs font-bold outline-none focus:border-primary transition-all placeholder:text-[10px] placeholder:font-black placeholder:uppercase placeholder:tracking-widest"
                                 />
                             </div>
                         </div>
@@ -660,17 +660,19 @@ function KPICard({ title, value, icon: Icon, gradient, changePercent, badgeText 
     const isNeutral = changePercent == null;
     const isPositive = isNeutral || changePercent >= 0;
     return (
-        <div className={`bg-surface p-6 rounded-xl border border-border shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all flex flex-col justify-between overflow-hidden relative group`}>
+        <div className={`bg-surface p-6 rounded-3xl border border-border shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all flex flex-col justify-between overflow-hidden relative group`}>
             {/* Soft decorative background shape */}
             <div className="absolute -right-4 -top-4 w-16 h-16 rounded-full bg-primary/5 group-hover:scale-110 transition-transform duration-300 pointer-events-none" />
             
             <div className="flex justify-between items-start mb-4">
-                <div className={`p-2.5 rounded-lg border ${gradient}`}>
-                    <Icon className="w-5 h-5" />
+                <div className={`w-12 h-12 flex items-center justify-center rounded-2xl bg-gradient-to-br border ${gradient}`}>
+                    <Icon className="w-6 h-6" />
                 </div>
-                <span className="text-[9px] font-black uppercase tracking-widest text-text-muted leading-tight text-right">
-                    Live
-                </span>
+                <div className="bg-surface-alt border border-border px-2.5 py-1.5 rounded-lg shadow-sm">
+                    <span className="text-[9px] font-black uppercase tracking-widest text-text-muted leading-tight block">
+                        Live
+                    </span>
+                </div>
             </div>
             
             <div className="space-y-1 mt-2">

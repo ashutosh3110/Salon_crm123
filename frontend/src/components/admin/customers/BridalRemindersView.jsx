@@ -137,11 +137,17 @@ export default function BridalRemindersView() {
     return (
         <div className="p-8 space-y-6 animate-reveal">
             {/* Header / Actions */}
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-surface-alt/10 p-6 border border-border">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-surface-alt/10 p-6 border border-border rounded-3xl">
                 <div className="text-left">
                     <h4 className="text-xs font-black uppercase tracking-widest text-text">Bridal Booking Reminders</h4>
                     <p className="text-[11px] font-semibold text-text-muted">View scheduled pre-wedding and wedding day automated alerts.</p>
                 </div>
+                <button
+                    onClick={() => setShowAddModal(true)}
+                    className="flex items-center gap-2 bg-primary text-primary-foreground px-6 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-[0_0_15px_rgba(var(--color-primary),0.3)] hover:brightness-110 hover:shadow-[0_0_20px_rgba(var(--color-primary),0.5)] transition-all cursor-pointer whitespace-nowrap"
+                >
+                    <Plus className="w-4 h-4" /> Add Booking
+                </button>
             </div>
 
             {loading ? (
@@ -150,7 +156,7 @@ export default function BridalRemindersView() {
                     <span className="text-[10px] font-black uppercase tracking-widest">Loading Bridal Records...</span>
                 </div>
             ) : bridalBookings.length === 0 ? (
-                <div className="border-2 border-dashed border-border py-20 flex flex-col items-center justify-center text-center space-y-4 bg-white">
+                <div className="border-2 border-dashed border-border py-20 flex flex-col items-center justify-center text-center space-y-4 bg-surface rounded-3xl">
                     <AlertCircle size={48} className="text-border" />
                     <div className="space-y-1">
                         <p className="text-lg font-black uppercase italic opacity-25">No Bridal Reminders Scheduled</p>
@@ -160,11 +166,11 @@ export default function BridalRemindersView() {
             ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     {bridalBookings.map((b) => (
-                        <div key={b._id || b.id} className="bg-white border-2 border-text p-6 flex flex-col justify-between shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transition-all relative">
+                        <div key={b._id || b.id} className="bg-surface border border-border rounded-3xl p-6 flex flex-col justify-between shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all relative group">
                             {/* Delete button */}
                             <button
                                 onClick={() => handleDelete(b._id || b.id)}
-                                className="absolute top-4 right-4 p-2 text-text-muted hover:text-rose-600 transition-colors border border-transparent hover:border-rose-100"
+                                className="absolute top-4 right-4 p-2.5 text-text-muted hover:text-rose-600 transition-colors bg-surface-alt hover:bg-rose-50 rounded-2xl opacity-0 group-hover:opacity-100"
                                 title="Delete bridal record"
                             >
                                 <Trash2 className="w-4 h-4" />
@@ -201,10 +207,10 @@ export default function BridalRemindersView() {
                                         {(b.reminders || []).map((r) => (
                                             <div
                                                 key={r._id || r.id}
-                                                className={`flex items-center justify-between p-3 border-2 text-[10px] uppercase font-black italic tracking-wider transition-all ${
+                                                className={`flex items-center justify-between p-3 border rounded-2xl text-[10px] uppercase font-black tracking-wider transition-all ${
                                                     r.active
-                                                        ? 'border-text bg-white'
-                                                        : 'border-border bg-surface-alt/5 opacity-60'
+                                                        ? 'border-border bg-surface shadow-sm'
+                                                        : 'border-border bg-surface-alt/10 opacity-60'
                                                 }`}
                                             >
                                                 <div className="flex items-center gap-2">
@@ -212,7 +218,7 @@ export default function BridalRemindersView() {
                                                         type="checkbox"
                                                         checked={r.active}
                                                         onChange={() => toggleReminder(b._id || b.id, r._id || r.id)}
-                                                        className="w-4 h-4 accent-primary cursor-pointer border-2"
+                                                        className="w-4 h-4 accent-primary cursor-pointer"
                                                     />
                                                     <span>{r.label}</span>
                                                 </div>
@@ -226,7 +232,7 @@ export default function BridalRemindersView() {
                                                     )}
                                                     <button
                                                         onClick={() => handleSendManualWhatsApp(b, r.label)}
-                                                        className="text-emerald-500 hover:text-emerald-600 transition-colors uppercase font-black"
+                                                        className="text-emerald-500 hover:text-emerald-600 transition-colors uppercase font-black bg-emerald-500/10 px-3 py-1.5 rounded-xl border border-emerald-500/20"
                                                     >
                                                         SEND WA
                                                     </button>
@@ -243,22 +249,22 @@ export default function BridalRemindersView() {
 
             {showAddModal && createPortal(
                 <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-[9999] flex items-center justify-center p-4" onClick={() => setShowAddModal(false)}>
-                    <div className="bg-white rounded-none w-full max-w-md shadow-2xl relative overflow-y-auto max-h-[90vh] border border-slate-200" onClick={(e) => e.stopPropagation()}>
+                    <div className="bg-surface rounded-3xl w-full max-w-md shadow-2xl relative overflow-y-auto max-h-[90vh] border border-border" onClick={(e) => e.stopPropagation()}>
                         {/* Modal Header */}
-                        <div className="px-6 py-5 border-b border-slate-100 flex justify-between items-center">
+                        <div className="px-6 py-5 border-b border-border flex justify-between items-center bg-surface">
                             <div className="flex items-center gap-3">
-                                <div className="w-9 h-9 bg-primary/10 flex items-center justify-center">
-                                    <Calendar className="w-4 h-4 text-primary" />
+                                <div className="w-10 h-10 bg-primary/10 rounded-2xl flex items-center justify-center">
+                                    <Calendar className="w-5 h-5 text-primary" />
                                 </div>
                                 <div>
-                                    <h4 className="text-sm font-black text-slate-900 uppercase tracking-[0.2em] italic">Add Bridal Event</h4>
-                                    <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">Schedule pre-wedding reminder</p>
+                                    <h4 className="text-sm font-black text-text uppercase tracking-widest">Add Bridal Event</h4>
+                                    <p className="text-[9px] font-bold text-text-muted uppercase tracking-widest mt-0.5">Schedule pre-wedding reminder</p>
                                 </div>
                             </div>
                             <button
                                 type="button"
                                 onClick={() => setShowAddModal(false)}
-                                className="p-2 rounded-full hover:bg-slate-100 text-slate-400 hover:text-rose-500 transition-all"
+                                className="p-2 rounded-xl bg-surface-alt hover:bg-rose-50 text-text-muted hover:text-rose-500 transition-all"
                             >
                                 <X className="w-4 h-4" />
                             </button>
@@ -266,7 +272,7 @@ export default function BridalRemindersView() {
 
                         <form onSubmit={handleAddBridal} className="p-6 space-y-5">
                             <div className="space-y-1.5 text-left">
-                                <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">Bride Name *</label>
+                                <label className="text-[10px] font-black text-text-muted uppercase tracking-widest ml-1">Bride Name *</label>
                                 <input
                                     type="text"
                                     required
@@ -274,11 +280,11 @@ export default function BridalRemindersView() {
                                     placeholder="Enter client name"
                                     value={newBridal.clientName}
                                     onChange={(e) => setNewBridal({ ...newBridal, clientName: e.target.value })}
-                                    className="w-full bg-slate-50 border border-slate-200 px-4 py-3 text-xs font-black text-slate-900 outline-none focus:bg-white focus:border-primary transition-all rounded-none"
+                                    className="w-full bg-surface-alt border border-border px-4 py-3.5 text-xs font-black text-text outline-none focus:bg-surface focus:border-primary transition-all rounded-2xl"
                                 />
                             </div>
                             <div className="space-y-1.5 text-left">
-                                <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">Phone Number *</label>
+                                <label className="text-[10px] font-black text-text-muted uppercase tracking-widest ml-1">Phone Number *</label>
                                 <input
                                     type="tel"
                                     required
@@ -288,42 +294,42 @@ export default function BridalRemindersView() {
                                         const val = e.target.value.replace(/\D/g, '');
                                         if (val.length <= 10) setNewBridal({ ...newBridal, clientPhone: val });
                                     }}
-                                    className="w-full bg-slate-50 border border-slate-200 px-4 py-3 text-xs font-black text-slate-900 outline-none focus:bg-white focus:border-primary transition-all rounded-none"
+                                    className="w-full bg-surface-alt border border-border px-4 py-3.5 text-xs font-black text-text outline-none focus:bg-surface focus:border-primary transition-all rounded-2xl"
                                 />
                             </div>
                             <div className="space-y-1.5 text-left">
-                                <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">Service Booking / Event Date *</label>
+                                <label className="text-[10px] font-black text-text-muted uppercase tracking-widest ml-1">Service Booking / Event Date *</label>
                                 <input
                                     type="date"
                                     required
                                     min={new Date().toISOString().split('T')[0]}
                                     value={newBridal.eventDate}
                                     onChange={(e) => setNewBridal({ ...newBridal, eventDate: e.target.value })}
-                                    className="w-full bg-slate-50 border border-slate-200 px-4 py-3 text-xs font-black text-slate-900 outline-none focus:bg-white focus:border-primary transition-all rounded-none"
+                                    className="w-full bg-surface-alt border border-border px-4 py-3.5 text-xs font-black text-text outline-none focus:bg-surface focus:border-primary transition-all rounded-2xl"
                                 />
                             </div>
                             <div className="space-y-1.5 text-left">
-                                <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">Service / Context</label>
+                                <label className="text-[10px] font-black text-text-muted uppercase tracking-widest ml-1">Service / Context</label>
                                 <input
                                     type="text"
                                     placeholder="e.g. Bridal Makeup & Hair"
                                     value={newBridal.service}
                                     onChange={(e) => setNewBridal({ ...newBridal, service: e.target.value })}
-                                    className="w-full bg-slate-50 border border-slate-200 px-4 py-3 text-xs font-black text-slate-900 outline-none focus:bg-white focus:border-primary transition-all rounded-none"
+                                    className="w-full bg-surface-alt border border-border px-4 py-3.5 text-xs font-black text-text outline-none focus:bg-surface focus:border-primary transition-all rounded-2xl"
                                 />
                             </div>
 
-                            <div className="flex gap-3 pt-4 border-t border-slate-100">
+                            <div className="flex gap-3 pt-6 mt-6">
                                 <button
                                     type="button"
                                     onClick={() => setShowAddModal(false)}
-                                    className="flex-1 py-4 border border-slate-200 font-bold text-[11px] uppercase tracking-[0.2em] bg-white hover:bg-slate-50 transition-all text-slate-600 rounded-none"
+                                    className="flex-1 py-3 border border-border font-black text-[10px] uppercase tracking-widest bg-surface hover:bg-surface-alt transition-all text-text rounded-2xl"
                                 >
                                     Cancel
                                 </button>
                                 <button
                                     type="submit"
-                                    className="flex-1 bg-slate-900 text-white border border-slate-900 py-4 font-bold text-[11px] uppercase tracking-[0.2em] hover:bg-primary hover:border-primary transition-all rounded-none shadow-lg"
+                                    className="flex-1 bg-primary text-primary-foreground py-3 font-black text-[10px] uppercase tracking-widest shadow-[0_0_15px_rgba(var(--color-primary),0.3)] hover:brightness-110 hover:shadow-[0_0_20px_rgba(var(--color-primary),0.5)] transition-all rounded-2xl"
                                 >
                                     Save Event
                                 </button>

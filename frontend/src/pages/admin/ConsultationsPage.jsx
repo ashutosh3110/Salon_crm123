@@ -221,14 +221,14 @@ export default function ConsultationsPage() {
 
                 <button
                     onClick={handleOpenAddModal}
-                    className="bg-primary text-primary-foreground px-8 py-4 rounded-none text-[10px] font-black uppercase tracking-[0.2em] shadow-xl shadow-primary/20 hover:bg-primary/90 hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-3 self-start lg:self-auto"
+                    className="bg-primary text-primary-foreground px-8 py-4 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] shadow-[0_0_15px_rgba(var(--color-primary),0.3)] hover:brightness-110 hover:shadow-[0_0_20px_rgba(var(--color-primary),0.5)] hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-3 self-start lg:self-auto"
                 >
                     <Plus className="w-4 h-4" /> Add Consultation
                 </button>
             </div>
 
             {/* Filters Section */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 bg-surface p-5 border border-border shadow-sm">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 bg-surface p-6 border border-border shadow-sm rounded-3xl">
                 <div className="space-y-1 text-left">
                     <label className="text-[9px] font-black text-text-muted uppercase tracking-wider block ml-1">Filter by Outlet</label>
                     <CustomDropdown
@@ -267,14 +267,14 @@ export default function ConsultationsPage() {
                             placeholder="Enter Customer ID to filter..."
                             value={filterCustomer}
                             onChange={(e) => setFilterCustomer(e.target.value.trim())}
-                            className="w-full pl-11 pr-4 py-3 bg-surface-alt border border-border text-xs font-bold outline-none"
+                            className="w-full pl-11 pr-4 py-3 bg-surface-alt border border-border text-xs font-bold outline-none rounded-2xl focus:border-primary transition-all shadow-sm"
                         />
                     </div>
                 </div>
             </div>
 
             {/* Consultations Table */}
-            <div className="bg-surface rounded-none border border-border shadow-sm overflow-hidden min-h-[500px]">
+            <div className="bg-surface rounded-3xl border border-border shadow-sm overflow-hidden min-h-[500px]">
                 {loading ? (
                     <div className="flex flex-col items-center justify-center py-20 space-y-4">
                         <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
@@ -317,8 +317,8 @@ export default function ConsultationsPage() {
                                                 {c.outletId?.name || 'General Outlet'}
                                             </td>
                                             <td className="p-4">
-                                                <div className="flex items-center gap-3">
-                                                    <div className="w-8 h-8 bg-text text-white flex items-center justify-center font-black text-xs">
+                                                <div className="flex items-center gap-4">
+                                                    <div className="w-10 h-10 bg-primary/10 text-primary rounded-xl flex items-center justify-center font-black text-sm">
                                                         {c.customerId?.name?.charAt(0) || '?'}
                                                     </div>
                                                     <div>
@@ -332,7 +332,7 @@ export default function ConsultationsPage() {
                                                 <p className="text-[10px] text-text-muted mt-1 truncate">{c.notes}</p>
                                             </td>
                                             <td className="p-4">
-                                                <span className={`px-2 py-0.5 text-[9px] font-black uppercase border rounded ${
+                                                <span className={`px-2.5 py-1 text-[9px] font-black uppercase border rounded-xl ${
                                                     c.status === 'completed' ? 'bg-green-500/10 text-green-600 border-green-500/20' :
                                                     c.status === 'in_progress' ? 'bg-indigo-500/10 text-indigo-600 border-indigo-500/20' :
                                                     'bg-amber-500/10 text-amber-600 border-amber-500/20'
@@ -343,14 +343,14 @@ export default function ConsultationsPage() {
                                             <td className="p-4 text-right flex items-center justify-end gap-2 mt-1">
                                                 <button
                                                     onClick={() => handleOpenViewModal(c)}
-                                                    className="p-2.5 text-text-muted hover:text-primary border border-border hover:bg-surface-alt transition-all"
+                                                    className="p-2.5 rounded-xl text-text-muted hover:text-primary border border-border hover:bg-surface-alt transition-all shadow-sm"
                                                     title="View Details"
                                                 >
                                                     <Eye className="w-4 h-4" />
                                                 </button>
                                                 <button
                                                     onClick={() => handleOpenEditModal(c)}
-                                                    className="p-2.5 text-text-muted hover:text-primary border border-border hover:bg-surface-alt transition-all"
+                                                    className="p-2.5 rounded-xl text-text-muted hover:text-primary border border-border hover:bg-surface-alt transition-all shadow-sm"
                                                     title="Edit Log"
                                                 >
                                                     <Edit className="w-4 h-4" />
@@ -358,7 +358,7 @@ export default function ConsultationsPage() {
                                                 {(user?.role === 'admin' || user?.role === 'superadmin' || user?.role === 'manager') && (
                                                     <button
                                                         onClick={() => handleDeleteConsultation(c._id)}
-                                                        className="p-2.5 text-text-muted hover:text-rose-500 border border-border hover:bg-surface-alt transition-all"
+                                                        className="p-2.5 rounded-xl text-text-muted hover:text-rose-500 border border-border hover:bg-surface-alt transition-all shadow-sm"
                                                         title="Delete Log"
                                                     >
                                                         <Trash2 className="w-4 h-4" />
@@ -381,7 +381,7 @@ export default function ConsultationsPage() {
                                     <button
                                         onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
                                         disabled={currentPage === 1}
-                                        className="px-6 py-3 border border-border bg-surface text-[10px] font-black uppercase tracking-widest disabled:opacity-30 hover:bg-surface-alt transition-all"
+                                        className="px-6 py-3 rounded-xl border border-border bg-surface text-[10px] font-black uppercase tracking-widest disabled:opacity-30 hover:bg-surface-alt transition-all shadow-sm"
                                     >
                                         Prev
                                     </button>
@@ -391,7 +391,7 @@ export default function ConsultationsPage() {
                                     <button
                                         onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
                                         disabled={currentPage >= totalPages}
-                                        className="px-6 py-3 border border-border bg-surface text-[10px] font-black uppercase tracking-widest disabled:opacity-30 hover:bg-surface-alt transition-all"
+                                        className="px-6 py-3 rounded-xl border border-border bg-surface text-[10px] font-black uppercase tracking-widest disabled:opacity-30 hover:bg-surface-alt transition-all shadow-sm"
                                     >
                                         Next
                                     </button>
@@ -406,8 +406,8 @@ export default function ConsultationsPage() {
             {showFormModal && createPortal(
                 <div className="admin-panel text-text">
                     <div className="fixed inset-0 z-[200] bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-300">
-                        <div className="bg-white rounded-none border border-border w-full max-w-xl shadow-2xl relative flex flex-col max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
-                            <div className="p-5 border-b border-border flex justify-between items-center bg-white sticky top-0 z-10">
+                        <div className="bg-surface rounded-3xl border border-border w-full max-w-xl shadow-2xl relative flex flex-col max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+                            <div className="p-6 border-b border-border flex justify-between items-center bg-surface sticky top-0 z-10">
                                 <h4 className="text-[11px] font-black text-text uppercase flex items-center gap-2 tracking-widest">
                                     <ClipboardList className="w-4 h-4 text-primary" />
                                     {selectedConsultation ? 'Update Consultation Log' : 'Create Consultation Record'}
@@ -415,9 +415,9 @@ export default function ConsultationsPage() {
                                 <button
                                     type="button"
                                     onClick={() => setShowFormModal(false)}
-                                    className="p-1 border-2 border-slate-900 dark:border-slate-700 text-slate-900 dark:text-slate-300 hover:bg-rose-500 hover:text-white transition-colors"
+                                    className="p-2 rounded-xl bg-surface-alt text-text-muted hover:bg-rose-500 hover:text-white transition-colors"
                                 >
-                                    <X className="w-4 h-4 text-slate-900 dark:text-slate-300" />
+                                    <X className="w-4 h-4" />
                                 </button>
                             </div>
 
@@ -431,7 +431,7 @@ export default function ConsultationsPage() {
                                             disabled={!!selectedConsultation} // Freeze outlet selection on update
                                             value={formData.outletId}
                                             onChange={(e) => setFormData({ ...formData, outletId: e.target.value, customerId: '' })}
-                                            className="w-full bg-surface-alt/5 border-2 border-text p-3 text-xs font-black text-slate-900 outline-none focus:bg-white focus:border-primary transition-all uppercase rounded-none"
+                                            className="w-full bg-surface-alt border border-border p-3 rounded-2xl text-xs font-black outline-none focus:bg-surface focus:border-primary transition-all uppercase shadow-sm disabled:opacity-50"
                                         >
                                             <option value="">-- Choose Outlet --</option>
                                             {outlets.map(o => (
@@ -451,7 +451,7 @@ export default function ConsultationsPage() {
                                                 type="text"
                                                 readOnly
                                                 value={selectedConsultation.customerId?.name || 'Standard Client'}
-                                                className="w-full bg-slate-100 border-2 border-text/25 p-3 text-xs font-black text-slate-500 outline-none rounded-none uppercase cursor-not-allowed"
+                                                className="w-full bg-surface-alt border border-border p-3 rounded-2xl text-xs font-black outline-none uppercase cursor-not-allowed opacity-70"
                                             />
                                         ) : (
                                             <select
@@ -459,7 +459,7 @@ export default function ConsultationsPage() {
                                                 disabled={!formData.outletId}
                                                 value={formData.customerId}
                                                 onChange={(e) => setFormData({ ...formData, customerId: e.target.value })}
-                                                className="w-full bg-surface-alt/5 border-2 border-text p-3 text-xs font-black text-slate-900 outline-none focus:bg-white focus:border-primary transition-all uppercase rounded-none disabled:opacity-50 disabled:cursor-not-allowed"
+                                                className="w-full bg-surface-alt border border-border p-3 rounded-2xl text-xs font-black outline-none focus:bg-surface focus:border-primary transition-all uppercase shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
                                             >
                                                 <option value="">-- Choose Customer --</option>
                                                 {outletCustomers.map(c => (
@@ -480,7 +480,7 @@ export default function ConsultationsPage() {
                                             placeholder="e.g. Skin ritual evaluation / Hair spa profile"
                                             value={formData.title}
                                             onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                                            className="w-full bg-surface-alt/5 border-2 border-text p-3 text-xs font-black text-slate-900 outline-none focus:bg-white focus:border-primary transition-all uppercase rounded-none"
+                                            className="w-full bg-surface-alt border border-border p-3 rounded-2xl text-xs font-black outline-none focus:bg-surface focus:border-primary transition-all uppercase shadow-sm"
                                         />
                                     </div>
 
@@ -492,7 +492,7 @@ export default function ConsultationsPage() {
                                             placeholder="Type problem details or client requests..."
                                             value={formData.notes}
                                             onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                                            className="w-full h-24 bg-surface-alt/5 border-2 border-text p-3 text-xs font-black text-slate-900 outline-none focus:bg-white focus:border-primary transition-all rounded-none resize-none"
+                                            className="w-full h-24 bg-surface-alt border border-border p-3 rounded-2xl text-xs font-black outline-none focus:bg-surface focus:border-primary transition-all resize-none shadow-sm"
                                         />
                                     </div>
 
@@ -504,7 +504,7 @@ export default function ConsultationsPage() {
                                             placeholder="Type recommend products, ritual treatments, or guidelines..."
                                             value={formData.solution}
                                             onChange={(e) => setFormData({ ...formData, solution: e.target.value })}
-                                            className="w-full h-24 bg-surface-alt/5 border-2 border-text p-3 text-xs font-black text-slate-900 outline-none focus:bg-white focus:border-primary transition-all rounded-none resize-none"
+                                            className="w-full h-24 bg-surface-alt border border-border p-3 rounded-2xl text-xs font-black outline-none focus:bg-surface focus:border-primary transition-all resize-none shadow-sm"
                                         />
                                     </div>
 
@@ -514,7 +514,7 @@ export default function ConsultationsPage() {
                                             <select
                                                 value={formData.status}
                                                 onChange={(e) => setFormData({ ...formData, status: e.target.value })}
-                                                className="w-full bg-surface-alt/5 border-2 border-text p-3 text-xs font-black text-slate-900 outline-none focus:bg-white focus:border-primary transition-all uppercase rounded-none"
+                                                className="w-full bg-surface-alt border border-border p-3 rounded-2xl text-xs font-black outline-none focus:bg-surface focus:border-primary transition-all uppercase shadow-sm"
                                             >
                                                 <option value="pending">Pending</option>
                                                 <option value="in_progress">In Progress</option>
@@ -532,23 +532,23 @@ export default function ConsultationsPage() {
                                             placeholder="Stylist internal logs / not visible to customer"
                                             value={formData.adminNotes}
                                             onChange={(e) => setFormData({ ...formData, adminNotes: e.target.value })}
-                                            className="w-full bg-surface-alt/5 border-2 border-text p-3 text-xs font-black text-slate-900 outline-none focus:bg-white focus:border-primary transition-all uppercase rounded-none"
+                                            className="w-full bg-surface-alt border border-border p-3 rounded-2xl text-xs font-black outline-none focus:bg-surface focus:border-primary transition-all uppercase shadow-sm"
                                         />
                                     </div>
                                 </div>
 
-                                <div className="flex gap-4 pt-4 border-t border-border sticky bottom-0 bg-white">
+                                <div className="flex gap-4 pt-6 border-t border-border sticky bottom-0 bg-surface">
                                     <button
                                         type="button"
                                         onClick={() => setShowFormModal(false)}
-                                        className="flex-1 py-3.5 border-2 border-text font-black text-[10px] uppercase tracking-widest italic bg-white hover:bg-surface-alt/20 transition-all rounded-none text-text-muted"
+                                        className="flex-1 py-3.5 border border-border rounded-2xl font-black text-[10px] uppercase tracking-widest bg-surface hover:bg-surface-alt transition-all text-text-muted shadow-sm"
                                     >
                                         Cancel
                                     </button>
                                     <button
                                         type="submit"
                                         disabled={formLoading}
-                                        className="flex-1 bg-text text-white border-2 border-text py-3.5 font-black text-[10px] uppercase tracking-widest italic hover:bg-primary hover:border-primary hover:text-white transition-all rounded-none shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:translate-x-0.5 active:translate-y-0.5 active:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]"
+                                        className="flex-1 bg-primary text-primary-foreground py-3.5 rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-[0_0_15px_rgba(var(--color-primary),0.3)] hover:brightness-110 hover:shadow-[0_0_20px_rgba(var(--color-primary),0.5)] active:scale-95 transition-all disabled:opacity-50"
                                     >
                                         {formLoading ? 'Executing...' : selectedConsultation ? 'Update Record' : 'Create Record'}
                                     </button>
@@ -564,12 +564,12 @@ export default function ConsultationsPage() {
             {showViewModal && viewConsultation && createPortal(
                 <div className="admin-panel text-text">
                     <div className="fixed inset-0 z-[200] bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-300">
-                        <div className="bg-white rounded-none border border-border w-full max-w-2xl shadow-2xl relative flex flex-col max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+                        <div className="bg-surface rounded-3xl border border-border w-full max-w-2xl shadow-2xl relative flex flex-col max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
                             {/* Modal Header */}
-                            <div className="p-6 border-b border-border flex justify-between items-center bg-white sticky top-0 z-10">
+                            <div className="p-6 border-b border-border flex justify-between items-center bg-surface sticky top-0 z-10">
                                 <div>
                                     <h4 className="text-[12px] font-black text-text uppercase flex items-center gap-2 tracking-widest">
-                                        <ClipboardList className="w-4.5 h-4.5 text-primary" />
+                                        <ClipboardList className="w-5 h-5 text-primary" />
                                         Consultation File Registry
                                     </h4>
                                     <p className="text-[8px] font-black text-text-muted mt-1 uppercase tracking-widest opacity-60">Record ID: #{viewConsultation._id}</p>
@@ -577,9 +577,9 @@ export default function ConsultationsPage() {
                                 <button
                                     type="button"
                                     onClick={() => setShowViewModal(false)}
-                                    className="p-1 border-2 border-slate-900 dark:border-slate-700 text-slate-900 dark:text-slate-300 hover:bg-rose-500 hover:text-white transition-colors"
+                                    className="p-2 rounded-xl bg-surface-alt text-text-muted hover:bg-rose-500 hover:text-white transition-colors"
                                 >
-                                    <X className="w-4 h-4 text-slate-900 dark:text-slate-300" />
+                                    <X className="w-4 h-4" />
                                 </button>
                             </div>
 
@@ -588,7 +588,7 @@ export default function ConsultationsPage() {
                                 
                                 {/* Grid metadata */}
                                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                                    <div className="p-4 bg-surface-alt/25 border border-border/60">
+                                    <div className="p-4 bg-surface-alt border border-border rounded-2xl">
                                         <span className="text-[8px] font-black text-text-muted uppercase tracking-widest block mb-1">Consultation Date</span>
                                         <span className="text-xs font-black text-text">
                                             {new Date(viewConsultation.date || viewConsultation.createdAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}
@@ -597,16 +597,16 @@ export default function ConsultationsPage() {
                                             {new Date(viewConsultation.date || viewConsultation.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                         </span>
                                     </div>
-                                    <div className="p-4 bg-surface-alt/25 border border-border/60">
+                                    <div className="p-4 bg-surface-alt border border-border rounded-2xl">
                                         <span className="text-[8px] font-black text-text-muted uppercase tracking-widest block mb-1">Target Outlet</span>
                                         <span className="text-xs font-black text-text uppercase">
                                             {viewConsultation.outletId?.name || 'General Outlet'}
                                         </span>
                                     </div>
-                                    <div className="p-4 bg-surface-alt/25 border border-border/60">
+                                    <div className="p-4 bg-surface-alt border border-border rounded-2xl">
                                         <span className="text-[8px] font-black text-text-muted uppercase tracking-widest block mb-1">Status Registry</span>
                                         <div>
-                                            <span className={`inline-block px-2.5 py-0.5 text-[9px] font-black uppercase border mt-0.5 rounded ${
+                                            <span className={`inline-block px-3 py-1 text-[9px] font-black uppercase border mt-0.5 rounded-xl ${
                                                 viewConsultation.status === 'completed' ? 'bg-green-500/10 text-green-600 border-green-500/20' :
                                                 viewConsultation.status === 'in_progress' ? 'bg-indigo-500/10 text-indigo-600 border-indigo-500/20' :
                                                 'bg-amber-500/10 text-amber-600 border-amber-500/20'
@@ -618,9 +618,9 @@ export default function ConsultationsPage() {
                                 </div>
 
                                 {/* Client Identification Card */}
-                                <div className="p-5 border border-border bg-slate-50 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                                <div className="p-5 border border-border bg-surface-alt rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                                     <div className="flex items-center gap-4">
-                                        <div className="w-12 h-12 bg-text text-white flex items-center justify-center font-black text-lg shadow-sm">
+                                        <div className="w-12 h-12 bg-primary/10 text-primary flex items-center justify-center font-black text-lg rounded-2xl shadow-sm">
                                             {viewConsultation.customerId?.name?.charAt(0) || '?'}
                                         </div>
                                         <div>
@@ -651,14 +651,14 @@ export default function ConsultationsPage() {
                                 <div className="space-y-5">
                                     <div className="space-y-2">
                                         <span className="text-[8px] font-black text-[#B4912B] uppercase tracking-widest block">1. Problem & Notes Description</span>
-                                        <div className="p-4 bg-slate-50 border-l-4 border-slate-400 text-xs font-bold text-slate-800 leading-relaxed whitespace-pre-wrap">
+                                        <div className="p-4 bg-surface-alt border-l-4 border-slate-400 rounded-r-2xl text-xs font-bold text-text leading-relaxed whitespace-pre-wrap">
                                             {viewConsultation.notes}
                                         </div>
                                     </div>
 
                                     <div className="space-y-2">
                                         <span className="text-[8px] font-black text-green-600 uppercase tracking-widest block">2. Recommended Solution & Treatment guidelines</span>
-                                        <div className="p-4 bg-emerald-50/40 border-l-4 border-emerald-500 text-xs font-bold text-slate-800 leading-relaxed whitespace-pre-wrap">
+                                        <div className="p-4 bg-emerald-500/5 border-l-4 border-emerald-500 rounded-r-2xl text-xs font-bold text-text leading-relaxed whitespace-pre-wrap">
                                             {viewConsultation.solution}
                                         </div>
                                     </div>
@@ -666,20 +666,19 @@ export default function ConsultationsPage() {
 
                                 {/* Internal Admin Notes */}
                                 {viewConsultation.adminNotes && (
-                                    <div className="space-y-2 p-4 bg-amber-500/5 border border-amber-500/25">
+                                    <div className="space-y-2 p-4 bg-amber-500/5 border border-amber-500/25 rounded-2xl">
                                         <span className="text-[8px] font-black text-amber-600 uppercase tracking-widest block">Stylist internal remarks (Internal Only)</span>
-                                        <p className="text-xs font-bold text-slate-700 italic">"{viewConsultation.adminNotes}"</p>
+                                        <p className="text-xs font-bold text-text italic">"{viewConsultation.adminNotes}"</p>
                                     </div>
                                 )}
-
                             </div>
 
                             {/* Modal Footer */}
-                            <div className="p-5 border-t border-border flex justify-end gap-3 bg-white sticky bottom-0 z-10">
+                            <div className="p-6 border-t border-border flex justify-end gap-3 bg-surface sticky bottom-0 z-10">
                                 <button
                                     type="button"
                                     onClick={() => setShowViewModal(false)}
-                                    className="px-6 py-3 border-2 border-text font-black text-[10px] uppercase tracking-widest italic bg-white hover:bg-surface-alt/20 transition-all rounded-none text-text-muted"
+                                    className="px-6 py-3 border border-border rounded-xl font-black text-[10px] uppercase tracking-widest bg-surface hover:bg-surface-alt transition-all text-text-muted shadow-sm"
                                 >
                                     Close File
                                 </button>
@@ -689,9 +688,9 @@ export default function ConsultationsPage() {
                                         setShowViewModal(false);
                                         handleOpenEditModal(viewConsultation);
                                     }}
-                                    className="px-6 py-3 bg-text text-white border-2 border-text font-black text-[10px] uppercase tracking-widest italic hover:bg-primary hover:border-primary hover:text-white transition-all rounded-none shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:translate-x-0.5 active:translate-y-0.5 active:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]"
+                                    className="px-6 py-3 bg-primary text-primary-foreground rounded-xl font-black text-[10px] uppercase tracking-widest shadow-sm hover:brightness-110 active:scale-95 transition-all"
                                 >
-                                    Edit Record
+                                    Edit Log
                                 </button>
                             </div>
                         </div>

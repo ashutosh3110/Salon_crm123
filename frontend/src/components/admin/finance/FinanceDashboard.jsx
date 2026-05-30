@@ -72,19 +72,29 @@ export default function FinanceDashboard({ data, loading, error, onRetry }) {
                             Data: <span className="font-mono">GET /finance/dashboard</span>
                         </p>
                     </div>
-                    <div className="flex flex-wrap items-center gap-4 bg-surface p-4 rounded-2xl border border-border shadow-sm text-left w-full md:w-auto justify-between md:justify-start">
-                        <div className="flex flex-col items-end text-right font-black">
-                            <span className="text-[9px] font-black text-text-muted uppercase tracking-[0.2em]">Opening cash</span>
-                            <span className="text-lg font-black text-text">
-                                {cash.openingCash != null ? formatInr(cash.openingCash) : '—'}
-                            </span>
+                    <div className="flex flex-wrap items-center gap-6 bg-surface p-5 rounded-2xl border border-border shadow-sm text-left w-full md:w-auto justify-between md:justify-start">
+                        <div className="flex items-center gap-3 font-black">
+                            <div className="w-10 h-10 rounded-full bg-blue-500/10 flex items-center justify-center">
+                                <span className="text-blue-500 text-lg font-black leading-none">₹</span>
+                            </div>
+                            <div className="flex flex-col text-left">
+                                <span className="text-[9px] font-black text-text-muted uppercase tracking-[0.2em]">Opening cash</span>
+                                <span className="text-xl font-black text-text leading-none mt-1">
+                                    {cash.openingCash != null ? formatInr(cash.openingCash) : '—'}
+                                </span>
+                            </div>
                         </div>
-                        <div className="w-[1px] h-8 bg-border" />
-                        <div className="flex flex-col items-end text-right font-black">
-                            <span className="text-[9px] font-black text-text-muted uppercase tracking-[0.2em]">Bank balance</span>
-                            <span className="text-lg font-black text-emerald-600">
-                                {cash.bankBalance != null ? formatInr(cash.bankBalance) : '—'}
-                            </span>
+                        <div className="w-[1px] h-10 bg-border hidden md:block" />
+                        <div className="flex items-center gap-3 font-black">
+                            <div className="w-10 h-10 rounded-full bg-emerald-500/10 flex items-center justify-center">
+                                <span className="text-emerald-500 text-lg font-black leading-none">₹</span>
+                            </div>
+                            <div className="flex flex-col text-left">
+                                <span className="text-[9px] font-black text-text-muted uppercase tracking-[0.2em]">Bank balance</span>
+                                <span className="text-xl font-black text-emerald-500 leading-none mt-1">
+                                    {cash.bankBalance != null ? formatInr(cash.bankBalance) : '—'}
+                                </span>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -172,7 +182,7 @@ export default function FinanceDashboard({ data, loading, error, onRetry }) {
                         </div>
                         <button
                             type="button"
-                            className="w-full py-4 bg-surface-alt border border-border rounded-2xl text-[9px] font-black text-text uppercase tracking-[0.3em] hover:bg-primary hover:text-white transition-all active:scale-[0.98]"
+                            className="w-full py-4 bg-primary/10 border border-primary/30 rounded-2xl text-[9px] font-black text-primary uppercase tracking-[0.3em] hover:bg-primary hover:text-primary-foreground transition-all shadow-[0_0_12px_rgba(var(--color-primary),0.2)] hover:shadow-[0_0_20px_rgba(var(--color-primary),0.5)] active:scale-[0.98]"
                             onClick={() => navigate('/admin/finance/transactions')}
                         >
                             View Transactions

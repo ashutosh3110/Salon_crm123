@@ -153,35 +153,35 @@ export default function CashAndBank({ type, outletId }) {
     <div className="p-6 space-y-6">
 
       {/* Header */}
-      <div className="flex flex-col md:flex-row justify-between gap-4">
+      <div className="flex flex-col md:flex-row justify-between gap-4 bg-surface p-6 rounded-3xl border border-border shadow-sm">
         <div>
-          <h2 className="text-lg font-semibold text-text">
+          <h2 className="text-xl font-black text-text uppercase tracking-tight">
             Cash & Bank
           </h2>
-          <p className="text-sm text-text-secondary">
+          <p className="text-[10px] font-bold text-text-muted uppercase tracking-widest mt-1">
             Daily balance check and closing
           </p>
         </div>
 
-        <div className="flex gap-2">
-          <div className="flex items-center gap-2 border rounded-lg px-3 py-2 bg-white">
-            <Calendar className="w-4 h-4" />
+        <div className="flex gap-3">
+          <div className="flex items-center gap-2 border border-border rounded-2xl px-4 py-2 bg-surface hover:border-primary/50 transition-all">
+            <Calendar className="w-4 h-4 text-primary" />
             <input
               type="date"
               value={businessDate}
               onChange={(e) =>
                 setBusinessDate(e.target.value)
               }
-              className="outline-none text-sm"
+              className="outline-none text-xs font-bold text-text bg-transparent"
             />
           </div>
 
           <button
             onClick={load}
-            className="border rounded-lg px-3 py-2 flex items-center gap-2 bg-white"
+            className="border border-border rounded-2xl px-4 py-2 flex items-center gap-2 bg-surface hover:bg-surface-alt hover:text-primary transition-all text-[10px] font-black uppercase tracking-widest text-text"
           >
             <RefreshCcw
-              className={`w-4 h-4 ${
+              className={`w-4 h-4 text-emerald-500 ${
                 loading ? 'animate-spin' : ''
               }`}
             />
@@ -208,6 +208,7 @@ export default function CashAndBank({ type, outletId }) {
             <Card
               icon={<Wallet className="w-5 h-5" />}
               title="Cash"
+              color="emerald"
             >
               <SummaryRow
                 label="Opening"
@@ -230,10 +231,10 @@ export default function CashAndBank({ type, outletId }) {
                 </span>
               </div>
 
-              <div className="space-y-1">
-                <label className="text-sm">Actual Cash</label>
-                <div className="relative flex items-center">
-                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-text-secondary font-bold text-sm">₹</span>
+              <div className="space-y-1.5 mt-auto">
+                <label className="text-[10px] font-bold uppercase tracking-widest text-text-muted">Actual Cash</label>
+                <div className="relative flex items-center group">
+                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-text-muted font-bold text-sm group-focus-within:text-primary transition-colors">₹</span>
                   <input
                     type="number"
                     value={actualCash}
@@ -242,7 +243,7 @@ export default function CashAndBank({ type, outletId }) {
                       setActualCash(e.target.value);
                       setDenominations({ 500: '', 200: '', 100: '', 50: '', 20: '', 10: '', 5: '', 2: '', 1: '' });
                     }}
-                    className="w-full border rounded-lg pl-10 pr-3 py-2 outline-none font-bold text-slate-800 focus:border-primary transition-all"
+                    className="w-full border border-border rounded-2xl pl-10 pr-3 py-2 outline-none text-xs font-bold bg-white text-text focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all"
                     placeholder="Enter amount"
                   />
                 </div>
@@ -285,7 +286,7 @@ export default function CashAndBank({ type, outletId }) {
                           disabled={locked}
                           onChange={(e) => handleDenominationChange(e.target.value, denom)}
                           placeholder="0"
-                          className="w-full px-2 py-1.5 rounded-lg border border-slate-200 text-xs font-bold bg-white text-slate-800 outline-none focus:border-primary transition-all text-center"
+                          className="w-full px-2 py-1.5 rounded-xl border border-border text-xs font-bold bg-white text-text outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all text-center"
                         />
                         {denominations[denom] > 0 && (
                           <span className="absolute -bottom-3.5 left-0 right-0 text-[8px] font-bold text-slate-400 text-center whitespace-nowrap">
@@ -329,6 +330,7 @@ export default function CashAndBank({ type, outletId }) {
             <Card
               icon={<CreditCard className="w-5 h-5" />}
               title="Bank"
+              color="blue"
             >
               <SummaryRow
                 label="Opening"
@@ -363,22 +365,22 @@ export default function CashAndBank({ type, outletId }) {
           </div>
 
           {/* Notes */}
-          <div className="border rounded-xl bg-white p-5 space-y-4">
-            <h3 className="font-medium text-sm">Notes</h3>
+          <div className="border border-border rounded-3xl bg-surface p-6 space-y-4 shadow-sm">
+            <h3 className="text-[10px] font-black uppercase tracking-widest text-text-muted">Notes</h3>
 
             <textarea
-              rows={3}
+              rows={2}
               value={notes}
               disabled={locked}
               onChange={(e) =>
                 setNotes(e.target.value)
               }
               placeholder="Remarks..."
-              className="w-full border rounded-lg p-3 outline-none"
+              className="w-full border border-border rounded-2xl p-3 outline-none text-xs font-bold bg-white focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all resize-none"
             />
 
             {locked ? (
-              <div className="bg-green-50 border border-green-200 text-green-700 rounded-lg p-3 text-sm flex items-center gap-2">
+              <div className="bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 rounded-2xl p-4 text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-2">
                 <Lock className="w-4 h-4" />
                 Day locked
               </div>
@@ -386,7 +388,7 @@ export default function CashAndBank({ type, outletId }) {
               <button
                 onClick={handleSave}
                 disabled={saving}
-                className="bg-primary text-white px-5 py-3 rounded-lg flex items-center gap-2"
+                className="w-full bg-primary text-primary-foreground px-5 py-3 rounded-2xl flex items-center justify-center gap-2 text-[10px] font-black uppercase tracking-widest shadow-[0_0_15px_rgba(var(--color-primary),0.3)] hover:brightness-110 hover:shadow-[0_0_20px_rgba(var(--color-primary),0.5)] transition-all disabled:opacity-50"
               >
                 <Lock className="w-4 h-4" />
                 {saving
@@ -401,11 +403,21 @@ export default function CashAndBank({ type, outletId }) {
   );
 }
 
-function Card({ icon, title, children }) {
+function Card({ icon, title, children, color }) {
+  const bgColors = {
+    emerald: 'bg-emerald-500/10 text-emerald-500',
+    blue: 'bg-blue-500/10 text-blue-500',
+    primary: 'bg-primary/10 text-primary'
+  };
+
+  const selectedColorClass = bgColors[color] || bgColors.primary;
+
   return (
-    <div className="bg-white border rounded-xl p-5 space-y-4">
-      <div className="flex items-center gap-2 font-semibold">
-        {icon}
+    <div className="bg-surface border border-border rounded-3xl p-6 space-y-4 shadow-sm flex flex-col">
+      <div className="flex items-center gap-3 font-black text-text uppercase tracking-tight text-lg mb-2">
+        <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${selectedColorClass}`}>
+          {icon}
+        </div>
         {title}
       </div>
       {children}
@@ -415,9 +427,9 @@ function Card({ icon, title, children }) {
 
 function SummaryRow({ label, value }) {
   return (
-    <div className="flex justify-between text-sm">
+    <div className="flex justify-between items-center text-[11px] font-bold text-text-muted uppercase tracking-widest py-1">
       <span>{label}</span>
-      <span>
+      <span className="text-text">
         ₹{Number(value || 0).toLocaleString('en-IN')}
       </span>
     </div>
@@ -431,10 +443,10 @@ function InputBox({
   disabled
 }) {
   return (
-    <div className="space-y-1">
-      <label className="text-sm">{label}</label>
-      <div className="relative flex items-center">
-        <span className="absolute left-4 top-1/2 -translate-y-1/2 text-text-secondary font-bold text-sm">₹</span>
+    <div className="space-y-1.5 mt-auto">
+      <label className="text-[10px] font-bold uppercase tracking-widest text-text-muted">{label}</label>
+      <div className="relative flex items-center group">
+        <span className="absolute left-4 top-1/2 -translate-y-1/2 text-text-muted font-bold text-sm group-focus-within:text-primary transition-colors">₹</span>
         <input
           type="number"
           value={value}
@@ -442,7 +454,7 @@ function InputBox({
           onChange={(e) =>
             onChange(e.target.value)
           }
-          className="w-full border rounded-lg pl-10 pr-3 py-2 outline-none font-bold text-slate-800 focus:border-primary transition-all"
+          className="w-full border border-border rounded-2xl pl-10 pr-3 py-2 outline-none text-xs font-bold bg-white text-text focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all"
           placeholder="Enter amount"
         />
       </div>
@@ -457,10 +469,10 @@ function DiffBox({ diff }) {
 
   return (
     <div
-      className={`rounded-lg p-3 flex justify-between items-center text-sm ${
+      className={`rounded-2xl p-4 mt-4 flex justify-between items-center text-[11px] font-black uppercase tracking-widest ${
         matched
-          ? 'bg-green-50 text-green-700'
-          : 'bg-red-50 text-red-600'
+          ? 'bg-emerald-500/10 text-emerald-600 border border-emerald-500/20'
+          : 'bg-rose-500/10 text-rose-600 border border-rose-500/20'
       }`}
     >
       <div className="flex items-center gap-2">
