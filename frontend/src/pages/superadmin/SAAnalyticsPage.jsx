@@ -229,7 +229,7 @@ export default function SAAnalyticsPage() {
     if (loading || !data) {
         return (
             <div className="flex flex-col items-center justify-center min-h-[400px] gap-4">
-                <div className="w-12 h-12 border-4 border-primary/20 border-t-primary rounded-full animate-spin"></div>
+                <div className="w-12 h-12 border-4 border-[#B4912B]/20 border-t-primary rounded-full animate-spin"></div>
                 <p className="text-sm font-bold text-text-secondary animate-pulse">Analyzing business data...</p>
             </div>
         );
@@ -258,7 +258,7 @@ export default function SAAnalyticsPage() {
                         exportToExcel(growth.mrrTrend, 'Wapixo_Analytics_Revenue', 'Revenue');
                         showToast('Report exported successfully!');
                     }}
-                        className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white border border-border text-text-secondary text-sm font-semibold hover:border-primary transition-all shadow-sm">
+                        className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white border border-border text-text-secondary text-sm font-semibold hover:border-[#B4912B] transition-all shadow-sm">
                         <Download className="w-4 h-4" /> Export Data
                     </button>
                 </div>
@@ -283,8 +283,8 @@ export default function SAAnalyticsPage() {
                             key={p.key}
                             onClick={() => applyPreset(p.key)}
                             className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all border ${activePreset === p.key
-                                    ? 'bg-primary text-white border-primary shadow-md shadow-primary/20 scale-95'
-                                    : 'bg-white text-text-secondary border-border hover:border-primary/45 hover:text-primary hover:bg-primary/5'
+                                    ? 'bg-[#B4912B] text-white border-[#B4912B] shadow-md shadow-[#B4912B]/20 scale-95'
+                                    : 'bg-white text-text-secondary border-border hover:border-[#B4912B]/45 hover:text-[#B4912B] hover:bg-[#B4912B]/5'
                                 }`}
                         >
                             {p.label}
@@ -301,7 +301,7 @@ export default function SAAnalyticsPage() {
                                 type="date"
                                 value={startDate}
                                 onChange={e => setStartDate(e.target.value)}
-                                className="px-2.5 py-1.5 rounded-lg border border-border text-xs text-text bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                                className="px-2.5 py-1.5 rounded-lg border border-border text-xs text-text bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-[#B4912B] transition-all"
                             />
                         </div>
                         <span className="text-xs text-text-muted font-bold">to</span>
@@ -311,7 +311,7 @@ export default function SAAnalyticsPage() {
                                 type="date"
                                 value={endDate}
                                 onChange={e => setEndDate(e.target.value)}
-                                className="px-2.5 py-1.5 rounded-lg border border-border text-xs text-text bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                                className="px-2.5 py-1.5 rounded-lg border border-border text-xs text-text bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-[#B4912B] transition-all"
                             />
                         </div>
                     </div>
@@ -320,7 +320,7 @@ export default function SAAnalyticsPage() {
 
             {/* ── KPI cards ── */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                <MetricCard label="Total Salons" value={kpis.totalSalons} sub={`${kpis.activeSalons} Active accounts`} icon={Building2} gradient="from-emerald-500 to-teal-600" shadow="shadow-primary/20" />
+                <MetricCard label="Total Salons" value={kpis.totalSalons} sub={`${kpis.activeSalons} Active accounts`} icon={Building2} gradient="from-emerald-500 to-teal-600" shadow="shadow-[#B4912B]/20" />
                 <MetricCard label="Monthly Revenue" value={fmtINR(kpis.mrr)} sub="Recurring income this month" icon={DollarSign} gradient="from-emerald-500 to-teal-600" shadow="shadow-emerald-500/20" />
                 <MetricCard label="Yearly Forecast" value={fmtINR(kpis.arr)} sub="Projected annual revenue" icon={TrendingUp} gradient="from-blue-500 to-indigo-600" shadow="shadow-blue-500/20" />
                 <MetricCard label="Lifetime Revenue" value={fmtINR(kpis.totalRevenue)} sub="Total income since launch" icon={BarChart2} gradient="from-amber-500 to-orange-600" shadow="shadow-amber-500/20" />

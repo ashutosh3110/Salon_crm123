@@ -74,7 +74,7 @@ function InvoiceModal({ onClose, onSend }) {
     }, []);
 
     const set = (k, v) => setForm(p => ({ ...p, [k]: v }));
-    const inputCls = 'w-full px-3.5 py-2.5 rounded-xl bg-white border border-border text-text text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all';
+    const inputCls = 'w-full px-3.5 py-2.5 rounded-xl bg-white border border-border text-text text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-[#B4912B] transition-all';
     const labelCls = 'block text-[11px] font-bold text-text-muted uppercase tracking-wider mb-1.5';
 
     return (
@@ -150,7 +150,7 @@ function InvoiceModal({ onClose, onSend }) {
                 <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-border">
                     <button onClick={onClose} className="px-4 py-2.5 rounded-xl text-sm font-semibold text-text-secondary hover:bg-surface transition-all">Cancel</button>
                     <button onClick={() => onSend(form)} disabled={!form.tenantId || !form.amount}
-                        className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-primary to-[#8B6F23] text-white text-sm font-bold hover:brightness-110 disabled:opacity-50 shadow-lg shadow-primary/20 transition-all flex items-center gap-2">
+                        className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-primary to-[#8B6F23] text-white text-sm font-bold hover:brightness-110 disabled:opacity-50 shadow-lg shadow-[#B4912B]/20 transition-all flex items-center gap-2">
                         <Send className="w-4 h-4" /> Send Invoice
                     </button>
                 </div>
@@ -419,7 +419,7 @@ export default function SABillingPage() {
                         exportToExcel(MOCK_PAYMENTS, 'Wapixo_Billing_Transactions', 'Payments');
                         showToast('Report exported as Excel!', 'info');
                     }}
-                        className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white border border-border text-text-secondary text-sm font-semibold hover:border-primary/30 hover:text-primary transition-all shadow-sm">
+                        className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white border border-border text-text-secondary text-sm font-semibold hover:border-[#B4912B]/30 hover:text-primary transition-all shadow-sm">
                         <Download className="w-4 h-4" /> Export
                     </button>
 
@@ -534,8 +534,8 @@ export default function SABillingPage() {
                             key={p.key}
                             onClick={() => applyPreset(p.key)}
                             className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all border ${datePeriod === p.key
-                                    ? 'bg-primary text-white border-primary shadow-md shadow-primary/20 scale-95'
-                                    : 'bg-white text-text-secondary border-border hover:border-primary/45 hover:text-primary hover:bg-primary/5'
+                                    ? 'bg-[#B4912B] text-white border-[#B4912B] shadow-md shadow-[#B4912B]/20 scale-95'
+                                    : 'bg-white text-text-secondary border-border hover:border-[#B4912B]/45 hover:text-[#B4912B] hover:bg-[#B4912B]/5'
                                 }`}
                         >
                             {p.label}
@@ -552,7 +552,7 @@ export default function SABillingPage() {
                                 type="date"
                                 value={customFrom}
                                 onChange={e => setCustomFrom(e.target.value)}
-                                className="px-2.5 py-1.5 rounded-lg border border-border text-xs text-text bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                                className="px-2.5 py-1.5 rounded-lg border border-border text-xs text-text bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-[#B4912B] transition-all"
                             />
                         </div>
                         <span className="text-xs text-text-muted font-bold">to</span>
@@ -562,7 +562,7 @@ export default function SABillingPage() {
                                 type="date"
                                 value={customTo}
                                 onChange={e => setCustomTo(e.target.value)}
-                                className="px-2.5 py-1.5 rounded-lg border border-border text-xs text-text bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                                className="px-2.5 py-1.5 rounded-lg border border-border text-xs text-text bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-[#B4912B] transition-all"
                             />
                         </div>
                     </div>
@@ -579,7 +579,7 @@ export default function SABillingPage() {
                             key={t.id}
                             onClick={() => { setTab(t.id); setSF(''); }}
                             className={`flex items-center gap-2 px-5 py-3 border-b-2 text-sm font-bold transition-all ${isActive
-                                    ? 'border-primary text-primary font-black animate-in fade-in duration-200'
+                                    ? 'border-[#B4912B] text-primary font-black animate-in fade-in duration-200'
                                     : 'border-transparent text-text-muted hover:text-text hover:border-border'
                                 }`}
                         >
@@ -601,7 +601,7 @@ export default function SABillingPage() {
                             </div>
                             <input value={search} onChange={e => setSearch(e.target.value)}
                                 placeholder="Search salon, invoice, plan…"
-                                className="flex-1 px-4 py-2.5 rounded-xl bg-white border border-border text-sm text-text placeholder-text-muted focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary shadow-sm" />
+                                className="flex-1 px-4 py-2.5 rounded-xl bg-white border border-border text-sm text-text placeholder-text-muted focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-[#B4912B] shadow-sm" />
                         </div>
                         <CustomDropdown
                             value={statusFilter}
@@ -727,7 +727,7 @@ export default function SABillingPage() {
                             </div>
                             <input value={search} onChange={e => setSearch(e.target.value)}
                                 placeholder="Search by salon, invoice ID…"
-                                className="flex-1 px-4 py-2.5 rounded-xl bg-white border border-border text-sm text-text placeholder-text-muted focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary shadow-sm" />
+                                className="flex-1 px-4 py-2.5 rounded-xl bg-white border border-border text-sm text-text placeholder-text-muted focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-[#B4912B] shadow-sm" />
                         </div>
                         <CustomDropdown
                             value={statusFilter}
@@ -911,7 +911,7 @@ export default function SABillingPage() {
                                 );
                                 showToast('Tax report exported as PDF!', 'info');
                             }}
-                                className="mt-4 w-full flex items-center justify-center gap-2 py-2.5 rounded-xl border border-border text-xs font-bold text-text-secondary hover:border-primary/30 hover:text-primary transition-all">
+                                className="mt-4 w-full flex items-center justify-center gap-2 py-2.5 rounded-xl border border-border text-xs font-bold text-text-secondary hover:border-[#B4912B]/30 hover:text-primary transition-all">
                                 <Download className="w-3.5 h-3.5" /> Export GST Report
                             </button>
                         </div>

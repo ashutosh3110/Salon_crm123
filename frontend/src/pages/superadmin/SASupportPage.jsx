@@ -229,13 +229,13 @@ export default function SASupportPage() {
                 <div className="flex items-center gap-2 bg-surface p-1 rounded-xl border border-border/60">
                     <button 
                         onClick={() => setActiveTab('tickets')}
-                        className={`px-4 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'tickets' ? 'bg-primary text-white shadow-lg' : 'text-text-muted hover:text-text'}`}
+                        className={`px-4 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'tickets' ? 'bg-[#B4912B] text-white shadow-lg' : 'text-text-muted hover:text-text'}`}
                     >
                         Salon Tickets
                     </button>
                     <button 
                         onClick={() => setActiveTab('faqs')}
-                        className={`px-4 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'faqs' ? 'bg-primary text-white shadow-lg' : 'text-text-muted hover:text-text'}`}
+                        className={`px-4 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'faqs' ? 'bg-[#B4912B] text-white shadow-lg' : 'text-text-muted hover:text-text'}`}
                     >
                         Manage FAQs
                     </button>
@@ -259,7 +259,7 @@ export default function SASupportPage() {
                         <div className="flex items-center gap-3">
                             <button 
                                 onClick={() => setIsCreateModalOpen(true)}
-                                className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:brightness-110 transition-all shadow-lg active:scale-95"
+                                className="flex items-center gap-2 px-4 py-2 bg-[#B4912B] text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:brightness-110 transition-all shadow-lg active:scale-95"
                             >
                                 <Plus className="w-4 h-4" /> Create Ticket
                             </button>
@@ -285,7 +285,7 @@ export default function SASupportPage() {
                             tickets.map(t => {
                                 const stStyle = STATUS_STYLES[t.status] || STATUS_STYLES.pending;
                                 return (
-                                    <div key={t._id} className="group relative bg-white border border-border rounded-2xl p-5 hover:shadow-2xl hover:border-primary/30 transition-all duration-300">
+                                    <div key={t._id} className="group relative bg-white border border-border rounded-2xl p-5 hover:shadow-2xl hover:border-[#B4912B]/30 transition-all duration-300">
                                         <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
                                             <div className="flex-1 space-y-2">
                                                 <div className="flex items-center gap-3">
@@ -325,7 +325,7 @@ export default function SASupportPage() {
                                                     <select 
                                                         value={t.status}
                                                         onChange={(e) => updateStatus(t._id, e.target.value)}
-                                                        className="flex-1 px-3 py-2 rounded-xl bg-surface border border-border text-[10px] font-black uppercase tracking-widest outline-none focus:border-primary transition-all"
+                                                        className="flex-1 px-3 py-2 rounded-xl bg-surface border border-border text-[10px] font-black uppercase tracking-widest outline-none focus:border-[#B4912B] transition-all"
                                                     >
                                                         {Object.entries(STATUS_STYLES).map(([val, cfg]) => (
                                                             <option key={val} value={val}>{cfg.label}</option>
@@ -371,7 +371,7 @@ export default function SASupportPage() {
                         <div className="flex items-center gap-3">
                             <button 
                                 onClick={addFaq}
-                                className="flex items-center gap-2 px-4 py-2 bg-text text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-primary transition-all shadow-lg active:scale-95"
+                                className="flex items-center gap-2 px-4 py-2 bg-[#B4912B] text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-[#8B6F23] transition-all shadow-lg shadow-[#B4912B]/20 active:scale-95"
                             >
                                 <Plus className="w-4 h-4" /> Add Question
                             </button>
@@ -393,7 +393,7 @@ export default function SASupportPage() {
                             faqs.map((faq, i) => (
                                 <div key={i} className="bg-white border border-border rounded-2xl p-6 hover:shadow-xl transition-all group">
                                     <div className="flex items-start gap-5">
-                                        <div className="w-8 h-8 rounded-lg bg-surface border border-border flex items-center justify-center text-text-muted group-hover:text-primary group-hover:border-primary/30 transition-colors">
+                                        <div className="w-8 h-8 rounded-lg bg-surface border border-border flex items-center justify-center text-text-muted group-hover:text-primary group-hover:border-[#B4912B]/30 transition-colors">
                                             <span className="text-[10px] font-black">Q{i+1}</span>
                                         </div>
                                         <div className="flex-1 space-y-4">
@@ -404,7 +404,7 @@ export default function SASupportPage() {
                                                         type="text" 
                                                         value={faq.question}
                                                         onChange={(e) => updateFaqLocal(i, 'question', e.target.value)}
-                                                        className="w-full px-4 py-2.5 bg-surface border border-border rounded-xl text-sm font-bold text-text focus:border-primary outline-none transition-all"
+                                                        className="w-full px-4 py-2.5 bg-surface border border-border rounded-xl text-sm font-bold text-text focus:border-[#B4912B] outline-none transition-all"
                                                     />
                                                 </div>
                                                 <div className="w-40 space-y-1.5">
@@ -413,7 +413,7 @@ export default function SASupportPage() {
                                                         type="text" 
                                                         value={faq.category}
                                                         onChange={(e) => updateFaqLocal(i, 'category', e.target.value)}
-                                                        className="w-full px-4 py-2.5 bg-surface border border-border rounded-xl text-xs font-bold text-text focus:border-primary outline-none transition-all"
+                                                        className="w-full px-4 py-2.5 bg-surface border border-border rounded-xl text-xs font-bold text-text focus:border-[#B4912B] outline-none transition-all"
                                                     />
                                                 </div>
                                             </div>
@@ -423,7 +423,7 @@ export default function SASupportPage() {
                                                     value={faq.answer}
                                                     onChange={(e) => updateFaqLocal(i, 'answer', e.target.value)}
                                                     rows="2"
-                                                    className="w-full px-4 py-2.5 bg-surface border border-border rounded-xl text-sm font-medium text-text-secondary focus:border-primary outline-none transition-all resize-none"
+                                                    className="w-full px-4 py-2.5 bg-surface border border-border rounded-xl text-sm font-medium text-text-secondary focus:border-[#B4912B] outline-none transition-all resize-none"
                                                 />
                                             </div>
                                             <div className="flex justify-end gap-2 pt-2">
@@ -471,7 +471,7 @@ export default function SASupportPage() {
                                     value={newTicket.subject}
                                     onChange={(e) => setNewTicket({...newTicket, subject: e.target.value})}
                                     placeholder="e.g., App sync issue"
-                                    className="w-full px-4 py-3 bg-surface border border-border rounded-xl text-sm font-bold focus:border-primary outline-none transition-all placeholder:text-text-muted/50"
+                                    className="w-full px-4 py-3 bg-surface border border-border rounded-xl text-sm font-bold focus:border-[#B4912B] outline-none transition-all placeholder:text-text-muted/50"
                                 />
                             </div>
 
@@ -480,7 +480,7 @@ export default function SASupportPage() {
                                 <select 
                                     value={newTicket.tenantId}
                                     onChange={(e) => setNewTicket({...newTicket, tenantId: e.target.value})}
-                                    className="w-full px-4 py-3 bg-surface border border-border rounded-xl text-sm font-bold focus:border-primary outline-none transition-all"
+                                    className="w-full px-4 py-3 bg-surface border border-border rounded-xl text-sm font-bold focus:border-[#B4912B] outline-none transition-all"
                                 >
                                     <option value="">Platform Level (Global)</option>
                                     {salons.map(s => (
@@ -495,7 +495,7 @@ export default function SASupportPage() {
                                     <select 
                                         value={newTicket.priority}
                                         onChange={(e) => setNewTicket({...newTicket, priority: e.target.value})}
-                                        className="w-full px-4 py-3 bg-surface border border-border rounded-xl text-sm font-bold focus:border-primary outline-none transition-all"
+                                        className="w-full px-4 py-3 bg-surface border border-border rounded-xl text-sm font-bold focus:border-[#B4912B] outline-none transition-all"
                                     >
                                         <option value="low">Low</option>
                                         <option value="medium">Medium</option>
@@ -508,7 +508,7 @@ export default function SASupportPage() {
                                     <select 
                                         value={newTicket.status}
                                         onChange={(e) => setNewTicket({...newTicket, status: e.target.value})}
-                                        className="w-full px-4 py-3 bg-surface border border-border rounded-xl text-sm font-bold focus:border-primary outline-none transition-all"
+                                        className="w-full px-4 py-3 bg-surface border border-border rounded-xl text-sm font-bold focus:border-[#B4912B] outline-none transition-all"
                                     >
                                         <option value="open">Open</option>
                                         <option value="in-progress">In Progress</option>
@@ -525,7 +525,7 @@ export default function SASupportPage() {
                                     onChange={(e) => setNewTicket({...newTicket, description: e.target.value})}
                                     rows="4"
                                     placeholder="Describe the issue in detail..."
-                                    className="w-full px-4 py-3 bg-surface border border-border rounded-xl text-sm font-medium focus:border-primary outline-none transition-all resize-none placeholder:text-text-muted/50"
+                                    className="w-full px-4 py-3 bg-surface border border-border rounded-xl text-sm font-medium focus:border-[#B4912B] outline-none transition-all resize-none placeholder:text-text-muted/50"
                                 />
                             </div>
 
@@ -540,7 +540,7 @@ export default function SASupportPage() {
                                 <button 
                                     type="submit"
                                     disabled={creating}
-                                    className="flex-[2] px-6 py-3 bg-primary text-white rounded-xl text-[11px] font-black uppercase tracking-widest hover:brightness-110 shadow-lg shadow-primary/20 transition-all disabled:opacity-50"
+                                    className="flex-[2] px-6 py-3 bg-[#B4912B] text-white rounded-xl text-[11px] font-black uppercase tracking-widest hover:brightness-110 shadow-lg shadow-[#B4912B]/20 transition-all disabled:opacity-50"
                                 >
                                     {creating ? <RefreshCw className="w-4 h-4 animate-spin mx-auto" /> : 'Create Ticket'}
                                 </button>

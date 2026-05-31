@@ -13,7 +13,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 const planColors = {
     free: 'bg-slate-100 text-slate-600 border-slate-200',
     basic: 'bg-blue-50 text-blue-600 border-blue-200',
-    pro: 'bg-primary/10 text-primary border-primary/25',
+    pro: 'bg-primary/10 text-primary border-[#B4912B]/25',
     premium: 'bg-indigo-50 text-indigo-600 border-indigo-200',
     enterprise: 'bg-amber-50 text-amber-600 border-amber-200',
 };
@@ -28,9 +28,9 @@ const STATUS_CFG = {
 /* ─── Action button ──────────────────────────────────────────────────── */
 function ActionBtn({ icon: Icon, label, onClick, variant = 'default', disabled = false }) {
     const varCls = {
-        default: 'bg-white text-text-secondary border-border hover:border-primary/30 hover:text-primary shadow-sm',
+        default: 'bg-white text-text-secondary border-border hover:border-[#B4912B]/30 hover:text-primary shadow-sm',
         danger: 'bg-white text-red-500 border-red-100 hover:bg-red-50 shadow-sm',
-        primary: 'bg-primary text-white border-primary hover:brightness-110 shadow-lg shadow-primary/20',
+        primary: 'bg-[#B4912B] text-white border-[#B4912B] hover:brightness-110 shadow-lg shadow-[#B4912B]/20',
         blue: 'bg-white text-blue-600 border-blue-100 hover:bg-blue-50 shadow-sm',
     };
     return (
@@ -151,7 +151,7 @@ export default function SATenantDetailPage() {
     if (loading) {
         return (
             <div className="flex flex-col items-center justify-center min-h-[400px] gap-4">
-                <div className="w-12 h-12 border-4 border-primary/20 border-t-primary rounded-full animate-spin" />
+                <div className="w-12 h-12 border-4 border-[#B4912B]/20 border-t-primary rounded-full animate-spin" />
                 <p className="text-xs font-black uppercase tracking-widest text-text-muted animate-pulse">Loading Salon...</p>
             </div>
         );
@@ -195,7 +195,7 @@ export default function SATenantDetailPage() {
             {/* ── Breadcrumb ── */}
             <nav className="flex items-center gap-3 text-[10px] font-black uppercase tracking-widest text-text-muted/60">
                 <Link to="/superadmin/tenants" className="hover:text-primary transition-colors flex items-center gap-1.5 group">
-                    <div className="w-5 h-5 rounded-md bg-surface border border-border flex items-center justify-center group-hover:bg-rose-50 group-hover:border-primary/20 transition-all">
+                    <div className="w-5 h-5 rounded-md bg-surface border border-border flex items-center justify-center group-hover:bg-rose-50 group-hover:border-[#B4912B]/20 transition-all">
                         <ArrowLeft className="w-3 h-3" />
                     </div>
                     Salons List
@@ -292,7 +292,7 @@ export default function SATenantDetailPage() {
                                 {isActive && (
                                     <motion.div 
                                         layoutId="activeTab"
-                                        className="absolute inset-0 bg-primary shadow-lg shadow-primary/20 rounded-xl"
+                                        className="absolute inset-0 bg-primary shadow-lg shadow-[#B4912B]/20 rounded-xl"
                                         transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
                                     />
                                 )}
@@ -479,7 +479,7 @@ export default function SATenantDetailPage() {
                                                 type="number" 
                                                 id="sa-credits-input"
                                                 placeholder="e.g. +1000 or -500"
-                                                className="w-full h-16 px-6 rounded-2xl border border-border bg-surface text-lg font-black outline-none focus:border-primary focus:ring-4 focus:ring-primary/5 transition-all"
+                                                className="w-full h-16 px-6 rounded-2xl border border-border bg-surface text-lg font-black outline-none focus:border-[#B4912B] focus:ring-4 focus:ring-primary/5 transition-all"
                                             />
                                         </div>
                                         <motion.button 
@@ -500,7 +500,7 @@ export default function SATenantDetailPage() {
                                                     showToast('Update failed', 'error');
                                                 }
                                             }}
-                                            className="h-16 px-10 bg-text text-white text-[11px] font-black uppercase tracking-[0.2em] rounded-2xl hover:bg-primary transition-all shadow-xl shadow-primary/20 whitespace-nowrap"
+                                            className="h-16 px-10 bg-[#B4912B] text-white text-[11px] font-black uppercase tracking-[0.2em] rounded-2xl hover:bg-[#8B6F23] transition-all shadow-xl shadow-[#B4912B]/20 whitespace-nowrap"
                                         >
                                             Sync Balance
                                         </motion.button>
@@ -543,7 +543,7 @@ export default function SATenantDetailPage() {
                                                 const s = states.find((st) => st.name === e.target.value);
                                                 if (s) setFiscalForm({ ...fiscalForm, state: s.name, stateCode: s.code });
                                             }}
-                                            className="w-full h-14 px-5 rounded-2xl border border-border text-sm font-bold focus:border-primary focus:ring-4 focus:ring-primary/5 outline-none transition-all bg-surface/50 appearance-none"
+                                            className="w-full h-14 px-5 rounded-2xl border border-border text-sm font-bold focus:border-[#B4912B] focus:ring-4 focus:ring-primary/5 outline-none transition-all bg-surface/50 appearance-none"
                                         >
                                             {states.map((s) => (
                                                 <option key={s.code} value={s.name}>
@@ -572,7 +572,7 @@ export default function SATenantDetailPage() {
                                                 type="number"
                                                 value={fiscalForm.serviceGst}
                                                 onChange={(e) => setFiscalForm({ ...fiscalForm, serviceGst: Number(e.target.value) })}
-                                                className="w-full h-14 px-5 rounded-2xl border border-border text-sm font-black focus:border-primary focus:ring-4 focus:ring-primary/5 outline-none transition-all bg-surface/50"
+                                                className="w-full h-14 px-5 rounded-2xl border border-border text-sm font-black focus:border-[#B4912B] focus:ring-4 focus:ring-primary/5 outline-none transition-all bg-surface/50"
                                             />
                                             <span className="absolute right-5 top-1/2 -translate-y-1/2 font-black text-text-muted">%</span>
                                         </div>
@@ -588,7 +588,7 @@ export default function SATenantDetailPage() {
                                                 type="number"
                                                 value={fiscalForm.productGst}
                                                 onChange={(e) => setFiscalForm({ ...fiscalForm, productGst: Number(e.target.value) })}
-                                                className="w-full h-14 px-5 rounded-2xl border border-border text-sm font-black focus:border-primary focus:ring-4 focus:ring-primary/5 outline-none transition-all bg-surface/50"
+                                                className="w-full h-14 px-5 rounded-2xl border border-border text-sm font-black focus:border-[#B4912B] focus:ring-4 focus:ring-primary/5 outline-none transition-all bg-surface/50"
                                             />
                                             <span className="absolute right-5 top-1/2 -translate-y-1/2 font-black text-text-muted">%</span>
                                         </div>
@@ -601,7 +601,7 @@ export default function SATenantDetailPage() {
                                         whileTap={{ scale: 0.98 }}
                                         onClick={handleUpdateFiscal}
                                         disabled={isSaving}
-                                        className="flex items-center justify-center gap-3 w-full sm:w-auto px-10 py-4 bg-text text-white text-[11px] font-black uppercase tracking-[0.3em] rounded-2xl hover:bg-primary transition-all shadow-xl shadow-primary/10 disabled:opacity-50"
+                                        className="flex items-center justify-center gap-3 w-full sm:w-auto px-10 py-4 bg-[#B4912B] text-white text-[11px] font-black uppercase tracking-[0.3em] rounded-2xl hover:bg-[#8B6F23] transition-all shadow-xl shadow-[#B4912B]/20 disabled:opacity-50"
                                     >
                                         {isSaving ? (
                                             <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin" />

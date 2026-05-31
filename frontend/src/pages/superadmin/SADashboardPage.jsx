@@ -30,8 +30,8 @@ const MOCK_CHURN = superAdminData.churn;
 const planColors = {
     free: 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700',
     basic: 'bg-blue-50 dark:bg-blue-950/30 text-blue-600 dark:text-blue-400 border-blue-200 dark:border-blue-800',
-    pro: 'bg-primary/10 text-primary border-primary/20',
-    premium: 'bg-primary/10 text-primary border-primary/20',
+    pro: 'bg-primary/10 text-primary border-[#B4912B]/20',
+    premium: 'bg-primary/10 text-primary border-[#B4912B]/20',
     enterprise: 'bg-amber-50 dark:bg-amber-950/30 text-amber-600 dark:text-amber-400 border-amber-200 dark:border-amber-800',
 };
 const statusColors = {
@@ -324,7 +324,7 @@ export default function SADashboardPage() {
     const salonsWithoutPlan = currentPlanDist.find(p => p.name === 'Free')?.value || 0;
 
     const metricCards = [
-        { label: 'Total Registered', value: kpi.totalSalons, icon: Building2, gradient: 'from-emerald-500 to-teal-600', shadow: 'shadow-primary/20', to: '/superadmin/tenants', textColor: 'text-primary' },
+        { label: 'Total Registered', value: kpi.totalSalons, icon: Building2, gradient: 'from-emerald-500 to-teal-600', shadow: 'shadow-[#B4912B]/20', to: '/superadmin/tenants', textColor: 'text-primary' },
         { label: 'Active Salons', value: kpi.activeSubs, icon: CheckCircle2, gradient: 'from-emerald-500 to-teal-600', shadow: 'shadow-emerald-500/20', to: '/superadmin/tenants?status=active', textColor: 'text-emerald-600 dark:text-emerald-400' },
         { label: 'Pending Approval', value: kpi.pendingSalons, icon: Clock, gradient: 'from-blue-500 to-indigo-600', shadow: 'shadow-blue-500/20', to: '/superadmin/tenants?status=pending', textColor: 'text-blue-600 dark:text-blue-400' },
         { label: 'Salons With Plan', value: salonsWithPlan, icon: Crown, gradient: 'from-amber-500 to-orange-600', shadow: 'shadow-amber-500/20', to: '/superadmin/tenants?plan=subscribed', textColor: 'text-amber-600 dark:text-amber-400' },
@@ -353,7 +353,7 @@ export default function SADashboardPage() {
                     <button
                         onClick={() => fetchStats(true)}
                         disabled={refreshing}
-                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-surface border border-border text-text-secondary text-xs font-semibold hover:border-primary/30 hover:text-primary transition-all hover:shadow-sm"
+                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-surface border border-border text-text-secondary text-xs font-semibold hover:border-[#B4912B]/30 hover:text-primary transition-all hover:shadow-sm"
                     >
                         <RefreshCw className={`w-3.5 h-3.5 ${refreshing ? 'animate-spin' : ''}`} /> Refresh
                     </button>
@@ -380,8 +380,8 @@ export default function SADashboardPage() {
                             onClick={() => applyPreset(p.key)}
                             className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all border ${
                                 datePeriod === p.key
-                                    ? 'bg-primary text-white border-primary shadow-md shadow-primary/20 scale-95'
-                                    : 'bg-white text-text-secondary border-border hover:border-primary/45 hover:text-primary hover:bg-primary/5'
+                                    ? 'bg-[#B4912B] text-white border-[#B4912B] shadow-md shadow-[#B4912B]/20 scale-95'
+                                    : 'bg-white text-text-secondary border-border hover:border-[#B4912B]/45 hover:text-[#B4912B] hover:bg-[#B4912B]/5'
                             }`}
                         >
                             {p.label}
@@ -398,7 +398,7 @@ export default function SADashboardPage() {
                                 type="date"
                                 value={startDate}
                                 onChange={e => setStartDate(e.target.value)}
-                                className="px-2.5 py-1.5 rounded-lg border border-border text-xs text-text bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                                className="px-2.5 py-1.5 rounded-lg border border-border text-xs text-text bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-[#B4912B] transition-all"
                             />
                         </div>
                         <span className="text-xs text-text-muted font-bold">to</span>
@@ -408,19 +408,19 @@ export default function SADashboardPage() {
                                 type="date"
                                 value={endDate}
                                 onChange={e => setEndDate(e.target.value)}
-                                className="px-2.5 py-1.5 rounded-lg border border-border text-xs text-text bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                                className="px-2.5 py-1.5 rounded-lg border border-border text-xs text-text bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-[#B4912B] transition-all"
                             />
                         </div>
                         <button
                             onClick={handleApplyFilters}
-                            className="px-3.5 py-1.5 bg-primary text-white text-xs font-bold rounded-lg hover:bg-primary/95 shadow-md shadow-primary/20 transition-all"
+                            className="px-3.5 py-1.5 bg-[#B4912B] text-white text-xs font-bold rounded-lg hover:bg-[#8B6F23] shadow-md shadow-[#B4912B]/20 transition-all"
                         >
                             Apply
                         </button>
                         {(startDate || endDate) && (
                             <button
                                 onClick={handleResetFilters}
-                                className="px-2 py-1 bg-surface border border-border text-text-secondary text-[11px] font-bold rounded-lg hover:border-primary/30 hover:text-primary transition-all"
+                                className="px-2 py-1 bg-surface border border-border text-text-secondary text-[11px] font-bold rounded-lg hover:border-[#B4912B]/30 hover:text-primary transition-all"
                             >
                                 Reset
                             </button>
@@ -442,7 +442,7 @@ export default function SADashboardPage() {
                 {/* Monthly Revenue — AreaChart (spans 2 cols) */}
                 <div
                     onClick={() => navigate('/superadmin/billing')}
-                    className="lg:col-span-2 bg-surface rounded-2xl border border-border shadow-sm p-5 group hover:shadow-md transition-all cursor-pointer hover:border-primary/20"
+                    className="lg:col-span-2 bg-surface rounded-2xl border border-border shadow-sm p-5 group hover:shadow-md transition-all cursor-pointer hover:border-[#B4912B]/20"
                 >
                     <SectionHeader
                         title="Income Trends"
@@ -480,7 +480,7 @@ export default function SADashboardPage() {
                 {/* Plan Distribution — PieChart */}
                 <div
                     onClick={() => navigate('/superadmin/tenants')}
-                    className="bg-surface rounded-2xl border border-border shadow-sm p-5 group hover:shadow-md transition-all cursor-pointer hover:border-primary/20"
+                    className="bg-surface rounded-2xl border border-border shadow-sm p-5 group hover:shadow-md transition-all cursor-pointer hover:border-[#B4912B]/20"
                 >
                     <SectionHeader
                         title="Most Popular Plans"
@@ -521,7 +521,7 @@ export default function SADashboardPage() {
                 {/* New Registrations — BarChart */}
                 <div
                     onClick={() => navigate('/superadmin/tenants')}
-                    className="bg-surface rounded-2xl border border-border shadow-sm p-5 group hover:shadow-md transition-all cursor-pointer hover:border-primary/20"
+                    className="bg-surface rounded-2xl border border-border shadow-sm p-5 group hover:shadow-md transition-all cursor-pointer hover:border-[#B4912B]/20"
                 >
                     <SectionHeader
                         title="Salons Joined Recently"
@@ -557,7 +557,7 @@ export default function SADashboardPage() {
                 {/* Churn Rate — LineChart */}
                 <div
                     onClick={() => navigate('/superadmin/tenants?status=expired')}
-                    className="bg-surface rounded-2xl border border-border shadow-sm p-5 group hover:shadow-md transition-all cursor-pointer hover:border-primary/20"
+                    className="bg-surface rounded-2xl border border-border shadow-sm p-5 group hover:shadow-md transition-all cursor-pointer hover:border-[#B4912B]/20"
                 >
                     <SectionHeader
                         title="Cancellations Rate"
@@ -626,7 +626,7 @@ export default function SADashboardPage() {
                                 >
                                     <td className="px-5 py-3.5">
                                         <div className="flex items-center gap-3">
-                                            <div className="w-8 h-8 rounded-lg bg-indigo-50 border border-primary/20 flex items-center justify-center text-xs font-black text-primary shrink-0 group-hover:bg-primary group-hover:text-primary-foreground transition-all">
+                                            <div className="w-8 h-8 rounded-lg bg-indigo-50 border border-[#B4912B]/20 flex items-center justify-center text-xs font-black text-primary shrink-0 group-hover:bg-primary group-hover:text-primary-foreground transition-all">
                                                 {t.name[0]?.toUpperCase() || 'S'}
                                             </div>
                                             <div>
@@ -659,7 +659,7 @@ export default function SADashboardPage() {
                                         </span>
                                     </td>
                                     <td className="px-5 py-3.5 text-right">
-                                        <div className="inline-flex items-center gap-1 text-[11px] font-semibold text-primary border border-primary/20 bg-primary/5 group-hover:bg-primary group-hover:text-primary-foreground px-3 py-1.5 rounded-lg transition-all">
+                                        <div className="inline-flex items-center gap-1 text-[11px] font-semibold text-primary border border-[#B4912B]/20 bg-primary/5 group-hover:bg-primary group-hover:text-primary-foreground px-3 py-1.5 rounded-lg transition-all">
                                             View <ArrowRight className="w-3 h-3" />
                                         </div>
                                     </td>

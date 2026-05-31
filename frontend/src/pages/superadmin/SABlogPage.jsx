@@ -165,7 +165,7 @@ export default function SABlogPage() {
                         initial={{ opacity: 0, x: 50 }}
                         animate={{ opacity: 1, x: 0 }}
                         exit={{ opacity: 0, x: 50 }}
-                        className="fixed top-20 right-8 bg-black text-white px-8 py-4 shadow-2xl z-[100] flex items-center gap-4 border-l-4 border-primary"
+                        className="fixed top-20 right-8 bg-[#B4912B] text-white px-8 py-4 shadow-2xl shadow-[#B4912B]/20 z-[100] flex items-center gap-4 border-l-4 border-white/20 hover:bg-[#8B6F23]"
                     >
                         <CheckCircle2 size={18} className="text-primary" />
                         <span className="text-[10px] font-black uppercase tracking-[0.2em]">{toast}</span>
@@ -191,7 +191,7 @@ export default function SABlogPage() {
                     </div>
                     <button
                         onClick={() => openEditor(null)}
-                        className="px-8 py-4 bg-black text-white text-[10px] font-black uppercase tracking-[0.3em] hover:bg-primary transition-all flex items-center gap-3 regular-radius shadow-2xl shadow-black/10 active:scale-[0.98]"
+                        className="px-8 py-4 bg-[#B4912B] text-white text-[10px] font-black uppercase tracking-[0.3em] hover:bg-[#8B6F23] transition-all flex items-center gap-3 regular-radius shadow-2xl shadow-[#B4912B]/20 active:scale-[0.98]"
                     >
                         <Plus size={16} /> Create New Article
                     </button>
@@ -366,7 +366,7 @@ export default function SABlogPage() {
                                             required 
                                             name="title"
                                             defaultValue={editingPost?.title}
-                                            className="w-full bg-slate-50/50 border border-border rounded-xl px-4 py-3.5 text-lg font-bold text-text placeholder:text-text-muted/40 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                                            className="w-full bg-slate-50/50 border border-border rounded-xl px-4 py-3.5 text-lg font-bold text-text placeholder:text-text-muted/40 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-[#B4912B] transition-all"
                                             placeholder="Write a compelling headline..."
                                         />
                                     </div>
@@ -378,7 +378,7 @@ export default function SABlogPage() {
                                         </label>
                                         <div 
                                             onClick={() => fileInputRef.current?.click()}
-                                            className="relative group aspect-video bg-slate-50 border-2 border-dashed border-border hover:border-primary/55 rounded-2xl flex flex-col items-center justify-center overflow-hidden cursor-pointer transition-all hover:bg-slate-100/50"
+                                            className="relative group aspect-video bg-slate-50 border-2 border-dashed border-border hover:border-[#B4912B]/55 rounded-2xl flex flex-col items-center justify-center overflow-hidden cursor-pointer transition-all hover:bg-slate-100/50"
                                         >
                                             <input 
                                                 type="file" 
@@ -431,7 +431,7 @@ export default function SABlogPage() {
                                             defaultValue={editingPost?.content}
                                             onChange={handleContentChange}
                                             required
-                                            className="w-full bg-slate-50/50 border border-border rounded-xl p-4 text-sm leading-relaxed text-text placeholder:text-text-muted/40 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all min-h-[180px] font-medium"
+                                            className="w-full bg-slate-50/50 border border-border rounded-xl p-4 text-sm leading-relaxed text-text placeholder:text-text-muted/40 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-[#B4912B] transition-all min-h-[180px] font-medium"
                                             placeholder="Write your article narrative here..."
                                         />
                                     </div>
@@ -449,7 +449,7 @@ export default function SABlogPage() {
                                         <button 
                                             type="submit" 
                                             disabled={uploading}
-                                            className="py-4 bg-black text-white text-[10px] font-black uppercase tracking-[0.2em] hover:bg-primary active:scale-[0.98] transition-all shadow-xl shadow-primary/10 flex items-center justify-center gap-2.5 group disabled:opacity-50 rounded-xl"
+                                            className="py-4 bg-[#B4912B] text-white text-[10px] font-black uppercase tracking-[0.2em] hover:bg-[#8B6F23] active:scale-[0.98] transition-all shadow-xl shadow-[#B4912B]/20 flex items-center justify-center gap-2.5 group disabled:opacity-50 rounded-xl"
                                         >
                                             {uploading ? <Loader2 size={14} className="animate-spin" /> : <Globe size={14} />}
                                             {uploading ? 'PUBLISHING...' : 'Publish Article'}

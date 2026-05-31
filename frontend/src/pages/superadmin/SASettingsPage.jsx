@@ -48,7 +48,7 @@ function Field({ label, icon: Icon, type = 'text', value, onChange, placeholder,
                         onChange={onChange}
                         placeholder={placeholder}
                         readOnly={readOnly}
-                        className={`w-full pl-3.5 ${suffix ? 'pr-10' : 'pr-3.5'} py-2.5 rounded-xl bg-white border border-border text-text text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm ${readOnly ? 'bg-surface cursor-not-allowed text-text-muted' : ''}`}
+                        className={`w-full pl-3.5 ${suffix ? 'pr-10' : 'pr-3.5'} py-2.5 rounded-xl bg-white border border-border text-text text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-[#B4912B] transition-all shadow-sm ${readOnly ? 'bg-surface cursor-not-allowed text-text-muted' : ''}`}
                     />
                     {suffix && (
                         <div className="absolute right-3 top-1/2 -translate-y-1/2">
@@ -399,7 +399,7 @@ export default function SASettingsPage() {
                         <button
                             onClick={handleSaveProfile}
                             disabled={savingProfile}
-                            className="w-full flex items-center justify-center gap-2 py-2.5 px-5 rounded-xl bg-gradient-to-r from-primary to-[#8B6F23] text-white text-sm font-bold hover:brightness-110 disabled:opacity-60 transition-all shadow-lg shadow-primary/20 active:scale-[0.98]"
+                            className="w-full flex items-center justify-center gap-2 py-2.5 px-5 rounded-xl bg-gradient-to-r from-primary to-[#8B6F23] text-white text-sm font-bold hover:brightness-110 disabled:opacity-60 transition-all shadow-lg shadow-[#B4912B]/20 active:scale-[0.98]"
                         >
                             {savingProfile
                                 ? <><span className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" /> Saving…</>
@@ -511,7 +511,7 @@ export default function SASettingsPage() {
                         <button
                             onClick={handleChangePassword}
                             disabled={savingPassword || !pwd.current || !pwd.newPwd || !pwd.confirm}
-                            className="w-full flex items-center justify-center gap-2 py-2.5 px-5 rounded-xl bg-gray-900 hover:bg-black text-white text-sm font-bold disabled:opacity-50 transition-all shadow-lg shadow-black/20 active:scale-[0.98]"
+                            className="w-full flex items-center justify-center gap-2 py-2.5 px-5 rounded-xl bg-primary hover:bg-[#8B6F23] text-white text-sm font-bold disabled:opacity-50 transition-all shadow-lg shadow-[#B4912B]/20 active:scale-[0.98]"
                         >
                             {savingPassword
                                 ? <><span className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" /> Changing…</>
@@ -542,7 +542,7 @@ export default function SASettingsPage() {
                                         Platform Logo
                                     </label>
                                     <div className="flex items-center gap-4">
-                                        <div className="relative group flex items-center justify-center w-20 h-20 rounded-2xl border border-dashed border-border bg-slate-50 hover:bg-slate-100/50 hover:border-primary/50 transition-all shrink-0 cursor-pointer overflow-hidden shadow-inner">
+                                        <div className="relative group flex items-center justify-center w-20 h-20 rounded-2xl border border-dashed border-border bg-slate-50 hover:bg-slate-100/50 hover:border-[#B4912B]/50 transition-all shrink-0 cursor-pointer overflow-hidden shadow-inner">
                                             {platform.logoUrl ? (
                                                 <img 
                                                     src={getImageUrl(platform.logoUrl)} 
@@ -555,7 +555,7 @@ export default function SASettingsPage() {
                                             )}
                                         </div>
                                         <div className="flex-1 space-y-2">
-                                            <label className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-white border border-border text-text text-xs font-bold rounded-xl hover:border-primary/30 hover:text-primary transition-all shadow-sm cursor-pointer hover:bg-primary/5">
+                                            <label className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-white border border-border text-text text-xs font-bold rounded-xl hover:border-[#B4912B]/30 hover:text-primary transition-all shadow-sm cursor-pointer hover:bg-primary/5">
                                                 <UploadCloud className="w-4 h-4 text-blue-500" />
                                                 <span>{uploadingLogo ? 'Uploading...' : 'Upload Logo'}</span>
                                                 <input 
@@ -577,7 +577,7 @@ export default function SASettingsPage() {
                                         Platform Favicon
                                     </label>
                                     <div className="flex items-center gap-4">
-                                        <div className="relative group flex items-center justify-center w-20 h-20 rounded-2xl border border-dashed border-border bg-slate-50 hover:bg-slate-100/50 hover:border-primary/50 transition-all shrink-0 cursor-pointer overflow-hidden shadow-inner">
+                                        <div className="relative group flex items-center justify-center w-20 h-20 rounded-2xl border border-dashed border-border bg-slate-50 hover:bg-slate-100/50 hover:border-[#B4912B]/50 transition-all shrink-0 cursor-pointer overflow-hidden shadow-inner">
                                             {platform.faviconUrl ? (
                                                 <img 
                                                     src={getImageUrl(platform.faviconUrl)} 
@@ -590,7 +590,7 @@ export default function SASettingsPage() {
                                             )}
                                         </div>
                                         <div className="flex-1 space-y-2">
-                                            <label className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-white border border-border text-text text-xs font-bold rounded-xl hover:border-primary/30 hover:text-primary transition-all shadow-sm cursor-pointer hover:bg-primary/5">
+                                            <label className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-white border border-border text-text text-xs font-bold rounded-xl hover:border-[#B4912B]/30 hover:text-primary transition-all shadow-sm cursor-pointer hover:bg-primary/5">
                                                 <UploadCloud className="w-4 h-4 text-emerald-500" />
                                                 <span>{uploadingFavicon ? 'Uploading...' : 'Upload Favicon'}</span>
                                                 <input 

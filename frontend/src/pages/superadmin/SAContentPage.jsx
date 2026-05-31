@@ -153,14 +153,14 @@ function Field({ label, value, onChange, type = 'text', rows = 3 }) {
                     value={value}
                     onChange={e => onChange(e.target.value)}
                     rows={rows}
-                    className="w-full text-sm px-3 py-2 border border-border bg-white text-text focus:outline-none focus:border-primary resize-none transition-colors"
+                    className="w-full text-sm px-3 py-2 border border-border bg-white text-text focus:outline-none focus:border-[#B4912B] resize-none transition-colors"
                 />
             ) : (
                 <input
                     type="text"
                     value={value}
                     onChange={e => onChange(e.target.value)}
-                    className="w-full text-sm px-3 py-2 border border-border bg-white text-text focus:outline-none focus:border-primary transition-colors"
+                    className="w-full text-sm px-3 py-2 border border-border bg-white text-text focus:outline-none focus:border-[#B4912B] transition-colors"
                 />
             )}
         </div>
@@ -179,7 +179,7 @@ function ImageField({ label, value, onChange }) {
                     value={value}
                     onChange={e => handleChange(e.target.value)}
                     placeholder="https://..."
-                    className="flex-1 text-sm px-3 py-2 border border-border bg-white text-text focus:outline-none focus:border-primary transition-colors"
+                    className="flex-1 text-sm px-3 py-2 border border-border bg-white text-text focus:outline-none focus:border-[#B4912B] transition-colors"
                 />
             </div>
             {preview && (
@@ -199,7 +199,7 @@ function Btn({ children, onClick, variant = 'primary', size = 'sm', className = 
     const base = 'inline-flex items-center gap-1.5 font-bold transition-all';
     const sizeClass = size === 'sm' ? 'text-xs px-3 py-1.5' : 'text-sm px-5 py-2.5';
     const variantClass = {
-        primary: 'bg-primary text-white hover:bg-primary/90 shadow-sm',
+        primary: 'bg-[#B4912B] text-white hover:bg-[#8B6F23] shadow-sm',
         ghost: 'bg-surface text-text-secondary hover:bg-border hover:text-text border border-border',
         danger: 'bg-red-50 text-red-600 hover:bg-red-100 border border-red-200',
         success: 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200',
@@ -556,7 +556,7 @@ function SpecialOffersEditor({ data, onChange }) {
                 <p className="text-[11px] font-black text-text uppercase tracking-[0.15em] mb-4">Floating Offer Images (6 Photos)</p>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {data.images.map((img, i) => (
-                        <div key={img.id} className="border border-border p-3 bg-surface/30 group hover:border-primary transition-colors">
+                        <div key={img.id} className="border border-border p-3 bg-surface/30 group hover:border-[#B4912B] transition-colors">
                             <div className="flex items-center justify-between mb-2">
                                 <p className="text-[10px] font-black text-text-muted uppercase">Image {i + 1}</p>
                             </div>
@@ -690,7 +690,7 @@ export default function SAContentPage() {
                                 onClick={() => setActiveSection(s.id)}
                                 className={`w-full flex items-center gap-2.5 px-3 py-2.5 text-sm font-medium transition-colors text-left
                                     ${activeSection === s.id
-                                        ? 'bg-primary text-white'
+                                        ? 'bg-[#B4912B] text-white'
                                         : 'text-text-secondary hover:bg-surface hover:text-text'}`}
                             >
                                 <s.icon className="w-4 h-4 shrink-0" />

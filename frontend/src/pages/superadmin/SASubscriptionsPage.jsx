@@ -26,7 +26,7 @@ import {
 const PLAN_STYLES = {
     free: { icon: Building2, color: 'bg-slate-500', lightColor: 'bg-slate-50', borderColor: 'border-slate-200' },
     basic: { icon: Star, color: 'bg-blue-600', lightColor: 'bg-blue-50', borderColor: 'border-blue-200' },
-    premium: { icon: Zap, color: 'bg-primary', lightColor: 'bg-primary/5', borderColor: 'border-primary/20' },
+    premium: { icon: Zap, color: 'bg-primary', lightColor: 'bg-primary/5', borderColor: 'border-[#B4912B]/20' },
     enterprise: { icon: Crown, color: 'bg-amber-600', lightColor: 'bg-amber-50', borderColor: 'border-amber-200' },
 };
 
@@ -91,7 +91,7 @@ export default function SASubscriptionsPage() {
     if (loading) {
         return (
             <div className="flex items-center justify-center py-20">
-                <div className="w-8 h-8 border-3 border-primary/20 border-t-primary rounded-full animate-spin" />
+                <div className="w-8 h-8 border-3 border-[#B4912B]/20 border-t-primary rounded-full animate-spin" />
             </div>
         );
     }
@@ -116,10 +116,10 @@ export default function SASubscriptionsPage() {
                     return (
                         <div
                             key={plan._id}
-                            className={`group relative bg-white rounded-2xl border-2 ${plan.popular ? 'border-primary shadow-xl shadow-primary/5 scale-[1.02] z-10' : 'border-border shadow-sm'} p-7 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 flex flex-col`}
+                            className={`group relative bg-white rounded-2xl border-2 ${plan.popular ? 'border-[#B4912B] shadow-xl shadow-primary/5 scale-[1.02] z-10' : 'border-border shadow-sm'} p-7 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 flex flex-col`}
                         >
                             {plan.popular && (
-                                <div className="absolute -top-4 left-1/2 -translate-x-1/2 px-4 py-1 rounded-xl bg-primary text-[11px] font-bold text-white uppercase tracking-widest shadow-lg shadow-primary/20">
+                                <div className="absolute -top-4 left-1/2 -translate-x-1/2 px-4 py-1 rounded-xl bg-primary text-[11px] font-bold text-white uppercase tracking-widest shadow-lg shadow-[#B4912B]/20">
                                     Most Popular
                                 </div>
                             )}
@@ -181,7 +181,7 @@ export default function SASubscriptionsPage() {
                             <button 
                                 onClick={() => setEditingPlan({...plan})}
                                 className={`w-full py-3.5 rounded-2xl text-sm font-bold transition-all duration-300 flex items-center justify-center gap-2 ${plan.popular
-                                ? 'bg-primary text-white shadow-lg shadow-primary/30 hover:brightness-110 active:scale-95'
+                                ? 'bg-[#B4912B] text-white shadow-lg shadow-primary/30 hover:brightness-110 active:scale-95'
                                 : 'bg-surface text-text hover:bg-border active:scale-95'
                                 }`}>
                                 <Edit3 className="w-4 h-4" /> Edit Plan Config
@@ -211,7 +211,7 @@ export default function SASubscriptionsPage() {
                                 const count = stats?.countsByPlan?.find(v => v._id === plan.tag)?.count || 0;
                                 const revenue = count * plan.monthlyPrice;
                                 return (
-                                    <div key={plan._id} className="p-5 rounded-2xl bg-surface border border-border/50 transition-colors hover:border-primary/20">
+                                    <div key={plan._id} className="p-5 rounded-2xl bg-surface border border-border/50 transition-colors hover:border-[#B4912B]/20">
                                         <div className="text-[10px] font-bold text-text-muted uppercase tracking-widest mb-2">{plan.name}</div>
                                         <div className="text-xl font-bold text-text">₹{revenue.toLocaleString('en-IN')}</div>
                                         <div className="text-[10px] text-text-secondary mt-1 font-bold">{count} Subscribers</div>
@@ -263,7 +263,7 @@ export default function SASubscriptionsPage() {
                                             type="number"
                                             value={editingPlan.monthlyPrice}
                                             onChange={(e) => setEditingPlan({ ...editingPlan, monthlyPrice: Number(e.target.value) })}
-                                            className="w-full px-5 py-3.5 rounded-2xl bg-surface border border-border focus:border-primary outline-none font-bold text-sm transition-all"
+                                            className="w-full px-5 py-3.5 rounded-2xl bg-surface border border-border focus:border-[#B4912B] outline-none font-bold text-sm transition-all"
                                         />
                                     </div>
                                     <div className="space-y-2">
@@ -272,7 +272,7 @@ export default function SASubscriptionsPage() {
                                             type="number"
                                             value={editingPlan.trialDays}
                                             onChange={(e) => setEditingPlan({ ...editingPlan, trialDays: Number(e.target.value) })}
-                                            className="w-full px-5 py-3.5 rounded-2xl bg-surface border border-border focus:border-primary outline-none font-bold text-sm transition-all"
+                                            className="w-full px-5 py-3.5 rounded-2xl bg-surface border border-border focus:border-[#B4912B] outline-none font-bold text-sm transition-all"
                                         />
                                     </div>
                                 </div>
@@ -356,12 +356,12 @@ export default function SASubscriptionsPage() {
                                                             ...editingPlan,
                                                             features: { ...editingPlan.features, [feature]: !isEnabled }
                                                         })}
-                                                        className={`p-4 rounded-2xl border transition-all flex items-center gap-4 cursor-pointer hover:border-primary/50 ${isEnabled
-                                                            ? 'bg-primary/5 border-primary shadow-sm'
+                                                        className={`p-4 rounded-2xl border transition-all flex items-center gap-4 cursor-pointer hover:border-[#B4912B]/50 ${isEnabled
+                                                            ? 'bg-primary/5 border-[#B4912B] shadow-sm'
                                                             : 'bg-white border-border/60 opacity-70'
                                                             }`}
                                                     >
-                                                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${isEnabled ? 'bg-primary text-white' : 'bg-surface text-text-muted'}`}>
+                                                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${isEnabled ? 'bg-[#B4912B] text-white' : 'bg-surface text-text-muted'}`}>
                                                             <Icon className="w-5 h-5" />
                                                         </div>
                                                         <div className="flex-1 min-w-0">
@@ -374,7 +374,7 @@ export default function SASubscriptionsPage() {
                                                     </div>
 
                                                     {feature === 'whatsapp' && isEnabled && (
-                                                        <div className="ml-4 pl-4 border-l-2 border-primary/20 space-y-2 animate-in slide-in-from-left-2 duration-300">
+                                                        <div className="ml-4 pl-4 border-l-2 border-[#B4912B]/20 space-y-2 animate-in slide-in-from-left-2 duration-300">
                                                             <label className="text-[10px] font-black text-primary uppercase tracking-widest">WhatsApp Msg Quota</label>
                                                             <div className="flex items-center gap-3">
                                                                 <input
@@ -384,7 +384,7 @@ export default function SASubscriptionsPage() {
                                                                         ...editingPlan,
                                                                         limits: { ...editingPlan.limits, whatsappLimit: Number(e.target.value) }
                                                                     })}
-                                                                    className="w-32 bg-surface text-lg font-bold text-text px-4 py-2 rounded-xl border border-primary/20 focus:outline-none focus:border-primary transition-all"
+                                                                    className="w-32 bg-surface text-lg font-bold text-text px-4 py-2 rounded-xl border border-[#B4912B]/20 focus:outline-none focus:border-[#B4912B] transition-all"
                                                                     placeholder="Limit"
                                                                 />
                                                                 <span className="text-[10px] font-bold text-text-muted">messages total</span>
@@ -411,7 +411,7 @@ export default function SASubscriptionsPage() {
                                 form="plan-form"
                                 type="submit"
                                 disabled={isSaving}
-                                className="flex-2 bg-text text-white px-10 py-4 rounded-2xl text-[11px] font-bold uppercase tracking-widest shadow-xl shadow-text/20 hover:bg-primary transition-all disabled:opacity-50"
+                                className="flex-2 bg-[#B4912B] text-white px-10 py-4 rounded-2xl text-[11px] font-bold uppercase tracking-widest shadow-xl shadow-[#B4912B]/20 hover:bg-[#8B6F23] transition-all disabled:opacity-50"
                             >
                                 {isSaving ? 'Saving Changes...' : 'Save Configuration'}
                             </button>

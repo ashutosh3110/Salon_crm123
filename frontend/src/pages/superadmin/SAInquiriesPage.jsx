@@ -109,7 +109,7 @@ export default function SAInquiriesPage() {
                         />
                         <button 
                             onClick={fetchInquiries}
-                            className="absolute right-2 top-1/2 -translate-y-1/2 bg-primary text-white text-[10px] font-bold px-2.5 py-1.5 rounded-lg"
+                            className="absolute right-2 top-1/2 -translate-y-1/2 bg-[#B4912B] text-white text-[10px] font-bold px-2.5 py-1.5 rounded-lg"
                         >
                             GO
                         </button>
@@ -168,7 +168,7 @@ export default function SAInquiriesPage() {
                                     >
                                         <td className="px-6 py-5">
                                             <div className="flex items-center gap-4">
-                                                <div className="w-10 h-10 bg-primary/5 flex items-center justify-center border border-primary/10">
+                                                <div className="w-10 h-10 bg-primary/5 flex items-center justify-center border border-[#B4912B]/10">
                                                     <User className="w-5 h-5 text-blue-500" />
                                                 </div>
                                                 <div>
