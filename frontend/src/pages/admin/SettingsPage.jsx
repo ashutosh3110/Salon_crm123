@@ -3,7 +3,7 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
 import { useAuth } from '../../contexts/AuthContext';
 import { useBusiness } from '../../contexts/BusinessContext';
-import { Camera, Upload, User as UserIcon, FileText, Plus, X, GripVertical, ChevronUp, ChevronDown, Share2, Copy, ExternalLink, Link as LinkIcon, Download, MapPin, ClipboardList, UserCheck, CalendarDays, MessageSquare, QrCode, ArrowRight, Info, Pencil, Trash2, Save, Eye, Lightbulb, ShieldCheck } from 'lucide-react';
+import { Camera, Upload, User as UserIcon, FileText, Plus, X, GripVertical, ChevronUp, ChevronDown, Share2, Copy, ExternalLink, Link as LinkIcon, Download, MapPin, ClipboardList, UserCheck, CalendarDays, MessageSquare, QrCode, ArrowRight, Info, Pencil, Trash2, Save, Eye, Lightbulb, ShieldCheck, CheckCircle2, Lock, Headset } from 'lucide-react';
 import PasswordField from '../../components/common/PasswordField';
 import { getImageUrl } from '../../utils/imageUtils';
 import { useRef } from 'react';
@@ -479,63 +479,134 @@ export default function SettingsPage({ section: propSection }) {
                     )}
 
                     {activeTab === 'security' && (
-                        <div className="space-y-4 text-left">
-                            <div>
-                                <h2 className="text-sm font-bold text-text tracking-tight">Security</h2>
-                                <p className="text-[10px] text-text-muted font-medium mt-0.5">Change your account password.</p>
+                        <div className="text-left flex flex-col -m-4">
+                            {/* Main Card Header */}
+                            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between pb-6 border-b border-gray-100 gap-4 p-6 sm:p-8">
+                                <div className="flex items-center gap-4">
+                                    <div className="w-12 h-12 rounded-2xl bg-[#F6F4FF] flex items-center justify-center shrink-0">
+                                        <ShieldCheck className="w-6 h-6 text-[#7F56D9]" />
+                                    </div>
+                                    <div>
+                                        <h2 className="text-[17px] font-bold text-gray-900 tracking-tight">Security</h2>
+                                        <p className="text-[13px] text-gray-500 font-medium mt-0.5">
+                                            Keep your account secure by using a strong password.
+                                        </p>
+                                    </div>
+                                </div>
+                                <div className="flex items-center gap-2 px-3 py-1.5 bg-[#ECFDF3] border border-[#D1FADF] rounded-full text-[#027A48]">
+                                    <ShieldCheck className="w-4 h-4" />
+                                    <span className="text-xs font-bold">Your account is secure</span>
+                                </div>
                             </div>
 
-                            <form onSubmit={handlePasswordSubmit} className="space-y-4">
-                                <div className="space-y-1.5">
-                                    <label className="text-[10px] font-black text-text-muted uppercase tracking-widest pl-1">
-                                        Current Password
-                                    </label>
-                                    <PasswordField
-                                        value={passwordForm.currentPassword}
-                                        onChange={(e) => setPasswordForm({ ...passwordForm, currentPassword: e.target.value })}
-                                        placeholder="••••••••"
-                                        required
-                                        inputClassName="w-full px-4 py-2.5 allow-curve rounded-lg border border-border text-xs font-bold focus:border-primary outline-none transition-all bg-surface-alt/50"
-                                        buttonClassName="text-text-muted hover:text-primary"
-                                    />
-                                </div>
-                                <div className="grid sm:grid-cols-2 gap-4">
-                                    <div className="space-y-1.5">
-                                        <label className="text-[10px] font-black text-text-muted uppercase tracking-widest pl-1">
-                                            New Password
-                                        </label>
-                                        <PasswordField
-                                            value={passwordForm.newPassword}
-                                            onChange={(e) => setPasswordForm({ ...passwordForm, newPassword: e.target.value })}
-                                            placeholder="••••••••"
-                                            required
-                                            minLength={8}
-                                            inputClassName="w-full px-4 py-2.5 allow-curve rounded-lg border border-border text-xs font-bold focus:border-primary outline-none transition-all bg-surface-alt/50"
-                                            buttonClassName="text-text-muted hover:text-primary"
-                                        />
-                                    </div>
-                                    <div className="space-y-1.5">
-                                        <label className="text-[10px] font-black text-text-muted uppercase tracking-widest pl-1">
-                                            Confirm Password
-                                        </label>
-                                        <PasswordField
-                                            value={passwordForm.confirmPassword}
-                                            onChange={(e) => setPasswordForm({ ...passwordForm, confirmPassword: e.target.value })}
-                                            placeholder="••••••••"
-                                            required
-                                            inputClassName="w-full px-4 py-2.5 allow-curve rounded-lg border border-border text-xs font-bold focus:border-primary outline-none transition-all bg-surface-alt/50"
-                                            buttonClassName="text-text-muted hover:text-primary"
-                                        />
+                            <form onSubmit={handlePasswordSubmit} className="flex flex-col">
+                                <div className="p-6 sm:p-8 space-y-8 bg-white">
+                                    <div className="grid md:grid-cols-2 gap-x-6 gap-y-8">
+                                        {/* Row 1, Col 1: Best Practices */}
+                                        <div className="flex items-start gap-3 p-4 bg-[#F8FAFC] border border-gray-100 rounded-xl h-full">
+                                            <Info className="w-5 h-5 text-blue-600 mt-0.5 shrink-0" />
+                                            <p className="text-[13px] leading-relaxed text-gray-600">
+                                                <span className="font-bold text-gray-900">Password best practices</span> Use at least 8 characters with a mix of letters, numbers, and symbols.
+                                            </p>
+                                        </div>
+
+                                        {/* Row 1-2, Col 2: Password Strength */}
+                                        <div className="border border-gray-100 rounded-xl p-5 bg-white shadow-sm shadow-green-900/5 md:row-span-2 flex flex-col justify-center">
+                                            <div className="flex flex-col gap-4">
+                                                <div className="flex items-center gap-3">
+                                                    <ShieldCheck className="w-5 h-5 text-[#12B76A]" />
+                                                    <span className="text-[13px] font-bold text-gray-700">
+                                                        Password strength <span className="text-[#12B76A]">Strong</span>
+                                                    </span>
+                                                </div>
+                                                <div className="flex gap-1.5 h-1.5">
+                                                    <div className="flex-1 bg-[#12B76A] rounded-full"></div>
+                                                    <div className="flex-1 bg-[#12B76A] rounded-full"></div>
+                                                    <div className="flex-1 bg-[#12B76A] rounded-full"></div>
+                                                    <div className="flex-1 bg-[#12B76A] opacity-30 rounded-full"></div>
+                                                </div>
+                                                <div className="space-y-2 mt-2">
+                                                    {[
+                                                        'At least 8 characters',
+                                                        'Contains uppercase & lowercase letters',
+                                                        'Contains a number',
+                                                        'Contains a special character'
+                                                    ].map((item, idx) => (
+                                                        <div key={idx} className="flex items-center gap-2">
+                                                            <CheckCircle2 className="w-4 h-4 text-[#12B76A] fill-[#12B76A]/20" />
+                                                            <span className="text-xs font-medium text-gray-600">{item}</span>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        {/* Row 2, Col 1: Current Password */}
+                                        <div className="space-y-2">
+                                            <label className="text-[11px] font-bold text-gray-700 uppercase tracking-widest block">
+                                                CURRENT PASSWORD
+                                            </label>
+                                            <PasswordField
+                                                value={passwordForm.currentPassword}
+                                                onChange={(e) => setPasswordForm({ ...passwordForm, currentPassword: e.target.value })}
+                                                placeholder="••••••••"
+                                                required
+                                                inputClassName="w-full px-4 py-3 rounded-full border border-gray-200 text-sm font-medium text-gray-900 focus:border-primary outline-none transition-all bg-white shadow-sm"
+                                                buttonClassName="text-gray-400 hover:text-gray-600 pr-3"
+                                            />
+                                            <p className="text-[11px] text-gray-500 font-medium pt-1">Enter your current password</p>
+                                        </div>
+
+                                        {/* Row 3, Col 1: New Password */}
+                                        <div className="space-y-2">
+                                            <label className="text-[11px] font-bold text-gray-700 uppercase tracking-widest block">
+                                                NEW PASSWORD
+                                            </label>
+                                            <PasswordField
+                                                value={passwordForm.newPassword}
+                                                onChange={(e) => setPasswordForm({ ...passwordForm, newPassword: e.target.value })}
+                                                placeholder="••••••••"
+                                                required
+                                                minLength={8}
+                                                inputClassName="w-full px-4 py-3 rounded-full border border-gray-200 text-sm font-medium text-gray-900 focus:border-primary outline-none transition-all bg-white shadow-sm"
+                                                buttonClassName="text-gray-400 hover:text-gray-600 pr-3"
+                                            />
+                                            <p className="text-[11px] text-gray-500 font-medium pt-1">Enter your new password</p>
+                                        </div>
+
+                                        {/* Row 3, Col 2: Confirm New Password */}
+                                        <div className="space-y-2">
+                                            <label className="text-[11px] font-bold text-gray-700 uppercase tracking-widest block">
+                                                CONFIRM NEW PASSWORD
+                                            </label>
+                                            <PasswordField
+                                                value={passwordForm.confirmPassword}
+                                                onChange={(e) => setPasswordForm({ ...passwordForm, confirmPassword: e.target.value })}
+                                                placeholder="••••••••"
+                                                required
+                                                inputClassName="w-full px-4 py-3 rounded-full border border-gray-200 text-sm font-medium text-gray-900 focus:border-primary outline-none transition-all bg-white shadow-sm"
+                                                buttonClassName="text-gray-400 hover:text-gray-600 pr-3"
+                                            />
+                                            <p className="text-[11px] text-gray-500 font-medium pt-1">Re-enter your new password</p>
+                                        </div>
                                     </div>
                                 </div>
 
-                                <div className="pt-3 flex justify-end border-t border-border">
+                                {/* Tip Banner and Submit Button */}
+                                <div className="bg-[#FFF9F0] border-t border-orange-100/50 p-6 sm:p-8 flex flex-col sm:flex-row items-center justify-between gap-4">
+                                    <div className="flex items-center gap-3">
+                                        <Lightbulb className="w-5 h-5 text-orange-400 shrink-0" />
+                                        <p className="text-[13px] text-gray-700">
+                                            <span className="font-bold">Tip:</span> Avoid using easily guessable information like your name, phone number, or birthdate.
+                                        </p>
+                                    </div>
                                     <button
                                         type="submit"
                                         disabled={isSaving}
-                                        className="px-5 py-2 bg-primary text-primary-foreground rounded-full font-bold text-[10px] uppercase tracking-widest shadow-md shadow-primary/20 disabled:opacity-50"
+                                        className="px-6 py-3 bg-[#D99A29] hover:bg-[#c88d25] text-white rounded-lg font-bold text-[11px] uppercase tracking-widest transition-colors flex items-center justify-center gap-2 shrink-0 shadow-sm disabled:opacity-50"
                                     >
-                                        {isSaving ? 'Updating…' : 'Update password'}
+                                        <Lock className="w-3.5 h-3.5" />
+                                        {isSaving ? 'UPDATING…' : 'UPDATE PASSWORD'}
                                     </button>
                                 </div>
                             </form>
@@ -659,19 +730,20 @@ export default function SettingsPage({ section: propSection }) {
                                     <label className="text-[11px] font-black text-gray-700 uppercase tracking-widest block">
                                         Add a new term or condition
                                     </label>
-                                    <div className="flex flex-col sm:flex-row gap-3">
+                                    <div className="flex gap-4">
                                         <input
                                             type="text"
                                             value={newTerm}
                                             onChange={(e) => setNewTerm(e.target.value)}
                                             onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleAddTerm(); } }}
                                             placeholder="e.g. No refund after 24 hours of service."
-                                            className="flex-1 px-4 py-3 border border-gray-200 rounded-lg text-[13px] font-medium text-gray-800 bg-white outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 transition-all"
+                                            className="flex-1 px-4 py-3 border border-gray-200 rounded-full text-[13px] font-medium text-gray-800 bg-white outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
                                         />
                                         <button
                                             type="button"
                                             onClick={handleAddTerm}
-                                            className="px-6 py-3 bg-amber-600 text-white rounded-lg font-bold text-[11px] uppercase tracking-widest hover:bg-amber-700 transition-colors flex items-center justify-center gap-2 shrink-0 shadow-sm"
+                                            disabled={!newTerm.trim()}
+                                            className="px-6 py-3 bg-primary text-white rounded-md font-bold text-[11px] uppercase tracking-widest hover:opacity-90 transition-colors flex items-center justify-center gap-2 shrink-0 shadow-sm"
                                         >
                                             <Plus className="w-4 h-4" /> Add
                                         </button>
@@ -967,7 +1039,7 @@ export default function SettingsPage({ section: propSection }) {
 
                 </div>
             </div>
-            
+
             {/* Bottom Banner for Booking Link */}
             {activeTab === 'booking-link' && (
                 <div className="bg-[#f0fdf4] border border-[#bbf7d0] rounded-xl p-4 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-sm w-full">
@@ -990,6 +1062,35 @@ export default function SettingsPage({ section: propSection }) {
                     >
                         Preview Booking Page <ExternalLink className="w-2.5 h-2.5" />
                     </a>
+                </div>
+            )}
+
+            {/* Bottom Banner for Security */}
+            {activeTab === 'security' && (
+                <div className="bg-[#F0FDF4] border border-[#bbf7d0] rounded-2xl p-6 sm:p-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 shadow-sm w-full">
+                    <div className="flex items-center gap-4">
+                        <div className="w-12 h-12 rounded-full bg-[#16a34a] flex items-center justify-center shrink-0">
+                            <ShieldCheck className="w-6 h-6 text-white" />
+                        </div>
+                        <div>
+                            <h3 className="text-[14px] font-bold text-gray-900 tracking-tight">Your security matters</h3>
+                            <p className="text-[13px] text-gray-600 font-medium mt-0.5 max-w-xl">
+                                We use industry-standard encryption to protect your data and keep your account safe.
+                            </p>
+                        </div>
+                    </div>
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6 sm:pl-6 sm:border-l border-green-200/60 shrink-0">
+                        <div>
+                            <h3 className="text-[14px] font-bold text-gray-900 tracking-tight">Need help?</h3>
+                            <p className="text-[13px] text-gray-600 font-medium mt-0.5">
+                                Reach out to our support team for any security related assistance.
+                            </p>
+                        </div>
+                        <button className="px-5 py-2.5 bg-white border border-[#22c55e] text-[#16a34a] rounded-lg font-bold text-xs hover:bg-[#F0FDF4] transition-colors flex items-center gap-2 shrink-0 whitespace-nowrap">
+                            <Headset className="w-4 h-4" />
+                            Contact Support
+                        </button>
+                    </div>
                 </div>
             )}
         </div>
