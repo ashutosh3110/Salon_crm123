@@ -97,19 +97,40 @@ export default function MembershipRemindersTab() {
             {/* Quick Metrics Cards */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                 {[
-                    { label: 'Active Memberships', value: totalActive, desc: 'Consistent privileges active', color: 'text-emerald-500', bg: 'border-emerald-500/20' },
-                    { label: 'Expiring Soon', value: expiringSoon, desc: 'Ending within next 7 days', color: 'text-amber-500', bg: 'border-amber-500/20' },
-                    { label: 'Expired Status', value: totalExpired, desc: 'Awaiting renewal processing', color: 'text-rose-500', bg: 'border-rose-500/20' },
-                    { label: 'Reminders Sent', value: totalRemindedSum, desc: 'Total WhatsApp logs recorded', color: 'text-primary', bg: 'border-primary/20' },
-                ].map((stat, i) => (
-                    <div key={i} className={`bg-surface border p-6 flex flex-col justify-between transition-all duration-300 hover:shadow-[5px_5px_0px_var(--primary)] ${stat.bg}`}>
-                        <span className="text-[9px] font-black text-text-muted uppercase tracking-widest block">{stat.label}</span>
-                        <div className="flex items-baseline gap-2 my-2">
-                            <span className={`text-3xl font-black tracking-tighter ${stat.color}`}>{stat.value}</span>
+                    { label: 'Active Memberships', value: totalActive, desc: 'Active Members', actionText: 'View active \u2192', theme: { bg: 'bg-emerald-500/5', iconBg: 'bg-emerald-500/10', text: 'text-emerald-600' }, icon: CheckCircle },
+                    { label: 'Expiring Soon', value: expiringSoon, desc: 'Ending in 7 days', actionText: 'View expiring \u2192', theme: { bg: 'bg-amber-500/5', iconBg: 'bg-amber-500/10', text: 'text-amber-600' }, icon: Clock },
+                    { label: 'Expired Status', value: totalExpired, desc: 'Awaiting renewal', actionText: 'View expired \u2192', theme: { bg: 'bg-rose-500/5', iconBg: 'bg-rose-500/10', text: 'text-rose-600' }, icon: AlertCircle },
+                    { label: 'Reminders Sent', value: totalRemindedSum, desc: 'WhatsApp logs', actionText: 'View logs \u2192', theme: { bg: 'bg-indigo-500/5', iconBg: 'bg-indigo-500/10', text: 'text-indigo-600' }, icon: Send },
+                ].map((stat, i) => {
+                    const Icon = stat.icon;
+                    return (
+                        <div key={i} className={`rounded-2xl p-5 border border-border/20 flex flex-col justify-between transition-all duration-300 hover:shadow-md ${stat.theme.bg}`}>
+                            <div className="flex gap-4">
+                                <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${stat.theme.iconBg}`}>
+                                    <Icon className={`w-5 h-5 ${stat.theme.text}`} />
+                                </div>
+                                <div>
+                                    <div className="text-[10px] uppercase font-bold text-foreground/80 tracking-widest">{stat.label}</div>
+                                    <div className="text-3xl font-black text-foreground mt-0.5 leading-none">{stat.value}</div>
+                                    <div className="text-sm font-medium text-foreground/70 mt-1.5">{stat.desc}</div>
+                                </div>
+                            </div>
+                            <div className="mt-5">
+                                <button 
+                                    onClick={() => {
+                                        if (stat.label === 'Active Memberships') setStatusFilter('active');
+                                        if (stat.label === 'Expiring Soon') setStatusFilter('expiring_soon');
+                                        if (stat.label === 'Expired Status') setStatusFilter('expired');
+                                        if (stat.label === 'Reminders Sent') setStatusFilter('reminded');
+                                    }}
+                                    className={`text-xs font-bold hover:underline ${stat.theme.text}`}
+                                >
+                                    {stat.actionText}
+                                </button>
+                            </div>
                         </div>
-                        <span className="text-[8px] font-black text-text-muted uppercase tracking-wider block opacity-75">{stat.desc}</span>
-                    </div>
-                ))}
+                    );
+                })}
             </div>
 
             {/* Filters and Controls */}
@@ -126,7 +147,7 @@ export default function MembershipRemindersTab() {
                         <button
                             key={tab.id}
                             onClick={() => setStatusFilter(tab.id)}
-                            className={`px-5 py-2.5 border font-black text-[9px] uppercase tracking-[0.2em] transition-all whitespace-nowrap ${statusFilter === tab.id
+                            className={`px-5 py-2.5 border rounded-xl font-black text-[9px] uppercase tracking-[0.2em] transition-all whitespace-nowrap ${statusFilter === tab.id
                                 ? 'bg-primary text-white border-primary shadow-lg shadow-primary/20'
                                 : 'text-text-muted border-border/40 hover:bg-surface-alt'
                                 }`}
@@ -138,19 +159,19 @@ export default function MembershipRemindersTab() {
 
                 {/* Search query input */}
                 <div className="relative w-full lg:w-80">
-                    <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
+                    <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-indigo-500" />
                     <input
                         type="text"
                         placeholder="SEARCH BY NAME OR PHONE..."
                         value={search}
                         onChange={e => setSearch(e.target.value)}
-                        className="w-full h-10 pl-10 pr-4 bg-surface border border-border/40 text-[9px] font-black uppercase tracking-widest outline-none focus:border-primary transition-all"
+                        className="w-full h-10 pl-10 pr-4 bg-surface border rounded-xl border-border/40 text-[9px] font-black uppercase tracking-widest outline-none focus:border-primary transition-all"
                     />
                 </div>
             </div>
 
             {/* Reminders Table */}
-            <div className="bg-surface border border-border/40 overflow-hidden shadow-sm">
+            <div className="bg-surface border border-border/40 rounded-2xl overflow-hidden shadow-sm">
                 <div className="overflow-x-auto">
                     <table className="w-full">
                         <thead className="bg-surface-alt border-b border-border/40">
@@ -178,7 +199,7 @@ export default function MembershipRemindersTab() {
                                     <td colSpan="6" className="py-24 text-center">
                                         <div className="flex flex-col items-center justify-center max-w-sm mx-auto space-y-4">
                                             <div className="w-16 h-16 bg-surface-alt border border-border/40 flex items-center justify-center text-text-muted shadow-inner rounded-2xl">
-                                                <Bell className="w-6 h-6 text-primary" />
+                                                <Bell className="w-6 h-6 text-amber-500" />
                                             </div>
                                             <div className="space-y-1">
                                                 <h3 className="text-base font-black uppercase tracking-tight text-foreground">No Expiry Records</h3>
@@ -194,13 +215,13 @@ export default function MembershipRemindersTab() {
                                         <tr key={item.id} className="hover:bg-surface-alt/30 transition-colors">
                                             <td className="px-6 py-5">
                                                 <div className="flex items-center gap-3">
-                                                    <div className="w-9 h-9 bg-surface-alt border border-border/40 flex items-center justify-center text-primary rounded-xl shrink-0">
+                                                    <div className="w-9 h-9 bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-500 rounded-xl shrink-0">
                                                         <User className="w-4 h-4" />
                                                     </div>
                                                     <div>
                                                         <div className="text-sm font-black text-foreground italic tracking-tight">{item.customerName}</div>
                                                         <div className="flex items-center gap-1.5 text-[9px] font-black text-text-muted uppercase tracking-widest mt-0.5">
-                                                            <Smartphone className="w-3 h-3 text-primary shrink-0" />
+                                                            <Smartphone className="w-3 h-3 text-emerald-500 shrink-0" />
                                                             {item.customerPhone}
                                                         </div>
                                                     </div>
@@ -219,7 +240,7 @@ export default function MembershipRemindersTab() {
                                             <td className="px-6 py-5">
                                                 <div className="space-y-1">
                                                     <div className="flex items-center gap-1.5 text-[9px] font-black text-text-muted uppercase tracking-widest">
-                                                        <Calendar className="w-3 h-3 text-primary shrink-0" />
+                                                        <Calendar className="w-3 h-3 text-purple-500 shrink-0" />
                                                         Start: <span className="text-foreground">{new Date(item.startDate).toLocaleDateString('en-IN')}</span>
                                                     </div>
                                                     <div className="flex items-center gap-1.5 text-[9px] font-black text-text-muted uppercase tracking-widest">
@@ -236,8 +257,8 @@ export default function MembershipRemindersTab() {
                                             <td className="px-6 py-5">
                                                 <div className="space-y-1">
                                                     <div className="flex items-center gap-1.5 text-[9px] font-black text-text-muted uppercase tracking-widest">
-                                                        Total Sent: 
-                                                        <span className={`px-2 py-0.5 text-[9px] font-black leading-none border ml-1 ${item.reminderCount > 0 ? 'bg-primary/10 text-primary border-primary/20' : 'bg-surface-alt text-text-muted border-border/40'}`}>
+                                                        Total Sent:
+                                                        <span className={`px-2 py-0.5 text-[9px] font-black leading-none border rounded-lg ml-1 ${item.reminderCount > 0 ? 'bg-primary/10 text-primary border-primary/20' : 'bg-surface-alt text-text-muted border-border/40'}`}>
                                                             {item.reminderCount} Reminders
                                                         </span>
                                                     </div>
@@ -253,11 +274,10 @@ export default function MembershipRemindersTab() {
                                                 <button
                                                     onClick={() => handleSendReminder(item)}
                                                     disabled={isSending}
-                                                    className={`h-9 px-4 border font-black text-[9px] uppercase tracking-[0.15em] transition-all flex items-center justify-center gap-2 ${
-                                                        isSending
+                                                    className={`h-9 px-4 border rounded-xl font-black text-[9px] uppercase tracking-[0.15em] transition-all flex items-center justify-center gap-2 ${isSending
                                                             ? 'bg-surface-alt border-border/40 text-text-muted cursor-not-allowed'
                                                             : 'bg-emerald-500/10 border-emerald-500/30 text-emerald-500 hover:bg-emerald-500 hover:text-white hover:border-emerald-500 hover:shadow-lg hover:shadow-emerald-500/20'
-                                                    }`}
+                                                        }`}
                                                 >
                                                     {isSending ? (
                                                         <>
@@ -305,7 +325,7 @@ function StatusBadge({ status, days }) {
     }
 
     return (
-        <span className={`px-2.5 py-1 text-[8px] font-black uppercase tracking-widest border leading-none rounded-none inline-block ${styles[status] || styles.active}`}>
+        <span className={`px-2.5 py-1 text-[8px] font-black uppercase tracking-widest border leading-none rounded-xl inline-block ${styles[status] || styles.active}`}>
             {text}
         </span>
     );

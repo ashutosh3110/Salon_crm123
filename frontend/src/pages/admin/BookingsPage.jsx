@@ -406,48 +406,42 @@ export default function BookingsPage() {
                 </div>
 
                 <div className="flex flex-wrap items-center gap-3 w-full xl:w-auto">
-                    <div className="bg-white border border-slate-200 allow-curve rounded-xl shadow-sm px-2 flex-1 xl:flex-none">
-                        <CustomDropdown
-                            value={dateFilter}
-                            onChange={setDateFilter}
-                            options={[
-                                { value: 'all', label: 'All Dates' },
-                                { value: 'today', label: 'Today' },
-                                { value: 'week', label: 'This Week' },
-                                { value: 'month', label: 'This Month' }
-                            ]}
-                            className="w-full xl:w-36 [&>button]:border-none [&>button]:shadow-none [&>button]:py-3 [&_span]:normal-case [&_span]:text-xs [&_span]:font-semibold [&_span]:text-slate-700"
-                            icon={<CalendarDays className="w-4 h-4 mr-1 text-slate-500" />}
-                        />
-                    </div>
-                    <div className="bg-white border border-slate-200 allow-curve rounded-xl shadow-sm px-2 flex-1 xl:flex-none">
-                        <CustomDropdown
-                            value={staffFilter}
-                            onChange={setStaffFilter}
-                            options={[
-                                { value: 'all', label: 'All Staff' },
-                                ...staff.map(s => ({ value: s._id, label: s.name }))
-                            ]}
-                            className="w-full xl:w-36 [&>button]:border-none [&>button]:shadow-none [&>button]:py-3 [&_span]:normal-case [&_span]:text-xs [&_span]:font-semibold [&_span]:text-slate-700"
-                        />
-                    </div>
-                    <div className="bg-white border border-slate-200 allow-curve rounded-xl shadow-sm px-2 flex-1 xl:flex-none">
-                        <CustomDropdown
-                            value={statusFilter}
-                            onChange={setStatusFilter}
-                            options={[
-                                { value: 'all', label: 'All Status' },
-                                { value: 'pending', label: 'Pending' },
-                                { value: 'confirmed', label: 'Confirmed' },
-                                { value: 'completed', label: 'Completed' },
-                                { value: 'cancelled', label: 'Cancelled' }
-                            ]}
-                            className="w-full xl:w-36 [&>button]:border-none [&>button]:shadow-none [&>button]:py-3 [&_span]:normal-case [&_span]:text-xs [&_span]:font-semibold [&_span]:text-slate-700"
-                        />
-                    </div>
-                    
-                    <button className="flex items-center justify-center gap-2 px-5 py-3 bg-white border border-slate-200 text-slate-700 text-xs font-semibold allow-curve rounded-xl shadow-sm hover:bg-slate-50 transition-all flex-1 xl:flex-none shrink-0">
-                        <Filter className="w-4 h-4" /> Filters
+                    <CustomDropdown
+                        value={dateFilter}
+                        onChange={setDateFilter}
+                        options={[
+                            { value: 'all', label: 'All Dates' },
+                            { value: 'today', label: 'Today' },
+                            { value: 'week', label: 'This Week' },
+                            { value: 'month', label: 'This Month' }
+                        ]}
+                        className="w-full xl:w-36 h-[38px] bg-white border border-slate-200 allow-curve rounded-xl shadow-sm hover:shadow-md [&>button]:border-none [&>button]:shadow-none [&>button]:h-full [&>button]:py-0 [&>button]:bg-transparent [&_span]:normal-case [&_span]:text-xs [&_span]:font-semibold [&_span]:text-slate-700 flex-1 xl:flex-none"
+                        icon={<CalendarDays className="w-4 h-4 mr-1 text-slate-500" />}
+                    />
+                    <CustomDropdown
+                        value={staffFilter}
+                        onChange={setStaffFilter}
+                        options={[
+                            { value: 'all', label: 'All Staff' },
+                            ...staff.map(s => ({ value: s._id, label: s.name }))
+                        ]}
+                        className="w-full xl:w-36 h-[38px] bg-white border border-slate-200 allow-curve rounded-xl shadow-sm hover:shadow-md [&>button]:border-none [&>button]:shadow-none [&>button]:h-full [&>button]:py-0 [&>button]:bg-transparent [&_span]:normal-case [&_span]:text-xs [&_span]:font-semibold [&_span]:text-slate-700 flex-1 xl:flex-none"
+                    />
+                    <CustomDropdown
+                        value={statusFilter}
+                        onChange={setStatusFilter}
+                        options={[
+                            { value: 'all', label: 'All Status' },
+                            { value: 'pending', label: 'Pending' },
+                            { value: 'confirmed', label: 'Confirmed' },
+                            { value: 'completed', label: 'Completed' },
+                            { value: 'cancelled', label: 'Cancelled' }
+                        ]}
+                        className="w-full xl:w-36 h-[38px] bg-white border border-slate-200 allow-curve rounded-xl shadow-sm hover:shadow-md [&>button]:border-none [&>button]:shadow-none [&>button]:h-full [&>button]:py-0 [&>button]:bg-transparent [&_span]:normal-case [&_span]:text-xs [&_span]:font-semibold [&_span]:text-slate-700 flex-1 xl:flex-none"
+                    />
+                     
+                    <button className="flex items-center justify-center gap-2 px-3 h-[38px] bg-white border border-slate-200 text-slate-700 text-xs font-semibold allow-curve rounded-xl shadow-sm hover:bg-slate-50 transition-all flex-1 xl:flex-none shrink-0">
+                        <Filter className="w-3.5 h-3.5 text-slate-550" /> Filters
                     </button>
                 </div>
             </div>

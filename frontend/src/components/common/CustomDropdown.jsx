@@ -25,18 +25,17 @@ export default function CustomDropdown({ options = [], value, onChange, label, c
     }, []);
 
     return (
-        <div className={`relative custom-dropdown-container ${className}`} ref={dropdownRef}>
+        <div className={`relative custom-dropdown-container rounded-xl ${className}`} ref={dropdownRef}>
             {label && (
                 <label className="block text-[10px] font-black text-text-muted uppercase tracking-[0.15em] mb-1.5">
                     {label}
                 </label>
             )}
 
-            {/* Trigger Button */}
             <button
                 type="button"
                 onClick={() => setIsOpen(!isOpen)}
-                className={`custom-dropdown-trigger w-full flex items-center justify-between gap-2 px-3 py-2 bg-white border transition-all duration-200 text-left
+                className={`custom-dropdown-trigger w-full flex items-center justify-between gap-2 px-3 py-2 bg-white border transition-all duration-200 text-left allow-curve rounded-xl
                     ${isOpen
                         ? 'border-primary shadow-[0_0_0_3px_rgba(var(--color-primary-rgb,99,102,241),0.12)]'
                         : 'border-border hover:border-primary/40 shadow-sm hover:shadow-md'
@@ -50,11 +49,11 @@ export default function CustomDropdown({ options = [], value, onChange, label, c
                     className={`w-3.5 h-3.5 shrink-0 text-text-muted transition-transform duration-300 ${isOpen ? 'rotate-180 text-primary' : ''}`}
                 />
             </button>
-
+ 
             {/* Dropdown Panel */}
             {isOpen && (
                 <div
-                    className="custom-dropdown-panel absolute z-[999] w-full mt-1 bg-white overflow-hidden"
+                    className="custom-dropdown-panel absolute z-[999] w-full mt-1 bg-white overflow-hidden rounded-xl"
                     style={{
                         border: '1px solid #e5e7eb',
                         boxShadow: '0 8px 30px rgba(0,0,0,0.10), 0 2px 8px rgba(0,0,0,0.06)',

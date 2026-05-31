@@ -262,7 +262,7 @@ export default function AttendanceTracker() {
                             <ChevronLeft className="w-4 h-4" />
                         </button>
                         <div className="flex items-center gap-1 mx-1.5">
-                            <CalendarIcon className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                            <CalendarIcon className="w-3.5 h-3.5 text-indigo-500 shrink-0" />
                             <input
                                 type="date"
                                 value={selectedDate}
@@ -298,7 +298,7 @@ export default function AttendanceTracker() {
                             onClick={exportCSV}
                             className="flex items-center gap-1.5 px-2.5 sm:px-3 py-2 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-750 text-slate-700 dark:text-slate-200 rounded-xl text-xs font-bold transition-all shadow-sm active:scale-95 whitespace-nowrap"
                         >
-                            <Download className="w-3.5 h-3.5 text-slate-400" />
+                            <Download className="w-3.5 h-3.5 text-emerald-500" />
                             <span className="hidden sm:inline">Export</span>
                         </button>
                     </div>
@@ -307,7 +307,7 @@ export default function AttendanceTracker() {
                 {/* Row 2: Search + Outlet filter */}
                 <div className="flex items-center gap-2">
                     <div className="relative flex-1">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" />
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-blue-500" />
                         <input
                             type="text"
                             placeholder="Search staff..."
@@ -324,7 +324,7 @@ export default function AttendanceTracker() {
                             onClick={() => setOutletDropdownOpen(o => !o)}
                             className="flex items-center gap-1.5 bg-slate-50 dark:bg-slate-750 border border-slate-200 dark:border-slate-700 rounded-xl px-2.5 py-2 shadow-sm text-xs font-bold text-slate-700 dark:text-slate-200 transition-colors max-w-[140px] sm:max-w-none"
                         >
-                            <Filter className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                            <Filter className="w-3.5 h-3.5 text-purple-500 shrink-0" />
                             <span className="truncate max-w-[80px] sm:max-w-none">
                                 {filterOutlet === 'All' ? 'All Outlets' : filterOutlet}
                             </span>
@@ -422,7 +422,7 @@ export default function AttendanceTracker() {
                                                         <div className="text-left leading-tight">
                                                             <p className="text-xs font-bold text-slate-800 dark:text-slate-100">{record.staff}</p>
                                                             <div className="flex items-center gap-1.5 mt-0.5">
-                                                                <MapPin className="w-3 h-3 text-slate-400" />
+                                                                <MapPin className="w-3 h-3 text-rose-500" />
                                                                 <span className="text-[10px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wider">{record.outlet}</span>
                                                             </div>
                                                         </div>
@@ -447,7 +447,7 @@ export default function AttendanceTracker() {
                                                                 : 'bg-transparent text-slate-500 border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-750 hover:text-slate-700 dark:hover:text-slate-200'
                                                                 }`}
                                                         >
-                                                            <Check className="w-3.5 h-3.5 mr-1" />
+                                                            <Check className={`w-3.5 h-3.5 mr-1 ${record.status === 'present' ? '' : 'text-emerald-500'}`} />
                                                             Present
                                                         </button>
 
@@ -460,7 +460,7 @@ export default function AttendanceTracker() {
                                                                 : 'bg-transparent text-slate-500 border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-750 hover:text-slate-700 dark:hover:text-slate-200'
                                                                 }`}
                                                         >
-                                                            <X className="w-3.5 h-3.5 mr-1" />
+                                                            <X className={`w-3.5 h-3.5 mr-1 ${record.status === 'absent' ? '' : 'text-rose-500'}`} />
                                                             Absent
                                                         </button>
 
@@ -473,7 +473,7 @@ export default function AttendanceTracker() {
                                                                 : 'bg-transparent text-slate-500 border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-750 hover:text-slate-700 dark:hover:text-slate-200'
                                                                 }`}
                                                         >
-                                                            <CalendarIcon className="w-3.5 h-3.5 mr-1" />
+                                                            <CalendarIcon className={`w-3.5 h-3.5 mr-1 ${record.status === 'leave' ? '' : 'text-violet-500'}`} />
                                                             Leave
                                                         </button>
                                                     </div>
@@ -489,7 +489,7 @@ export default function AttendanceTracker() {
                                                             }`}
                                                         title={record.remark || 'Add daily remark'}
                                                     >
-                                                        <MessageSquare className="w-4 h-4" />
+                                                        <MessageSquare className={`w-4 h-4 ${record.remark ? '' : 'text-blue-500'}`} />
                                                     </button>
                                                 </td>
 
