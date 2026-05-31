@@ -435,6 +435,41 @@ export default function SABillingPage() {
                     { label: 'Subscribed Salons', value: stats.totalSubscribedSalons || 0, icon: Building2, gradient: 'from-violet-500 to-purple-600', shadow: 'shadow-violet-500/20', change: 0 },
                 ].map(k => {
                     const isSalonsCard = k.label === 'Subscribed Salons';
+                    const Icon = k.icon;
+                    let colorTheme = 'emerald';
+                    if (k.gradient.includes('blue')) colorTheme = 'blue';
+                    else if (k.gradient.includes('amber') || k.gradient.includes('orange')) colorTheme = 'amber';
+                    else if (k.gradient.includes('violet') || k.gradient.includes('purple')) colorTheme = 'violet';
+                    
+                    const themes = {
+                        emerald: {
+                            iconColorClass: '!text-emerald-600 dark:!text-emerald-400',
+                            iconBgClass: '!bg-emerald-100 dark:!bg-emerald-500/20',
+                            cardBgClass: '!bg-emerald-50 dark:!bg-emerald-500/5',
+                            cardBorderClass: '!border-emerald-100 dark:!border-emerald-500/15 hover:!border-emerald-300 dark:hover:!border-emerald-500/50'
+                        },
+                        blue: {
+                            iconColorClass: '!text-blue-600 dark:!text-blue-400',
+                            iconBgClass: '!bg-blue-100 dark:!bg-blue-500/20',
+                            cardBgClass: '!bg-blue-50 dark:!bg-blue-500/5',
+                            cardBorderClass: '!border-blue-100 dark:!border-blue-500/15 hover:!border-blue-300 dark:hover:!border-blue-500/50'
+                        },
+                        amber: {
+                            iconColorClass: '!text-amber-600 dark:!text-amber-400',
+                            iconBgClass: '!bg-amber-100 dark:!bg-amber-500/20',
+                            cardBgClass: '!bg-amber-50 dark:!bg-amber-500/5',
+                            cardBorderClass: '!border-amber-100 dark:!border-amber-500/15 hover:!border-amber-300 dark:hover:!border-amber-500/50'
+                        },
+                        violet: {
+                            iconColorClass: '!text-violet-600 dark:!text-violet-400',
+                            iconBgClass: '!bg-violet-100 dark:!bg-violet-500/20',
+                            cardBgClass: '!bg-violet-50 dark:!bg-violet-500/5',
+                            cardBorderClass: '!border-violet-100 dark:!border-violet-500/15 hover:!border-violet-300 dark:hover:!border-violet-500/50'
+                        }
+                    };
+                    
+                    const { iconColorClass, iconBgClass, cardBgClass, cardBorderClass } = themes[colorTheme] || themes.emerald;
+
                     return (
                         <div
                             key={k.label}
@@ -444,20 +479,37 @@ export default function SABillingPage() {
                                 else if (k.label === 'Collected Amount') { setTab('payments'); setSF('captured'); }
                                 else if (k.label === 'Pending Amount') { setTab('payments'); setSF('pending'); }
                             }}
-                            className="bg-white rounded-2xl border border-border shadow-sm p-5 hover:shadow-md transition-all cursor-pointer hover:border-primary/20"
+                            className={`!rounded-[16px] !border p-3.5 shadow-[0_2px_8px_-3px_rgba(0,0,0,0.04)] group flex flex-col justify-between min-h-[118px] transition-all hover:-translate-y-0.5 active:scale-[0.98] hover:shadow-md cursor-pointer ${cardBgClass} ${cardBorderClass}`}
                         >
-                            <div className="flex items-center justify-between mb-3">
-                                <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${k.gradient} flex items-center justify-center shadow-lg ${k.shadow}`}>
-                                    <k.icon className="w-5 h-5 text-white" />
+                            <div className="flex !items-start justify-between w-full">
+                                <div className="flex !items-start gap-3 !text-left">
+                                    <div className={`w-9 h-9 rounded-full flex items-center justify-center shrink-0 ${iconBgClass}`}>
+                                        <Icon className={`w-4 h-4 ${iconColorClass}`} strokeWidth={2} />
+                                    </div>
+                                    <div className="flex flex-col !items-start !text-left">
+                                        <span style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '0.03em' }} className="uppercase text-slate-500 dark:text-slate-450 leading-none mb-1.5 !text-left">
+                                            {k.label}
+                                        </span>
+                                        <h3 style={{ fontSize: '24px', fontWeight: 850 }} className="text-slate-800 dark:text-slate-50 leading-none tracking-tight !text-left">
+                                            {k.value}
+                                        </h3>
+                                        <span style={{ fontSize: '12px', fontWeight: 500 }} className="text-slate-500 dark:text-slate-400 mt-1.5 !text-left">
+                                            Stats
+                                        </span>
+                                    </div>
                                 </div>
                                 {k.change !== 0 && k.change !== null && (
-                                    <span className={`text-[11px] font-bold px-2 py-0.5 rounded-full ${k.change >= 0 ? 'bg-emerald-50 text-emerald-600' : 'bg-red-50 text-red-500'}`}>
+                                    <span className={`text-[11px] font-bold px-2 py-0.5 rounded-full shrink-0 ${k.change >= 0 ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-400' : 'bg-red-50 text-red-600 dark:bg-red-500/20 dark:text-red-400'}`}>
                                         {k.change >= 0 ? '↑' : '↓'} {Math.abs(k.change)}%
                                     </span>
                                 )}
                             </div>
-                            <div className="text-xl font-black text-text">{k.value}</div>
-                            <div className="text-xs text-text-muted mt-0.5">{k.label}</div>
+                            <div style={{ fontSize: '11px', fontWeight: 700 }} className="flex !items-center gap-1 mt-auto pt-2 transition-all opacity-90 group-hover:opacity-100 whitespace-nowrap !text-left !justify-start">
+                                <span className={iconColorClass}>View details</span>
+                                <span style={{ fontSize: '12px' }} className={`inline-block transition-transform duration-200 group-hover:translate-x-1 leading-none ${iconColorClass}`}>
+                                    →
+                                </span>
+                            </div>
                         </div>
                     );
                 })}
@@ -567,7 +619,7 @@ export default function SABillingPage() {
                     </div>
 
                     {/* Payments table */}
-                    <div className="bg-white rounded-2xl border border-border shadow-sm overflow-hidden">
+                    <div className="!bg-white dark:!bg-slate-900 !rounded-[24px] !border !border-slate-100 dark:!border-slate-800 shadow-[0_2px_12px_-3px_rgba(0,0,0,0.04)] overflow-hidden">
                         <div className="overflow-x-auto">
                             <table className="w-full">
                                 <thead>
@@ -692,7 +744,7 @@ export default function SABillingPage() {
                         />
                     </div>
 
-                    <div className="bg-white rounded-2xl border border-border shadow-sm overflow-hidden">
+                    <div className="!bg-white dark:!bg-slate-900 !rounded-[24px] !border !border-slate-100 dark:!border-slate-800 shadow-[0_2px_12px_-3px_rgba(0,0,0,0.04)] overflow-hidden">
                         <div className="overflow-x-auto">
                             <table className="w-full">
                                 <thead>
@@ -760,7 +812,7 @@ export default function SABillingPage() {
 
 
                     {/* Revenue trend chart */}
-                    <div className="bg-white rounded-2xl border border-border shadow-sm p-5">
+                    <div className="!bg-white dark:!bg-slate-900 !rounded-[24px] !border !border-slate-100 dark:!border-slate-800 shadow-[0_2px_12px_-3px_rgba(0,0,0,0.04)] p-5">
                         <div className="flex items-center justify-between mb-4">
                             <div>
                                 <h3 className="font-bold text-text">Revenue Trend</h3>
@@ -789,7 +841,7 @@ export default function SABillingPage() {
                     <div className="grid lg:grid-cols-2 gap-5">
 
                         {/* Plan revenue cards */}
-                        <div className="bg-white rounded-2xl border border-border shadow-sm p-5">
+                        <div className="!bg-white dark:!bg-slate-900 !rounded-[24px] !border !border-slate-100 dark:!border-slate-800 shadow-[0_2px_12px_-3px_rgba(0,0,0,0.04)] p-5">
                             <h3 className="font-bold text-text mb-1">Revenue by Plan</h3>
                             <p className="text-xs text-text-muted mb-4">Current month breakdown</p>
                             <div className="space-y-3">

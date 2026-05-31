@@ -72,29 +72,100 @@ const renderPieLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent })
     );
 };
 
-/* ─── Metric card ────────────────────────────────────────────────────────── */
 function MetricCard({ label, value, icon: Icon, gradient, shadow, change, prefix = '', loading, to, textColor = 'text-text' }) {
+    let colorTheme = 'emerald';
+    if (textColor.includes('blue')) colorTheme = 'blue';
+    else if (textColor.includes('amber')) colorTheme = 'amber';
+    else if (textColor.includes('slate')) colorTheme = 'slate';
+    else if (textColor.includes('violet') || textColor.includes('purple')) colorTheme = 'violet';
+    else if (textColor.includes('red') || textColor.includes('rose')) colorTheme = 'red';
+    else if (textColor.includes('primary')) colorTheme = 'yellow';
+
+    const themes = {
+        emerald: {
+            iconColorClass: '!text-emerald-600 dark:!text-emerald-400',
+            iconBgClass: '!bg-emerald-100 dark:!bg-emerald-500/20',
+            cardBgClass: '!bg-emerald-50 dark:!bg-emerald-500/5',
+            cardBorderClass: '!border-emerald-100 dark:!border-emerald-500/15 hover:!border-emerald-300 dark:hover:!border-emerald-500/50'
+        },
+        blue: {
+            iconColorClass: '!text-blue-600 dark:!text-blue-400',
+            iconBgClass: '!bg-blue-100 dark:!bg-blue-500/20',
+            cardBgClass: '!bg-blue-50 dark:!bg-blue-500/5',
+            cardBorderClass: '!border-blue-100 dark:!border-blue-500/15 hover:!border-blue-300 dark:hover:!border-blue-500/50'
+        },
+        amber: {
+            iconColorClass: '!text-amber-600 dark:!text-amber-400',
+            iconBgClass: '!bg-amber-100 dark:!bg-amber-500/20',
+            cardBgClass: '!bg-amber-50 dark:!bg-amber-500/5',
+            cardBorderClass: '!border-amber-100 dark:!border-amber-500/15 hover:!border-amber-300 dark:hover:!border-amber-500/50'
+        },
+        slate: {
+            iconColorClass: '!text-slate-600 dark:!text-slate-400',
+            iconBgClass: '!bg-slate-100 dark:!bg-slate-500/20',
+            cardBgClass: '!bg-slate-50 dark:!bg-slate-500/5',
+            cardBorderClass: '!border-slate-200 dark:!border-slate-500/15 hover:!border-slate-300 dark:hover:!border-slate-500/50'
+        },
+        violet: {
+            iconColorClass: '!text-violet-600 dark:!text-violet-400',
+            iconBgClass: '!bg-violet-100 dark:!bg-violet-500/20',
+            cardBgClass: '!bg-violet-50 dark:!bg-violet-500/5',
+            cardBorderClass: '!border-violet-100 dark:!border-violet-500/15 hover:!border-violet-300 dark:hover:!border-violet-500/50'
+        },
+        red: {
+            iconColorClass: '!text-red-600 dark:!text-red-400',
+            iconBgClass: '!bg-red-100 dark:!bg-red-500/20',
+            cardBgClass: '!bg-red-50 dark:!bg-red-500/5',
+            cardBorderClass: '!border-red-100 dark:!border-red-500/15 hover:!border-red-300 dark:hover:!border-red-500/50'
+        },
+        yellow: {
+            iconColorClass: '!text-[#B4912B] dark:!text-[#D4AF37]',
+            iconBgClass: '!bg-[#FDF9ED] dark:!bg-[#B4912B]/20',
+            cardBgClass: '!bg-[#FFFDF7] dark:!bg-[#B4912B]/5',
+            cardBorderClass: '!border-[#FDF5DA] dark:!border-[#B4912B]/15 hover:!border-[#E6C975] dark:hover:!border-[#B4912B]/50'
+        }
+    };
+    
+    const { iconColorClass, iconBgClass, cardBgClass, cardBorderClass } = themes[colorTheme] || themes.emerald;
+
     const content = (
-        <div className={`bg-surface rounded-2xl border border-border p-5 hover:border-primary/20 hover:shadow-xl hover:-translate-y-1 transition-all group shadow-sm relative overflow-hidden${to ? ' cursor-pointer' : ''}`}>
-            <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
-                <ArrowUpRight className="w-4 h-4 text-blue-500" />
-            </div>
-            <div className="flex items-center justify-between mb-4">
-                <div className={`w-11 h-11 rounded-xl bg-gradient-to-br ${gradient} flex items-center justify-center shadow-lg ${shadow} group-hover:scale-110 transition-transform`}>
-                    <Icon className="w-5 h-5 text-white" />
+        <div className={`!rounded-[16px] !border p-3.5 shadow-[0_2px_8px_-3px_rgba(0,0,0,0.04)] group flex flex-col justify-between min-h-[118px] transition-all hover:-translate-y-0.5 active:scale-[0.98] hover:shadow-md ${cardBgClass} ${cardBorderClass}`}>
+            <div className="flex !items-start justify-between w-full">
+                <div className="flex !items-start gap-3 !text-left">
+                    <div className={`w-9 h-9 rounded-full flex items-center justify-center shrink-0 ${iconBgClass}`}>
+                        <Icon className={`w-4 h-4 ${iconColorClass}`} strokeWidth={2} />
+                    </div>
+                    
+                    <div className="flex flex-col !items-start !text-left">
+                        <span style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '0.03em' }} className="uppercase text-slate-500 dark:text-slate-450 leading-none mb-1.5 !text-left">
+                            {label}
+                        </span>
+                        {loading ? (
+                            <div className="h-6 w-20 bg-slate-200 dark:bg-slate-700 rounded-lg animate-pulse" />
+                        ) : (
+                            <h3 style={{ fontSize: '24px', fontWeight: 850 }} className="text-slate-800 dark:text-slate-50 leading-none tracking-tight !text-left">
+                                {prefix}{typeof value === 'number' ? value.toLocaleString('en-IN') : value}
+                            </h3>
+                        )}
+                        <span style={{ fontSize: '12px', fontWeight: 500 }} className="text-slate-500 dark:text-slate-400 mt-1.5 !text-left">
+                            Stats
+                        </span>
+                    </div>
                 </div>
                 {change !== undefined && (
-                    <span className={`text-[11px] font-bold px-2 py-0.5 rounded-full ${change >= 0 ? 'bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400' : 'bg-red-50 dark:bg-red-950/30 text-red-500 dark:text-red-400'}`}>
+                    <span className={`text-[11px] font-bold px-2 py-0.5 rounded-full shrink-0 ${change >= 0 ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-400' : 'bg-red-50 text-red-600 dark:bg-red-500/20 dark:text-red-400'}`}>
                         {change >= 0 ? '↑' : '↓'} {Math.abs(change)}%
                     </span>
                 )}
             </div>
-            {loading ? (
-                <div className="h-8 w-20 bg-gray-100 rounded-lg animate-pulse mb-1" />
-            ) : (
-                <div className={`text-2xl font-black tracking-tight ${textColor}`}>{prefix}{typeof value === 'number' ? value.toLocaleString('en-IN') : value}</div>
+            {to && (
+                <div style={{ fontSize: '11px', fontWeight: 700 }} className="flex !items-center gap-1 mt-auto pt-2 transition-all opacity-90 group-hover:opacity-100 whitespace-nowrap !text-left !justify-start">
+                    <span className={iconColorClass}>View details</span>
+                    <span style={{ fontSize: '12px' }} className={`inline-block transition-transform duration-200 group-hover:translate-x-1 leading-none ${iconColorClass}`}>
+                        →
+                    </span>
+                </div>
             )}
-            <div className="text-xs text-text-muted font-medium mt-1">{label}</div>
         </div>
     );
     if (to) return <Link to={to} className="block no-underline">{content}</Link>;
@@ -524,7 +595,7 @@ export default function SADashboardPage() {
             </div>
 
             {/* ── Recent Signups Table ── */}
-            <div className="bg-surface rounded-2xl border border-border shadow-sm overflow-hidden">
+            <div className="!bg-white dark:!bg-slate-900 !rounded-[24px] !border !border-slate-100 dark:!border-slate-800 shadow-[0_2px_12px_-3px_rgba(0,0,0,0.04)] overflow-hidden">
                 <div className="flex items-center justify-between px-5 py-4 border-b border-border">
                     <div>
                         <h2 className="font-bold text-text">Newly Registered Salons</h2>
