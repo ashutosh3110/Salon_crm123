@@ -2,9 +2,9 @@ import { useState, useMemo, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import {
     Plus, Search, LifeBuoy, MessageSquare,
-    CheckCircle, Clock, AlertCircle, ChevronDown,
+    CheckCircle, Clock, AlertCircle, ChevronDown, ChevronRight,
     Filter, Download, HelpCircle, ArrowRight, ArrowUpCircle,
-    X, Send, RefreshCw, User as UserIcon, MoreHorizontal
+    X, Send, RefreshCw, User as UserIcon, MoreHorizontal, Copy, Shield, Headphones, Ticket, Bell
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../../contexts/AuthContext';
@@ -53,6 +53,19 @@ export default function SupportPage() {
     const chatEndRef = useRef(null);
     const [form, setForm] = useState({ subject: '', category: 'General Inquiry', description: '' });
     const [toast, setToast] = useState(null);
+    const [isFilterOpen, setIsFilterOpen] = useState(false);
+    const [isSearchFocused, setIsSearchFocused] = useState(false);
+    const filterRef = useRef(null);
+
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (filterRef.current && !filterRef.current.contains(event.target)) {
+                setIsFilterOpen(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
 
     const showToast = (msg) => {
         setToast(msg);
@@ -106,10 +119,10 @@ export default function SupportPage() {
         const open = tickets.filter(t => t.status === 'open' || t.status === 'in-progress').length;
         const resolved = tickets.filter(t => t.status === 'resolved').length;
         return [
-            { label: 'Total Tickets', value: total, icon: MessageSquare },
-            { label: 'Active Issues', value: open, icon: Clock },
-            { label: 'Resolved', value: resolved, icon: CheckCircle },
-            { label: 'Avg. Help Time', value: '< 4hrs', icon: LifeBuoy },
+            { label: 'Total Tickets', value: total, subtitle: 'All time tickets raised', icon: Ticket, bgColor: 'bg-amber-100', iconColor: 'text-amber-600' },
+            { label: 'Active Issues', value: open, subtitle: 'Currently open', icon: Bell, bgColor: 'bg-purple-100', iconColor: 'text-purple-600' },
+            { label: 'Resolved', value: resolved, subtitle: 'Successfully resolved', icon: CheckCircle, bgColor: 'bg-emerald-100', iconColor: 'text-emerald-600' },
+            { label: 'Avg. Help Time', value: '< 4hrs', subtitle: 'Average response time', icon: Clock, bgColor: 'bg-blue-100', iconColor: 'text-blue-600' },
         ];
     }, [tickets]);
 
@@ -212,16 +225,16 @@ export default function SupportPage() {
                     </p>
                 </div>
                 <div className="flex items-center gap-3">
-                    <div className="flex bg-surface p-1 rounded-xl border border-border mr-2">
+                    <div className="flex items-center bg-white border border-border rounded-lg overflow-hidden mr-2 shadow-sm">
                         <button
                             onClick={() => setActiveTab('customer')}
-                            className={`px-4 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'customer' ? 'bg-primary text-white shadow-md' : 'text-text-muted hover:text-text'}`}
+                            className={`px-6 py-2.5 text-[11px] font-bold uppercase tracking-wider transition-all ${activeTab === 'customer' ? 'bg-[#B58E29] text-white' : 'bg-transparent text-text hover:bg-gray-50'}`}
                         >
                             Customer Issues
                         </button>
                         <button
                             onClick={() => setActiveTab('platform')}
-                            className={`px-4 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'platform' ? 'bg-primary text-white shadow-md' : 'text-text-muted hover:text-text'}`}
+                            className={`px-6 py-2.5 text-[11px] font-bold uppercase tracking-wider transition-all ${activeTab === 'platform' ? 'bg-[#B58E29] text-white' : 'bg-transparent text-text hover:bg-gray-50'}`}
                         >
                             Platform Help
                         </button>
@@ -240,47 +253,79 @@ export default function SupportPage() {
             {/* Stats */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                 {stats.map((stat, i) => (
-                    <div key={i} className="bg-white p-5 border border-border flex flex-col justify-between group hover:border-primary transition-all rounded-xl shadow-sm">
-                        <div className="flex items-center justify-between mb-3">
-                            <div className="flex items-center gap-2">
-                                <stat.icon className="w-4 h-4 text-text-muted group-hover:text-primary transition-colors" />
-                                <p className="text-[10px] font-bold text-text-muted uppercase tracking-wider">{stat.label}</p>
-                            </div>
+                    <div key={i} className="bg-white p-5 border border-border flex items-center gap-4 rounded-2xl shadow-sm">
+                        <div className={`w-12 h-12 rounded-full flex items-center justify-center shrink-0 ${stat.bgColor}`}>
+                            <stat.icon className={`w-5 h-5 ${stat.iconColor}`} />
                         </div>
-                        <h3 className="text-2xl font-bold text-text leading-none">{stat.value}</h3>
+                        <div className="flex flex-col">
+                            <p className="text-[10px] font-bold text-text uppercase tracking-wider mb-1">{stat.label}</p>
+                            <h3 className="text-2xl font-bold text-text leading-none mb-1">{stat.value}</h3>
+                            <p className="text-[11px] text-text-muted">{stat.subtitle}</p>
+                        </div>
                     </div>
                 ))}
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 {/* Tickets Table */}
-                <div className="lg:col-span-2 space-y-4">
-                    <div className="bg-white p-3 border border-border flex flex-col md:flex-row gap-3 rounded-xl shadow-sm">
-                        <div className="relative flex-1">
-                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
+                <div className="lg:col-span-2 space-y-5">
+                    <div className="flex flex-col md:flex-row gap-3">
+                        <div className={`relative flex-1 bg-white border transition-all duration-300 rounded-xl ${isSearchFocused ? 'border-[#B58E29] shadow-[0_0_15px_rgba(181,142,41,0.25)] ring-1 ring-[#B58E29]/50' : 'border-border shadow-sm'}`}>
+                            <Search className={`absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 transition-colors ${isSearchFocused ? 'text-[#B58E29]' : 'text-text-muted'}`} />
                             <input
                                 type="text"
                                 value={search}
                                 onChange={(e) => setSearch(e.target.value)}
+                                onFocus={() => setIsSearchFocused(true)}
+                                onBlur={() => setIsSearchFocused(false)}
                                 placeholder="Search by subject or request number..."
-                                className="w-full pl-10 pr-4 py-2 bg-surface border border-border text-[13px] font-medium focus:border-primary outline-none transition-all rounded-lg"
+                                className="w-full pl-11 pr-4 py-3.5 bg-transparent text-[13px] font-medium outline-none rounded-xl"
                             />
                         </div>
-                        <select
-                            value={filterStatus}
-                            onChange={(e) => setFilterStatus(e.target.value)}
-                            className="text-[11px] font-bold uppercase tracking-wider bg-surface border border-border pl-4 pr-10 py-2 outline-none focus:border-primary cursor-pointer appearance-none min-w-[140px] rounded-lg"
+                        <div
+                            ref={filterRef}
+                            className={`relative flex items-center px-5 bg-white border transition-all duration-300 rounded-xl cursor-pointer hover:bg-gray-50 ${isFilterOpen ? 'border-[#B58E29] ring-1 ring-[#B58E29]/50 shadow-[0_0_15px_rgba(181,142,41,0.15)]' : 'border-border shadow-sm'}`}
+                            onClick={() => setIsFilterOpen(!isFilterOpen)}
                         >
-                            <option value="All">All Status</option>
-                            <option value="pending">PENDING</option>
-                            <option value="in-progress">IN PROGRESS</option>
-                            <option value="resolved">RESOLVED</option>
-                            <option value="closed">CLOSED</option>
-                            <option value="escalated">ESCALATED</option>
-                        </select>
+                            <Filter className={`w-4 h-4 mr-2 transition-colors ${isFilterOpen ? 'text-[#B58E29]' : 'text-text-muted'}`} />
+                            <div className="text-[12px] font-bold uppercase tracking-wider py-3.5 pr-8 min-w-[120px] select-none text-text">
+                                {filterStatus === 'All' ? 'ALL STATUS' : filterStatus}
+                            </div>
+                            <ChevronDown className="w-4 h-4 text-text-muted absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none" />
+
+                            {/* Custom Dropdown Menu */}
+                            <AnimatePresence>
+                                {isFilterOpen && (
+                                    <motion.div
+                                        initial={{ opacity: 0, y: 10 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        exit={{ opacity: 0, y: 10 }}
+                                        transition={{ duration: 0.15 }}
+                                        className="absolute top-full right-0 w-full mt-2 bg-white border border-border rounded-xl shadow-lg z-50 overflow-hidden py-1"
+                                    >
+                                        {[
+                                            { value: 'All', label: 'ALL STATUS' },
+                                            { value: 'pending', label: 'PENDING' },
+                                            { value: 'in-progress', label: 'IN PROGRESS' },
+                                            { value: 'resolved', label: 'RESOLVED' },
+                                            { value: 'closed', label: 'CLOSED' },
+                                            { value: 'escalated', label: 'ESCALATED' }
+                                        ].map((opt) => (
+                                            <div
+                                                key={opt.value}
+                                                className={`px-4 py-2.5 text-[11px] font-bold uppercase tracking-wider cursor-pointer hover:bg-primary/5 transition-colors ${filterStatus === opt.value ? 'text-primary bg-primary/5' : 'text-text-muted'}`}
+                                                onClick={() => setFilterStatus(opt.value)}
+                                            >
+                                                {opt.label}
+                                            </div>
+                                        ))}
+                                    </motion.div>
+                                )}
+                            </AnimatePresence>
+                        </div>
                     </div>
 
-                    <div className="bg-white border border-border shadow-sm overflow-hidden min-h-[400px] rounded-xl">
+                    <div className="bg-white border border-border shadow-sm overflow-hidden min-h-[400px] rounded-2xl">
                         <div className="overflow-x-auto">
                             <table className="w-full text-left border-collapse min-w-[700px]">
                                 <thead>
@@ -311,27 +356,31 @@ export default function SupportPage() {
                                                 >
                                                     <td className="px-5 py-4 cursor-pointer" onClick={() => handleSelectTicket(t._id)}>
                                                         <div className="flex items-center gap-2 mb-1">
-                                                            <div className="text-[10px] font-bold text-primary tracking-tight opacity-70 uppercase">#{t._id?.slice(-6)}</div>
+                                                            <div className="text-[12px] font-bold text-text tracking-tight uppercase">#{t._id?.slice(-6) || '1AD301'}</div>
+                                                            <button onClick={(e) => { e.stopPropagation(); navigator.clipboard.writeText(t._id); showToast('Copied to clipboard'); }} className="text-text-muted hover:text-text transition-colors">
+                                                                <Copy className="w-3.5 h-3.5" />
+                                                            </button>
                                                             {['admin', 'manager'].includes(user?.role) && t.userId && (
-                                                                <div className="text-[8px] font-black bg-primary/10 text-primary px-1.5 py-0.5 rounded uppercase tracking-tighter">
+                                                                <div className="text-[8px] font-black bg-primary/10 text-primary px-1.5 py-0.5 rounded uppercase tracking-tighter ml-2">
                                                                     {t.userId.name} ({t.userId.role})
                                                                 </div>
                                                             )}
                                                         </div>
-                                                        <div className="font-bold text-text text-[14px] leading-tight group-hover:text-primary transition-colors">{t.subject}</div>
-                                                        <div className="text-[9px] font-medium text-text-muted mt-0.5">{new Date(t.createdAt).toLocaleString()}</div>
+                                                        <div className="text-[11px] text-text-muted mt-0.5">ID</div>
+                                                        <div className="text-[11px] font-medium text-text mt-0.5">{new Date(t.createdAt).toLocaleString()}</div>
                                                     </td>
                                                     <td className="px-5 py-4 cursor-pointer" onClick={() => handleSelectTicket(t._id)}>
-                                                        <span className={`inline-flex items-center px-2.5 py-0.5 text-[9px] font-bold border uppercase tracking-wider rounded-full ${CATEGORY_STYLES[t.category]}`}>
+                                                        <div className={`inline-flex items-center gap-2 px-3 py-1.5 text-[10px] font-bold border uppercase tracking-wider rounded-full ${CATEGORY_STYLES[t.category] || CATEGORY_STYLES['General Inquiry']}`}>
+                                                            <div className="w-2 h-2 rounded-full bg-current opacity-70"></div>
                                                             {t.category}
-                                                        </span>
+                                                        </div>
                                                     </td>
                                                     <td className="px-5 py-4" onClick={(e) => e.stopPropagation()}>
                                                         {['admin', 'manager', 'superadmin'].includes(userRole) ? (
                                                             <select
                                                                 value={t.status}
                                                                 onChange={(e) => handleUpdateStatus(t._id, e.target.value)}
-                                                                className={`inline-flex items-center px-2 py-0.5 text-[9px] font-bold border uppercase tracking-wider rounded-full outline-none cursor-pointer appearance-none text-center ${stStyle.bg} ${stStyle.text} ${stStyle.border}`}
+                                                                className={`inline-flex items-center px-3 py-1.5 text-[10px] font-bold border uppercase tracking-wider rounded-full outline-none cursor-pointer appearance-none text-center bg-white ${stStyle.text} ${stStyle.border}`}
                                                             >
                                                                 <option value="pending">PENDING</option>
                                                                 <option value="in-progress">IN PROGRESS</option>
@@ -340,22 +389,17 @@ export default function SupportPage() {
                                                                 <option value="escalated">ESCALATED</option>
                                                             </select>
                                                         ) : (
-                                                            <span className={`inline-flex items-center px-2.5 py-0.5 text-[9px] font-bold border uppercase tracking-wider rounded-full ${stStyle.bg} ${stStyle.text} ${stStyle.border}`}>
+                                                            <span className={`inline-flex items-center px-3 py-1.5 text-[10px] font-bold border uppercase tracking-wider rounded-full bg-white ${stStyle.text} ${stStyle.border}`}>
                                                                 {stStyle.label}
                                                             </span>
                                                         )}
                                                     </td>
                                                     <td className="px-5 py-4 text-right">
-                                                        <div className="flex items-center justify-end gap-2">
-                                                            {activeTab === 'customer' && t.status !== 'escalated' && t.status !== 'resolved' && t.status !== 'closed' && (
-                                                                <button
-                                                                    onClick={(e) => { e.stopPropagation(); handleEscalate(t._id); }}
-                                                                    className="flex items-center gap-1.5 px-3 py-1 bg-rose-50 text-rose-600 border border-rose-200 text-[10px] font-bold uppercase tracking-wider rounded-lg hover:bg-rose-100 transition-all shadow-sm"
-                                                                >
-                                                                    <ArrowUpCircle className="w-3.5 h-3.5" /> Escalate to SuperAdmin
-                                                                </button>
-                                                            )}
-                                                            <span className="text-[11px] font-medium text-text-muted">{t.lastUpdate || 'Just now'}</span>
+                                                        <div className="flex items-center justify-end gap-3">
+                                                            <span className="text-[12px] font-bold text-text">{t.lastUpdate || 'Just now'}</span>
+                                                            <button className="p-1 hover:bg-surface rounded-full text-text transition-colors">
+                                                                <MoreHorizontal className="w-5 h-5" />
+                                                            </button>
                                                         </div>
                                                     </td>
                                                 </tr>
@@ -370,37 +414,81 @@ export default function SupportPage() {
 
                 {/* Right Panel: FAQ & Contact */}
                 <div className="space-y-6">
-                    <div className="bg-white border border-border p-6 space-y-5 rounded-xl shadow-sm">
-                        <div className="flex items-center gap-3 pb-4 border-b border-border">
-                            <HelpCircle className="w-5 h-5 text-primary" />
-                            <h2 className="text-[12px] font-bold uppercase tracking-wider">Common Questions</h2>
+                    <div className="bg-white border border-border p-6 space-y-5 rounded-2xl shadow-sm">
+                        <div className="flex items-center justify-between pb-4 border-b border-border">
+                            <div className="flex items-center gap-3">
+                                <div className="w-8 h-8 rounded-full bg-amber-100 flex items-center justify-center">
+                                    <HelpCircle className="w-4 h-4 text-amber-600" />
+                                </div>
+                                <h2 className="text-[14px] font-bold text-text">Common Questions</h2>
+                            </div>
+                            <a href="#" className="text-[12px] font-bold text-amber-600 hover:text-amber-700 transition-colors">View all</a>
                         </div>
                         <div className="space-y-4">
-                            {faqs.map((faq, i) => (
-                                <div key={i} className="group cursor-help">
-                                    <p className="text-[13px] font-bold text-text flex items-center gap-2 group-hover:text-primary transition-colors">
-                                        <ArrowRight className="w-3 h-3 text-primary/50" /> {faq.q}
-                                    </p>
-                                    <p className="text-[12px] font-medium text-text-muted mt-2 pl-5 leading-relaxed">{faq.a}</p>
+                            {[1, 2].map((_, i) => (
+                                <div key={i} className="group cursor-help border border-border p-4 rounded-xl flex items-start justify-between">
+                                    <div className="flex gap-3">
+                                        <ChevronDown className="w-4 h-4 text-text mt-0.5" />
+                                        <div>
+                                            <p className="text-[13px] font-bold text-text transition-colors">
+                                                New Question?
+                                            </p>
+                                            <p className="text-[12px] text-text-muted mt-1 leading-relaxed">Answer goes here... {i === 0 ? '#gffrtffffff#jkjkrt;kjv' : 'n.b'}</p>
+                                        </div>
+                                    </div>
+                                    <ChevronRight className="w-4 h-4 text-text" />
                                 </div>
                             ))}
                         </div>
                     </div>
 
-                    <div className="bg-primary/5 border border-primary/20 p-6 rounded-xl relative overflow-hidden group">
-                        <div className="relative z-10 space-y-4">
-                            <h3 className="text-[15px] font-bold text-primary italic tracking-tight">Need Direct Help?</h3>
-                            <p className="text-[12px] font-medium text-text-secondary leading-relaxed">Our support team is available 24/7 to resolve any issues you're facing.</p>
-                            <div className="pt-2 flex flex-col gap-3">
-                                <a href="mailto:support@wapixo.com" className="flex items-center gap-3 text-[12px] font-bold text-text hover:text-primary transition-colors bg-white/50 p-3 border border-border rounded-lg shadow-sm">
-                                    <LifeBuoy className="w-4 h-4 text-primary" /> support@wapixo.com
-                                </a>
-                                <div className="flex items-center gap-3 text-[12px] font-bold text-text bg-white/50 p-3 border border-border rounded-lg shadow-sm">
-                                    <Clock className="w-4 h-4 text-primary" /> Avg. Response: 4h
-                                </div>
+                    <div className="bg-white border border-border p-6 rounded-2xl shadow-sm space-y-4">
+                        <div className="flex gap-4">
+                            <div className="w-10 h-10 rounded-full bg-amber-50 flex items-center justify-center shrink-0">
+                                <Headphones className="w-5 h-5 text-amber-600" />
+                            </div>
+                            <div>
+                                <h3 className="text-[14px] font-bold text-text">Need Direct Help?</h3>
+                                <p className="text-[12px] text-text-muted mt-1 leading-relaxed">Our support team is available 24/7 to resolve any issues you're facing.</p>
                             </div>
                         </div>
-                        <LifeBuoy className="absolute -bottom-6 -right-6 w-24 h-24 text-primary/10 rotate-12 transition-transform group-hover:rotate-45 duration-1000" />
+                        <div className="pt-2 flex flex-col gap-3">
+                            <div className="flex items-center justify-between text-[12px] font-bold text-text p-3 border border-border rounded-xl shadow-sm">
+                                <div className="flex items-center gap-3">
+                                    <div className="text-text-muted"><MessageSquare className="w-4 h-4" /></div>
+                                    support@wapixo.com
+                                </div>
+                                <button onClick={() => { navigator.clipboard.writeText('support@wapixo.com'); showToast('Email copied!'); }} className="text-text-muted hover:text-text transition-colors">
+                                    <Copy className="w-4 h-4" />
+                                </button>
+                            </div>
+                            <div className="flex items-center gap-3 text-[12px] font-bold text-text p-3 border border-border rounded-xl shadow-sm">
+                                <div className="text-text-muted"><Clock className="w-4 h-4" /></div>
+                                Avg. Response: 4h
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {/* Bottom Banner */}
+            <div className="bg-[#f8fcf8] border border-emerald-100 rounded-2xl p-6 mt-8 flex items-center justify-between relative overflow-hidden">
+                <div className="flex items-center gap-4 relative z-10">
+                    <div className="w-14 h-14 rounded-full bg-emerald-100 flex items-center justify-center shrink-0">
+                        <Shield className="w-7 h-7 text-emerald-600" />
+                    </div>
+                    <div>
+                        <h3 className="text-[16px] font-bold text-text">We're here to help!</h3>
+                        <p className="text-[13px] text-text-muted mt-1">Your satisfaction is our priority. Reach out anytime.</p>
+                    </div>
+                </div>
+                {/* Placeholder for 3D graphic */}
+                <div className="relative z-10 hidden sm:flex items-center justify-center mr-8">
+                    <div className="w-24 h-24 relative flex items-center justify-center">
+                        {/* Simulate the graphic with emojis or placeholder */}
+                        <span className="text-6xl">🎧</span>
+                        <span className="absolute -top-2 -right-4 text-3xl">💬</span>
+                        <span className="absolute bottom-0 -right-2 text-2xl">😊</span>
                     </div>
                 </div>
             </div>
