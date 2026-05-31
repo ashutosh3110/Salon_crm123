@@ -237,7 +237,7 @@ export default function ShopCategoriesManager() {
                                         type="button"
                                         title="Close"
                                         onClick={() => setIsAdding(false)}
-                                        className="p-2 rounded-full hover:bg-surface-alt text-text-muted"
+                                        className="p-2 rounded-xl hover:bg-surface-alt text-text-muted"
                                     >
                                         <Plus className="w-5 h-5 rotate-45" />
                                     </button>
@@ -283,7 +283,7 @@ export default function ShopCategoriesManager() {
                                     </div>
 
                                     {formData.image && (
-                                        <div className="aspect-[16/9] rounded-3xl overflow-hidden border border-border shadow-sm bg-surface-alt animate-in zoom-in-95 duration-300">
+                                        <div className="aspect-[16/9] rounded-2xl overflow-hidden border border-border shadow-sm bg-surface-alt animate-in zoom-in-95 duration-300">
                                             <img src={formData.image} className="w-full h-full object-cover" alt="Preview" />
                                         </div>
                                     )}
@@ -292,14 +292,14 @@ export default function ShopCategoriesManager() {
                                         <button
                                             type="button"
                                             onClick={() => setIsAdding(false)}
-                                            className="flex-1 py-4 rounded-3xl text-sm font-semibold text-text-muted hover:bg-surface-alt transition-all"
+                                            className="flex-1 py-4 rounded-2xl text-sm font-semibold text-text-muted hover:bg-surface-alt transition-all"
                                         >
                                             Cancel
                                         </button>
                                         <button
                                             type="button"
                                             onClick={handleSave}
-                                            className="flex-[2] py-4 bg-primary text-white rounded-3xl text-sm font-bold shadow-lg shadow-primary/20 hover:shadow-xl hover:translate-y-[-2px] transition-all active:scale-95"
+                                            className="flex-[2] py-4 bg-primary text-white rounded-2xl text-sm font-bold shadow-lg shadow-primary/20 hover:shadow-xl hover:translate-y-[-2px] transition-all active:scale-95"
                                         >
                                             {editingId ? 'Save changes' : 'Save section'}
                                         </button>
@@ -333,7 +333,7 @@ export default function ShopCategoriesManager() {
                                         setEditingId(null);
                                         setFormData({ name: '', image: '' });
                                     }}
-                                    className="flex items-center gap-2 group px-6 py-2.5 rounded-full bg-white border border-border shadow-sm hover:shadow-md transition-all mt-4"
+                                    className="flex items-center gap-2 group px-6 py-2.5 rounded-xl bg-white border border-border shadow-sm hover:shadow-md transition-all mt-4"
                                 >
                                     <Plus className="w-4 h-4 text-primary" />
                                     <span className="text-xs font-bold text-text">Add your first section</span>

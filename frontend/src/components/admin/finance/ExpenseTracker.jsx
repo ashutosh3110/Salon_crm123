@@ -311,7 +311,7 @@ function ExpenseForm({ onCancel, onSaved, outletId }) {
 
     return (
         <div className="p-6 max-w-2xl mx-auto animate-slideUp">
-            <form onSubmit={submit} className="space-y-6 bg-surface p-6 rounded-3xl border border-border shadow-sm">
+            <form onSubmit={submit} className="space-y-6 bg-surface p-6 rounded-2xl border border-border shadow-sm">
                 <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 mb-2">
                     <div className="w-12 h-12 rounded-2xl bg-rose-500/10 flex items-center justify-center shrink-0">
                         <IndianRupee className="w-6 h-6 text-rose-500" />

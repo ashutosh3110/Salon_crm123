@@ -203,7 +203,7 @@ export default function CustomerProfileModal({ customer, isOpen, onClose }) {
                 {/* Header Section (Integrated Design) */}
                 <div className="bg-surface px-4 py-2.5 border-b border-border flex justify-between items-center">
                     <div className="flex gap-3 items-center">
-                        <div className="w-11 h-11 rounded-none bg-text text-white flex items-center justify-center text-lg font-black shadow-lg overflow-hidden border-2 border-white">
+                        <div className="w-11 h-11 rounded-xl bg-text text-white flex items-center justify-center text-lg font-black shadow-lg overflow-hidden border-2 border-white">
                             {customer.avatar ? (
                                 <img
                                     src={getImageUrl(customer.avatar)}
@@ -222,13 +222,13 @@ export default function CustomerProfileModal({ customer, isOpen, onClose }) {
                                         type="text"
                                         value={editForm?.name}
                                         onChange={(e) => setEditForm({ ...editForm, name: e.target.value.replace(/[^a-zA-Z\s]/g, '') })}
-                                        className="text-lg font-black text-text bg-white border border-border px-3 py-1.5 rounded-none outline-none focus:border-primary uppercase tracking-tight"
+                                        className="text-lg font-black text-text bg-white border border-border px-3 py-1.5 rounded-xl outline-none focus:border-primary uppercase tracking-tight"
                                     />
                                     <input
                                         type="tel"
                                         value={editForm?.phone}
                                         onChange={(e) => setEditForm({ ...editForm, phone: e.target.value })}
-                                        className="block font-bold text-text-muted text-[10px] bg-white border border-border px-3 py-1.5 rounded-none outline-none focus:border-primary"
+                                        className="block font-bold text-text-muted text-[10px] bg-white border border-border px-3 py-1.5 rounded-xl outline-none focus:border-primary"
                                     />
                                 </div>
                             ) : (
@@ -254,14 +254,14 @@ export default function CustomerProfileModal({ customer, isOpen, onClose }) {
                         {isEditing ? (
                             <button
                                 onClick={handleSave}
-                                className="flex items-center gap-1.5 bg-primary text-white px-4 py-2 rounded-none text-[9px] font-black uppercase tracking-widest hover:bg-primary-dark transition-all shadow-xl shadow-primary/20"
+                                className="flex items-center gap-1.5 bg-primary text-white px-4 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest hover:bg-primary-dark transition-all shadow-xl shadow-primary/20"
                             >
                                 SAVE CHANGES
                             </button>
                         ) : (
                             <button
                                 onClick={() => setIsEditing(true)}
-                                className="flex items-center gap-1.5 bg-white border border-border px-4 py-2 rounded-none text-[9px] font-black text-text-muted hover:bg-surface transition-all uppercase tracking-widest"
+                                className="flex items-center gap-1.5 bg-white border border-border px-4 py-2 rounded-xl text-[9px] font-black text-text-muted hover:bg-surface transition-all uppercase tracking-widest"
                             >
                                 EDIT DATA
                             </button>
@@ -514,7 +514,7 @@ function TabButton({ id, label, icon: Icon, active, onClick }) {
     return (
         <button
             onClick={() => onClick(id)}
-            className={`w-full flex items-center justify-between px-4 py-2.5 rounded-none text-[10px] font-black uppercase tracking-[0.15em] transition-all group ${active
+            className={`w-full flex items-center justify-between px-4 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-[0.15em] transition-all group ${active
                 ? 'bg-white text-text border border-border shadow-xl shadow-slate-200/50'
                 : 'text-text-muted hover:bg-white/50 hover:text-text border border-transparent'
                 }`}
@@ -523,7 +523,7 @@ function TabButton({ id, label, icon: Icon, active, onClick }) {
                 <Icon className={`w-3.5 h-3.5 transition-colors ${active ? 'text-primary' : 'text-text-muted group-hover:text-text'}`} />
                 {label}
             </div>
-            {active && <div className="w-1 h-1 bg-primary rounded-none" />}
+            {active && <div className="w-1 h-1 bg-primary rounded-xl" />}
         </button>
     );
 }

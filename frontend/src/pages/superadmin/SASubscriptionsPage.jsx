@@ -116,10 +116,10 @@ export default function SASubscriptionsPage() {
                     return (
                         <div
                             key={plan._id}
-                            className={`group relative bg-white rounded-3xl border-2 ${plan.popular ? 'border-primary shadow-xl shadow-primary/5 scale-[1.02] z-10' : 'border-border shadow-sm'} p-7 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 flex flex-col`}
+                            className={`group relative bg-white rounded-2xl border-2 ${plan.popular ? 'border-primary shadow-xl shadow-primary/5 scale-[1.02] z-10' : 'border-border shadow-sm'} p-7 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 flex flex-col`}
                         >
                             {plan.popular && (
-                                <div className="absolute -top-4 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full bg-primary text-[11px] font-bold text-white uppercase tracking-widest shadow-lg shadow-primary/20">
+                                <div className="absolute -top-4 left-1/2 -translate-x-1/2 px-4 py-1 rounded-xl bg-primary text-[11px] font-bold text-white uppercase tracking-widest shadow-lg shadow-primary/20">
                                     Most Popular
                                 </div>
                             )}
@@ -199,8 +199,8 @@ export default function SASubscriptionsPage() {
                 <div className="relative flex flex-col md:flex-row md:items-center justify-between gap-8">
                     <div className="flex-1">
                         <div className="flex items-center gap-3 mb-2">
-                            <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
-                                <CreditCard className="w-5 h-5 text-primary" />
+                            <div className="w-10 h-10 rounded-xl bg-amber-50 flex items-center justify-center">
+                                <CreditCard className="w-5 h-5 text-blue-500" />
                             </div>
                             <h2 className="text-2xl font-bold text-text tracking-tight">Revenue Analytics</h2>
                         </div>
@@ -211,7 +211,7 @@ export default function SASubscriptionsPage() {
                                 const count = stats?.countsByPlan?.find(v => v._id === plan.tag)?.count || 0;
                                 const revenue = count * plan.monthlyPrice;
                                 return (
-                                    <div key={plan._id} className="p-5 rounded-3xl bg-surface border border-border/50 transition-colors hover:border-primary/20">
+                                    <div key={plan._id} className="p-5 rounded-2xl bg-surface border border-border/50 transition-colors hover:border-primary/20">
                                         <div className="text-[10px] font-bold text-text-muted uppercase tracking-widest mb-2">{plan.name}</div>
                                         <div className="text-xl font-bold text-text">₹{revenue.toLocaleString('en-IN')}</div>
                                         <div className="text-[10px] text-text-secondary mt-1 font-bold">{count} Subscribers</div>
@@ -223,7 +223,7 @@ export default function SASubscriptionsPage() {
 
                     <div className="md:w-72 lg:w-80 p-8 rounded-[2rem] bg-text text-white shadow-2xl flex flex-col justify-center items-center text-center">
                         <div className="w-12 h-12 rounded-2xl bg-white/10 flex items-center justify-center mb-4">
-                            <Zap className="w-6 h-6 text-primary-light" />
+                            <Zap className="w-6 h-6 text-emerald-500-light" />
                         </div>
                         <div className="text-xs font-bold text-white/60 uppercase tracking-widest mb-1">Total Estimated MRR</div>
                         <div className="text-4xl font-bold tracking-tighter mb-2">
@@ -232,7 +232,7 @@ export default function SASubscriptionsPage() {
                                 return sum + (count * plan.monthlyPrice);
                             }, 0).toLocaleString('en-IN')}
                         </div>
-                        <div className="text-[10px] font-bold text-emerald-400 flex items-center gap-1.5 bg-emerald-400/10 px-3 py-1.5 rounded-full">
+                        <div className="text-[10px] font-bold text-emerald-400 flex items-center gap-1.5 bg-emerald-400/10 px-3 py-1.5 rounded-xl">
                             <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
                             Live Stats
                         </div>
@@ -280,7 +280,7 @@ export default function SASubscriptionsPage() {
                                 {/* Limits */}
                                 <div>
                                     <h4 className="text-[11px] font-black text-text uppercase tracking-[0.2em] mb-6 flex items-center gap-3">
-                                        <Shield  className="w-4 h-4 text-primary" />
+                                        <Shield className="w-4 h-4 text-indigo-500" />
                                         Platform Limits
                                     </h4>
                                     <div className="grid grid-cols-2 gap-6">
@@ -341,7 +341,7 @@ export default function SASubscriptionsPage() {
                                 {/* Features */}
                                 <div>
                                     <h4 className="text-[11px] font-black text-text uppercase tracking-[0.2em] mb-6 flex items-center gap-3">
-                                        <Zap className="w-4 h-4 text-primary" />
+                                        <Zap className="w-4 h-4 text-rose-500" />
                                         Module Access Control
                                     </h4>
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

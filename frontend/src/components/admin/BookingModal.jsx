@@ -95,7 +95,7 @@ export default function BookingModal({ isOpen, onClose }) {
 
     return (
         <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-in fade-in duration-200">
-            <div className="bg-surface rounded-3xl w-full max-w-xl overflow-hidden shadow-2xl animate-in zoom-in-95 duration-200 border border-border">
+            <div className="bg-surface rounded-2xl w-full max-w-xl overflow-hidden shadow-2xl animate-in zoom-in-95 duration-200 border border-border">
                 {/* Header */}
                 <div className="px-6 py-4 bg-surface border-b border-border flex items-center justify-between">
                     <div className="flex items-center gap-3">
@@ -104,7 +104,7 @@ export default function BookingModal({ isOpen, onClose }) {
                         </div>
                         <h2 className="font-bold text-text">New Appointment</h2>
                     </div>
-                    <button onClick={onClose} className="p-2 rounded-full hover:bg-surface-alt transition-colors">
+                    <button onClick={onClose} className="p-2 rounded-xl hover:bg-surface-alt transition-colors">
                         <X className="w-5 h-5 text-text-muted" />
                     </button>
                 </div>

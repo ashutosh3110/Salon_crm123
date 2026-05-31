@@ -911,7 +911,7 @@ export default function SupplierInvoices() {
                                     initial={{ opacity: 0, scale: 0.95 }}
                                     animate={{ opacity: 1, scale: 1 }}
                                     exit={{ opacity: 0, scale: 0.95 }}
-                                    className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 w-full max-w-lg shadow-2xl rounded-3xl overflow-hidden relative flex flex-col transition-all text-left"
+                                    className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 w-full max-w-lg shadow-2xl rounded-2xl overflow-hidden relative flex flex-col transition-all text-left"
                                     onClick={e => e.stopPropagation()}
                                 >
                                     <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-700 bg-white dark:bg-slate-800 flex justify-between items-center rounded-t-3xl">
@@ -927,7 +927,7 @@ export default function SupplierInvoices() {
                                         <button
                                             type="button"
                                             onClick={() => { setPayingKey(null); setPaySendWhatsApp(false); }}
-                                            className="p-2 text-slate-400 hover:text-rose-500 rounded-full hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+                                            className="p-2 text-slate-400 hover:text-rose-500 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
                                         >
                                             <X className="w-5 h-5" />
                                         </button>
@@ -1078,7 +1078,7 @@ export default function SupplierInvoices() {
                                 initial={{ opacity: 0, scale: 0.95 }}
                                 animate={{ opacity: 1, scale: 1 }}
                                 exit={{ opacity: 0, scale: 0.95 }}
-                                className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 w-full max-w-5xl shadow-2xl rounded-3xl flex flex-col my-8 max-h-[90vh] overflow-hidden text-left"
+                                className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 w-full max-w-5xl shadow-2xl rounded-2xl flex flex-col my-8 max-h-[90vh] overflow-hidden text-left"
                                 onClick={e => e.stopPropagation()}
                             >
                                 <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center bg-white dark:bg-slate-800 rounded-t-3xl text-left">
@@ -1092,7 +1092,7 @@ export default function SupplierInvoices() {
                                     <button
                                         type="button"
                                         onClick={resetInvoiceForm}
-                                        className="p-2 text-slate-400 hover:text-rose-500 rounded-full hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+                                        className="p-2 text-slate-400 hover:text-rose-500 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
                                     >
                                         <X className="w-5 h-5" />
                                     </button>

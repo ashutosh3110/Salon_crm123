@@ -602,13 +602,8 @@ export default function SuperAdminLayout() {
                 }
 
                 /* ==========================================
-                   📐 SQUARE CORNERS — Cards, Buttons, Inputs
-                   Remove all rounded corners inside sa-panel
-                   (keep rounded-full for avatars/dots only)
+                   📐 SQUARE CORNERS — Removed
                    ========================================== */
-                .sa-panel *:not([class*="rounded-full"]):not(input[type="checkbox"]):not(input[type="radio"]) {
-                    border-radius: 0 !important;
-                }
                 /* Keep the toggle switch pill shape */
                 .sa-panel .rounded-full,
                 .sa-panel [class*="rounded-full"],

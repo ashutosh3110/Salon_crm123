@@ -144,7 +144,7 @@ export default function BirthdayAnniversaryRemindersView() {
     return (
         <div className="p-8 space-y-6 animate-reveal">
             {/* Header / Actions */}
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-surface-alt/10 p-6 border border-border rounded-3xl">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-surface-alt/10 p-6 border border-border rounded-2xl">
                 <div className="text-left">
                     <h4 className="text-xs font-black uppercase tracking-widest text-text">Birthday & Anniversary Wishes History</h4>
                     <p className="text-[11px] font-semibold text-text-muted">View records of sent wishes, automated reminders, and celebratory loyalty awards.</p>
@@ -244,7 +244,7 @@ export default function BirthdayAnniversaryRemindersView() {
                 </div>
             ) : (
                 <div className="space-y-4">
-                    <div className="bg-surface border border-border shadow-sm overflow-hidden rounded-3xl">
+                    <div className="bg-surface border border-border shadow-sm overflow-hidden rounded-2xl">
                         <div className="overflow-x-auto">
                             <table className="w-full text-left border-collapse">
                                 <thead>

@@ -289,7 +289,7 @@ export default function SubscriptionPage() {
             <div className="relative group mb-8">
                 <div className="absolute inset-0 bg-gradient-to-r from-[#B4912B]/20 via-transparent to-transparent rounded-[1.5rem] blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
                 <div className="relative !bg-white dark:!bg-slate-900 !rounded-[24px] !border-[1.5px] !border-[#e2e8f0] dark:!border-slate-800 p-6 !overflow-hidden shadow-sm hover:shadow-xl transition-all duration-500">
-                    <div className="absolute top-0 right-0 w-48 h-48 bg-gradient-to-br from-[#B4912B]/5 to-transparent rounded-full -translate-y-1/2 translate-x-1/2" />
+                    <div className="absolute top-0 right-0 w-48 h-48 bg-gradient-to-br from-[#B4912B]/5 to-transparent rounded-xl -translate-y-1/2 translate-x-1/2" />
 
                     <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
                         <div className="space-y-3">
@@ -301,9 +301,9 @@ export default function SubscriptionPage() {
                                     <div className="flex items-center gap-2">
                                         <span className="text-[9px] font-black text-[#B4912B] uppercase tracking-[0.2em] block">Your Current Plan</span>
                                         {effectiveSalon?.isActive ? (
-                                            <span className="bg-emerald-500/10 text-emerald-600 text-[8px] font-black px-2 py-0.5 rounded-full border border-emerald-500/20 uppercase tracking-widest">Active</span>
+                                            <span className="bg-emerald-500/10 text-emerald-600 text-[8px] font-black px-2 py-0.5 rounded-xl border border-emerald-500/20 uppercase tracking-widest">Active</span>
                                         ) : (
-                                            <span className="bg-rose-500/10 text-rose-600 text-[8px] font-black px-2 py-0.5 rounded-full border border-rose-500/20 uppercase tracking-widest">Inactive</span>
+                                            <span className="bg-rose-500/10 text-rose-600 text-[8px] font-black px-2 py-0.5 rounded-xl border border-rose-500/20 uppercase tracking-widest">Inactive</span>
                                         )}
                                     </div>
                                     <h2 className="text-2xl font-black text-text tracking-tighter uppercase italic">
@@ -349,7 +349,7 @@ export default function SubscriptionPage() {
                             className={`group relative !bg-white dark:!bg-slate-900 !rounded-[24px] !border-[1.5px] p-5 flex flex-col gap-5 transition-all duration-500 hover:-translate-y-1.5 ${isCurrent ? 'ring-2 ring-[#B4912B] shadow-xl shadow-[#B4912B]/5 !border-transparent dark:!border-transparent' : 'hover:shadow-lg !border-[#e2e8f0] dark:!border-slate-800'}`}
                         >
                             {isCurrent && (
-                                <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-[#B4912B] text-white text-[8px] font-black uppercase tracking-[0.2em] px-3.5 py-1 rounded-full shadow-md">
+                                <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-[#B4912B] text-white text-[8px] font-black uppercase tracking-[0.2em] px-3.5 py-1 rounded-xl shadow-md">
                                     Active Now
                                 </div>
                             )}

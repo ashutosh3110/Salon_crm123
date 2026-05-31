@@ -12,7 +12,7 @@ export default function ServiceSettings() {
     return (
         <div className="max-w-3xl mx-auto space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
             {/* Header */}
-            <div className="bg-white p-6 rounded-3xl border border-border shadow-sm mb-6">
+            <div className="bg-white p-6 rounded-2xl border border-border shadow-sm mb-6">
                 <div className="flex items-center gap-4">
                     <div className="p-3 rounded-2xl bg-indigo-50 text-indigo-600 border border-indigo-100">
                         <Settings className="w-6 h-6" />
@@ -26,7 +26,7 @@ export default function ServiceSettings() {
 
             <div className="grid grid-cols-1 gap-6">
                 {/* Default GST */}
-                <div className="bg-white p-6 rounded-3xl border border-border shadow-sm flex items-center justify-between gap-6 hover:shadow-md transition-all">
+                <div className="bg-white p-6 rounded-2xl border border-border shadow-sm flex items-center justify-between gap-6 hover:shadow-md transition-all">
                     <div className="flex items-center gap-4">
                         <div className="w-12 h-12 rounded-2xl bg-slate-50 flex items-center justify-center text-indigo-500 border border-border shrink-0">
                             <Percent className="w-6 h-6" />
@@ -46,7 +46,7 @@ export default function ServiceSettings() {
                 </div>
 
                 {/* Default Duration */}
-                <div className="bg-white p-6 rounded-3xl border border-border shadow-sm flex items-center justify-between gap-6 hover:shadow-md transition-all">
+                <div className="bg-white p-6 rounded-2xl border border-border shadow-sm flex items-center justify-between gap-6 hover:shadow-md transition-all">
                     <div className="flex items-center gap-4">
                         <div className="w-12 h-12 rounded-2xl bg-slate-50 flex items-center justify-center text-emerald-500 border border-border shrink-0">
                             <Clock className="w-6 h-6" />
@@ -65,7 +65,7 @@ export default function ServiceSettings() {
                 </div>
 
                 {/* Price Edit Permission */}
-                <div className="bg-slate-900 text-white p-6 rounded-3xl shadow-xl shadow-slate-200 flex items-center justify-between gap-6 relative overflow-hidden group">
+                <div className="bg-slate-900 text-white p-6 rounded-2xl shadow-xl shadow-slate-200 flex items-center justify-between gap-6 relative overflow-hidden group">
                     <div className="relative z-10 flex items-center gap-4">
                         <div className="w-12 h-12 rounded-2xl bg-white/10 flex items-center justify-center text-amber-400 border border-white/20 shrink-0">
                             <Lock className="w-6 h-6" />

@@ -249,8 +249,8 @@ export default function EndOfDay({ outletId }) {
             {loading ? (
                 <div className="flex flex-col items-center justify-center py-32 space-y-4">
                     <div className="relative w-12 h-12">
-                        <div className="absolute inset-0 rounded-full border-4 border-slate-200 dark:border-slate-800" />
-                        <div className="absolute inset-0 rounded-full border-4 border-t-primary border-r-transparent border-b-transparent border-l-transparent animate-spin" />
+                        <div className="absolute inset-0 rounded-xl border-4 border-slate-200 dark:border-slate-800" />
+                        <div className="absolute inset-0 rounded-xl border-4 border-t-primary border-r-transparent border-b-transparent border-l-transparent animate-spin" />
                     </div>
                     <span className="text-xs font-bold text-slate-400 uppercase tracking-widest animate-pulse">Fetching Day Ledger...</span>
                 </div>
@@ -291,7 +291,7 @@ export default function EndOfDay({ outletId }) {
                                 <FileText className="w-4 h-4" />
                             </div>
                             <h3 className="text-2xl font-black tracking-tight mt-2.5">{formatInr(m?.totalSales)}</h3>
-                            <span className="text-[10px] font-bold bg-white/20 px-2 py-0.5 rounded-full inline-block mt-2">
+                            <span className="text-[10px] font-bold bg-white/20 px-2 py-0.5 rounded-xl inline-block mt-2">
                                 {m?.invoiceCount ?? 0} Invoices
                             </span>
                         </div>
@@ -302,7 +302,7 @@ export default function EndOfDay({ outletId }) {
                                 <TrendingDown className="w-4 h-4" />
                             </div>
                             <h3 className="text-2xl font-black tracking-tight mt-2.5">{formatInr(m?.dailyExpenses)}</h3>
-                            <span className="text-[10px] font-bold bg-white/20 px-2 py-0.5 rounded-full inline-block mt-2">
+                            <span className="text-[10px] font-bold bg-white/20 px-2 py-0.5 rounded-xl inline-block mt-2">
                                 Outflows & Salaries
                             </span>
                         </div>
@@ -313,7 +313,7 @@ export default function EndOfDay({ outletId }) {
                                 <TrendingUp className="w-4 h-4" />
                             </div>
                             <h3 className="text-2xl font-black tracking-tight mt-2.5">{formatInr(m?.netForDay)}</h3>
-                            <span className="text-[10px] font-bold bg-white/20 px-2 py-0.5 rounded-full inline-block mt-2">
+                            <span className="text-[10px] font-bold bg-white/20 px-2 py-0.5 rounded-xl inline-block mt-2">
                                 Sales − Expenses
                             </span>
                         </div>
@@ -324,7 +324,7 @@ export default function EndOfDay({ outletId }) {
                                 <Coins className="w-4 h-4" />
                             </div>
                             <h3 className="text-2xl font-black tracking-tight mt-2.5">{formatInr(expectedCashDrawer)}</h3>
-                            <span className="text-[10px] font-bold bg-white/20 px-2 py-0.5 rounded-full inline-block mt-2" title="Opening balance + cash sales + cash inflows - cash expenses">
+                            <span className="text-[10px] font-bold bg-white/20 px-2 py-0.5 rounded-xl inline-block mt-2" title="Opening balance + cash sales + cash inflows - cash expenses">
                                 Target Cash Count
                             </span>
                         </div>
@@ -414,7 +414,7 @@ export default function EndOfDay({ outletId }) {
                     </div>
 
                     {/* Interactive EOD Reconciliation Terminal */}
-                    <div className="bg-white dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700/80 rounded-3xl p-8 shadow-xl shadow-slate-200/50 dark:shadow-none space-y-6">
+                    <div className="bg-white dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700/80 rounded-2xl p-8 shadow-xl shadow-slate-200/50 dark:shadow-none space-y-6">
                         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 pb-4 border-b border-slate-150 dark:border-slate-700">
                             <div>
                                 <h3 className="text-base font-extrabold text-slate-800 dark:text-slate-100 tracking-tight">

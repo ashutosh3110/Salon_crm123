@@ -50,7 +50,7 @@ export default function BookingDetailModal({ booking, onClose, onUpdateStatus, o
     return (
         <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-in fade-in duration-200" onClick={onClose}>
             <div
-                className="bg-surface rounded-3xl w-full max-w-2xl overflow-hidden shadow-2xl animate-in zoom-in-95 duration-200 border border-border"
+                className="bg-surface rounded-2xl w-full max-w-2xl overflow-hidden shadow-2xl animate-in zoom-in-95 duration-200 border border-border"
                 onClick={(e) => e.stopPropagation()}
             >
                 {/* Header */}
@@ -64,7 +64,7 @@ export default function BookingDetailModal({ booking, onClose, onUpdateStatus, o
                             <p className="text-[10px] text-text-muted uppercase tracking-widest font-bold">ID: {booking._id?.slice(-8) || 'N/A'}</p>
                         </div>
                     </div>
-                    <button onClick={onClose} className="p-2 rounded-full hover:bg-surface-alt transition-colors">
+                    <button onClick={onClose} className="p-2 rounded-xl hover:bg-surface-alt transition-colors">
                         <X className="w-5 h-5 text-text-muted" />
                     </button>
                 </div>

@@ -246,7 +246,7 @@ export default function FinancePage({ tab = 'dashboard' }) {
             {financeError ? (
                 <div
                     role="alert"
-                    className="rounded-none border border-rose-200 bg-rose-50 dark:bg-rose-950/30 dark:border-rose-900 px-4 py-3 text-left"
+                    className="rounded-xl border border-rose-200 bg-rose-50 dark:bg-rose-950/30 dark:border-rose-900 px-4 py-3 text-left"
                 >
                     <p className="text-[10px] font-black uppercase tracking-widest text-rose-700 dark:text-rose-300 mb-1">
                         Could not load finance summary

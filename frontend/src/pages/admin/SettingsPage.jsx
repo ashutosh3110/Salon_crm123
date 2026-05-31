@@ -340,7 +340,7 @@ export default function SettingsPage({ section: propSection }) {
                                         </p>
                                     </div>
                                 </div>
-                                <div className="flex items-center gap-2 px-3 py-1.5 bg-[#ECFDF3] border border-[#D1FADF] rounded-full text-[#027A48]">
+                                <div className="flex items-center gap-2 px-3 py-1.5 bg-[#ECFDF3] border border-[#D1FADF] rounded-xl text-[#027A48]">
                                     <CheckCircle2 className="w-3.5 h-3.5" />
                                     <span className="text-[11px] font-bold">Profile is up to date</span>
                                 </div>
@@ -389,10 +389,10 @@ export default function SettingsPage({ section: propSection }) {
                                 <div className="flex flex-col justify-center h-20">
                                     <h3 className="font-bold text-xl text-gray-900 leading-tight tracking-tight mb-2">{user?.name || '—'}</h3>
                                     <div className="flex flex-wrap items-center gap-3">
-                                        <div className="px-3 py-1 bg-[#FFF9F0] rounded-full text-[10px] font-bold text-[#D99A29] uppercase tracking-widest flex items-center justify-center">
+                                        <div className="px-3 py-1 bg-[#FFF9F0] rounded-xl text-[10px] font-bold text-[#D99A29] uppercase tracking-widest flex items-center justify-center">
                                             {user?.role || 'ADMIN'}
                                         </div>
-                                        <div className="px-3 py-1 bg-white border border-gray-200 rounded-full flex items-center gap-1.5 text-[10px] font-bold text-gray-600 uppercase tracking-widest">
+                                        <div className="px-3 py-1 bg-white border border-gray-200 rounded-xl flex items-center gap-1.5 text-[10px] font-bold text-gray-600 uppercase tracking-widest">
                                             <Mail className="w-3 h-3 text-gray-400" />
                                             {user?.email}
                                         </div>
@@ -419,7 +419,7 @@ export default function SettingsPage({ section: propSection }) {
                                                 type="text"
                                                 value={profileForm.name}
                                                 onChange={(e) => setProfileForm({ ...profileForm, name: e.target.value })}
-                                                className="w-full pl-12 pr-4 py-2.5 rounded-full border border-gray-200 text-sm font-medium text-gray-900 focus:border-primary outline-none transition-all bg-white shadow-sm"
+                                                className="w-full pl-12 pr-4 py-2.5 rounded-xl border border-gray-200 text-sm font-medium text-gray-900 focus:border-primary outline-none transition-all bg-white shadow-sm"
                                             />
                                         </div>
                                     </div>
@@ -440,7 +440,7 @@ export default function SettingsPage({ section: propSection }) {
                                                 type="email"
                                                 value={profileForm.email}
                                                 onChange={(e) => setProfileForm({ ...profileForm, email: e.target.value })}
-                                                className="w-full pl-12 pr-4 py-2.5 rounded-full border border-gray-200 text-sm font-medium text-gray-900 focus:border-primary outline-none transition-all bg-white shadow-sm"
+                                                className="w-full pl-12 pr-4 py-2.5 rounded-xl border border-gray-200 text-sm font-medium text-gray-900 focus:border-primary outline-none transition-all bg-white shadow-sm"
                                             />
                                         </div>
                                     </div>
@@ -462,7 +462,7 @@ export default function SettingsPage({ section: propSection }) {
                                             type="tel"
                                             value={profileForm.phone}
                                             onChange={(e) => setProfileForm({ ...profileForm, phone: e.target.value })}
-                                            className="w-full pl-12 pr-4 py-2.5 rounded-full border border-gray-200 text-sm font-medium text-gray-900 focus:border-primary outline-none transition-all bg-white shadow-sm"
+                                            className="w-full pl-12 pr-4 py-2.5 rounded-xl border border-gray-200 text-sm font-medium text-gray-900 focus:border-primary outline-none transition-all bg-white shadow-sm"
                                             placeholder="+91..."
                                         />
                                     </div>
@@ -524,7 +524,7 @@ export default function SettingsPage({ section: propSection }) {
                                                         setNotifications((prev) => ({ ...prev, [item.key]: e.target.checked }))
                                                     }
                                                 />
-                                                <div className="w-10 h-5 bg-border rounded-none peer-checked:bg-primary transition-all duration-300 after:content-[''] after:absolute after:top-[3px] after:left-[3px] after:bg-white after:rounded-none after:h-3.5 after:w-3.5 after:transition-all peer-checked:after:translate-x-5 after:shadow-sm peer-checked:after:bg-white group-hover:after:scale-110" />
+                                                <div className="w-10 h-5 bg-border rounded-xl peer-checked:bg-primary transition-all duration-300 after:content-[''] after:absolute after:top-[3px] after:left-[3px] after:bg-white after:rounded-xl after:h-3.5 after:w-3.5 after:transition-all peer-checked:after:translate-x-5 after:shadow-sm peer-checked:after:bg-white group-hover:after:scale-110" />
                                             </label>
                                         </div>
                                     ))}
@@ -533,7 +533,7 @@ export default function SettingsPage({ section: propSection }) {
                                     <button
                                         type="submit"
                                         disabled={isSaving || salonLoading}
-                                        className="px-5 py-2 bg-primary text-primary-foreground rounded-full font-bold text-[10px] uppercase tracking-widest shadow-md shadow-primary/20 disabled:opacity-50"
+                                        className="px-5 py-2 bg-primary text-primary-foreground rounded-xl font-bold text-[10px] uppercase tracking-widest shadow-md shadow-primary/20 disabled:opacity-50"
                                     >
                                         {isSaving ? 'Saving…' : 'Save notification preferences'}
                                     </button>
@@ -557,7 +557,7 @@ export default function SettingsPage({ section: propSection }) {
                                         </p>
                                     </div>
                                 </div>
-                                <div className="flex items-center gap-2 px-3 py-1.5 bg-[#ECFDF3] border border-[#D1FADF] rounded-full text-[#027A48]">
+                                <div className="flex items-center gap-2 px-3 py-1.5 bg-[#ECFDF3] border border-[#D1FADF] rounded-xl text-[#027A48]">
                                     <ShieldCheck className="w-4 h-4" />
                                     <span className="text-xs font-bold">Your account is secure</span>
                                 </div>
@@ -584,10 +584,10 @@ export default function SettingsPage({ section: propSection }) {
                                                     </span>
                                                 </div>
                                                 <div className="flex gap-1.5 h-1.5">
-                                                    <div className="flex-1 bg-[#12B76A] rounded-full"></div>
-                                                    <div className="flex-1 bg-[#12B76A] rounded-full"></div>
-                                                    <div className="flex-1 bg-[#12B76A] rounded-full"></div>
-                                                    <div className="flex-1 bg-[#12B76A] opacity-30 rounded-full"></div>
+                                                    <div className="flex-1 bg-[#12B76A] rounded-xl"></div>
+                                                    <div className="flex-1 bg-[#12B76A] rounded-xl"></div>
+                                                    <div className="flex-1 bg-[#12B76A] rounded-xl"></div>
+                                                    <div className="flex-1 bg-[#12B76A] opacity-30 rounded-xl"></div>
                                                 </div>
                                                 <div className="space-y-2 mt-2">
                                                     {[
@@ -692,7 +692,7 @@ export default function SettingsPage({ section: propSection }) {
                                         </p>
                                     </div>
                                 </div>
-                                <div className="flex items-center gap-2 px-3 py-1.5 bg-[#ECFDF3] border border-[#D1FADF] rounded-full text-[#027A48]">
+                                <div className="flex items-center gap-2 px-3 py-1.5 bg-[#ECFDF3] border border-[#D1FADF] rounded-xl text-[#027A48]">
                                     <CheckCircle2 className="w-3.5 h-3.5" />
                                     <span className="text-[11px] font-bold">Synced with your account</span>
                                 </div>
@@ -715,7 +715,7 @@ export default function SettingsPage({ section: propSection }) {
                                                     value={fiscal.businessName}
                                                     onChange={(e) => setFiscal({ ...fiscal, businessName: e.target.value })}
                                                     placeholder="WAPIXO"
-                                                    className="w-full px-4 py-2.5 rounded-full border border-gray-200 text-sm font-medium text-gray-900 focus:border-primary outline-none transition-all bg-white shadow-sm uppercase"
+                                                    className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm font-medium text-gray-900 focus:border-primary outline-none transition-all bg-white shadow-sm uppercase"
                                                 />
                                             </div>
                                             <div className="space-y-2">
@@ -731,7 +731,7 @@ export default function SettingsPage({ section: propSection }) {
                                                     value={fiscal.gstin}
                                                     onChange={(e) => setFiscal({ ...fiscal, gstin: e.target.value.toUpperCase() })}
                                                     placeholder="8979"
-                                                    className="w-full px-4 py-2.5 rounded-full border border-gray-200 text-sm font-medium text-gray-900 focus:border-primary outline-none transition-all bg-white shadow-sm"
+                                                    className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm font-medium text-gray-900 focus:border-primary outline-none transition-all bg-white shadow-sm"
                                                 />
                                             </div>
                                         </div>
@@ -755,7 +755,7 @@ export default function SettingsPage({ section: propSection }) {
                                                         min="0"
                                                         value={fiscal.birthdayPoints}
                                                         onChange={(e) => setFiscal({ ...fiscal, birthdayPoints: e.target.value })}
-                                                        className="w-full pl-12 pr-4 py-2.5 rounded-full border border-gray-200 text-sm font-bold text-gray-900 focus:border-primary outline-none transition-all bg-white shadow-sm"
+                                                        className="w-full pl-12 pr-4 py-2.5 rounded-xl border border-gray-200 text-sm font-bold text-gray-900 focus:border-primary outline-none transition-all bg-white shadow-sm"
                                                     />
                                                 </div>
                                                 <p className="text-[11px] text-gray-500 font-medium pt-1">Points sent to customer on birthday</p>
@@ -778,7 +778,7 @@ export default function SettingsPage({ section: propSection }) {
                                                         min="0"
                                                         value={fiscal.anniversaryPoints}
                                                         onChange={(e) => setFiscal({ ...fiscal, anniversaryPoints: e.target.value })}
-                                                        className="w-full pl-12 pr-4 py-2.5 rounded-full border border-gray-200 text-sm font-bold text-gray-900 focus:border-primary outline-none transition-all bg-white shadow-sm"
+                                                        className="w-full pl-12 pr-4 py-2.5 rounded-xl border border-gray-200 text-sm font-bold text-gray-900 focus:border-primary outline-none transition-all bg-white shadow-sm"
                                                     />
                                                 </div>
                                                 <p className="text-[11px] text-gray-500 font-medium pt-1">Points sent to customer on anniversary</p>
@@ -905,7 +905,7 @@ export default function SettingsPage({ section: propSection }) {
                                             onChange={(e) => setNewTerm(e.target.value)}
                                             onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleAddTerm(); } }}
                                             placeholder="e.g. No refund after 24 hours of service."
-                                            className="flex-1 px-4 py-3 border border-gray-200 rounded-full text-[13px] font-medium text-gray-800 bg-white outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
+                                            className="flex-1 px-4 py-3 border border-gray-200 rounded-xl text-[13px] font-medium text-gray-800 bg-white outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
                                         />
                                         <button
                                             type="button"
@@ -1072,7 +1072,7 @@ export default function SettingsPage({ section: propSection }) {
                                         type="text"
                                         readOnly
                                         value={`${window.location.origin}/app/booking?tenantId=${salon?._id || ''}`}
-                                        className="flex-1 px-4 py-2.5 text-[13px] font-medium text-text bg-surface border border-border rounded-full outline-none focus:border-primary focus:ring-1 focus:ring-primary/20 transition-all select-all"
+                                        className="flex-1 px-4 py-2.5 text-[13px] font-medium text-text bg-surface border border-border rounded-xl outline-none focus:border-primary focus:ring-1 focus:ring-primary/20 transition-all select-all"
                                     />
                                     <button
                                         type="button"
@@ -1081,7 +1081,7 @@ export default function SettingsPage({ section: propSection }) {
                                             navigator.clipboard.writeText(link);
                                             toast.success('Booking link copied to clipboard!');
                                         }}
-                                        className="px-6 py-2.5 bg-primary text-primary-foreground font-bold text-[11px] uppercase tracking-widest hover:opacity-90 active:scale-95 transition-all flex items-center justify-center gap-2 shrink-0 rounded-full shadow-sm"
+                                        className="px-6 py-2.5 bg-primary text-primary-foreground font-bold text-[11px] uppercase tracking-widest hover:opacity-90 active:scale-95 transition-all flex items-center justify-center gap-2 shrink-0 rounded-xl shadow-sm"
                                     >
                                         <Copy className="w-4 h-4" /> Copy Link
                                     </button>

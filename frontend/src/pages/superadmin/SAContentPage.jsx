@@ -342,7 +342,7 @@ function FAQEditor({ data, onChange }) {
                 {data.map((faq, i) => (
                     <div key={faq.id} className="border border-border bg-white">
                         <div className="flex items-start gap-3 p-4">
-                            <span className="shrink-0 w-6 h-6 bg-primary/10 text-primary text-[10px] font-black flex items-center justify-center mt-0.5">
+                            <span className="shrink-0 w-6 h-6 bg-emerald-50 text-primary text-[10px] font-black flex items-center justify-center mt-0.5">
                                 {i + 1}
                             </span>
                             <div className="flex-1 space-y-2">
@@ -593,7 +593,7 @@ function LegalEditor({ data, onChange }) {
                 {pages.map(({ key, label, icon: Icon }) => (
                     <div key={key} className="border border-border bg-white p-5">
                         <div className="flex items-center gap-2 mb-4">
-                            <Icon className="w-4 h-4 text-primary" />
+                            <Icon className="w-4 h-4 text-blue-500" />
                             <span className="text-sm font-black text-text">{label}</span>
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

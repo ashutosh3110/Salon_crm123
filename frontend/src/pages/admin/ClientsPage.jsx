@@ -134,7 +134,7 @@ export default function ClientsPage() {
                 </div>
                 <button
                     onClick={() => { setEditingClient(null); setForm({ name: '', email: '', phone: '', gender: 'female', notes: '', dob: '', anniversary: '' }); setShowModal(true); }}
-                    className="w-full lg:w-auto flex items-center justify-center gap-3 bg-primary text-primary-foreground border border-primary px-10 py-4 rounded-none text-[10px] font-black uppercase tracking-[0.2em] shadow-xl shadow-primary/20 hover:bg-primary/90 transition-all font-black"
+                    className="w-full lg:w-auto flex items-center justify-center gap-3 bg-primary text-primary-foreground border border-primary px-10 py-4 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] shadow-xl shadow-primary/20 hover:bg-primary/90 transition-all font-black"
                 >
                     <Plus className="w-4 h-4" /> Add Profile
                 </button>
@@ -144,7 +144,7 @@ export default function ClientsPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 text-left font-black">
                 <div className="md:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4">
                     {stats.map((stat, i) => (
-                        <div key={i} className="bg-surface py-6 px-8 rounded-none border border-border shadow-sm hover:shadow-xl hover:translate-y-[-2px] transition-all group overflow-hidden relative text-left">
+                        <div key={i} className="bg-surface py-6 px-8 rounded-xl border border-border shadow-sm hover:shadow-xl hover:translate-y-[-2px] transition-all group overflow-hidden relative text-left">
                             <div className="absolute -right-6 -top-6 w-24 h-24 bg-primary/5 rotate-12 transition-all group-hover:bg-primary/10" />
                             <div className="relative z-10 flex flex-col justify-between h-full text-left">
                                 <div className="flex items-center justify-between mb-4 text-left">
@@ -170,7 +170,7 @@ export default function ClientsPage() {
                 </div>
 
                 {/* Identity Distribution Chart */}
-                <div className="bg-surface p-6 rounded-none border border-border shadow-sm text-left font-black flex flex-col justify-between">
+                <div className="bg-surface p-6 rounded-xl border border-border shadow-sm text-left font-black flex flex-col justify-between">
                     <div className="flex items-center justify-between mb-4 text-left">
                         <span className="text-[9px] font-black text-text-muted uppercase tracking-[0.2em]">Gender Ratio</span>
                         <PieIcon className="w-4 h-4 text-primary" />
@@ -190,7 +190,7 @@ export default function ClientsPage() {
                     <div className="mt-4 flex flex-wrap gap-2 text-left">
                         {genderData.map(d => (
                             <div key={d.name} className="flex items-center gap-1.5 text-left">
-                                <div className="w-1.5 h-1.5 rounded-none" style={{ backgroundColor: d.color }} />
+                                <div className="w-1.5 h-1.5 rounded-xl" style={{ backgroundColor: d.color }} />
                                 <span className="text-[7px] font-black uppercase text-text-muted leading-none">{d.name}</span>
                             </div>
                         ))}
@@ -198,7 +198,7 @@ export default function ClientsPage() {
                 </div>
 
                 {/* Karma Pulse Chart */}
-                <div className="bg-surface p-6 rounded-none border border-border shadow-sm text-left font-black flex flex-col justify-between">
+                <div className="bg-surface p-6 rounded-xl border border-border shadow-sm text-left font-black flex flex-col justify-between">
                     <div className="flex items-center justify-between mb-4 text-left">
                         <span className="text-[9px] font-black text-text-muted uppercase tracking-[0.2em]">Karma Pulse</span>
                         <BarChart3 className="w-4 h-4 text-primary" />
@@ -220,7 +220,7 @@ export default function ClientsPage() {
             </div>
 
             {/* Search Filter */}
-            <div className="flex items-center bg-surface rounded-none border border-border px-6 py-4 max-w-xl shadow-sm transition-all focus-within:ring-2 focus-within:ring-primary/20 text-left font-black">
+            <div className="flex items-center bg-surface rounded-xl border border-border px-6 py-4 max-w-xl shadow-sm transition-all focus-within:ring-2 focus-within:ring-primary/20 text-left font-black">
                 <Search className="w-4 h-4 text-text-muted mr-4" />
                 <input
                     type="text"
@@ -232,7 +232,7 @@ export default function ClientsPage() {
             </div>
 
             {/* Table */}
-            <div className="bg-surface rounded-none border border-border shadow-sm overflow-hidden text-left font-black">
+            <div className="bg-surface rounded-xl border border-border shadow-sm overflow-hidden text-left font-black">
                 <div className="table-responsive">
                     <table className="w-full text-left border-collapse min-w-[900px]">
                         <thead>
@@ -248,7 +248,7 @@ export default function ClientsPage() {
                             {loading ? (
                                 <tr>
                                     <td colSpan="5" className="px-8 py-32 text-center">
-                                        <div className="w-10 h-10 border border-primary/20 border-t-primary rounded-none animate-spin mx-auto mb-4" />
+                                        <div className="w-10 h-10 border border-primary/20 border-t-primary rounded-xl animate-spin mx-auto mb-4" />
                                         <p className="text-[10px] font-black uppercase tracking-[0.3em] text-text-muted">Syncing Registry...</p>
                                     </td>
                                 </tr>
@@ -265,7 +265,7 @@ export default function ClientsPage() {
                                     <tr key={client._id} className="hover:bg-surface-alt/50 transition-all cursor-pointer group text-left">
                                         <td className="px-8 py-6">
                                             <div className="flex items-center gap-4 text-left">
-                                                <div className="w-11 h-11 rounded-none bg-primary/5 border border-primary/20 flex items-center justify-center text-[10px] font-black text-primary shadow-inner">
+                                                <div className="w-11 h-11 rounded-xl bg-primary/5 border border-primary/20 flex items-center justify-center text-[10px] font-black text-primary shadow-inner">
                                                     {client.name?.[0]?.toUpperCase()}
                                                 </div>
                                                 <div className="flex flex-col text-left">
@@ -282,7 +282,7 @@ export default function ClientsPage() {
                                         </td>
                                         <td className="px-8 py-6 hidden md:table-cell text-left">
                                             <div className="flex items-center gap-3">
-                                                <div className="h-1.5 w-16 bg-border rounded-none overflow-hidden">
+                                                <div className="h-1.5 w-16 bg-border rounded-xl overflow-hidden">
                                                     <div className="h-full bg-primary" style={{ width: `${Math.min(100, (client.loyaltyPoints || 0) / 10)}%` }} />
                                                 </div>
                                                 <span className="text-sm font-black text-primary tracking-tighter leading-none">{client.loyaltyPoints || 0}</span>
@@ -290,10 +290,10 @@ export default function ClientsPage() {
                                         </td>
                                         <td className="px-8 py-6 text-right">
                                             <div className="flex items-center justify-end gap-3 font-black">
-                                                <button onClick={() => openEdit(client)} className="p-3 rounded-none bg-surface border border-border text-text-muted hover:text-primary hover:border-primary transition-all shadow-sm">
+                                                <button onClick={() => openEdit(client)} className="p-3 rounded-xl bg-surface border border-border text-text-muted hover:text-primary hover:border-primary transition-all shadow-sm">
                                                     <Edit className="w-4 h-4" />
                                                 </button>
-                                                <button onClick={() => handleDelete(client._id)} className="p-3 rounded-none bg-surface border border-border text-text-muted hover:text-rose-600 hover:border-rose-600 transition-all shadow-sm">
+                                                <button onClick={() => handleDelete(client._id)} className="p-3 rounded-xl bg-surface border border-border text-text-muted hover:text-rose-600 hover:border-rose-600 transition-all shadow-sm">
                                                     <Trash2 className="w-4 h-4" />
                                                 </button>
                                             </div>
@@ -308,9 +308,9 @@ export default function ClientsPage() {
 
             {showModal && (
                 <div className="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4 text-left font-black" onClick={() => setShowModal(false)}>
-                    <div className="bg-surface rounded-none w-full max-w-xl p-12 shadow-2xl relative overflow-hidden animate-in zoom-in-95 duration-300 border border-border text-left font-black" onClick={(e) => e.stopPropagation()}>
+                    <div className="bg-surface rounded-xl w-full max-w-xl p-12 shadow-2xl relative overflow-hidden animate-in zoom-in-95 duration-300 border border-border text-left font-black" onClick={(e) => e.stopPropagation()}>
                         <div className="flex flex-col items-center text-center mb-12">
-                            <div className="w-20 h-20 rounded-none bg-primary/5 text-primary flex items-center justify-center mb-8 border border-primary/20 shadow-xl shadow-primary/5">
+                            <div className="w-20 h-20 rounded-xl bg-primary/5 text-primary flex items-center justify-center mb-8 border border-primary/20 shadow-xl shadow-primary/5">
                                 <Users className="w-10 h-10" />
                             </div>
                             <h2 className="text-2xl font-black text-text uppercase tracking-tight leading-none">{editingClient ? 'Overwrite Profile' : 'Deploy Identity'}</h2>
@@ -319,7 +319,7 @@ export default function ClientsPage() {
                         <form onSubmit={handleSubmit} className="space-y-8 text-left font-black">
                             <div className="space-y-3 text-left">
                                 <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] pl-1">Full Identity *</label>
-                                <input type="text" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value.replace(/[^a-zA-Z\s]/g, '') })} required className="w-full px-6 py-4 rounded-none bg-surface-alt border border-border text-xs font-black uppercase tracking-widest focus:border-primary outline-none transition-all placeholder:text-text-muted/10" placeholder="e.g. ALEXANDRA_V" />
+                                <input type="text" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value.replace(/[^a-zA-Z\s]/g, '') })} required className="w-full px-6 py-4 rounded-xl bg-surface-alt border border-border text-xs font-black uppercase tracking-widest focus:border-primary outline-none transition-all placeholder:text-text-muted/10" placeholder="e.g. ALEXANDRA_V" />
                             </div>
                             <div className="grid grid-cols-2 gap-8 text-left">
                                 <div className="space-y-3 text-left">
@@ -327,11 +327,11 @@ export default function ClientsPage() {
                                     <input type="tel" value={form.phone} onChange={(e) => {
                                         const val = e.target.value.replace(/\D/g, '');
                                         if (val.length <= 10) setForm({ ...form, phone: val });
-                                    }} required className="w-full px-6 py-4 rounded-none bg-surface-alt border border-border text-xs font-black uppercase tracking-widest focus:border-primary outline-none transition-all placeholder:text-text-muted/10" placeholder="+91..." />
+                                    }} required className="w-full px-6 py-4 rounded-xl bg-surface-alt border border-border text-xs font-black uppercase tracking-widest focus:border-primary outline-none transition-all placeholder:text-text-muted/10" placeholder="+91..." />
                                 </div>
                                 <div className="space-y-3 text-left">
                                     <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] pl-1">Gender Tag</label>
-                                    <select value={form.gender} onChange={(e) => setForm({ ...form, gender: e.target.value })} className="w-full px-6 py-4 rounded-none bg-surface-alt border border-border text-xs font-black uppercase tracking-widest focus:border-primary outline-none transition-all appearance-none cursor-pointer">
+                                    <select value={form.gender} onChange={(e) => setForm({ ...form, gender: e.target.value })} className="w-full px-6 py-4 rounded-xl bg-surface-alt border border-border text-xs font-black uppercase tracking-widest focus:border-primary outline-none transition-all appearance-none cursor-pointer">
                                         <option value="female">FEMALE</option>
                                         <option value="male">MALE</option>
                                         <option value="other">OTHER</option>
@@ -340,25 +340,25 @@ export default function ClientsPage() {
                             </div>
                             <div className="space-y-3 text-left">
                                 <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] pl-1">Electronic Mail</label>
-                                <input type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} className="w-full px-6 py-4 rounded-none bg-surface-alt border border-border text-xs font-black focus:border-primary outline-none transition-all placeholder:text-text-muted/10" placeholder="reach@node.com" />
+                                <input type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} className="w-full px-6 py-4 rounded-xl bg-surface-alt border border-border text-xs font-black focus:border-primary outline-none transition-all placeholder:text-text-muted/10" placeholder="reach@node.com" />
                             </div>
                             <div className="grid grid-cols-2 gap-8 text-left">
                                 <div className="space-y-3 text-left">
                                     <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] pl-1">Birth Date</label>
-                                    <input type="date" max={new Date().toISOString().split('T')[0]} value={form.dob} onChange={(e) => setForm({ ...form, dob: e.target.value })} className="w-full px-6 py-4 rounded-none bg-surface-alt border border-border text-xs font-black focus:border-primary outline-none transition-all" />
+                                    <input type="date" max={new Date().toISOString().split('T')[0]} value={form.dob} onChange={(e) => setForm({ ...form, dob: e.target.value })} className="w-full px-6 py-4 rounded-xl bg-surface-alt border border-border text-xs font-black focus:border-primary outline-none transition-all" />
                                 </div>
                                 <div className="space-y-3 text-left">
                                     <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] pl-1">Anniversary</label>
-                                    <input type="date" max={new Date().toISOString().split('T')[0]} value={form.anniversary} onChange={(e) => setForm({ ...form, anniversary: e.target.value })} className="w-full px-6 py-4 rounded-none bg-surface-alt border border-border text-xs font-black focus:border-primary outline-none transition-all" />
+                                    <input type="date" max={new Date().toISOString().split('T')[0]} value={form.anniversary} onChange={(e) => setForm({ ...form, anniversary: e.target.value })} className="w-full px-6 py-4 rounded-xl bg-surface-alt border border-border text-xs font-black focus:border-primary outline-none transition-all" />
                                 </div>
                             </div>
                             <div className="space-y-3 text-left">
                                 <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] pl-1">Dossier Notes</label>
-                                <textarea value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} rows={2} className="w-full px-6 py-4 rounded-none bg-surface-alt border border-border text-xs font-black focus:border-primary outline-none transition-all resize-none placeholder:text-text-muted/10" placeholder="Relevant history log..." />
+                                <textarea value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} rows={2} className="w-full px-6 py-4 rounded-xl bg-surface-alt border border-border text-xs font-black focus:border-primary outline-none transition-all resize-none placeholder:text-text-muted/10" placeholder="Relevant history log..." />
                             </div>
                             <div className="flex gap-6 pt-10 font-black">
-                                <button type="button" onClick={() => setShowModal(false)} className="flex-1 py-5 rounded-none border border-border text-[10px] font-black uppercase tracking-[0.3em] text-text-muted hover:bg-surface-alt transition-all">Abort</button>
-                                <button type="submit" className="flex-1 py-5 bg-primary text-primary-foreground rounded-none font-black text-[10px] uppercase tracking-[0.3em] shadow-2xl shadow-primary/20 hover:bg-primary-dark transition-all">{editingClient ? 'Commit' : 'Deploy Identity'}</button>
+                                <button type="button" onClick={() => setShowModal(false)} className="flex-1 py-5 rounded-xl border border-border text-[10px] font-black uppercase tracking-[0.3em] text-text-muted hover:bg-surface-alt transition-all">Abort</button>
+                                <button type="submit" className="flex-1 py-5 bg-primary text-primary-foreground rounded-xl font-black text-[10px] uppercase tracking-[0.3em] shadow-2xl shadow-primary/20 hover:bg-primary-dark transition-all">{editingClient ? 'Commit' : 'Deploy Identity'}</button>
                             </div>
                         </form>
                     </div>

@@ -101,7 +101,7 @@ export default function MembershipPlansTab() {
                 </div>
                 <button
                     onClick={() => { setEditingPlan(null); setShowModal(true); }}
-                    className="flex items-center justify-center gap-1.5 px-4 py-2 bg-[#cca839] text-white font-bold text-[9px] uppercase tracking-widest hover:bg-[#b89531] transition-all rounded-full shadow-sm w-full sm:w-auto"
+                    className="flex items-center justify-center gap-1.5 px-4 py-2 bg-[#cca839] text-white font-bold text-[9px] uppercase tracking-widest hover:bg-[#b89531] transition-all rounded-xl shadow-sm w-full sm:w-auto"
                 >
                     <Plus className="w-3.5 h-3.5" /> CREATE NEW PLAN
                 </button>
@@ -184,8 +184,8 @@ function MembershipCard({ plan, onEdit, onDelete, onToggle }) {
                         <Icon size={16} />
                     </div>
                     <div className="flex gap-1.5">
-                        <button onClick={onEdit} className="p-1.5 border border-slate-100 rounded-full hover:bg-slate-50 text-slate-400 hover:text-[#cca839] transition-all"><Edit2 size={12} /></button>
-                        <button onClick={onDelete} className="p-1.5 border border-slate-100 rounded-full hover:bg-slate-50 text-slate-400 hover:text-rose-500 transition-all"><Trash2 size={12} /></button>
+                        <button onClick={onEdit} className="p-1.5 border border-slate-100 rounded-xl hover:bg-slate-50 text-slate-400 hover:text-[#cca839] transition-all"><Edit2 size={12} /></button>
+                        <button onClick={onDelete} className="p-1.5 border border-slate-100 rounded-xl hover:bg-slate-50 text-slate-400 hover:text-rose-500 transition-all"><Trash2 size={12} /></button>
                     </div>
                 </div>
                 
@@ -209,7 +209,7 @@ function MembershipCard({ plan, onEdit, onDelete, onToggle }) {
                     ))}
                     
                     <div className="pt-2 mt-1 space-y-1.5">
-                        <div className="flex justify-between items-center bg-slate-50 p-1.5 px-3 rounded-full border border-slate-100">
+                        <div className="flex justify-between items-center bg-slate-50 p-1.5 px-3 rounded-xl border border-slate-100">
                             <div className="flex items-center gap-1.5">
                                 <Layout size={10} className="text-slate-400" />
                                 <p className="text-[8px] font-black text-slate-700 uppercase tracking-wide">ALL SERVICES</p>
@@ -218,7 +218,7 @@ function MembershipCard({ plan, onEdit, onDelete, onToggle }) {
                                 {plan.serviceDiscountValue}{plan.serviceDiscountType === 'percentage' ? '% OFF' : '₹ OFF'}
                             </span>
                         </div>
-                        <div className="flex justify-between items-center bg-slate-50 p-1.5 px-3 rounded-full border border-slate-100">
+                        <div className="flex justify-between items-center bg-slate-50 p-1.5 px-3 rounded-xl border border-slate-100">
                             <div className="flex items-center gap-1.5">
                                 <Layout size={10} className="text-slate-400" />
                                 <p className="text-[8px] font-black text-slate-700 uppercase tracking-wide">ALL PRODUCTS</p>

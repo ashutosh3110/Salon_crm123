@@ -52,7 +52,7 @@ export default function OutletDetailPage() {
         }
     }, [id]);
 
-    if (loading) return <div className="flex justify-center py-20"><div className="w-10 h-10 border-2 border-primary/20 border-t-primary rounded-none animate-spin" /></div>;
+    if (loading) return <div className="flex justify-center py-20"><div className="w-10 h-10 border-2 border-primary/20 border-t-primary rounded-xl animate-spin" /></div>;
     if (!outlet) return <div className="text-center py-20 text-text-muted font-black uppercase tracking-widest text-[10px]">Salon details not found</div>;
 
     const stats = [
@@ -76,14 +76,14 @@ export default function OutletDetailPage() {
                 <div className="flex items-center gap-5">
                     <button
                         onClick={() => navigate('/admin/outlets')}
-                        className="w-10 h-10 rounded-none bg-surface border border-border flex items-center justify-center text-text-muted hover:text-primary transition-all shadow-sm"
+                        className="w-10 h-10 rounded-xl bg-surface border border-border flex items-center justify-center text-text-muted hover:text-primary transition-all shadow-sm"
                     >
                         <ArrowLeft className="w-5 h-5" />
                     </button>
                     <div>
                         <div className="flex items-center gap-3">
                             <h1 className="text-2xl font-black text-text uppercase tracking-tight">{outlet.name || 'Unnamed Salon'}</h1>
-                            <span className={`px-2.5 py-1 rounded-none text-[9px] font-black uppercase tracking-widest border ${outlet.isActive !== false ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 'bg-slate-50 text-slate-500 border-slate-100'
+                            <span className={`px-2.5 py-1 rounded-xl text-[9px] font-black uppercase tracking-widest border ${outlet.isActive !== false ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 'bg-slate-50 text-slate-500 border-slate-100'
                                 }`}>
                                 {outlet.isActive !== false ? 'active' : 'inactive'}
                             </span>
@@ -95,7 +95,7 @@ export default function OutletDetailPage() {
                 </div>
                 <button
                     onClick={() => navigate(`/admin/outlets/edit/${outlet._id}`)}
-                    className="flex items-center gap-2 bg-primary text-primary-foreground px-6 py-2.5 rounded-none text-[10px] font-extrabold uppercase tracking-widest shadow-lg shadow-primary/20 hover:brightness-110 active:scale-95 transition-all"
+                    className="flex items-center gap-2 bg-primary text-primary-foreground px-6 py-2.5 rounded-xl text-[10px] font-extrabold uppercase tracking-widest shadow-lg shadow-primary/20 hover:brightness-110 active:scale-95 transition-all"
                 >
                     <Edit className="w-3.5 h-3.5" /> EDIT SALON DETAILS
                 </button>
@@ -104,13 +104,13 @@ export default function OutletDetailPage() {
             {/* Stats Cards */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 {stats.map((stat, i) => (
-                    <div key={i} className="bg-surface p-6 rounded-none border border-border shadow-sm flex items-center justify-between group overflow-hidden relative">
-                        <div className="absolute -right-4 -top-4 w-16 h-16 bg-primary/5 rounded-none group-hover:scale-110 transition-transform" />
+                    <div key={i} className="bg-surface p-6 rounded-xl border border-border shadow-sm flex items-center justify-between group overflow-hidden relative">
+                        <div className="absolute -right-4 -top-4 w-16 h-16 bg-primary/5 rounded-xl group-hover:scale-110 transition-transform" />
                         <div className="relative z-10">
                             <p className="text-[10px] font-black text-text-muted uppercase tracking-widest mb-1.5">{stat.label}</p>
                             <p className="text-2xl font-black text-text tracking-tight uppercase">{stat.value}</p>
                         </div>
-                        <div className={`w-12 h-12 rounded-none flex items-center justify-center relative z-10 ${stat.color.replace('bg-', 'bg-').replace('50', '10')}`}>
+                        <div className={`w-12 h-12 rounded-xl flex items-center justify-center relative z-10 ${stat.color.replace('bg-', 'bg-').replace('50', '10')}`}>
                             <stat.icon className="w-6 h-6" />
                         </div>
                     </div>
@@ -118,12 +118,12 @@ export default function OutletDetailPage() {
             </div>
 
             {/* Tabs */}
-            <div className="flex gap-2 p-1.5 bg-surface-alt border border-border rounded-none w-fit overflow-x-auto max-w-full">
+            <div className="flex gap-2 p-1.5 bg-surface-alt border border-border rounded-xl w-fit overflow-x-auto max-w-full">
                 {['overview', 'staff', 'chairs', 'hours', 'services', 'products'].map(tab => (
                     <button
                         key={tab}
                         onClick={() => setActiveTab(tab)}
-                        className={`px-8 py-2.5 rounded-none text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === tab
+                        className={`px-8 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === tab
                             ? 'bg-primary text-primary-foreground shadow-lg shadow-primary/20'
                             : 'text-text-muted hover:bg-surface'
                             }`}
@@ -142,7 +142,7 @@ export default function OutletDetailPage() {
                 {/* Left: Info or List */}
                 <div className="lg:col-span-2 space-y-6">
                     {activeTab === 'overview' && (
-                        <div className="bg-surface p-8 rounded-none border border-border shadow-sm space-y-8">
+                        <div className="bg-surface p-8 rounded-xl border border-border shadow-sm space-y-8">
                             <h3 className="text-sm font-black text-text uppercase tracking-widest flex items-center gap-3">
                                 <Info className="w-4 h-4 text-primary" /> Contact & Address
                             </h3>
@@ -168,18 +168,18 @@ export default function OutletDetailPage() {
                                     </div>
                                 </div>
                                 <div className="space-y-6">
-                                    <div className="bg-surface-alt p-6 rounded-none border border-border">
+                                    <div className="bg-surface-alt p-6 rounded-xl border border-border">
                                         <p className="text-[10px] font-black text-text-muted uppercase tracking-widest mb-3 flex items-center gap-2">
                                             <Clock className="w-3.5 h-3.5 text-primary/40" /> Opening Hours
                                         </p>
                                         <p className="text-xl font-black text-text uppercase tracking-tight">09:00 - 21:00 HRS</p>
                                         <div className="text-[9px] font-black text-emerald-600 uppercase tracking-widest mt-2 flex items-center gap-1.5">
-                                            <div className="w-1.5 h-1.5 rounded-none bg-emerald-500 animate-pulse" /> SALON OPEN
+                                            <div className="w-1.5 h-1.5 rounded-xl bg-emerald-500 animate-pulse" /> SALON OPEN
                                         </div>
                                     </div>
                                     <button 
                                         onClick={handleViewOnMap}
-                                        className="w-full py-4 rounded-none bg-surface-alt border border-border border-dashed text-[10px] font-black uppercase tracking-widest text-text hover:bg-surface transition-all"
+                                        className="w-full py-4 rounded-xl bg-surface-alt border border-border border-dashed text-[10px] font-black uppercase tracking-widest text-text hover:bg-surface transition-all"
                                     >
                                         <Map className="w-4 h-4 mr-2 inline" /> View on Map
                                     </button>
@@ -189,7 +189,7 @@ export default function OutletDetailPage() {
                     )}
 
                     {activeTab === 'staff' && (
-                        <div className="bg-surface rounded-none border border-border shadow-sm">
+                        <div className="bg-surface rounded-xl border border-border shadow-sm">
                             <div className="px-8 py-5 border-b border-border flex items-center justify-between bg-surface-alt/50">
                                 <h3 className="text-sm font-black text-text uppercase tracking-widest">Salon Staff</h3>
                                 <span className="text-[10px] font-black text-primary px-3 py-1 bg-primary/10 border border-primary/20">{(outlet.staff || []).length} STAFF MEMBERS</span>
@@ -234,7 +234,7 @@ export default function OutletDetailPage() {
                     )}
 
                     {activeTab === 'chairs' && (
-                        <div className="bg-surface rounded-none border border-border shadow-sm">
+                        <div className="bg-surface rounded-xl border border-border shadow-sm">
                             <div className="px-8 py-5 border-b border-border flex items-center justify-between bg-surface-alt/50">
                                 <h3 className="text-sm font-black text-text uppercase tracking-widest">Salon Stations (Chairs)</h3>
                                 <span className="text-[10px] font-black text-primary px-3 py-1 bg-primary/10 border border-primary/20">
@@ -245,7 +245,7 @@ export default function OutletDetailPage() {
                                 {(outlet.chairs || []).map((chair) => (
                                     <div key={chair.id} className="px-8 py-5 flex items-center justify-between hover:bg-surface-alt transition-all group">
                                         <div className="flex items-center gap-5">
-                                            <div className="w-11 h-11 rounded-none bg-purple-50 border border-purple-100 flex items-center justify-center text-purple-500 group-hover:scale-105 transition-transform">
+                                            <div className="w-11 h-11 rounded-xl bg-purple-50 border border-purple-100 flex items-center justify-center text-purple-500 group-hover:scale-105 transition-transform">
                                                 <Layout className="w-5 h-5" />
                                             </div>
                                             <div>
@@ -269,13 +269,13 @@ export default function OutletDetailPage() {
                     )}
 
                     {activeTab === 'hours' && (
-                        <div className="bg-surface p-8 rounded-none border border-border shadow-sm">
+                        <div className="bg-surface p-8 rounded-xl border border-border shadow-sm">
                             <h3 className="text-sm font-black text-text uppercase tracking-widest mb-8">Weekly Schedule</h3>
                             <div className="space-y-4">
                                 {['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'].map(day => (
-                                    <div key={day} className="flex items-center justify-between p-5 rounded-none border border-border hover:bg-surface-alt group transition-all">
+                                    <div key={day} className="flex items-center justify-between p-5 rounded-xl border border-border hover:bg-surface-alt group transition-all">
                                         <div className="flex items-center gap-4">
-                                            <div className="w-2 h-2 rounded-none bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.4)]" />
+                                            <div className="w-2 h-2 rounded-xl bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.4)]" />
                                             <span className="text-sm font-black text-text uppercase tracking-tight">{day}</span>
                                         </div>
                                         <div className="text-[11px] font-black text-text-muted uppercase tracking-widest">
@@ -288,7 +288,7 @@ export default function OutletDetailPage() {
                     )}
                     
                     {activeTab === 'services' && (
-                        <div className="bg-surface rounded-none border border-border shadow-sm">
+                        <div className="bg-surface rounded-xl border border-border shadow-sm">
                             <div className="px-8 py-5 border-b border-border flex items-center justify-between bg-surface-alt/50">
                                 <h3 className="text-sm font-black text-text uppercase tracking-widest">Available Services</h3>
                                 <span className="text-[10px] font-black text-primary px-3 py-1 bg-primary/10 border border-primary/20">
@@ -299,7 +299,7 @@ export default function OutletDetailPage() {
                                 {(outlet.services || []).map(service => (
                                     <div key={service.id} className="px-8 py-5 flex items-center justify-between hover:bg-surface-alt transition-all cursor-pointer group">
                                         <div className="flex items-center gap-5">
-                                            <div className="w-11 h-11 rounded-none bg-primary/5 border border-primary/20 flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
+                                            <div className="w-11 h-11 rounded-xl bg-primary/5 border border-primary/20 flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
                                                 <Scissors className="w-5 h-5" />
                                             </div>
                                             <div>
@@ -336,7 +336,7 @@ export default function OutletDetailPage() {
                     )}
 
                     {activeTab === 'products' && (
-                        <div className="bg-surface rounded-none border border-border shadow-sm">
+                        <div className="bg-surface rounded-xl border border-border shadow-sm">
                             <div className="px-8 py-5 border-b border-border flex items-center justify-between bg-surface-alt/50">
                                 <h3 className="text-sm font-black text-text uppercase tracking-widest">Inventory / Products</h3>
                                 <span className="text-[10px] font-black text-primary px-3 py-1 bg-primary/10 border border-primary/20">
@@ -347,7 +347,7 @@ export default function OutletDetailPage() {
                                 {(outlet.products || []).map(product => (
                                     <div key={product.id} className="px-8 py-5 flex items-center justify-between hover:bg-surface-alt transition-all cursor-pointer group">
                                         <div className="flex items-center gap-5">
-                                            <div className="w-11 h-11 rounded-none bg-primary/5 border border-primary/20 flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
+                                            <div className="w-11 h-11 rounded-xl bg-primary/5 border border-primary/20 flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
                                                 <Package className="w-5 h-5" />
                                             </div>
                                             <div>
@@ -386,26 +386,26 @@ export default function OutletDetailPage() {
 
                 {/* Right Side: Quick Actions / Small Info */}
                 <div className="space-y-6">
-                    <div className="bg-primary p-8 rounded-none text-white shadow-2xl shadow-primary/20 relative overflow-hidden group">
+                    <div className="bg-primary p-8 rounded-xl text-white shadow-2xl shadow-primary/20 relative overflow-hidden group">
                         <div className="relative z-10">
                             <h4 className="text-[10px] font-black text-white opacity-60 uppercase tracking-[0.3em] mb-2">Salon Oversight</h4>
                             <p className="text-xl font-black text-white mb-6 uppercase tracking-tight">Manage Salon</p>
                             <div className="space-y-3">
                                 <button 
                                     onClick={() => setActiveTab('staff')}
-                                    className="w-full py-4 bg-primary-foreground/10 hover:bg-primary-foreground/20 rounded-none text-[10px] font-black uppercase tracking-[0.2em] transition-all flex items-center justify-center gap-3 border border-primary-foreground/10"
+                                    className="w-full py-4 bg-primary-foreground/10 hover:bg-primary-foreground/20 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] transition-all flex items-center justify-center gap-3 border border-primary-foreground/10"
                                 >
                                     <Users className="w-4 h-4" /> Manage Staff
                                 </button>
                                 <button 
                                     onClick={() => setActiveTab('hours')}
-                                    className="w-full py-4 bg-primary-foreground/10 hover:bg-primary-foreground/20 rounded-none text-[10px] font-black uppercase tracking-[0.2em] transition-all flex items-center justify-center gap-3 border border-primary-foreground/10"
+                                    className="w-full py-4 bg-primary-foreground/10 hover:bg-primary-foreground/20 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] transition-all flex items-center justify-center gap-3 border border-primary-foreground/10"
                                 >
                                     <Clock className="w-4 h-4" /> Manage Opening Hours
                                 </button>
                                 <button 
                                     onClick={() => setActiveTab('products')}
-                                    className="w-full py-4 bg-primary-foreground/10 hover:bg-primary-foreground/20 rounded-none text-[10px] font-black uppercase tracking-[0.2em] transition-all flex items-center justify-center gap-3 border border-primary-foreground/10"
+                                    className="w-full py-4 bg-primary-foreground/10 hover:bg-primary-foreground/20 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] transition-all flex items-center justify-center gap-3 border border-primary-foreground/10"
                                 >
                                     <Package className="w-4 h-4" /> Manage Inventory
                                 </button>
@@ -414,11 +414,11 @@ export default function OutletDetailPage() {
                         <Store className="absolute -right-8 -bottom-8 w-40 h-40 opacity-10 group-hover:scale-110 transition-transform" />
                     </div>
 
-                    <div className="bg-surface p-6 rounded-none border border-border shadow-sm">
+                    <div className="bg-surface p-6 rounded-xl border border-border shadow-sm">
                         <h4 className="text-[10px] font-black text-text-muted uppercase tracking-widest mb-6 border-b border-border pb-3">Update History</h4>
                         <div className="space-y-6">
                             <div className="flex gap-4">
-                                <div className="w-10 h-10 rounded-none bg-surface-alt border border-border flex items-center justify-center shrink-0">
+                                <div className="w-10 h-10 rounded-xl bg-surface-alt border border-border flex items-center justify-center shrink-0">
                                     <User className="w-5 h-5 text-text-muted" />
                                 </div>
                                 <div>
@@ -429,7 +429,7 @@ export default function OutletDetailPage() {
                                 </div>
                             </div>
                             <div className="flex gap-4">
-                                <div className="w-10 h-10 rounded-none bg-surface-alt border border-border flex items-center justify-center shrink-0">
+                                <div className="w-10 h-10 rounded-xl bg-surface-alt border border-border flex items-center justify-center shrink-0">
                                     <Edit className="w-5 h-5 text-text-muted" />
                                 </div>
                                 <div>

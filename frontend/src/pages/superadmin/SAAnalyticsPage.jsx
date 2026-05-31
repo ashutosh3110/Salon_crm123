@@ -50,7 +50,7 @@ function Section({ title, subtitle, icon: Icon, children }) {
     return (
         <div className="bg-white rounded-2xl border border-border shadow-sm overflow-hidden">
             <div className="flex items-center gap-3 px-5 py-4 border-b border-border bg-surface/30">
-                {Icon && <Icon className="w-5 h-5 text-primary" />}
+                {Icon && <Icon className="w-5 h-5 text-emerald-500" />}
                 <div>
                     <h3 className="font-bold text-text">{title}</h3>
                     {subtitle && <p className="text-[10px] uppercase font-black text-text-muted tracking-widest mt-0.5">{subtitle}</p>}
@@ -198,7 +198,7 @@ export default function SAAnalyticsPage() {
             <div className="bg-white rounded-2xl border border-border p-4 shadow-sm flex flex-col lg:flex-row lg:items-center justify-between gap-4">
                 <div className="flex flex-wrap items-center gap-2">
                     <span className="text-xs font-bold text-text-muted uppercase tracking-wider flex items-center gap-1.5 mr-1">
-                        <Calendar className="w-4 h-4 text-primary" /> Filter Period:
+                        <Calendar className="w-4 h-4 text-indigo-500" /> Filter Period:
                     </span>
                     {[
                         { key: 'all', label: 'All Time' },
@@ -250,7 +250,7 @@ export default function SAAnalyticsPage() {
 
             {/* ── KPI cards ── */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                <MetricCard label="Total Salons" value={kpis.totalSalons} sub={`${kpis.activeSalons} Active accounts`} icon={Building2} gradient="from-primary to-[#8B6F23]" shadow="shadow-primary/20" />
+                <MetricCard label="Total Salons" value={kpis.totalSalons} sub={`${kpis.activeSalons} Active accounts`} icon={Building2} gradient="from-emerald-500 to-teal-600" shadow="shadow-primary/20" />
                 <MetricCard label="Monthly Revenue" value={fmtINR(kpis.mrr)} sub="Recurring income this month" icon={DollarSign} gradient="from-emerald-500 to-teal-600" shadow="shadow-emerald-500/20" />
                 <MetricCard label="Yearly Forecast" value={fmtINR(kpis.arr)} sub="Projected annual revenue" icon={TrendingUp} gradient="from-blue-500 to-indigo-600" shadow="shadow-blue-500/20" />
                 <MetricCard label="Lifetime Revenue" value={fmtINR(kpis.totalRevenue)} sub="Total income since launch" icon={BarChart2} gradient="from-amber-500 to-orange-600" shadow="shadow-amber-500/20" />
@@ -341,7 +341,7 @@ export default function SAAnalyticsPage() {
                                             <tr key={g.city} className="hover:bg-surface/40 transition-colors">
                                                 <td className="py-4 px-4">
                                                     <div className="flex items-center gap-3">
-                                                        <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-xs font-black text-primary uppercase">
+                                                        <div className="w-8 h-8 rounded-lg bg-rose-50 flex items-center justify-center text-xs font-black text-primary uppercase">
                                                             {g.city[0]}
                                                         </div>
                                                         <span className="text-sm font-bold text-text">{g.city}</span>
@@ -351,7 +351,7 @@ export default function SAAnalyticsPage() {
                                                 <td className="py-4 px-4 text-right">
                                                     <div className="flex items-center justify-end gap-3">
                                                         <div className="w-24 h-1.5 rounded-full bg-slate-100 overflow-hidden hidden sm:block">
-                                                            <div className="h-full bg-primary rounded-full" style={{ width: `${pct}%` }} />
+                                                            <div className="h-full bg-primary rounded-xl" style={{ width: `${pct}%` }} />
                                                         </div>
                                                         <span className="text-xs font-bold text-text-secondary">{pct}%</span>
                                                     </div>

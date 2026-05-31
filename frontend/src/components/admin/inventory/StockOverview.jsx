@@ -243,7 +243,7 @@ export default function StockOverview() {
 
             {/* Expired Products Cards Section */}
             {expiredProductsList.length > 0 && (
-                <div className="p-5 border border-rose-100 dark:border-rose-950/20 bg-rose-50/20 dark:bg-rose-950/5 allow-curve rounded-3xl animate-reveal mb-6 shadow-sm mx-2">
+                <div className="p-5 border border-rose-100 dark:border-rose-950/20 bg-rose-50/20 dark:bg-rose-950/5 allow-curve rounded-2xl animate-reveal mb-6 shadow-sm mx-2">
                     <div className="text-left mb-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                         <div className="space-y-1">
                             <div className="flex items-center gap-2">
@@ -256,7 +256,7 @@ export default function StockOverview() {
                                 </div>
                             </div>
                         </div>
-                        <span className="px-4 py-1.5 bg-rose-500 text-white text-[9px] font-black uppercase tracking-widest rounded-full shadow-sm flex items-center gap-1.5 shrink-0 self-start sm:self-center">
+                        <span className="px-4 py-1.5 bg-rose-500 text-white text-[9px] font-black uppercase tracking-widest rounded-xl shadow-sm flex items-center gap-1.5 shrink-0 self-start sm:self-center">
                             <span className="w-1.5 h-1.5 rounded-full bg-white animate-ping" />
                             {expiredProductsList.length} Expired Batches
                         </span>
@@ -292,7 +292,7 @@ export default function StockOverview() {
                                     </div>
                                     <div className="mt-4 pt-2.5 border-t border-slate-50 dark:border-slate-800/40 flex justify-between items-center relative z-10">
                                         <span className="text-[8px] font-medium text-slate-450 uppercase tracking-wider">Quarantine Status</span>
-                                        <span className="px-3 py-1 bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-450 text-[9px] font-semibold rounded-full uppercase tracking-widest border border-rose-200/50 dark:border-rose-900/30 text-center inline-flex items-center justify-center leading-tight">
+                                        <span className="px-3 py-1 bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-450 text-[9px] font-semibold rounded-xl uppercase tracking-widest border border-rose-200/50 dark:border-rose-900/30 text-center inline-flex items-center justify-center leading-tight">
                                             Expired {daysAgo}d ago
                                         </span>
                                     </div>

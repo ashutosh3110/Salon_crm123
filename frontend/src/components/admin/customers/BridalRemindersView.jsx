@@ -275,7 +275,7 @@ export default function BridalRemindersView() {
 
             {showAddModal && createPortal(
                 <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-[9999] flex items-center justify-center p-4" onClick={() => setShowAddModal(false)}>
-                    <div className="bridal-modal-container bg-surface rounded-3xl w-full max-w-md shadow-2xl relative overflow-y-auto max-h-[90vh] border border-border" onClick={(e) => e.stopPropagation()}>
+                    <div className="bridal-modal-container bg-surface rounded-2xl w-full max-w-md shadow-2xl relative overflow-y-auto max-h-[90vh] border border-border" onClick={(e) => e.stopPropagation()}>
                         {/* Modal Header */}
                         <div className="px-6 py-5 border-b border-border flex justify-between items-center bg-surface">
                             <div className="flex items-center gap-3">

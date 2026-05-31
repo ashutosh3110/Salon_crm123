@@ -64,7 +64,7 @@ export default function ServiceDetailsModal({ isOpen, onClose, service, outlets 
                 <div className="p-8 space-y-8 overflow-y-auto custom-scrollbar flex-1">
                     {/* Technical Specs Grid */}
                     <div className="grid grid-cols-3 gap-3">
-                        <div className="bg-slate-50 p-5 rounded-3xl border border-slate-100 flex flex-col items-center justify-center text-center group hover:bg-white hover:shadow-xl hover:shadow-slate-200/50 transition-all duration-300">
+                        <div className="bg-slate-50 p-5 rounded-2xl border border-slate-100 flex flex-col items-center justify-center text-center group hover:bg-white hover:shadow-xl hover:shadow-slate-200/50 transition-all duration-300">
                             <div className="p-2 bg-primary/10 rounded-xl text-primary mb-3 group-hover:rotate-12 transition-transform">
                                 <IndianRupee className="w-4 h-4" />
                             </div>
@@ -73,7 +73,7 @@ export default function ServiceDetailsModal({ isOpen, onClose, service, outlets 
                             <p className="text-[9px] font-black text-rose-500 mt-1 uppercase tracking-tighter">+{service.gst}% GST</p>
                         </div>
 
-                        <div className="bg-slate-50 p-5 rounded-3xl border border-slate-100 flex flex-col items-center justify-center text-center group hover:bg-white hover:shadow-xl hover:shadow-slate-200/50 transition-all duration-300">
+                        <div className="bg-slate-50 p-5 rounded-2xl border border-slate-100 flex flex-col items-center justify-center text-center group hover:bg-white hover:shadow-xl hover:shadow-slate-200/50 transition-all duration-300">
                             <div className="p-2 bg-blue-500/10 rounded-xl text-blue-600 mb-3 group-hover:rotate-12 transition-transform">
                                 <Clock className="w-4 h-4" />
                             </div>
@@ -82,7 +82,7 @@ export default function ServiceDetailsModal({ isOpen, onClose, service, outlets 
                             <p className="text-[9px] font-black text-blue-400 mt-1 uppercase tracking-tighter">ESTIMATED</p>
                         </div>
 
-                        <div className="bg-slate-50 p-5 rounded-3xl border border-slate-100 flex flex-col items-center justify-center text-center group hover:bg-white hover:shadow-xl hover:shadow-slate-200/50 transition-all duration-300">
+                        <div className="bg-slate-50 p-5 rounded-2xl border border-slate-100 flex flex-col items-center justify-center text-center group hover:bg-white hover:shadow-xl hover:shadow-slate-200/50 transition-all duration-300">
                             <div className="p-2 bg-purple-500/10 rounded-xl text-purple-600 mb-3 group-hover:rotate-12 transition-transform">
                                 <User className="w-4 h-4" />
                             </div>
@@ -101,7 +101,7 @@ export default function ServiceDetailsModal({ isOpen, onClose, service, outlets 
                                 </div>
                                 <h4 className="text-xs font-black text-slate-900 uppercase tracking-widest">Available Locations</h4>
                             </div>
-                            <span className="text-[10px] font-black text-emerald-600 px-3 py-1 bg-emerald-50 rounded-full border border-emerald-100 uppercase tracking-widest">
+                            <span className="text-[10px] font-black text-emerald-600 px-3 py-1 bg-emerald-50 rounded-xl border border-emerald-100 uppercase tracking-widest">
                                 {serviceOutlets.length} Branches
                             </span>
                         </div>

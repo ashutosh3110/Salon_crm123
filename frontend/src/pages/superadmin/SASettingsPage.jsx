@@ -556,7 +556,7 @@ export default function SASettingsPage() {
                                         </div>
                                         <div className="flex-1 space-y-2">
                                             <label className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-white border border-border text-text text-xs font-bold rounded-xl hover:border-primary/30 hover:text-primary transition-all shadow-sm cursor-pointer hover:bg-primary/5">
-                                                <UploadCloud className="w-4 h-4 text-primary" />
+                                                <UploadCloud className="w-4 h-4 text-blue-500" />
                                                 <span>{uploadingLogo ? 'Uploading...' : 'Upload Logo'}</span>
                                                 <input 
                                                     type="file" 
@@ -591,7 +591,7 @@ export default function SASettingsPage() {
                                         </div>
                                         <div className="flex-1 space-y-2">
                                             <label className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-white border border-border text-text text-xs font-bold rounded-xl hover:border-primary/30 hover:text-primary transition-all shadow-sm cursor-pointer hover:bg-primary/5">
-                                                <UploadCloud className="w-4 h-4 text-primary" />
+                                                <UploadCloud className="w-4 h-4 text-emerald-500" />
                                                 <span>{uploadingFavicon ? 'Uploading...' : 'Upload Favicon'}</span>
                                                 <input 
                                                     type="file" 

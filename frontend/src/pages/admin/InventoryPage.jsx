@@ -226,7 +226,7 @@ function InventoryStatCard({ title, value, icon: Icon, color, trend, to }) {
         </>
     );
 
-    const cardClasses = "bg-surface py-6 px-8 rounded-none border border-border shadow-sm hover:shadow-xl hover:translate-y-[-2px] transition-all group overflow-hidden relative text-left font-black block";
+    const cardClasses = "bg-surface py-6 px-8 rounded-xl border border-border shadow-sm hover:shadow-xl hover:translate-y-[-2px] transition-all group overflow-hidden relative text-left font-black block";
 
     if (to) {
         return (

@@ -322,13 +322,13 @@ export default function SABlogPage() {
                             animate={{ opacity: 1, scale: 1, y: 0 }} 
                             exit={{ opacity: 0, scale: 0.96, y: 30 }} 
                             transition={{ type: "spring", duration: 0.5 }}
-                            className="relative bg-surface w-full max-w-3xl h-[92vh] overflow-hidden flex flex-col shadow-2xl rounded-3xl border border-border"
+                            className="relative bg-surface w-full max-w-3xl h-[92vh] overflow-hidden flex flex-col shadow-2xl rounded-2xl border border-border"
                         >
 
                             {/* Modal Header */}
                             <div className="flex items-center justify-between px-8 py-6 border-b border-border bg-white shadow-sm">
                                 <div className="flex items-center gap-3">
-                                    <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center shadow-inner">
+                                    <div className="w-10 h-10 rounded-xl bg-rose-50 text-primary flex items-center justify-center shadow-inner">
                                         <Sparkles className="w-5 h-5" />
                                     </div>
                                     <div>
@@ -360,7 +360,7 @@ export default function SABlogPage() {
                                     {/* Headline Card */}
                                     <div className="bg-white border border-border p-6 rounded-2xl shadow-sm space-y-3">
                                         <label className="text-[10px] font-black text-text-muted uppercase tracking-widest flex items-center gap-1.5">
-                                            <Megaphone className="w-3.5 h-3.5 text-primary" /> Article Headline
+                                            <Megaphone className="w-3.5 h-3.5 text-blue-500" /> Article Headline
                                         </label>
                                         <input
                                             required 
@@ -374,7 +374,7 @@ export default function SABlogPage() {
                                     {/* Cover Media Card */}
                                     <div className="bg-white border border-border p-6 rounded-2xl shadow-sm space-y-3">
                                         <label className="text-[10px] font-black text-text-muted uppercase tracking-widest flex items-center gap-1.5">
-                                            <ImageIcon className="w-3.5 h-3.5 text-primary" /> Cover Media Asset
+                                            <ImageIcon className="w-3.5 h-3.5 text-emerald-500" /> Cover Media Asset
                                         </label>
                                         <div 
                                             onClick={() => fileInputRef.current?.click()}
@@ -418,7 +418,7 @@ export default function SABlogPage() {
                                     <div className="bg-white border border-border p-6 rounded-2xl shadow-sm space-y-3">
                                         <div className="flex justify-between items-center">
                                             <label className="text-[10px] font-black text-text-muted uppercase tracking-widest flex items-center gap-1.5">
-                                                <FileText className="w-3.5 h-3.5 text-primary" /> Story Intel
+                                                <FileText className="w-3.5 h-3.5 text-indigo-500" /> Story Intel
                                             </label>
                                             <div className="flex items-center gap-2 text-[9px] text-text-muted font-bold uppercase tracking-wider">
                                                 <span>Words: <strong className="text-text">{wordCount}</strong></span>

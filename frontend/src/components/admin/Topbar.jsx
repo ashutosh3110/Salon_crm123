@@ -105,7 +105,7 @@ export default function Topbar({ onMenuClick }) {
                     >
                         <Bell className={`w-4.5 h-4.5 ${unreadCount > 0 ? 'animate-bounce-slow' : ''}`} />
                         {unreadCount > 0 && (
-                            <span className="absolute top-1.5 right-1.5 min-w-[18px] h-[18px] px-1 rounded-full bg-primary text-[10px] font-black text-white flex items-center justify-center ring-2 ring-white dark:ring-surface shadow-lg">
+                            <span className="absolute top-1.5 right-1.5 min-w-[18px] h-[18px] px-1 rounded-xl bg-primary text-[10px] font-black text-white flex items-center justify-center ring-2 ring-white dark:ring-surface shadow-lg">
                                 {unreadCount > 9 ? '9+' : unreadCount}
                             </span>
                         )}
@@ -117,7 +117,7 @@ export default function Topbar({ onMenuClick }) {
                                 initial={{ opacity: 0, y: 10, scale: 0.95 }}
                                 animate={{ opacity: 1, y: 5, scale: 1 }}
                                 exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                                className="absolute right-0 mt-2 w-80 sm:w-96 bg-white dark:bg-surface border border-border shadow-2xl rounded-3xl overflow-hidden focus:outline-none"
+                                className="absolute right-0 mt-2 w-80 sm:w-96 bg-white dark:bg-surface border border-border shadow-2xl rounded-2xl overflow-hidden focus:outline-none"
                             >
                                 <div className="p-4 border-b border-border bg-surface/50 flex items-center justify-between">
                                     <h3 className="text-sm font-black text-text uppercase tracking-widest italic">Notifications</h3>

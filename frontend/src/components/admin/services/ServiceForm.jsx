@@ -165,7 +165,7 @@ export default function ServiceForm({ onSave, onCancel, categories = [], initial
         <div className={`${isModal ? 'p-3 px-4' : 'max-w-4xl mx-auto pb-10'} animate-in fade-in slide-in-from-bottom-4 duration-500`}>
             {/* Header - Only for Non-Modal */}
             {!isModal && (
-                <div className="bg-surface p-6 rounded-3xl border border-border shadow-sm mb-6 flex items-center justify-between">
+                <div className="bg-surface p-6 rounded-2xl border border-border shadow-sm mb-6 flex items-center justify-between">
                     <div className="flex items-center gap-4">
                         <div className="p-3 rounded-2xl bg-primary/10 text-primary border border-primary/20">
                             <Scissors className="w-6 h-6" />
@@ -189,7 +189,7 @@ export default function ServiceForm({ onSave, onCancel, categories = [], initial
 
             <div className={`grid grid-cols-1 ${isModal ? 'lg:grid-cols-2' : 'md:grid-cols-2'} ${isModal ? 'gap-4' : 'gap-6'}`}>
                 {/* 1. Basic Details */}
-                <div className={`bg-surface ${isModal ? 'p-4' : 'p-6'} rounded-3xl border border-border shadow-sm ${isModal ? 'space-y-3' : 'space-y-4'} h-fit`}>
+                <div className={`bg-surface ${isModal ? 'p-4' : 'p-6'} rounded-2xl border border-border shadow-sm ${isModal ? 'space-y-3' : 'space-y-4'} h-fit`}>
                     <div className="flex items-center gap-2 mb-0.5">
                         <Tag className="w-3.5 h-3.5 text-primary" />
                         <h3 className="text-[9px] font-bold text-text uppercase tracking-widest">1. Basic Details</h3>
@@ -271,13 +271,13 @@ export default function ServiceForm({ onSave, onCancel, categories = [], initial
                                         className="w-full h-full object-cover" 
                                     />
                                     <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3">
-                                        <label className="p-2 bg-white rounded-full text-primary cursor-pointer hover:scale-110 transition-transform">
+                                        <label className="p-2 bg-white rounded-xl text-primary cursor-pointer hover:scale-110 transition-transform">
                                             <Upload className="w-4 h-4" />
                                             <input type="file" className="hidden" accept="image/*" onChange={handleImageUpload} />
                                         </label>
                                         <button 
                                             onClick={() => setFormData({ ...formData, image: '' })}
-                                            className="p-2 bg-white rounded-full text-rose-500 hover:scale-110 transition-transform"
+                                            className="p-2 bg-white rounded-xl text-rose-500 hover:scale-110 transition-transform"
                                         >
                                             <X className="w-4 h-4" />
                                         </button>
@@ -285,7 +285,7 @@ export default function ServiceForm({ onSave, onCancel, categories = [], initial
                                 </div>
                             ) : (
                                 <label className="flex flex-col items-center justify-center h-28 rounded-2xl border-2 border-dashed border-border bg-surface-alt hover:bg-surface hover:border-primary/40 transition-all cursor-pointer group">
-                                    <div className="p-2 rounded-full bg-primary/5 text-text-muted group-hover:text-primary group-hover:bg-primary/10 transition-all">
+                                    <div className="p-2 rounded-xl bg-primary/5 text-text-muted group-hover:text-primary group-hover:bg-primary/10 transition-all">
                                         <ImageIcon className="w-5 h-5" />
                                     </div>
                                     <p className="text-[9px] font-bold text-text-muted uppercase tracking-widest mt-1">Upload Image</p>
@@ -335,7 +335,7 @@ export default function ServiceForm({ onSave, onCancel, categories = [], initial
 
                 <div className={`${isModal ? 'space-y-4' : 'space-y-6'}`}>
                     {/* 2. Time & Pricing */}
-                    <div className={`bg-surface ${isModal ? 'p-4' : 'p-6'} rounded-3xl border border-border shadow-sm ${isModal ? 'space-y-3' : 'space-y-4'} h-fit`}>
+                    <div className={`bg-surface ${isModal ? 'p-4' : 'p-6'} rounded-2xl border border-border shadow-sm ${isModal ? 'space-y-3' : 'space-y-4'} h-fit`}>
                         <div className="flex items-center gap-2 mb-0.5">
                             <IndianRupee className="w-3.5 h-3.5 text-emerald-500" />
                             <h3 className="text-[9px] font-bold text-text uppercase tracking-widest">2. Time & Pricing</h3>
@@ -442,7 +442,7 @@ export default function ServiceForm({ onSave, onCancel, categories = [], initial
                     </div>
 
                     {/* 4. Commission Rules */}
-                    <div className={`bg-surface-alt border border-border ${isModal ? 'p-4' : 'p-6'} rounded-3xl relative overflow-hidden group`}>
+                    <div className={`bg-surface-alt border border-border ${isModal ? 'p-4' : 'p-6'} rounded-2xl relative overflow-hidden group`}>
                         <div className="relative z-10 space-y-3">
                             <div className="flex items-center justify-between">
                                 <div className="flex items-center gap-2">
@@ -481,7 +481,7 @@ export default function ServiceForm({ onSave, onCancel, categories = [], initial
                     </div>
 
                     {/* 5. Outlet & 6. Status - Compressed for Modal */}
-                    <div className={`bg-surface ${isModal ? 'p-4' : 'p-6'} rounded-3xl border border-border shadow-sm h-fit space-y-3`}>
+                    <div className={`bg-surface ${isModal ? 'p-4' : 'p-6'} rounded-2xl border border-border shadow-sm h-fit space-y-3`}>
                         <div className="grid grid-cols-2 gap-3">
                             <div className="space-y-1">
                                 <div className="flex items-center gap-2 mb-1">
@@ -538,7 +538,7 @@ export default function ServiceForm({ onSave, onCancel, categories = [], initial
             </div>
 
             {/* Actions */}
-            <div className={`${isModal ? 'mt-2' : 'mt-8'} flex flex-col sm:flex-row sm:items-center justify-end gap-2 ${isModal ? 'p-2' : 'p-6'} bg-surface-alt rounded-3xl border border-border text-left`}>
+            <div className={`${isModal ? 'mt-2' : 'mt-8'} flex flex-col sm:flex-row sm:items-center justify-end gap-2 ${isModal ? 'p-2' : 'p-6'} bg-surface-alt rounded-2xl border border-border text-left`}>
                 <button
                     onClick={handleCancel}
                     className="px-6 py-2 rounded-xl text-xs font-bold text-text-secondary hover:bg-surface transition-all border border-transparent hover:border-border"

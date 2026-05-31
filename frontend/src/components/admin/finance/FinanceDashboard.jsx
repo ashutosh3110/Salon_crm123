@@ -105,7 +105,7 @@ export default function FinanceDashboard({ data, loading, error, onRetry }) {
 
             <div className="p-8 grid grid-cols-1 lg:grid-cols-3 gap-8 text-left font-black">
                 <div className="lg:col-span-2 space-y-6 text-left font-black">
-                    <div className="bg-surface/30 border border-border rounded-3xl p-8 h-[400px] flex flex-col text-left">
+                    <div className="bg-surface/30 border border-border rounded-2xl p-8 h-[400px] flex flex-col text-left">
                         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-10 gap-4 text-left">
                             <h3 className="text-[10px] font-black text-text uppercase tracking-[0.2em] text-left">
                                 Revenue vs expense (12 months)
@@ -162,7 +162,7 @@ export default function FinanceDashboard({ data, loading, error, onRetry }) {
                 </div>
 
                 <div className="space-y-6 text-left font-black">
-                    <div className="bg-surface border border-border rounded-3xl p-6 flex flex-col gap-6 shadow-sm text-left">
+                    <div className="bg-surface border border-border rounded-2xl p-6 flex flex-col gap-6 shadow-sm text-left">
                         <h3 className="text-[10px] font-black text-text uppercase tracking-[0.2em] text-left">Recent activity</h3>
                         <div className="space-y-4 text-left">
                             {recent.length === 0 ? (
@@ -189,7 +189,7 @@ export default function FinanceDashboard({ data, loading, error, onRetry }) {
                         </button>
                     </div>
 
-                    <div className="bg-surface border border-border/50 rounded-3xl p-6 space-y-6 text-left">
+                    <div className="bg-surface border border-border/50 rounded-2xl p-6 space-y-6 text-left">
                         <h3 className="text-[10px] font-black text-text uppercase tracking-[0.2em] text-left">
                             Cost allocation (90d expenses)
                         </h3>
@@ -249,7 +249,7 @@ function ProgressItem({ label, percentage, color }) {
                 <span>{percentage}%</span>
             </div>
             <div className="w-full h-2 bg-surface-alt rounded-full overflow-hidden border border-border/40">
-                <div className={`h-full ${color} rounded-full`} style={{ width: `${Math.min(100, percentage)}%` }} />
+                <div className={`h-full ${color} rounded-xl`} style={{ width: `${Math.min(100, percentage)}%` }} />
             </div>
         </div>
     );

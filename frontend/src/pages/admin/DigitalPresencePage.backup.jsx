@@ -248,7 +248,7 @@ export default function DigitalPresence() {
                     {activeTab === 'builder' && (
                         <div className="grid lg:grid-cols-3 gap-8">
                             <div className="lg:col-span-2 space-y-6">
-                                <div className="bg-surface rounded-3xl border border-border p-8 shadow-sm">
+                                <div className="bg-surface rounded-2xl border border-border p-8 shadow-sm">
                                     <div className="space-y-4 mb-8 pb-8 border-b border-border">
                                         <div>
                                             <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] mb-2 block">Catalogue Title</label>
@@ -385,7 +385,7 @@ export default function DigitalPresence() {
                             </div>
 
                             <div className="space-y-6">
-                                <div className="bg-surface rounded-3xl border border-border p-6 shadow-sm sticky top-6">
+                                <div className="bg-surface rounded-2xl border border-border p-6 shadow-sm sticky top-6">
                                     <div className="flex items-center justify-between mb-6">
                                         <h3 className="text-xs font-black text-text uppercase tracking-widest">Live Preview</h3>
                                         <div className="flex items-center gap-1.5">
@@ -449,7 +449,7 @@ export default function DigitalPresence() {
                             <SectionHeader title="Your Shareable Link" desc="This link is public and can be accessed by anyone to browse your services." icon={Globe} />
                             <div className="grid md:grid-cols-2 gap-8">
                                 <div className="space-y-6">
-                                    <div className="bg-surface rounded-3xl border border-border p-8 shadow-sm">
+                                    <div className="bg-surface rounded-2xl border border-border p-8 shadow-sm">
                                         <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] mb-4 block">Public URL Slug</label>
                                         <div className="flex gap-2">
                                             <div className="flex-1 bg-surface border border-border rounded-xl px-4 py-3 text-sm font-bold flex items-center gap-2 overflow-hidden">
@@ -466,7 +466,7 @@ export default function DigitalPresence() {
                                             </button>
                                         </div>
                                     </div>
-                                    <div className="bg-surface rounded-3xl border border-border p-8 shadow-sm flex items-center justify-between">
+                                    <div className="bg-surface rounded-2xl border border-border p-8 shadow-sm flex items-center justify-between">
                                         <div>
                                             <h4 className="text-sm font-black text-text uppercase tracking-tight">Public Visibility</h4>
                                             <p className="text-[10px] text-text-muted font-bold uppercase mt-0.5">Allow anyone to view this menu</p>
@@ -476,8 +476,8 @@ export default function DigitalPresence() {
                                         </button>
                                     </div>
                                 </div>
-                                <div className="bg-surface rounded-3xl border border-border p-8 shadow-sm flex flex-col items-center text-center">
-                                    <div className="w-48 h-48 p-4 border-2 border-primary/20 rounded-3xl flex items-center justify-center mb-6 bg-white">
+                                <div className="bg-surface rounded-2xl border border-border p-8 shadow-sm flex flex-col items-center text-center">
+                                    <div className="w-48 h-48 p-4 border-2 border-primary/20 rounded-2xl flex items-center justify-center mb-6 bg-white">
                                         <QRCodeSVG value={publicUrl} size={150} />
                                     </div>
                                     <button
@@ -515,7 +515,7 @@ export default function DigitalPresence() {
                                     { label: 'Instagram', icon: Instagram, color: 'bg-rose-50 dark:bg-rose-950/30 text-rose-600 dark:text-rose-400', btn: 'bg-rose-600', action: () => copyToClipboard(publicUrl) },
                                     { label: 'Facebook', icon: Facebook, color: 'bg-blue-50 dark:bg-blue-950/30 text-blue-600 dark:text-blue-400', btn: 'bg-blue-600', action: () => window.open(`https://www.facebook.com/sharer/sharer.php?u=${publicUrl}`, '_blank') },
                                 ].map(s => (
-                                    <div key={s.label} className="bg-surface rounded-3xl border border-border p-6 shadow-sm hover:shadow-xl transition-all group text-center">
+                                    <div key={s.label} className="bg-surface rounded-2xl border border-border p-6 shadow-sm hover:shadow-xl transition-all group text-center">
                                         <div className={`w-14 h-14 rounded-2xl ${s.color} flex items-center justify-center mb-6 mx-auto group-hover:scale-110 transition-transform`}>
                                             <s.icon className="w-7 h-7" />
                                         </div>
@@ -543,7 +543,7 @@ export default function DigitalPresence() {
                         >
                             <div className="px-8 py-6 border-b border-border flex items-center justify-between shrink-0">
                                 <h3 className="text-lg font-black text-text uppercase tracking-tight">Pick a Service</h3>
-                                <button onClick={() => setShowPicker(false)} className="p-2 hover:bg-surface rounded-full">
+                                <button onClick={() => setShowPicker(false)} className="p-2 hover:bg-surface rounded-xl">
                                     <XCircle className="w-5 h-5 text-text-muted" />
                                 </button>
                             </div>

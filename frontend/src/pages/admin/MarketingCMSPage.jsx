@@ -275,7 +275,7 @@ export default function MarketingCMSPage() {
                             resetForm();
                             setIsModalOpen(true);
                         }}
-                        className="flex items-center gap-2 px-8 py-3 bg-primary text-primary-foreground rounded-none text-[10px] font-black uppercase tracking-widest shadow-xl shadow-primary/20 hover:brightness-110 active:scale-95 transition-all"
+                        className="flex items-center gap-2 px-8 py-3 bg-primary text-primary-foreground rounded-xl text-[10px] font-black uppercase tracking-widest shadow-xl shadow-primary/20 hover:brightness-110 active:scale-95 transition-all"
                     >
                         <Plus className="w-4 h-4" /> New {activeTab === 'banners' ? 'Banner' : activeTab === 'offers' ? 'Offer' : 'Look'}
                     </button>
@@ -294,7 +294,7 @@ export default function MarketingCMSPage() {
                         >
                             {tab.label}
                             {tab.id === 'experts' && pendingExpertsCount > 0 && (
-                                <span className="ml-2 px-1.5 py-0.5 bg-rose-500 text-white text-[8px] font-black rounded-full animate-pulse">
+                                <span className="ml-2 px-1.5 py-0.5 bg-rose-500 text-white text-[8px] font-black rounded-xl animate-pulse">
                                     {pendingExpertsCount}
                                 </span>
                             )}
@@ -305,7 +305,7 @@ export default function MarketingCMSPage() {
                     ))}
                 </div>
 
-                <div className="flex bg-surface-alt p-1 rounded-none border border-border/40">
+                <div className="flex bg-surface-alt p-1 rounded-xl border border-border/40">
                     {[
                         { id: 'all', label: 'All Protocols' },
                         { id: 'men', label: 'Men\'s Sector' },
@@ -339,7 +339,7 @@ export default function MarketingCMSPage() {
                         {banners
                             .filter(b => selectedGender === 'all' || b.gender === selectedGender)
                             .map((banner) => (
-                                <div key={banner.id} className="group bg-surface border border-border/40 rounded-none overflow-hidden hover:border-primary/40 transition-all text-left">
+                                <div key={banner.id} className="group bg-surface border border-border/40 rounded-xl overflow-hidden hover:border-primary/40 transition-all text-left">
                                     <div className="aspect-[21/9] relative overflow-hidden bg-background">
                                         <img src={getImageUrl(banner.image)} alt={banner.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 opacity-80" />
                                         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
@@ -369,12 +369,12 @@ export default function MarketingCMSPage() {
                                         <div className="absolute bottom-3 left-3 flex items-center gap-2">
                                             <button 
                                                 onClick={() => handleToggleStatus('banner', banner.id)}
-                                                className={`text-[8px] font-black px-2 py-0.5 rounded-none uppercase tracking-widest transition-all ${banner.status === 'Active' ? 'bg-emerald-500 text-white dark:text-primary-foreground' : 'bg-surface-alt text-text-muted border border-border hover:bg-primary hover:text-white'
+                                                className={`text-[8px] font-black px-2 py-0.5 rounded-xl uppercase tracking-widest transition-all ${banner.status === 'Active' ? 'bg-emerald-500 text-white dark:text-primary-foreground' : 'bg-surface-alt text-text-muted border border-border hover:bg-primary hover:text-white'
                                                 }`}
                                             >
                                                 {banner.status}
                                             </button>
-                                            <span className="text-[8px] font-black px-2 py-0.5 rounded-none uppercase tracking-widest bg-white/10 text-white backdrop-blur-md border border-white/20">
+                                            <span className="text-[8px] font-black px-2 py-0.5 rounded-xl uppercase tracking-widest bg-white/10 text-white backdrop-blur-md border border-white/20">
                                                 {banner.gender === 'all' ? 'All' : banner.gender === 'men' ? 'Men' : 'Women'}
                                             </span>
                                         </div>
@@ -402,7 +402,7 @@ export default function MarketingCMSPage() {
                             onClick={() => { setModalType('banner'); resetForm(); setIsModalOpen(true); }}
                             className="aspect-[21/9] sm:aspect-auto flex flex-col items-center justify-center gap-4 border-2 border-dashed border-border/40 hover:border-primary/40 hover:bg-primary/[0.02] transition-all group min-h-[250px]"
                         >
-                            <div className="w-12 h-12 rounded-none bg-surface-alt flex items-center justify-center border border-border group-hover:bg-primary group-hover:border-primary transition-all">
+                            <div className="w-12 h-12 rounded-xl bg-surface-alt flex items-center justify-center border border-border group-hover:bg-primary group-hover:border-primary transition-all">
                                 <Plus className="w-6 h-6 text-text-muted group-hover:text-white" />
                             </div>
                             <div className="text-center">
@@ -442,18 +442,18 @@ export default function MarketingCMSPage() {
                                         </button>
                                     </div>
 
-                                    <div className="w-24 h-24 rounded-none bg-background border border-border/10 flex items-center justify-center shrink-0 shadow-inner group-hover:border-violet-500/20 transition-all">
+                                    <div className="w-24 h-24 rounded-xl bg-background border border-border/10 flex items-center justify-center shrink-0 shadow-inner group-hover:border-violet-500/20 transition-all">
                                         <Zap className="w-10 h-10 text-violet-500 animate-pulse" />
                                     </div>
                                     <div className="flex-1 space-y-4">
                                         <div className="flex items-center gap-2">
                                             <button 
                                                 onClick={() => handleToggleStatus('offer', offer.id)}
-                                                className={`text-[9px] font-black px-2 py-0.5 rounded-none uppercase tracking-widest transition-all ${offer.status === 'Live' ? 'bg-emerald-500 text-white dark:text-primary-foreground' : 'bg-surface-alt text-text-muted border border-border hover:bg-violet-500 hover:text-white'
+                                                className={`text-[9px] font-black px-2 py-0.5 rounded-xl uppercase tracking-widest transition-all ${offer.status === 'Live' ? 'bg-emerald-500 text-white dark:text-primary-foreground' : 'bg-surface-alt text-text-muted border border-border hover:bg-violet-500 hover:text-white'
                                                 }`}>
                                                 {offer.status}
                                             </button>
-                                            <span className="text-[9px] font-black px-2 py-0.5 rounded-none uppercase tracking-widest bg-violet-500/10 text-violet-500 border border-violet-500/20">
+                                            <span className="text-[9px] font-black px-2 py-0.5 rounded-xl uppercase tracking-widest bg-violet-500/10 text-violet-500 border border-violet-500/20">
                                                 {offer.gender === 'men' ? 'Men' : 'Women'}
                                             </span>
                                             <span className="text-[10px] font-black text-text-muted uppercase tracking-widest flex items-center gap-1 ml-auto">
@@ -465,7 +465,7 @@ export default function MarketingCMSPage() {
                                             <p className="text-xs text-text-secondary mt-2 leading-relaxed">{offer.description}</p>
                                         </div>
                                         <div className="flex items-center justify-between">
-                                            <div className="px-4 py-2 bg-background border border-border/40 border-dashed rounded-none text-xs font-black text-primary tracking-widest uppercase">
+                                            <div className="px-4 py-2 bg-background border border-border/40 border-dashed rounded-xl text-xs font-black text-primary tracking-widest uppercase">
                                                 {offer.code}
                                             </div>
                                             <button 
@@ -492,7 +492,7 @@ export default function MarketingCMSPage() {
                         {lookbook
                             .filter(l => selectedGender === 'all' || l.gender === selectedGender)
                             .map((item) => (
-                                <div key={item.id} className="group bg-surface border border-border/40 rounded-none overflow-hidden hover:border-emerald-500/40 transition-all text-left">
+                                <div key={item.id} className="group bg-surface border border-border/40 rounded-xl overflow-hidden hover:border-emerald-500/40 transition-all text-left">
                                     <div className="aspect-[3/4] relative overflow-hidden bg-background">
                                         <img src={getImageUrl(item.image)} alt={item.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 opacity-80" />
                                         <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-60 group-hover:opacity-100 transition-opacity" />
@@ -516,12 +516,12 @@ export default function MarketingCMSPage() {
                                             <div className="flex items-center gap-2 mb-2">
                                                 <button 
                                                     onClick={() => handleToggleStatus('lookbook', item.id)}
-                                                    className={`text-[8px] font-black px-2 py-0.5 rounded-none uppercase tracking-widest transition-all ${item.status === 'Active' ? 'bg-emerald-500 text-white' : 'bg-surface-alt text-text-muted border border-border hover:bg-primary hover:text-white'
+                                                    className={`text-[8px] font-black px-2 py-0.5 rounded-xl uppercase tracking-widest transition-all ${item.status === 'Active' ? 'bg-emerald-500 text-white' : 'bg-surface-alt text-text-muted border border-border hover:bg-primary hover:text-white'
                                                     }`}
                                                 >
                                                     {item.status}
                                                 </button>
-                                                <span className="text-[8px] font-black px-2 py-0.5 rounded-none uppercase tracking-widest bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                                                <span className="text-[8px] font-black px-2 py-0.5 rounded-xl uppercase tracking-widest bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
                                                     {item.tag}
                                                 </span>
                                             </div>
@@ -540,7 +540,7 @@ export default function MarketingCMSPage() {
                             onClick={() => { setModalType('lookbook'); resetForm(); setIsModalOpen(true); }}
                             className="aspect-[3/4] flex flex-col items-center justify-center gap-4 border-2 border-dashed border-border/40 hover:border-primary/40 hover:bg-primary/[0.02] transition-all group min-h-[300px]"
                         >
-                            <div className="w-12 h-12 rounded-none bg-surface-alt flex items-center justify-center border border-border group-hover:bg-primary group-hover:border-primary transition-all">
+                            <div className="w-12 h-12 rounded-xl bg-surface-alt flex items-center justify-center border border-border group-hover:bg-primary group-hover:border-primary transition-all">
                                 <Plus className="w-6 h-6 text-text-muted group-hover:text-white" />
                             </div>
                             <div className="text-center">
@@ -565,7 +565,7 @@ export default function MarketingCMSPage() {
                                     <img src={getImageUrl(expert.img) || 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=200&q=80'} className="w-16 h-16 rounded-full border border-border object-cover" alt={expert.name} />
                                     <div>
                                         <h3 className="text-sm font-black text-text uppercase tracking-tight">{expert.name}</h3>
-                                        <div className={`text-[8px] font-black uppercase px-2 py-0.5 rounded-none mt-1 inline-block ${
+                                        <div className={`text-[8px] font-black uppercase px-2 py-0.5 rounded-xl mt-1 inline-block ${
                                             expert.status === 'Approved' ? 'bg-emerald-500 text-white' : expert.status === 'Pending' ? 'bg-amber-500 text-white' : 'bg-rose-500 text-white'
                                         }`}>
                                             {expert.status}
@@ -755,7 +755,7 @@ export default function MarketingCMSPage() {
                                                             <img src={getImageUrl(formData.image)} className="absolute inset-0 w-full h-full object-cover opacity-20 group-hover:scale-110 transition-transform duration-700" alt="Preview" />
                                                             <div className="relative z-10 flex flex-col items-center">
                                                                 <Upload className="w-8 h-8 text-primary mb-2 shadow-sm" />
-                                                                <p className="text-[10px] font-black text-white uppercase tracking-widest bg-black px-4 py-1.5 rounded-full">Change Image</p>
+                                                                <p className="text-[10px] font-black text-white uppercase tracking-widest bg-black px-4 py-1.5 rounded-xl">Change Image</p>
                                                             </div>
                                                         </>
                                                     ) : (
@@ -833,7 +833,7 @@ export default function MarketingCMSPage() {
                                                             <img src={formData.image} className="absolute inset-0 w-full h-full object-cover opacity-20 group-hover:scale-110 transition-transform duration-700" alt="Preview" />
                                                             <div className="relative z-10 flex flex-col items-center">
                                                                 <Upload className="w-8 h-8 text-primary mb-2 shadow-sm" />
-                                                                <p className="text-[10px] font-black text-white uppercase tracking-widest bg-black px-4 py-1.5 rounded-full">Change Image</p>
+                                                                <p className="text-[10px] font-black text-white uppercase tracking-widest bg-black px-4 py-1.5 rounded-xl">Change Image</p>
                                                             </div>
                                                         </>
                                                     ) : (

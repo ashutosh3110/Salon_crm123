@@ -81,7 +81,7 @@ export default function POSDashboardPage() {
         return (
             <div className="flex items-center justify-center min-h-[60vh]">
                 <div className="flex flex-col items-center gap-6">
-                    <div className="w-12 h-12 border-2 border-primary/20 border-t-primary rounded-none animate-spin" />
+                    <div className="w-12 h-12 border-2 border-primary/20 border-t-primary rounded-xl animate-spin" />
                     <p className="text-[10px] font-black text-text-muted uppercase tracking-[0.3em]">Syncing Terminal Core...</p>
                 </div>
             </div>
@@ -97,10 +97,10 @@ export default function POSDashboardPage() {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 {dashStats.map((stat, i) => (
-                    <div key={i} className="bg-white rounded-none border border-border p-6 shadow-sm group hover:shadow-xl transition-all relative overflow-hidden">
-                        <div className="absolute top-0 right-0 w-24 h-24 bg-primary/5 -mr-8 -mt-8 rounded-none rotate-45 pointer-events-none transition-transform group-hover:scale-110" />
+                    <div key={i} className="bg-white rounded-xl border border-border p-6 shadow-sm group hover:shadow-xl transition-all relative overflow-hidden">
+                        <div className="absolute top-0 right-0 w-24 h-24 bg-primary/5 -mr-8 -mt-8 rounded-xl rotate-45 pointer-events-none transition-transform group-hover:scale-110" />
                         <div className="flex items-center justify-between mb-6">
-                            <div className={`w-10 h-10 rounded-none border border-border flex items-center justify-center bg-surface-alt transition-colors group-hover:bg-primary group-hover:text-white`}>
+                            <div className={`w-10 h-10 rounded-xl border border-border flex items-center justify-center bg-surface-alt transition-colors group-hover:bg-primary group-hover:text-white`}>
                                 <stat.icon className="w-5 h-5" />
                             </div>
                         </div>
@@ -117,11 +117,11 @@ export default function POSDashboardPage() {
             </div>
 
             {stats && (stats.cashTotal > 0 || stats.cardTotal > 0 || stats.onlineTotal > 0) && (
-                <div className="bg-white rounded-none border border-border shadow-sm p-8 text-left">
+                <div className="bg-white rounded-xl border border-border shadow-sm p-8 text-left">
                     <h3 className="text-sm font-black text-text uppercase tracking-widest mb-8 border-b border-border pb-4">Revenue Auth Breakdown</h3>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        <div className="p-6 bg-emerald-500/5 rounded-none border border-emerald-500/10 flex items-center gap-5">
-                            <div className="w-12 h-12 rounded-none bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-600">
+                        <div className="p-6 bg-emerald-500/5 rounded-xl border border-emerald-500/10 flex items-center gap-5">
+                            <div className="w-12 h-12 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-600">
                                 <Banknote className="w-6 h-6" />
                             </div>
                             <div className="text-left">
@@ -129,8 +129,8 @@ export default function POSDashboardPage() {
                                 <p className="text-xl font-black text-emerald-600 tracking-tight">₹{(stats.cashTotal || 0).toLocaleString()}</p>
                             </div>
                         </div>
-                        <div className="p-6 bg-blue-500/5 rounded-none border border-blue-500/10 flex items-center gap-5">
-                            <div className="w-12 h-12 rounded-none bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-600">
+                        <div className="p-6 bg-blue-500/5 rounded-xl border border-blue-500/10 flex items-center gap-5">
+                            <div className="w-12 h-12 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-600">
                                 <CreditCard className="w-6 h-6" />
                             </div>
                             <div className="text-left">
@@ -138,8 +138,8 @@ export default function POSDashboardPage() {
                                 <p className="text-xl font-black text-blue-600 tracking-tight">₹{(stats.cardTotal || 0).toLocaleString()}</p>
                             </div>
                         </div>
-                        <div className="p-6 bg-purple-500/5 rounded-none border border-purple-500/10 flex items-center gap-5">
-                            <div className="w-12 h-12 rounded-none bg-purple-500/10 border border-purple-500/20 flex items-center justify-center text-purple-600">
+                        <div className="p-6 bg-purple-500/5 rounded-xl border border-purple-500/10 flex items-center gap-5">
+                            <div className="w-12 h-12 rounded-xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center text-purple-600">
                                 <Smartphone className="w-6 h-6" />
                             </div>
                             <div className="text-left">
@@ -151,7 +151,7 @@ export default function POSDashboardPage() {
                 </div>
             )}
 
-            <div className="bg-white rounded-none border border-border shadow-sm overflow-hidden text-left">
+            <div className="bg-white rounded-xl border border-border shadow-sm overflow-hidden text-left">
                 <div className="px-8 py-5 border-b border-border flex items-center justify-between bg-surface-alt/50">
                     <h3 className="text-sm font-black text-text uppercase tracking-widest">Live Transaction Stream</h3>
                 </div>
@@ -164,7 +164,7 @@ export default function POSDashboardPage() {
                         {recentInvoices.map((inv) => (
                             <div key={inv._id} className="px-8 py-5 flex items-center justify-between hover:bg-surface-alt transition-all group text-left">
                                 <div className="flex items-center gap-5 min-w-0 text-left">
-                                    <div className="w-10 h-10 rounded-none bg-surface-alt border border-border flex items-center justify-center shrink-0 group-hover:bg-primary group-hover:text-white transition-all text-text-muted">
+                                    <div className="w-10 h-10 rounded-xl bg-surface-alt border border-border flex items-center justify-center shrink-0 group-hover:bg-primary group-hover:text-white transition-all text-text-muted">
                                         <Receipt className="w-5 h-5" />
                                     </div>
                                     <div className="min-w-0 text-left">
@@ -173,7 +173,7 @@ export default function POSDashboardPage() {
                                     </div>
                                 </div>
                                 <div className="flex items-center gap-8 shrink-0">
-                                    <span className={`px-3 py-1.5 rounded-none text-[9px] font-black uppercase tracking-widest border bg-emerald-500/10 text-emerald-600 border-emerald-500/20`}>
+                                    <span className={`px-3 py-1.5 rounded-xl text-[9px] font-black uppercase tracking-widest border bg-emerald-500/10 text-emerald-600 border-emerald-500/20`}>
                                         {inv.paymentStatus || 'PAID'}
                                     </span>
                                     <span className="text-sm font-black text-text tracking-tight">₹{inv.total?.toLocaleString()}</span>

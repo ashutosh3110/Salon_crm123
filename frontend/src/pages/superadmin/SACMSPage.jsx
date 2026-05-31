@@ -202,7 +202,7 @@ export default function SACMSPage() {
             <div className="grid grid-cols-1 md:grid-cols-12 gap-8 mt-8 relative">
                 {loading && (
                     <div className="absolute inset-0 bg-white/50 backdrop-blur-sm z-50 flex items-center justify-center min-h-[400px]">
-                        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+                        <div className="animate-spin rounded-xl h-12 w-12 border-t-2 border-b-2 border-primary"></div>
                     </div>
                 )}
                 {/* Editor Area */}
@@ -213,7 +213,7 @@ export default function SACMSPage() {
                             {/* Hero & Transition Section */}
                             <section className="space-y-6">
                                 <div className="flex items-center gap-4">
-                                    <div className="w-10 h-10 bg-primary/10 flex items-center justify-center text-primary">
+                                    <div className="w-10 h-10 bg-blue-50 flex items-center justify-center text-primary">
                                         <Type size={18} />
                                     </div>
                                     <h2 className="text-lg font-bold tracking-tight">Website Introduction</h2>
@@ -237,7 +237,7 @@ export default function SACMSPage() {
                             {/* Features Grid */}
                             <section className="space-y-6">
                                 <div className="flex items-center gap-4">
-                                    <div className="w-10 h-10 bg-primary/10 flex items-center justify-center text-primary">
+                                    <div className="w-10 h-10 bg-emerald-50 flex items-center justify-center text-primary">
                                         <Package size={18} />
                                     </div>
                                     <h2 className="text-lg font-bold tracking-tight">Key Features</h2>
@@ -276,7 +276,7 @@ export default function SACMSPage() {
                             {/* Testimonials */}
                             <section className="space-y-6">
                                 <div className="flex items-center gap-4">
-                                    <div className="w-10 h-10 bg-primary/10 flex items-center justify-center text-primary">
+                                    <div className="w-10 h-10 bg-indigo-50 flex items-center justify-center text-primary">
                                         <Heart size={18} />
                                     </div>
                                     <h2 className="text-lg font-bold tracking-tight">Customer Reviews</h2>
@@ -388,7 +388,7 @@ export default function SACMSPage() {
                         <section className="space-y-6">
                             <div className="flex items-center justify-between">
                                 <div className="flex items-center gap-4">
-                                    <div className="w-10 h-10 bg-primary/10 flex items-center justify-center text-primary">
+                                    <div className="w-10 h-10 bg-rose-50 flex items-center justify-center text-primary">
                                         <HelpCircle size={18} />
                                     </div>
                                     <h2 className="text-lg font-bold tracking-tight">Landing Page FAQs</h2>

@@ -248,7 +248,7 @@ export default function SASupportPage() {
                 <div className="space-y-6 pt-2">
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-4">
-                            <div className="w-10 h-10 bg-primary/10 flex items-center justify-center text-primary">
+                            <div className="w-10 h-10 bg-amber-50 flex items-center justify-center text-primary">
                                 <MessageSquare size={18} />
                             </div>
                             <div>
@@ -272,7 +272,7 @@ export default function SASupportPage() {
                     <div className="grid grid-cols-1 gap-4">
                         {loadingTickets ? (
                             <div className="py-20 text-center animate-pulse">
-                                <MessageSquare className="w-12 h-12 text-primary/20 mx-auto mb-4" />
+                                <MessageSquare className="w-12 h-12 text-blue-500/20 mx-auto mb-4" />
                                 <p className="text-[11px] font-black uppercase tracking-widest text-text-muted">Fetching support tickets...</p>
                             </div>
                         ) : tickets.length === 0 ? (
@@ -289,7 +289,7 @@ export default function SASupportPage() {
                                         <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
                                             <div className="flex-1 space-y-2">
                                                 <div className="flex items-center gap-3">
-                                                    <span className="px-2 py-0.5 rounded bg-primary/10 text-primary text-[10px] font-black uppercase tracking-tight">#{t._id.slice(-6)}</span>
+                                                    <span className="px-2 py-0.5 rounded bg-teal-50 text-primary text-[10px] font-black uppercase tracking-tight">#{t._id.slice(-6)}</span>
                                                     <span className={`px-2 py-0.5 rounded text-[9px] font-black border uppercase tracking-widest ${stStyle.bg} ${stStyle.text} ${stStyle.border}`}>
                                                         {stStyle.label}
                                                     </span>
@@ -305,7 +305,7 @@ export default function SASupportPage() {
                                                 <div className="flex flex-wrap items-center gap-x-6 gap-y-2 pt-2">
                                                     <div className="flex items-center gap-2">
                                                         <div className="w-6 h-6 rounded-full bg-surface border border-border flex items-center justify-center">
-                                                            <Shield className="w-3 h-3 text-primary" />
+                                                            <Shield className="w-3 h-3 text-emerald-500" />
                                                         </div>
                                                         <span className="text-[11px] font-bold text-text">{t.tenantId?.name}</span>
                                                     </div>
@@ -360,7 +360,7 @@ export default function SASupportPage() {
                 <div className="space-y-6 pt-2">
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-4">
-                            <div className="w-10 h-10 bg-primary/10 flex items-center justify-center text-primary">
+                            <div className="w-10 h-10 bg-violet-50 flex items-center justify-center text-primary">
                                 <HelpCircle size={18} />
                             </div>
                             <div>
@@ -381,12 +381,12 @@ export default function SASupportPage() {
                     <div className="grid grid-cols-1 gap-4">
                         {loadingFaqs ? (
                             <div className="py-20 text-center animate-pulse">
-                                <RefreshCw className="w-12 h-12 text-primary/20 mx-auto mb-4 animate-spin" />
+                                <RefreshCw className="w-12 h-12 text-indigo-500/20 mx-auto mb-4 animate-spin" />
                                 <p className="text-[11px] font-black uppercase tracking-widest text-text-muted">Updating FAQ list...</p>
                             </div>
                         ) : faqs.length === 0 ? (
                             <div className="py-20 text-center bg-white border border-border border-dashed rounded-2xl">
-                                <Info className="w-16 h-16 text-primary/20 mx-auto mb-4" />
+                                <Info className="w-16 h-16 text-rose-500/20 mx-auto mb-4" />
                                 <p className="text-[11px] font-black uppercase tracking-widest text-text-muted">No FAQs found. Click "Add Question" to start.</p>
                             </div>
                         ) : (
@@ -454,7 +454,7 @@ export default function SASupportPage() {
             {isCreateModalOpen && (
                 <div className="fixed inset-0 z-[150] flex items-center justify-center p-4">
                     <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setIsCreateModalOpen(false)}></div>
-                    <div className="relative w-full max-w-lg bg-white rounded-3xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
+                    <div className="relative w-full max-w-lg bg-white rounded-2xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
                         <div className="p-6 border-b border-border flex items-center justify-between bg-surface/50">
                             <h2 className="text-xl font-black uppercase tracking-tight">Create <span className="text-primary">Support Ticket</span></h2>
                             <button onClick={() => setIsCreateModalOpen(false)} className="p-2 hover:bg-surface rounded-xl transition-colors">

@@ -202,7 +202,7 @@ export default function TaxReports() {
                         </div>
                     </div>
 
-                    <div className="bg-white border border-border rounded-3xl overflow-hidden shadow-sm">
+                    <div className="bg-white border border-border rounded-2xl overflow-hidden shadow-sm">
                         <div className="p-6 border-b border-border bg-surface/10">
                             <h3 className="text-[10px] font-bold text-text-muted uppercase tracking-widest">
                                 Monthly tax summary

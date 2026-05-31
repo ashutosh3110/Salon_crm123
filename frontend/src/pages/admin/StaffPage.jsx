@@ -326,7 +326,7 @@ export default function StaffPage() {
                         setForm({ name: '', email: '', phone: '', role: '', roleId: '', outletId: '', password: '', salary: '', bankName: '', accountNo: '', ifsc: '', avatar: '', stylistBio: '', stylistExperience: '', stylistSpecializations: '', availability: JSON.parse(JSON.stringify(DEFAULT_AVAILABILITY)) });
                         setShowModal(true);
                     }}
-                    className="flex items-center gap-2 bg-[#cca839] text-white px-6 py-3.5 text-[11px] font-black uppercase tracking-widest rounded-full hover:bg-[#b59533] transition-all shadow-sm"
+                    className="flex items-center gap-2 bg-[#cca839] text-white px-6 py-3.5 text-[11px] font-black uppercase tracking-widest rounded-xl hover:bg-[#b59533] transition-all shadow-sm"
                 >
                     <Plus className="w-4 h-4" /> ADD NEW MEMBER
                 </button>
@@ -364,7 +364,7 @@ export default function StaffPage() {
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
                         placeholder="SEARCH BY NAME OR EMAIL..."
-                        className="w-full !pl-14 pr-5 py-3.5 bg-white border border-slate-200 rounded-full text-[11px] font-black uppercase tracking-widest focus:border-slate-300 outline-none transition-all placeholder:text-slate-300 text-text shadow-sm"
+                        className="w-full !pl-14 pr-5 py-3.5 bg-white border border-slate-200 rounded-xl text-[11px] font-black uppercase tracking-widest focus:border-slate-300 outline-none transition-all placeholder:text-slate-300 text-text shadow-sm"
                     />
                 </div>
                 <div className="flex gap-4">
@@ -372,7 +372,7 @@ export default function StaffPage() {
                         <select
                             value={roleFilter === 'all' ? 'All Roles' : roleFilter.toUpperCase()}
                             onChange={(e) => setRoleFilter(e.target.value === 'All Roles' ? 'all' : e.target.value.toLowerCase())}
-                            className="pl-5 pr-10 py-3.5 bg-white border border-slate-200 rounded-full text-[11px] font-black tracking-widest outline-none focus:border-slate-300 transition-all appearance-none min-w-[160px] text-slate-700 shadow-sm"
+                            className="pl-5 pr-10 py-3.5 bg-white border border-slate-200 rounded-xl text-[11px] font-black tracking-widest outline-none focus:border-slate-300 transition-all appearance-none min-w-[160px] text-slate-700 shadow-sm"
                         >
                             <option value="All Roles">All Roles</option>
                             {roles.map(r => <option key={r._id} value={r.name.toUpperCase()}>{r.name}</option>)}
@@ -383,7 +383,7 @@ export default function StaffPage() {
                         <select
                             value={outletFilter === 'all' ? 'All Salons' : outlets.find(o => o._id === outletFilter)?.name}
                             onChange={(e) => setOutletFilter(e.target.value === 'All Salons' ? 'all' : outlets.find(o => o.name === e.target.value)?._id)}
-                            className="pl-5 pr-10 py-3.5 bg-white border border-slate-200 rounded-full text-[11px] font-black tracking-widest outline-none focus:border-slate-300 transition-all appearance-none min-w-[160px] text-slate-700 shadow-sm"
+                            className="pl-5 pr-10 py-3.5 bg-white border border-slate-200 rounded-xl text-[11px] font-black tracking-widest outline-none focus:border-slate-300 transition-all appearance-none min-w-[160px] text-slate-700 shadow-sm"
                         >
                             <option value="All Salons">All Salons</option>
                             {outlets.map(o => <option key={o._id} value={o.name}>{o.name}</option>)}
@@ -430,7 +430,7 @@ export default function StaffPage() {
                                                         <img
                                                             src={getImageUrl(s.avatar)}
                                                             alt={s.name}
-                                                            className="w-full h-full rounded-full object-cover"
+                                                            className="w-full h-full rounded-xl object-cover"
                                                         />
                                                     ) : (
                                                         s.name?.charAt(0) || 'U'
@@ -458,7 +458,7 @@ export default function StaffPage() {
                                             </div>
                                         </td>
                                         <td className="px-6 py-5">
-                                            <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-50 text-[10px] font-black text-emerald-500 uppercase tracking-widest border border-emerald-100">
+                                            <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-emerald-50 text-[10px] font-black text-emerald-500 uppercase tracking-widest border border-emerald-100">
                                                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
                                                 {s.status || 'ACTIVE'}
                                             </span>
@@ -508,7 +508,7 @@ export default function StaffPage() {
                             type="button"
                             onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
                             disabled={currentPage === 1}
-                            className="px-5 py-2.5 border border-slate-200 rounded-full text-[10px] font-black text-slate-400 uppercase tracking-widest hover:border-slate-300 transition-all disabled:opacity-30 bg-white"
+                            className="px-5 py-2.5 border border-slate-200 rounded-xl text-[10px] font-black text-slate-400 uppercase tracking-widest hover:border-slate-300 transition-all disabled:opacity-30 bg-white"
                         >
                             PREVIOUS
                         </button>
@@ -516,7 +516,7 @@ export default function StaffPage() {
                             type="button"
                             onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
                             disabled={currentPage === totalPages || totalPages === 0}
-                            className="px-5 py-2.5 border border-slate-200 rounded-full text-[10px] font-black text-slate-400 uppercase tracking-widest hover:border-slate-300 transition-all disabled:opacity-30 bg-white"
+                            className="px-5 py-2.5 border border-slate-200 rounded-xl text-[10px] font-black text-slate-400 uppercase tracking-widest hover:border-slate-300 transition-all disabled:opacity-30 bg-white"
                         >
                             NEXT
                         </button>
@@ -530,7 +530,7 @@ export default function StaffPage() {
                 <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 sm:p-6 overflow-y-auto bg-slate-900/60 backdrop-blur-sm transition-all" onClick={() => setShowModal(false)}>
                     <form
                         onSubmit={handleSubmit}
-                        className="bg-white dark:bg-slate-800 w-full max-w-md shadow-2xl relative border border-border flex flex-col my-auto rounded-none z-10 max-h-[85vh] overflow-y-auto admin-panel"
+                        className="bg-white dark:bg-slate-800 w-full max-w-md shadow-2xl relative border border-border flex flex-col my-auto rounded-xl z-10 max-h-[85vh] overflow-y-auto admin-panel"
                         onClick={(e) => e.stopPropagation()}
                     >
                         <style>{`
@@ -897,7 +897,7 @@ export default function StaffPage() {
 
                                             <div className="flex items-center justify-between mb-4">
                                                 <p className="text-[10px] font-black text-primary uppercase tracking-[0.2em] font-mono">Work Schedule & Availability</p>
-                                                <div className="flex bg-surface-alt p-1 rounded-none border border-border">
+                                                <div className="flex bg-surface-alt p-1 rounded-xl border border-border">
                                                     <div
                                                         role="button"
                                                         onClick={() => setForm({ ...form, availability: { ...form.availability, mode: 'same' } })}
@@ -984,7 +984,7 @@ export default function StaffPage() {
             {viewingStaff && createPortal(
                 <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 sm:p-6 overflow-y-auto bg-slate-900/60 backdrop-blur-sm transition-all" onClick={() => setViewingStaff(null)}>
                     <div 
-                        className="bg-white dark:bg-slate-800 w-full max-w-2xl shadow-2xl relative border border-border flex flex-col my-auto rounded-none z-10 max-h-[90vh] overflow-y-auto admin-panel"
+                        className="bg-white dark:bg-slate-800 w-full max-w-2xl shadow-2xl relative border border-border flex flex-col my-auto rounded-xl z-10 max-h-[90vh] overflow-y-auto admin-panel"
                         onClick={(e) => e.stopPropagation()}
                     >
                         {/* Modal Header */}

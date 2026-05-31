@@ -77,7 +77,7 @@ function MetricCard({ label, value, icon: Icon, gradient, shadow, change, prefix
     const content = (
         <div className={`bg-surface rounded-2xl border border-border p-5 hover:border-primary/20 hover:shadow-xl hover:-translate-y-1 transition-all group shadow-sm relative overflow-hidden${to ? ' cursor-pointer' : ''}`}>
             <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
-                <ArrowUpRight className="w-4 h-4 text-primary" />
+                <ArrowUpRight className="w-4 h-4 text-blue-500" />
             </div>
             <div className="flex items-center justify-between mb-4">
                 <div className={`w-11 h-11 rounded-xl bg-gradient-to-br ${gradient} flex items-center justify-center shadow-lg ${shadow} group-hover:scale-110 transition-transform`}>
@@ -253,7 +253,7 @@ export default function SADashboardPage() {
     const salonsWithoutPlan = currentPlanDist.find(p => p.name === 'Free')?.value || 0;
 
     const metricCards = [
-        { label: 'Total Registered', value: kpi.totalSalons, icon: Building2, gradient: 'from-primary to-[#8B6F23]', shadow: 'shadow-primary/20', to: '/superadmin/tenants', textColor: 'text-primary' },
+        { label: 'Total Registered', value: kpi.totalSalons, icon: Building2, gradient: 'from-emerald-500 to-teal-600', shadow: 'shadow-primary/20', to: '/superadmin/tenants', textColor: 'text-primary' },
         { label: 'Active Salons', value: kpi.activeSubs, icon: CheckCircle2, gradient: 'from-emerald-500 to-teal-600', shadow: 'shadow-emerald-500/20', to: '/superadmin/tenants?status=active', textColor: 'text-emerald-600 dark:text-emerald-400' },
         { label: 'Pending Approval', value: kpi.pendingSalons, icon: Clock, gradient: 'from-blue-500 to-indigo-600', shadow: 'shadow-blue-500/20', to: '/superadmin/tenants?status=pending', textColor: 'text-blue-600 dark:text-blue-400' },
         { label: 'Salons With Plan', value: salonsWithPlan, icon: Crown, gradient: 'from-amber-500 to-orange-600', shadow: 'shadow-amber-500/20', to: '/superadmin/tenants?plan=subscribed', textColor: 'text-amber-600 dark:text-amber-400' },
@@ -272,7 +272,7 @@ export default function SADashboardPage() {
                     <h1 className="text-2xl font-black text-text tracking-tight flex items-center gap-2">
                         Platform Overview
                         <span className="flex h-2.5 w-2.5 relative">
-                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                            <span className="animate-ping absolute inline-flex h-full w-full rounded-xl bg-emerald-400 opacity-75"></span>
                             <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
                         </span>
                     </h1>
@@ -293,7 +293,7 @@ export default function SADashboardPage() {
             <div className="bg-surface/80 backdrop-blur-md rounded-2xl border border-border p-4 shadow-sm flex flex-col lg:flex-row lg:items-center justify-between gap-4">
                 <div className="flex flex-wrap items-center gap-2">
                     <span className="text-xs font-bold text-text-secondary uppercase tracking-wider flex items-center gap-1.5 mr-1">
-                        <Calendar className="w-4 h-4 text-primary" /> Filter Period:
+                        <Calendar className="w-4 h-4 text-emerald-500" /> Filter Period:
                     </span>
                     {[
                         { key: 'all', label: 'All Time' },
@@ -378,7 +378,7 @@ export default function SADashboardPage() {
                         subtitle="Earnings performance over the last 6 months"
                         action={
                             <div className="flex items-center gap-3">
-                                <span className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/30 px-2 py-1 rounded-full">
+                                <span className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/30 px-2 py-1 rounded-xl">
                                     ↑ 11.9% MoM
                                 </span>
                                 <Link to="/superadmin/billing" className="p-1.5 rounded-lg bg-primary/5 text-primary opacity-0 group-hover:opacity-100 transition-all hover:bg-primary hover:text-white">
@@ -457,7 +457,7 @@ export default function SADashboardPage() {
                         subtitle="New monthly registrations"
                         action={
                             <div className="flex items-center gap-3">
-                                <span className="text-[11px] font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/30 px-2 py-1 rounded-full">
+                                <span className="text-[11px] font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/30 px-2 py-1 rounded-xl">
                                     34 this month
                                 </span>
                                 <Link to="/superadmin/tenants" className="p-1.5 rounded-lg bg-primary/5 text-primary opacity-0 group-hover:opacity-100 transition-all hover:bg-primary hover:text-white">
@@ -493,7 +493,7 @@ export default function SADashboardPage() {
                         subtitle="Tracing salons who left our platform"
                         action={
                             <div className="flex items-center gap-3">
-                                <span className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/30 px-2 py-1 rounded-full">
+                                <span className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/30 px-2 py-1 rounded-xl">
                                     ↓ Improving
                                 </span>
                                 <Link to="/superadmin/tenants?status=expired" className="p-1.5 rounded-lg bg-primary/5 text-primary opacity-0 group-hover:opacity-100 transition-all hover:bg-primary hover:text-white">
@@ -555,7 +555,7 @@ export default function SADashboardPage() {
                                 >
                                     <td className="px-5 py-3.5">
                                         <div className="flex items-center gap-3">
-                                            <div className="w-8 h-8 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center text-xs font-black text-primary shrink-0 group-hover:bg-primary group-hover:text-primary-foreground transition-all">
+                                            <div className="w-8 h-8 rounded-lg bg-indigo-50 border border-primary/20 flex items-center justify-center text-xs font-black text-primary shrink-0 group-hover:bg-primary group-hover:text-primary-foreground transition-all">
                                                 {t.name[0]?.toUpperCase() || 'S'}
                                             </div>
                                             <div>

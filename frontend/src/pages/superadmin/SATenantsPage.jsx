@@ -731,7 +731,7 @@ export default function SATenantsPage() {
 
     const DateFilterPanel = showDateFilter && (
         <div className="bg-surface rounded-2xl border border-primary/20 shadow-lg px-4 py-3.5 flex flex-wrap items-center gap-2 animate-in slide-in-from-top-2 duration-200">
-            <Calendar className="w-4 h-4 text-primary shrink-0" />
+            <Calendar className="w-4 h-4 text-blue-500 shrink-0" />
             <span className="text-[11px] font-bold text-text-muted uppercase tracking-wider mr-1">Period:</span>
             {DATE_PERIODS.map(p => (
                 <button
@@ -1065,7 +1065,7 @@ export default function SATenantsPage() {
 
 
             {/* ── Table ── */}
-            <div className="bg-white rounded-3xl border border-border shadow-sm overflow-hidden">
+            <div className="bg-white rounded-2xl border border-border shadow-sm overflow-hidden">
                 {filtered.length === 0 ? (
                     <div className="text-center py-20">
                         <Building2 className="w-12 h-12 text-text-muted mx-auto mb-3 opacity-40" />
@@ -1107,7 +1107,7 @@ export default function SATenantsPage() {
                                                 {/* Salon */}
                                                 <td className="px-4 py-3.5">
                                                     <div className="flex items-center gap-3 group/link">
-                                                        <div className="w-9 h-9 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center text-sm font-black text-primary shrink-0 group-hover:bg-primary group-hover:text-primary-foreground transition-all">
+                                                        <div className="w-9 h-9 rounded-xl bg-emerald-50 border border-primary/20 flex items-center justify-center text-sm font-black text-primary shrink-0 group-hover:bg-primary group-hover:text-primary-foreground transition-all">
                                                             {t.name[0].toUpperCase()}
                                                         </div>
                                                         <div>

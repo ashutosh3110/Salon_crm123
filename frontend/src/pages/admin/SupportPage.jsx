@@ -397,7 +397,7 @@ export default function SupportPage() {
                                                     <td className="px-5 py-4 text-right">
                                                         <div className="flex items-center justify-end gap-3">
                                                             <span className="text-[12px] font-bold text-text">{t.lastUpdate || 'Just now'}</span>
-                                                            <button className="p-1 hover:bg-surface rounded-full text-text transition-colors">
+                                                            <button className="p-1 hover:bg-surface rounded-xl text-text transition-colors">
                                                                 <MoreHorizontal className="w-5 h-5" />
                                                             </button>
                                                         </div>
@@ -474,7 +474,7 @@ export default function SupportPage() {
             {/* Bottom Banner */}
             <div className="bg-[#f8fcf8] border border-emerald-100 rounded-2xl p-6 mt-8 flex items-center justify-between relative overflow-hidden">
                 <div className="flex items-center gap-4 relative z-10">
-                    <div className="w-14 h-14 rounded-full bg-emerald-100 flex items-center justify-center shrink-0">
+                    <div className="w-14 h-14 rounded-xl bg-emerald-100 flex items-center justify-center shrink-0">
                         <Shield className="w-7 h-7 text-emerald-600" />
                     </div>
                     <div>
@@ -504,7 +504,7 @@ export default function SupportPage() {
                         {/* Header */}
                         <div className="p-6 border-b border-border flex items-center justify-between bg-surface/50">
                             <div className="flex items-center gap-4">
-                                <button onClick={() => setSelectedTicket(null)} className="p-2 hover:bg-surface rounded-full transition-colors">
+                                <button onClick={() => setSelectedTicket(null)} className="p-2 hover:bg-surface rounded-xl transition-colors">
                                     <X className="w-5 h-5 text-text-muted" />
                                 </button>
                                 <div>
@@ -538,7 +538,7 @@ export default function SupportPage() {
                                         )}
                                     </div>
                                 )}
-                                <button onClick={fetchTickets} className="p-2 hover:bg-surface rounded-full">
+                                <button onClick={fetchTickets} className="p-2 hover:bg-surface rounded-xl">
                                     <RefreshCw className="w-4 h-4 text-text-muted" />
                                 </button>
                             </div>
@@ -604,7 +604,7 @@ export default function SupportPage() {
                                             );
                                         })}
                                         {selectedTicket.responses?.length === 0 && (
-                                            <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary/5 text-primary border border-primary/10 rounded-full text-[10px] font-bold uppercase tracking-wider mx-auto">
+                                            <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary/5 text-primary border border-primary/10 rounded-xl text-[10px] font-bold uppercase tracking-wider mx-auto">
                                                 <Clock className="w-3.5 h-3.5" /> Awaiting reply
                                             </div>
                                         )}
@@ -729,7 +729,7 @@ export default function SupportPage() {
                         initial={{ opacity: 0, y: 40 }}
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: 40 }}
-                        className="fixed bottom-10 left-1/2 -translate-x-1/2 z-[100] flex items-center gap-3 px-6 py-3 bg-text text-background rounded-full shadow-2xl border border-white/10"
+                        className="fixed bottom-10 left-1/2 -translate-x-1/2 z-[100] flex items-center gap-3 px-6 py-3 bg-text text-background rounded-xl shadow-2xl border border-white/10"
                     >
                         <CheckCircle className="w-4 h-4 text-emerald-500" />
                         <p className="text-[11px] font-bold uppercase tracking-widest">{toast}</p>

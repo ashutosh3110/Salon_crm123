@@ -169,7 +169,7 @@ export default function SAInquiriesPage() {
                                         <td className="px-6 py-5">
                                             <div className="flex items-center gap-4">
                                                 <div className="w-10 h-10 bg-primary/5 flex items-center justify-center border border-primary/10">
-                                                    <User className="w-5 h-5 text-primary" />
+                                                    <User className="w-5 h-5 text-blue-500" />
                                                 </div>
                                                 <div>
                                                     <div className="text-sm font-bold text-text truncate max-w-[180px]">{item.name}</div>
@@ -202,7 +202,7 @@ export default function SAInquiriesPage() {
                                             </div>
                                         </td>
                                         <td className="px-6 py-5">
-                                            <div className={`px-2 py-1 rounded-none text-[10px] font-black uppercase tracking-wider inline-flex items-center gap-1.5
+                                            <div className={`px-2 py-1 rounded-xl text-[10px] font-black uppercase tracking-wider inline-flex items-center gap-1.5
                                                 ${item.status === 'new' ? 'bg-amber-100 text-amber-700' :
                                                     item.status === 'contacted' ? 'bg-emerald-100 text-emerald-700' :
                                                         'bg-gray-100 text-gray-700'}`}>

@@ -467,7 +467,7 @@ export default function SABillingPage() {
             <div className="bg-white rounded-2xl border border-border p-4 shadow-sm flex flex-col lg:flex-row lg:items-center justify-between gap-4">
                 <div className="flex flex-wrap items-center gap-2">
                     <span className="text-xs font-bold text-text-muted uppercase tracking-wider flex items-center gap-1.5 mr-1">
-                        <Calendar className="w-4 h-4 text-primary" /> Filter Period:
+                        <Calendar className="w-4 h-4 text-blue-500" /> Filter Period:
                     </span>
                     {[
                         { key: 'all', label: 'All Time' },
@@ -585,7 +585,7 @@ export default function SABillingPage() {
                                                 <td className="px-4 py-3.5 text-sm font-mono text-primary font-semibold">{p.invoiceNumber}</td>
                                                 <td className="px-4 py-3.5">
                                                     <div className="flex items-center gap-2.5">
-                                                        <div className="w-7 h-7 rounded-lg bg-primary/10 flex items-center justify-center text-xs font-black text-primary shrink-0">
+                                                        <div className="w-7 h-7 rounded-lg bg-emerald-50 flex items-center justify-center text-xs font-black text-primary shrink-0">
                                                             {(p.tenantId?.name || p.salonName || 'S')[0]}
                                                         </div>
                                                         <span className="text-sm text-text font-medium">{p.tenantId?.name || p.salonName || 'Unknown'}</span>
@@ -766,7 +766,7 @@ export default function SABillingPage() {
                                 <h3 className="font-bold text-text">Revenue Trend</h3>
                                 <p className="text-xs text-text-muted mt-0.5">Monthly revenue over last 6 months</p>
                             </div>
-                            <span className="text-[11px] font-bold text-emerald-600 bg-emerald-50 px-2 py-1 rounded-full">↑ 11.9% MoM</span>
+                            <span className="text-[11px] font-bold text-emerald-600 bg-emerald-50 px-2 py-1 rounded-xl">↑ 11.9% MoM</span>
                         </div>
                         <ResponsiveContainer width="100%" height={220}>
                             <AreaChart data={monthlyRevenue} margin={{ top: 5, right: 5, left: 0, bottom: 0 }}>
@@ -811,7 +811,7 @@ export default function SABillingPage() {
                                                 </span>
                                             </div>
                                             <div className="h-2 rounded-full bg-slate-100 overflow-hidden">
-                                                <div className="h-full rounded-full transition-all duration-700"
+                                                <div className="h-full rounded-xl transition-all duration-700"
                                                     style={{ width: `${pct}%`, backgroundColor: color }} />
                                             </div>
                                         </div>

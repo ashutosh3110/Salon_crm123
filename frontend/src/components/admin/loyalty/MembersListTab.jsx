@@ -436,7 +436,7 @@ export default function MembersListTab() {
                             initial={{ opacity: 0, scale: 0.95, y: 20 }}
                             animate={{ opacity: 1, scale: 1, y: 0 }}
                             exit={{ opacity: 0, scale: 0.95, y: 20 }}
-                            className="bg-white border border-slate-200 w-full max-w-lg overflow-hidden shadow-2xl rounded-none font-sans text-slate-800"
+                            className="bg-white border border-slate-200 w-full max-w-lg overflow-hidden shadow-2xl rounded-xl font-sans text-slate-800"
                             onClick={e => e.stopPropagation()}
                         >
                             {/* Modal Header */}
@@ -447,7 +447,7 @@ export default function MembersListTab() {
                                 </div>
                                 <button
                                     onClick={() => setSelectedMember(null)}
-                                    className="p-2 rounded-full hover:bg-slate-100 text-slate-400 hover:text-rose-500 transition-colors"
+                                    className="p-2 rounded-xl hover:bg-slate-100 text-slate-400 hover:text-rose-500 transition-colors"
                                 >
                                     <X size={20} />
                                 </button>
@@ -511,7 +511,7 @@ export default function MembersListTab() {
                             <div className="bg-slate-50 border-t border-slate-100 px-6 py-4 flex justify-end">
                                 <button
                                     onClick={() => setSelectedMember(null)}
-                                    className="px-6 py-2.5 bg-slate-900 hover:bg-primary text-white text-[10px] font-black uppercase tracking-[0.2em] transition-all shadow-lg rounded-none"
+                                    className="px-6 py-2.5 bg-slate-900 hover:bg-primary text-white text-[10px] font-black uppercase tracking-[0.2em] transition-all shadow-lg rounded-xl"
                                 >
                                     Close Registry
                                 </button>
@@ -541,7 +541,7 @@ export default function MembersListTab() {
                             initial={{ opacity: 0, scale: 0.95, y: 20 }}
                             animate={{ opacity: 1, scale: 1, y: 0 }}
                             exit={{ opacity: 0, scale: 0.95, y: 20 }}
-                            className="bg-white border border-slate-200 w-full max-w-lg overflow-hidden shadow-2xl rounded-none font-sans text-slate-800 flex flex-col max-h-[90vh]"
+                            className="bg-white border border-slate-200 w-full max-w-lg overflow-hidden shadow-2xl rounded-xl font-sans text-slate-800 flex flex-col max-h-[90vh]"
                             onClick={e => e.stopPropagation()}
                         >
                             {/* Modal Header */}
@@ -560,7 +560,7 @@ export default function MembersListTab() {
                                         setErrorMessage('');
                                         setSuccessMessage('');
                                     }}
-                                    className="p-2 rounded-full hover:bg-slate-100 text-slate-400 hover:text-rose-500 transition-colors"
+                                    className="p-2 rounded-xl hover:bg-slate-100 text-slate-400 hover:text-rose-500 transition-colors"
                                 >
                                     <X size={20} />
                                 </button>
@@ -598,7 +598,7 @@ export default function MembersListTab() {
                                                 setSelectedCustomer(null);
                                                 setShowDropdown(true);
                                             }}
-                                            className="w-full h-12 bg-slate-50 border border-slate-200 pl-12 pr-10 text-xs font-bold text-slate-900 focus:border-primary outline-none transition-all shadow-sm rounded-none"
+                                            className="w-full h-12 bg-slate-50 border border-slate-200 pl-12 pr-10 text-xs font-bold text-slate-900 focus:border-primary outline-none transition-all shadow-sm rounded-xl"
                                         />
                                         {selectedCustomerId ? (
                                             <button
@@ -681,7 +681,7 @@ export default function MembersListTab() {
                                     <select
                                         value={selectedPlanId}
                                         onChange={(e) => setSelectedPlanId(e.target.value)}
-                                        className="w-full h-12 bg-slate-50 border border-slate-200 px-4 text-xs font-bold text-slate-900 focus:border-primary outline-none transition-all shadow-sm rounded-none"
+                                        className="w-full h-12 bg-slate-50 border border-slate-200 px-4 text-xs font-bold text-slate-900 focus:border-primary outline-none transition-all shadow-sm rounded-xl"
                                     >
                                         <option value="">-- Choose a Plan --</option>
                                         {plans.map(p => (
@@ -699,7 +699,7 @@ export default function MembersListTab() {
                                         <select
                                             value={selectedOutletId}
                                             onChange={(e) => setSelectedOutletId(e.target.value)}
-                                            className="w-full h-12 bg-slate-50 border border-slate-200 px-4 text-xs font-bold text-slate-900 focus:border-primary outline-none transition-all shadow-sm rounded-none"
+                                            className="w-full h-12 bg-slate-50 border border-slate-200 px-4 text-xs font-bold text-slate-900 focus:border-primary outline-none transition-all shadow-sm rounded-xl"
                                         >
                                             <option value="">-- Choose Outlet --</option>
                                             {outlets.map(o => (
@@ -716,7 +716,7 @@ export default function MembersListTab() {
                                         <select
                                             value={paymentMethod}
                                             onChange={(e) => setPaymentMethod(e.target.value)}
-                                            className="w-full h-12 bg-slate-50 border border-slate-200 px-4 text-xs font-bold text-slate-900 focus:border-primary outline-none transition-all shadow-sm rounded-none"
+                                            className="w-full h-12 bg-slate-50 border border-slate-200 px-4 text-xs font-bold text-slate-900 focus:border-primary outline-none transition-all shadow-sm rounded-xl"
                                         >
                                             <option value="cash">Cash</option>
                                             <option value="card">Card</option>
@@ -728,7 +728,7 @@ export default function MembersListTab() {
 
                                 {paymentMethod === 'wallet' && (
                                     selectedCustomer ? (
-                                        <div className="p-4 bg-emerald-50 border border-emerald-200 text-emerald-600 flex items-center justify-between rounded-none animate-in fade-in slide-in-from-top-2 duration-200">
+                                        <div className="p-4 bg-emerald-50 border border-emerald-200 text-emerald-600 flex items-center justify-between rounded-xl animate-in fade-in slide-in-from-top-2 duration-200">
                                             <div className="flex items-center gap-2.5">
                                                 <div className="w-9 h-9 rounded-full bg-emerald-100 flex items-center justify-center">
                                                     <Star className="w-5 h-5 text-emerald-600" fill="currentColor" />
@@ -743,7 +743,7 @@ export default function MembersListTab() {
                                             </div>
                                         </div>
                                     ) : (
-                                        <div className="p-4 bg-amber-50 border border-amber-200 text-amber-600 flex items-center gap-2.5 rounded-none animate-in fade-in slide-in-from-top-2 duration-200">
+                                        <div className="p-4 bg-amber-50 border border-amber-200 text-amber-600 flex items-center gap-2.5 rounded-xl animate-in fade-in slide-in-from-top-2 duration-200">
                                             <AlertCircle className="w-5 h-5 text-amber-500 shrink-0" />
                                             <span className="text-xs font-bold uppercase tracking-wider text-left">Please select a customer first to view wallet balance.</span>
                                         </div>
@@ -840,7 +840,7 @@ export default function MembersListTab() {
                                         setErrorMessage('');
                                         setSuccessMessage('');
                                     }}
-                                    className="px-6 py-2.5 border border-slate-200 text-slate-600 hover:bg-slate-100 bg-white text-[10px] font-black uppercase tracking-[0.2em] rounded-none transition-all"
+                                    className="px-6 py-2.5 border border-slate-200 text-slate-600 hover:bg-slate-100 bg-white text-[10px] font-black uppercase tracking-[0.2em] rounded-xl transition-all"
                                 >
                                     Cancel
                                 </button>
@@ -857,7 +857,7 @@ export default function MembersListTab() {
                                             return (selectedCustomer.walletBalance || 0) < calculatedTotal;
                                         })())
                                     }
-                                    className="px-6 py-2.5 bg-slate-900 text-white text-[10px] font-black uppercase tracking-[0.2em] hover:bg-primary transition-all disabled:opacity-50 flex items-center gap-2 rounded-none shadow-lg"
+                                    className="px-6 py-2.5 bg-slate-900 text-white text-[10px] font-black uppercase tracking-[0.2em] hover:bg-primary transition-all disabled:opacity-50 flex items-center gap-2 rounded-xl shadow-lg"
                                 >
                                     {assigning ? 'Activating...' : 'Activate Subscription'}
                                 </button>
@@ -879,7 +879,7 @@ export default function MembersListTab() {
                             initial={{ opacity: 0, scale: 0.95, y: 20 }}
                             animate={{ opacity: 1, scale: 1, y: 0 }}
                             exit={{ opacity: 0, scale: 0.95, y: 20 }}
-                            className="bg-white border border-slate-200 w-full max-w-2xl overflow-hidden shadow-2xl rounded-none font-sans flex flex-col max-h-[90vh]"
+                            className="bg-white border border-slate-200 w-full max-w-2xl overflow-hidden shadow-2xl rounded-xl font-sans flex flex-col max-h-[90vh]"
                             onClick={e => e.stopPropagation()}
                         >
                             {/* Modal Header */}
@@ -890,7 +890,7 @@ export default function MembersListTab() {
                                 </div>
                                 <button
                                     onClick={() => setSelectedInvoice(null)}
-                                    className="p-2 rounded-full hover:bg-slate-100 text-slate-400 hover:text-rose-500 transition-colors"
+                                    className="p-2 rounded-xl hover:bg-slate-100 text-slate-400 hover:text-rose-500 transition-colors"
                                 >
                                     <X size={20} />
                                 </button>
@@ -900,7 +900,7 @@ export default function MembersListTab() {
                             <div className="flex border-b border-slate-100 bg-slate-50 p-1 shrink-0">
                                 <button
                                     onClick={() => setInvoiceTab('standard')}
-                                    className={`flex-1 py-3 text-center text-[10px] font-black uppercase tracking-widest transition-all rounded-none ${invoiceTab === 'standard'
+                                    className={`flex-1 py-3 text-center text-[10px] font-black uppercase tracking-widest transition-all rounded-xl ${invoiceTab === 'standard'
                                             ? 'bg-white text-slate-900 border border-slate-200 font-extrabold shadow-sm'
                                             : 'text-slate-400 hover:text-slate-950'
                                         }`}
@@ -909,7 +909,7 @@ export default function MembersListTab() {
                                 </button>
                                 <button
                                     onClick={() => setInvoiceTab('thermal')}
-                                    className={`flex-1 py-3 text-center text-[10px] font-black uppercase tracking-widest transition-all rounded-none ${invoiceTab === 'thermal'
+                                    className={`flex-1 py-3 text-center text-[10px] font-black uppercase tracking-widest transition-all rounded-xl ${invoiceTab === 'thermal'
                                             ? 'bg-white text-slate-900 border border-slate-200 font-extrabold shadow-sm'
                                             : 'text-slate-400 hover:text-slate-950'
                                         }`}
@@ -1073,7 +1073,7 @@ export default function MembersListTab() {
                             <div className="bg-slate-50 border-t border-slate-100 px-6 py-4 flex justify-end gap-3 text-right shrink-0">
                                 <button
                                     onClick={() => setSelectedInvoice(null)}
-                                    className="px-6 py-2.5 border border-slate-200 bg-white text-slate-600 hover:bg-slate-100 text-[10px] font-black uppercase tracking-[0.2em] rounded-none transition-all"
+                                    className="px-6 py-2.5 border border-slate-200 bg-white text-slate-600 hover:bg-slate-100 text-[10px] font-black uppercase tracking-[0.2em] rounded-xl transition-all"
                                 >
                                     Close
                                 </button>
@@ -1108,7 +1108,7 @@ export default function MembersListTab() {
                                             if (helper) helper.remove();
                                         }, 1000);
                                     }}
-                                    className="px-6 py-2.5 bg-slate-900 text-white text-[10px] font-black uppercase tracking-[0.2em] hover:bg-primary transition-all flex items-center gap-2 rounded-none shadow-lg"
+                                    className="px-6 py-2.5 bg-slate-900 text-white text-[10px] font-black uppercase tracking-[0.2em] hover:bg-primary transition-all flex items-center gap-2 rounded-xl shadow-lg"
                                 >
                                     <Printer className="w-4 h-4" /> Print Receipt
                                 </button>

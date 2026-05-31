@@ -287,7 +287,7 @@ export default function ServiceCategories({
             {modalState.isOpen && createPortal(
                 <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
                     <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onClick={closeModal} />
-                    <div className="bg-white dark:bg-slate-800 rounded-none p-6 w-full max-w-md relative z-10 shadow-2xl animate-in zoom-in-95 duration-200 border border-border admin-panel" onClick={(e) => e.stopPropagation()}>
+                    <div className="bg-white dark:bg-slate-800 rounded-xl p-6 w-full max-w-md relative z-10 shadow-2xl animate-in zoom-in-95 duration-200 border border-border admin-panel" onClick={(e) => e.stopPropagation()}>
                         <div className="flex items-center justify-between mb-5">
                             <div className="flex items-center gap-3">
                                 {modalState.type === 'add' ? <Plus className="w-6 h-6 text-text shrink-0" /> : <Edit2 className="w-6 h-6 text-text shrink-0" />}
@@ -301,7 +301,7 @@ export default function ServiceCategories({
                             <button
                                 type="button"
                                 onClick={closeModal}
-                                className="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-400 hover:text-rose-500 transition-all"
+                                className="p-2 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-400 hover:text-rose-500 transition-all"
                                 title="Close"
                             >
                                 <X className="w-5 h-5" />
@@ -326,7 +326,7 @@ export default function ServiceCategories({
                                         onChange={handleImageChange}
                                     />
                                     {imagePreview ? (
-                                        <div className="relative w-full h-32 rounded-none overflow-hidden border border-slate-200 dark:border-slate-700 group-hover/img:border-primary transition-all">
+                                        <div className="relative w-full h-32 rounded-xl overflow-hidden border border-slate-200 dark:border-slate-700 group-hover/img:border-primary transition-all">
                                             <img
                                                 src={imagePreview.startsWith('data:') || imagePreview.startsWith('http') ? imagePreview : `${API_BASE_URL}${imagePreview}`}
                                                 className="w-full h-full object-cover"
@@ -335,7 +335,7 @@ export default function ServiceCategories({
                                             <div className="absolute inset-0 bg-white/60 dark:bg-slate-900/60 opacity-0 group-hover/img:opacity-100 flex items-center justify-center transition-all">
                                                 <button
                                                     onClick={(e) => { e.preventDefault(); setImage(''); setImagePreview(''); }}
-                                                    className="p-3 bg-rose-500 text-white rounded-full shadow-xl hover:scale-110 transition-all"
+                                                    className="p-3 bg-rose-500 text-white rounded-xl shadow-xl hover:scale-110 transition-all"
                                                 >
                                                     <X className="w-5 h-5" />
                                                 </button>
@@ -344,7 +344,7 @@ export default function ServiceCategories({
                                     ) : (
                                         <label
                                             htmlFor="cat-image-input"
-                                            className="flex flex-col items-center justify-center w-full h-32 rounded-none border-2 border-dashed border-slate-300 dark:border-slate-600 hover:border-primary/50 bg-slate-50 dark:bg-slate-800 cursor-pointer transition-all gap-2"
+                                            className="flex flex-col items-center justify-center w-full h-32 rounded-xl border-2 border-dashed border-slate-300 dark:border-slate-600 hover:border-primary/50 bg-slate-50 dark:bg-slate-800 cursor-pointer transition-all gap-2"
                                         >
                                             <div className="w-10 h-10 bg-primary/10 flex items-center justify-center text-primary">
                                                 <Camera className="w-6 h-6" />
@@ -364,7 +364,7 @@ export default function ServiceCategories({
                                 <input
                                     type="text"
                                     autoFocus
-                                    className="w-full px-4 py-2.5 rounded-none bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-black uppercase tracking-widest focus:ring-0 focus:border-primary outline-none text-slate-900 dark:text-white transition-all"
+                                    className="w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-black uppercase tracking-widest focus:ring-0 focus:border-primary outline-none text-slate-900 dark:text-white transition-all"
                                     placeholder="e.g. LUXURY HAIR CARE"
                                     value={name}
                                     onChange={(e) => setName(e.target.value)}
@@ -379,7 +379,7 @@ export default function ServiceCategories({
                                             key={g}
                                             role="button"
                                             onClick={() => setGender(g)}
-                                            className={`py-2 border text-[10px] font-bold uppercase tracking-[0.1em] transition-all flex flex-col items-center gap-1 rounded-none cursor-pointer ${gender === g
+                                            className={`py-2 border text-[10px] font-bold uppercase tracking-[0.1em] transition-all flex flex-col items-center gap-1 rounded-xl cursor-pointer ${gender === g
                                                 ? 'bg-primary border-primary shadow-lg shadow-primary/20 text-white'
                                                 : 'bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:border-primary/50'
                                                 }`}
@@ -400,14 +400,14 @@ export default function ServiceCategories({
                             <div className="flex gap-2 pt-2">
                                 <button
                                     onClick={closeModal}
-                                    className="flex-1 py-3 bg-slate-100 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 text-[11px] font-bold text-slate-600 dark:text-slate-300 uppercase tracking-[0.2em] hover:bg-slate-200 dark:hover:bg-slate-600 transition-all rounded-none"
+                                    className="flex-1 py-3 bg-slate-100 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 text-[11px] font-bold text-slate-600 dark:text-slate-300 uppercase tracking-[0.2em] hover:bg-slate-200 dark:hover:bg-slate-600 transition-all rounded-xl"
                                 >
                                     Abort
                                 </button>
                                 <button
                                     onClick={handleSubmit}
                                     disabled={!name || !image}
-                                    className="flex-1 flex items-center justify-center gap-2 px-6 py-3 bg-slate-900 text-white text-[11px] font-bold uppercase tracking-widest hover:bg-primary disabled:opacity-50 disabled:cursor-not-allowed transition-all italic rounded-none"
+                                    className="flex-1 flex items-center justify-center gap-2 px-6 py-3 bg-slate-900 text-white text-[11px] font-bold uppercase tracking-widest hover:bg-primary disabled:opacity-50 disabled:cursor-not-allowed transition-all italic rounded-xl"
                                 >
                                     <Zap className="w-3.5 h-3.5" />
                                     {modalState.type === 'add' ? 'Save Category' : 'Update Category'}

@@ -365,7 +365,7 @@ export default function CashAndBank({ type, outletId }) {
           </div>
 
           {/* Notes */}
-          <div className="border border-border rounded-3xl bg-surface p-5 space-y-3 shadow-sm">
+          <div className="border border-border rounded-2xl bg-surface p-5 space-y-3 shadow-sm">
             <h3 className="text-[10px] font-black uppercase tracking-widest text-text-muted">Notes</h3>
 
             <textarea
@@ -413,7 +413,7 @@ function Card({ icon, title, children, color }) {
   const selectedColorClass = bgColors[color] || bgColors.primary;
 
   return (
-    <div className="bg-surface border border-border rounded-3xl p-5 space-y-3 shadow-sm flex flex-col">
+    <div className="bg-surface border border-border rounded-2xl p-5 space-y-3 shadow-sm flex flex-col">
       <div className="flex items-center gap-3 font-black text-text uppercase tracking-tight text-base mb-1">
         <div className={`w-9 h-9 rounded-xl flex items-center justify-center ${selectedColorClass}`}>
           {icon}

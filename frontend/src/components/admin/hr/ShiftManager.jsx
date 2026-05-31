@@ -213,7 +213,7 @@ export default function ShiftManager() {
     return (
         <div className="space-y-6 font-black text-left">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 text-left font-black">
-                <div className="flex items-center gap-4 px-6 py-4 bg-surface rounded-none border border-border shadow-sm text-left font-black">
+                <div className="flex items-center gap-4 px-6 py-4 bg-surface rounded-xl border border-border shadow-sm text-left font-black">
                     <Calendar className="w-5 h-5 text-primary" />
                     <div className="text-left font-black">
                         <h2 className="text-sm font-black text-text uppercase tracking-[0.2em] leading-none">Shift schedule</h2>
@@ -229,7 +229,7 @@ export default function ShiftManager() {
                 <button
                     onClick={openAdd}
                     disabled={!filteredOutlets?.length}
-                    className="flex items-center gap-3 px-8 py-4 rounded-none bg-primary text-white text-[10px] font-black uppercase tracking-[0.2em] shadow-xl shadow-primary/20 hover:bg-primary-dark active:scale-[0.98] transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+                    className="flex items-center gap-3 px-8 py-4 rounded-xl bg-primary text-white text-[10px] font-black uppercase tracking-[0.2em] shadow-xl shadow-primary/20 hover:bg-primary-dark active:scale-[0.98] transition-all disabled:opacity-40 disabled:cursor-not-allowed"
                 >
                     <Plus className="w-4 h-4" /> Add shift
                 </button>
@@ -243,7 +243,7 @@ export default function ShiftManager() {
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 text-left font-black relative">
                 {listLoading && (
-                    <div className="absolute inset-0 z-10 bg-surface/60 backdrop-blur-[1px] flex items-start justify-center pt-24 rounded-none">
+                    <div className="absolute inset-0 z-10 bg-surface/60 backdrop-blur-[1px] flex items-start justify-center pt-24 rounded-xl">
                         <p className="text-[10px] font-black uppercase tracking-widest text-text-muted">Loading shifts…</p>
                     </div>
                 )}
@@ -251,12 +251,12 @@ export default function ShiftManager() {
                     <div className="flex items-center justify-between px-2 mb-2 text-left font-black">
                         <h3 className="text-[10px] font-black text-text-muted uppercase tracking-[0.3em]">Your shifts</h3>
                         <div className="flex items-center gap-2 text-left">
-                            <div className="w-2 h-2 rounded-none bg-emerald-500 animate-pulse" />
+                            <div className="w-2 h-2 rounded-xl bg-emerald-500 animate-pulse" />
                             <span className="text-[9px] font-black uppercase tracking-widest text-emerald-500">Ready</span>
                         </div>
                     </div>
                     {!listLoading && shifts.length === 0 && (
-                        <div className="bg-surface border border-dashed border-border p-10 text-center rounded-none">
+                        <div className="bg-surface border border-dashed border-border p-10 text-center rounded-xl">
                             <p className="text-sm font-black text-text uppercase tracking-tight">No shifts yet</p>
                             <p className="text-[11px] text-text-muted mt-2 font-bold tracking-wide">
                                 Use “Add shift” to create your first one, then assign your team.
@@ -269,12 +269,12 @@ export default function ShiftManager() {
                             layout
                             initial={{ opacity: 0, y: 16 }}
                             animate={{ opacity: 1, y: 0 }}
-                            className="bg-surface p-6 rounded-none border border-border shadow-sm hover:shadow-xl transition-all group relative overflow-hidden text-left font-black"
+                            className="bg-surface p-6 rounded-xl border border-border shadow-sm hover:shadow-xl transition-all group relative overflow-hidden text-left font-black"
                         >
                             <div className={`absolute top-0 left-0 w-2 h-full ${shift.color}`} />
                             <div className="pl-4 flex flex-col md:flex-row md:items-center justify-between gap-6 text-left font-black">
                                 <div className="flex items-center gap-6 text-left">
-                                    <div className={`p-4 rounded-none ${shift.color}/5 border border-border/10 shrink-0`}>
+                                    <div className={`p-4 rounded-xl ${shift.color}/5 border border-border/10 shrink-0`}>
                                         <Clock className={`w-6 h-6 ${shift.color.replace('bg-', 'text-')}`} />
                                     </div>
                                     <div className="text-left leading-tight">
@@ -285,7 +285,7 @@ export default function ShiftManager() {
                                             <div className="flex items-center gap-1.5 text-left">
                                                 <Clock className="w-3.5 h-3.5" /> {to12(shift.start)} — {to12(shift.end)}
                                             </div>
-                                            <div className="hidden sm:block w-1 h-1 bg-border rounded-none" />
+                                            <div className="hidden sm:block w-1 h-1 bg-border rounded-xl" />
                                             <div className="flex items-center gap-1.5 text-left">
                                                 <Store className="w-3.5 h-3.5" /> {shift.outlet}
                                             </div>
@@ -301,10 +301,10 @@ export default function ShiftManager() {
                                         </div>
                                     </button>
                                     <div className="flex items-center gap-2 text-left">
-                                        <button type="button" onClick={() => openEdit(shift)} className="p-3 rounded-none border border-border hover:bg-surface-alt transition-all text-text-muted hover:text-primary">
+                                        <button type="button" onClick={() => openEdit(shift)} className="p-3 rounded-xl border border-border hover:bg-surface-alt transition-all text-text-muted hover:text-primary">
                                             <Edit2 className="w-4 h-4" />
                                         </button>
-                                        <button type="button" onClick={() => setDeleteConfirm(shift.id)} className="p-3 rounded-none border border-border hover:bg-rose-500/10 transition-all text-text-muted hover:text-rose-500">
+                                        <button type="button" onClick={() => setDeleteConfirm(shift.id)} className="p-3 rounded-xl border border-border hover:bg-rose-500/10 transition-all text-text-muted hover:text-rose-500">
                                             <Trash2 className="w-4 h-4" />
                                         </button>
                                     </div>
@@ -316,7 +316,7 @@ export default function ShiftManager() {
                         type="button"
                         disabled={!filteredOutlets?.length}
                         onClick={openAdd}
-                        className="w-full py-6 border border-dashed border-border rounded-none text-text-muted hover:text-primary hover:border-primary hover:bg-primary/5 transition-all text-[10px] font-black uppercase tracking-[0.3em] flex items-center justify-center gap-3 group disabled:opacity-40 disabled:cursor-not-allowed"
+                        className="w-full py-6 border border-dashed border-border rounded-xl text-text-muted hover:text-primary hover:border-primary hover:bg-primary/5 transition-all text-[10px] font-black uppercase tracking-[0.3em] flex items-center justify-center gap-3 group disabled:opacity-40 disabled:cursor-not-allowed"
                     >
                         <Plus className="w-4 h-4 group-hover:scale-125 transition-transform" /> Add another shift
                     </button>
@@ -325,7 +325,7 @@ export default function ShiftManager() {
                 <div className="space-y-6 text-left font-black">
                     <h3 className="text-[10px] font-black text-text-muted uppercase tracking-[0.3em] px-1">Summary</h3>
 
-                    <div className="bg-surface p-8 rounded-none border border-border shadow-sm text-left font-black">
+                    <div className="bg-surface p-8 rounded-xl border border-border shadow-sm text-left font-black">
                         <div className="flex items-center justify-between mb-8 text-left">
                             <span className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Staff per shift</span>
                             <TrendingUp className="w-4 h-4 text-primary" />
@@ -379,10 +379,10 @@ export default function ShiftManager() {
                         </div>
                     </div>
 
-                    <div className="bg-text p-8 rounded-none shadow-xl shadow-text/10 relative overflow-hidden group border border-text text-left font-black">
+                    <div className="bg-text p-8 rounded-xl shadow-xl shadow-text/10 relative overflow-hidden group border border-text text-left font-black">
                         <div className="relative z-10 text-left">
                             <div className="flex items-center gap-3 mb-6 text-left">
-                                <div className="p-3 rounded-none bg-white text-text border border-white/20">
+                                <div className="p-3 rounded-xl bg-white text-text border border-white/20">
                                     <Briefcase className="w-5 h-5" />
                                 </div>
                                 <span className="text-[10px] font-black uppercase tracking-[0.3em] text-white">Quick tip</span>
@@ -395,7 +395,7 @@ export default function ShiftManager() {
                                 type="button"
                                 disabled={!shifts.length}
                                 onClick={() => shifts[0] && setRosterModal(shifts[0])}
-                                className="w-full flex items-center justify-between px-6 py-4 rounded-none bg-primary text-white font-black text-[10px] uppercase tracking-[0.2em] hover:bg-primary-dark transition-all shadow-xl shadow-primary/20 disabled:opacity-40 disabled:cursor-not-allowed"
+                                className="w-full flex items-center justify-between px-6 py-4 rounded-xl bg-primary text-white font-black text-[10px] uppercase tracking-[0.2em] hover:bg-primary-dark transition-all shadow-xl shadow-primary/20 disabled:opacity-40 disabled:cursor-not-allowed"
                             >
                                 {shifts.length ? 'Pick team for first shift' : 'Add a shift first'} <ArrowRight className="w-4 h-4" />
                             </button>
@@ -413,11 +413,11 @@ export default function ShiftManager() {
                             initial={{ opacity: 0, scale: 0.95, y: 20 }}
                             animate={{ opacity: 1, scale: 1, y: 0 }}
                             exit={{ opacity: 0, scale: 0.95 }}
-                            className="bg-surface w-full max-w-md rounded-none border border-border shadow-2xl relative p-10"
+                            className="bg-surface w-full max-w-md rounded-xl border border-border shadow-2xl relative p-10"
                         >
                             <div className="flex items-center justify-between mb-8">
                                 <h2 className="text-sm font-black text-text uppercase tracking-[0.2em]">{editTarget ? 'Edit shift' : 'New shift'}</h2>
-                                <button type="button" onClick={() => setShiftModal(false)} className="w-10 h-10 rounded-none bg-background border border-border flex items-center justify-center text-text-muted hover:text-text transition-all">
+                                <button type="button" onClick={() => setShiftModal(false)} className="w-10 h-10 rounded-xl bg-background border border-border flex items-center justify-center text-text-muted hover:text-text transition-all">
                                     <X className="w-6 h-6" />
                                 </button>
                             </div>
@@ -428,7 +428,7 @@ export default function ShiftManager() {
                                         required
                                         type="text"
                                         placeholder="e.g. Morning, Evening, Weekend"
-                                        className="w-full px-5 py-4 rounded-none bg-background border border-border text-xs font-black tracking-wide focus:border-primary outline-none"
+                                        className="w-full px-5 py-4 rounded-xl bg-background border border-border text-xs font-black tracking-wide focus:border-primary outline-none"
                                         value={form.name}
                                         onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
                                     />
@@ -439,7 +439,7 @@ export default function ShiftManager() {
                                         <input
                                             required
                                             type="time"
-                                            className="w-full px-5 py-4 rounded-none bg-background border border-border text-xs font-black focus:border-primary outline-none uppercase"
+                                            className="w-full px-5 py-4 rounded-xl bg-background border border-border text-xs font-black focus:border-primary outline-none uppercase"
                                             value={form.start}
                                             onChange={(e) => setForm((f) => ({ ...f, start: e.target.value }))}
                                         />
@@ -449,7 +449,7 @@ export default function ShiftManager() {
                                         <input
                                             required
                                             type="time"
-                                            className="w-full px-5 py-4 rounded-none bg-background border border-border text-xs font-black focus:border-primary outline-none uppercase"
+                                            className="w-full px-5 py-4 rounded-xl bg-background border border-border text-xs font-black focus:border-primary outline-none uppercase"
                                             value={form.end}
                                             onChange={(e) => setForm((f) => ({ ...f, end: e.target.value }))}
                                         />
@@ -459,7 +459,7 @@ export default function ShiftManager() {
                                     <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Salon / branch</label>
                                     <select
                                         required
-                                        className="w-full px-5 py-4 rounded-none bg-background border border-border text-xs font-black uppercase tracking-widest focus:border-primary outline-none appearance-none"
+                                        className="w-full px-5 py-4 rounded-xl bg-background border border-border text-xs font-black uppercase tracking-widest focus:border-primary outline-none appearance-none"
                                         value={form.outletId}
                                         onChange={(e) => setForm((f) => ({ ...f, outletId: e.target.value }))}
                                     >
@@ -479,12 +479,12 @@ export default function ShiftManager() {
                                                 key={c}
                                                 type="button"
                                                 onClick={() => setForm((f) => ({ ...f, color: c, hex: COLORS[i] }))}
-                                                className={`w-10 h-10 rounded-none ${c} border-4 transition-all ${form.color === c ? 'border-text scale-110 shadow-xl' : 'border-transparent'}`}
+                                                className={`w-10 h-10 rounded-xl ${c} border-4 transition-all ${form.color === c ? 'border-text scale-110 shadow-xl' : 'border-transparent'}`}
                                             />
                                         ))}
                                     </div>
                                 </div>
-                                <button type="submit" className="w-full py-4 bg-primary text-white rounded-none font-black text-[10px] uppercase tracking-[0.2em] shadow-xl shadow-primary/20 hover:bg-primary-dark transition-all">
+                                <button type="submit" className="w-full py-4 bg-primary text-white rounded-xl font-black text-[10px] uppercase tracking-[0.2em] shadow-xl shadow-primary/20 hover:bg-primary-dark transition-all">
                                     {editTarget ? 'Save changes' : 'Create shift'}
                                 </button>
                             </form>
@@ -501,7 +501,7 @@ export default function ShiftManager() {
                             initial={{ opacity: 0, scale: 0.95, y: 20 }}
                             animate={{ opacity: 1, scale: 1, y: 0 }}
                             exit={{ opacity: 0, scale: 0.95 }}
-                            className="bg-surface w-full max-w-md rounded-none border border-border shadow-2xl relative p-10"
+                            className="bg-surface w-full max-w-md rounded-xl border border-border shadow-2xl relative p-10"
                         >
                             <div className="flex items-center justify-between mb-8">
                                 <div>
@@ -510,7 +510,7 @@ export default function ShiftManager() {
                                         {rosterModal.name} · {to12(rosterModal.start)} — {to12(rosterModal.end)}
                                     </p>
                                 </div>
-                                <button type="button" onClick={() => setRosterModal(null)} className="w-10 h-10 rounded-none bg-background border border-border flex items-center justify-center text-text-muted hover:text-text transition-all">
+                                <button type="button" onClick={() => setRosterModal(null)} className="w-10 h-10 rounded-xl bg-background border border-border flex items-center justify-center text-text-muted hover:text-text transition-all">
                                     <X className="w-5 h-5" />
                                 </button>
                             </div>
@@ -523,12 +523,12 @@ export default function ShiftManager() {
                                             key={sid}
                                             type="button"
                                             onClick={() => toggleRosterMember(sid)}
-                                            className={`w-full flex items-center justify-between p-4 rounded-none border transition-all text-left ${
+                                            className={`w-full flex items-center justify-between p-4 rounded-xl border transition-all text-left ${
                                                 isAssigned ? 'bg-primary/5 border-primary shadow-lg shadow-primary/5' : 'bg-background border-border/40 hover:border-primary/20'
                                             }`}
                                         >
                                             <div className="flex items-center gap-4 text-left">
-                                                <div className="w-10 h-10 rounded-none bg-primary/10 flex items-center justify-center text-primary font-black text-xs border border-primary/10">
+                                                <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary font-black text-xs border border-primary/10">
                                                     {(s.name || '').split(' ').map((n) => n[0]).join('')}
                                                 </div>
                                                 <div className="text-left leading-tight">
@@ -536,7 +536,7 @@ export default function ShiftManager() {
                                                     <p className="text-[9px] text-text-muted uppercase tracking-widest text-left">{s.outletId?.name || s.outlet || '—'}</p>
                                                 </div>
                                             </div>
-                                            <div className={`w-6 h-6 rounded-none border-2 flex items-center justify-center transition-all ${isAssigned ? 'bg-primary border-primary' : 'border-border/40'}`}>
+                                            <div className={`w-6 h-6 rounded-xl border-2 flex items-center justify-center transition-all ${isAssigned ? 'bg-primary border-primary' : 'border-border/40'}`}>
                                                 {isAssigned && <CheckCircle2 className="w-4 h-4 text-white" />}
                                             </div>
                                         </button>
@@ -547,7 +547,7 @@ export default function ShiftManager() {
                                 type="button"
                                 disabled={savingRoster}
                                 onClick={saveRoster}
-                                className="w-full mt-8 py-4 bg-primary text-white rounded-none font-black text-[10px] uppercase tracking-[0.2em] shadow-xl shadow-primary/20 hover:bg-primary-dark transition-all disabled:opacity-50"
+                                className="w-full mt-8 py-4 bg-primary text-white rounded-xl font-black text-[10px] uppercase tracking-[0.2em] shadow-xl shadow-primary/20 hover:bg-primary-dark transition-all disabled:opacity-50"
                             >
                                 {savingRoster ? 'Saving…' : 'Done'}
                             </button>
@@ -564,9 +564,9 @@ export default function ShiftManager() {
                             initial={{ opacity: 0, scale: 0.9 }}
                             animate={{ opacity: 1, scale: 1 }}
                             exit={{ opacity: 0, scale: 0.9 }}
-                            className="bg-surface w-full max-w-xs rounded-none border border-border shadow-2xl relative p-10 text-center"
+                            className="bg-surface w-full max-w-xs rounded-xl border border-border shadow-2xl relative p-10 text-center"
                         >
-                            <div className="w-16 h-16 bg-rose-500/10 rounded-none flex items-center justify-center mx-auto mb-8 border border-rose-500/10 text-rose-500">
+                            <div className="w-16 h-16 bg-rose-500/10 rounded-xl flex items-center justify-center mx-auto mb-8 border border-rose-500/10 text-rose-500">
                                 <Trash2 className="w-8 h-8" />
                             </div>
                             <h3 className="text-sm font-black text-text uppercase tracking-[0.1em]">Delete this shift?</h3>
@@ -574,10 +574,10 @@ export default function ShiftManager() {
                                 People assigned to this shift will be unlinked. You can add the shift again later if you need.
                             </p>
                             <div className="flex flex-col gap-3 font-black">
-                                <button type="button" onClick={() => deleteShift(deleteConfirm)} className="w-full py-4 bg-rose-500 text-white rounded-none text-[10px] font-black uppercase tracking-[0.2em] shadow-xl shadow-rose-500/10 hover:bg-rose-600 transition-all">
+                                <button type="button" onClick={() => deleteShift(deleteConfirm)} className="w-full py-4 bg-rose-500 text-white rounded-xl text-[10px] font-black uppercase tracking-[0.2em] shadow-xl shadow-rose-500/10 hover:bg-rose-600 transition-all">
                                     Yes, delete
                                 </button>
-                                <button type="button" onClick={() => setDeleteConfirm(null)} className="w-full py-4 bg-background border border-border rounded-none text-[10px] font-black text-text-muted uppercase tracking-[0.2em] hover:bg-surface-alt transition-all">
+                                <button type="button" onClick={() => setDeleteConfirm(null)} className="w-full py-4 bg-background border border-border rounded-xl text-[10px] font-black text-text-muted uppercase tracking-[0.2em] hover:bg-surface-alt transition-all">
                                     Cancel
                                 </button>
                             </div>
@@ -592,7 +592,7 @@ export default function ShiftManager() {
                         initial={{ opacity: 0, y: 40 }}
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: 40 }}
-                        className="fixed bottom-10 left-1/2 -translate-x-1/2 z-[200] flex items-center gap-4 px-8 py-4 bg-text border border-border rounded-none shadow-2xl shadow-black/40"
+                        className="fixed bottom-10 left-1/2 -translate-x-1/2 z-[200] flex items-center gap-4 px-8 py-4 bg-text border border-border rounded-xl shadow-2xl shadow-black/40"
                     >
                         <CheckCircle2 className="w-5 h-5 text-emerald-500 shrink-0" />
                         <p className="text-[10px] font-black text-background uppercase tracking-[0.2em]">{toast}</p>

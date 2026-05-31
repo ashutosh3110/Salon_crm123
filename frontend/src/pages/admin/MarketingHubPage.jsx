@@ -35,7 +35,7 @@ function SectionHeader({ title, desc, icon: Icon, badge, onRefresh, iconColor = 
                 </div>
             </div>
             {onRefresh && (
-                <button onClick={onRefresh} className="flex items-center gap-1.5 px-4 py-2 rounded-full border border-border text-xs font-medium text-text-muted hover:text-primary hover:border-primary/40 transition-all">
+                <button onClick={onRefresh} className="flex items-center gap-1.5 px-4 py-2 rounded-xl border border-border text-xs font-medium text-text-muted hover:text-primary hover:border-primary/40 transition-all">
                     <RefreshCw className="w-3.5 h-3.5" /> Refresh
                 </button>
             )}
@@ -213,14 +213,14 @@ function MarketingHubContent() {
                     {selectedCampaignIds.length > 0 && (
                         <button
                             onClick={handleBulkDelete}
-                            className="flex items-center justify-center gap-2 px-4 py-2 rounded-full bg-rose-500 text-white text-[10px] font-black uppercase tracking-widest hover:bg-rose-600 shadow-md active:scale-[0.98] transition-all leading-none"
+                            className="flex items-center justify-center gap-2 px-4 py-2 rounded-xl bg-rose-500 text-white text-[10px] font-black uppercase tracking-widest hover:bg-rose-600 shadow-md active:scale-[0.98] transition-all leading-none"
                         >
                             <Trash2 className="w-3.5 h-3.5" /> Delete Selected ({selectedCampaignIds.length})
                         </button>
                     )}
                     <button
                         onClick={startCampaign}
-                        className="flex-1 lg:flex-none flex items-center justify-center gap-2 px-5 py-2 rounded-full bg-primary text-white text-[10px] font-black uppercase tracking-widest hover:brightness-110 shadow-md shadow-primary/30 active:scale-[0.98] transition-all leading-none"
+                        className="flex-1 lg:flex-none flex items-center justify-center gap-2 px-5 py-2 rounded-xl bg-primary text-white text-[10px] font-black uppercase tracking-widest hover:brightness-110 shadow-md shadow-primary/30 active:scale-[0.98] transition-all leading-none"
                     >
                         <Plus className="w-3.5 h-3.5" /> New {activeTab === 'whatsapp' ? 'WhatsApp' : 'Notification'}
                     </button>
@@ -390,7 +390,7 @@ function MarketingHubContent() {
                                             <div
                                                 role="button"
                                                 onClick={() => setIsCampaignModalOpen(false)}
-                                                className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors cursor-pointer flex items-center justify-center"
+                                                className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-colors cursor-pointer flex items-center justify-center"
                                             >
                                                 <XCircle className="w-6 h-6 text-slate-400 dark:text-slate-500" />
                                             </div>

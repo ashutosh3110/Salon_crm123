@@ -48,7 +48,7 @@ function PlanCard({ plan, onEdit, onClone, onToggleActive, onDelete, trialDays }
                         <div className="flex items-center gap-2">
                              <h3 className="text-xl font-black text-text tracking-tight uppercase">{plan.name}</h3>
                              {plan.popular && (
-                                <span className="bg-amber-100 text-amber-700 text-[9px] font-black px-2 py-0.5 rounded-full uppercase tracking-widest">
+                                <span className="bg-amber-100 text-amber-700 text-[9px] font-black px-2 py-0.5 rounded-xl uppercase tracking-widest">
                                     Best Seller
                                 </span>
                              )}
@@ -424,7 +424,7 @@ export default function SAPlansPage() {
             {/* Plans Grid */}
             {loading ? (
                 <div className="flex flex-col items-center justify-center py-24 space-y-4">
-                    <RefreshCw className="w-8 h-8 text-primary animate-spin" />
+                    <RefreshCw className="w-8 h-8 text-blue-500 animate-spin" />
                     <div className="text-[10px] text-text-muted font-black uppercase tracking-widest">Loading Plans...</div>
                 </div>
             ) : (
