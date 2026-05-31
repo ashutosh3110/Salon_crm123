@@ -5,13 +5,13 @@ export default function StockOverviewPage() {
     return (
         <div className="space-y-6 animate-reveal text-left max-w-[1600px] mx-auto pb-8">
             <div className="px-1">
-                <div className="text-left font-mono">
-                    <h1 className="text-xl font-black text-text uppercase italic tracking-tight leading-none">Stock Intelligence</h1>
-                    <p className="text-[9px] font-black text-text-muted mt-1 uppercase tracking-[0.2em] italic">Logistics :: Real-time Inventory Status</p>
+                <div className="text-left">
+                    <h1 className="text-2xl font-black text-slate-800 uppercase tracking-tight leading-none">Stock Intelligence</h1>
+                    <p className="text-[10px] font-semibold text-slate-450 mt-2 uppercase tracking-[0.15em]">Logistics · Real-time Inventory Status</p>
                 </div>
             </div>
 
-            <div className="bg-surface p-6 border border-border min-h-[600px]">
+            <div className="bg-surface p-6 border border-border allow-curve rounded-3xl min-h-[600px] shadow-sm">
                 <StockOverview />
             </div>
         </div>
