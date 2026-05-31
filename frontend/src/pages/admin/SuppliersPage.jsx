@@ -26,7 +26,7 @@ export default function SuppliersPage({ tab = 'directory' }) {
             </div>
 
             {/* Premium Modular tabbed layout wrapper */}
-            <div className="bg-surface rounded-none border border-border shadow-sm overflow-hidden min-h-[680px] text-left font-black">
+            <div className="bg-surface allow-curve rounded-[2rem] border border-border shadow-sm overflow-hidden min-h-[680px] text-left font-black mt-4">
                 {activeTab === 'directory' && <SupplierManager />}
                 {activeTab === 'invoices' && <SupplierInvoices />}
             </div>

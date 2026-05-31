@@ -9,9 +9,9 @@ import { useBusiness } from '../../../contexts/BusinessContext';
 import api from '../../../services/api';
 
 const STATUS_META = {
-    paid: { label: 'Paid', cls: 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20 dark:text-emerald-400 dark:border-emerald-500/30' },
-    approved: { label: 'Approved', cls: 'bg-blue-500/10 text-blue-600 border-blue-500/20 dark:text-blue-400 dark:border-blue-500/30' },
-    pending: { label: 'Pending', cls: 'bg-amber-500/10 text-amber-600 border-amber-500/20 dark:text-amber-400 dark:border-amber-500/30' },
+    paid: { label: 'Paid', cls: 'bg-emerald-500/10 !text-emerald-700 border-emerald-500/20 dark:!text-emerald-400 dark:border-emerald-500/30' },
+    approved: { label: 'Approved', cls: 'bg-blue-500/10 !text-blue-700 border-blue-500/20 dark:!text-blue-400 dark:border-blue-500/30' },
+    pending: { label: 'Pending', cls: 'bg-amber-500/10 !text-amber-700 border-amber-500/20 dark:!text-amber-450 dark:border-amber-500/30' },
 };
 
 export default function AdvanceSalaryManager() {
@@ -232,6 +232,32 @@ export default function AdvanceSalaryManager() {
 
     return (
         <div className="space-y-5 text-left bg-slate-50 dark:bg-slate-900 rounded-3xl p-4 sm:p-6 border border-slate-200/60 dark:border-slate-800/80 transition-colors">
+            <style>{`
+                html:not(.dark) .advance-salary-card-wallet-icon {
+                    color: #7c3aed !important;
+                    stroke: #7c3aed !important;
+                }
+                html:not(.dark) .group:hover .advance-salary-card-wallet-icon {
+                    color: #ffffff !important;
+                    stroke: #ffffff !important;
+                }
+                html:not(.dark) .advance-salary-card-check-icon {
+                    color: #059669 !important;
+                    stroke: #059669 !important;
+                }
+                html:not(.dark) .group:hover .advance-salary-card-check-icon {
+                    color: #ffffff !important;
+                    stroke: #ffffff !important;
+                }
+                html:not(.dark) .advance-salary-card-clock-icon {
+                    color: #d97706 !important;
+                    stroke: #d97706 !important;
+                }
+                html:not(.dark) .group:hover .advance-salary-card-clock-icon {
+                    color: #ffffff !important;
+                    stroke: #ffffff !important;
+                }
+            `}</style>
             
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
                 <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700/80 shadow-sm flex items-center justify-between group hover:border-violet-500 transition-all">
@@ -239,8 +265,8 @@ export default function AdvanceSalaryManager() {
                         <p className="text-[10px] font-black text-slate-450 dark:text-slate-500 uppercase tracking-widest">Total Advances Given</p>
                         <h3 className="text-2xl font-black text-slate-850 dark:text-slate-100 tracking-tight">₹{stats.totalGiven.toLocaleString()}</h3>
                     </div>
-                    <div className="p-3 bg-violet-500/10 text-violet-500 border border-violet-500/20 rounded-xl transition-all group-hover:bg-violet-500 group-hover:text-white">
-                        <Wallet className="w-5 h-5" />
+                    <div className="p-3 bg-violet-500/10 text-violet-650 dark:text-violet-400 border border-violet-500/20 dark:border-violet-500/30 rounded-xl transition-all group-hover:bg-violet-500 group-hover:text-white">
+                        <Wallet className="w-5 h-5 advance-salary-card-wallet-icon" />
                     </div>
                 </div>
 
@@ -249,8 +275,8 @@ export default function AdvanceSalaryManager() {
                         <p className="text-[10px] font-black text-slate-450 dark:text-slate-500 uppercase tracking-widest">Adjusted In Payroll</p>
                         <h3 className="text-2xl font-black text-emerald-600 dark:text-emerald-450 tracking-tight">₹{stats.totalAdjusted.toLocaleString()}</h3>
                     </div>
-                    <div className="p-3 bg-emerald-500/10 text-emerald-600 border border-emerald-500/20 rounded-xl transition-all group-hover:bg-emerald-500 group-hover:text-white">
-                        <CheckCircle2 className="w-5 h-5" />
+                    <div className="p-3 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 dark:border-emerald-500/30 rounded-xl transition-all group-hover:bg-emerald-500 group-hover:text-white">
+                        <CheckCircle2 className="w-5 h-5 advance-salary-card-check-icon" />
                     </div>
                 </div>
 
@@ -259,8 +285,8 @@ export default function AdvanceSalaryManager() {
                         <p className="text-[10px] font-black text-slate-450 dark:text-slate-500 uppercase tracking-widest">Outstanding Balance</p>
                         <h3 className="text-2xl font-black text-amber-600 dark:text-amber-400 tracking-tight">₹{stats.totalPending.toLocaleString()}</h3>
                     </div>
-                    <div className="p-3 bg-amber-500/10 text-amber-600 border border-amber-500/20 rounded-xl transition-all group-hover:bg-amber-500 group-hover:text-white">
-                        <Clock className="w-5 h-5" />
+                    <div className="p-3 bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 dark:border-amber-500/30 rounded-xl transition-all group-hover:bg-amber-500 group-hover:text-white">
+                        <Clock className="w-5 h-5 advance-salary-card-clock-icon" />
                     </div>
                 </div>
             </div>
@@ -475,18 +501,20 @@ export default function AdvanceSalaryManager() {
                                             <button 
                                                 onClick={() => openEdit(item)} 
                                                 disabled={item.isAdjusted}
-                                                className="p-2 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-400 hover:text-primary hover:border-primary bg-transparent hover:bg-slate-50 dark:hover:bg-slate-750 transition-all disabled:opacity-30 disabled:cursor-not-allowed" 
+                                                className="p-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 hover:bg-slate-100 dark:bg-slate-800 text-slate-600 hover:text-primary dark:text-slate-300 dark:hover:text-white transition-all disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center shadow-sm" 
+                                                style={{ color: '#475569', borderColor: '#cbd5e1' }}
                                                 title={item.isAdjusted ? "Cannot edit adjusted advance" : "Edit Advance Details"}
                                             >
-                                                <Edit2 className="w-4 h-4" />
+                                                <Edit2 className="w-4 h-4" style={{ stroke: '#475569' }} />
                                             </button>
                                             <button 
                                                 onClick={() => handleDelete(item._id)} 
                                                 disabled={item.isAdjusted}
-                                                className="p-2 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-400 hover:text-rose-500 hover:border-rose-500 bg-transparent hover:bg-slate-50 dark:hover:bg-slate-750 transition-all disabled:opacity-30 disabled:cursor-not-allowed" 
+                                                className="p-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 hover:bg-slate-100 dark:bg-slate-800 text-slate-600 hover:text-rose-500 dark:text-slate-300 dark:hover:text-rose-400 transition-all disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center shadow-sm" 
+                                                style={{ color: '#475569', borderColor: '#cbd5e1' }}
                                                 title={item.isAdjusted ? "Cannot delete adjusted advance" : "Delete Advance"}
                                             >
-                                                <Trash2 className="w-4 h-4" />
+                                                <Trash2 className="w-4 h-4" style={{ stroke: '#475569' }} />
                                             </button>
                                         </div>
                                     </td>

@@ -212,34 +212,34 @@ export default function ServicesPage({ tab = 'list' }) {
     const outletOptions = ['All Outlets', ...outlets.map(o => o.name)];
 
     return (
-        <div className="space-y-6 animate-reveal text-left font-black">
+        <div className="space-y-4 animate-reveal text-left font-black">
             {/* Header */}
-            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
                 <div>
-                    <div className="flex items-center gap-2 text-[10px] font-black text-text-muted uppercase tracking-[0.2em] mb-3">
+                    <div className="flex items-center gap-1.5 text-[9px] font-black text-text-muted uppercase tracking-[0.2em] mb-1.5">
                         <span className="opacity-60">Operations</span>
-                        <ChevronRight className="w-3.5 h-3.5 opacity-40" />
+                        <ChevronRight className="w-3 h-3 opacity-40" />
                         <span className="text-primary">Catalog Management</span>
                     </div>
-                    <h1 className="text-3xl font-black text-text tracking-tighter uppercase leading-none">Portfolio Services</h1>
-                    <p className="text-[10px] font-black text-text-muted mt-2 uppercase tracking-[0.3em] opacity-60">Architect and manage your salon service portfolio</p>
+                    <h1 className="text-2xl font-black text-text tracking-tighter uppercase leading-none">Portfolio Services</h1>
+                    <p className="text-[9px] font-black text-text-muted mt-1 uppercase tracking-[0.25em] opacity-60">Architect and manage your salon service portfolio</p>
                 </div>
             </div>
 
             {/* Stats Row */}
             {activeTab === 'list' && (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 animate-in fade-in slide-in-from-top-4 duration-300">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 animate-in fade-in slide-in-from-top-4 duration-300">
                     {stats.map((stat, i) => (
-                        <div key={i} className="bg-surface p-6 border border-border/40 shadow-sm group hover:shadow-xl transition-all relative overflow-hidden rounded-3xl">
-                            <div className={`absolute -right-4 -top-4 w-16 h-16 bg-primary/5 rounded-full blur-2xl group-hover:bg-primary/10 transition-all`} />
-                            <div className="relative z-10 flex flex-col gap-3">
+                        <div key={i} className="bg-surface p-3.5 border border-border/40 shadow-sm group hover:shadow-lg transition-all relative overflow-hidden rounded-2xl">
+                            <div className={`absolute -right-4 -top-4 w-12 h-12 bg-primary/5 rounded-full blur-xl group-hover:bg-primary/10 transition-all`} />
+                            <div className="relative z-10 flex flex-col gap-1.5">
                                 <div className="flex items-center justify-between">
-                                    <stat.icon className="w-5 h-5 text-text-muted group-hover:text-primary transition-colors" />
-                                    <div className="w-1.5 h-1.5 rounded-full bg-primary/20 group-hover:bg-primary animate-pulse" />
+                                    <stat.icon className="w-4 h-4 text-text-muted group-hover:text-primary transition-colors" />
+                                    <div className="w-1 h-1 rounded-full bg-primary/20 group-hover:bg-primary animate-pulse" />
                                 </div>
                                 <div>
-                                    <p className="text-[9px] font-black text-text-muted uppercase tracking-widest leading-none mb-1">{stat.label}</p>
-                                    <h3 className="text-2xl font-black text-text tracking-tighter uppercase">
+                                    <p className="text-[8.5px] font-black text-text-muted uppercase tracking-widest leading-none mb-1">{stat.label}</p>
+                                    <h3 className="text-xl font-black text-text tracking-tighter uppercase leading-none">
                                         {typeof stat.value === 'string' ? stat.value : <AnimatedCounter value={stat.value} />}
                                     </h3>
                                 </div>
@@ -251,48 +251,48 @@ export default function ServicesPage({ tab = 'list' }) {
 
             {/* Toolbar */}
             {activeTab === 'list' && (
-                <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 bg-surface p-4 rounded-3xl border border-border/40 shadow-sm">
+                <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 bg-surface p-2.5 rounded-2xl border border-border/40 shadow-sm">
                     <div className="relative flex-1 max-w-full lg:max-w-md">
-                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
+                        <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-text-muted" />
                         <input
                             type="text"
                             placeholder="Search services by name..."
-                            className="w-full pl-11 pr-4 py-3.5 rounded-2xl border border-border/40 bg-surface-alt text-foreground text-xs focus:outline-none focus:border-primary transition-all font-bold placeholder-text-muted"
+                            className="w-full pl-9 pr-4 py-2 rounded-xl border border-border/40 bg-surface-alt text-foreground text-xs focus:outline-none focus:border-primary transition-all font-bold placeholder-text-muted"
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
                         />
                     </div>
 
-                    <div className="flex flex-wrap items-center gap-3">
+                    <div className="flex flex-wrap items-center gap-2.5">
                         <CustomDropdown
                             value={filterCategory}
                             onChange={setFilterCategory}
                             options={categoriesList}
-                            className="flex-1 lg:flex-none min-w-[120px]"
+                            className="flex-1 lg:flex-none min-w-[110px]"
                         />
 
                         <CustomDropdown
                             value={filterOutlet}
                             onChange={setFilterOutlet}
                             options={outletOptions}
-                            className="flex-1 lg:flex-none min-w-[140px]"
+                            className="flex-1 lg:flex-none min-w-[130px]"
                         />
 
-                        <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+                        <div className="flex flex-wrap items-center gap-1.5 w-full sm:w-auto">
                             <button
                                 onClick={handleRefresh}
-                                className="flex-1 sm:flex-none p-3.5 rounded-2xl bg-surface-alt border border-border/40 text-text-muted hover:text-primary hover:border-primary transition-all active:scale-95 flex justify-center items-center"
+                                className="flex-1 sm:flex-none p-2 rounded-xl bg-surface-alt border border-border/40 text-text-muted hover:text-primary hover:border-primary transition-all active:scale-95 flex justify-center items-center"
                                 title="Refresh List"
                             >
-                                <RefreshCcw className="w-4 h-4" />
+                                <RefreshCcw className="w-3.5 h-3.5" />
                             </button>
 
                             <button
                                 onClick={handleDownloadTemplate}
-                                className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-500 hover:bg-amber-500/20 transition-all active:scale-95 text-[11px] font-black uppercase tracking-widest group"
+                                className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-500 hover:bg-amber-500/20 transition-all active:scale-95 text-[10px] font-black uppercase tracking-wider group"
                                 title="Download Sample Template"
                             >
-                                <Download className="w-3.5 h-3.5 group-hover:scale-110 transition-transform" />
+                                <Download className="w-3 h-3 group-hover:scale-110 transition-transform" />
                                 <span>Sample</span>
                             </button>
 
@@ -307,78 +307,38 @@ export default function ServicesPage({ tab = 'list' }) {
                                 <button
                                     onClick={() => document.getElementById('bulk-upload-top').click()}
                                     disabled={importing}
-                                    className="w-full flex items-center justify-center gap-2 px-4 py-3.5 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 hover:bg-emerald-500/20 transition-all active:scale-95 text-[11px] font-black uppercase tracking-widest disabled:opacity-50 group"
+                                    className="w-full flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 hover:bg-emerald-500/20 transition-all active:scale-95 text-[10px] font-black uppercase tracking-wider disabled:opacity-50 group"
                                 >
-                                    {importing ? <RefreshCcw className="w-3.5 h-3.5 animate-spin" /> : <Upload className="w-3.5 h-3.5 group-hover:scale-110 transition-transform" />}
+                                    {importing ? <RefreshCcw className="w-3 h-3 animate-spin" /> : <Upload className="w-3 h-3 group-hover:scale-110 transition-transform" />}
                                     <span>{importing ? 'Importing...' : 'Import'}</span>
                                 </button>
                             </div>
 
                             <button
                                 onClick={handleAddClick}
-                                className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-3.5 rounded-2xl bg-text text-surface hover:bg-primary text-[11px] font-black uppercase tracking-widest shadow-lg shadow-primary/20 transition-all active:scale-95"
+                                className="w-full sm:w-auto flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl bg-text text-surface hover:bg-primary text-[10px] font-black uppercase tracking-wider shadow-md shadow-primary/10 transition-all active:scale-95"
                             >
-                                <Plus className="w-4 h-4" /> Add Service
+                                <Plus className="w-3.5 h-3.5" /> Add Service
                             </button>
                         </div>
                     </div>
                 </div>
             )}
-
-            {activeTab === 'categories' && (
-                <div className="flex flex-col lg:flex-row lg:items-center justify-end gap-4 bg-surface p-4 rounded-3xl border border-border/40 shadow-sm">
-                    <div className="flex flex-wrap items-center gap-2 sm:gap-3">
-                        <button
-                            onClick={handleRefresh}
-                            className="flex-1 sm:flex-none p-3.5 rounded-2xl bg-surface-alt border border-border/40 text-text-muted hover:text-primary transition-all active:scale-95 flex justify-center items-center"
-                            title="Refresh List"
-                        >
-                            <RefreshCcw className="w-4 h-4" />
-                        </button>
-
-                        <button
-                            onClick={handleDownloadCategoryTemplate}
-                            className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-5 py-3.5 rounded-2xl bg-surface-alt border border-border/40 text-foreground hover:text-primary transition-all active:scale-95 text-[11px] font-black uppercase tracking-widest"
-                        >
-                            <Download className="w-3.5 h-3.5" /> Sample
-                        </button>
-
-                        <div className="relative flex-1 sm:flex-none">
-                            <input
-                                type="file"
-                                id="category-bulk-upload"
-                                className="hidden"
-                                accept=".xlsx, .xls, .csv"
-                                onChange={handleCategoryBulkUpload}
-                            />
-                            <button
-                                onClick={() => document.getElementById('category-bulk-upload').click()}
-                                disabled={importing}
-                                className="w-full flex items-center justify-center gap-2 px-5 py-3.5 rounded-2xl bg-text text-surface border border-transparent hover:bg-primary transition-all active:scale-95 text-[11px] font-black uppercase tracking-widest disabled:opacity-50"
-                            >
-                                {importing ? <RefreshCcw className="w-3.5 h-3.5 animate-spin" /> : <Upload className="w-3.5 h-3.5" />}
-                                {importing ? 'Importing...' : 'Bulk Upload'}
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
-
             {/* Outlet Filter */}
             {activeTab === 'list' && (
-                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 bg-surface-alt p-4 border border-border/40 rounded-3xl">
-                    <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
-                            <Layers className="w-5 h-5" />
+                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 bg-surface-alt p-2.5 border border-border/40 rounded-2xl">
+                    <div className="flex items-center gap-2.5">
+                        <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
+                            <Layers className="w-4 h-4" />
                         </div>
                         <div>
-                            <p className="text-[10px] font-black uppercase text-text-muted tracking-widest leading-none mb-1">View Scope</p>
-                            <p className="text-[11px] font-black uppercase text-foreground tracking-widest">Filter by Outlet</p>
+                            <p className="text-[8.5px] font-black uppercase text-text-muted tracking-widest leading-none mb-0.5">View Scope</p>
+                            <p className="text-[10px] font-black uppercase text-foreground tracking-widest leading-none">Filter by Outlet</p>
                         </div>
                     </div>
 
                     <CustomDropdown
-                        className="w-full sm:w-64"
+                        className="w-full sm:w-56"
                         placeholder="All Outlets"
                         options={[
                             { label: 'All Outlets (Global)', value: 'all' },
@@ -389,9 +349,9 @@ export default function ServicesPage({ tab = 'list' }) {
                     />
 
                     {selectedOutletId !== 'all' && (
-                        <div className="flex items-center gap-2 px-3 py-1.5 bg-primary/10 border border-primary/20 animate-in fade-in slide-in-from-left-2 rounded-xl">
-                            <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
-                            <span className="text-[9px] font-black text-primary uppercase tracking-widest italic">
+                        <div className="flex items-center gap-1.5 px-2 py-1 bg-primary/10 border border-primary/20 animate-in fade-in slide-in-from-left-2 rounded-lg">
+                            <span className="w-1 h-1 rounded-full bg-primary animate-pulse" />
+                            <span className="text-[8px] font-black text-primary uppercase tracking-widest italic">
                                 Showing specific + common services
                             </span>
                         </div>
@@ -423,6 +383,10 @@ export default function ServicesPage({ tab = 'list' }) {
                         onUpdate={updateCategory}
                         onDelete={deleteCategory}
                         onToggleStatus={toggleCategoryStatus}
+                        onRefresh={handleRefresh}
+                        onDownloadTemplate={handleDownloadCategoryTemplate}
+                        onBulkUpload={handleCategoryBulkUpload}
+                        importing={importing}
                     />
                 )}
                 {activeTab === 'settings' && <ServiceSettings />}

@@ -253,11 +253,23 @@ export default function PromotionsPage() {
     }, [customers, customerSearch, sharingPromo]);
 
     return (
-        <div className="space-y-6 text-left font-black">
-            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6 text-left">
+        <div className="space-y-4 text-left font-black">
+            <style>{`
+                /* Fix visibility of WhatsApp Share Icon in Light Mode */
+                html:not(.dark) .share-button-icon {
+                    color: #10b981 !important;
+                    stroke: #10b981 !important;
+                }
+                html:not(.dark) .p-1.5:hover .share-button-icon {
+                    color: #047857 !important;
+                    stroke: #047857 !important;
+                }
+            `}</style>
+            
+            <div className="flex items-center justify-between gap-4 text-left">
                 <div className="text-left font-black leading-none">
-                    <h1 className="text-xl sm:text-2xl font-black text-text uppercase tracking-tight leading-none">Coupons & offers</h1>
-                    <p className="text-[9px] font-black text-text-muted mt-1 uppercase tracking-[0.2em] opacity-60 leading-none">{promos.length} offer{promos.length !== 1 ? 's' : ''} in your list</p>
+                    <h1 className="text-base sm:text-lg font-black text-text uppercase tracking-tight leading-none">Coupons & offers</h1>
+                    <p className="text-[9px] font-black text-text-muted mt-1.5 uppercase tracking-[0.2em] opacity-60 leading-none">{promos.length} offer{promos.length !== 1 ? 's' : ''} in your list</p>
                 </div>
                 <button
                     onClick={() => {
@@ -265,30 +277,30 @@ export default function PromotionsPage() {
                         setForm({ name: '', type: 'percentage', value: '', startDate: '', endDate: '', usageLimit: 1, usageLimitPerCustomer: 1, isActive: true, activationMode: 'AUTO', couponCode: '', applicableOn: 'BOTH', outletIds: [] });
                         setShowModal(true);
                     }}
-                    className="w-full lg:w-auto flex items-center justify-center gap-2 bg-primary/10 text-primary border border-primary px-6 py-2.5 rounded-2xl text-[10px] font-black uppercase tracking-[0.15em] shadow-[0_0_12px_rgba(234,179,8,0.4)] hover:shadow-[0_0_20px_rgba(234,179,8,0.6)] transition-all"
+                    className="flex items-center justify-center gap-1.5 bg-primary/10 text-primary border border-primary px-4 py-2 rounded-2xl text-[9px] font-black uppercase tracking-[0.15em] shadow-[0_0_12px_rgba(234,179,8,0.4)] hover:shadow-[0_0_20px_rgba(234,179,8,0.6)] transition-all whitespace-nowrap cursor-pointer"
                 >
-                    <Plus className="w-4 h-4" /> Add coupon
+                    <Plus className="w-3.5 h-3.5" /> Add coupon
                 </button>
             </div>
 
             {!loading && promos.length > 0 && (
-                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 text-left font-black">
-                    <div className="md:col-span-1 bg-surface p-5 rounded-2xl border border-border shadow-sm text-left font-black flex flex-col justify-between">
-                        <div className="flex items-center justify-between mb-4 text-left">
-                            <span className="text-[10px] font-black text-text-muted uppercase tracking-[0.15em]">Discount amounts</span>
-                            <div className="w-8 h-8 rounded-full bg-blue-500/10 flex items-center justify-center">
-                                <BarChart3 className="w-4 h-4 text-blue-500" />
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3.5 text-left font-black">
+                    <div className="md:col-span-1 bg-surface p-4 rounded-2xl border border-border shadow-sm text-left font-black flex flex-col justify-between">
+                        <div className="flex items-center justify-between mb-3 text-left">
+                            <span className="text-[9px] font-black text-text-muted uppercase tracking-[0.15em]">Discount amounts</span>
+                            <div className="w-7 h-7 rounded-full bg-blue-500/10 flex items-center justify-center">
+                                <BarChart3 className="w-3.5 h-3.5 text-blue-500" />
                             </div>
                         </div>
-                        <div className="h-[150px] w-full text-left">
+                        <div className="h-[120px] w-full text-left">
                             <ResponsiveContainer width="100%" height="100%">
                                 <BarChart data={chartData}>
-                                    <Bar dataKey="value" radius={[4, 4, 0, 0]}>
+                                    <Bar dataKey="value" radius={[3, 3, 0, 0]}>
                                         {chartData.map((entry, index) => (
                                             <Cell key={`cell-${index}`} fill={entry.color} />
                                         ))}
                                     </Bar>
-                                    <Tooltip contentStyle={{ backgroundColor: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '12px', fontSize: '9px', fontWeight: '900', textTransform: 'uppercase' }} cursor={{ fill: 'transparent' }} />
+                                    <Tooltip contentStyle={{ backgroundColor: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '8px', fontSize: '8px', fontWeight: '900', textTransform: 'uppercase' }} cursor={{ fill: 'transparent' }} />
                                 </BarChart>
                             </ResponsiveContainer>
                         </div>
@@ -301,13 +313,13 @@ export default function PromotionsPage() {
                             { label: 'Expiring Soon', value: promos.filter(p => p.endDate && new Date(p.endDate) < new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)).length, icon: Calendar, color: 'text-rose-500', bg: 'bg-rose-500/10' },
                             { label: 'Total Volume', value: promos.length, icon: Tag, color: 'text-violet-500', bg: 'bg-violet-500/10' }
                         ].map((stat, i) => (
-                            <div key={i} className="bg-surface p-4 rounded-2xl border border-border flex items-center gap-4 group hover:shadow-md transition-all text-left">
-                                <div className={`w-12 h-12 rounded-full flex items-center justify-center ${stat.bg} ${stat.color} group-hover:scale-110 transition-transform`}>
-                                    <stat.icon className="w-5 h-5" />
+                            <div key={i} className="bg-surface p-3 rounded-2xl border border-border flex items-center gap-3.5 group hover:shadow-md transition-all text-left">
+                                <div className={`w-9 h-9 rounded-full flex items-center justify-center shrink-0 ${stat.bg} ${stat.color} group-hover:scale-110 transition-transform`}>
+                                    <stat.icon className="w-4 h-4" />
                                 </div>
                                 <div className="text-left leading-none font-black">
-                                    <p className="text-[9px] font-black text-text-muted uppercase tracking-[0.15em] mb-1.5 leading-none">{stat.label}</p>
-                                    <p className="text-xl font-black text-text tracking-tight leading-none">{stat.value}</p>
+                                    <p className="text-[8px] font-black text-text-muted uppercase tracking-[0.15em] mb-1 leading-none">{stat.label}</p>
+                                    <p className="text-base font-black text-text tracking-tight leading-none">{stat.value}</p>
                                 </div>
                             </div>
                         ))}
@@ -315,54 +327,54 @@ export default function PromotionsPage() {
                 </div>
             )}
 
-            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 text-left font-black">
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3.5 text-left font-black">
                 {loading ? (
-                    <div className="col-span-full flex flex-col items-center justify-center py-20 text-left">
-                        <div className="w-10 h-10 border border-primary/20 border-t-primary rounded-full animate-spin mb-3" />
-                        <p className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] animate-pulse">Loading offers...</p>
+                    <div className="col-span-full flex flex-col items-center justify-center py-16 text-left">
+                        <div className="w-8 h-8 border border-primary/20 border-t-primary rounded-full animate-spin mb-2" />
+                        <p className="text-[9px] font-black text-text-muted uppercase tracking-[0.2em] animate-pulse">Loading offers...</p>
                     </div>
                 ) : promos.length === 0 ? (
-                    <div className="col-span-full text-center py-20 bg-surface rounded-2xl border border-border border-dashed text-left">
-                        <Tag className="w-12 h-12 text-text-muted/20 mx-auto mb-4" />
-                        <h3 className="text-xs font-black text-text uppercase tracking-[0.2em]">No coupons yet</h3>
+                    <div className="col-span-full text-center py-16 bg-surface rounded-2xl border border-border border-dashed text-left">
+                        <Tag className="w-10 h-10 text-text-muted/20 mx-auto mb-3" />
+                        <h3 className="text-[10px] font-black text-text uppercase tracking-[0.2em]">No coupons yet</h3>
                     </div>
                 ) : (
                     promos.map((p) => {
                         const showShare = p.outletIds.length === 0 || !user?.outletId || p.outletIds.includes(String(user?.outletId));
                         return (
-                            <div key={p._id} className="bg-surface rounded-2xl border border-border p-5 hover:shadow-md hover:translate-y-[-2px] transition-all group relative overflow-hidden text-left font-black">
-                                <div className="flex items-start justify-between mb-5 text-left">
-                                    <span className={`text-[9px] font-black px-3 py-1 rounded-md uppercase tracking-wider ${typeColors[p.type] || 'bg-gray-50 text-gray-500'} bg-opacity-10 border border-current`}>{typeLabels[p.type]}</span>
-                                    <div className="flex gap-1.5">
+                            <div key={p._id} className="bg-surface rounded-2xl border border-border p-4 hover:shadow-md hover:translate-y-[-1.5px] transition-all group relative overflow-hidden text-left font-black">
+                                <div className="flex items-start justify-between mb-4 text-left">
+                                    <span className={`text-[8px] font-black px-2.5 py-0.5 rounded-full uppercase tracking-wider ${typeColors[p.type] || 'bg-gray-50 text-gray-500'} bg-opacity-10 border border-current`}>{typeLabels[p.type]}</span>
+                                    <div className="flex gap-1">
                                         {showShare && (
-                                            <button onClick={() => handleOpenShare(p)} className="p-2 rounded-xl bg-surface border border-border text-emerald-500 hover:bg-emerald-50 transition-all hover:shadow-[0_0_8px_rgba(16,185,129,0.3)]" title="Share on WhatsApp">
-                                                <Share2 className="w-3.5 h-3.5" />
+                                            <button onClick={() => handleOpenShare(p)} className="p-1.5 rounded-lg bg-surface border border-border text-emerald-500 hover:bg-emerald-50 transition-all hover:shadow-[0_0_8px_rgba(16,185,129,0.3)]" title="Share on WhatsApp">
+                                                <Share2 className="w-3 h-3 share-button-icon" />
                                             </button>
                                         )}
-                                        <button onClick={() => openEdit(p)} className="p-2 rounded-xl bg-surface border border-border text-blue-500 hover:bg-blue-50 transition-all hover:shadow-[0_0_8px_rgba(59,130,246,0.3)]"><Edit className="w-3.5 h-3.5" /></button>
-                                        <button onClick={() => handleDelete(p._id)} className="p-2 rounded-xl bg-surface border border-border text-rose-500 hover:bg-rose-50 transition-all hover:shadow-[0_0_8px_rgba(244,63,94,0.3)]"><Trash2 className="w-3.5 h-3.5" /></button>
+                                        <button onClick={() => openEdit(p)} className="p-1.5 rounded-lg bg-surface border border-border text-blue-500 hover:bg-blue-50 transition-all hover:shadow-[0_0_8px_rgba(59,130,246,0.3)]"><Edit className="w-3 h-3" /></button>
+                                        <button onClick={() => handleDelete(p._id)} className="p-1.5 rounded-lg bg-surface border border-border text-rose-500 hover:bg-rose-50 transition-all hover:shadow-[0_0_8px_rgba(244,63,94,0.3)]"><Trash2 className="w-3 h-3" /></button>
                                     </div>
                                 </div>
-                                <h3 className="text-lg font-black text-text uppercase tracking-tight text-left leading-tight mb-1">{p.name}</h3>
-                                <div className="text-3xl font-black text-primary tracking-tighter text-left leading-none mb-4">{p.type === 'percentage' ? `${p.value}%` : `₹${p.value}`}</div>
+                                <h3 className="text-sm font-black text-text uppercase tracking-tight text-left leading-tight mb-0.5">{p.name}</h3>
+                                <div className="text-xl font-black text-primary tracking-tighter text-left leading-none mb-3">{p.type === 'percentage' ? `${p.value}%` : `₹${p.value}`}</div>
 
-                                <div className="space-y-2.5 pt-4 border-t border-border/40 text-left font-black">
-                                    <div className="flex items-center gap-2.5 text-[9px] font-black text-text-muted uppercase tracking-wider text-left">
-                                        <Calendar className="w-3.5 h-3.5 text-blue-500" />
+                                <div className="space-y-1.5 pt-3 border-t border-border/40 text-left font-black">
+                                    <div className="flex items-center gap-2 text-[8px] font-black text-text-muted uppercase tracking-wider text-left">
+                                        <Calendar className="w-3 h-3 text-blue-500" />
                                         {p.startDate ? new Date(p.startDate).toLocaleDateString('en-IN') : '—'} → {p.endDate ? new Date(p.endDate).toLocaleDateString('en-IN') : '—'}
                                     </div>
-                                    <div className="flex items-start gap-2.5 text-[9px] font-black text-text-muted uppercase tracking-wider text-left">
-                                        <Tag className="w-3.5 h-3.5 text-purple-500 mt-0.5" />
+                                    <div className="flex items-start gap-2 text-[8px] font-black text-text-muted uppercase tracking-wider text-left">
+                                        <Tag className="w-3 h-3 text-purple-500 mt-0.5" />
                                         <span>Applies to: <strong className="text-text">{p.applicableOn === 'SERVICE' ? 'Services Only' : (p.applicableOn === 'PRODUCT' ? 'Products Only' : 'Both')}</strong></span>
                                     </div>
-                                    <div className="flex items-start gap-2.5 text-[9px] font-black text-text-muted uppercase tracking-wider text-left">
-                                        <TrendingUp className="w-3.5 h-3.5 text-emerald-500 mt-0.5" />
+                                    <div className="flex items-start gap-2 text-[8px] font-black text-text-muted uppercase tracking-wider text-left">
+                                        <TrendingUp className="w-3 h-3 text-emerald-500 mt-0.5" />
                                         <span className="line-clamp-2">Outlets: <strong className="text-text">{p.outletIds.length === 0 ? 'All Outlets' : p.outletIds.map(id => outlets.find(o => o._id === id)?.name || 'Outlet').join(', ')}</strong></span>
                                     </div>
                                 </div>
 
-                                <div className="absolute bottom-0 right-0 p-4 font-black">
-                                    <span className={`text-[9px] font-black uppercase tracking-[0.2em] ${p.isActive ? 'text-emerald-500' : 'text-text-muted opacity-40'}`}>
+                                <div className="absolute bottom-0 right-0 p-3 font-black">
+                                    <span className={`text-[8px] font-black uppercase tracking-[0.2em] ${p.isActive ? 'text-emerald-500' : 'text-text-muted opacity-40'}`}>
                                         {p.isActive ? 'Active' : 'Inactive'}
                                     </span>
                                 </div>
@@ -389,58 +401,58 @@ export default function PromotionsPage() {
                             <form onSubmit={handleSubmit} className="space-y-6 p-6 text-left">
                                 <div className="space-y-2">
                                     <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Offer Name *</label>
-                                    <input placeholder="e.g. SUMMER SALE" type="text" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required className="w-full px-4 py-3 rounded-none bg-white border border-border text-xs font-bold uppercase tracking-widest focus:border-primary outline-none transition-all text-text placeholder:text-text-muted/40" />
+                                    <input placeholder="e.g. SUMMER SALE" type="text" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required className="w-full px-4 py-3 rounded-xl bg-white border border-border text-xs font-bold uppercase tracking-widest focus:border-primary outline-none transition-all text-text placeholder:text-text-muted/40" />
                                 </div>
                                 <div className="grid grid-cols-2 gap-4">
                                     <div className="space-y-2">
                                         <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Discount Type *</label>
-                                        <select value={form.type} onChange={(e) => setForm({ ...form, type: e.target.value })} className="w-full px-4 py-3 rounded-none bg-white border border-border text-xs font-bold uppercase tracking-widest focus:border-primary outline-none transition-all cursor-pointer text-text">
+                                        <select value={form.type} onChange={(e) => setForm({ ...form, type: e.target.value })} className="w-full px-4 py-3 rounded-xl bg-white border border-border text-xs font-bold uppercase tracking-widest focus:border-primary outline-none transition-all cursor-pointer text-text">
                                             <option value="percentage">Percent Off</option>
                                             <option value="flat">Fixed ₹ Off</option>
                                         </select>
                                     </div>
                                     <div className="space-y-2">
                                         <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Discount Value *</label>
-                                        <input placeholder="0" type="number" value={form.value} onChange={(e) => setForm({ ...form, value: e.target.value })} required className="w-full px-4 py-3 rounded-none bg-white border border-border text-xs font-bold uppercase tracking-widest focus:border-primary outline-none transition-all text-text placeholder:text-text-muted/40" />
+                                        <input placeholder="0" type="number" value={form.value} onChange={(e) => setForm({ ...form, value: e.target.value })} required className="w-full px-4 py-3 rounded-xl bg-white border border-border text-xs font-bold uppercase tracking-widest focus:border-primary outline-none transition-all text-text placeholder:text-text-muted/40" />
                                     </div>
                                 </div>
                                 <div className="grid grid-cols-2 gap-4">
                                     <div className="space-y-2">
                                         <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Valid From</label>
-                                        <input type="date" value={form.startDate} onChange={(e) => setForm({ ...form, startDate: e.target.value })} className="w-full px-4 py-3 rounded-none bg-white border border-border text-xs font-bold focus:border-primary outline-none transition-all uppercase text-text" />
+                                        <input type="date" value={form.startDate} onChange={(e) => setForm({ ...form, startDate: e.target.value })} className="w-full px-4 py-3 rounded-xl bg-white border border-border text-xs font-bold focus:border-primary outline-none transition-all uppercase text-text" />
                                     </div>
                                     <div className="space-y-2">
                                         <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Valid Until</label>
-                                        <input type="date" value={form.endDate} onChange={(e) => setForm({ ...form, endDate: e.target.value })} className="w-full px-4 py-3 rounded-none bg-white border border-border text-xs font-bold focus:border-primary outline-none transition-all uppercase text-text" />
+                                        <input type="date" value={form.endDate} onChange={(e) => setForm({ ...form, endDate: e.target.value })} className="w-full px-4 py-3 rounded-xl bg-white border border-border text-xs font-bold focus:border-primary outline-none transition-all uppercase text-text" />
                                     </div>
                                 </div>
                                 <div className="grid grid-cols-2 gap-4">
                                     <div className="space-y-2">
                                         <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Total Usage Limit</label>
-                                        <input type="number" value={form.usageLimit} onChange={(e) => setForm({ ...form, usageLimit: e.target.value })} required className="w-full px-4 py-3 rounded-none bg-white border border-border text-xs font-bold uppercase tracking-widest focus:border-primary outline-none transition-all text-text" />
+                                        <input type="number" value={form.usageLimit} onChange={(e) => setForm({ ...form, usageLimit: e.target.value })} required className="w-full px-4 py-3 rounded-xl bg-white border border-border text-xs font-bold uppercase tracking-widest focus:border-primary outline-none transition-all text-text" />
                                     </div>
                                     <div className="space-y-2">
                                         <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Usage Limit Per Customer</label>
-                                        <input type="number" value={form.usageLimitPerCustomer} onChange={(e) => setForm({ ...form, usageLimitPerCustomer: e.target.value })} required className="w-full px-4 py-3 rounded-none bg-white border border-border text-xs font-bold uppercase tracking-widest focus:border-primary outline-none transition-all text-text" />
+                                        <input type="number" value={form.usageLimitPerCustomer} onChange={(e) => setForm({ ...form, usageLimitPerCustomer: e.target.value })} required className="w-full px-4 py-3 rounded-xl bg-white border border-border text-xs font-bold uppercase tracking-widest focus:border-primary outline-none transition-all text-text" />
                                     </div>
                                 </div>
                                 <div className="grid grid-cols-2 gap-4">
                                     <div className="space-y-2">
                                         <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">How It Applies</label>
-                                        <select value={form.activationMode || 'AUTO'} onChange={(e) => setForm({ ...form, activationMode: e.target.value })} className="w-full px-4 py-3 rounded-none bg-white border border-border text-xs font-bold uppercase tracking-widest focus:border-primary outline-none transition-all cursor-pointer text-text">
+                                        <select value={form.activationMode || 'AUTO'} onChange={(e) => setForm({ ...form, activationMode: e.target.value })} className="w-full px-4 py-3 rounded-xl bg-white border border-border text-xs font-bold uppercase tracking-widest focus:border-primary outline-none transition-all cursor-pointer text-text">
                                             <option value="AUTO">Automatic</option>
                                             <option value="COUPON">Coupon Code</option>
                                         </select>
                                     </div>
                                     <div className="space-y-2">
                                         <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Code</label>
-                                        <input placeholder="CODE10" type="text" value={form.couponCode} onChange={(e) => setForm({ ...form, couponCode: e.target.value.toUpperCase() })} className="w-full px-4 py-3 rounded-none bg-white border border-border text-xs font-bold uppercase tracking-widest focus:border-primary outline-none transition-all text-text disabled:opacity-40 disabled:bg-surface" disabled={form.activationMode !== 'COUPON'} />
+                                        <input placeholder="CODE10" type="text" value={form.couponCode} onChange={(e) => setForm({ ...form, couponCode: e.target.value.toUpperCase() })} className="w-full px-4 py-3 rounded-xl bg-white border border-border text-xs font-bold uppercase tracking-widest focus:border-primary outline-none transition-all text-text disabled:opacity-40 disabled:bg-surface" disabled={form.activationMode !== 'COUPON'} />
                                     </div>
                                 </div>
                                 <div className="grid grid-cols-2 gap-4">
                                     <div className="space-y-2">
                                         <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Discount Applies To *</label>
-                                        <select value={form.applicableOn} onChange={(e) => setForm({ ...form, applicableOn: e.target.value })} className="w-full px-4 py-3 rounded-none bg-white border border-border text-xs font-bold uppercase tracking-widest focus:border-primary outline-none transition-all cursor-pointer text-text">
+                                        <select value={form.applicableOn} onChange={(e) => setForm({ ...form, applicableOn: e.target.value })} className="w-full px-4 py-3 rounded-xl bg-white border border-border text-xs font-bold uppercase tracking-widest focus:border-primary outline-none transition-all cursor-pointer text-text">
                                             <option value="BOTH">Both Services & Products</option>
                                             <option value="SERVICE">Services Only</option>
                                             <option value="PRODUCT">Products Only</option>
@@ -448,7 +460,7 @@ export default function PromotionsPage() {
                                     </div>
                                     <div className="space-y-2">
                                         <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Applicable Outlets</label>
-                                        <div className="border border-border p-3 bg-white max-h-[120px] overflow-y-auto space-y-2 rounded-none">
+                                        <div className="border border-border p-3 bg-white max-h-[120px] overflow-y-auto space-y-2 rounded-xl">
                                             <label className="flex items-center gap-3 cursor-pointer text-xs font-bold uppercase tracking-wider text-text">
                                                 <input type="checkbox" checked={form.outletIds.length === 0} onChange={() => setForm({ ...form, outletIds: [] })} className="accent-primary w-4 h-4 cursor-pointer" />
                                                 All Outlets
@@ -469,8 +481,8 @@ export default function PromotionsPage() {
                                     </div>
                                 </div>
                                 <div className="flex gap-4 pt-4 border-t border-border">
-                                    <button type="button" onClick={() => setShowModal(false)} className="flex-1 py-4 rounded-none border border-border text-[11px] font-bold uppercase tracking-[0.2em] text-text-muted hover:bg-surface transition-all">Cancel</button>
-                                    <button type="submit" className="flex-1 py-4 bg-primary text-primary-foreground rounded-none font-black text-[11px] uppercase tracking-[0.2em] shadow-lg shadow-primary/20 hover:brightness-110 transition-all">{editing ? 'Save Changes' : 'Create Offer'}</button>
+                                    <button type="button" onClick={() => setShowModal(false)} className="flex-1 py-4 rounded-xl border border-border text-[11px] font-bold uppercase tracking-[0.2em] text-text-muted hover:bg-surface transition-all">Cancel</button>
+                                    <button type="submit" className="flex-1 py-4 bg-primary text-primary-foreground rounded-xl font-black text-[11px] uppercase tracking-[0.2em] shadow-lg shadow-primary/20 hover:brightness-110 transition-all">{editing ? 'Save Changes' : 'Create Offer'}</button>
                                 </div>
                             </form>
                         </div>

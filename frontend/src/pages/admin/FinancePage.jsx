@@ -285,62 +285,73 @@ export default function FinancePage({ tab = 'dashboard' }) {
     );
 }
 
-const trendBadgeClass = (color) => {
-    const map = {
-        blue: 'border-primary/40 text-primary bg-primary/5',
-        rose: 'border-rose-500/50 text-rose-600 bg-rose-500/5',
-        orange: 'border-orange-500/50 text-orange-600 bg-orange-500/5',
-        emerald: 'border-emerald-500/50 text-emerald-600 bg-emerald-500/5',
-        violet: 'border-violet-500/50 text-violet-600 bg-violet-500/5',
-    };
-    return map[color] || map.emerald;
+const colorStyles = {
+    blue: {
+        iconColor: '!text-[#2563EB] dark:!text-[#60A5FA]',
+        iconBg: '!bg-[#DBEAFE] dark:!bg-[#2563EB]/20',
+        cardBg: '!bg-[#EFF6FF] dark:!bg-[#2563EB]/5',
+        cardBorder: '!border-[#DBEAFE] dark:!border-[#2563EB]/15 hover:!border-[#93C5FD] dark:hover:!border-[#60A5FA]/50',
+    },
+    emerald: {
+        iconColor: '!text-[#059669] dark:!text-[#34D399]',
+        iconBg: '!bg-[#D1FAE5] dark:!bg-[#059669]/20',
+        cardBg: '!bg-[#F0FDF4] dark:!bg-[#059669]/5',
+        cardBorder: '!border-[#DCFCE7] dark:!border-[#059669]/15 hover:!border-[#86EFAC] dark:hover:!border-[#34D399]/50',
+    },
+    rose: {
+        iconColor: '!text-[#E11D48] dark:!text-[#FB7185]',
+        iconBg: '!bg-[#FFE4E6] dark:!bg-[#E11D48]/20',
+        cardBg: '!bg-[#FFF1F2] dark:!bg-[#E11D48]/5',
+        cardBorder: '!border-[#FFE4E6] dark:!border-[#E11D48]/15 hover:!border-[#FDA4AF] dark:hover:!border-[#FB7185]/50',
+    },
+    violet: {
+        iconColor: '!text-[#7C3AED] dark:!text-[#A78BFA]',
+        iconBg: '!bg-[#EDE9FE] dark:!bg-[#7C3AED]/20',
+        cardBg: '!bg-[#FAF5FF] dark:!bg-[#7C3AED]/5',
+        cardBorder: '!border-[#F3E8FF] dark:!border-[#7C3AED]/15 hover:!border-[#D8B4FE] dark:hover:!border-[#A78BFA]/50',
+    },
+    orange: {
+        iconColor: '!text-[#EA580C] dark:!text-[#FB923C]',
+        iconBg: '!bg-[#FFEDD5] dark:!bg-[#EA580C]/20',
+        cardBg: '!bg-[#FFF7ED] dark:!bg-[#EA580C]/5',
+        cardBorder: '!border-[#FFEDD5] dark:!border-[#EA580C]/15 hover:!border-[#FDBA74] dark:hover:!border-[#FB923C]/50',
+    }
 };
 
 function FinanceKPICard({ title, value, icon: Icon, color, trend, className = '', to }) {
-    const colors = {
-        blue: 'text-primary',
-        rose: 'text-rose-500',
-        orange: 'text-orange-500',
-        emerald: 'text-emerald-500',
-        violet: 'text-violet-600',
-    };
-
+    const styles = colorStyles[color] || colorStyles.blue;
     const trendText = trend != null ? String(trend) : '—';
 
-    const bgColors = {
-        blue: 'bg-blue-500/10',
-        rose: 'bg-rose-500/10',
-        orange: 'bg-orange-500/10',
-        emerald: 'bg-emerald-500/10',
-        violet: 'bg-violet-500/10',
-    };
-
     const content = (
-        <>
-            <div className={`absolute -right-4 -top-4 w-20 h-20 bg-primary/5 rotate-12 transition-all ${to ? 'group-hover:bg-primary/10' : ''}`} />
-            <div className="flex justify-between items-start gap-2 mb-4 text-left font-black min-h-[2.75rem]">
-                <div className={`shrink-0 w-12 h-12 flex items-center justify-center rounded-xl ${colors[color]} ${bgColors[color]} ${to ? 'group-hover:scale-105' : ''} transition-transform`}>
-                    <Icon className="w-6 h-6 font-black" />
-                </div>
-                <span
-                    title={trendText}
-                    className={`text-[8px] sm:text-[9px] font-black uppercase tracking-wider px-2 py-1 rounded-md border max-w-[58%] min-w-0 text-right leading-snug line-clamp-3 ${trendBadgeClass(color)}`}
+        <div className="flex !items-start gap-3 !text-left">
+            <div className={`w-9 h-9 rounded-full flex items-center justify-center shrink-0 ${styles.iconBg}`}>
+                <Icon className={`w-4 h-4 ${styles.iconColor}`} strokeWidth={2} />
+            </div>
+            
+            <div className="flex flex-col !items-start !text-left">
+                <span 
+                    style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '0.03em' }} 
+                    className="uppercase text-slate-500 dark:text-slate-450 leading-none mb-1.5 !text-left"
+                >
+                   {title}
+                </span>
+                <h3 
+                    style={{ fontSize: '24px', fontWeight: 850 }} 
+                    className="text-slate-800 dark:text-slate-50 leading-none tracking-tight !text-left break-words min-w-0"
+                >
+                    {value}
+                </h3>
+                <span 
+                    style={{ fontSize: '12px', fontWeight: 500 }} 
+                    className="text-slate-500 dark:text-slate-400 mt-1.5 !text-left"
                 >
                     {trendText}
                 </span>
             </div>
-            <div className="space-y-1.5 mt-auto text-left font-black leading-tight">
-                <h3 className="text-text-muted text-[9px] sm:text-[10px] font-black uppercase tracking-[0.2em] opacity-60 line-clamp-2">
-                    {title}
-                </h3>
-                <div className="text-2xl sm:text-3xl font-black text-text tracking-tighter tabular-nums break-words">{value}</div>
-            </div>
-        </>
+        </div>
     );
 
-    const cardClasses = `bg-surface p-5 sm:p-6 rounded-2xl border border-border shadow-sm ${
-        to ? 'hover:shadow-xl hover:translate-y-[-2px] cursor-pointer' : ''
-    } transition-all group relative overflow-hidden text-left font-black flex flex-col min-h-[160px] ${className}`;
+    const cardClasses = `!rounded-[16px] !border p-3.5 shadow-[0_2px_8px_-3px_rgba(0,0,0,0.04)] group flex flex-col justify-between min-h-[118px] transition-all hover:-translate-y-0.5 active:scale-[0.98] hover:shadow-md ${styles.cardBg} ${styles.cardBorder} ${className}`;
 
     if (to) {
         return (

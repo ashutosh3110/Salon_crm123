@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import api from '../../../services/api';
 import { useBusiness } from '../../../contexts/BusinessContext';
+import CustomDropdown from '../../common/CustomDropdown';
 
 const CATEGORY_OPTIONS = [
     { value: 'Rent', label: 'Rent' },
@@ -328,21 +329,12 @@ function ExpenseForm({ onCancel, onSaved, outletId }) {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
                         <label className="text-[10px] font-bold text-text-muted uppercase tracking-widest ml-1">Expense category</label>
-                        <div className="relative group">
-                            <Tag className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-rose-500 transition-colors" />
-                            <select
-                                required
-                                value={category}
-                                onChange={(e) => setCategory(e.target.value)}
-                                className="w-full pl-10 pr-4 py-2 bg-white border border-border rounded-2xl text-xs font-bold text-text-secondary appearance-none focus:outline-none focus:ring-2 focus:ring-rose-500/10 transition-all"
-                            >
-                                {CATEGORY_OPTIONS.map((o) => (
-                                    <option key={o.value} value={o.value}>
-                                        {o.label}
-                                    </option>
-                                ))}
-                            </select>
-                        </div>
+                        <CustomDropdown
+                            value={category}
+                            onChange={setCategory}
+                            placeholder="Select Category"
+                            options={CATEGORY_OPTIONS}
+                        />
                     </div>
 
                     <div className="space-y-2">
@@ -394,21 +386,18 @@ function ExpenseForm({ onCancel, onSaved, outletId }) {
 
                     <div className="space-y-2">
                         <label className="text-[10px] font-bold text-text-muted uppercase tracking-widest ml-1">Outlet</label>
-                        <div className="relative">
-                            <Store className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
-                            <select
-                                value={formOutletId}
-                                onChange={(e) => setFormOutletId(e.target.value)}
-                                className="w-full pl-10 pr-4 py-2 bg-white border border-border rounded-2xl text-xs font-bold text-text-secondary appearance-none transition-all"
-                            >
-                                <option value="">All / not specified</option>
-                                {(outlets || []).map((o) => (
-                                    <option key={o._id || o.id} value={o._id || o.id}>
-                                        {o.name}
-                                    </option>
-                                ))}
-                            </select>
-                        </div>
+                        <CustomDropdown
+                            value={formOutletId}
+                            onChange={setFormOutletId}
+                            placeholder="All / not specified"
+                            options={[
+                                { label: 'All / not specified', value: '' },
+                                ...(outlets || []).map((o) => ({
+                                    label: o.name,
+                                    value: o._id || o.id,
+                                })),
+                            ]}
+                        />
                     </div>
 
                     <div className="space-y-2">

@@ -150,12 +150,12 @@ export default function CashAndBank({ type, outletId }) {
   const locked = payload?.saved?.status === 'closed';
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-4 space-y-4">
 
       {/* Header */}
-      <div className="flex flex-col md:flex-row justify-between gap-4 bg-surface p-6 rounded-3xl border border-border shadow-sm">
+      <div className="flex flex-col md:flex-row justify-between gap-3 bg-surface p-4 rounded-[24px] border border-border shadow-sm">
         <div>
-          <h2 className="text-xl font-black text-text uppercase tracking-tight">
+          <h2 className="text-lg font-black text-text uppercase tracking-tight">
             Cash & Bank
           </h2>
           <p className="text-[10px] font-bold text-text-muted uppercase tracking-widest mt-1">
@@ -202,7 +202,7 @@ export default function CashAndBank({ type, outletId }) {
         </div>
       ) : (
         <>
-          <div className="grid md:grid-cols-2 gap-5">
+          <div className="grid md:grid-cols-2 gap-4">
 
             {/* CASH */}
             <Card
@@ -259,7 +259,7 @@ export default function CashAndBank({ type, outletId }) {
               </div>
 
               {showCalculator && !locked && (
-                <div className="p-4 bg-slate-550/5 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-700 rounded-xl space-y-4 animate-fadeIn">
+                <div className="p-3 bg-slate-550/5 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-700 rounded-xl space-y-3 animate-fadeIn">
                   <div className="flex justify-between items-center pb-1.5 border-b border-slate-200 dark:border-slate-700">
                     <span className="text-[10px] font-black uppercase text-slate-500 tracking-wider">Denomination Calculator</span>
                     <button
@@ -273,7 +273,7 @@ export default function CashAndBank({ type, outletId }) {
                       Reset
                     </button>
                   </div>
-                  <div className="grid grid-cols-3 gap-x-2 gap-y-4">
+                  <div className="grid grid-cols-3 gap-x-2 gap-y-3">
                     {[500, 200, 100, 50, 20, 10, 5, 2, 1].map((denom) => (
                       <div key={denom} className="flex flex-col gap-1 relative">
                         <span className="text-[9px] font-bold text-slate-500 uppercase tracking-wider text-center">
@@ -365,7 +365,7 @@ export default function CashAndBank({ type, outletId }) {
           </div>
 
           {/* Notes */}
-          <div className="border border-border rounded-3xl bg-surface p-6 space-y-4 shadow-sm">
+          <div className="border border-border rounded-3xl bg-surface p-5 space-y-3 shadow-sm">
             <h3 className="text-[10px] font-black uppercase tracking-widest text-text-muted">Notes</h3>
 
             <textarea
@@ -413,9 +413,9 @@ function Card({ icon, title, children, color }) {
   const selectedColorClass = bgColors[color] || bgColors.primary;
 
   return (
-    <div className="bg-surface border border-border rounded-3xl p-6 space-y-4 shadow-sm flex flex-col">
-      <div className="flex items-center gap-3 font-black text-text uppercase tracking-tight text-lg mb-2">
-        <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${selectedColorClass}`}>
+    <div className="bg-surface border border-border rounded-3xl p-5 space-y-3 shadow-sm flex flex-col">
+      <div className="flex items-center gap-3 font-black text-text uppercase tracking-tight text-base mb-1">
+        <div className={`w-9 h-9 rounded-xl flex items-center justify-center ${selectedColorClass}`}>
           {icon}
         </div>
         {title}
@@ -427,7 +427,7 @@ function Card({ icon, title, children, color }) {
 
 function SummaryRow({ label, value }) {
   return (
-    <div className="flex justify-between items-center text-[11px] font-bold text-text-muted uppercase tracking-widest py-1">
+    <div className="flex justify-between items-center text-[10px] font-bold text-text-muted uppercase tracking-widest py-0.5">
       <span>{label}</span>
       <span className="text-text">
         ₹{Number(value || 0).toLocaleString('en-IN')}
@@ -469,7 +469,7 @@ function DiffBox({ diff }) {
 
   return (
     <div
-      className={`rounded-2xl p-4 mt-4 flex justify-between items-center text-[11px] font-black uppercase tracking-widest ${
+      className={`rounded-2xl p-3 mt-3 flex justify-between items-center text-[10px] font-black uppercase tracking-widest ${
         matched
           ? 'bg-emerald-500/10 text-emerald-600 border border-emerald-500/20'
           : 'bg-rose-500/10 text-rose-600 border border-rose-500/20'
