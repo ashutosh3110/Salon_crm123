@@ -14,13 +14,26 @@ import {
     Zap,
     User,
     UserCircle,
-    Users
+    Users,
+    RefreshCcw,
+    Download,
+    Upload
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { API_BASE_URL } from '../../../services/api';
 import { useBusiness } from '../../../contexts/BusinessContext';
 
-export default function ServiceCategories({ categories = [], onAdd, onUpdate, onDelete, onToggleStatus }) {
+export default function ServiceCategories({ 
+    categories = [], 
+    onAdd, 
+    onUpdate, 
+    onDelete, 
+    onToggleStatus,
+    onRefresh,
+    onDownloadTemplate,
+    onBulkUpload,
+    importing 
+}) {
     const navigate = useNavigate();
     const { platformSettings } = useBusiness();
     const [searchTerm, setSearchTerm] = useState('');
@@ -126,32 +139,75 @@ export default function ServiceCategories({ categories = [], onAdd, onUpdate, on
     return (
         <div className="space-y-6">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-surface p-4 rounded-2xl border border-border shadow-sm">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 bg-surface p-2.5 rounded-2xl border border-border/40 shadow-sm">
                 <div className="relative flex-1 max-w-md">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-text-muted" />
                     <input
                         type="text"
                         placeholder="Search sectors..."
-                        className="w-full pl-10 pr-4 py-2 rounded-xl border border-border bg-surface-alt text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all font-medium text-text placeholder-text-muted"
+                        className="w-full pl-9 pr-4 py-1.5 rounded-xl border border-border bg-surface-alt text-xs focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all font-medium text-text placeholder-text-muted"
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                     />
                 </div>
 
-                <button
-                    onClick={openAddModal}
-                    className="flex items-center gap-3 bg-primary text-primary-foreground border border-primary px-10 py-4 rounded-none text-[11px] font-bold uppercase tracking-[0.2em] shadow-xl shadow-primary/20 hover:bg-primary/90 transition-all"
-                >
-                    <Plus className="w-4 h-4" /> Initialize Category
-                </button>
+                <div className="flex flex-wrap items-center gap-1.5 w-full sm:w-auto">
+                    {onRefresh && (
+                        <button
+                            onClick={onRefresh}
+                            className="p-2 rounded-xl bg-surface-alt border border-border text-text-muted hover:text-primary transition-all active:scale-95 flex justify-center items-center"
+                            title="Refresh List"
+                        >
+                            <RefreshCcw className="w-3.5 h-3.5" />
+                        </button>
+                    )}
+
+                    {onDownloadTemplate && (
+                        <button
+                            onClick={onDownloadTemplate}
+                            className="flex items-center justify-center gap-1 px-3 py-2 rounded-xl bg-surface-alt border border-border text-foreground hover:text-primary transition-all active:scale-95 text-[10px] font-bold uppercase tracking-wider"
+                            title="Download Sample Template"
+                        >
+                            <Download className="w-3 h-3" />
+                            <span>Sample</span>
+                        </button>
+                    )}
+
+                    {onBulkUpload && (
+                        <div className="relative">
+                            <input
+                                type="file"
+                                id="category-bulk-upload-integrated"
+                                className="hidden"
+                                accept=".xlsx, .xls, .csv"
+                                onChange={onBulkUpload}
+                            />
+                            <button
+                                onClick={() => document.getElementById('category-bulk-upload-integrated').click()}
+                                disabled={importing}
+                                className="flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 hover:bg-emerald-500/20 transition-all active:scale-95 text-[10px] font-black uppercase tracking-widest disabled:opacity-50 group"
+                            >
+                                {importing ? <RefreshCcw className="w-3 h-3 animate-spin" /> : <Upload className="w-3 h-3 group-hover:scale-110 transition-transform" />}
+                                <span>{importing ? 'Importing...' : 'Import'}</span>
+                            </button>
+                        </div>
+                    )}
+
+                    <button
+                        onClick={openAddModal}
+                        className="flex items-center gap-1.5 bg-primary text-primary-foreground border border-primary px-4 py-2 rounded-xl text-[10px] font-bold uppercase tracking-wider shadow-md shadow-primary/10 hover:bg-primary/90 transition-all active:scale-95"
+                    >
+                        <Plus className="w-3.5 h-3.5" /> Initialize Category
+                    </button>
+                </div>
             </div>
 
             {/* Category Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {filteredCategories.map((cat) => (
-                    <div key={cat._id} className="bg-surface p-6 rounded-3xl border border-border shadow-sm hover:shadow-md transition-all group relative overflow-hidden">
-                        <div className="flex justify-between items-start mb-4 relative z-10">
-                            <div className="p-3 rounded-2xl bg-primary/5 text-primary border border-primary/10 group-hover:scale-110 transition-transform flex items-center gap-2 overflow-hidden w-16 h-16 justify-center">
+                    <div key={cat._id} className="bg-surface p-4 rounded-2xl border border-border shadow-sm hover:shadow-lg transition-all group relative overflow-hidden">
+                        <div className="flex justify-between items-start mb-3 relative z-10">
+                            <div className="p-1 rounded-xl bg-primary/5 text-primary border border-primary/10 group-hover:scale-105 transition-transform flex items-center gap-1 overflow-hidden w-11 h-11 justify-center">
                                 {cat.image ? (
                                     <img
                                         src={cat.image.startsWith('http') ? cat.image : `${API_BASE_URL}${cat.image}`}
@@ -159,24 +215,24 @@ export default function ServiceCategories({ categories = [], onAdd, onUpdate, on
                                         className="w-full h-full object-cover"
                                     />
                                 ) : (
-                                    <Tag className="w-6 h-6" />
+                                    <Tag className="w-4.5 h-4.5" />
                                 )}
                             </div>
-                            <div className="flex gap-1">
+                            <div className="flex gap-0.5">
                                 <button
                                     onClick={() => openEditModal(cat)}
-                                    className="p-2 rounded-xl hover:bg-surface-alt text-text-muted hover:text-primary transition-all"
+                                    className="p-1.5 rounded-lg hover:bg-surface-alt text-text-muted hover:text-primary transition-all"
                                     title="Edit Section"
                                 >
-                                    <Edit2 className="w-4 h-4" />
+                                    <Edit2 className="w-3.5 h-3.5" />
                                 </button>
 
                                 <button
                                     onClick={() => handleDelete(cat._id, cat.name)}
-                                    className="p-2 rounded-xl hover:bg-surface-alt text-text-muted hover:text-rose-500 transition-all"
+                                    className="p-1.5 rounded-lg hover:bg-surface-alt text-text-muted hover:text-rose-500 transition-all"
                                     title="Delete Section"
                                 >
-                                    <Trash2 className="w-4 h-4" />
+                                    <Trash2 className="w-3.5 h-3.5" />
                                 </button>
                             </div>
                         </div>
@@ -185,44 +241,44 @@ export default function ServiceCategories({ categories = [], onAdd, onUpdate, on
                             className="relative z-10 cursor-pointer group/content"
                             onClick={() => navigate('/admin/services/list', { state: { category: cat.name } })}
                         >
-                            <div className="flex items-center gap-2">
-                                <h3 className="text-lg font-bold text-text leading-tight uppercase tracking-tight group-hover/content:text-primary transition-colors">{cat.name}</h3>
-                                <span className={`w-2 h-2 rounded-full ${cat.status === 'active' ? 'bg-emerald-500' : 'bg-muted-foreground/30'}`} />
-                                <ArrowUpRight className="w-4 h-4 opacity-0 group-hover/content:opacity-100 group-hover/content:translate-x-1 group-hover/content:-translate-y-1 transition-all text-primary" />
+                            <div className="flex items-center gap-1.5">
+                                <h3 className="text-base font-bold text-text leading-tight uppercase tracking-tight group-hover/content:text-primary transition-colors">{cat.name}</h3>
+                                <span className={`w-1.5 h-1.5 rounded-full ${cat.status === 'active' ? 'bg-emerald-500' : 'bg-muted-foreground/30'}`} />
+                                <ArrowUpRight className="w-3.5 h-3.5 opacity-0 group-hover/content:opacity-100 group-hover/content:translate-x-0.5 group-hover/content:-translate-y-0.5 transition-all text-primary" />
                             </div>
-                            <div className="flex items-center flex-wrap gap-2 mt-2">
-                                <div className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-surface-alt text-text-secondary text-[9px] font-black uppercase tracking-widest border border-border/50">
-                                    <Layers className="w-3 h-3 text-primary" />
+                            <div className="flex items-center flex-wrap gap-1.5 mt-2">
+                                <div className="flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-surface-alt text-text-secondary text-[8.5px] font-black uppercase tracking-widest border border-border/50">
+                                    <Layers className="w-2.5 h-2.5 text-primary" />
                                     {cat.serviceCount} Services
                                 </div>
-                                <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest border ${cat.gender === 'men'
+                                <div className={`flex items-center gap-1 px-1.5 py-0.5 rounded-md text-[8.5px] font-black uppercase tracking-widest border ${cat.gender === 'men'
                                     ? 'bg-blue-500/10 text-blue-600 border-blue-500/20'
                                     : cat.gender === 'both'
                                         ? 'bg-purple-500/10 text-purple-600 border-purple-500/20'
                                         : 'bg-pink-500/10 text-pink-600 border-pink-500/20'
                                     }`}>
-                                    {cat.gender === 'men' ? <User className="w-3 h-3" /> : cat.gender === 'both' ? <Users className="w-3 h-3" /> : <UserCircle className="w-3 h-3" />}
+                                    {cat.gender === 'men' ? <User className="w-2.5 h-2.5" /> : cat.gender === 'both' ? <Users className="w-2.5 h-2.5" /> : <UserCircle className="w-2.5 h-2.5" />}
                                     {cat.gender === 'men' ? 'Men' : cat.gender === 'women' ? 'Women' : 'Unisex'}
                                 </div>
-                                <span className="text-[10px] font-bold text-text-muted uppercase tracking-tighter ml-auto italic">Currently {cat.status}</span>
+                                <span className="text-[9px] font-bold text-text-muted uppercase tracking-tighter ml-auto italic">Currently {cat.status}</span>
                             </div>
                         </div>
 
                         {/* Decoration */}
-                        <div className="absolute -bottom-4 -right-4 w-24 h-24 rounded-full bg-primary/5 group-hover:bg-primary/10 transition-all blur-2xl" />
+                        <div className="absolute -bottom-4 -right-4 w-16 h-16 rounded-full bg-primary/5 group-hover:bg-primary/10 transition-all blur-2xl" />
                     </div>
                 ))}
 
                 <button
                     onClick={openAddModal}
-                    className="bg-surface-alt border-2 border-dashed border-border rounded-3xl p-6 flex flex-col items-center justify-center gap-3 hover:bg-surface hover:border-primary/40 transition-all group group-hover:shadow-lg h-full min-h-[160px]"
+                    className="bg-surface-alt border border-dashed border-border rounded-2xl p-4 flex flex-col items-center justify-center gap-2 hover:bg-surface hover:border-primary/40 transition-all group group-hover:shadow-lg h-full min-h-[120px]"
                 >
-                    <div className="w-12 h-12 rounded-full bg-surface border border-border flex items-center justify-center text-text-muted group-hover:text-primary group-hover:scale-110 transition-all">
-                        <Plus className="w-6 h-6" />
+                    <div className="w-9 h-9 rounded-full bg-surface border border-border flex items-center justify-center text-text-muted group-hover:text-primary group-hover:scale-105 transition-all">
+                        <Plus className="w-5 h-5" />
                     </div>
                     <div>
-                        <p className="text-xs font-bold text-text-secondary uppercase tracking-widest leading-none">Initialize New</p>
-                        <p className="text-[10px] text-text-muted font-bold mt-1.5 uppercase tracking-tighter opacity-60">Group your assets</p>
+                        <p className="text-[11px] font-bold text-text-secondary uppercase tracking-widest leading-none text-center">Initialize New</p>
+                        <p className="text-[9px] text-text-muted font-bold mt-1 uppercase tracking-tighter opacity-60 text-center">Group your assets</p>
                     </div>
                 </button>
             </div>

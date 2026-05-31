@@ -272,28 +272,28 @@ export default function BookingsPage() {
             {/* Header */}
             <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
                 <div>
-                    <h1 className="text-2xl font-black text-slate-900 uppercase tracking-tight leading-none">Manage Bookings</h1>
-                    <p className="text-[10px] font-black text-slate-400 mt-1.5 uppercase tracking-[0.1em]">View and manage all salon appointments</p>
+                    <h1 className="text-2xl font-black text-text uppercase tracking-tight leading-none">Manage Bookings</h1>
+                    <p className="text-[9px] font-black text-text-muted mt-1.5 uppercase tracking-[0.1em] opacity-60">View and manage all salon appointments</p>
                 </div>
 
-                <div className="flex flex-wrap items-center gap-3">
+                <div className="flex flex-wrap items-center gap-2">
                     <button
                         onClick={() => navigate('/admin/bookings/new')}
-                        className="flex items-center gap-2 px-5 py-2.5 bg-[#B8860B] hover:bg-[#997009] text-white text-[11px] font-black uppercase tracking-widest allow-curve rounded-lg transition-all shadow-sm"
+                        className="flex items-center gap-1.5 px-4 py-2 bg-[#B8860B] hover:bg-[#997009] text-white text-[10px] font-black uppercase tracking-widest rounded-xl transition-all shadow-sm active:scale-95"
                     >
-                        <Plus className="w-4 h-4" /> New Booking
+                        <Plus className="w-3.5 h-3.5" /> New Booking
                     </button>
 
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-1.5">
                         <button
                             onClick={() => setView('calendar')}
-                            className={`flex items-center gap-1.5 px-4 py-2.5 text-[10px] font-black uppercase tracking-wider transition-all allow-curve rounded-lg shadow-sm border ${view === 'calendar' ? 'bg-white text-slate-900 border-slate-300' : 'bg-white text-slate-500 border-slate-200 hover:border-slate-300 hover:text-slate-700'}`}
+                            className={`flex items-center gap-1 px-3 py-1.5 text-[9px] font-black uppercase tracking-wider transition-all rounded-lg shadow-sm border ${view === 'calendar' ? 'bg-surface text-text border-border' : 'bg-surface text-text-muted border-border/40 hover:text-text hover:bg-surface-alt'}`}
                         >
                             <CalendarClock className="w-3.5 h-3.5" /> Calendar
                         </button>
                         <button
                             onClick={() => setView('list')}
-                            className={`flex items-center gap-1.5 px-4 py-2.5 text-[10px] font-black uppercase tracking-wider transition-all allow-curve rounded-lg shadow-sm border ${view === 'list' ? 'bg-white text-slate-900 border-slate-300' : 'bg-white text-slate-500 border-slate-200 hover:border-slate-300 hover:text-slate-700'}`}
+                            className={`flex items-center gap-1 px-3 py-1.5 text-[9px] font-black uppercase tracking-wider transition-all rounded-lg shadow-sm border ${view === 'list' ? 'bg-surface text-text border-border' : 'bg-surface text-text-muted border-border/40 hover:text-text hover:bg-surface-alt'}`}
                         >
                             <List className="w-3.5 h-3.5" /> List
                         </button>
@@ -393,19 +393,19 @@ export default function BookingsPage() {
             </div>
 
             {/* Filters Row */}
-            <div className="flex flex-col xl:flex-row gap-3 items-center">
-                <div className="relative flex-1 w-full bg-white border border-slate-200 allow-curve rounded-xl shadow-sm">
-                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+            <div className="flex flex-col xl:flex-row gap-2.5 items-center">
+                <div className="relative flex-1 w-full bg-surface border border-border/40 rounded-xl shadow-sm">
+                    <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-text-muted" />
                     <input
                         type="text"
                         placeholder="Search by ID, customer, service, staff, or phone..."
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
-                        className="w-full pl-10 pr-4 py-3 bg-transparent text-xs font-semibold placeholder:text-slate-400 text-slate-900 focus:outline-none allow-curve rounded-xl"
+                        className="w-full pl-9 pr-4 py-1.5 bg-transparent text-xs font-semibold placeholder:text-text-muted/65 text-text focus:outline-none rounded-xl"
                     />
                 </div>
 
-                <div className="flex flex-wrap items-center gap-3 w-full xl:w-auto">
+                <div className="flex flex-wrap items-center gap-2 w-full xl:w-auto">
                     <CustomDropdown
                         value={dateFilter}
                         onChange={setDateFilter}
@@ -415,8 +415,8 @@ export default function BookingsPage() {
                             { value: 'week', label: 'This Week' },
                             { value: 'month', label: 'This Month' }
                         ]}
-                        className="w-full xl:w-36 h-[38px] bg-white border border-slate-200 allow-curve rounded-xl shadow-sm hover:shadow-md [&>button]:border-none [&>button]:shadow-none [&>button]:h-full [&>button]:py-0 [&>button]:bg-transparent [&_span]:normal-case [&_span]:text-xs [&_span]:font-semibold [&_span]:text-slate-700 flex-1 xl:flex-none"
-                        icon={<CalendarDays className="w-4 h-4 mr-1 text-slate-500" />}
+                        className="w-full xl:w-32 h-8 bg-surface border border-border/40 rounded-xl shadow-sm hover:shadow-md [&>button]:border-none [&>button]:shadow-none [&>button]:h-full [&>button]:py-0 [&>button]:bg-transparent [&_span]:normal-case [&_span]:text-[11px] [&_span]:font-black [&_span]:text-text-muted flex-1 xl:flex-none"
+                        icon={<CalendarDays className="w-3.5 h-3.5 mr-1 text-text-muted" />}
                     />
                     <CustomDropdown
                         value={staffFilter}
@@ -425,7 +425,7 @@ export default function BookingsPage() {
                             { value: 'all', label: 'All Staff' },
                             ...staff.map(s => ({ value: s._id, label: s.name }))
                         ]}
-                        className="w-full xl:w-36 h-[38px] bg-white border border-slate-200 allow-curve rounded-xl shadow-sm hover:shadow-md [&>button]:border-none [&>button]:shadow-none [&>button]:h-full [&>button]:py-0 [&>button]:bg-transparent [&_span]:normal-case [&_span]:text-xs [&_span]:font-semibold [&_span]:text-slate-700 flex-1 xl:flex-none"
+                        className="w-full xl:w-32 h-8 bg-surface border border-border/40 rounded-xl shadow-sm hover:shadow-md [&>button]:border-none [&>button]:shadow-none [&>button]:h-full [&>button]:py-0 [&>button]:bg-transparent [&_span]:normal-case [&_span]:text-[11px] [&_span]:font-black [&_span]:text-text-muted flex-1 xl:flex-none"
                     />
                     <CustomDropdown
                         value={statusFilter}
@@ -437,11 +437,11 @@ export default function BookingsPage() {
                             { value: 'completed', label: 'Completed' },
                             { value: 'cancelled', label: 'Cancelled' }
                         ]}
-                        className="w-full xl:w-36 h-[38px] bg-white border border-slate-200 allow-curve rounded-xl shadow-sm hover:shadow-md [&>button]:border-none [&>button]:shadow-none [&>button]:h-full [&>button]:py-0 [&>button]:bg-transparent [&_span]:normal-case [&_span]:text-xs [&_span]:font-semibold [&_span]:text-slate-700 flex-1 xl:flex-none"
+                        className="w-full xl:w-32 h-8 bg-surface border border-border/40 rounded-xl shadow-sm hover:shadow-md [&>button]:border-none [&>button]:shadow-none [&>button]:h-full [&>button]:py-0 [&>button]:bg-transparent [&_span]:normal-case [&_span]:text-[11px] [&_span]:font-black [&_span]:text-text-muted flex-1 xl:flex-none"
                     />
                      
-                    <button className="flex items-center justify-center gap-2 px-3 h-[38px] bg-white border border-slate-200 text-slate-700 text-xs font-semibold allow-curve rounded-xl shadow-sm hover:bg-slate-50 transition-all flex-1 xl:flex-none shrink-0">
-                        <Filter className="w-3.5 h-3.5 text-slate-550" /> Filters
+                    <button className="flex items-center justify-center gap-1 px-3 h-8 bg-surface border border-border/40 text-text-muted text-[11px] font-black rounded-xl shadow-sm hover:text-primary transition-all flex-1 xl:flex-none shrink-0 uppercase tracking-wider">
+                        <Filter className="w-3.5 h-3.5" /> Filters
                     </button>
                 </div>
             </div>
@@ -536,28 +536,28 @@ export default function BookingsPage() {
                     </div>
                 </div>
             ) : (
-                <div className="bg-white border border-slate-200 allow-curve rounded-2xl shadow-sm overflow-hidden mt-4">
-                    <div className="overflow-x-auto">
+                <div className="bg-surface border border-border/40 rounded-2xl shadow-sm overflow-hidden mt-3.5">
+                    <div className="overflow-x-auto text-left">
                         <table className="w-full text-left border-collapse min-w-[1000px]">
                             <thead>
-                                <tr className="bg-slate-50/50 border-b border-slate-200">
-                                    <th className="px-5 py-4 text-[10px] font-black text-slate-500 uppercase tracking-wider">ID</th>
-                                    <th className="px-5 py-4 text-[10px] font-black text-slate-500 uppercase tracking-wider">Date & Time ↓</th>
-                                    <th className="px-5 py-4 text-[10px] font-black text-slate-500 uppercase tracking-wider">Customer</th>
-                                    <th className="px-5 py-4 text-[10px] font-black text-slate-500 uppercase tracking-wider">Service</th>
-                                    <th className="px-5 py-4 text-[10px] font-black text-slate-500 uppercase tracking-wider">Staff</th>
-                                    <th className="px-5 py-4 text-[10px] font-black text-slate-500 uppercase tracking-wider">Outlet</th>
-                                    <th className="px-5 py-4 text-[10px] font-black text-slate-500 uppercase tracking-wider">Status</th>
-                                    <th className="px-5 py-4 text-[10px] font-black text-slate-500 uppercase tracking-wider text-right">Actions</th>
+                                <tr className="bg-surface-alt border-b border-border/40">
+                                    <th className="px-4 py-2 text-[9px] font-bold text-text-muted uppercase tracking-widest">ID</th>
+                                    <th className="px-4 py-2 text-[9px] font-bold text-text-muted uppercase tracking-widest">Date & Time ↓</th>
+                                    <th className="px-4 py-2 text-[9px] font-bold text-text-muted uppercase tracking-widest">Customer</th>
+                                    <th className="px-4 py-2 text-[9px] font-bold text-text-muted uppercase tracking-widest">Service</th>
+                                    <th className="px-4 py-2 text-[9px] font-bold text-text-muted uppercase tracking-widest">Staff</th>
+                                    <th className="px-4 py-2 text-[9px] font-bold text-text-muted uppercase tracking-widest">Outlet</th>
+                                    <th className="px-4 py-2 text-[9px] font-bold text-text-muted uppercase tracking-widest">Status</th>
+                                    <th className="px-4 py-2 text-[9px] font-bold text-text-muted uppercase tracking-widest text-right">Actions</th>
                                 </tr>
                             </thead>
-                            <tbody className="divide-y divide-slate-100">
+                            <tbody className="divide-y divide-border/20">
                                 {filteredBookings.length === 0 ? (
                                     <tr>
-                                        <td colSpan="8" className="px-4 py-20 text-center">
-                                            <div className="flex flex-col items-center justify-center opacity-20">
-                                                <RotateCcw className="w-12 h-12 mb-4 animate-spin-slow" />
-                                                <p className="text-[10px] font-black uppercase tracking-widest">No bookings found matching your search.</p>
+                                        <td colSpan="8" className="px-4 py-12 text-center">
+                                            <div className="flex flex-col items-center justify-center opacity-25">
+                                                <RotateCcw className="w-8 h-8 mb-3 animate-spin-slow text-text-muted" />
+                                                <p className="text-[9px] font-black uppercase tracking-widest text-text-muted">No bookings found matching search query.</p>
                                             </div>
                                         </td>
                                     </tr>
@@ -565,80 +565,71 @@ export default function BookingsPage() {
                                     paginatedBookings.map((b, index) => (
                                         <tr
                                             key={b._id}
-                                            className="hover:bg-slate-50/50 transition-all cursor-pointer group"
+                                            className="hover:bg-surface-alt/45 transition-all cursor-pointer group"
                                             onClick={() => navigate(`/admin/bookings/${b._id}`)}
                                         >
-                                            <td className="px-5 py-4">
-                                                <div className="flex flex-col gap-1.5">
-                                                    <span className="text-[11px] font-black text-slate-700 uppercase tracking-wider">#{b._id?.slice(-6).toUpperCase() || 'NULL'}</span>
-                                                    <button onClick={(e) => { e.stopPropagation(); navigator.clipboard.writeText(b._id); }} className="text-slate-400 hover:text-slate-600 transition-colors w-fit"><Copy className="w-3.5 h-3.5" /></button>
+                                            <td className="px-4 py-2">
+                                                <div className="flex items-center gap-1">
+                                                    <span className="text-[10px] font-black text-text-secondary uppercase tracking-wider">#{b._id?.slice(-6).toUpperCase() || 'NULL'}</span>
+                                                    <button onClick={(e) => { e.stopPropagation(); navigator.clipboard.writeText(b._id); }} className="text-text-muted hover:text-text transition-colors"><Copy className="w-3 h-3" /></button>
                                                 </div>
                                             </td>
-                                            <td className="px-5 py-4">
-                                                <div className="flex items-start gap-2">
-                                                    <CalendarDays className="w-4 h-4 text-slate-500 mt-0.5" />
-                                                    <div className="flex flex-col gap-1">
-                                                        <span className="text-[11px] font-black text-slate-900 uppercase leading-none">
+                                            <td className="px-4 py-2">
+                                                <div className="flex items-start gap-1.5">
+                                                    <CalendarDays className="w-3.5 h-3.5 text-text-muted mt-0.5" />
+                                                    <div className="flex flex-col">
+                                                        <span className="text-[10px] font-black text-text uppercase leading-none">
                                                             {b.appointmentDate ? new Date(b.appointmentDate).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : 'N/A'}
                                                         </span>
-                                                        <span className="text-[10px] font-black text-slate-500 uppercase tracking-wider leading-none">
+                                                        <span className="text-[9px] font-black text-text-muted uppercase tracking-wider leading-none mt-0.5">
                                                             {b.appointmentDate ? new Date(b.appointmentDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '--:--'}
                                                         </span>
                                                     </div>
                                                 </div>
                                             </td>
-                                            <td className="px-5 py-4">
-                                                <div className="flex items-center gap-3">
-                                                    <div className="w-9 h-9 bg-purple-100 flex items-center justify-center text-[12px] font-black text-purple-600 flex-shrink-0 allow-curve rounded-lg">
+                                            <td className="px-4 py-2">
+                                                <div className="flex items-center gap-2">
+                                                    <div className="w-7 h-7 bg-purple-500/10 flex items-center justify-center text-[10px] font-black text-purple-600 flex-shrink-0 rounded-lg">
                                                         {b.client?.name?.[0]?.toUpperCase() || 'C'}
                                                     </div>
-                                                    <div className="flex flex-col min-w-0 gap-1">
-                                                        <span className="text-[11px] font-black text-slate-900 uppercase tracking-tight leading-none truncate">{b.client?.name || 'UNKNOWN'}</span>
-                                                        <span className="text-[10px] font-bold text-slate-500 tracking-wider leading-none flex items-center gap-1">
+                                                    <div className="flex flex-col min-w-0">
+                                                        <span className="text-[11px] font-black text-text uppercase tracking-tight leading-none truncate">{b.client?.name || 'UNKNOWN'}</span>
+                                                        <span className="text-[9px] font-bold text-text-muted tracking-wider leading-none flex items-center gap-1 mt-0.5">
                                                             {maskPhone(b.client?.phone, user?.role) || '—'}
                                                         </span>
                                                     </div>
                                                 </div>
                                             </td>
-                                            <td className="px-5 py-4">
-                                                <div className="flex items-center gap-1.5">
+                                            <td className="px-4 py-2">
+                                                <div className="flex items-center gap-1">
                                                     <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                                                    <span className="text-[10px] font-black text-slate-700 uppercase tracking-wider max-w-[140px] truncate">{b.service?.name}</span>
+                                                    <span className="text-[9.5px] font-black text-text-secondary uppercase tracking-wider max-w-[130px] truncate">{b.service?.name}</span>
                                                 </div>
                                             </td>
-                                            <td className="px-5 py-4">
-                                                <div className="flex items-center gap-2">
-                                                    <div className="w-6 h-6 rounded-full bg-emerald-100 flex items-center justify-center text-[9px] font-black text-emerald-700 flex-shrink-0">
+                                            <td className="px-4 py-2">
+                                                <div className="flex items-center gap-1.5">
+                                                    <div className="w-5.5 h-5.5 rounded-full bg-emerald-500/10 flex items-center justify-center text-[8px] font-black text-emerald-700 flex-shrink-0">
                                                         {b.staff?.name?.split(' ').map(n => n[0]).join('').toUpperCase() || '?'}
                                                     </div>
-                                                    <span className="text-[10px] font-black text-slate-700 uppercase tracking-wide truncate">{b.staff?.name || 'UNASSIGNED'}</span>
+                                                    <span className="text-[9.5px] font-black text-text-secondary uppercase tracking-wide truncate">{b.staff?.name || 'UNASSIGNED'}</span>
                                                 </div>
                                             </td>
-                                            <td className="px-5 py-4">
-                                                <span className="text-[10px] font-black text-slate-700 uppercase tracking-wide leading-none">{b.outlet?.name || 'MAIN OUTLET'}</span>
+                                            <td className="px-4 py-2">
+                                                <span className="text-[9.5px] font-black text-text-secondary uppercase tracking-wide leading-none">{b.outlet?.name || 'MAIN OUTLET'}</span>
                                             </td>
-                                            <td className="px-5 py-4">
-                                                <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-[9px] font-black allow-curve rounded-lg uppercase tracking-wider ${b.status === 'confirmed' ? 'bg-indigo-50 text-indigo-600 border border-indigo-200' : b.status === 'pending' ? 'bg-amber-50 text-amber-600 border border-amber-200' : b.status === 'completed' ? 'bg-emerald-50 text-emerald-600 border border-emerald-200' : 'bg-slate-100 text-slate-600 border border-slate-200'}`}>
-                                                    <div className={`w-1.5 h-1.5 rounded-full ${b.status === 'confirmed' ? 'bg-indigo-500' : b.status === 'pending' ? 'bg-amber-500' : b.status === 'completed' ? 'bg-emerald-500' : 'bg-slate-500'}`} />
+                                            <td className="px-4 py-2">
+                                                <span className={`inline-flex items-center gap-1 px-2 py-0.5 text-[8px] font-black rounded-md uppercase tracking-wider ${b.status === 'confirmed' ? 'bg-indigo-500/10 text-indigo-600 border border-indigo-500/20' : b.status === 'pending' ? 'bg-amber-500/10 text-amber-600 border border-amber-500/20' : b.status === 'completed' ? 'bg-emerald-500/10 text-emerald-600 border border-emerald-500/20' : 'bg-surface-alt text-text-muted border border-border/30'}`}>
+                                                    <div className={`w-1 h-1 rounded-full ${b.status === 'confirmed' ? 'bg-indigo-500' : b.status === 'pending' ? 'bg-amber-500' : b.status === 'completed' ? 'bg-emerald-500' : 'bg-text-muted'}`} />
                                                     {b.status}
                                                 </span>
                                             </td>
-                                            <td className="px-5 py-4 text-right">
-                                                <div className="flex items-center justify-end gap-2">
+                                            <td className="px-4 py-2 text-right">
+                                                <div className="flex items-center justify-end gap-1.5" onClick={e => e.stopPropagation()}>
                                                     <button 
-                                                        onClick={(e) => {
-                                                            e.stopPropagation();
-                                                            navigate(`/admin/bookings/${b._id}`);
-                                                        }}
-                                                        className="p-2 bg-white border border-slate-200 text-slate-500 allow-curve rounded-lg hover:text-slate-900 hover:border-slate-300 transition-all shadow-sm"
+                                                        onClick={() => navigate(`/admin/bookings/${b._id}`)}
+                                                        className="p-1.5 bg-surface border border-border/40 text-text-muted rounded-lg hover:text-text hover:border-primary/30 transition-all shadow-sm active:scale-95"
                                                     >
-                                                        <Eye className="w-3.5 h-3.5" />
-                                                    </button>
-                                                    <button 
-                                                        onClick={(e) => { e.stopPropagation(); }}
-                                                        className="p-2 bg-white border border-slate-200 text-slate-500 allow-curve rounded-lg hover:text-slate-900 hover:border-slate-300 transition-all shadow-sm"
-                                                    >
-                                                        <MoreHorizontal className="w-3.5 h-3.5" />
+                                                        <Eye className="w-3 h-3" />
                                                     </button>
                                                 </div>
                                             </td>
@@ -651,29 +642,29 @@ export default function BookingsPage() {
 
                     {/* Pagination Footer */}
                     {filteredBookings.length > 0 && (
-                        <div className="bg-white px-6 py-4 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-4">
-                            <span className="text-[11px] font-semibold text-slate-500">
+                        <div className="bg-surface px-4 py-2 border-t border-border/40 flex flex-col sm:flex-row items-center justify-between gap-3 text-left">
+                            <span className="text-[9.5px] font-bold text-text-muted uppercase tracking-wider">
                                 Showing {(currentPage - 1) * itemsPerPage + 1} to {Math.min(currentPage * itemsPerPage, filteredBookings.length)} of {filteredBookings.length} bookings
                             </span>
-                            <div className="flex items-center gap-2">
+                            <div className="flex items-center gap-1">
                                 <button 
                                     type="button"
                                     onClick={(e) => { e.stopPropagation(); setCurrentPage(prev => Math.max(1, prev - 1)); }}
                                     disabled={currentPage === 1}
-                                    className="flex items-center gap-1 text-[10px] font-black text-slate-400 uppercase tracking-wider hover:text-slate-900 transition-colors disabled:opacity-30"
+                                    className="flex items-center gap-0.5 text-[9px] font-black text-text-muted uppercase tracking-wider hover:text-primary transition-colors disabled:opacity-30"
                                 >
-                                    <ChevronRight className="w-4 h-4 rotate-180" /> PREV
+                                    <ChevronRight className="w-3.5 h-3.5 rotate-180" /> PREV
                                 </button>
-                                <div className="px-3 py-1.5 border border-slate-300 text-slate-900 font-black text-[11px] allow-curve rounded-md mx-2">
+                                <div className="px-2 py-0.5 border border-border/60 text-text font-black text-[10px] rounded-md mx-1">
                                     {currentPage}
                                 </div>
                                 <button 
                                     type="button"
                                     onClick={(e) => { e.stopPropagation(); setCurrentPage(prev => Math.min(totalPages, prev + 1)); }}
                                     disabled={currentPage === totalPages || totalPages === 0}
-                                    className="flex items-center gap-1 text-[10px] font-black text-slate-400 uppercase tracking-wider hover:text-slate-900 transition-colors disabled:opacity-30"
+                                    className="flex items-center gap-0.5 text-[9px] font-black text-text-muted uppercase tracking-wider hover:text-primary transition-colors disabled:opacity-30"
                                 >
-                                    NEXT <ChevronRight className="w-4 h-4" />
+                                    NEXT <ChevronRight className="w-3.5 h-3.5" />
                                 </button>
                             </div>
                         </div>

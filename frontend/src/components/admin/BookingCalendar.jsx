@@ -85,35 +85,44 @@ export default function BookingCalendar({ bookings = [], currentDate, onDateChan
             date.getFullYear() === currentDate.getFullYear();
     };
 
+    const getStatusClass = (status) => {
+        const s = (status || '').toLowerCase();
+        if (s === 'completed') return 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-500 border-emerald-500/20';
+        if (s === 'confirmed' || s === 'upcoming') return 'bg-indigo-500/10 text-indigo-600 dark:text-indigo-500 border-indigo-500/20';
+        if (s === 'pending') return 'bg-amber-500/10 text-amber-600 dark:text-amber-500 border-amber-500/20';
+        if (s === 'cancelled') return 'bg-slate-500/10 text-slate-500 dark:text-slate-400 border-slate-500/20';
+        return 'bg-rose-500/10 text-rose-600 dark:text-rose-500 border-rose-500/20';
+    };
+
     return (
-        <div className="flex flex-col h-full bg-white select-none">
+        <div className="flex flex-col h-full bg-surface select-none text-left">
             {/* Windows 11 style Toolbar */}
-            <div className="px-8 py-5 flex items-center justify-between border-b border-gray-100 bg-white shadow-sm">
-                <div className="flex items-center gap-6">
-                    <h2 className="text-xl font-bold text-gray-900 tracking-tight min-w-[200px]">
-                        {monthNames[month]} <span className="font-medium text-gray-400">{year}</span>
+            <div className="px-4 py-2.5 flex items-center justify-between border-b border-border/40 bg-surface shadow-sm gap-4">
+                <div className="flex items-center gap-4">
+                    <h2 className="text-base font-black text-text tracking-tight uppercase leading-none min-w-[120px]">
+                        {monthNames[month]} <span className="font-bold text-text-muted">{year}</span>
                     </h2>
 
-                    <div className="flex items-center bg-gray-100/80 p-1 rounded-xl border border-gray-200/50">
-                        <button onClick={handlePrev} className="p-2 hover:bg-white hover:shadow-sm rounded-lg transition-all text-gray-600">
-                            <ChevronLeft className="w-4 h-4" />
+                    <div className="flex items-center bg-surface-alt border border-border/45 p-0.5 rounded-xl shadow-inner">
+                        <button onClick={handlePrev} className="p-1.5 hover:bg-surface rounded-lg transition-all text-text-muted hover:text-text active:scale-90">
+                            <ChevronLeft className="w-3.5 h-3.5" />
                         </button>
-                        <button onClick={handleToday} className="px-5 py-2 text-[11px] font-bold text-gray-700 hover:bg-white hover:shadow-sm rounded-lg transition-all uppercase tracking-wider">
+                        <button onClick={handleToday} className="px-3.5 py-1 text-[9px] font-black text-text hover:bg-surface rounded-lg transition-all uppercase tracking-wider">
                             Today
                         </button>
-                        <button onClick={handleNext} className="p-2 hover:bg-white hover:shadow-sm rounded-lg transition-all text-gray-600">
-                            <ChevronRight className="w-4 h-4" />
+                        <button onClick={handleNext} className="p-1.5 hover:bg-surface rounded-lg transition-all text-text-muted hover:text-text active:scale-90">
+                            <ChevronRight className="w-3.5 h-3.5" />
                         </button>
                     </div>
                 </div>
 
-                <div className="flex items-center bg-gray-100/80 p-1 rounded-xl border border-gray-200/50">
+                <div className="flex items-center bg-surface-alt border border-border/45 p-0.5 rounded-xl shadow-inner">
                     {VIEW_MODES.map((mode) => (
                         <button
                             key={mode}
-                            className={`px-6 py-2 text-[11px] font-bold rounded-lg transition-all tracking-wider uppercase ${mode === 'Month'
-                                    ? 'bg-white text-[#0078d4] shadow-md border border-gray-100'
-                                    : 'text-gray-500 hover:text-gray-900'
+                            className={`px-3.5 py-1 text-[9px] font-black rounded-lg transition-all tracking-wider uppercase ${mode === 'Month'
+                                    ? 'bg-surface text-primary shadow-sm border border-border/10'
+                                    : 'text-text-muted hover:text-text'
                                 }`}
                         >
                             {mode}
@@ -121,27 +130,27 @@ export default function BookingCalendar({ bookings = [], currentDate, onDateChan
                     ))}
                 </div>
 
-                <div className="relative group">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 group-hover:text-[#0078d4] transition-colors" />
+                <div className="relative group max-w-[200px]">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-text-muted group-hover:text-primary transition-colors" />
                     <input
                         type="text"
                         placeholder="Search appointments..."
-                        className="pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-[#0078d4]/10 transition-all w-56 focus:w-72"
+                        className="pl-8.5 pr-4 py-1.5 bg-surface-alt border border-border/45 rounded-xl text-xs text-text focus:outline-none focus:border-primary transition-all w-full placeholder-text-muted"
                     />
                 </div>
             </div>
 
             {/* Weekdays Header */}
-            <div className="grid grid-cols-7 border-b border-gray-100 bg-gray-50/30">
+            <div className="grid grid-cols-7 border-b border-border/40 bg-surface-alt/10">
                 {['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'].map((day, i) => (
-                    <div key={i} className="py-3 text-[10px] font-bold text-gray-400 text-center tracking-widest uppercase">
+                    <div key={i} className="py-2.5 text-[8.5px] font-black text-text-muted text-center tracking-widest uppercase">
                         {day}
                     </div>
                 ))}
             </div>
 
             {/* Calendar Grid */}
-            <div className="flex-1 grid grid-cols-7 grid-rows-5 overflow-hidden divide-x divide-y divide-gray-100 border-l border-gray-100">
+            <div className="flex-1 grid grid-cols-7 grid-rows-5 overflow-hidden divide-x divide-y divide-border/40 border-l border-border/40 border-b border-border/40">
                 {calendarGrid.map((item, i) => {
                     const key = `${item.date.getFullYear()}-${item.date.getMonth()}-${item.date.getDate()}`;
                     const items = bookingsByDate[key] || [];
@@ -150,20 +159,20 @@ export default function BookingCalendar({ bookings = [], currentDate, onDateChan
                         <div
                             key={i}
                             onClick={() => onDateChange(item.date)}
-                            className={`p-3 relative flex flex-col gap-1 transition-all hover:bg-[#0078d4]/[0.02] cursor-pointer group ${!item.isCurrentMonth ? 'bg-gray-50/30' : 'bg-white'
-                                } ${isSelected(item.date) ? 'bg-[#0078d4]/[0.03]' : ''}`}
+                            className={`p-2 relative flex flex-col gap-0.5 transition-all hover:bg-primary/[0.02] cursor-pointer group ${!item.isCurrentMonth ? 'bg-surface-alt/10' : 'bg-surface'
+                                } ${isSelected(item.date) ? 'bg-primary/[0.02]' : ''}`}
                         >
-                            <div className="flex justify-between items-start mb-2">
-                                <span className={`text-[12px] font-bold w-7 h-7 flex items-center justify-center rounded-lg transition-all ${isToday(item.date)
-                                        ? 'bg-[#0078d4] text-white shadow-lg shadow-[#0078d4]/30'
-                                        : item.isCurrentMonth ? 'text-gray-700' : 'text-gray-300'
-                                    } ${isSelected(item.date) && !isToday(item.date) ? 'ring-2 ring-[#0078d4]' : ''}`}>
+                            <div className="flex justify-between items-start mb-1.5">
+                                <span className={`text-[10px] font-black w-5.5 h-5.5 flex items-center justify-center rounded-lg transition-all ${isToday(item.date)
+                                        ? 'bg-primary text-surface shadow-md shadow-primary/20'
+                                        : item.isCurrentMonth ? 'text-text' : 'text-text-muted/40'
+                                    } ${isSelected(item.date) && !isToday(item.date) ? 'ring-1.5 ring-primary' : ''}`}>
                                     {item.date.getDate()}
                                 </span>
                             </div>
 
                             {/* Event Indicators */}
-                            <div className="flex flex-col gap-1.5 flex-1 overflow-y-auto no-scrollbar">
+                            <div className="flex flex-col gap-1 flex-1 overflow-y-auto no-scrollbar">
                                 {items.slice(0, 3).map((b) => (
                                     <div
                                         key={b._id}
@@ -171,20 +180,16 @@ export default function BookingCalendar({ bookings = [], currentDate, onDateChan
                                             e.stopPropagation();
                                             onBookingClick(b);
                                         }}
-                                        className={`px-2.5 py-1.5 rounded-lg text-[9px] font-bold truncate transition-all shadow-sm border border-transparent hover:border-black/5
-                                            ${b.status === 'upcoming' ? 'bg-blue-50 text-[#0078d4]' :
-                                                b.status === 'completed' ? 'bg-green-50 text-green-700' :
-                                                    'bg-red-50 text-red-700 hover:bg-red-100'}
-                                        `}
+                                        className={`px-1.5 py-0.5 rounded-md text-[8px] font-bold truncate transition-all border ${getStatusClass(b.status)}`}
                                     >
-                                        <div className="flex items-center gap-2">
-                                            <div className="w-1.5 h-1.5 rounded-full bg-current opacity-60" />
-                                            {b.client?.name}
+                                        <div className="flex items-center gap-1">
+                                            <div className="w-1 h-1 rounded-full bg-current opacity-60" />
+                                            <span className="uppercase tracking-[0.03em]">{b.client?.name}</span>
                                         </div>
                                     </div>
                                 ))}
                                 {items.length > 3 && (
-                                    <span className="text-[9px] font-bold text-gray-400 px-2">+{items.length - 3} more</span>
+                                    <span className="text-[8px] font-black text-text-muted/65 px-1.5">+{items.length - 3} MORE</span>
                                 )}
                             </div>
                         </div>

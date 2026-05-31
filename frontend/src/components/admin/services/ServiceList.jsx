@@ -244,7 +244,7 @@ export default function ServiceList({ services = [], onDelete, onToggleStatus, o
             <div className="bg-surface rounded-3xl border border-border shadow-sm overflow-hidden min-h-[400px] flex flex-col justify-between">
                 <div>
                     {viewMode === 'grid' ? (
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 p-6">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 p-4">
                             {filteredServices.length === 0 ? (
                                 <div className="col-span-full py-20 text-center flex flex-col items-center gap-2 opacity-40">
                                     <Scissors className="w-8 h-8" />
@@ -261,7 +261,7 @@ export default function ServiceList({ services = [], onDelete, onToggleStatus, o
                                         }`}
                                     >
                                         {/* Card Header with Image and badges */}
-                                        <div className="relative aspect-[2/1] bg-slate-100 overflow-hidden border-b border-border">
+                                        <div className="relative aspect-[2.4/1] bg-slate-100 overflow-hidden border-b border-border">
                                             {service.image ? (
                                                 <img
                                                     src={getImageUrl(service.image)}
@@ -313,7 +313,7 @@ export default function ServiceList({ services = [], onDelete, onToggleStatus, o
                                         </div>
 
                                         {/* Card Body */}
-                                        <div className="p-4 flex-1 flex flex-col justify-between gap-3">
+                                        <div className="p-3.5 flex-1 flex flex-col justify-between gap-2.5">
                                             <div className="space-y-2">
                                                 {/* Category */}
                                                 <div className="flex items-center justify-between">
@@ -345,7 +345,7 @@ export default function ServiceList({ services = [], onDelete, onToggleStatus, o
                                             </div>
 
                                             {/* Price and Duration Details (2-column info layout) */}
-                                            <div className="bg-slate-50/50 rounded-2xl border border-slate-100/60 p-2.5 grid grid-cols-2 gap-3 relative">
+                                            <div className="bg-slate-50/50 rounded-xl border border-slate-100/60 p-2 grid grid-cols-2 gap-2 relative">
                                                 <div className="w-px h-8 bg-slate-200/60 absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2" />
                                                 <div>
                                                     <span className="text-[8px] font-bold text-slate-400 uppercase tracking-wider mb-0.5 block">Price</span>
@@ -369,7 +369,7 @@ export default function ServiceList({ services = [], onDelete, onToggleStatus, o
                                             <button
                                                 type="button"
                                                 onClick={() => setAssigningOutletsService(service)}
-                                                className="w-full flex items-center gap-3 p-3 rounded-2xl bg-slate-50 hover:bg-primary/5 border-0 hover:shadow-sm transition-all duration-200 text-left group/outlet"
+                                                className="w-full flex items-center gap-2.5 p-2 rounded-xl bg-slate-50 hover:bg-primary/5 border-0 hover:shadow-sm transition-all duration-200 text-left group/outlet"
                                             >
                                                 <Building2 className="w-4 h-4 text-slate-400 group-hover/outlet:text-primary transition-colors shrink-0" />
                                                 <div className="flex-1 min-w-0">
@@ -386,7 +386,7 @@ export default function ServiceList({ services = [], onDelete, onToggleStatus, o
                                         </div>
 
                                         {/* Card Footer Actions */}
-                                        <div className="px-4 py-2 bg-slate-50/60 border-t border-slate-100 flex items-center justify-between gap-2">
+                                        <div className="px-3 py-1.5 bg-slate-50/60 border-t border-slate-100 flex items-center justify-between gap-1.5">
                                             <button
                                                 type="button"
                                                 title="View"
@@ -427,7 +427,7 @@ export default function ServiceList({ services = [], onDelete, onToggleStatus, o
                                 <table className="w-full text-left border-collapse min-w-[1000px]">
                                     <thead>
                                         <tr className="bg-surface-alt/50 border-b border-border">
-                                            <th className="px-6 py-4 w-10">
+                                            <th className="px-4 py-2.5 w-10">
                                                 <input 
                                                     type="checkbox" 
                                                     className="w-4 h-4 rounded border-border text-primary focus:ring-primary/20"
@@ -435,15 +435,15 @@ export default function ServiceList({ services = [], onDelete, onToggleStatus, o
                                                     onChange={toggleSelectAll}
                                                 />
                                             </th>
-                                            <th className="px-6 py-4 text-[10px] font-bold text-text-muted uppercase tracking-widest">Service Name</th>
-                                            <th className="px-6 py-4 text-[10px] font-bold text-text-muted uppercase tracking-widest text-center">Target</th>
-                                            <th className="px-6 py-4 text-[10px] font-bold text-text-muted uppercase tracking-widest">Category</th>
-                                            <th className="px-6 py-4 text-[10px] font-bold text-text-muted uppercase tracking-widest text-center">Duration</th>
-                                            <th className="px-6 py-4 text-[10px] font-bold text-text-muted uppercase tracking-widest text-center">Price</th>
-                                            <th className="px-6 py-4 text-[10px] font-bold text-text-muted uppercase tracking-widest text-center">Tax Mode</th>
-                                            <th className="px-6 py-4 text-[10px] font-bold text-text-muted uppercase tracking-widest text-center">Outlets</th>
-                                            <th className="px-6 py-4 text-[10px] font-bold text-text-muted uppercase tracking-widest text-center">Status</th>
-                                            <th className="px-6 py-4 text-[10px] font-bold text-text-muted uppercase tracking-widest text-right">Actions</th>
+                                            <th className="px-4 py-2.5 text-[10px] font-bold text-text-muted uppercase tracking-widest">Service Name</th>
+                                            <th className="px-4 py-2.5 text-[10px] font-bold text-text-muted uppercase tracking-widest text-center">Target</th>
+                                            <th className="px-4 py-2.5 text-[10px] font-bold text-text-muted uppercase tracking-widest">Category</th>
+                                            <th className="px-4 py-2.5 text-[10px] font-bold text-text-muted uppercase tracking-widest text-center">Duration</th>
+                                            <th className="px-4 py-2.5 text-[10px] font-bold text-text-muted uppercase tracking-widest text-center">Price</th>
+                                            <th className="px-4 py-2.5 text-[10px] font-bold text-text-muted uppercase tracking-widest text-center">Tax Mode</th>
+                                            <th className="px-4 py-2.5 text-[10px] font-bold text-text-muted uppercase tracking-widest text-center">Outlets</th>
+                                            <th className="px-4 py-2.5 text-[10px] font-bold text-text-muted uppercase tracking-widest text-center">Status</th>
+                                            <th className="px-4 py-2.5 text-[10px] font-bold text-text-muted uppercase tracking-widest text-right">Actions</th>
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-border">
@@ -459,7 +459,7 @@ export default function ServiceList({ services = [], onDelete, onToggleStatus, o
                                         ) : (
                                             paginatedServices.map((service) => (
                                                 <tr key={service._id} className={`hover:bg-surface-alt/50 transition-colors group ${selectedServiceIds.includes(service._id) ? 'bg-primary/5' : ''}`}>
-                                                    <td className="px-6 py-4">
+                                                    <td className="px-4 py-2.5">
                                                         <input 
                                                             type="checkbox" 
                                                             className="w-4 h-4 rounded border-border text-primary focus:ring-primary/20"
@@ -467,9 +467,9 @@ export default function ServiceList({ services = [], onDelete, onToggleStatus, o
                                                             onChange={() => toggleSelectService(service._id)}
                                                         />
                                                     </td>
-                                                    <td className="px-6 py-4">
+                                                    <td className="px-4 py-2.5">
                                                         <div className="flex items-center gap-3">
-                                                            <div className="w-10 h-10 rounded-xl bg-primary/5 flex items-center justify-center text-primary border border-primary/10 overflow-hidden">
+                                                            <div className="w-8 h-8 rounded-lg bg-primary/5 flex items-center justify-center text-primary border border-primary/10 overflow-hidden">
                                                                 {service.image ? (
                                                                     <img 
                                                                         src={getImageUrl(service.image)} 
@@ -477,7 +477,7 @@ export default function ServiceList({ services = [], onDelete, onToggleStatus, o
                                                                         className="w-full h-full object-cover" 
                                                                     />
                                                                 ) : (
-                                                                    <Scissors className="w-5 h-5" />
+                                                                    <Scissors className="w-4 h-4" />
                                                                 )}
                                                             </div>
 

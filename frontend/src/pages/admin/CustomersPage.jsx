@@ -208,15 +208,15 @@ export default function CustomersPage({ tab = 'directory' }) {
                     {activeTab === 'payment-reminders' ? (
                         <>
                             <div>
-                                <h1 className="text-2xl sm:text-3xl font-black text-slate-900 uppercase tracking-tighter leading-none">Payment Reminders</h1>
-                                <p className="text-[10px] font-black text-slate-500 mt-2 uppercase tracking-[0.3em] leading-none">Operations • POS Outstanding Balances</p>
+                                <h1 className="text-2xl font-black text-text tracking-tighter uppercase leading-none">Payment Reminders</h1>
+                                <p className="text-[9px] font-black text-text-muted mt-1 uppercase tracking-[0.25em] opacity-60 leading-none">Operations • POS Outstanding Balances</p>
                             </div>
-                            <div className="flex flex-col sm:flex-row items-center gap-3">
-                                <button onClick={() => window.location.reload()} className="flex items-center justify-center gap-2 px-5 py-3 bg-white border border-slate-200 text-slate-700 text-xs font-semibold allow-curve rounded-xl shadow-sm hover:bg-slate-50 transition-all w-full sm:w-auto shrink-0">
-                                    <RefreshCw className="w-4 h-4" /> Refresh
+                            <div className="flex flex-wrap items-center gap-1.5 w-full sm:w-auto">
+                                <button onClick={() => window.location.reload()} className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg bg-surface border border-border text-text-muted hover:text-primary transition-all active:scale-95 text-[10px] font-bold uppercase tracking-wider shadow-sm">
+                                    <RefreshCw className="w-3.5 h-3.5" /> Refresh
                                 </button>
-                                <button className="flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white allow-curve rounded-xl text-xs font-bold uppercase tracking-wider shadow-md shadow-amber-500/20 transition-all w-full sm:w-auto">
-                                    <FileText className="w-4 h-4" /> Create Reminder Campaign
+                                <button className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-4 py-1.5 rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground text-[10px] font-bold uppercase tracking-wider shadow-md shadow-primary/10 transition-all active:scale-95">
+                                    <FileText className="w-3.5 h-3.5" /> Create Campaign
                                 </button>
                             </div>
                         </>
@@ -1092,108 +1092,90 @@ function PaymentRemindersView({ onCustomerClick, setWhatsappModal, fetchCustomer
     };
 
     return (
-        <div className="p-4 md:p-6 space-y-4 animate-reveal max-w-7xl mx-auto">
+        <div className="p-3.5 space-y-4 animate-reveal max-w-7xl mx-auto">
             {/* KPI Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="bg-white p-6 border border-slate-200 allow-curve rounded-2xl shadow-sm flex flex-col gap-1 relative group hover:border-purple-300 transition-all">
-                    <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 rounded-full bg-purple-50 flex items-center justify-center flex-shrink-0">
-                            <Users className="w-5 h-5 text-purple-600" />
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                <div className="bg-surface p-3.5 border border-border/40 rounded-2xl shadow-sm flex flex-col gap-1 relative group hover:border-primary/40 hover:shadow-md transition-all">
+                    <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-xl bg-purple-500/10 flex items-center justify-center flex-shrink-0 text-purple-600">
+                            <Users className="w-5 h-5" />
                         </div>
                         <div>
-                            <span className="text-[10px] font-black uppercase tracking-widest text-slate-800">Outstanding Clients</span>
-                            <div className="text-3xl font-black text-slate-900 leading-none mt-1">{dueMetadata.totalCount}</div>
+                            <span className="text-[9.5px] font-black uppercase tracking-widest text-text-muted">Outstanding Clients</span>
+                            <div className="text-xl font-black text-text leading-none mt-0.5">{dueMetadata.totalCount}</div>
                         </div>
                     </div>
-                    <div className="text-[11px] font-semibold text-slate-500 mt-4">Customers with pending dues</div>
-                    <button className="text-[11px] font-bold text-purple-700 hover:text-purple-800 text-left mt-3 flex items-center gap-1 transition-colors w-fit">
-                        View clients →
-                    </button>
+                    <div className="text-[10px] font-bold text-text-muted mt-2 uppercase tracking-wide opacity-80">Pending accounts</div>
                 </div>
-                <div className="bg-white p-6 border border-slate-200 allow-curve rounded-2xl shadow-sm flex flex-col gap-1 relative group hover:border-emerald-300 transition-all">
-                    <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 rounded-full bg-emerald-50 flex items-center justify-center flex-shrink-0">
-                            <IndianRupee className="w-5 h-5 text-emerald-600" />
+                <div className="bg-surface p-3.5 border border-border/40 rounded-2xl shadow-sm flex flex-col gap-1 relative group hover:border-primary/40 hover:shadow-md transition-all">
+                    <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center flex-shrink-0 text-emerald-600">
+                            <IndianRupee className="w-5 h-5" />
                         </div>
                         <div>
-                            <span className="text-[10px] font-black uppercase tracking-widest text-slate-800">Total Dues (Page)</span>
-                            <div className="text-3xl font-black text-slate-900 leading-none mt-1">₹{totalOutstanding.toLocaleString()}</div>
+                            <span className="text-[9.5px] font-black uppercase tracking-widest text-text-muted">Total Dues (Page)</span>
+                            <div className="text-xl font-black text-text leading-none mt-0.5">₹{totalOutstanding.toLocaleString()}</div>
                         </div>
                     </div>
-                    <div className="text-[11px] font-semibold text-slate-500 mt-4">Pending balance this page</div>
-                    <button className="text-[11px] font-bold text-emerald-700 hover:text-emerald-800 text-left mt-3 flex items-center gap-1 transition-colors w-fit">
-                        View all invoices →
-                    </button>
+                    <div className="text-[10px] font-bold text-text-muted mt-2 uppercase tracking-wide opacity-80">Outstanding balance</div>
                 </div>
-                <div className="bg-white p-6 border border-slate-200 allow-curve rounded-2xl shadow-sm flex flex-col relative group hover:border-blue-300 transition-all">
-                    <div className="flex items-start justify-between">
-                        <div className="flex items-start gap-4">
-                            <div className="w-12 h-12 rounded-full bg-blue-50 flex items-center justify-center flex-shrink-0">
-                                <ShieldAlert className="w-5 h-5 text-blue-600" />
-                            </div>
-                            <div className="pt-1">
-                                <span className="text-[10px] font-black uppercase tracking-widest text-slate-800">Dues Status</span>
-                                <div className="mt-3 space-y-2">
-                                    <div className="flex items-center gap-6 text-[11px] font-black">
-                                        <span className="text-slate-800 w-24">Action Required</span>
-                                        <span className="text-rose-600">{dueMetadata.totalCount}</span>
-                                    </div>
-                                    <div className="flex items-center gap-6 text-[11px] font-black">
-                                        <span className="text-slate-800 w-24">Send Reminders</span>
-                                        <span className="text-amber-500">{dueMetadata.totalCount}</span>
-                                    </div>
-                                </div>
+                <div className="bg-surface p-3.5 border border-border/40 rounded-2xl shadow-sm flex flex-col gap-1 relative group hover:border-primary/40 hover:shadow-md transition-all">
+                    <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center flex-shrink-0 text-blue-600">
+                            <ShieldAlert className="w-5 h-5" />
+                        </div>
+                        <div className="pt-0.5">
+                            <span className="text-[9.5px] font-black uppercase tracking-widest text-text-muted">Dues Status</span>
+                            <div className="flex items-center gap-4 text-[10px] font-bold text-text-muted mt-1 leading-none">
+                                <span className="uppercase tracking-wider">Required: <span className="text-rose-500 font-black">{dueMetadata.totalCount}</span></span>
                             </div>
                         </div>
                     </div>
-                    <button className="text-[11px] font-bold text-blue-700 hover:text-blue-800 text-left mt-auto pt-4 flex items-center gap-1 transition-colors w-fit">
-                        View settings →
-                    </button>
+                    <div className="text-[10px] font-bold text-text-muted mt-2 uppercase tracking-wide opacity-80">Awaiting engagement</div>
                 </div>
             </div>
 
             {/* Auto Reminder Settings Card */}
-            <div className="bg-white border border-slate-200 rounded-2xl p-3 shadow-sm flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-                <div className="flex items-start gap-4 flex-1">
-                    <div className="w-10 h-10 bg-emerald-50 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
-                        <Bell className="w-5 h-5 text-slate-900" />
+            <div className="bg-surface border border-border/40 rounded-2xl p-2.5 shadow-sm flex flex-col lg:flex-row lg:items-center justify-between gap-3">
+                <div className="flex items-center gap-3 flex-1 text-left">
+                    <div className="w-8 h-8 bg-emerald-500/10 rounded-xl flex items-center justify-center flex-shrink-0 text-emerald-500">
+                        <Bell className="w-4 h-4 animate-bounce" />
                     </div>
-                    <div className="space-y-1">
-                        <h4 className="text-[12px] font-bold text-slate-900">AUTOMATED PAYMENT REMINDERS</h4>
-                        <p className="text-[12px] text-slate-900 leading-snug max-w-lg">Configure the system to automatically send WhatsApp payment reminders to customers with pending balances.</p>
+                    <div>
+                        <h4 className="text-[11px] font-black uppercase tracking-wider text-text">Automated Payment Reminders</h4>
+                        <p className="text-[9px] font-black text-text-muted uppercase tracking-[0.05em] leading-tight opacity-70">Auto-transmit pending balance alerts to client WhatsApp profiles.</p>
                     </div>
                 </div>
-                <div className="flex flex-wrap items-center gap-5">
+                <div className="flex flex-wrap items-center gap-4">
                     {/* Toggle Switch */}
-                    <label className="flex items-center gap-3 cursor-pointer select-none group">
-                        <div className={`relative w-10 h-5 rounded-full transition-all duration-300 ${autoReminder ? 'bg-[#00d084]' : 'bg-slate-200'}`}>
-                            <div className={`absolute top-0.5 w-4 h-4 bg-white rounded-full shadow-sm transition-all duration-300 ${autoReminder ? 'left-[22px]' : 'left-0.5'}`} />
+                    <label className="flex items-center gap-2 cursor-pointer select-none group">
+                        <div className={`relative w-8 h-4.5 rounded-full transition-all duration-300 ${autoReminder ? 'bg-emerald-500' : 'bg-border/60'}`}>
+                            <div className={`absolute top-0.5 w-3.5 h-3.5 bg-white rounded-full shadow-sm transition-all duration-300 ${autoReminder ? 'left-[16px]' : 'left-0.5'}`} />
                         </div>
-                        <div className="flex flex-col line-clamp-2">
-                            <div className="text-[10px] font-bold text-slate-900">AUTO REMINDERS</div>
-                            <div className="text-[10px] font-bold text-slate-900 uppercase">{autoReminder ? 'Enabled' : 'Disabled'}</div>
+                        <div className="flex flex-col line-clamp-1 text-left">
+                            <span className="text-[9px] font-black uppercase text-text tracking-wider">Auto Pilot</span>
                         </div>
                         <input type="checkbox" className="hidden" checked={autoReminder} onChange={(e) => setAutoReminder(e.target.checked)} />
                     </label>
 
                     {/* Interval */}
                     {autoReminder && (
-                        <div className="flex items-stretch border border-slate-200 rounded-sm bg-white text-[11px] font-bold text-slate-900 h-8">
-                            <div className="flex items-center px-3 border-r border-slate-200 uppercase tracking-wider">
+                        <div className="flex items-stretch border border-border/60 rounded-xl bg-surface text-[10px] font-bold text-text h-7 overflow-hidden">
+                            <div className="flex items-center px-2.5 border-r border-border/50 uppercase tracking-widest text-[8.5px] font-black text-text-muted">
                                 Every
                             </div>
-                            <div className="flex items-center px-2 border-r border-slate-200 relative group cursor-pointer hover:bg-slate-50 transition-colors">
+                            <div className="flex items-center px-1.5 border-r border-border/50 relative group cursor-pointer hover:bg-surface-alt transition-colors">
                                 <input
                                     type="number"
                                     min="1"
                                     value={reminderInterval}
                                     onChange={(e) => setReminderInterval(Math.max(1, Number(e.target.value) || 1))}
-                                    className="w-6 text-center outline-none bg-transparent appearance-none font-bold text-[12px] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none m-0"
+                                    className="w-5 text-center outline-none bg-transparent appearance-none font-black text-[10px] text-text [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none m-0"
                                     style={{ MozAppearance: 'textfield' }}
                                 />
-                                <ChevronDown className="w-3.5 h-3.5 text-slate-400 -ml-1 pointer-events-none" />
+                                <ChevronDown className="w-3 h-3 text-text-muted pointer-events-none -ml-0.5" />
                             </div>
-                            <div className="flex items-center px-3 uppercase tracking-wider">
+                            <div className="flex items-center px-2.5 uppercase tracking-widest text-[8.5px] font-black text-text-muted">
                                 Days
                             </div>
                         </div>
@@ -1202,42 +1184,42 @@ function PaymentRemindersView({ onCustomerClick, setWhatsappModal, fetchCustomer
                     <button
                         onClick={handleSaveSettings}
                         disabled={savingSettings}
-                        className="flex items-center justify-center gap-2 px-5 py-1.5 h-8 bg-white hover:bg-slate-50 border border-slate-300 text-slate-900 rounded-full text-[11px] font-bold uppercase disabled:opacity-50 transition-all active:scale-95 ml-2 shadow-sm"
+                        className="flex items-center justify-center gap-1.5 px-3 py-1.5 bg-text text-surface hover:bg-primary rounded-xl text-[9px] font-black uppercase tracking-wider disabled:opacity-50 transition-all active:scale-95 shadow-sm"
                     >
                         {savingSettings ? (
                             <>
-                                <span className="w-3.5 h-3.5 border-2 border-slate-300 border-t-slate-900 rounded-full animate-spin" />
-                                Saving...
+                                <span className="w-3 h-3 border-2 border-surface border-t-transparent rounded-full animate-spin" />
+                                Saving
                             </>
                         ) : (
-                            'Save Settings'
+                            'Save Config'
                         )}
                     </button>
                 </div>
             </div>
 
             {/* Search Bar & Actions */}
-            <div className="flex flex-col xl:flex-row gap-3 items-center">
-                <div className="relative flex-1 w-full bg-white border border-slate-200 allow-curve rounded-xl shadow-sm">
-                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+            <div className="flex flex-col xl:flex-row gap-2.5 items-center">
+                <div className="relative flex-1 w-full bg-surface border border-border/40 rounded-xl shadow-sm">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-text-muted" />
                     <input
                         type="text"
-                        placeholder="Search due clients by name, phone or invoice number..."
+                        placeholder="Search due clients by name, phone or invoice..."
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
-                        className="w-full pl-10 pr-4 py-3 bg-transparent text-xs font-semibold placeholder:text-slate-400 text-slate-900 focus:outline-none allow-curve rounded-xl"
+                        className="w-full pl-8.5 pr-4 py-1.5 bg-transparent text-xs font-semibold placeholder:text-text-muted/60 text-text focus:outline-none rounded-xl"
                     />
                 </div>
-                <div className="flex flex-wrap items-center gap-3 w-full xl:w-auto">
+                <div className="flex flex-wrap items-center gap-2 w-full xl:w-auto">
                     {filteredOutlets && filteredOutlets.length > 0 && (
-                        <div className="bg-white border border-slate-200 allow-curve rounded-xl shadow-sm px-4 flex-1 xl:flex-none">
+                        <div className="bg-surface border border-border/40 rounded-xl shadow-sm px-3 flex-1 xl:flex-none">
                             <select
                                 value={selectedOutlet}
                                 onChange={(e) => {
                                     setSelectedOutlet(e.target.value);
                                     setPage(1);
                                 }}
-                                className="w-full xl:w-36 py-3 bg-transparent text-xs font-semibold text-slate-700 outline-none cursor-pointer appearance-none"
+                                className="w-full xl:w-36 py-1.5 bg-transparent text-xs font-semibold text-text outline-none cursor-pointer appearance-none"
                             >
                                 <option value="">All Outlets</option>
                                 {filteredOutlets.map(o => (
@@ -1248,72 +1230,70 @@ function PaymentRemindersView({ onCustomerClick, setWhatsappModal, fetchCustomer
                             </select>
                         </div>
                     )}
-                    <button className="flex items-center justify-center gap-2 px-5 py-3 bg-white border border-slate-200 text-slate-700 text-xs font-semibold allow-curve rounded-xl shadow-sm hover:bg-slate-50 transition-all flex-1 xl:flex-none shrink-0">
-                        <Filter className="w-4 h-4" /> Filters
+                    <button className="flex items-center justify-center gap-1 px-3 py-1.5 bg-surface border border-border/40 text-text-muted text-xs font-semibold rounded-xl shadow-sm hover:text-primary transition-all flex-1 xl:flex-none shrink-0">
+                        <Filter className="w-3.5 h-3.5" /> Filters
                     </button>
                 </div>
             </div>
 
             {/* Table */}
-            <div className="table-responsive border border-slate-200 bg-white allow-curve rounded-2xl overflow-hidden shadow-sm mt-4">
+            <div className="table-responsive border border-border/40 bg-surface rounded-2xl overflow-hidden shadow-sm mt-3 text-left">
                 {loading ? (
-                    <div className="text-center py-12 text-xs font-bold text-slate-400 uppercase tracking-widest">
+                    <div className="text-center py-8 text-[10px] font-bold text-text-muted uppercase tracking-widest">
                         Loading unpaid dues...
                     </div>
                 ) : filtered.length === 0 ? (
-                    <div className="text-center py-12 text-xs font-bold text-slate-400 uppercase tracking-widest">
-                        No customers with pending payments found
+                    <div className="text-center py-8 text-[10px] font-bold text-text-muted uppercase tracking-widest">
+                        No pending payments found
                     </div>
                 ) : (
                     <table className="w-full text-left min-w-[800px]">
-                        <thead className="bg-slate-50/50 border-b border-slate-200">
+                        <thead className="bg-surface-alt border-b border-border/40">
                             <tr>
-                                <th className="px-5 py-4 text-[10px] font-black text-slate-500 uppercase tracking-wider">Customer Details</th>
-                                <th className="px-5 py-4 text-[10px] font-black text-slate-500 uppercase tracking-wider text-right">Dues Amount</th>
-                                <th className="px-5 py-4 text-[10px] font-black text-slate-500 uppercase tracking-wider text-center">Reminders Sent</th>
-                                <th className="px-5 py-4 text-[10px] font-black text-slate-500 uppercase tracking-wider text-center">Last Reminded</th>
-                                <th className="px-5 py-4 text-[10px] font-black text-slate-500 uppercase tracking-wider text-right">Actions</th>
+                                <th className="px-4 py-2 text-[9px] font-bold text-text-muted uppercase tracking-widest">Client profile</th>
+                                <th className="px-4 py-2 text-[9px] font-bold text-text-muted uppercase tracking-widest text-right">Dues Amount</th>
+                                <th className="px-4 py-2 text-[9px] font-bold text-text-muted uppercase tracking-widest text-center">Reminders</th>
+                                <th className="px-4 py-2 text-[9px] font-bold text-text-muted uppercase tracking-widest text-center">Last Reminded</th>
+                                <th className="px-4 py-2 text-[9px] font-bold text-text-muted uppercase tracking-widest text-right">Actions</th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-slate-100">
+                        <tbody className="divide-y divide-border/20">
                             {filtered.map(c => (
-                                <tr key={c._id} className="hover:bg-slate-50/50 transition-all cursor-pointer group" onClick={() => onCustomerClick(c)}>
-                                    <td className="px-5 py-4">
-                                        <div className="flex items-center gap-3">
-                                            <div className="w-9 h-9 bg-purple-100 flex items-center justify-center text-[12px] font-black text-purple-600 flex-shrink-0 allow-curve rounded-lg">
+                                <tr key={c._id} className="hover:bg-surface-alt/40 transition-all cursor-pointer group" onClick={() => onCustomerClick(c)}>
+                                    <td className="px-4 py-2">
+                                        <div className="flex items-center gap-2.5">
+                                            <div className="w-8 h-8 bg-purple-500/10 flex items-center justify-center text-[11px] font-black text-purple-600 flex-shrink-0 rounded-lg">
                                                 {c.name?.charAt(0)?.toUpperCase() || '?'}
                                             </div>
-                                            <div className="flex flex-col min-w-0 gap-1">
-                                                <span className="text-[11px] font-black text-slate-900 uppercase tracking-tight leading-none truncate">{c.name}</span>
-                                                <span className="text-[10px] font-bold text-slate-500 tracking-wider leading-none flex items-center gap-1">{c.phone}</span>
+                                            <div className="flex flex-col min-w-0">
+                                                <span className="text-[11px] font-black text-text uppercase tracking-tight leading-tight truncate">{c.name}</span>
+                                                <span className="text-[9px] font-bold text-text-muted tracking-wider leading-none mt-0.5">{c.phone}</span>
                                             </div>
                                         </div>
                                     </td>
-                                    <td className="px-5 py-4 text-right">
-                                        <span className="text-[12px] font-black text-slate-900">
+                                    <td className="px-4 py-2 text-right">
+                                        <span className="text-[11px] font-black text-text">
                                             ₹{(c.dueAmount || 0).toLocaleString()}
                                         </span>
                                     </td>
-                                    <td className="px-5 py-4 text-center">
-                                        <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-[9px] font-black allow-curve rounded-lg uppercase tracking-wider ${c.paymentReminderCount > 0 ? 'bg-amber-50 text-amber-600 border border-amber-200' : 'bg-slate-100 text-slate-600 border border-slate-200'}`}>
-                                            <div className={`w-1.5 h-1.5 rounded-full ${c.paymentReminderCount > 0 ? 'bg-amber-500' : 'bg-slate-500'}`} />
+                                    <td className="px-4 py-2 text-center">
+                                        <span className={`inline-flex items-center gap-1 px-2 py-0.5 text-[8px] font-black rounded-md uppercase tracking-wider ${c.paymentReminderCount > 0 ? 'bg-amber-500/10 text-amber-500 border border-amber-500/20' : 'bg-surface-alt text-text-muted border border-border/30'}`}>
+                                            <div className={`w-1 h-1 rounded-full ${c.paymentReminderCount > 0 ? 'bg-amber-500 animate-pulse' : 'bg-text-muted'}`} />
                                             {c.paymentReminderCount || 0} Sent
                                         </span>
                                     </td>
-                                    <td className="px-5 py-4 text-center">
-                                        <div className="flex flex-col items-center gap-1">
-                                            <span className="text-[11px] font-black text-slate-900 uppercase leading-none">
-                                                {c.lastPaymentReminderSentAt ? new Date(c.lastPaymentReminderSentAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : 'NEVER'}
-                                            </span>
-                                        </div>
+                                    <td className="px-4 py-2 text-center">
+                                        <span className="text-[10px] font-black text-text uppercase leading-none">
+                                            {c.lastPaymentReminderSentAt ? new Date(c.lastPaymentReminderSentAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : 'NEVER'}
+                                        </span>
                                     </td>
-                                    <td className="px-5 py-4 text-right">
-                                        <div className="flex items-center justify-end gap-2">
+                                    <td className="px-4 py-2 text-right">
+                                        <div className="flex items-center justify-end" onClick={e => e.stopPropagation()}>
                                             <button
-                                                onClick={(e) => { e.stopPropagation(); handleSendReminder(c); }}
-                                                className="flex items-center justify-center gap-2 px-4 py-2 bg-emerald-50 border border-emerald-200 text-emerald-700 allow-curve rounded-lg hover:bg-emerald-100 hover:text-emerald-800 transition-all shadow-sm text-[10px] font-black uppercase tracking-wider"
+                                                onClick={() => handleSendReminder(c)}
+                                                className="flex items-center justify-center gap-1 px-2.5 py-1 bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-500 rounded-lg hover:bg-emerald-500/20 transition-all text-[9px] font-black uppercase tracking-wider active:scale-95"
                                             >
-                                                <Send className="w-3.5 h-3.5" /> Send Reminder
+                                                <Send className="w-3 h-3" /> Transmit Alert
                                             </button>
                                         </div>
                                     </td>
@@ -1325,27 +1305,27 @@ function PaymentRemindersView({ onCustomerClick, setWhatsappModal, fetchCustomer
 
                 {/* Pagination Controls */}
                 {dueMetadata.totalPages > 1 && (
-                    <div className="bg-white px-6 py-4 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-4">
-                        <span className="text-[11px] font-semibold text-slate-500">
+                    <div className="bg-surface px-4 py-2 border-t border-border/40 flex flex-col sm:flex-row items-center justify-between gap-3">
+                        <span className="text-[9.5px] font-bold text-text-muted uppercase tracking-wider">
                             Showing {(page - 1) * 10 + 1} to {Math.min(page * 10, dueMetadata.totalCount)} of {dueMetadata.totalCount} accounts
                         </span>
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-1">
                             <button
                                 onClick={() => setPage(p => Math.max(1, p - 1))}
                                 disabled={page === 1}
-                                className="flex items-center gap-1 text-[10px] font-black text-slate-400 uppercase tracking-wider hover:text-slate-900 transition-colors disabled:opacity-30"
+                                className="flex items-center gap-0.5 text-[9px] font-black text-text-muted uppercase tracking-wider hover:text-primary transition-colors disabled:opacity-30"
                             >
-                                <ChevronRight className="w-4 h-4 rotate-180" /> PREV
+                                <ChevronRight className="w-3.5 h-3.5 rotate-180" /> PREV
                             </button>
-                            <div className="px-3 py-1.5 border border-slate-300 text-slate-900 font-black text-[11px] allow-curve rounded-md mx-2">
+                            <div className="px-2 py-0.5 border border-border/60 text-text font-black text-[10px] rounded-md mx-1">
                                 {page}
                             </div>
                             <button
                                 onClick={() => setPage(p => Math.min(dueMetadata.totalPages || 1, p + 1))}
                                 disabled={page >= (dueMetadata.totalPages || 1)}
-                                className="flex items-center gap-1 text-[10px] font-black text-slate-400 uppercase tracking-wider hover:text-slate-900 transition-colors disabled:opacity-30"
+                                className="flex items-center gap-0.5 text-[9px] font-black text-text-muted uppercase tracking-wider hover:text-primary transition-colors disabled:opacity-30"
                             >
-                                NEXT <ChevronRight className="w-4 h-4" />
+                                NEXT <ChevronRight className="w-3.5 h-3.5" />
                             </button>
                         </div>
                     </div>
@@ -1353,18 +1333,15 @@ function PaymentRemindersView({ onCustomerClick, setWhatsappModal, fetchCustomer
             </div>
 
             {/* Stay Organized Banner */}
-            <div className="mt-8 bg-white border border-slate-200 allow-curve rounded-2xl shadow-sm p-6 relative overflow-hidden flex items-center justify-between">
-                <div className="flex items-start gap-4 z-10">
-                    <div className="w-6 h-6 rounded-full bg-blue-500 text-white flex items-center justify-center font-bold text-xs shrink-0 shadow-sm mt-0.5">
+            <div className="mt-6 bg-surface-alt/30 border border-border/40 rounded-2xl shadow-sm p-4 relative overflow-hidden flex items-center justify-between text-left">
+                <div className="flex items-start gap-3 z-10">
+                    <div className="w-5 h-5 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-[10px] shrink-0 shadow-sm mt-0.5">
                         i
                     </div>
                     <div>
-                        <h4 className="text-sm font-black text-slate-900">Stay organized!</h4>
-                        <p className="text-[11px] font-semibold text-slate-500 mt-1">Use filters and search to quickly find clients with pending dues. Send targeted reminders to improve your cash flow.</p>
+                        <h4 className="text-[11px] font-black uppercase tracking-wider text-text">Dues Protocol Action</h4>
+                        <p className="text-[10px] font-semibold text-text-muted mt-0.5">Utilize custom search queries to locate client details. Rapidly communicate notifications to optimize daily cash receipt velocity.</p>
                     </div>
-                </div>
-                <div className="hidden md:block absolute right-6 -bottom-6 opacity-40 mix-blend-multiply pointer-events-none">
-                    <Calendar className="w-32 h-32 text-blue-100" />
                 </div>
             </div>
         </div>

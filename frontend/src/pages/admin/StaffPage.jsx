@@ -311,7 +311,7 @@ export default function StaffPage() {
     };
 
     return (
-        <div className="space-y-4 animate-reveal max-w-[1600px] mx-auto pb-8 text-left p-4 md:p-6 bg-[#f8fafc] min-h-screen">
+        <div className="space-y-4 animate-reveal max-w-[1600px] mx-auto pb-8 text-left p-4 md:p-6 bg-[#f8fafc] dark:bg-[#121826] min-h-screen">
             <div className="bg-white !rounded-[24px] shadow-sm border border-slate-200 p-6 md:p-8 !overflow-hidden">
                 {/* Header */}
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 px-2 mt-2 mb-8">
@@ -364,7 +364,7 @@ export default function StaffPage() {
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
                         placeholder="SEARCH BY NAME OR EMAIL..."
-                        className="w-full pl-12 pr-5 py-3.5 bg-white border border-slate-200 rounded-full text-[11px] font-black uppercase tracking-widest focus:border-slate-300 outline-none transition-all placeholder:text-slate-300 text-text shadow-sm"
+                        className="w-full !pl-14 pr-5 py-3.5 bg-white border border-slate-200 rounded-full text-[11px] font-black uppercase tracking-widest focus:border-slate-300 outline-none transition-all placeholder:text-slate-300 text-text shadow-sm"
                     />
                 </div>
                 <div className="flex gap-4">
@@ -533,17 +533,43 @@ export default function StaffPage() {
                         className="bg-white dark:bg-slate-800 w-full max-w-md shadow-2xl relative border border-border flex flex-col my-auto rounded-none z-10 max-h-[85vh] overflow-y-auto admin-panel"
                         onClick={(e) => e.stopPropagation()}
                     >
+                        <style>{`
+                            .staff-modal-header-icon {
+                                color: #1e293b !important;
+                                stroke: #1e293b !important;
+                            }
+                            .dark .staff-modal-header-icon {
+                                color: #ffffff !important;
+                                stroke: #ffffff !important;
+                            }
+                            .staff-modal-close-icon {
+                                color: #94a3b8 !important;
+                                stroke: #94a3b8 !important;
+                            }
+                            .staff-modal-close-icon:hover {
+                                color: #1e293b !important;
+                                stroke: #1e293b !important;
+                            }
+                            .dark .staff-modal-close-icon {
+                                color: #94a3b8 !important;
+                                stroke: #94a3b8 !important;
+                            }
+                            .dark .staff-modal-close-icon:hover {
+                                color: #ffffff !important;
+                                stroke: #ffffff !important;
+                            }
+                        `}</style>
                         {/* Modal Header */}
                         <div className="flex items-center gap-4 p-6 pb-4 border-b border-border shrink-0">
-                            <UserCog className="w-6 h-6 text-text shrink-0" />
+                            <UserCog className="w-6 h-6 staff-modal-header-icon shrink-0" />
                             <div className="text-left">
                                 <h2 className="text-lg font-black text-text uppercase italic font-mono leading-none">
                                     {editing ? 'Update Profile' : 'Add New Member'}
                                 </h2>
                                 <p className="text-[8px] font-black text-text-muted uppercase tracking-[0.3em] mt-1">New Staff Registration</p>
                             </div>
-                            <button type="button" onClick={() => setShowModal(false)} className="ml-auto p-1 hover:bg-surface transition-colors">
-                                <XCircle className="w-5 h-5 text-text-muted" />
+                            <button type="button" onClick={() => setShowModal(false)} className="ml-auto p-1 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors">
+                                <XCircle className="w-5 h-5 staff-modal-close-icon" />
                             </button>
                         </div>
 

@@ -84,18 +84,18 @@ export default function MembershipRemindersTab() {
     const totalRemindedSum = reminders.reduce((acc, curr) => acc + (curr.reminderCount || 0), 0);
 
     return (
-        <div className="space-y-8 italic text-left">
+        <div className="space-y-4 italic text-left">
             {/* Header section with stark styling */}
-            <div className="flex items-center gap-3">
-                <div className="w-1.5 h-8 bg-primary" />
+            <div className="flex items-center gap-2">
+                <div className="w-1 h-6 bg-primary" />
                 <div>
-                    <h2 className="text-2xl font-black text-foreground uppercase italic tracking-tighter leading-none">Membership Expiry Reminders</h2>
-                    <p className="text-[10px] font-black text-text-muted uppercase tracking-widest mt-1">Audit, monitor, and manually dispatch membership renewals via automated WhatsApp API integration</p>
+                    <h2 className="text-sm font-black text-foreground uppercase italic tracking-tight leading-none">Membership Expiry Reminders</h2>
+                    <p className="text-[8px] font-black text-text-muted uppercase tracking-widest mt-1">Audit, monitor, and manually dispatch membership renewals via automated WhatsApp API integration</p>
                 </div>
             </div>
 
             {/* Quick Metrics Cards */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 {[
                     { label: 'Active Memberships', value: totalActive, desc: 'Active Members', actionText: 'View active \u2192', theme: { bg: 'bg-emerald-500/5', iconBg: 'bg-emerald-500/10', text: 'text-emerald-600' }, icon: CheckCircle },
                     { label: 'Expiring Soon', value: expiringSoon, desc: 'Ending in 7 days', actionText: 'View expiring \u2192', theme: { bg: 'bg-amber-500/5', iconBg: 'bg-amber-500/10', text: 'text-amber-600' }, icon: Clock },
@@ -104,18 +104,18 @@ export default function MembershipRemindersTab() {
                 ].map((stat, i) => {
                     const Icon = stat.icon;
                     return (
-                        <div key={i} className={`rounded-2xl p-5 border border-border/20 flex flex-col justify-between transition-all duration-300 hover:shadow-md ${stat.theme.bg}`}>
-                            <div className="flex gap-4">
-                                <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${stat.theme.iconBg}`}>
-                                    <Icon className={`w-5 h-5 ${stat.theme.text}`} />
+                        <div key={i} className={`rounded-2xl p-3.5 sm:p-4 border border-border/20 flex flex-col justify-between transition-all duration-300 hover:shadow-md ${stat.theme.bg}`}>
+                            <div className="flex gap-3">
+                                <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${stat.theme.iconBg}`}>
+                                    <Icon className={`w-4 h-4 ${stat.theme.text}`} />
                                 </div>
                                 <div>
-                                    <div className="text-[10px] uppercase font-bold text-foreground/80 tracking-widest">{stat.label}</div>
-                                    <div className="text-3xl font-black text-foreground mt-0.5 leading-none">{stat.value}</div>
-                                    <div className="text-sm font-medium text-foreground/70 mt-1.5">{stat.desc}</div>
+                                    <div className="text-[8px] uppercase font-bold text-foreground/80 tracking-widest">{stat.label}</div>
+                                    <div className="text-xl font-black text-foreground mt-0.5 leading-none">{stat.value}</div>
+                                    <div className="text-[11px] font-medium text-foreground/70 mt-1">{stat.desc}</div>
                                 </div>
                             </div>
-                            <div className="mt-5">
+                            <div className="mt-3">
                                 <button 
                                     onClick={() => {
                                         if (stat.label === 'Active Memberships') setStatusFilter('active');
@@ -123,7 +123,7 @@ export default function MembershipRemindersTab() {
                                         if (stat.label === 'Expired Status') setStatusFilter('expired');
                                         if (stat.label === 'Reminders Sent') setStatusFilter('reminded');
                                     }}
-                                    className={`text-xs font-bold hover:underline ${stat.theme.text}`}
+                                    className={`text-[10px] font-bold hover:underline ${stat.theme.text}`}
                                 >
                                     {stat.actionText}
                                 </button>
@@ -134,9 +134,9 @@ export default function MembershipRemindersTab() {
             </div>
 
             {/* Filters and Controls */}
-            <div className="flex flex-col lg:flex-row gap-4 justify-between items-start lg:items-center">
+            <div className="flex flex-col lg:flex-row gap-3 justify-between items-start lg:items-center">
                 {/* Status Filter Tabs */}
-                <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-2 lg:pb-0">
+                <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-1 lg:pb-0">
                     {[
                         { id: 'all', label: 'All Records' },
                         { id: 'active', label: 'Active Only' },
@@ -147,8 +147,8 @@ export default function MembershipRemindersTab() {
                         <button
                             key={tab.id}
                             onClick={() => setStatusFilter(tab.id)}
-                            className={`px-5 py-2.5 border rounded-xl font-black text-[9px] uppercase tracking-[0.2em] transition-all whitespace-nowrap ${statusFilter === tab.id
-                                ? 'bg-primary text-white border-primary shadow-lg shadow-primary/20'
+                            className={`px-4 py-2 border rounded-xl font-black text-[8px] uppercase tracking-[0.15em] transition-all whitespace-nowrap ${statusFilter === tab.id
+                                ? 'bg-primary text-white border-primary shadow-md shadow-primary/10'
                                 : 'text-text-muted border-border/40 hover:bg-surface-alt'
                                 }`}
                         >
@@ -158,14 +158,14 @@ export default function MembershipRemindersTab() {
                 </div>
 
                 {/* Search query input */}
-                <div className="relative w-full lg:w-80">
-                    <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-indigo-500" />
+                <div className="relative w-full lg:w-72">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-indigo-500" />
                     <input
                         type="text"
                         placeholder="SEARCH BY NAME OR PHONE..."
                         value={search}
                         onChange={e => setSearch(e.target.value)}
-                        className="w-full h-10 pl-10 pr-4 bg-surface border rounded-xl border-border/40 text-[9px] font-black uppercase tracking-widest outline-none focus:border-primary transition-all"
+                        className="w-full h-8.5 pl-9 pr-3 bg-surface border rounded-xl border-border/40 text-[8px] font-black uppercase tracking-widest outline-none focus:border-primary transition-all"
                     />
                 </div>
             </div>
