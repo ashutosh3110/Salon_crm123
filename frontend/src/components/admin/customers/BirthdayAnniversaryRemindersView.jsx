@@ -93,11 +93,11 @@ export default function BirthdayAnniversaryRemindersView() {
 
     // Filter wishes in the UI by category, outlet and search query
     const filteredClients = clients.filter(c => {
-        const matchesSearch = c.name?.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                              c.phone?.includes(searchQuery);
-        
+        const matchesSearch = c.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            c.phone?.includes(searchQuery);
+
         if (!matchesSearch) return false;
-  
+
         if (categoryFilter === 'birthday') {
             if (!c.birthdayWishSent) return false;
         } else if (categoryFilter === 'anniversary') {
@@ -108,7 +108,7 @@ export default function BirthdayAnniversaryRemindersView() {
             const clientOutletId = c.lastOutletId?._id || c.lastOutletId;
             if (String(clientOutletId) !== outletFilter) return false;
         }
-  
+
         return true;
     });
 
@@ -183,21 +183,21 @@ export default function BirthdayAnniversaryRemindersView() {
                 <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
                     {/* Outlet Filter Select */}
                     <div className="relative min-w-[200px]" ref={outletDropdownRef}>
-                        <div 
+                        <div
                             onClick={() => setIsOutletDropdownOpen(!isOutletDropdownOpen)}
                             className="w-full px-4 py-3 bg-surface border border-border text-[11px] font-black uppercase tracking-widest outline-none cursor-pointer rounded-2xl shadow-sm flex items-center justify-between group hover:border-primary transition-all"
                         >
                             <span className="text-text truncate pr-4">
-                                {outletFilter === 'all' 
-                                    ? 'All Outlets' 
+                                {outletFilter === 'all'
+                                    ? 'All Outlets'
                                     : (outlets?.find(o => (o._id || o.id) === outletFilter)?.name || 'All Outlets')}
                             </span>
                             <ChevronDown className={`w-4 h-4 text-text-muted group-hover:text-primary transition-transform duration-200 ${isOutletDropdownOpen ? 'rotate-180' : ''}`} />
                         </div>
-                        
+
                         {isOutletDropdownOpen && (
                             <div className="absolute top-full left-0 mt-2 w-full bg-surface border border-border rounded-2xl shadow-lg z-50 overflow-hidden py-2 animate-in fade-in slide-in-from-top-2 duration-200">
-                                <div 
+                                <div
                                     onClick={() => {
                                         setOutletFilter('all');
                                         setIsOutletDropdownOpen(false);

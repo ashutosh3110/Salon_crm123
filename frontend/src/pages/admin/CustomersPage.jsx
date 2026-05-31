@@ -812,7 +812,7 @@ function CelebrationReminders({ customers, onSendWhatsApp }) {
     if (reminders.length === 0) return null;
 
     return (
-        <div className="bg-amber-500/5 dark:bg-amber-500/10 border border-amber-500/20 p-3 rounded-xl flex flex-col gap-2.5 animate-in fade-in slide-in-from-top-2 duration-300">
+        <div className="bg-amber-500/5 dark:bg-amber-500/10 border border-amber-500/20 p-3 rounded-2xl flex flex-col gap-2.5 animate-in fade-in slide-in-from-top-2 duration-300">
             <h3 className="text-[10px] font-black text-amber-600 dark:text-amber-400 uppercase tracking-[0.2em] flex items-center gap-2">
                 <Cake className="w-3.5 h-3.5" /> Birthdays &amp; Anniversaries
                 <span className="ml-auto text-[8px] font-black text-amber-600/70 dark:text-amber-400/60 uppercase bg-amber-500/10 px-2 py-0.5 rounded-full">{reminders.length} UPCOMING</span>
@@ -826,7 +826,7 @@ function CelebrationReminders({ customers, onSendWhatsApp }) {
                         : `Happy Anniversary ${c.name}! Celebrating your beautiful journey together.`;
 
                     return (
-                        <div key={c._id} className="flex-shrink-0 min-w-[240px] p-2.5 bg-surface border border-border/80 rounded-lg flex items-center justify-between hover:border-amber-500/30 transition-all duration-200">
+                        <div key={c._id} className="flex-shrink-0 min-w-[240px] p-2.5 bg-surface border border-border/80 rounded-xl flex items-center justify-between hover:border-amber-500/30 transition-all duration-200">
                             <div className="flex items-center gap-2">
                                 <div className="w-7 h-7 bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center font-black text-xs rounded-full border border-amber-500/25">
                                     {c.name?.charAt(0) || '?'}

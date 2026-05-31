@@ -116,7 +116,7 @@ export default function MembershipRemindersTab() {
                                 </div>
                             </div>
                             <div className="mt-3">
-                                <button 
+                                <button
                                     onClick={() => {
                                         if (stat.label === 'Active Memberships') setStatusFilter('active');
                                         if (stat.label === 'Expiring Soon') setStatusFilter('expiring_soon');
@@ -275,8 +275,8 @@ export default function MembershipRemindersTab() {
                                                     onClick={() => handleSendReminder(item)}
                                                     disabled={isSending}
                                                     className={`h-9 px-4 border rounded-xl font-black text-[9px] uppercase tracking-[0.15em] transition-all flex items-center justify-center gap-2 ${isSending
-                                                            ? 'bg-surface-alt border-border/40 text-text-muted cursor-not-allowed'
-                                                            : 'bg-emerald-500/10 border-emerald-500/30 text-emerald-500 hover:bg-emerald-500 hover:text-white hover:border-emerald-500 hover:shadow-lg hover:shadow-emerald-500/20'
+                                                        ? 'bg-surface-alt border-border/40 text-text-muted cursor-not-allowed'
+                                                        : 'bg-emerald-500/10 border-emerald-500/30 text-emerald-500 hover:bg-emerald-500 hover:text-white hover:border-emerald-500 hover:shadow-lg hover:shadow-emerald-500/20'
                                                         }`}
                                                 >
                                                     {isSending ? (
