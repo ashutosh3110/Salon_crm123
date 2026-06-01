@@ -125,7 +125,7 @@ function MetricCard({ label, value, icon: Icon, gradient, shadow, change, prefix
             cardBorderClass: '!border-[#FDF5DA] dark:!border-[#B4912B]/15 hover:!border-[#E6C975] dark:hover:!border-[#B4912B]/50'
         }
     };
-    
+
     const { iconColorClass, iconBgClass, cardBgClass, cardBorderClass } = themes[colorTheme] || themes.emerald;
 
     const content = (
@@ -135,7 +135,7 @@ function MetricCard({ label, value, icon: Icon, gradient, shadow, change, prefix
                     <div className={`w-9 h-9 rounded-full flex items-center justify-center shrink-0 ${iconBgClass}`}>
                         <Icon className={`w-4 h-4 ${iconColorClass}`} strokeWidth={2} />
                     </div>
-                    
+
                     <div className="flex flex-col !items-start !text-left">
                         <span style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '0.03em' }} className="uppercase text-slate-500 dark:text-slate-450 leading-none mb-1.5 !text-left">
                             {label}
@@ -378,11 +378,10 @@ export default function SADashboardPage() {
                         <button
                             key={p.key}
                             onClick={() => applyPreset(p.key)}
-                            className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all border ${
-                                datePeriod === p.key
+                            className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all border ${datePeriod === p.key
                                     ? 'bg-[#B4912B] text-white border-[#B4912B] shadow-md shadow-[#B4912B]/20 scale-95'
                                     : 'bg-white text-text-secondary border-border hover:border-[#B4912B]/45 hover:text-[#B4912B] hover:bg-[#B4912B]/5'
-                            }`}
+                                }`}
                         >
                             {p.label}
                         </button>
@@ -401,7 +400,6 @@ export default function SADashboardPage() {
                                 className="px-2.5 py-1.5 rounded-lg border border-border text-xs text-text bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-[#B4912B] transition-all"
                             />
                         </div>
-                        <span className="text-xs text-text-muted font-bold">to</span>
                         <div className="flex items-center gap-2">
                             <label className="text-[10px] font-black uppercase text-text-muted tracking-wider">To</label>
                             <input

@@ -15,14 +15,17 @@ import api from '../../services/api';
 const fmtINR = v => `₹${(v || 0).toLocaleString('en-IN')}`;
 
 const CustomTooltip = ({ active, payload, label }) => {
-    if (!active || !payload?.length) return null;
+    if (!active || !payload || !payload.length) return null;
     return (
-        <div className="bg-white border border-border rounded-xl shadow-xl p-3 text-xs min-w-[140px]">
-            <p className="font-semibold text-text mb-1.5">{label}</p>
+        <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-xl p-3 text-xs min-w-[140px]">
+            {label && <p className="font-semibold mb-1.5" style={{ color: 'var(--text-color, inherit)' }}>{label}</p>}
             {payload.map((p, i) => (
-                <p key={i} style={{ color: p.color || p.fill }} className="font-medium flex justify-between gap-3">
-                    <span>{p.name}</span>
-                    <span className="font-bold">{typeof p.value === 'number' && p.value > 1000 ? fmtINR(p.value) : p.value}</span>
+                <p key={i} className="font-medium flex items-center justify-between gap-4">
+                    <span className="flex items-center gap-2 text-slate-700 dark:text-slate-200" style={{ color: 'inherit' }}>
+                        <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: p.color || p.fill || p.payload?.fill }}></span>
+                        <span className="capitalize !text-slate-700 dark:!text-slate-200" style={{ color: 'inherit' }}>{p.name || p.payload?.name || 'None'}</span>
+                    </span>
+                    <span className="font-bold !text-slate-900 dark:!text-white" style={{ color: 'inherit' }}>{typeof p.value === 'number' && p.value > 1000 ? fmtINR(p.value) : p.value}</span>
                 </p>
             ))}
         </div>
@@ -87,7 +90,7 @@ function MetricCard({ label, value, sub, icon: Icon, gradient, shadow }) {
     const { iconColorClass, iconBgClass, cardBgClass, cardBorderClass } = themes[colorTheme] || themes.emerald;
 
     return (
-        <div className={`!rounded-[16px] !border p-3.5 shadow-[0_2px_8px_-3px_rgba(0,0,0,0.04)] group flex flex-col justify-between min-h-[118px] transition-all hover:-translate-y-0.5 active:scale-[0.98] hover:shadow-md ${cardBgClass} ${cardBorderClass}`}>
+        <div className={`!rounded-[16px] !border p-3.5 shadow-[0_2px_8px_-3px_rgba(0,0,0,0.04)] group flex flex-col justify-between min-h-[118px] transition-all hover:-translate-y-0.5 hover:shadow-md ${cardBgClass} ${cardBorderClass}`}>
             <div className="flex !items-start gap-3 !text-left">
                 <div className={`w-9 h-9 rounded-full flex items-center justify-center shrink-0 ${iconBgClass}`}>
                     <Icon className={`w-4 h-4 ${iconColorClass}`} strokeWidth={2} />
@@ -104,13 +107,6 @@ function MetricCard({ label, value, sub, icon: Icon, gradient, shadow }) {
                         {sub || 'Stats'}
                     </span>
                 </div>
-            </div>
-
-            <div style={{ fontSize: '11px', fontWeight: 700 }} className="flex !items-center gap-1 mt-auto pt-2 transition-all opacity-90 group-hover:opacity-100 whitespace-nowrap !text-left !justify-start">
-                <span className={iconColorClass}>View analytics</span>
-                <span style={{ fontSize: '12px' }} className={`inline-block transition-transform duration-200 group-hover:translate-x-1 leading-none ${iconColorClass}`}>
-                    →
-                </span>
             </div>
         </div>
     );
@@ -258,7 +254,7 @@ export default function SAAnalyticsPage() {
                         exportToExcel(growth.mrrTrend, 'Wapixo_Analytics_Revenue', 'Revenue');
                         showToast('Report exported successfully!');
                     }}
-                        className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white border border-border text-text-secondary text-sm font-semibold hover:border-[#B4912B] transition-all shadow-sm">
+                        className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white dark:bg-slate-800 border border-border text-slate-900 dark:text-slate-100 text-sm !font-bold hover:border-[#B4912B] transition-all shadow-sm">
                         <Download className="w-4 h-4" /> Export Data
                     </button>
                 </div>
@@ -304,7 +300,6 @@ export default function SAAnalyticsPage() {
                                 className="px-2.5 py-1.5 rounded-lg border border-border text-xs text-text bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-[#B4912B] transition-all"
                             />
                         </div>
-                        <span className="text-xs text-text-muted font-bold">to</span>
                         <div className="flex items-center gap-2">
                             <label className="text-[10px] font-black uppercase text-text-muted tracking-wider">To</label>
                             <input
@@ -341,7 +336,7 @@ export default function SAAnalyticsPage() {
                                 <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
                                 <XAxis dataKey="month" tickFormatter={formatXAxis} tick={{ fontSize: 11, fill: '#94a3b8' }} axisLine={false} tickLine={false} />
                                 <YAxis tick={{ fontSize: 11, fill: '#94a3b8' }} axisLine={false} tickLine={false} tickFormatter={v => `₹${(v / 1000).toFixed(0)}k`} />
-                                <Tooltip content={<CustomTooltip />} />
+                                <Tooltip content={<CustomTooltip />} cursor={{ fill: 'transparent', stroke: 'transparent' }} />
                                 <Area type="monotone" dataKey="revenue" name="Revenue" stroke="#B4912B" strokeWidth={3} fillOpacity={1} fill="url(#colorRev)" />
                             </AreaChart>
                         </ResponsiveContainer>
@@ -354,7 +349,7 @@ export default function SAAnalyticsPage() {
                             <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
                             <XAxis dataKey="month" tickFormatter={formatXAxis} tick={{ fontSize: 11, fill: '#94a3b8' }} axisLine={false} tickLine={false} />
                             <YAxis tick={{ fontSize: 11, fill: '#94a3b8' }} axisLine={false} tickLine={false} />
-                            <Tooltip content={<CustomTooltip />} />
+                            <Tooltip content={<CustomTooltip />} cursor={{ fill: 'transparent' }} />
                             <Bar dataKey="count" name="New Salons" fill="#10b981" radius={[6, 6, 0, 0]} barSize={30} />
                         </BarChart>
                     </ResponsiveContainer>
@@ -369,23 +364,23 @@ export default function SAAnalyticsPage() {
                             <div className="w-full min-w-0 overflow-hidden">
                                 <ResponsiveContainer width="100%" height={200} minWidth={0}>
                                     <PieChart>
-                                        <Pie data={planDistribution} cx="50%" cy="50%" innerRadius={60} outerRadius={80} paddingAngle={5} dataKey="value" stroke="none">
+                                        <Pie data={planDistribution} cx="50%" cy="50%" innerRadius={60} outerRadius={80} paddingAngle={5} dataKey="value" nameKey="name" stroke="none">
                                             {planDistribution.map((entry, index) => (
                                                 <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                                             ))}
                                         </Pie>
-                                        <Tooltip tooltip={CustomTooltip} />
+                                        <Tooltip content={<CustomTooltip />} />
                                     </PieChart>
                                 </ResponsiveContainer>
                             </div>
                             <div className="w-full mt-4 space-y-2">
                                 {planDistribution.map((p, index) => (
-                                    <div key={p.name} className="flex items-center justify-between text-xs">
+                                    <div key={p.name || index} className="flex items-center justify-between text-xs">
                                         <div className="flex items-center gap-2">
-                                            <div className="w-2 h-2 rounded-full" style={{ backgroundColor: COLORS[index % COLORS.length] }} />
-                                            <span className="font-medium text-text-secondary capitalize">{p.name || 'None'}</span>
+                                            <div className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: COLORS[index % COLORS.length] }} />
+                                            <span className="font-medium capitalize !text-slate-700 dark:!text-slate-300">{p.name || 'None'}</span>
                                         </div>
-                                        <span className="font-bold text-text">{p.value}</span>
+                                        <span className="font-bold !text-slate-900 dark:!text-white">{p.value}</span>
                                     </div>
                                 ))}
                             </div>
@@ -400,8 +395,8 @@ export default function SAAnalyticsPage() {
                                 <thead>
                                     <tr className="border-b border-border">
                                         <th className="text-left py-3 px-4 text-xs font-bold text-text-muted uppercase tracking-wider">City</th>
-                                        <th className="text-right py-3 px-4 text-xs font-bold text-text-muted uppercase tracking-wider">Total Salons</th>
-                                        <th className="text-right py-3 px-4 text-xs font-bold text-text-muted uppercase tracking-wider">Market Share</th>
+                                        <th className="text-center py-3 px-4 text-xs font-bold text-text-muted uppercase tracking-wider">Total Salons</th>
+                                        <th className="text-center py-3 px-4 text-xs font-bold text-text-muted uppercase tracking-wider">Market Share</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-border">
@@ -411,15 +406,15 @@ export default function SAAnalyticsPage() {
                                             <tr key={g.city} className="hover:bg-surface/40 transition-colors">
                                                 <td className="py-4 px-4">
                                                     <div className="flex items-center gap-3">
-                                                        <div className="w-8 h-8 rounded-lg bg-rose-50 flex items-center justify-center text-xs font-black text-primary uppercase">
-                                                            {g.city[0]}
+                                                        <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ backgroundColor: 'rgba(180, 145, 43, 0.1)' }}>
+                                                            <MapPin size={18} color="#B4912B" strokeWidth={2.5} />
                                                         </div>
                                                         <span className="text-sm font-bold text-text">{g.city}</span>
                                                     </div>
                                                 </td>
-                                                <td className="py-4 px-4 text-right text-sm font-bold text-text">{g.salons}</td>
-                                                <td className="py-4 px-4 text-right">
-                                                    <div className="flex items-center justify-end gap-3">
+                                                <td className="py-4 px-4 text-center text-sm font-bold text-text">{g.salons}</td>
+                                                <td className="py-4 px-4 text-center">
+                                                    <div className="flex items-center justify-center gap-3">
                                                         <div className="w-24 h-1.5 rounded-full bg-slate-100 overflow-hidden hidden sm:block">
                                                             <div className="h-full bg-primary rounded-xl" style={{ width: `${pct}%` }} />
                                                         </div>
