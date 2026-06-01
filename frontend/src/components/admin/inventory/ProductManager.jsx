@@ -48,7 +48,7 @@ export default function ProductManager({ products = [], onDelete, onToggleStatus
     return (
         <div className="space-y-6">
             {/* Toolbar - Compact */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-4 border border-border shadow-sm rounded-3xl">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-4 border border-border shadow-sm rounded-2xl">
                 <div className="relative flex-1">
                     <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
                     <input
@@ -77,7 +77,7 @@ export default function ProductManager({ products = [], onDelete, onToggleStatus
             </div>
 
             {/* Product Table */}
-            <div className="bg-surface rounded-3xl border border-border shadow-sm overflow-hidden min-h-[400px]">
+            <div className="bg-surface rounded-2xl border border-border shadow-sm overflow-hidden min-h-[400px]">
                 <div className="table-responsive">
                     <table className="w-full text-left border-collapse min-w-[900px]">
                         <thead>

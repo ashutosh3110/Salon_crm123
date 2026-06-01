@@ -508,7 +508,7 @@ export default function ShopOrdersPage() {
                                 animate={{ opacity: 1, scale: 1, y: 0 }}
                                 exit={{ opacity: 0, scale: 0.95, y: 20 }}
                                 transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-                                className="relative w-full max-w-3xl bg-surface max-h-[90vh] shadow-2xl flex flex-col allow-curve rounded-3xl border border-border z-10 overflow-hidden"
+                                className="relative w-full max-w-3xl bg-surface max-h-[90vh] shadow-2xl flex flex-col allow-curve rounded-2xl border border-border z-10 overflow-hidden"
                             >
                                 {/* Drawer Header */}
                                 <div className="p-6 bg-surface-alt border-b border-border flex items-center justify-between">

@@ -167,13 +167,13 @@ export default function PerformanceAnalytics() {
                 <div className="flex items-center gap-3">
                     <div className="relative">
                         <button onClick={() => setPeriodOpen(!periodOpen)} 
-                            className="flex items-center gap-3 px-5 py-3.5 bg-surface border border-border rounded-none text-xs font-black uppercase tracking-widest hover:border-primary transition-all shadow-xl shadow-primary/5">
+                            className="flex items-center gap-3 px-5 py-3.5 bg-surface border border-border rounded-xl text-xs font-black uppercase tracking-widest hover:border-primary transition-all shadow-xl shadow-primary/5">
                             <Calendar className="w-4 h-4 text-primary" /> {period} <ChevronDown className="w-4 h-4 text-text-muted" />
                         </button>
                         <AnimatePresence>
                             {periodOpen && (
                                 <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}
-                                    className="absolute top-full left-0 mt-2 bg-surface border border-border rounded-none shadow-2xl z-50 w-48 py-2">
+                                    className="absolute top-full left-0 mt-2 bg-surface border border-border rounded-xl shadow-2xl z-50 w-48 py-2">
                                     {PERIODS.map(p => (
                                         <button key={p} onClick={() => { setPeriod(p); setPeriodOpen(false); }}
                                             className={`w-full px-6 py-3.5 text-xs font-black uppercase text-left tracking-widest hover:bg-surface-alt ${period === p ? 'text-primary' : 'text-text'}`}>
@@ -194,7 +194,7 @@ export default function PerformanceAnalytics() {
                     <div className="relative w-48 lg:w-64">
                         <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
                         <input type="text" placeholder="FILTER STAFF..." 
-                            className="w-full pl-12 pr-4 py-3.5 bg-surface border border-border rounded-none text-xs font-black uppercase tracking-widest focus:border-primary outline-none"
+                            className="w-full pl-12 pr-4 py-3.5 bg-surface border border-border rounded-xl text-xs font-black uppercase tracking-widest focus:border-primary outline-none"
                             value={searchTerm} onChange={e => setSearchTerm(e.target.value)} />
                     </div>
                     <button 
@@ -214,7 +214,7 @@ export default function PerformanceAnalytics() {
                     { label: 'Customer Trust', value: `${avgRating}/5.0`, sub: 'Avg Staff Rating', icon: Star, color: 'text-amber-500' },
                     { label: 'Top Performer', value: sortedStaff[0]?.staff?.split(' ')[0] || '—', sub: sortedStaff[0]?.role || 'N/A', icon: Trophy, color: 'text-violet-500' }
                 ].map((stat, i) => (
-                    <div key={i} className="bg-surface p-8 rounded-none border border-border shadow-sm flex flex-col justify-between group hover:border-primary transition-all">
+                    <div key={i} className="bg-surface p-8 rounded-xl border border-border shadow-sm flex flex-col justify-between group hover:border-primary transition-all">
                         <div className="flex items-center justify-between mb-4">
                             <p className="text-[10px] font-black text-text-muted uppercase tracking-[0.3em] italic">{stat.label}</p>
                             <stat.icon className={`w-5 h-5 ${stat.color}`} />
@@ -230,7 +230,7 @@ export default function PerformanceAnalytics() {
             {/* Main Analytics Grid */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 text-left font-black">
                 {/* Ranking & List */}
-                <div className="lg:col-span-2 bg-surface rounded-none border border-border shadow-sm flex flex-col relative overflow-hidden">
+                <div className="lg:col-span-2 bg-surface rounded-xl border border-border shadow-sm flex flex-col relative overflow-hidden">
                     <div className="p-8 border-b border-border flex items-center justify-between bg-surface-alt/20">
                         <div>
                             <h3 className="text-sm font-black text-text uppercase tracking-[0.2em]">Efficiency Rankings</h3>
@@ -321,7 +321,7 @@ export default function PerformanceAnalytics() {
                 {/* Goals & Side Panel */}
                 <div className="space-y-6 text-left font-black">
                     {/* Goal Card */}
-                    <div className="bg-background rounded-none border border-border shadow-sm p-8 relative overflow-hidden group">
+                    <div className="bg-background rounded-xl border border-border shadow-sm p-8 relative overflow-hidden group">
                         <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:opacity-20 transition-opacity">
                             <Target className="w-24 h-24 text-primary" />
                         </div>
@@ -341,7 +341,7 @@ export default function PerformanceAnalytics() {
                                         <span>Pipeline Progress</span>
                                         <span className="text-primary">{totalGoal > 0 ? Math.min(100, Math.round((totalRevenue/totalGoal)*100)) : 0}%</span>
                                     </div>
-                                    <div className="h-1.5 bg-border/20 rounded-none overflow-hidden">
+                                    <div className="h-1.5 bg-border/20 rounded-xl overflow-hidden">
                                         <motion.div initial={{ width: 0 }} animate={{ width: `${totalGoal > 0 ? Math.min(100, (totalRevenue/totalGoal)*100) : 0}%` }}
                                             transition={{ duration: 1.5, ease: 'easeOut' }} className="h-full bg-primary" />
                                     </div>
@@ -351,7 +351,7 @@ export default function PerformanceAnalytics() {
                     </div>
 
                     {/* Skill Chart */}
-                    <div className="bg-surface p-8 rounded-none border border-border shadow-sm">
+                    <div className="bg-surface p-8 rounded-xl border border-border shadow-sm">
                         <h3 className="text-[10px] font-black text-text-muted uppercase tracking-[0.3em] mb-8 italic">Metric Saturation</h3>
                         <div className="h-64 w-full">
                             <ResponsiveContainer width="100%" height="100%">
@@ -383,18 +383,18 @@ export default function PerformanceAnalytics() {
                     <div className="fixed inset-0 z-[150] flex items-center justify-center p-4">
                         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setGoalModal(null)} className="absolute inset-0 bg-black/70 backdrop-blur-md" />
                         <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }}
-                            className="bg-surface w-full max-w-sm rounded-none border border-border shadow-2xl relative p-10 font-black">
+                            className="bg-surface w-full max-w-sm rounded-xl border border-border shadow-2xl relative p-10 font-black">
                             <h3 className="text-sm font-black text-text uppercase tracking-[0.2em] mb-2">Set Target Goal</h3>
                             <p className="text-[10px] font-black text-primary uppercase tracking-widest italic">{goalModal.staff} // {goalModal.role}</p>
                             
                             <form onSubmit={saveGoal} className="mt-8 space-y-6">
                                 <div className="space-y-2">
                                     <label className="text-[9px] font-black text-text-muted uppercase tracking-widest italic">Target Revenue Amount (₹)</label>
-                                    <input type="number" min={0} className="w-full px-5 py-4 bg-background border border-border rounded-none text-sm font-black outline-none focus:border-primary uppercase"
+                                    <input type="number" min={0} className="w-full px-5 py-4 bg-background border border-border rounded-xl text-sm font-black outline-none focus:border-primary uppercase"
                                         value={goalInput} onChange={e => setGoalInput(e.target.value)} autoFocus />
                                 </div>
                                 <div className="flex gap-3 pt-4 font-black">
-                                    <button type="submit" disabled={goalSaving} className="flex-1 py-4 bg-primary text-white rounded-none text-xs font-black uppercase tracking-[0.3em] shadow-xl shadow-primary/20 hover:scale-[1.02] active:scale-95 transition-all">
+                                    <button type="submit" disabled={goalSaving} className="flex-1 py-4 bg-primary text-white rounded-xl text-xs font-black uppercase tracking-[0.3em] shadow-xl shadow-primary/20 hover:scale-[1.02] active:scale-95 transition-all">
                                         {goalSaving ? 'LOCKING...' : 'SAVE GOAL'}
                                     </button>
                                     <button type="button" onClick={() => setGoalModal(null)} className="px-6 py-4 border border-border text-xs font-black text-text uppercase tracking-widest hover:text-text transition-all">CANCEL</button>
@@ -408,7 +408,7 @@ export default function PerformanceAnalytics() {
             <AnimatePresence>
                 {toast && (
                     <motion.div initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 40 }}
-                        className="fixed bottom-10 left-1/2 -translate-x-1/2 z-[200] flex items-center gap-4 px-8 py-4 bg-text border border-border rounded-none shadow-2xl">
+                        className="fixed bottom-10 left-1/2 -translate-x-1/2 z-[200] flex items-center gap-4 px-8 py-4 bg-text border border-border rounded-xl shadow-2xl">
                         <CheckCircle2 className="w-5 h-5 text-emerald-500 shrink-0" />
                         <p className="text-[10px] font-black text-background uppercase tracking-[0.2em] font-black italic">{toast}</p>
                     </motion.div>

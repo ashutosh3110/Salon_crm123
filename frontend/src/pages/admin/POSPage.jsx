@@ -163,7 +163,7 @@ export default function POSPage() {
             {/* Left Section: Catalog & Search */}
             <div className="flex-1 flex flex-col gap-6 min-w-0">
                 {/* Search Bar */}
-                <div className="bg-surface p-6 border border-border rounded-none shadow-sm relative group">
+                <div className="bg-surface p-6 border border-border rounded-xl shadow-sm relative group">
                     <div className="absolute inset-y-0 left-10 flex items-center pointer-events-none">
                         <Search className="w-5 h-5 text-text-muted group-focus-within:text-primary transition-colors" />
                     </div>
@@ -172,7 +172,7 @@ export default function POSPage() {
                         placeholder="SEARCH PRODUCTS OR SERVICES..."
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
-                        className="w-full pl-12 pr-6 py-4 bg-surface-alt border border-border rounded-none focus:outline-none focus:border-primary text-xs font-black uppercase tracking-widest transition-all"
+                        className="w-full pl-12 pr-6 py-4 bg-surface-alt border border-border rounded-xl focus:outline-none focus:border-primary text-xs font-black uppercase tracking-widest transition-all"
                     />
                     
                     {/* Search Results Dropdown */}
@@ -185,7 +185,7 @@ export default function POSPage() {
                                     className="w-full flex items-center justify-between p-4 hover:bg-surface-alt border-b border-border last:border-0 transition-all text-left"
                                 >
                                     <div className="flex items-center gap-4">
-                                        <div className={`p-2 rounded-none ${item.type === 'service' ? 'bg-blue-50 text-blue-600' : 'bg-emerald-50 text-emerald-600'}`}>
+                                        <div className={`p-2 rounded-xl ${item.type === 'service' ? 'bg-blue-50 text-blue-600' : 'bg-emerald-50 text-emerald-600'}`}>
                                             {item.type === 'service' ? <Zap className="w-4 h-4" /> : <Package className="w-4 h-4" />}
                                         </div>
                                         <div>
@@ -203,13 +203,13 @@ export default function POSPage() {
                 {/* Main POS Interface Grid */}
                 <div className="flex-1 grid grid-cols-1 xl:grid-cols-2 gap-6 overflow-hidden">
                     {/* Catalog Browse/Active Bookings */}
-                    <div className="bg-surface border border-border rounded-none shadow-sm flex flex-col overflow-hidden">
+                    <div className="bg-surface border border-border rounded-xl shadow-sm flex flex-col overflow-hidden">
                         <div className="p-6 border-b border-border bg-surface-alt/50 flex items-center justify-between">
                             <h3 className="text-[11px] font-black uppercase tracking-widest flex items-center gap-3">
                                 <History className="w-4 h-4 text-primary" />
                                 ACTIVE SALON BOOKINGS
                             </h3>
-                            <span className="text-[9px] font-black bg-primary/10 text-primary px-2.5 py-1 rounded-none border border-primary/20">
+                            <span className="text-[9px] font-black bg-primary/10 text-primary px-2.5 py-1 rounded-xl border border-primary/20">
                                 {unpaidBookings.length} TODAY
                             </span>
                         </div>
@@ -230,7 +230,7 @@ export default function POSPage() {
                                         <div className="absolute right-0 top-0 w-24 h-24 bg-primary/5 rotate-12 translate-x-12 -translate-y-12 transition-all group-hover:bg-primary/10" />
                                         <div className="relative z-10 flex items-center justify-between">
                                             <div className="flex items-center gap-4">
-                                                <div className="w-10 h-10 rounded-none bg-primary/10 border border-primary/20 flex items-center justify-center text-[10px] font-black text-primary">
+                                                <div className="w-10 h-10 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center text-[10px] font-black text-primary">
                                                     {b.client?.name?.[0]?.toUpperCase() || 'C'}
                                                 </div>
                                                 <div>
@@ -245,7 +245,7 @@ export default function POSPage() {
                                             </div>
                                             <div className="text-right">
                                                 <p className="text-sm font-black text-text tracking-tighter leading-none">₹{b.price}</p>
-                                                <div className="mt-2 text-[8px] font-black bg-emerald-50 text-emerald-600 px-2 py-0.5 rounded-none border border-emerald-100 uppercase tracking-widest">PAY AT SALON</div>
+                                                <div className="mt-2 text-[8px] font-black bg-emerald-50 text-emerald-600 px-2 py-0.5 rounded-xl border border-emerald-100 uppercase tracking-widest">PAY AT SALON</div>
                                             </div>
                                         </div>
                                     </button>
@@ -255,7 +255,7 @@ export default function POSPage() {
                     </div>
 
                     {/* Cart Section */}
-                    <div className="bg-surface border border-border rounded-none shadow-sm flex flex-col overflow-hidden">
+                    <div className="bg-surface border border-border rounded-xl shadow-sm flex flex-col overflow-hidden">
                         <div className="p-6 border-b border-border bg-surface-alt/50 flex items-center justify-between">
                             <h3 className="text-[11px] font-black uppercase tracking-widest flex items-center gap-3">
                                 <ShoppingCart className="w-4 h-4 text-primary" />
@@ -326,7 +326,7 @@ export default function POSPage() {
             {/* Right Section: Payment Summary */}
             <div className="w-full lg:w-[400px] flex flex-col gap-6">
                 {/* Checkout Panel */}
-                <div className="bg-surface border-2 border-primary rounded-none shadow-2xl flex flex-col">
+                <div className="bg-surface border-2 border-primary rounded-xl shadow-2xl flex flex-col">
                     <div className="p-8 border-b border-border relative overflow-hidden">
                         <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 -mr-16 -mt-16 rotate-45" />
                         <h2 className="text-[11px] font-black uppercase tracking-[0.3em] text-primary relative z-10">ORDER SUMMARY</h2>
@@ -340,7 +340,7 @@ export default function POSPage() {
                                     <span className="text-[10px] font-black text-text-muted uppercase tracking-widest">Taxation (GST)</span>
                                     <div className="group relative">
                                         <Info className="w-3 h-3 text-text-muted cursor-help" />
-                                        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 p-2 bg-text text-surface text-[8px] font-black uppercase rounded-none whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity">
+                                        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 p-2 bg-text text-surface text-[8px] font-black uppercase rounded-xl whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity">
                                             {platformSettings?.serviceGst || 18}% Service / {platformSettings?.productGst || 12}% Product
                                         </div>
                                     </div>
@@ -365,7 +365,7 @@ export default function POSPage() {
                                     <button
                                         key={m.id}
                                         onClick={() => setPaymentMethod(m.id)}
-                                        className={`flex flex-col items-center justify-center gap-3 p-5 rounded-none border-2 transition-all ${paymentMethod === m.id ? 'border-primary bg-primary/5 shadow-inner' : 'border-border bg-surface hover:border-text-muted'}`}
+                                        className={`flex flex-col items-center justify-center gap-3 p-5 rounded-xl border-2 transition-all ${paymentMethod === m.id ? 'border-primary bg-primary/5 shadow-inner' : 'border-border bg-surface hover:border-text-muted'}`}
                                     >
                                         <m.icon className={`w-6 h-6 ${paymentMethod === m.id ? 'text-primary' : 'text-text-muted'}`} />
                                         <span className={`text-[9px] font-black uppercase tracking-widest ${paymentMethod === m.id ? 'text-primary' : 'text-text-muted'}`}>{m.label}</span>
@@ -388,7 +388,7 @@ export default function POSPage() {
                         <button
                             disabled={cart.length === 0 || isProcessing}
                             onClick={handleCheckout}
-                            className={`w-full group relative flex items-center justify-center gap-4 py-6 rounded-none shadow-2xl transition-all overflow-hidden ${
+                            className={`w-full group relative flex items-center justify-center gap-4 py-6 rounded-xl shadow-2xl transition-all overflow-hidden ${
                                 cart.length === 0 || isProcessing 
                                     ? 'bg-text-muted/20 cursor-not-allowed text-text-muted grayscale' 
                                     : 'bg-primary text-primary-foreground hover:scale-[1.02] active:scale-[0.98]'
@@ -414,7 +414,7 @@ export default function POSPage() {
 
                 {/* Success Indicator */}
                 {showSuccess && lastInvoice && (
-                    <div className="bg-emerald-500 text-white p-6 rounded-none shadow-2xl border border-emerald-600 animate-slide-up relative">
+                    <div className="bg-emerald-500 text-white p-6 rounded-xl shadow-2xl border border-emerald-600 animate-slide-up relative">
                         <div className="flex items-center gap-4">
                             <CheckCircle2 className="w-8 h-8" />
                             <div>

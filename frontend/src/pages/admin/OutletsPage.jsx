@@ -154,7 +154,7 @@ export default function OutletsPage() {
             </div>
 
             {/* Filters - Compact */}
-            <div className="!bg-white dark:!bg-slate-900 p-1.5 !border-[1.5px] !border-[#e2e8f0] dark:!border-slate-800 flex flex-col md:flex-row gap-2 !rounded-full items-center shadow-sm">
+            <div className="!bg-white dark:!bg-slate-900 p-1.5 !border-[1.5px] !border-[#e2e8f0] dark:!border-slate-800 flex flex-col md:flex-row gap-2 !rounded-xl items-center shadow-sm">
                 <div className="flex items-center gap-3 flex-1 h-10 px-4">
                     <Search className="w-4 h-4 text-slate-400 shrink-0" />
                     <input

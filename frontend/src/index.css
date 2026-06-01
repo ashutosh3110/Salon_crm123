@@ -690,16 +690,6 @@ html:not(.dark) .sa-panel option {
 html:not(.dark) .admin-panel span:not([class*="text-green"]):not([class*="text-emerald"]):not([class*="text-red"]):not([class*="text-rose"]):not([class*="text-amber"]):not([class*="text-yellow"]):not([class*="text-blue"]):not([class*="text-indigo"]):not([class*="text-violet"]):not([class*="text-orange"]):not([class*="text-primary"]):not([class*="text-primary-foreground"]):not([class*="recharts"]):not([class*="recharts-"]):not([class*="text-white"]),
 html:not(.dark) .admin-panel div:not([class*="text-green"]):not([class*="text-emerald"]):not([class*="text-red"]):not([class*="text-rose"]):not([class*="text-amber"]):not([class*="text-yellow"]):not([class*="text-blue"]):not([class*="text-indigo"]):not([class*="text-violet"]):not([class*="text-orange"]):not([class*="text-primary"]):not([class*="text-primary-foreground"]):not([class*="recharts"]):not([class*="recharts-"]):not([class*="text-white"]),
 html:not(.dark) .admin-panel button:not(.bg-primary):not([class*="bg-primary"]):not([class*="text-green"]):not([class*="text-red"]):not([class*="text-emerald"]):not([class*="text-rose"]):not([class*="text-primary"]):not([class*="text-primary-foreground"]):not([class*="text-white"]),
-html:not(.dark) .admin-panel a:not(.bg-primary):not([class*="bg-primary"]):not([class*="text-green"]):not([class*="text-red"]):not([class*="text-emerald"]):not([class*="text-rose"]):not([class*="text-primary"]):not([class*="text-primary-foreground"]):not([class*="text-white"]),
-html:not(.dark) .admin-panel svg:not([class*="text-green"]):not([class*="text-emerald"]):not([class*="text-red"]):not([class*="text-rose"]):not([class*="text-amber"]):not([class*="text-yellow"]):not([class*="text-blue"]):not([class*="text-indigo"]):not([class*="text-violet"]):not([class*="text-orange"]):not([class*="text-primary"]):not([class*="text-primary-foreground"]):not([class*="recharts"]):not([class*="recharts-"]):not([class*="text-white"]),
-html:not(.dark) .sa-panel span:not([class*="text-green"]):not([class*="text-emerald"]):not([class*="text-red"]):not([class*="text-rose"]):not([class*="text-amber"]):not([class*="text-yellow"]):not([class*="text-blue"]):not([class*="text-indigo"]):not([class*="text-violet"]):not([class*="text-orange"]):not([class*="text-primary"]):not([class*="recharts"]):not([class*="recharts-"]):not([class*="text-white"]),
-html:not(.dark) .sa-panel div:not([class*="text-green"]):not([class*="text-emerald"]):not([class*="text-red"]):not([class*="text-rose"]):not([class*="text-amber"]):not([class*="text-yellow"]):not([class*="text-blue"]):not([class*="text-indigo"]):not([class*="text-violet"]):not([class*="text-orange"]):not([class*="text-primary"]):not([class*="recharts"]):not([class*="recharts-"]):not([class*="text-white"]),
-html:not(.dark) .sa-panel button:not(.bg-primary):not([class*="bg-primary"]):not([class*="text-green"]):not([class*="text-red"]):not([class*="text-emerald"]):not([class*="text-rose"]):not([class*="text-primary"]):not([class*="text-white"]),
-html:not(.dark) .sa-panel a:not(.bg-primary):not([class*="bg-primary"]):not([class*="text-green"]):not([class*="text-red"]):not([class*="text-emerald"]):not([class*="text-rose"]):not([class*="text-primary"]):not([class*="text-white"]),
-html:not(.dark) .sa-panel svg:not([class*="text-green"]):not([class*="text-emerald"]):not([class*="text-red"]):not([class*="text-rose"]):not([class*="text-amber"]):not([class*="text-yellow"]):not([class*="text-blue"]):not([class*="text-indigo"]):not([class*="text-violet"]):not([class*="text-orange"]):not([class*="text-primary"]):not([class*="recharts"]):not([class*="recharts-"]):not([class*="text-white"]) {
-  color: #000000 !important;
-}
-
 /* --- Make heading/bold texts in admin panels look premium and elegant --- */
 .admin-panel .font-black,
 .admin-panel .font-extrabold,
@@ -873,9 +863,7 @@ html:not(.dark) .sa-panel button[type="submit"] svg:not([class*="text-green"]):n
 }
 
 /* =============================================
-   📐 ADMIN PANEL — Square Corners Everywhere
-   Cards, buttons, inputs — no more rounded corners
-   (rounded-full preserved for pills/dots/avatars)
+   📐 ADMIN PANEL — Removed Square Corners
    ============================================= */
 .admin-panel *:not(button):not([role="button"]):not([class*="btn-"]):not([class*="rounded-full"]):not([class*="rounded-3xl"]):not([class*="rounded-2xl"]):not(input[type="checkbox"]):not(input[type="radio"]):not(.allow-curve):not([class*="allow-curve"]) {
   border-radius: 0 !important;

@@ -249,7 +249,7 @@ export default function AttendanceTracker() {
     };
 
     return (
-        <div className="space-y-5 text-left bg-slate-50 dark:bg-[#0f172a] rounded-3xl p-6 border border-slate-200/60 dark:border-slate-800/80 transition-colors">
+        <div className="space-y-5 text-left bg-slate-50 dark:bg-[#0f172a] rounded-2xl p-6 border border-slate-200/60 dark:border-slate-800/80 transition-colors">
 
             {/* Top Toolbar */}
             <div className="bg-white dark:bg-slate-800 p-3 sm:p-4 rounded-2xl border border-slate-200/60 dark:border-slate-700/80 shadow-sm flex flex-col gap-3 transition-colors">

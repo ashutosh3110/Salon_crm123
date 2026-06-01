@@ -318,8 +318,8 @@ export default function StaffManager() {
                         { label: 'Recently Joined', value: staffRows.filter((s) => s.joined && new Date(s.joined) > new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)).length, icon: UserPlus, color: 'text-blue-500', bg: 'bg-blue-500/10' },
                     ].map((stat, i) => (
                         <motion.div key={stat.label} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}
-                            className="p-6 rounded-none bg-surface border border-border shadow-sm flex items-center gap-6 hover:shadow-xl transition-all group text-left font-black">
-                            <div className={`p-4 rounded-none ${stat.bg} border border-border/10 group-hover:scale-110 transition-transform`}><stat.icon className={`w-6 h-6 ${stat.color}`} /></div>
+                            className="p-6 rounded-xl bg-surface border border-border shadow-sm flex items-center gap-6 hover:shadow-xl transition-all group text-left font-black">
+                            <div className={`p-4 rounded-xl ${stat.bg} border border-border/10 group-hover:scale-110 transition-transform`}><stat.icon className={`w-6 h-6 ${stat.color}`} /></div>
                             <div className="text-left leading-none">
                                 <p className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] mb-2 leading-none">{stat.label}</p>
                                 <p className={`text-3xl font-black ${stat.color} tracking-tighter leading-none`}>{stat.value}</p>
@@ -328,7 +328,7 @@ export default function StaffManager() {
                     ))}
                 </div>
 
-                <div className="bg-surface p-8 rounded-none border border-border shadow-sm text-left font-black">
+                <div className="bg-surface p-8 rounded-xl border border-border shadow-sm text-left font-black">
                     <div className="flex items-center justify-between mb-6 text-left">
                         <span className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Team Composition</span>
                         <PieChartIcon className="w-4 h-4 text-primary" />
@@ -357,7 +357,7 @@ export default function StaffManager() {
                     <div className="mt-4 flex flex-wrap gap-x-4 gap-y-2 justify-center text-left">
                         {roleData.slice(0, 4).map(d => (
                             <div key={d.name} className="flex items-center gap-2 text-left">
-                                <div className="w-1.5 h-1.5 rounded-none" style={{ backgroundColor: d.color }} />
+                                <div className="w-1.5 h-1.5 rounded-xl" style={{ backgroundColor: d.color }} />
                                 <span className="text-[8px] font-black uppercase tracking-widest text-text-muted">{d.name}</span>
                             </div>
                         ))}
@@ -366,27 +366,27 @@ export default function StaffManager() {
             </div>
 
             {/* Toolbar */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-surface p-5 rounded-none border border-border shadow-sm text-left font-black">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-surface p-5 rounded-xl border border-border shadow-sm text-left font-black">
                 <div className="relative flex-1 max-w-sm text-left">
                     <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
                     <input type="text" placeholder="Search for team members..."
-                        className="w-full pl-12 pr-4 py-3 rounded-none bg-background border border-border text-[10px] font-black uppercase tracking-widest focus:outline-none focus:border-primary transition-all"
+                        className="w-full pl-12 pr-4 py-3 rounded-xl bg-background border border-border text-[10px] font-black uppercase tracking-widest focus:outline-none focus:border-primary transition-all"
                         value={searchTerm} onChange={e => { setSearchTerm(e.target.value); setPage(1); }} />
                 </div>
                 <div className="flex items-center gap-3 text-left">
                     <div className="relative text-left">
                         <button onClick={() => setShowFilter(v => !v)}
-                            className={`flex items-center gap-3 px-6 py-3 rounded-none text-[10px] font-black uppercase tracking-[0.1em] border transition-all ${showFilter ? 'bg-primary text-white border-primary shadow-lg shadow-primary/20' : 'text-text-secondary border-border hover:border-primary bg-surface'}`}>
+                            className={`flex items-center gap-3 px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-[0.1em] border transition-all ${showFilter ? 'bg-primary text-white border-primary shadow-lg shadow-primary/20' : 'text-text-secondary border-border hover:border-primary bg-surface'}`}>
                             <Filter className="w-4 h-4" /> Quick Filter
-                            {(filterRole !== 'All' || filterOutlet !== 'All') && <span className="w-2 h-2 bg-rose-500 rounded-none shadow-lg shadow-rose-500/40" />}
+                            {(filterRole !== 'All' || filterOutlet !== 'All') && <span className="w-2 h-2 bg-rose-500 rounded-xl shadow-lg shadow-rose-500/40" />}
                         </button>
                         <AnimatePresence>
                             {showFilter && (
                                 <motion.div initial={{ opacity: 0, y: -8, scale: 0.95 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: -8, scale: 0.95 }}
-                                    className="absolute right-0 top-full mt-3 w-72 bg-surface border border-border rounded-none shadow-2xl z-50 p-6 space-y-6">
+                                    className="absolute right-0 top-full mt-3 w-72 bg-surface border border-border rounded-xl shadow-2xl z-50 p-6 space-y-6">
                                     <div className="space-y-2 text-left">
                                         <label className="text-[10px] font-black text-text-muted uppercase tracking-widest">Filter by Profession</label>
-                                        <select className="w-full px-4 py-3 rounded-none bg-background border border-border text-[10px] font-black uppercase tracking-widest outline-none focus:border-primary appearance-none"
+                                        <select className="w-full px-4 py-3 rounded-xl bg-background border border-border text-[10px] font-black uppercase tracking-widest outline-none focus:border-primary appearance-none"
                                             value={filterRole} onChange={e => { setFilterRole(e.target.value); setPage(1); }}>
                                             <option value="All">All Roles</option>
                                             {ROLE_KEYS.map((k) => (
@@ -396,7 +396,7 @@ export default function StaffManager() {
                                     </div>
                                     <div className="space-y-2 text-left">
                                         <label className="text-[10px] font-black text-text-muted uppercase tracking-widest">Filter by Salon</label>
-                                        <select className="w-full px-4 py-3 rounded-none bg-background border border-border text-[10px] font-black uppercase tracking-widest outline-none focus:border-primary appearance-none"
+                                        <select className="w-full px-4 py-3 rounded-xl bg-background border border-border text-[10px] font-black uppercase tracking-widest outline-none focus:border-primary appearance-none"
                                             value={filterOutlet} onChange={e => { setFilterOutlet(e.target.value); setPage(1); }}>
                                             <option value="All">All Salons</option>
                                             {OUTLET_NAMES.map((o) => (
@@ -404,20 +404,20 @@ export default function StaffManager() {
                                             ))}
                                         </select>
                                     </div>
-                                    <button onClick={() => { setFilterRole('All'); setFilterOutlet('All'); }} className="w-full py-3 text-[9px] font-black text-rose-500 hover:bg-rose-500/10 border border-transparent hover:border-rose-500/20 rounded-none transition-all uppercase tracking-widest">Reset Filters</button>
+                                    <button onClick={() => { setFilterRole('All'); setFilterOutlet('All'); }} className="w-full py-3 text-[9px] font-black text-rose-500 hover:bg-rose-500/10 border border-transparent hover:border-rose-500/20 rounded-xl transition-all uppercase tracking-widest">Reset Filters</button>
                                 </motion.div>
                             )}
                         </AnimatePresence>
                     </div>
                     <button onClick={openAdd}
-                        className="flex items-center gap-3 px-8 py-3 rounded-none bg-primary text-white text-[10px] font-black uppercase tracking-[0.2em] shadow-xl shadow-primary/20 hover:bg-primary-dark transition-all">
+                        className="flex items-center gap-3 px-8 py-3 rounded-xl bg-primary text-white text-[10px] font-black uppercase tracking-[0.2em] shadow-xl shadow-primary/20 hover:bg-primary-dark transition-all">
                         <Plus className="w-4 h-4" /> Add Team Member
                     </button>
                 </div>
             </div>
 
             {/* Table */}
-            <div className="bg-surface rounded-none border border-border shadow-sm overflow-hidden text-left font-black table-responsive relative">
+            <div className="bg-surface rounded-xl border border-border shadow-sm overflow-hidden text-left font-black table-responsive relative">
                 {staffLoading && (
                     <div className="absolute inset-0 z-10 bg-surface/70 backdrop-blur-[2px] flex items-center justify-center">
                         <p className="text-[10px] font-black uppercase tracking-[0.3em] text-text-muted">Loading team…</p>
@@ -442,7 +442,7 @@ export default function StaffManager() {
                                 <tr key={s._id || s.id} className="hover:bg-surface-alt/20 transition-colors group text-left">
                                     <td className="px-6 py-5 text-left">
                                         <div className="flex items-center gap-4 text-left">
-                                            <div className="w-10 h-10 rounded-none bg-background border border-border flex items-center justify-center text-text-muted font-black text-[11px] shrink-0 overflow-hidden">
+                                            <div className="w-10 h-10 rounded-xl bg-background border border-border flex items-center justify-center text-text-muted font-black text-[11px] shrink-0 overflow-hidden">
                                                 {s.avatar ? (
                                                     <img src={s.avatar} alt={s.name} className="w-full h-full object-cover" />
                                                 ) : (
@@ -466,20 +466,20 @@ export default function StaffManager() {
                                     <td className="px-6 py-5 text-sm font-black text-primary tracking-tighter uppercase text-left">₹{(s.salary || 0).toLocaleString()}</td>
                                     <td className="px-6 py-5 text-left font-black">
                                         <span className={`inline-flex items-center gap-2.5 px-3 py-1 border text-[9px] font-black uppercase tracking-widest ${s.status === 'active' ? 'bg-emerald-500/5 text-emerald-500 border-emerald-500/10' : 'bg-rose-500/5 text-rose-500 border-rose-500/10'}`}>
-                                            <div className={`w-1.5 h-1.5 rounded-none ${s.status === 'active' ? 'bg-emerald-500 animate-pulse' : 'bg-rose-500'}`} />
+                                            <div className={`w-1.5 h-1.5 rounded-xl ${s.status === 'active' ? 'bg-emerald-500 animate-pulse' : 'bg-rose-500'}`} />
                                             {s.status === 'active' ? 'Active' : 'Inactive'}
                                         </span>
                                     </td>
                                     <td className="px-6 py-5 text-right font-black">
                                         <div className="flex items-center justify-end gap-2 transition-opacity">
-                                            <button onClick={() => setViewModal(s)} className="p-2 rounded-none border border-border hover:bg-primary/10 hover:text-primary transition-all"><Eye className="w-4 h-4" /></button>
-                                            <button onClick={() => openEdit(s)} className="p-2 rounded-none border border-border hover:bg-primary/10 hover:text-primary transition-all"><Edit2 className="w-4 h-4" /></button>
+                                            <button onClick={() => setViewModal(s)} className="p-2 rounded-xl border border-border hover:bg-primary/10 hover:text-primary transition-all"><Eye className="w-4 h-4" /></button>
+                                            <button onClick={() => openEdit(s)} className="p-2 rounded-xl border border-border hover:bg-primary/10 hover:text-primary transition-all"><Edit2 className="w-4 h-4" /></button>
                                             <div className="relative text-left">
-                                                <button onClick={() => setMenuOpen(menuOpen === (s._id || s.id) ? null : (s._id || s.id))} className="p-2 rounded-none border border-border hover:bg-surface transition-all text-text-muted"><MoreVertical className="w-4 h-4" /></button>
+                                                <button onClick={() => setMenuOpen(menuOpen === (s._id || s.id) ? null : (s._id || s.id))} className="p-2 rounded-xl border border-border hover:bg-surface transition-all text-text-muted"><MoreVertical className="w-4 h-4" /></button>
                                                 <AnimatePresence>
                                                     {menuOpen === (s._id || s.id) && (
                                                         <motion.div initial={{ opacity: 0, scale: 0.9, y: -4 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.9 }}
-                                                            className="absolute right-0 top-full mt-2 bg-surface border border-border rounded-none shadow-2xl z-50 w-52 overflow-hidden py-2 text-left">
+                                                            className="absolute right-0 top-full mt-2 bg-surface border border-border rounded-xl shadow-2xl z-50 w-52 overflow-hidden py-2 text-left">
                                                             <button onClick={() => toggleStatus(s._id || s.id)} className="w-full flex items-center gap-3 px-6 py-3 text-[10px] font-black uppercase tracking-widest hover:bg-surface-alt transition-colors">
                                                                 <CheckCircle2 className="w-4 h-4 text-emerald-500" /> Update Status
                                                             </button>
@@ -501,13 +501,13 @@ export default function StaffManager() {
                 <div className="px-6 py-4 border-t border-border bg-surface-alt/30 flex items-center justify-between text-left font-black">
                     <p className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Showing <span className="text-text">{paginated.length}</span> of <span className="text-text">{filtered.length}</span> team members</p>
                     <div className="flex items-center gap-2 text-left">
-                        <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1} className="p-2 rounded-none border border-border text-text-muted disabled:opacity-30 hover:bg-surface transition-all"><ChevronLeft className="w-4 h-4" /></button>
+                        <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1} className="p-2 rounded-xl border border-border text-text-muted disabled:opacity-30 hover:bg-surface transition-all"><ChevronLeft className="w-4 h-4" /></button>
                         <div className="flex gap-1.5 mx-1">
                             {Array.from({ length: totalPages }).map((_, i) => (
-                                <button key={i} onClick={() => setPage(i + 1)} className={`w-8 h-8 rounded-none text-[10px] font-black uppercase transition-all ${page === i + 1 ? 'bg-primary text-white shadow-xl shadow-primary/20' : 'border border-border text-text hover:bg-surface'}`}>{i + 1}</button>
+                                <button key={i} onClick={() => setPage(i + 1)} className={`w-8 h-8 rounded-xl text-[10px] font-black uppercase transition-all ${page === i + 1 ? 'bg-primary text-white shadow-xl shadow-primary/20' : 'border border-border text-text hover:bg-surface'}`}>{i + 1}</button>
                             ))}
                         </div>
-                        <button onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={page === totalPages} className="p-2 rounded-none border border-border text-text-muted disabled:opacity-30 hover:bg-surface transition-all"><ChevronRight className="w-4 h-4" /></button>
+                        <button onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={page === totalPages} className="p-2 rounded-xl border border-border text-text-muted disabled:opacity-30 hover:bg-surface transition-all"><ChevronRight className="w-4 h-4" /></button>
                     </div>
                 </div>
             </div>
@@ -518,13 +518,13 @@ export default function StaffManager() {
                     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
                         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setModal(false)} className="absolute inset-0 bg-black/70 backdrop-blur-md" />
                         <motion.div initial={{ opacity: 0, scale: 0.95, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95 }}
-                            className="bg-surface w-full max-w-xl rounded-none border border-border shadow-2xl relative max-h-[90vh] flex flex-col">
+                            className="bg-surface w-full max-w-xl rounded-xl border border-border shadow-2xl relative max-h-[90vh] flex flex-col">
                             <div className="px-10 py-8 border-b border-border flex items-center justify-between">
                                 <div className="text-left font-black">
                                     <h2 className="text-lg font-black text-text uppercase tracking-tight">{editTarget ? 'Edit Member Profile' : 'Add New Member'}</h2>
                                     <p className="text-[10px] font-black text-primary mt-2 uppercase tracking-[0.3em]">Team Settings</p>
                                 </div>
-                                <button onClick={() => setModal(false)} className="w-12 h-12 rounded-none bg-background border border-border flex items-center justify-center text-text-muted hover:text-text hover:border-text transition-all"><X className="w-6 h-6" /></button>
+                                <button onClick={() => setModal(false)} className="w-12 h-12 rounded-xl bg-background border border-border flex items-center justify-center text-text-muted hover:text-text hover:border-text transition-all"><X className="w-6 h-6" /></button>
                             </div>
                             <form onSubmit={saveStaff} className="flex flex-col flex-1 overflow-hidden font-black">
                                 <div className="p-8 space-y-6 overflow-y-auto flex-1 text-left">
@@ -533,7 +533,7 @@ export default function StaffManager() {
 
                                         <div className="col-span-2 flex justify-center py-4">
                                             <div className="relative group">
-                                                <div className="w-32 h-32 rounded-none bg-background border-2 border-dashed border-border flex items-center justify-center overflow-hidden transition-all group-hover:border-primary">
+                                                <div className="w-32 h-32 rounded-xl bg-background border-2 border-dashed border-border flex items-center justify-center overflow-hidden transition-all group-hover:border-primary">
                                                     {form.avatar ? (
                                                         <img src={form.avatar} alt="Preview" className="w-full h-full object-cover" />
                                                     ) : (
@@ -552,12 +552,12 @@ export default function StaffManager() {
                                         <div className="col-span-2 space-y-2 text-left">
                                             <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Member Name *</label>
                                             <input required type="text" placeholder="e.g. John Doe"
-                                                className="w-full px-5 py-4 rounded-none bg-background border border-border text-xs font-black uppercase tracking-widest focus:border-primary outline-none"
+                                                className="w-full px-5 py-4 rounded-xl bg-background border border-border text-xs font-black uppercase tracking-widest focus:border-primary outline-none"
                                                 value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value.replace(/[^a-zA-Z0-9\s'\-\.]/g, '') }))} />
                                         </div>
                                         <div className="space-y-2 text-left">
                                             <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Role *</label>
-                                            <select required className="w-full px-5 py-4 rounded-none bg-background border border-border text-xs font-black uppercase tracking-widest focus:border-primary outline-none appearance-none"
+                                            <select required className="w-full px-5 py-4 rounded-xl bg-background border border-border text-xs font-black uppercase tracking-widest focus:border-primary outline-none appearance-none"
                                                 value={form.roleKey} onChange={(e) => setForm((f) => ({ ...f, roleKey: e.target.value }))}>
                                                 {ROLE_KEYS.map((k) => (
                                                     <option key={k} value={k}>{ROLE_LABELS[k]}</option>
@@ -566,7 +566,7 @@ export default function StaffManager() {
                                         </div>
                                         <div className="space-y-2 text-left">
                                             <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Primary Salon *</label>
-                                            <select required className="w-full px-5 py-4 rounded-none bg-background border border-border text-xs font-black uppercase tracking-widest focus:border-primary outline-none appearance-none"
+                                            <select required className="w-full px-5 py-4 rounded-xl bg-background border border-border text-xs font-black uppercase tracking-widest focus:border-primary outline-none appearance-none"
                                                 value={form.outletId} onChange={(e) => setForm((f) => ({ ...f, outletId: e.target.value }))}>
                                                 {outlets.map((o) => (
                                                     <option key={String(o._id || o.id)} value={String(o._id || o.id)}>{o.name}</option>
@@ -576,7 +576,7 @@ export default function StaffManager() {
                                         <div className="space-y-2 text-left">
                                             <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Email Address *</label>
                                             <input required type="email" placeholder="e.g. john@example.com" readOnly={!!editTarget}
-                                                className="w-full px-5 py-4 rounded-none bg-background border border-border text-xs font-black uppercase tracking-widest focus:border-primary outline-none read-only:opacity-80"
+                                                className="w-full px-5 py-4 rounded-xl bg-background border border-border text-xs font-black uppercase tracking-widest focus:border-primary outline-none read-only:opacity-80"
                                                 value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))} />
                                         </div>
                                         <div className="space-y-2 text-left">
@@ -586,7 +586,7 @@ export default function StaffManager() {
                                         <div className="space-y-2 text-left">
                                             <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Phone Number *</label>
                                             <input required type="text" placeholder="10-digit number"
-                                                className="w-full px-5 py-4 rounded-none bg-background border border-border text-xs font-black uppercase tracking-widest focus:border-primary outline-none"
+                                                className="w-full px-5 py-4 rounded-xl bg-background border border-border text-xs font-black uppercase tracking-widest focus:border-primary outline-none"
                                                 value={form.phone} onChange={e => {
                                                     const val = e.target.value.replace(/\D/g, '');
                                                     if (val.length <= 10) setForm(f => ({ ...f, phone: val }));
@@ -597,7 +597,7 @@ export default function StaffManager() {
                                             <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Date of Birth</label>
                                             <input type="date"
                                                 max={new Date().toISOString().split('T')[0]}
-                                                className="w-full px-5 py-4 rounded-none bg-background border border-border text-xs font-black uppercase tracking-widest focus:border-primary outline-none"
+                                                className="w-full px-5 py-4 rounded-xl bg-background border border-border text-xs font-black uppercase tracking-widest focus:border-primary outline-none"
                                                 value={form.dob} onChange={e => setForm(f => ({ ...f, dob: e.target.value }))} />
                                         </div>
 
@@ -606,7 +606,7 @@ export default function StaffManager() {
                                         <div className="space-y-2 text-left">
                                             <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Base Salary</label>
                                             <input type="number" placeholder="CURRENCY_VAL"
-                                                className="w-full px-5 py-4 rounded-none bg-background border border-border text-xs font-black uppercase tracking-widest focus:border-primary outline-none"
+                                                className="w-full px-5 py-4 rounded-xl bg-background border border-border text-xs font-black uppercase tracking-widest focus:border-primary outline-none"
                                                 value={form.salary} onChange={e => setForm(f => ({ ...f, salary: e.target.value }))} />
                                         </div>
                                         <div className="space-y-2 text-left">
@@ -614,25 +614,25 @@ export default function StaffManager() {
                                             <input type="text" placeholder="e.g. AAAAA1234A" maxLength={10}
                                                 pattern="[A-Z]{5}[0-9]{4}[A-Z]{1}"
                                                 title="PAN format: 5 letters, 4 digits, 1 letter (e.g. AAAAA1234A)"
-                                                className="w-full px-5 py-4 rounded-none bg-background border border-border text-xs font-black uppercase tracking-widest focus:border-primary outline-none"
+                                                className="w-full px-5 py-4 rounded-xl bg-background border border-border text-xs font-black uppercase tracking-widest focus:border-primary outline-none"
                                                 value={form.pan} onChange={e => setForm(f => ({ ...f, pan: e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 10) }))} />
                                         </div>
                                         <div className="space-y-2 text-left">
                                             <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Bank Institution</label>
                                             <input type="text" placeholder="BANK_NAME"
-                                                className="w-full px-5 py-4 rounded-none bg-background border border-border text-xs font-black uppercase tracking-widest focus:border-primary outline-none"
+                                                className="w-full px-5 py-4 rounded-xl bg-background border border-border text-xs font-black uppercase tracking-widest focus:border-primary outline-none"
                                                 value={form.bankName} onChange={e => setForm(f => ({ ...f, bankName: e.target.value }))} />
                                         </div>
                                         <div className="space-y-2 text-left">
                                             <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Account Number</label>
                                             <input type="text" placeholder="ACCOUNT_NUMBER"
-                                                className="w-full px-5 py-4 rounded-none bg-background border border-border text-xs font-black uppercase tracking-widest focus:border-primary outline-none"
+                                                className="w-full px-5 py-4 rounded-xl bg-background border border-border text-xs font-black uppercase tracking-widest focus:border-primary outline-none"
                                                 value={form.accountNo} onChange={e => setForm(f => ({ ...f, accountNo: e.target.value }))} />
                                         </div>
                                         <div className="space-y-2 text-left col-span-2">
                                             <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">IFSC Code</label>
                                             <input type="text" placeholder="IFSC_CODE"
-                                                className="w-full px-5 py-4 rounded-none bg-background border border-border text-xs font-black uppercase tracking-widest focus:border-primary outline-none"
+                                                className="w-full px-5 py-4 rounded-xl bg-background border border-border text-xs font-black uppercase tracking-widest focus:border-primary outline-none"
                                                 value={form.ifsc} onChange={e => setForm(f => ({ ...f, ifsc: e.target.value }))} />
                                         </div>
 
@@ -642,13 +642,13 @@ export default function StaffManager() {
                                                 <div className="col-span-2 space-y-2 text-left">
                                                     <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Years of Experience</label>
                                                     <input type="text" placeholder="e.g. 5+ Years"
-                                                        className="w-full px-5 py-4 rounded-none bg-background border border-border text-xs font-black uppercase tracking-widest focus:border-primary outline-none"
+                                                        className="w-full px-5 py-4 rounded-xl bg-background border border-border text-xs font-black uppercase tracking-widest focus:border-primary outline-none"
                                                         value={form.stylistExperience} onChange={e => setForm(f => ({ ...f, stylistExperience: e.target.value }))} />
                                                 </div>
                                                 <div className="col-span-2 space-y-2 text-left">
                                                     <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Professional Bio</label>
                                                     <textarea placeholder="Write a short summary about the expert..."
-                                                        className="w-full px-5 py-4 rounded-none bg-background border border-border text-xs font-black uppercase tracking-widest focus:border-primary outline-none h-24 resize-none"
+                                                        className="w-full px-5 py-4 rounded-xl bg-background border border-border text-xs font-black uppercase tracking-widest focus:border-primary outline-none h-24 resize-none"
                                                         value={form.stylistBio} onChange={e => setForm(f => ({ ...f, stylistBio: e.target.value }))}></textarea>
                                                 </div>
                                             </>
@@ -792,7 +792,7 @@ export default function StaffManager() {
                                     </div>
                                 </div>
                                 <div className="px-10 py-8 border-t border-border bg-surface-alt/20">
-                                    <button type="submit" className="w-full py-5 bg-primary text-white rounded-none font-black text-[10px] uppercase tracking-[0.3em] shadow-xl shadow-primary/20 hover:bg-primary-dark transition-all active:scale-[0.99]">
+                                    <button type="submit" className="w-full py-5 bg-primary text-white rounded-xl font-black text-[10px] uppercase tracking-[0.3em] shadow-xl shadow-primary/20 hover:bg-primary-dark transition-all active:scale-[0.99]">
                                         {editTarget ? 'Save Profile' : 'Register Member'}
                                     </button>
                                 </div>
@@ -808,10 +808,10 @@ export default function StaffManager() {
                     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
                         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setViewModal(null)} className="absolute inset-0 bg-black/70 backdrop-blur-md" />
                         <motion.div initial={{ opacity: 0, scale: 0.95, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95 }}
-                            className="bg-surface w-full max-w-xl rounded-none border border-border shadow-2xl relative flex flex-col max-h-[90vh]">
+                            className="bg-surface w-full max-w-xl rounded-xl border border-border shadow-2xl relative flex flex-col max-h-[90vh]">
                             <div className="p-10 border-b border-border bg-surface-alt/10 flex items-center justify-between shrink-0">
                                 <div className="flex items-center gap-6 text-left font-black">
-                                    <div className="w-20 h-20 rounded-none bg-primary/10 flex items-center justify-center text-primary font-black text-3xl border border-primary/20 shadow-2xl shadow-primary/5 overflow-hidden">
+                                    <div className="w-20 h-20 rounded-xl bg-primary/10 flex items-center justify-center text-primary font-black text-3xl border border-primary/20 shadow-2xl shadow-primary/5 overflow-hidden">
                                         {viewModal.avatar ? (
                                             <img src={viewModal.avatar} alt={viewModal.name} className="w-full h-full object-cover" />
                                         ) : (
@@ -823,7 +823,7 @@ export default function StaffManager() {
                                         <span className="inline-flex items-center gap-2 px-3 py-1 bg-violet-500/5 text-violet-500 border border-violet-500/10 text-[10px] font-black uppercase tracking-widest mt-3 italic"><Shield className="w-3 h-3" />{viewModal.role}</span>
                                     </div>
                                 </div>
-                                <button onClick={() => setViewModal(null)} className="w-12 h-12 rounded-none bg-background border border-border flex items-center justify-center text-text-muted hover:text-text transition-all"><X className="w-6 h-6" /></button>
+                                <button onClick={() => setViewModal(null)} className="w-12 h-12 rounded-xl bg-background border border-border flex items-center justify-center text-text-muted hover:text-text transition-all"><X className="w-6 h-6" /></button>
                             </div>
 
                             <div className="p-10 overflow-y-auto space-y-8 flex-1 font-black">
@@ -926,7 +926,7 @@ export default function StaffManager() {
 
                             <div className="p-10 border-t border-border bg-surface-alt/5 shrink-0">
                                 <button onClick={() => { openEdit(viewModal); setViewModal(null); }}
-                                    className="w-full py-5 bg-primary text-white rounded-none font-black text-[10px] uppercase tracking-[0.3em] shadow-xl shadow-primary/20 hover:bg-primary-dark transition-all">
+                                    className="w-full py-5 bg-primary text-white rounded-xl font-black text-[10px] uppercase tracking-[0.3em] shadow-xl shadow-primary/20 hover:bg-primary-dark transition-all">
                                     Modify Profile
                                 </button>
                             </div>
@@ -941,13 +941,13 @@ export default function StaffManager() {
                     <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
                         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setDeleteConfirm(null)} className="absolute inset-0 bg-black/80 backdrop-blur-md" />
                         <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.9 }}
-                            className="bg-surface w-full max-w-xs rounded-none border border-border shadow-2xl relative p-10 text-center font-black">
-                            <div className="w-16 h-16 bg-rose-500/10 rounded-none flex items-center justify-center mx-auto mb-8 border border-rose-500/10 text-rose-500"><Trash2 className="w-8 h-8" /></div>
+                            className="bg-surface w-full max-w-xs rounded-xl border border-border shadow-2xl relative p-10 text-center font-black">
+                            <div className="w-16 h-16 bg-rose-500/10 rounded-xl flex items-center justify-center mx-auto mb-8 border border-rose-500/10 text-rose-500"><Trash2 className="w-8 h-8" /></div>
                             <h3 className="text-sm font-black text-text uppercase tracking-widest">Remove Member from Team?</h3>
                             <p className="text-[10px] text-text-muted mt-3 mb-8 uppercase font-bold tracking-widest leading-relaxed italic">Warning: This will permanently delete the member record.</p>
                             <div className="flex flex-col gap-3 font-black">
-                                <button onClick={() => handleDelete(deleteConfirm)} className="w-full py-4 bg-rose-500 text-white rounded-none text-[10px] font-black uppercase tracking-[0.2em] shadow-xl shadow-rose-500/10 hover:bg-rose-600 transition-all">Delete</button>
-                                <button onClick={() => setDeleteConfirm(null)} className="w-full py-4 bg-background border border-border rounded-none text-[10px] font-black text-text-muted uppercase tracking-[0.2em] hover:bg-surface-alt transition-all">Cancel</button>
+                                <button onClick={() => handleDelete(deleteConfirm)} className="w-full py-4 bg-rose-500 text-white rounded-xl text-[10px] font-black uppercase tracking-[0.2em] shadow-xl shadow-rose-500/10 hover:bg-rose-600 transition-all">Delete</button>
+                                <button onClick={() => setDeleteConfirm(null)} className="w-full py-4 bg-background border border-border rounded-xl text-[10px] font-black text-text-muted uppercase tracking-[0.2em] hover:bg-surface-alt transition-all">Cancel</button>
                             </div>
                         </motion.div>
                     </div>
@@ -958,7 +958,7 @@ export default function StaffManager() {
             <AnimatePresence>
                 {toast && (
                     <motion.div initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 40 }}
-                        className="fixed bottom-10 left-1/2 -translate-x-1/2 z-[200] flex items-center gap-4 px-8 py-4 bg-text border border-border rounded-none shadow-2xl">
+                        className="fixed bottom-10 left-1/2 -translate-x-1/2 z-[200] flex items-center gap-4 px-8 py-4 bg-text border border-border rounded-xl shadow-2xl">
                         <CheckCircle2 className="w-5 h-5 text-emerald-500 shrink-0" />
                         <p className="text-[10px] font-black text-background uppercase tracking-[0.2em]">{toast}</p>
                     </motion.div>

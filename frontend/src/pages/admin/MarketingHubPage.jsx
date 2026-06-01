@@ -35,7 +35,7 @@ function SectionHeader({ title, desc, icon: Icon, badge, onRefresh, iconColor = 
                 </div>
             </div>
             {onRefresh && (
-                <button onClick={onRefresh} className="flex items-center gap-1.5 px-4 py-2 rounded-full border border-border text-xs font-medium text-text-muted hover:text-primary hover:border-primary/40 transition-all">
+                <button onClick={onRefresh} className="flex items-center gap-1.5 px-4 py-2 rounded-xl border border-border text-xs font-medium text-text-muted hover:text-primary hover:border-primary/40 transition-all">
                     <RefreshCw className="w-3.5 h-3.5" /> Refresh
                 </button>
             )}
@@ -390,7 +390,7 @@ function MarketingHubContent() {
                                             <div
                                                 role="button"
                                                 onClick={() => setIsCampaignModalOpen(false)}
-                                                className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors cursor-pointer flex items-center justify-center"
+                                                className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-colors cursor-pointer flex items-center justify-center"
                                             >
                                                 <XCircle className="w-6 h-6 text-slate-400 dark:text-slate-500" />
                                             </div>

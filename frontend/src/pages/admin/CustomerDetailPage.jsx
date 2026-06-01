@@ -279,7 +279,7 @@ export default function CustomerDetailPage() {
                                 )}
                             </div>
                             {customer.isVIP && (
-                                <div className="absolute -top-1 -right-1 bg-amber-500 text-white p-1 rounded-none border border-white shadow-sm">
+                                <div className="absolute -top-1 -right-1 bg-amber-500 text-white p-1 rounded-xl border border-white shadow-sm">
                                     <Star className="w-3 h-3 fill-current" />
                                 </div>
                             )}
@@ -733,7 +733,7 @@ function ProfileMetric({ label, value, icon: Icon, color }) {
 
 function DetailRow({ label, value, icon: Icon }) {
     return (
-        <div className="flex items-start gap-3 border border-border bg-surface-alt/10 p-3.5 rounded-none text-left">
+        <div className="flex items-start gap-3 border border-border bg-surface-alt/10 p-3.5 rounded-xl text-left">
             <Icon className="w-4 h-4 text-text-muted mt-0.5 shrink-0" />
             <div className="space-y-1">
                 <span className="text-[8px] font-black text-text-muted uppercase tracking-widest block leading-none">{label}</span>

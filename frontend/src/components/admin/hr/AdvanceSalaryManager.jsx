@@ -231,7 +231,7 @@ export default function AdvanceSalaryManager() {
     };
 
     return (
-        <div className="space-y-5 text-left bg-slate-50 dark:bg-slate-900 rounded-3xl p-4 sm:p-6 border border-slate-200/60 dark:border-slate-800/80 transition-colors">
+        <div className="space-y-5 text-left bg-slate-50 dark:bg-slate-900 rounded-2xl p-4 sm:p-6 border border-slate-200/60 dark:border-slate-800/80 transition-colors">
             <style>{`
                 html:not(.dark) .advance-salary-card-wallet-icon {
                     color: #7c3aed !important;
@@ -544,7 +544,7 @@ export default function AdvanceSalaryManager() {
                                 initial={{ opacity: 0, scale: 0.95 }} 
                                 animate={{ opacity: 1, scale: 1 }} 
                                 exit={{ opacity: 0, scale: 0.95 }}
-                                className="bg-white dark:bg-slate-800 w-full max-w-lg rounded-3xl border border-slate-200 dark:border-slate-700 shadow-2xl relative flex flex-col max-h-[90vh] transition-all text-left"
+                                className="bg-white dark:bg-slate-800 w-full max-w-lg rounded-2xl border border-slate-200 dark:border-slate-700 shadow-2xl relative flex flex-col max-h-[90vh] transition-all text-left"
                                 onClick={e => e.stopPropagation()}
                             >
                                 <div className="p-6 border-b border-slate-100 dark:border-slate-700 flex items-center justify-between shrink-0 bg-white dark:bg-slate-800">

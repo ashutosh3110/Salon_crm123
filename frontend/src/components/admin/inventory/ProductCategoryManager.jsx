@@ -192,7 +192,7 @@ export default function ProductCategoryManager() {
                                                 </span>
                                                 <div className="w-full h-1.5 bg-surface-alt rounded-full overflow-hidden border border-border/50">
                                                     <div
-                                                        className="h-full bg-primary rounded-full transition-all duration-1000"
+                                                        className="h-full bg-primary rounded-xl transition-all duration-1000"
                                                         style={{ width: `${Math.min(100, (getProductCount(cat.name) / 20) * 100)}%` }}
                                                     />
                                                 </div>
@@ -255,7 +255,7 @@ export default function ProductCategoryManager() {
                                 animate={{ opacity: 1, scale: 1 }}
                                 exit={{ opacity: 0, scale: 0.95 }}
                                 onClick={(e) => e.stopPropagation()}
-                                className="w-full max-w-md bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-2xl rounded-3xl overflow-hidden relative text-left category-modal-container"
+                                className="w-full max-w-md bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-2xl rounded-2xl overflow-hidden relative text-left category-modal-container"
                             >
                                 <div 
                                     className="p-5 flex items-center justify-between rounded-t-3xl border-b category-modal-header"
@@ -501,7 +501,7 @@ export default function ProductCategoryManager() {
                                                             <div className="absolute inset-0 bg-black/40 opacity-0 group-hover/preview:opacity-100 transition-opacity flex items-center justify-center">
                                                                 <button
                                                                     onClick={() => setFormData({ ...formData, image: '' })}
-                                                                    className="p-2 bg-rose-500 rounded-full text-white shadow-xl hover:scale-110 transition-all"
+                                                                    className="p-2 bg-rose-500 rounded-xl text-white shadow-xl hover:scale-110 transition-all"
                                                                 >
                                                                     <Trash2 size={16} />
                                                                 </button>

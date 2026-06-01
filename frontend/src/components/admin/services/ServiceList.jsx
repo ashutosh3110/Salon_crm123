@@ -206,7 +206,7 @@ export default function ServiceList({ services = [], onDelete, onToggleStatus, o
             />
 
             {/* View Toggle & Count Toolbar */}
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 bg-surface p-4 rounded-3xl border border-border/40 shadow-sm">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 bg-surface p-4 rounded-2xl border border-border/40 shadow-sm">
                 <div className="flex items-center gap-2">
                     <span className="text-[10px] font-black text-text-muted uppercase tracking-widest pl-2">
                         {filteredServices.length} {filteredServices.length === 1 ? 'Service' : 'Services'} Found
@@ -241,7 +241,7 @@ export default function ServiceList({ services = [], onDelete, onToggleStatus, o
             </div>
 
             {/* Service Table / Cards Container */}
-            <div className="bg-surface rounded-3xl border border-border shadow-sm overflow-hidden min-h-[400px] flex flex-col justify-between">
+            <div className="bg-surface rounded-2xl border border-border shadow-sm overflow-hidden min-h-[400px] flex flex-col justify-between">
                 <div>
                     {viewMode === 'grid' ? (
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 p-4">
@@ -254,7 +254,7 @@ export default function ServiceList({ services = [], onDelete, onToggleStatus, o
                                 paginatedServices.map((service) => (
                                     <div
                                         key={service._id}
-                                        className={`bg-surface border transition-all duration-300 hover:shadow-xl hover:border-primary/20 rounded-3xl overflow-hidden flex flex-col justify-between group relative ${
+                                        className={`bg-surface border transition-all duration-300 hover:shadow-xl hover:border-primary/20 rounded-2xl overflow-hidden flex flex-col justify-between group relative ${
                                             selectedServiceIds.includes(service._id)
                                                 ? 'ring-2 ring-primary border-primary/20 bg-primary/[0.01]'
                                                 : 'shadow-sm border-border/70'
@@ -321,7 +321,7 @@ export default function ServiceList({ services = [], onDelete, onToggleStatus, o
                                                         <button
                                                             type="button"
                                                             onClick={() => setAssigningCategoryService(service)}
-                                                            className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-slate-50 hover:bg-primary/5 text-slate-600 hover:text-primary border-0 text-[9px] font-bold uppercase tracking-wider transition-colors"
+                                                            className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-slate-50 hover:bg-primary/5 text-slate-600 hover:text-primary border-0 text-[9px] font-bold uppercase tracking-wider transition-colors"
                                                         >
                                                             <Tag className="w-2.5 h-2.5" />
                                                             {service.category}

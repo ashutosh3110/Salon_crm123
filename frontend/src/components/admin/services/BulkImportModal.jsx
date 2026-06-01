@@ -80,11 +80,11 @@ export default function BulkImportModal({ isOpen, onClose, onRefresh, outlets = 
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6">
             <div className="absolute inset-0 bg-background/80 backdrop-blur-sm" onClick={onClose} />
             
-            <div className="relative w-full max-w-lg bg-surface border border-border rounded-none shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200">
+            <div className="relative w-full max-w-lg bg-surface border border-border rounded-xl shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200">
                 {/* Header */}
                 <div className="flex items-center justify-between p-6 border-b border-border bg-surface-hover/50">
                     <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-none bg-primary/10 flex items-center justify-center">
+                        <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
                             <Upload className="w-5 h-5 text-primary" />
                         </div>
                         <div>
@@ -92,7 +92,7 @@ export default function BulkImportModal({ isOpen, onClose, onRefresh, outlets = 
                             <p className="text-[10px] font-black text-text-muted mt-1 uppercase tracking-widest opacity-60">Upload multiple services via Excel</p>
                         </div>
                     </div>
-                    <button onClick={onClose} className="p-2 hover:bg-surface-hover transition-colors rounded-none">
+                    <button onClick={onClose} className="p-2 hover:bg-surface-hover transition-colors rounded-xl">
                         <X className="w-5 h-5 text-text-muted" />
                     </button>
                 </div>
@@ -102,7 +102,7 @@ export default function BulkImportModal({ isOpen, onClose, onRefresh, outlets = 
                         <>
                             {/* Template Download Section */}
                             <div className="p-6 border border-dashed border-border flex flex-col items-center text-center gap-4 bg-surface-hover/20">
-                                <div className="w-12 h-12 rounded-none bg-primary/5 flex items-center justify-center">
+                                <div className="w-12 h-12 rounded-xl bg-primary/5 flex items-center justify-center">
                                     <Download className="w-6 h-6 text-primary/40" />
                                 </div>
                                 <div>
@@ -179,11 +179,11 @@ export default function BulkImportModal({ isOpen, onClose, onRefresh, outlets = 
                             <div className={`p-8 border ${result.errors ? 'border-orange-500/20 bg-orange-500/5' : 'border-emerald-500/20 bg-emerald-500/5'} text-center space-y-6`}>
                                 <div className="flex justify-center">
                                     {result.errors ? (
-                                        <div className="w-16 h-16 rounded-none bg-orange-500/10 flex items-center justify-center">
+                                        <div className="w-16 h-16 rounded-xl bg-orange-500/10 flex items-center justify-center">
                                             <AlertCircle className="w-8 h-8 text-orange-500" />
                                         </div>
                                     ) : (
-                                        <div className="w-16 h-16 rounded-none bg-emerald-500/10 flex items-center justify-center">
+                                        <div className="w-16 h-16 rounded-xl bg-emerald-500/10 flex items-center justify-center">
                                             <CheckCircle2 className="w-8 h-8 text-emerald-500" />
                                         </div>
                                     )}

@@ -228,7 +228,7 @@ export default function ConsultationsPage() {
             </div>
 
             {/* Filters Section */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 bg-surface p-6 border border-border shadow-sm rounded-3xl">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 bg-surface p-6 border border-border shadow-sm rounded-2xl">
                 <div className="space-y-1 text-left">
                     <label className="text-[9px] font-black text-text-muted uppercase tracking-wider block ml-1">Filter by Outlet</label>
                     <CustomDropdown
@@ -274,7 +274,7 @@ export default function ConsultationsPage() {
             </div>
 
             {/* Consultations Table */}
-            <div className="bg-surface rounded-3xl border border-border shadow-sm overflow-hidden min-h-[500px]">
+            <div className="bg-surface rounded-2xl border border-border shadow-sm overflow-hidden min-h-[500px]">
                 {loading ? (
                     <div className="flex flex-col items-center justify-center py-20 space-y-4">
                         <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
@@ -406,7 +406,7 @@ export default function ConsultationsPage() {
             {showFormModal && createPortal(
                 <div className="admin-panel text-text">
                     <div className="fixed inset-0 z-[200] bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-300">
-                        <div className="bg-surface rounded-3xl border border-border w-full max-w-xl shadow-2xl relative flex flex-col max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+                        <div className="bg-surface rounded-2xl border border-border w-full max-w-xl shadow-2xl relative flex flex-col max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
                             <div className="p-6 border-b border-border flex justify-between items-center bg-surface sticky top-0 z-10">
                                 <h4 className="text-[11px] font-black text-text uppercase flex items-center gap-2 tracking-widest">
                                     <ClipboardList className="w-4 h-4 text-primary" />
@@ -564,7 +564,7 @@ export default function ConsultationsPage() {
             {showViewModal && viewConsultation && createPortal(
                 <div className="admin-panel text-text">
                     <div className="fixed inset-0 z-[200] bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-300">
-                        <div className="bg-surface rounded-3xl border border-border w-full max-w-2xl shadow-2xl relative flex flex-col max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+                        <div className="bg-surface rounded-2xl border border-border w-full max-w-2xl shadow-2xl relative flex flex-col max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
                             {/* Modal Header */}
                             <div className="p-6 border-b border-border flex justify-between items-center bg-surface sticky top-0 z-10">
                                 <div>

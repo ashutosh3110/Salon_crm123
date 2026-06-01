@@ -13,7 +13,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 const planColors = {
     free: 'bg-slate-100 text-slate-600 border-slate-200',
     basic: 'bg-blue-50 text-blue-600 border-blue-200',
-    pro: 'bg-primary/10 text-primary border-primary/25',
+    pro: 'bg-primary/10 text-primary border-[#B4912B]/25',
     premium: 'bg-indigo-50 text-indigo-600 border-indigo-200',
     enterprise: 'bg-amber-50 text-amber-600 border-amber-200',
 };
@@ -28,9 +28,9 @@ const STATUS_CFG = {
 /* ─── Action button ──────────────────────────────────────────────────── */
 function ActionBtn({ icon: Icon, label, onClick, variant = 'default', disabled = false }) {
     const varCls = {
-        default: 'bg-white text-text-secondary border-border hover:border-primary/30 hover:text-primary shadow-sm',
+        default: 'bg-white text-text-secondary border-border hover:border-[#B4912B]/30 hover:text-primary shadow-sm',
         danger: 'bg-white text-red-500 border-red-100 hover:bg-red-50 shadow-sm',
-        primary: 'bg-primary text-white border-primary hover:brightness-110 shadow-lg shadow-primary/20',
+        primary: 'bg-[#B4912B] text-white border-[#B4912B] hover:brightness-110 shadow-lg shadow-[#B4912B]/20',
         blue: 'bg-white text-blue-600 border-blue-100 hover:bg-blue-50 shadow-sm',
     };
     return (
@@ -151,7 +151,7 @@ export default function SATenantDetailPage() {
     if (loading) {
         return (
             <div className="flex flex-col items-center justify-center min-h-[400px] gap-4">
-                <div className="w-12 h-12 border-4 border-primary/20 border-t-primary rounded-full animate-spin" />
+                <div className="w-12 h-12 border-4 border-[#B4912B]/20 border-t-primary rounded-full animate-spin" />
                 <p className="text-xs font-black uppercase tracking-widest text-text-muted animate-pulse">Loading Salon...</p>
             </div>
         );
@@ -159,7 +159,7 @@ export default function SATenantDetailPage() {
 
     if (!selectedTenant) {
         return (
-            <div className="text-center py-20 bg-white rounded-3xl border border-border shadow-sm">
+            <div className="text-center py-20 bg-white rounded-2xl border border-border shadow-sm">
                 <AlertTriangle className="w-12 h-12 text-red-500 mx-auto mb-4" />
                 <h2 className="text-xl font-black text-text uppercase tracking-tighter">Salon not found</h2>
                 <Link to="/superadmin/tenants" className="text-primary font-black uppercase tracking-widest text-[10px] mt-6 inline-block hover:underline">Back to Salons</Link>
@@ -195,7 +195,7 @@ export default function SATenantDetailPage() {
             {/* ── Breadcrumb ── */}
             <nav className="flex items-center gap-3 text-[10px] font-black uppercase tracking-widest text-text-muted/60">
                 <Link to="/superadmin/tenants" className="hover:text-primary transition-colors flex items-center gap-1.5 group">
-                    <div className="w-5 h-5 rounded-md bg-surface border border-border flex items-center justify-center group-hover:bg-primary/10 group-hover:border-primary/20 transition-all">
+                    <div className="w-5 h-5 rounded-md bg-surface border border-border flex items-center justify-center group-hover:bg-rose-50 group-hover:border-[#B4912B]/20 transition-all">
                         <ArrowLeft className="w-3 h-3" />
                     </div>
                     Salons List
@@ -243,7 +243,7 @@ export default function SATenantDetailPage() {
                             </div>
                             <div className="flex items-center gap-2 group cursor-pointer" onClick={() => copyToClipboard(selectedTenant._id)}>
                                 <p className="text-[10px] font-bold text-text-muted/60 tracking-wider">ID: {selectedTenant._id}</p>
-                                <Copy className="w-3 h-3 text-text-muted/40 group-hover:text-primary transition-colors" />
+                                <Copy className="w-3 h-3 text-text-muted/40 group-hover:text-blue-500 transition-colors" />
                             </div>
                         </div>
 
@@ -292,7 +292,7 @@ export default function SATenantDetailPage() {
                                 {isActive && (
                                     <motion.div 
                                         layoutId="activeTab"
-                                        className="absolute inset-0 bg-primary shadow-lg shadow-primary/20 rounded-xl"
+                                        className="absolute inset-0 bg-primary shadow-lg shadow-[#B4912B]/20 rounded-xl"
                                         transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
                                     />
                                 )}
@@ -313,7 +313,7 @@ export default function SATenantDetailPage() {
                     >
                         {tab === 'info' && (
                             <div className="grid md:grid-cols-3 gap-6">
-                                <div className="md:col-span-2 bg-white rounded-3xl border border-border shadow-sm p-8 space-y-8">
+                                <div className="md:col-span-2 bg-white rounded-2xl border border-border shadow-sm p-8 space-y-8">
                                     <div className="flex items-center gap-3 mb-2">
                                         <div className="w-1.5 h-6 bg-primary rounded-full" />
                                         <h3 className="font-black text-text text-lg uppercase tracking-tight">Salon Information</h3>
@@ -338,7 +338,7 @@ export default function SATenantDetailPage() {
                                         ))}
                                     </div>
                                 </div>
-                                <div className="bg-gradient-to-br from-slate-900 to-slate-800 rounded-3xl p-8 text-white shadow-2xl shadow-slate-900/20 relative overflow-hidden">
+                                <div className="bg-gradient-to-br from-slate-900 to-slate-800 rounded-2xl p-8 text-white shadow-2xl shadow-slate-900/20 relative overflow-hidden">
                                     <div className="absolute top-[-10%] right-[-10%] w-32 h-32 bg-white/5 blur-3xl rounded-full" />
                                     <div className="relative z-10 space-y-8">
                                         <div className="space-y-1">
@@ -365,7 +365,7 @@ export default function SATenantDetailPage() {
                         )}
 
                         {tab === 'plan' && (
-                            <div className="bg-white rounded-3xl border border-border shadow-sm p-8 space-y-8">
+                            <div className="bg-white rounded-2xl border border-border shadow-sm p-8 space-y-8">
                                 <div className="flex items-center gap-3 mb-2">
                                     <div className="w-1.5 h-6 bg-indigo-500 rounded-full" />
                                     <h3 className="font-black text-text text-lg uppercase tracking-tight">Subscription Profile</h3>
@@ -379,18 +379,18 @@ export default function SATenantDetailPage() {
                                     </div>
                                 ) : (
                                     <div className="grid md:grid-cols-3 gap-6">
-                                        <div className="p-8 rounded-3xl bg-indigo-50 border border-indigo-100 space-y-4">
+                                        <div className="p-8 rounded-2xl bg-indigo-50 border border-indigo-100 space-y-4">
                                             <p className="text-[10px] font-black text-indigo-400 uppercase tracking-widest">Active Plan</p>
                                             <div className="space-y-1">
                                                 <h4 className="text-3xl font-black text-indigo-700 uppercase tracking-tight">{selectedTenant.subscriptionPlan}</h4>
                                                 <p className="text-[10px] font-bold text-indigo-500 uppercase tracking-widest">Premium Features Enabled</p>
                                             </div>
                                         </div>
-                                        <div className="p-8 rounded-3xl bg-white border border-border space-y-4 shadow-sm hover:shadow-md transition-shadow">
+                                        <div className="p-8 rounded-2xl bg-white border border-border space-y-4 shadow-sm hover:shadow-md transition-shadow">
                                             <p className="text-[10px] font-black text-text-muted uppercase tracking-widest">Billing Period</p>
                                             <div className="flex items-center gap-4">
                                                 <div className="w-12 h-12 rounded-2xl bg-surface border border-border flex items-center justify-center">
-                                                    <Clock className="w-6 h-6 text-primary" />
+                                                    <Clock className="w-6 h-6 text-emerald-500" />
                                                 </div>
                                                 <div>
                                                     <p className="text-xs font-black uppercase tracking-widest">Activation</p>
@@ -398,7 +398,7 @@ export default function SATenantDetailPage() {
                                                 </div>
                                             </div>
                                         </div>
-                                        <div className="p-8 rounded-3xl bg-white border border-border space-y-4 shadow-sm hover:shadow-md transition-shadow">
+                                        <div className="p-8 rounded-2xl bg-white border border-border space-y-4 shadow-sm hover:shadow-md transition-shadow">
                                             <p className="text-[10px] font-black text-text-muted uppercase tracking-widest">Renewal Date</p>
                                             <div className="flex items-center gap-4">
                                                 <div className="w-12 h-12 rounded-2xl bg-surface border border-border flex items-center justify-center">
@@ -434,7 +434,7 @@ export default function SATenantDetailPage() {
                                                 </h3>
                                             </div>
                                             <div className="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center">
-                                                <Sparkles className="w-5 h-5 text-primary" />
+                                                <Sparkles className="w-5 h-5 text-indigo-500" />
                                             </div>
                                         </div>
                                         
@@ -479,7 +479,7 @@ export default function SATenantDetailPage() {
                                                 type="number" 
                                                 id="sa-credits-input"
                                                 placeholder="e.g. +1000 or -500"
-                                                className="w-full h-16 px-6 rounded-2xl border border-border bg-surface text-lg font-black outline-none focus:border-primary focus:ring-4 focus:ring-primary/5 transition-all"
+                                                className="w-full h-16 px-6 rounded-2xl border border-border bg-surface text-lg font-black outline-none focus:border-[#B4912B] focus:ring-4 focus:ring-primary/5 transition-all"
                                             />
                                         </div>
                                         <motion.button 
@@ -500,7 +500,7 @@ export default function SATenantDetailPage() {
                                                     showToast('Update failed', 'error');
                                                 }
                                             }}
-                                            className="h-16 px-10 bg-text text-white text-[11px] font-black uppercase tracking-[0.2em] rounded-2xl hover:bg-primary transition-all shadow-xl shadow-primary/20 whitespace-nowrap"
+                                            className="h-16 px-10 bg-[#B4912B] text-white text-[11px] font-black uppercase tracking-[0.2em] rounded-2xl hover:bg-[#8B6F23] transition-all shadow-xl shadow-[#B4912B]/20 whitespace-nowrap"
                                         >
                                             Sync Balance
                                         </motion.button>
@@ -520,13 +520,13 @@ export default function SATenantDetailPage() {
                         )}
 
                         {tab === 'fiscal' && (
-                            <div className="bg-white rounded-3xl border border-border shadow-sm p-10 space-y-10">
+                            <div className="bg-white rounded-2xl border border-border shadow-sm p-10 space-y-10">
                                 <div className="flex items-center justify-between border-b border-border pb-4">
                                     <div className="flex items-center gap-3">
                                         <div className="w-1.5 h-6 bg-emerald-500 rounded-full" />
                                         <h3 className="font-black text-text text-lg uppercase tracking-tight">Fiscal Compliance</h3>
                                     </div>
-                                    <div className="flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-50 border border-emerald-100">
+                                    <div className="flex items-center gap-2 px-4 py-1.5 rounded-xl bg-emerald-50 border border-emerald-100">
                                         <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
                                         <span className="text-[9px] font-black uppercase text-emerald-600 tracking-widest">Active GST Engine</span>
                                     </div>
@@ -543,7 +543,7 @@ export default function SATenantDetailPage() {
                                                 const s = states.find((st) => st.name === e.target.value);
                                                 if (s) setFiscalForm({ ...fiscalForm, state: s.name, stateCode: s.code });
                                             }}
-                                            className="w-full h-14 px-5 rounded-2xl border border-border text-sm font-bold focus:border-primary focus:ring-4 focus:ring-primary/5 outline-none transition-all bg-surface/50 appearance-none"
+                                            className="w-full h-14 px-5 rounded-2xl border border-border text-sm font-bold focus:border-[#B4912B] focus:ring-4 focus:ring-primary/5 outline-none transition-all bg-surface/50 appearance-none"
                                         >
                                             {states.map((s) => (
                                                 <option key={s.code} value={s.name}>
@@ -572,7 +572,7 @@ export default function SATenantDetailPage() {
                                                 type="number"
                                                 value={fiscalForm.serviceGst}
                                                 onChange={(e) => setFiscalForm({ ...fiscalForm, serviceGst: Number(e.target.value) })}
-                                                className="w-full h-14 px-5 rounded-2xl border border-border text-sm font-black focus:border-primary focus:ring-4 focus:ring-primary/5 outline-none transition-all bg-surface/50"
+                                                className="w-full h-14 px-5 rounded-2xl border border-border text-sm font-black focus:border-[#B4912B] focus:ring-4 focus:ring-primary/5 outline-none transition-all bg-surface/50"
                                             />
                                             <span className="absolute right-5 top-1/2 -translate-y-1/2 font-black text-text-muted">%</span>
                                         </div>
@@ -588,7 +588,7 @@ export default function SATenantDetailPage() {
                                                 type="number"
                                                 value={fiscalForm.productGst}
                                                 onChange={(e) => setFiscalForm({ ...fiscalForm, productGst: Number(e.target.value) })}
-                                                className="w-full h-14 px-5 rounded-2xl border border-border text-sm font-black focus:border-primary focus:ring-4 focus:ring-primary/5 outline-none transition-all bg-surface/50"
+                                                className="w-full h-14 px-5 rounded-2xl border border-border text-sm font-black focus:border-[#B4912B] focus:ring-4 focus:ring-primary/5 outline-none transition-all bg-surface/50"
                                             />
                                             <span className="absolute right-5 top-1/2 -translate-y-1/2 font-black text-text-muted">%</span>
                                         </div>
@@ -601,7 +601,7 @@ export default function SATenantDetailPage() {
                                         whileTap={{ scale: 0.98 }}
                                         onClick={handleUpdateFiscal}
                                         disabled={isSaving}
-                                        className="flex items-center justify-center gap-3 w-full sm:w-auto px-10 py-4 bg-text text-white text-[11px] font-black uppercase tracking-[0.3em] rounded-2xl hover:bg-primary transition-all shadow-xl shadow-primary/10 disabled:opacity-50"
+                                        className="flex items-center justify-center gap-3 w-full sm:w-auto px-10 py-4 bg-[#B4912B] text-white text-[11px] font-black uppercase tracking-[0.3em] rounded-2xl hover:bg-[#8B6F23] transition-all shadow-xl shadow-[#B4912B]/20 disabled:opacity-50"
                                     >
                                         {isSaving ? (
                                             <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin" />

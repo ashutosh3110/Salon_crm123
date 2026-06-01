@@ -503,7 +503,7 @@ export default function PromotionsPage() {
                                 </h2>
                                 <p className="text-[9px] font-bold text-text-muted uppercase tracking-widest mt-1">Send "{sharingPromo.name}" on WhatsApp</p>
                             </div>
-                            <button type="button" onClick={() => setShareModalOpen(false)} className="p-2 rounded-full hover:bg-surface text-text-muted hover:text-rose-500 transition-all">
+                            <button type="button" onClick={() => setShareModalOpen(false)} className="p-2 rounded-xl hover:bg-surface text-text-muted hover:text-rose-500 transition-all">
                                 <X className="w-5 h-5" />
                             </button>
                         </div>

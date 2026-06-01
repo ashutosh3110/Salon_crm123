@@ -289,7 +289,7 @@ function AdjustmentForm({ onCancel, onSuccess, products, outlets, updateStock })
 
     return (
         <div className="p-10 max-w-2xl mx-auto animate-slideUp">
-            <div className="space-y-8 bg-surface/20 p-8 rounded-3xl border border-border/50">
+            <div className="space-y-8 bg-surface/20 p-8 rounded-2xl border border-border/50">
                 <div className="space-y-1">
                     <div className="flex items-center gap-2 text-rose-600 mb-2">
                         <AlertOctagon className="w-5 h-5" />

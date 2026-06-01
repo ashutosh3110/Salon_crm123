@@ -214,7 +214,7 @@ export default function AddProductForm({ onSave, initialData, onCancel }) {
             </div>
 
             {/* Header */}
-            <div className="bg-surface p-6 rounded-3xl border border-border shadow-sm mb-6 flex items-center justify-between gap-4 flex-wrap">
+            <div className="bg-surface p-6 rounded-2xl border border-border shadow-sm mb-6 flex items-center justify-between gap-4 flex-wrap">
                 <div className="flex items-center gap-4 min-w-0">
                     <div className="p-3 rounded-2xl bg-primary/10 text-primary border border-primary/20 shrink-0">
                         <FileText className="w-6 h-6" />
@@ -708,7 +708,7 @@ export default function AddProductForm({ onSave, initialData, onCancel }) {
                                                 const newImgs = formData.images.filter((_, i) => i !== idx);
                                                 setFormData({ ...formData, images: newImgs });
                                             }}
-                                            className="p-2 bg-rose-500 text-white rounded-full hover:scale-110 transition-all"
+                                            className="p-2 bg-rose-500 text-white rounded-xl hover:scale-110 transition-all"
                                         >
                                             <X className="w-4 h-4" />
                                         </button>
@@ -774,7 +774,7 @@ export default function AddProductForm({ onSave, initialData, onCancel }) {
             </div>
 
             {/* 9. Status & 10. Actions */}
-            <div className="mt-8 flex flex-col sm:flex-row sm:items-center justify-end gap-6 p-6 bg-surface-alt rounded-3xl border border-border text-left">
+            <div className="mt-8 flex flex-col sm:flex-row sm:items-center justify-end gap-6 p-6 bg-surface-alt rounded-2xl border border-border text-left">
                 <div className="flex items-center gap-3">
                     <button
                         type="button"

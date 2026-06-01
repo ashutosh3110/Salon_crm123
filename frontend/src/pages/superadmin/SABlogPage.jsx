@@ -165,7 +165,7 @@ export default function SABlogPage() {
                         initial={{ opacity: 0, x: 50 }}
                         animate={{ opacity: 1, x: 0 }}
                         exit={{ opacity: 0, x: 50 }}
-                        className="fixed top-20 right-8 bg-black text-white px-8 py-4 shadow-2xl z-[100] flex items-center gap-4 border-l-4 border-primary"
+                        className="fixed top-20 right-8 bg-[#B4912B] text-white px-8 py-4 shadow-2xl shadow-[#B4912B]/20 z-[100] flex items-center gap-4 border-l-4 border-white/20 hover:bg-[#8B6F23]"
                     >
                         <CheckCircle2 size={18} className="text-primary" />
                         <span className="text-[10px] font-black uppercase tracking-[0.2em]">{toast}</span>
@@ -191,7 +191,7 @@ export default function SABlogPage() {
                     </div>
                     <button
                         onClick={() => openEditor(null)}
-                        className="px-8 py-4 bg-black text-white text-[10px] font-black uppercase tracking-[0.3em] hover:bg-primary transition-all flex items-center gap-3 regular-radius shadow-2xl shadow-black/10 active:scale-[0.98]"
+                        className="px-8 py-4 bg-[#B4912B] text-white text-[10px] font-black uppercase tracking-[0.3em] hover:bg-[#8B6F23] transition-all flex items-center gap-3 regular-radius shadow-2xl shadow-[#B4912B]/20 active:scale-[0.98]"
                     >
                         <Plus size={16} /> Create New Article
                     </button>
@@ -212,13 +212,13 @@ export default function SABlogPage() {
                         className="flex-1 bg-white border border-border px-6 py-4.5 text-xs font-bold uppercase tracking-widest outline-none regular-radius focus:ring-1 ring-primary/20 transition-all shadow-sm"
                     />
                 </div>
-                <div className="flex bg-white p-2 border border-border regular-radius shadow-sm">
+                <div className="flex bg-white p-1.5 border border-border rounded-full shadow-sm">
                     {['all', 'published', 'draft'].map((f) => (
                         <button
                             key={f}
                             onClick={() => setFilter(f)}
-                            className={`px-6 py-3 text-[9px] font-black uppercase tracking-[0.2em] transition-all regular-radius
-                                ${filter === f ? 'bg-black text-white shadow-lg' : 'bg-transparent text-text-muted hover:text-text'}
+                            className={`px-5 py-2.5 text-[9px] font-black uppercase tracking-[0.2em] transition-all rounded-full
+                                ${filter === f ? '!bg-[#B4912B] !text-white shadow-md' : 'bg-transparent text-text-muted hover:text-text hover:bg-slate-50'}
                             `}
                         >
                             {f === 'all' ? 'All Articles' : f}
@@ -244,7 +244,7 @@ export default function SABlogPage() {
                         <motion.div
                             layout
                             key={post._id}
-                            className="group bg-white border border-border regular-radius overflow-hidden flex flex-col h-full hover:shadow-2xl transition-all duration-700"
+                            className="group bg-white border border-border rounded-3xl overflow-hidden flex flex-col h-full hover:shadow-2xl transition-all duration-700"
                         >
                         {/* Preview Asset */}
                         <div className="relative h-64 overflow-hidden bg-black">
@@ -262,11 +262,11 @@ export default function SABlogPage() {
                             </div>
 
                             {/* Hover Actions */}
-                            <div className="absolute inset-x-0 bottom-0 p-6 bg-gradient-to-t from-black to-transparent translate-y-full group-hover:translate-y-0 transition-all duration-500">
+                            <div className="absolute inset-x-0 bottom-0 p-6 bg-gradient-to-t from-black/80 to-transparent transition-all duration-500">
                                 <div className="flex gap-3">
                                     <button
                                         onClick={() => openEditor(post)}
-                                        className="flex-1 bg-white text-black py-3 text-[10px] font-black uppercase tracking-[0.2em] hover:bg-primary transition-all flex items-center justify-center gap-2 regular-radius shadow-xl"
+                                        className="flex-1 bg-white text-black py-3 text-[10px] font-black uppercase tracking-[0.2em] hover:!bg-primary hover:!text-white transition-all flex items-center justify-center gap-2 regular-radius shadow-xl"
                                     >
                                         <Edit2 size={12} /> Edit
                                     </button>
@@ -322,13 +322,13 @@ export default function SABlogPage() {
                             animate={{ opacity: 1, scale: 1, y: 0 }} 
                             exit={{ opacity: 0, scale: 0.96, y: 30 }} 
                             transition={{ type: "spring", duration: 0.5 }}
-                            className="relative bg-surface w-full max-w-3xl h-[92vh] overflow-hidden flex flex-col shadow-2xl rounded-3xl border border-border"
+                            className="relative bg-surface w-full max-w-3xl h-[92vh] overflow-hidden flex flex-col shadow-2xl rounded-2xl border border-border"
                         >
 
                             {/* Modal Header */}
                             <div className="flex items-center justify-between px-8 py-6 border-b border-border bg-white shadow-sm">
                                 <div className="flex items-center gap-3">
-                                    <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center shadow-inner">
+                                    <div className="w-10 h-10 rounded-xl bg-rose-50 text-primary flex items-center justify-center shadow-inner">
                                         <Sparkles className="w-5 h-5" />
                                     </div>
                                     <div>
@@ -360,13 +360,13 @@ export default function SABlogPage() {
                                     {/* Headline Card */}
                                     <div className="bg-white border border-border p-6 rounded-2xl shadow-sm space-y-3">
                                         <label className="text-[10px] font-black text-text-muted uppercase tracking-widest flex items-center gap-1.5">
-                                            <Megaphone className="w-3.5 h-3.5 text-primary" /> Article Headline
+                                            <Megaphone className="w-3.5 h-3.5 text-blue-500" /> Article Headline
                                         </label>
                                         <input
                                             required 
                                             name="title"
                                             defaultValue={editingPost?.title}
-                                            className="w-full bg-slate-50/50 border border-border rounded-xl px-4 py-3.5 text-lg font-bold text-text placeholder:text-text-muted/40 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                                            className="w-full bg-slate-50/50 border border-border rounded-xl px-4 py-3.5 text-lg font-bold text-text placeholder:text-text-muted/40 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-[#B4912B] transition-all"
                                             placeholder="Write a compelling headline..."
                                         />
                                     </div>
@@ -374,11 +374,11 @@ export default function SABlogPage() {
                                     {/* Cover Media Card */}
                                     <div className="bg-white border border-border p-6 rounded-2xl shadow-sm space-y-3">
                                         <label className="text-[10px] font-black text-text-muted uppercase tracking-widest flex items-center gap-1.5">
-                                            <ImageIcon className="w-3.5 h-3.5 text-primary" /> Cover Media Asset
+                                            <ImageIcon className="w-3.5 h-3.5 text-emerald-500" /> Cover Media Asset
                                         </label>
                                         <div 
                                             onClick={() => fileInputRef.current?.click()}
-                                            className="relative group aspect-video bg-slate-50 border-2 border-dashed border-border hover:border-primary/55 rounded-2xl flex flex-col items-center justify-center overflow-hidden cursor-pointer transition-all hover:bg-slate-100/50"
+                                            className="relative group aspect-video bg-slate-50 border-2 border-dashed border-border hover:border-[#B4912B]/55 rounded-2xl flex flex-col items-center justify-center overflow-hidden cursor-pointer transition-all hover:bg-slate-100/50"
                                         >
                                             <input 
                                                 type="file" 
@@ -418,7 +418,7 @@ export default function SABlogPage() {
                                     <div className="bg-white border border-border p-6 rounded-2xl shadow-sm space-y-3">
                                         <div className="flex justify-between items-center">
                                             <label className="text-[10px] font-black text-text-muted uppercase tracking-widest flex items-center gap-1.5">
-                                                <FileText className="w-3.5 h-3.5 text-primary" /> Story Intel
+                                                <FileText className="w-3.5 h-3.5 text-indigo-500" /> Story Intel
                                             </label>
                                             <div className="flex items-center gap-2 text-[9px] text-text-muted font-bold uppercase tracking-wider">
                                                 <span>Words: <strong className="text-text">{wordCount}</strong></span>
@@ -431,7 +431,7 @@ export default function SABlogPage() {
                                             defaultValue={editingPost?.content}
                                             onChange={handleContentChange}
                                             required
-                                            className="w-full bg-slate-50/50 border border-border rounded-xl p-4 text-sm leading-relaxed text-text placeholder:text-text-muted/40 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all min-h-[180px] font-medium"
+                                            className="w-full bg-slate-50/50 border border-border rounded-xl p-4 text-sm leading-relaxed text-text placeholder:text-text-muted/40 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-[#B4912B] transition-all min-h-[180px] font-medium"
                                             placeholder="Write your article narrative here..."
                                         />
                                     </div>
@@ -449,7 +449,7 @@ export default function SABlogPage() {
                                         <button 
                                             type="submit" 
                                             disabled={uploading}
-                                            className="py-4 bg-black text-white text-[10px] font-black uppercase tracking-[0.2em] hover:bg-primary active:scale-[0.98] transition-all shadow-xl shadow-primary/10 flex items-center justify-center gap-2.5 group disabled:opacity-50 rounded-xl"
+                                            className="py-4 bg-[#B4912B] text-white text-[10px] font-black uppercase tracking-[0.2em] hover:bg-[#8B6F23] active:scale-[0.98] transition-all shadow-xl shadow-[#B4912B]/20 flex items-center justify-center gap-2.5 group disabled:opacity-50 rounded-xl"
                                         >
                                             {uploading ? <Loader2 size={14} className="animate-spin" /> : <Globe size={14} />}
                                             {uploading ? 'PUBLISHING...' : 'Publish Article'}

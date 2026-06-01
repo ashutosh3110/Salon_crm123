@@ -47,9 +47,9 @@ export default function HRPage({ tab = 'attendance' }) {
                         <Skeleton variant="card" />
                         <Skeleton variant="card" />
                     </div>
-                    <div className="bg-surface p-8 rounded-none border border-border shadow-sm space-y-6">
-                        <Skeleton className="h-12 w-full rounded-none" />
-                        <Skeleton className="h-80 w-full rounded-none" />
+                    <div className="bg-surface p-8 rounded-xl border border-border shadow-sm space-y-6">
+                        <Skeleton className="h-12 w-full rounded-xl" />
+                        <Skeleton className="h-80 w-full rounded-xl" />
                     </div>
                 </div>
             );

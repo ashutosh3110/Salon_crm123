@@ -353,7 +353,7 @@ export default function DashboardPage() {
                                     <span className="text-2xl font-black text-slate-800 dark:text-slate-100">
                                         ₹{totalPeriodRevenue.toLocaleString('en-IN')}
                                     </span>
-                                    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#ECFDF5] dark:bg-[#059669]/10 text-[#059669] dark:text-[#34D399]">
+                                    <span className="inline-flex items-center px-2 py-0.5 rounded-xl text-[10px] font-bold bg-[#ECFDF5] dark:bg-[#059669]/10 text-[#059669] dark:text-[#34D399]">
                                         {periodPctText}
                                     </span>
                                 </div>

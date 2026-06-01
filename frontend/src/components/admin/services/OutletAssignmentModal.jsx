@@ -34,7 +34,7 @@ export default function OutletAssignmentModal({ isOpen, onClose, onSave, service
 
     return (
         <div className="fixed inset-0 z-[100] flex items-end justify-center bg-black/60 backdrop-blur-sm animate-in fade-in duration-300">
-            <div className="bg-surface w-full max-w-md rounded-t-[32px] sm:rounded-3xl sm:mb-8 shadow-2xl border border-border overflow-hidden animate-in slide-in-from-bottom duration-300">
+            <div className="bg-surface w-full max-w-md rounded-t-[32px] sm:rounded-2xl sm:mb-8 shadow-2xl border border-border overflow-hidden animate-in slide-in-from-bottom duration-300">
                 {/* Drag Handle for Mobile */}
                 <div className="flex justify-center pt-3 pb-1 sm:hidden">
                     <div className="w-12 h-1.5 bg-slate-200 rounded-full" />
@@ -94,7 +94,7 @@ export default function OutletAssignmentModal({ isOpen, onClose, onSave, service
                                     </div>
                                     <span className={`text-sm font-bold ${selectedOutletIds.includes(outlet._id) ? 'text-primary' : 'text-text'}`}>{outlet.name}</span>
                                 </div>
-                                <span className="text-[10px] font-bold text-text-muted bg-surface px-2 py-0.5 rounded-full border border-border">{outlet.location?.city || 'Default'}</span>
+                                <span className="text-[10px] font-bold text-text-muted bg-surface px-2 py-0.5 rounded-xl border border-border">{outlet.location?.city || 'Default'}</span>
                             </button>
                         ))}
                     </div>

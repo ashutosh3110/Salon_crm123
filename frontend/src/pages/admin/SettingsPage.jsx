@@ -3,7 +3,7 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
 import { useAuth } from '../../contexts/AuthContext';
 import { useBusiness } from '../../contexts/BusinessContext';
-import { Camera, Upload, User as UserIcon, FileText, Plus, X, GripVertical, ChevronUp, ChevronDown, Share2, Copy, ExternalLink, Link as LinkIcon, Download, MapPin, ClipboardList, UserCheck, CalendarDays, MessageSquare, QrCode, ArrowRight, Info, Pencil, Trash2, Save, Eye, Lightbulb, ShieldCheck } from 'lucide-react';
+import { Camera, Upload, User as UserIcon, FileText, Plus, X, GripVertical, ChevronUp, ChevronDown, Share2, Copy, ExternalLink, Link as LinkIcon, Download, MapPin, ClipboardList, UserCheck, CalendarDays, MessageSquare, QrCode, ArrowRight, Info, Pencil, Trash2, Save, Eye, Lightbulb, ShieldCheck, CheckCircle2, Lock, Headset, Building2, Gift, Check, Mail, Phone } from 'lucide-react';
 import PasswordField from '../../components/common/PasswordField';
 import { getImageUrl } from '../../utils/imageUtils';
 import { useRef } from 'react';
@@ -326,45 +326,57 @@ export default function SettingsPage({ section: propSection }) {
             <div className="bg-surface rounded-2xl border border-border overflow-hidden shadow-sm transition-all">
                 <div className="p-4">
                     {activeTab === 'profile' && (
-                        <div className="space-y-3 text-left">
-                            <div>
-                                <h2 className="text-sm font-bold text-text tracking-tight">Profile</h2>
-                                <p className="text-[10px] text-text-muted font-medium mt-0.5">Your login identity (saved on the server).</p>
+                        <div className="text-left flex flex-col">
+                            {/* Header */}
+                            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between pb-6 border-b border-gray-100 gap-4 pt-2">
+                                <div className="flex items-center gap-4">
+                                    <div className="w-12 h-12 rounded-2xl bg-[#FFF9F0] flex items-center justify-center shrink-0">
+                                        <Camera className="w-6 h-6 text-[#D99A29]" />
+                                    </div>
+                                    <div>
+                                        <h2 className="text-[17px] font-bold text-gray-900 tracking-tight">Profile</h2>
+                                        <p className="text-[13px] text-gray-500 font-medium mt-0.5">
+                                            Your login identity (saved on the server).
+                                        </p>
+                                    </div>
+                                </div>
+                                <div className="flex items-center gap-2 px-3 py-1.5 bg-[#ECFDF3] border border-[#D1FADF] rounded-xl text-[#027A48]">
+                                    <CheckCircle2 className="w-3.5 h-3.5" />
+                                    <span className="text-[11px] font-bold">Profile is up to date</span>
+                                </div>
                             </div>
 
-                            <div className="flex flex-col sm:flex-row items-center sm:items-start gap-3 p-3 rounded-xl bg-surface-alt/10 border border-border text-center sm:text-left">
-                                <div
-                                    onClick={handleAvatarClick}
-                                    className={`w-12 h-12 rounded-xl bg-primary/5 flex items-center justify-center text-base font-bold text-primary border border-primary/20 shadow-sm relative overflow-hidden group cursor-pointer hover:border-primary transition-all flex-shrink-0 ${isUploading ? 'animate-pulse' : ''}`}
-                                >
-                                    {user?.avatar ? (
-                                        <img
-                                            src={getImageUrl(user.avatar)}
-                                            alt={user.name}
-                                            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                                        />
-                                    ) : (
-                                        <span className="relative z-10 group-hover:scale-110 transition-transform duration-300">
-                                            {user?.name
-                                                ?.split(' ')
-                                                .map((n) => n[0])
-                                                .join('')
-                                                .toUpperCase()
-                                                .slice(0, 2) || 'U'}
-                                        </span>
-                                    )}
-
-                                    <div className="absolute inset-0 bg-black/40 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                                        <Camera className="w-5 h-5 text-white mb-0.5" />
-                                        <span className="text-[7px] text-white font-black uppercase tracking-widest">Change</span>
+                            {/* Profile Picture & Badges */}
+                            <div className="py-6 flex flex-col sm:flex-row items-center sm:items-start gap-6 border-b border-gray-100 pb-8 mb-8">
+                                <div className="relative">
+                                    <div
+                                        onClick={handleAvatarClick}
+                                        className={`w-20 h-20 rounded-2xl bg-gray-50 border border-gray-200 overflow-hidden cursor-pointer relative group ${isUploading ? 'opacity-50' : ''}`}
+                                    >
+                                        {user?.avatar ? (
+                                            <img
+                                                src={getImageUrl(user.avatar)}
+                                                alt={user.name}
+                                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                                            />
+                                        ) : (
+                                            <div className="w-full h-full flex flex-col items-center justify-center text-gray-400">
+                                                <Camera className="w-6 h-6 mb-1" />
+                                            </div>
+                                        )}
+                                        {isUploading && (
+                                            <div className="absolute inset-0 bg-white/50 flex items-center justify-center">
+                                                <div className="w-6 h-6 border-2 border-[#D99A29]/20 border-t-[#D99A29] rounded-full animate-spin" />
+                                            </div>
+                                        )}
                                     </div>
-
-                                    {isUploading && (
-                                        <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
-                                            <div className="w-5 h-5 border-2 border-white/20 border-t-white rounded-full animate-spin" />
-                                        </div>
-                                    )}
-
+                                    {/* Overlay Camera Button */}
+                                    <button
+                                        onClick={handleAvatarClick}
+                                        className="absolute -bottom-2 -right-2 w-8 h-8 bg-white border border-gray-200 rounded-lg flex items-center justify-center shadow-sm hover:bg-gray-50 transition-colors z-10"
+                                    >
+                                        <Camera className="w-3.5 h-3.5 text-gray-600" />
+                                    </button>
                                     <input
                                         type="file"
                                         ref={fileInputRef}
@@ -373,58 +385,110 @@ export default function SettingsPage({ section: propSection }) {
                                         accept="image/*"
                                     />
                                 </div>
-                                <div className="space-y-0.5 w-full flex flex-col items-center sm:items-start justify-center h-12">
-                                    <h3 className="font-bold text-sm text-text leading-tight tracking-tight">{user?.name || '—'}</h3>
-                                    <div className="flex flex-col sm:flex-row items-center gap-2">
-                                        <p className="text-[10px] font-bold text-primary uppercase tracking-wider inline-flex items-center px-2 py-0.5 rounded-full bg-primary/10 border border-primary/20">
+
+                                <div className="flex flex-col justify-center h-20">
+                                    <h3 className="font-bold text-xl text-gray-900 leading-tight tracking-tight mb-2">{user?.name || '—'}</h3>
+                                    <div className="flex flex-wrap items-center gap-3">
+                                        <div className="px-3 py-1 bg-[#FFF9F0] rounded-xl text-[10px] font-bold text-[#D99A29] uppercase tracking-widest flex items-center justify-center">
                                             {user?.role || 'ADMIN'}
-                                        </p>
-                                        <p className="text-[9px] font-bold text-text-muted uppercase tracking-widest px-2 py-0.5 bg-surface border border-border rounded-full break-all">
+                                        </div>
+                                        <div className="px-3 py-1 bg-white border border-gray-200 rounded-xl flex items-center gap-1.5 text-[10px] font-bold text-gray-600 uppercase tracking-widest">
+                                            <Mail className="w-3 h-3 text-gray-400" />
                                             {user?.email}
-                                        </p>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
 
-                            <form onSubmit={handleProfileSubmit} className="space-y-3 pt-1">
-                                <div className="grid sm:grid-cols-2 gap-3">
-                                    <div className="space-y-1 text-left">
-                                        <label className="text-[11px] font-semibold text-text-muted pl-1">Full Name</label>
-                                        <input
-                                            type="text"
-                                            value={profileForm.name}
-                                            onChange={(e) => setProfileForm({ ...profileForm, name: e.target.value })}
-                                            className="w-full px-3 py-2 rounded-full border border-border text-xs font-semibold focus:border-primary outline-none transition-all bg-surface hover:border-primary/40 focus:ring-4 focus:ring-primary/5"
-                                        />
+                            <form onSubmit={handleProfileSubmit} className="flex flex-col">
+                                <div className="grid sm:grid-cols-2 gap-4 mb-4">
+                                    <div className="space-y-2">
+                                        <div className="flex items-center gap-2">
+                                            <label className="text-[11px] font-bold text-gray-700 uppercase tracking-widest block">
+                                                Full Name
+                                            </label>
+                                            <Info className="w-3 h-3 text-gray-400" />
+                                        </div>
+                                        <div className="relative">
+                                            <div className="absolute inset-y-0 left-0 pl-1.5 flex items-center pointer-events-none">
+                                                <div className="w-7 h-7 rounded-full bg-blue-100 flex items-center justify-center">
+                                                    <UserIcon className="w-4 h-4 text-blue-700" />
+                                                </div>
+                                            </div>
+                                            <input
+                                                type="text"
+                                                value={profileForm.name}
+                                                onChange={(e) => setProfileForm({ ...profileForm, name: e.target.value })}
+                                                className="w-full pl-12 pr-4 py-2.5 rounded-xl border border-gray-200 text-sm font-medium text-gray-900 focus:border-primary outline-none transition-all bg-white shadow-sm"
+                                            />
+                                        </div>
                                     </div>
-                                    <div className="space-y-1 text-left">
-                                        <label className="text-[11px] font-semibold text-text-muted pl-1">Email</label>
-                                        <input
-                                            type="email"
-                                            value={profileForm.email}
-                                            onChange={(e) => setProfileForm({ ...profileForm, email: e.target.value })}
-                                            className="w-full px-3 py-2 rounded-full border border-border text-xs font-semibold focus:border-primary outline-none transition-all bg-surface hover:border-primary/40 focus:ring-4 focus:ring-primary/5"
-                                        />
+                                    <div className="space-y-2">
+                                        <div className="flex items-center gap-2">
+                                            <label className="text-[11px] font-bold text-gray-700 uppercase tracking-widest block">
+                                                Email
+                                            </label>
+                                            <Info className="w-3 h-3 text-gray-400" />
+                                        </div>
+                                        <div className="relative">
+                                            <div className="absolute inset-y-0 left-0 pl-1.5 flex items-center pointer-events-none">
+                                                <div className="w-7 h-7 rounded-full bg-purple-100 flex items-center justify-center">
+                                                    <Mail className="w-4 h-4 text-purple-700" />
+                                                </div>
+                                            </div>
+                                            <input
+                                                type="email"
+                                                value={profileForm.email}
+                                                onChange={(e) => setProfileForm({ ...profileForm, email: e.target.value })}
+                                                className="w-full pl-12 pr-4 py-2.5 rounded-xl border border-gray-200 text-sm font-medium text-gray-900 focus:border-primary outline-none transition-all bg-white shadow-sm"
+                                            />
+                                        </div>
                                     </div>
                                 </div>
-                                <div className="space-y-1 text-left">
-                                    <label className="text-[11px] font-semibold text-text-muted pl-1">Phone</label>
-                                    <input
-                                        type="tel"
-                                        value={profileForm.phone}
-                                        onChange={(e) => setProfileForm({ ...profileForm, phone: e.target.value })}
-                                        className="w-full px-3 py-2 rounded-full border border-border text-xs font-semibold focus:border-primary outline-none transition-all bg-surface hover:border-primary/40 focus:ring-4 focus:ring-primary/5"
-                                        placeholder="+91..."
-                                    />
+                                <div className="space-y-2 mb-6">
+                                    <div className="flex items-center gap-2">
+                                        <label className="text-[11px] font-bold text-gray-700 uppercase tracking-widest block">
+                                            Phone
+                                        </label>
+                                        <Info className="w-3 h-3 text-gray-400" />
+                                    </div>
+                                    <div className="relative">
+                                        <div className="absolute inset-y-0 left-0 pl-1.5 flex items-center pointer-events-none">
+                                            <div className="w-7 h-7 rounded-full bg-green-100 flex items-center justify-center">
+                                                <Phone className="w-4 h-4 text-green-700" />
+                                            </div>
+                                        </div>
+                                        <input
+                                            type="tel"
+                                            value={profileForm.phone}
+                                            onChange={(e) => setProfileForm({ ...profileForm, phone: e.target.value })}
+                                            className="w-full pl-12 pr-4 py-2.5 rounded-xl border border-gray-200 text-sm font-medium text-gray-900 focus:border-primary outline-none transition-all bg-white shadow-sm"
+                                            placeholder="+91..."
+                                        />
+                                    </div>
                                 </div>
 
-                                <div className="pt-3 flex justify-end border-t border-border">
+                                {/* Footer Tip and Submit */}
+                                <div className="pt-6 border-t border-gray-100 flex flex-col sm:flex-row items-center justify-between gap-6">
+                                    <div className="bg-[#FFF9F0] border border-orange-50 rounded-xl p-5 flex items-start gap-4 shadow-sm w-full sm:w-auto flex-1">
+                                        <div className="mt-0.5 shrink-0">
+                                            <Lightbulb className="w-5 h-5 text-[#D99A29]" />
+                                        </div>
+                                        <div>
+                                            <h4 className="text-[13px] font-bold text-gray-900">Keep your profile information updated</h4>
+                                            <p className="text-[12px] text-gray-600 mt-0.5 font-medium">
+                                                This information is used for account recovery, notifications, and important communication.
+                                            </p>
+                                        </div>
+                                    </div>
+
                                     <button
                                         type="submit"
                                         disabled={isSaving}
                                         className="px-5 py-2 bg-primary text-primary-foreground rounded-xl font-bold text-[10px] uppercase tracking-widest shadow-md shadow-primary/20 hover:shadow-primary/30 active:scale-95 transition-all disabled:opacity-50"
                                     >
-                                        {isSaving ? 'Saving…' : 'Save profile'}
+                                        <Save className="w-4 h-4" />
+                                        {isSaving ? 'SAVING…' : 'SAVE PROFILE'}
                                     </button>
                                 </div>
                             </form>
@@ -460,7 +524,7 @@ export default function SettingsPage({ section: propSection }) {
                                                         setNotifications((prev) => ({ ...prev, [item.key]: e.target.checked }))
                                                     }
                                                 />
-                                                <div className="w-10 h-5 bg-border rounded-none peer-checked:bg-primary transition-all duration-300 after:content-[''] after:absolute after:top-[3px] after:left-[3px] after:bg-white after:rounded-none after:h-3.5 after:w-3.5 after:transition-all peer-checked:after:translate-x-5 after:shadow-sm peer-checked:after:bg-white group-hover:after:scale-110" />
+                                                <div className="w-10 h-5 bg-border rounded-xl peer-checked:bg-primary transition-all duration-300 after:content-[''] after:absolute after:top-[3px] after:left-[3px] after:bg-white after:rounded-xl after:h-3.5 after:w-3.5 after:transition-all peer-checked:after:translate-x-5 after:shadow-sm peer-checked:after:bg-white group-hover:after:scale-110" />
                                             </label>
                                         </div>
                                     ))}
@@ -469,6 +533,7 @@ export default function SettingsPage({ section: propSection }) {
                                     <button
                                         type="submit"
                                         disabled={isSaving || salonLoading}
+                                        className="px-5 py-2 bg-primary text-primary-foreground rounded-xl font-bold text-[10px] uppercase tracking-widest shadow-md shadow-primary/20 disabled:opacity-50"
                                         className="px-5 py-2 bg-primary text-primary-foreground rounded-xl font-bold text-[10px] uppercase tracking-widest shadow-md shadow-primary/20 disabled:opacity-50"
                                     >
                                         {isSaving ? 'Saving…' : 'Save notification preferences'}
@@ -479,63 +544,134 @@ export default function SettingsPage({ section: propSection }) {
                     )}
 
                     {activeTab === 'security' && (
-                        <div className="space-y-4 text-left">
-                            <div>
-                                <h2 className="text-sm font-bold text-text tracking-tight">Security</h2>
-                                <p className="text-[10px] text-text-muted font-medium mt-0.5">Change your account password.</p>
+                        <div className="text-left flex flex-col">
+                            {/* Main Card Header */}
+                            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between pb-6 border-b border-gray-100 gap-4 pt-2">
+                                <div className="flex items-center gap-4">
+                                    <div className="w-12 h-12 rounded-2xl bg-[#F6F4FF] flex items-center justify-center shrink-0">
+                                        <ShieldCheck className="w-6 h-6 text-[#7F56D9]" />
+                                    </div>
+                                    <div>
+                                        <h2 className="text-[17px] font-bold text-gray-900 tracking-tight">Security</h2>
+                                        <p className="text-[13px] text-gray-500 font-medium mt-0.5">
+                                            Keep your account secure by using a strong password.
+                                        </p>
+                                    </div>
+                                </div>
+                                <div className="flex items-center gap-2 px-3 py-1.5 bg-[#ECFDF3] border border-[#D1FADF] rounded-xl text-[#027A48]">
+                                    <ShieldCheck className="w-4 h-4" />
+                                    <span className="text-xs font-bold">Your account is secure</span>
+                                </div>
                             </div>
 
-                            <form onSubmit={handlePasswordSubmit} className="space-y-4">
-                                <div className="space-y-1.5">
-                                    <label className="text-[10px] font-black text-text-muted uppercase tracking-widest pl-1">
-                                        Current Password
-                                    </label>
-                                    <PasswordField
-                                        value={passwordForm.currentPassword}
-                                        onChange={(e) => setPasswordForm({ ...passwordForm, currentPassword: e.target.value })}
-                                        placeholder="••••••••"
-                                        required
-                                        inputClassName="w-full px-4 py-2.5 allow-curve rounded-lg border border-border text-xs font-bold focus:border-primary outline-none transition-all bg-surface-alt/50"
-                                        buttonClassName="text-text-muted hover:text-primary"
-                                    />
-                                </div>
-                                <div className="grid sm:grid-cols-2 gap-4">
-                                    <div className="space-y-1.5">
-                                        <label className="text-[10px] font-black text-text-muted uppercase tracking-widest pl-1">
-                                            New Password
-                                        </label>
-                                        <PasswordField
-                                            value={passwordForm.newPassword}
-                                            onChange={(e) => setPasswordForm({ ...passwordForm, newPassword: e.target.value })}
-                                            placeholder="••••••••"
-                                            required
-                                            minLength={8}
-                                            inputClassName="w-full px-4 py-2.5 allow-curve rounded-lg border border-border text-xs font-bold focus:border-primary outline-none transition-all bg-surface-alt/50"
-                                            buttonClassName="text-text-muted hover:text-primary"
-                                        />
-                                    </div>
-                                    <div className="space-y-1.5">
-                                        <label className="text-[10px] font-black text-text-muted uppercase tracking-widest pl-1">
-                                            Confirm Password
-                                        </label>
-                                        <PasswordField
-                                            value={passwordForm.confirmPassword}
-                                            onChange={(e) => setPasswordForm({ ...passwordForm, confirmPassword: e.target.value })}
-                                            placeholder="••••••••"
-                                            required
-                                            inputClassName="w-full px-4 py-2.5 allow-curve rounded-lg border border-border text-xs font-bold focus:border-primary outline-none transition-all bg-surface-alt/50"
-                                            buttonClassName="text-text-muted hover:text-primary"
-                                        />
+                            <form onSubmit={handlePasswordSubmit} className="flex flex-col">
+                                <div className="py-6 space-y-8">
+                                    <div className="grid md:grid-cols-2 gap-x-6 gap-y-8">
+                                        {/* Row 1, Col 1: Best Practices */}
+                                        <div className="flex items-start gap-3 p-4 bg-[#F8FAFC] border border-gray-100 rounded-xl h-full">
+                                            <Info className="w-5 h-5 text-blue-600 mt-0.5 shrink-0" />
+                                            <p className="text-[13px] leading-relaxed text-gray-600">
+                                                <span className="font-bold text-gray-900">Password best practices</span> Use at least 8 characters with a mix of letters, numbers, and symbols.
+                                            </p>
+                                        </div>
+
+                                        {/* Row 1-2, Col 2: Password Strength */}
+                                        <div className="border border-gray-100 rounded-xl p-5 bg-white shadow-sm shadow-green-900/5 md:row-span-2 flex flex-col justify-center">
+                                            <div className="flex flex-col gap-4">
+                                                <div className="flex items-center gap-3">
+                                                    <ShieldCheck className="w-5 h-5 text-[#12B76A]" />
+                                                    <span className="text-[13px] font-bold text-gray-700">
+                                                        Password strength <span className="text-[#12B76A]">Strong</span>
+                                                    </span>
+                                                </div>
+                                                <div className="flex gap-1.5 h-1.5">
+                                                    <div className="flex-1 bg-[#12B76A] rounded-xl"></div>
+                                                    <div className="flex-1 bg-[#12B76A] rounded-xl"></div>
+                                                    <div className="flex-1 bg-[#12B76A] rounded-xl"></div>
+                                                    <div className="flex-1 bg-[#12B76A] opacity-30 rounded-xl"></div>
+                                                </div>
+                                                <div className="space-y-2 mt-2">
+                                                    {[
+                                                        'At least 8 characters',
+                                                        'Contains uppercase & lowercase letters',
+                                                        'Contains a number',
+                                                        'Contains a special character'
+                                                    ].map((item, idx) => (
+                                                        <div key={idx} className="flex items-center gap-2">
+                                                            <CheckCircle2 className="w-4 h-4 text-[#12B76A] fill-[#12B76A]/20" />
+                                                            <span className="text-xs font-medium text-gray-600">{item}</span>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        {/* Row 2, Col 1: Current Password */}
+                                        <div className="space-y-2">
+                                            <label className="text-[11px] font-bold text-gray-700 uppercase tracking-widest block">
+                                                CURRENT PASSWORD
+                                            </label>
+                                            <PasswordField
+                                                value={passwordForm.currentPassword}
+                                                onChange={(e) => setPasswordForm({ ...passwordForm, currentPassword: e.target.value })}
+                                                placeholder="••••••••"
+                                                required
+                                                inputClassName="w-full px-4 py-3 rounded-full border border-gray-200 text-sm font-medium text-gray-900 focus:border-primary outline-none transition-all bg-white shadow-sm"
+                                                buttonClassName="text-gray-400 hover:text-gray-600 pr-3"
+                                            />
+                                            <p className="text-[11px] text-gray-500 font-medium pt-1">Enter your current password</p>
+                                        </div>
+
+                                        {/* Row 3, Col 1: New Password */}
+                                        <div className="space-y-2">
+                                            <label className="text-[11px] font-bold text-gray-700 uppercase tracking-widest block">
+                                                NEW PASSWORD
+                                            </label>
+                                            <PasswordField
+                                                value={passwordForm.newPassword}
+                                                onChange={(e) => setPasswordForm({ ...passwordForm, newPassword: e.target.value })}
+                                                placeholder="••••••••"
+                                                required
+                                                minLength={8}
+                                                inputClassName="w-full px-4 py-3 rounded-full border border-gray-200 text-sm font-medium text-gray-900 focus:border-primary outline-none transition-all bg-white shadow-sm"
+                                                buttonClassName="text-gray-400 hover:text-gray-600 pr-3"
+                                            />
+                                            <p className="text-[11px] text-gray-500 font-medium pt-1">Enter your new password</p>
+                                        </div>
+
+                                        {/* Row 3, Col 2: Confirm New Password */}
+                                        <div className="space-y-2">
+                                            <label className="text-[11px] font-bold text-gray-700 uppercase tracking-widest block">
+                                                CONFIRM NEW PASSWORD
+                                            </label>
+                                            <PasswordField
+                                                value={passwordForm.confirmPassword}
+                                                onChange={(e) => setPasswordForm({ ...passwordForm, confirmPassword: e.target.value })}
+                                                placeholder="••••••••"
+                                                required
+                                                inputClassName="w-full px-4 py-3 rounded-full border border-gray-200 text-sm font-medium text-gray-900 focus:border-primary outline-none transition-all bg-white shadow-sm"
+                                                buttonClassName="text-gray-400 hover:text-gray-600 pr-3"
+                                            />
+                                            <p className="text-[11px] text-gray-500 font-medium pt-1">Re-enter your new password</p>
+                                        </div>
                                     </div>
                                 </div>
 
-                                <div className="pt-3 flex justify-end border-t border-border">
+                                {/* Tip Banner and Submit Button */}
+                                <div className="bg-[#FFF9F0] border border-orange-100/50 rounded-xl p-5 flex flex-col sm:flex-row items-center justify-between gap-4 mt-2">
+                                    <div className="flex items-center gap-3">
+                                        <Lightbulb className="w-5 h-5 text-orange-400 shrink-0" />
+                                        <p className="text-[13px] text-gray-700">
+                                            <span className="font-bold">Tip:</span> Avoid using easily guessable information like your name, phone number, or birthdate.
+                                        </p>
+                                    </div>
                                     <button
                                         type="submit"
                                         disabled={isSaving}
                                         className="px-5 py-2 bg-primary text-primary-foreground rounded-xl font-bold text-[10px] uppercase tracking-widest shadow-md shadow-primary/20 disabled:opacity-50"
                                     >
-                                        {isSaving ? 'Updating…' : 'Update password'}
+                                        <Lock className="w-3.5 h-3.5" />
+                                        {isSaving ? 'UPDATING…' : 'UPDATE PASSWORD'}
                                     </button>
                                 </div>
                             </form>
@@ -543,96 +679,200 @@ export default function SettingsPage({ section: propSection }) {
                     )}
 
                     {activeTab === 'business' && (
-                        <div className="space-y-4 text-left">
-                            <div>
-                                <h2 className="text-sm font-bold text-text tracking-tight">Business & Tax Info</h2>
-                                <p className="text-[10px] text-text-muted font-medium mt-0.5">
-                                    Legal name, GST, defaults — stored on your salon record (`PATCH /tenants/me`).
-                                </p>
+                        <div className="text-left flex flex-col">
+                            {/* Main Card Header */}
+                            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between pb-6 border-b border-gray-100 gap-4 pt-2">
+                                <div className="flex items-center gap-4">
+                                    <div className="w-12 h-12 rounded-2xl bg-[#FFF9F0] flex items-center justify-center shrink-0">
+                                        <Building2 className="w-6 h-6 text-[#D99A29]" />
+                                    </div>
+                                    <div>
+                                        <h2 className="text-[17px] font-bold text-gray-900 tracking-tight">Business & Tax Information</h2>
+                                        <p className="text-[13px] text-gray-500 font-medium mt-0.5">
+                                            Legal name, GST, and defaults — stored on your salon record ( PATCH /tenants/me ).
+                                        </p>
+                                    </div>
+                                </div>
+                                <div className="flex items-center gap-2 px-3 py-1.5 bg-[#ECFDF3] border border-[#D1FADF] rounded-xl text-[#027A48]">
+                                    <CheckCircle2 className="w-3.5 h-3.5" />
+                                    <span className="text-[11px] font-bold">Synced with your account</span>
+                                </div>
                             </div>
 
-                            <form onSubmit={handleFiscalSubmit} className="space-y-4">
-                                <div className="space-y-1.5">
-                                    <label className="text-[10px] font-black text-text-muted uppercase tracking-widest pl-1">
-                                        Legal Business Name
-                                    </label>
-                                    <input
-                                        type="text"
-                                        value={fiscal.businessName}
-                                        onChange={(e) => setFiscal({ ...fiscal, businessName: e.target.value })}
-                                        className="w-full px-4 py-2.5 allow-curve rounded-lg border border-border text-xs font-bold focus:border-primary outline-none transition-all bg-surface-alt/50 uppercase"
-                                    />
-                                </div>
+                            <form onSubmit={handleFiscalSubmit} className="flex flex-col">
+                                <div className="py-5 flex flex-col md:flex-row gap-6">
+                                    {/* Left Column */}
+                                    <div className="flex-1 space-y-6">
+                                        <div className="grid md:grid-cols-2 gap-5">
+                                            <div className="space-y-2">
+                                                <div className="flex items-center gap-2">
+                                                    <label className="text-[11px] font-bold text-gray-700 uppercase tracking-widest block">
+                                                        LEGAL BUSINESS NAME
+                                                    </label>
+                                                    <Info className="w-3 h-3 text-gray-400" />
+                                                </div>
+                                                <input
+                                                    type="text"
+                                                    value={fiscal.businessName}
+                                                    onChange={(e) => setFiscal({ ...fiscal, businessName: e.target.value })}
+                                                    placeholder="WAPIXO"
+                                                    className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm font-medium text-gray-900 focus:border-primary outline-none transition-all bg-white shadow-sm uppercase"
+                                                />
+                                            </div>
+                                            <div className="space-y-2">
+                                                <div className="flex items-center gap-2">
+                                                    <label className="text-[11px] font-bold text-gray-700 uppercase tracking-widest block">
+                                                        GSTIN NUMBER
+                                                    </label>
+                                                    <Info className="w-3 h-3 text-gray-400" />
+                                                </div>
+                                                <input
+                                                    type="text"
+                                                    maxLength={15}
+                                                    value={fiscal.gstin}
+                                                    onChange={(e) => setFiscal({ ...fiscal, gstin: e.target.value.toUpperCase() })}
+                                                    placeholder="8979"
+                                                    className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm font-medium text-gray-900 focus:border-primary outline-none transition-all bg-white shadow-sm"
+                                                />
+                                            </div>
+                                        </div>
 
-                                <div className="grid sm:grid-cols-2 gap-4">
-                                    <div className="space-y-1.5">
-                                        <label className="text-[10px] font-black text-text-muted uppercase tracking-widest pl-1">
-                                            GSTIN Number
-                                        </label>
-                                        <input
-                                            type="text"
-                                            maxLength={15}
-                                            value={fiscal.gstin}
-                                            onChange={(e) => setFiscal({ ...fiscal, gstin: e.target.value.toUpperCase() })}
-                                            className="w-full px-4 py-2.5 allow-curve rounded-lg border border-border text-xs font-bold focus:border-primary outline-none transition-all bg-surface-alt/50"
-                                        />
+                                        <div className="grid md:grid-cols-2 gap-5">
+                                            <div className="space-y-2">
+                                                <div className="flex items-center gap-2">
+                                                    <label className="text-[11px] font-bold text-gray-700 uppercase tracking-widest block">
+                                                        BIRTHDAY GIFT (LOYALTY POINTS)
+                                                    </label>
+                                                    <Info className="w-3 h-3 text-gray-400" />
+                                                </div>
+                                                <div className="relative">
+                                                    <div className="absolute inset-y-0 left-0 pl-1.5 flex items-center pointer-events-none">
+                                                        <div className="w-7 h-7 rounded-lg bg-purple-100 flex items-center justify-center">
+                                                            <Gift className="w-4 h-4 text-purple-700" />
+                                                        </div>
+                                                    </div>
+                                                    <input
+                                                        type="number"
+                                                        min="0"
+                                                        value={fiscal.birthdayPoints}
+                                                        onChange={(e) => setFiscal({ ...fiscal, birthdayPoints: e.target.value })}
+                                                        className="w-full pl-12 pr-4 py-2.5 rounded-xl border border-gray-200 text-sm font-bold text-gray-900 focus:border-primary outline-none transition-all bg-white shadow-sm"
+                                                    />
+                                                </div>
+                                                <p className="text-[11px] text-gray-500 font-medium pt-1">Points sent to customer on birthday</p>
+                                            </div>
+                                            <div className="space-y-2">
+                                                <div className="flex items-center gap-2">
+                                                    <label className="text-[11px] font-bold text-gray-700 uppercase tracking-widest block">
+                                                        ANNIVERSARY GIFT (LOYALTY POINTS)
+                                                    </label>
+                                                    <Info className="w-3 h-3 text-gray-400" />
+                                                </div>
+                                                <div className="relative">
+                                                    <div className="absolute inset-y-0 left-0 pl-1.5 flex items-center pointer-events-none">
+                                                        <div className="w-7 h-7 rounded-lg bg-purple-100 flex items-center justify-center">
+                                                            <Gift className="w-4 h-4 text-purple-700" />
+                                                        </div>
+                                                    </div>
+                                                    <input
+                                                        type="number"
+                                                        min="0"
+                                                        value={fiscal.anniversaryPoints}
+                                                        onChange={(e) => setFiscal({ ...fiscal, anniversaryPoints: e.target.value })}
+                                                        className="w-full pl-12 pr-4 py-2.5 rounded-xl border border-gray-200 text-sm font-bold text-gray-900 focus:border-primary outline-none transition-all bg-white shadow-sm"
+                                                    />
+                                                </div>
+                                                <p className="text-[11px] text-gray-500 font-medium pt-1">Points sent to customer on anniversary</p>
+                                            </div>
+                                        </div>
+
+                                        {/* Tip Banner */}
+                                        <div className="bg-[#FFF9F0] rounded-xl p-4 flex items-start gap-3 shadow-sm border border-orange-50">
+                                            <div className="mt-0.5 shrink-0">
+                                                <Info className="w-5 h-5 text-[#D99A29]" />
+                                            </div>
+                                            <div>
+                                                <h4 className="text-[13px] font-bold text-gray-900">About loyalty points</h4>
+                                                <p className="text-[12px] text-gray-600 mt-0.5 font-medium">
+                                                    These points will be automatically added to the customer's wallet on their special day.
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Right Column: Information */}
+                                    <div className="w-full md:w-[320px] shrink-0">
+                                        <div className="bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl p-5 shadow-sm h-full">
+                                            <h3 className="text-[14px] font-bold text-gray-900 mb-5 tracking-tight">Information</h3>
+                                            
+                                            <div className="space-y-5">
+                                                <div className="flex items-start gap-3">
+                                                    <div className="w-9 h-9 rounded-full bg-transparent border-[1.5px] border-blue-200 flex items-center justify-center shrink-0">
+                                                        <FileText className="w-4 h-4 text-blue-700" />
+                                                    </div>
+                                                    <div>
+                                                        <h4 className="text-[12px] font-bold text-gray-900">Legal name</h4>
+                                                        <p className="text-[11px] text-gray-500 font-medium mt-0.5">Used on invoices and receipts.</p>
+                                                    </div>
+                                                </div>
+                                                
+                                                <div className="flex items-start gap-3">
+                                                    <div className="w-9 h-9 rounded-full bg-transparent border-[1.5px] border-blue-200 flex items-center justify-center shrink-0">
+                                                        <Gift className="w-4 h-4 text-blue-700" />
+                                                    </div>
+                                                    <div>
+                                                        <h4 className="text-[12px] font-bold text-gray-900">GSTIN</h4>
+                                                        <p className="text-[11px] text-gray-500 font-medium mt-0.5">Used for tax calculation and compliance.</p>
+                                                    </div>
+                                                </div>
+                                                
+                                                <div className="flex items-start gap-3">
+                                                    <div className="w-9 h-9 rounded-full bg-transparent border-[1.5px] border-blue-200 flex items-center justify-center shrink-0">
+                                                        <ShieldCheck className="w-4 h-4 text-blue-700" />
+                                                    </div>
+                                                    <div>
+                                                        <h4 className="text-[12px] font-bold text-gray-900">Loyalty points</h4>
+                                                        <p className="text-[11px] text-gray-500 font-medium mt-0.5">Awarded automatically on special days.</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
 
-                                <div className="grid sm:grid-cols-2 gap-4 border-t border-border/40 pt-4">
-                                    <div className="space-y-1.5">
-                                        <label className="text-[10px] font-black text-text-muted uppercase tracking-widest pl-1">
-                                            Birthday Gift (Loyalty Points)
-                                        </label>
-                                        <input
-                                            type="number"
-                                            min="0"
-                                            value={fiscal.birthdayPoints}
-                                            onChange={(e) => setFiscal({ ...fiscal, birthdayPoints: e.target.value })}
-                                            className="w-full px-4 py-2.5 allow-curve rounded-lg border border-border text-xs font-bold focus:border-primary outline-none transition-all bg-surface-alt/50"
-                                        />
-                                        <p className="text-[10px] text-text-muted">Points sent to customer on birthday</p>
+                                {/* Footer (Checkbox and Save button) */}
+                                <div className="pt-6 border-t border-gray-100 flex flex-col sm:flex-row items-center justify-between gap-6">
+                                    <div className="flex items-start gap-3">
+                                        <div className="relative flex items-center justify-center mt-0.5 shrink-0">
+                                            <input
+                                                type="checkbox"
+                                                id="inclusive"
+                                                checked={fiscal.inclusiveTax}
+                                                onChange={(e) => setFiscal({ ...fiscal, inclusiveTax: e.target.checked })}
+                                                className="peer appearance-none w-5 h-5 rounded border border-[#D99A29] bg-white checked:bg-[#D99A29] checked:border-[#D99A29] cursor-pointer transition-all"
+                                            />
+                                            <Check className="w-3.5 h-3.5 text-white absolute pointer-events-none opacity-0 peer-checked:opacity-100 transition-opacity" />
+                                        </div>
+                                        <div>
+                                            <label htmlFor="inclusive" className="text-[13px] font-bold text-gray-900 cursor-pointer select-none">
+                                                Prices are inclusive of tax
+                                            </label>
+                                            <p className="text-[11px] text-gray-500 font-medium mt-0.5">
+                                                All prices and loyalty points are calculated including applicable taxes.
+                                            </p>
+                                        </div>
                                     </div>
-                                    <div className="space-y-1.5">
-                                        <label className="text-[10px] font-black text-text-muted uppercase tracking-widest pl-1">
-                                            Anniversary Gift (Loyalty Points)
-                                        </label>
-                                        <input
-                                            type="number"
-                                            min="0"
-                                            value={fiscal.anniversaryPoints}
-                                            onChange={(e) => setFiscal({ ...fiscal, anniversaryPoints: e.target.value })}
-                                            className="w-full px-4 py-2.5 allow-curve rounded-lg border border-border text-xs font-bold focus:border-primary outline-none transition-all bg-surface-alt/50"
-                                        />
-                                        <p className="text-[10px] text-text-muted">Points sent to customer on anniversary</p>
-                                    </div>
-                                </div>
 
-                                <div className="flex items-center gap-3 pt-2">
-                                    <input
-                                        type="checkbox"
-                                        id="inclusive"
-                                        checked={fiscal.inclusiveTax}
-                                        onChange={(e) => setFiscal({ ...fiscal, inclusiveTax: e.target.checked })}
-                                        className="w-4 h-4 accent-primary"
-                                    />
-                                    <label htmlFor="inclusive" className="text-xs font-semibold text-text-muted tracking-tight cursor-pointer select-none">
-                                        Prices are inclusive of tax
-                                    </label>
-                                </div>
-
-                                <div className="pt-3 flex justify-end border-t border-border">
                                     <button
                                         type="submit"
                                         disabled={isSaving || salonLoading}
                                         className="px-5 py-2 bg-primary text-primary-foreground rounded-xl font-bold text-[10px] uppercase tracking-widest shadow-md shadow-primary/20 disabled:opacity-50"
                                     >
-                                        {isSaving ? 'Saving…' : 'Save business info'}
+                                        <Save className="w-4 h-4" />
+                                        {isSaving ? 'SAVING…' : 'Save Business Info'}
                                     </button>
                                 </div>
                             </form>
-
-
                         </div>
                     )}
 
@@ -659,19 +899,20 @@ export default function SettingsPage({ section: propSection }) {
                                     <label className="text-[11px] font-black text-gray-700 uppercase tracking-widest block">
                                         Add a new term or condition
                                     </label>
-                                    <div className="flex flex-col sm:flex-row gap-3">
+                                    <div className="flex gap-4">
                                         <input
                                             type="text"
                                             value={newTerm}
                                             onChange={(e) => setNewTerm(e.target.value)}
                                             onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleAddTerm(); } }}
                                             placeholder="e.g. No refund after 24 hours of service."
-                                            className="flex-1 px-4 py-3 border border-gray-200 rounded-lg text-[13px] font-medium text-gray-800 bg-white outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 transition-all"
+                                            className="flex-1 px-4 py-3 border border-gray-200 rounded-xl text-[13px] font-medium text-gray-800 bg-white outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
                                         />
                                         <button
                                             type="button"
                                             onClick={handleAddTerm}
-                                            className="px-6 py-3 bg-amber-600 text-white rounded-lg font-bold text-[11px] uppercase tracking-widest hover:bg-amber-700 transition-colors flex items-center justify-center gap-2 shrink-0 shadow-sm"
+                                            disabled={!newTerm.trim()}
+                                            className="px-6 py-3 bg-primary text-white rounded-md font-bold text-[11px] uppercase tracking-widest hover:opacity-90 transition-colors flex items-center justify-center gap-2 shrink-0 shadow-sm"
                                         >
                                             <Plus className="w-4 h-4" /> Add
                                         </button>
@@ -833,6 +1074,7 @@ export default function SettingsPage({ section: propSection }) {
                                         readOnly
                                         value={`${window.location.origin}/app/booking?tenantId=${salon?._id || ''}`}
                                         className="flex-1 px-4 py-2.5 text-[13px] font-medium text-text bg-surface border border-border rounded-xl outline-none focus:border-primary focus:ring-1 focus:ring-primary/20 transition-all select-all"
+                                        className="flex-1 px-4 py-2.5 text-[13px] font-medium text-text bg-surface border border-border rounded-xl outline-none focus:border-primary focus:ring-1 focus:ring-primary/20 transition-all select-all"
                                     />
                                     <button
                                         type="button"
@@ -841,6 +1083,7 @@ export default function SettingsPage({ section: propSection }) {
                                             navigator.clipboard.writeText(link);
                                             toast.success('Booking link copied to clipboard!');
                                         }}
+                                        className="px-6 py-2.5 bg-primary text-primary-foreground font-bold text-[11px] uppercase tracking-widest hover:opacity-90 active:scale-95 transition-all flex items-center justify-center gap-2 shrink-0 rounded-xl shadow-sm"
                                         className="px-6 py-2.5 bg-primary text-primary-foreground font-bold text-[11px] uppercase tracking-widest hover:opacity-90 active:scale-95 transition-all flex items-center justify-center gap-2 shrink-0 rounded-xl shadow-sm"
                                     >
                                         <Copy className="w-4 h-4" /> Copy Link
@@ -967,7 +1210,7 @@ export default function SettingsPage({ section: propSection }) {
 
                 </div>
             </div>
-            
+
             {/* Bottom Banner for Booking Link */}
             {activeTab === 'booking-link' && (
                 <div className="bg-[#f0fdf4] border border-[#bbf7d0] rounded-xl p-4 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-sm w-full">
@@ -990,6 +1233,85 @@ export default function SettingsPage({ section: propSection }) {
                     >
                         Preview Booking Page <ExternalLink className="w-2.5 h-2.5" />
                     </a>
+                </div>
+            )}
+
+            {/* Bottom Banner for Security */}
+            {activeTab === 'security' && (
+                <div className="bg-[#F0FDF4] border border-[#bbf7d0] rounded-2xl p-6 sm:p-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 shadow-sm w-full">
+                    <div className="flex items-center gap-4">
+                        <div className="w-12 h-12 rounded-full bg-[#16a34a] flex items-center justify-center shrink-0">
+                            <ShieldCheck className="w-6 h-6 text-white" />
+                        </div>
+                        <div>
+                            <h3 className="text-[14px] font-bold text-gray-900 tracking-tight">Your security matters</h3>
+                            <p className="text-[13px] text-gray-600 font-medium mt-0.5 max-w-xl">
+                                We use industry-standard encryption to protect your data and keep your account safe.
+                            </p>
+                        </div>
+                    </div>
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6 sm:pl-6 sm:border-l border-green-200/60 shrink-0">
+                        <div>
+                            <h3 className="text-[14px] font-bold text-gray-900 tracking-tight">Need help?</h3>
+                            <p className="text-[13px] text-gray-600 font-medium mt-0.5">
+                                Reach out to our support team for any security related assistance.
+                            </p>
+                        </div>
+                        <button className="px-5 py-2.5 bg-white border border-[#22c55e] text-[#16a34a] rounded-lg font-bold text-xs hover:bg-[#F0FDF4] transition-colors flex items-center gap-2 shrink-0 whitespace-nowrap">
+                            <Headset className="w-4 h-4" />
+                            Contact Support
+                        </button>
+                    </div>
+                </div>
+            )}
+            {/* Bottom Banner for Business */}
+            {activeTab === 'business' && (
+                <div className="bg-[#F0FDF4] border border-[#bbf7d0] rounded-2xl p-6 sm:p-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 shadow-sm w-full mt-6">
+                    <div className="flex items-center gap-4">
+                        <div className="w-12 h-12 rounded-full bg-[#16a34a] flex items-center justify-center shrink-0">
+                            <ShieldCheck className="w-6 h-6 text-white" />
+                        </div>
+                        <div>
+                            <h3 className="text-[14px] font-bold text-gray-900 tracking-tight">Secure & Compliant</h3>
+                            <p className="text-[13px] text-gray-600 font-medium mt-0.5 max-w-xl">
+                                Your business data is encrypted and protected. We never share your information.
+                            </p>
+                        </div>
+                    </div>
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6 sm:pl-6 sm:border-l border-green-200/60 shrink-0">
+                        <div>
+                            <h3 className="text-[14px] font-bold text-gray-900 tracking-tight">Need help?</h3>
+                            <p className="text-[13px] text-gray-600 font-medium mt-0.5">
+                                Contact support for any queries related to business & tax information.
+                            </p>
+                        </div>
+                        <button className="px-5 py-2.5 bg-white border border-[#22c55e] text-[#16a34a] rounded-lg font-bold text-xs hover:bg-[#F0FDF4] transition-colors flex items-center gap-2 shrink-0 whitespace-nowrap shadow-sm">
+                            <Headset className="w-4 h-4" />
+                            Contact Support
+                        </button>
+                    </div>
+                </div>
+            )}
+
+            {/* Bottom Banner for Profile */}
+            {activeTab === 'profile' && (
+                <div className="bg-[#F0FDF4] border border-[#bbf7d0] rounded-2xl p-6 sm:p-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 shadow-sm w-full mt-6">
+                    <div className="flex items-center gap-4">
+                        <div className="w-12 h-12 rounded-full bg-[#16a34a] flex items-center justify-center shrink-0">
+                            <ShieldCheck className="w-6 h-6 text-white" />
+                        </div>
+                        <div>
+                            <h3 className="text-[14px] font-bold text-gray-900 tracking-tight">Your data is safe with us</h3>
+                            <p className="text-[13px] text-gray-600 font-medium mt-0.5 max-w-xl">
+                                We use industry-standard encryption to protect your personal information.
+                            </p>
+                        </div>
+                    </div>
+                    <div className="flex shrink-0">
+                        <button className="px-5 py-2.5 bg-white border border-[#22c55e] text-[#16a34a] rounded-lg font-bold text-xs hover:bg-[#F0FDF4] transition-colors flex items-center gap-2 shadow-sm">
+                            Learn about security <ExternalLink className="w-4 h-4" />
+                        </button>
+                    </div>
                 </div>
             )}
         </div>

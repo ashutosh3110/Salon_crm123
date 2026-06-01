@@ -28,7 +28,7 @@ export default function ProductManagementPage() {
                 </div>
             </div>
 
-            <div className="bg-surface p-8 border border-border min-h-[600px] rounded-3xl shadow-sm">
+            <div className="bg-surface p-8 border border-border min-h-[600px] rounded-2xl shadow-sm">
                 <ProductManager
                     products={products}
                     onDelete={deleteProduct}

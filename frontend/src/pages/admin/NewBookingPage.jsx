@@ -374,11 +374,11 @@ export default function NewBookingPage() {
                                         setSelection({...selection, outletId: o._id});
                                         nextStep();
                                     }}
-                                    className={`group relative bg-white border transition-all cursor-pointer overflow-hidden rounded-3xl shadow-sm flex flex-col ${selection.outletId === o._id ? 'border-[#D4A373] shadow-md ring-1 ring-[#D4A373]' : 'border-slate-200 hover:border-slate-300 hover:shadow-md'}`}
+                                    className={`group relative bg-white border transition-all cursor-pointer overflow-hidden rounded-2xl shadow-sm flex flex-col ${selection.outletId === o._id ? 'border-[#D4A373] shadow-md ring-1 ring-[#D4A373]' : 'border-slate-200 hover:border-slate-300 hover:shadow-md'}`}
                                 >
                                     <div className="h-48 relative overflow-hidden bg-slate-900">
                                         <img src={getImageUrl(o.images?.[0]) || 'https://images.unsplash.com/photo-1560066984-138dadb4c035?q=80&w=1974'} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 opacity-90" />
-                                        <div className="absolute top-4 right-4 bg-emerald-500 text-white text-[9px] font-bold px-3 py-1.5 rounded-full uppercase tracking-wider">
+                                        <div className="absolute top-4 right-4 bg-emerald-500 text-white text-[9px] font-bold px-3 py-1.5 rounded-xl uppercase tracking-wider">
                                             Active
                                         </div>
                                     </div>
@@ -406,7 +406,7 @@ export default function NewBookingPage() {
                         </div>
 
                         {/* Banner */}
-                        <div className="mt-8 p-6 bg-amber-50/50 border border-amber-100 rounded-3xl flex flex-col sm:flex-row items-center justify-between gap-6">
+                        <div className="mt-8 p-6 bg-amber-50/50 border border-amber-100 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-6">
                             <div className="flex items-center gap-5">
                                 <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center shrink-0 border border-amber-100">
                                     <Store className="w-5 h-5 text-[#D4A373]" />
@@ -453,7 +453,7 @@ export default function NewBookingPage() {
                                         setSelection({...selection, serviceId: s._id});
                                         nextStep();
                                     }}
-                                    className={`group relative bg-surface border transition-all cursor-pointer overflow-hidden flex flex-col rounded-3xl shadow-sm ${selection.serviceId === s._id ? 'border-primary shadow-lg ring-2 ring-primary/20' : 'border-border hover:border-text hover:shadow-md'}`}
+                                    className={`group relative bg-surface border transition-all cursor-pointer overflow-hidden flex flex-col rounded-2xl shadow-sm ${selection.serviceId === s._id ? 'border-primary shadow-lg ring-2 ring-primary/20' : 'border-border hover:border-text hover:shadow-md'}`}
                                 >
                                     <div className="h-40 bg-surface-alt relative overflow-hidden border-b border-border">
                                         {s.image ? (
@@ -483,7 +483,7 @@ export default function NewBookingPage() {
                                         </div>
                                     </div>
                                     {selection.serviceId === s._id && (
-                                        <div className="absolute top-4 left-4 bg-primary text-white p-1.5 rounded-full shadow-sm">
+                                        <div className="absolute top-4 left-4 bg-primary text-white p-1.5 rounded-xl shadow-sm">
                                             <CheckCircle2 className="w-3.5 h-3.5" />
                                         </div>
                                     )}
@@ -528,9 +528,9 @@ export default function NewBookingPage() {
                                                     : [...selection.staffId, s._id];
                                                 setSelection({...selection, staffId: newStaffIds});
                                             }}
-                                            className={`group p-8 bg-surface border cursor-pointer transition-all text-center relative rounded-3xl shadow-sm ${isSelected ? 'border-primary shadow-lg ring-2 ring-primary/20 scale-105 z-10' : 'border-border hover:border-text opacity-70 hover:opacity-100 hover:shadow-md'}`}
+                                            className={`group p-8 bg-surface border cursor-pointer transition-all text-center relative rounded-2xl shadow-sm ${isSelected ? 'border-primary shadow-lg ring-2 ring-primary/20 scale-105 z-10' : 'border-border hover:border-text opacity-70 hover:opacity-100 hover:shadow-md'}`}
                                         >
-                                            <div className="w-24 h-24 mx-auto bg-surface-alt border-4 border-surface shadow-sm mb-6 overflow-hidden rounded-full flex items-center justify-center transition-all group-hover:border-primary">
+                                            <div className="w-24 h-24 mx-auto bg-surface-alt border-4 border-surface shadow-sm mb-6 overflow-hidden rounded-xl flex items-center justify-center transition-all group-hover:border-primary">
                                                 {s.avatar ? (
                                                     <img src={getImageUrl(s.avatar)} className="w-full h-full object-cover" />
                                                 ) : (
@@ -547,7 +547,7 @@ export default function NewBookingPage() {
                                                 </div>
                                             </div>
                                             {isSelected && (
-                                                <div className="absolute top-4 right-4 bg-primary text-white p-1.5 rounded-full shadow-sm">
+                                                <div className="absolute top-4 right-4 bg-primary text-white p-1.5 rounded-xl shadow-sm">
                                                     <CheckCircle2 className="w-4 h-4" />
                                                 </div>
                                             )}
@@ -555,7 +555,7 @@ export default function NewBookingPage() {
                                     );
                                 })
                             ) : (
-                                <div className="col-span-full py-16 bg-surface border border-dashed border-border rounded-3xl flex flex-col items-center justify-center text-center space-y-6 shadow-sm">
+                                <div className="col-span-full py-16 bg-surface border border-dashed border-border rounded-2xl flex flex-col items-center justify-center text-center space-y-6 shadow-sm">
                                     <div className="w-16 h-16 bg-primary/5 rounded-2xl flex items-center justify-center shadow-inner">
                                         <Users className="w-8 h-8 text-primary opacity-40" />
                                     </div>
@@ -598,7 +598,7 @@ export default function NewBookingPage() {
                                 <label className="text-[10px] font-black text-text uppercase tracking-widest flex items-center gap-2 italic">
                                     <Calendar className="w-4 h-4 text-primary" /> Select Date
                                 </label>
-                                <div className="grid grid-cols-7 gap-2 bg-surface p-6 border border-border rounded-3xl shadow-sm">
+                                <div className="grid grid-cols-7 gap-2 bg-surface p-6 border border-border rounded-2xl shadow-sm">
                                     {[...Array(14)].map((_, i) => {
                                         const d = new Date();
                                         d.setDate(d.getDate() + i);
@@ -622,7 +622,7 @@ export default function NewBookingPage() {
                                 <label className="text-[10px] font-black text-text uppercase tracking-widest flex items-center gap-2 italic">
                                     <Clock className="w-4 h-4 text-primary" /> Select Time
                                 </label>
-                                <div className="grid grid-cols-3 sm:grid-cols-4 gap-3 bg-surface p-6 border border-border rounded-3xl shadow-sm overflow-y-auto max-h-[350px]">
+                                <div className="grid grid-cols-3 sm:grid-cols-4 gap-3 bg-surface p-6 border border-border rounded-2xl shadow-sm overflow-y-auto max-h-[350px]">
                                     {(() => {
                                         if (!selection.date) return <p className="col-span-full text-[10px] text-text-muted uppercase text-center py-10 font-black italic">Select a date first</p>;
                                         
@@ -693,7 +693,7 @@ export default function NewBookingPage() {
                                         setSelection({...selection, customerId: c._id});
                                         nextStep();
                                     }}
-                                    className={`p-6 bg-surface border cursor-pointer transition-all flex items-center gap-4 group rounded-3xl shadow-sm ${selection.customerId === c._id ? 'border-primary bg-primary/5 shadow-md ring-2 ring-primary/20' : 'border-border hover:border-text hover:shadow-md'}`}
+                                    className={`p-6 bg-surface border cursor-pointer transition-all flex items-center gap-4 group rounded-2xl shadow-sm ${selection.customerId === c._id ? 'border-primary bg-primary/5 shadow-md ring-2 ring-primary/20' : 'border-border hover:border-text hover:shadow-md'}`}
                                 >
                                     <div className={`w-12 h-12 flex items-center justify-center text-xl font-black italic border transition-all shrink-0 rounded-2xl ${selection.customerId === c._id ? 'bg-primary text-white border-primary shadow-inner' : 'bg-surface-alt text-text-muted border-border'}`}>
                                         {c.name?.[0] || '?'}
@@ -752,15 +752,15 @@ export default function NewBookingPage() {
                 {step === 6 && (
                     <div className="max-w-4xl mx-auto space-y-10 animate-reveal">
                         <div className="text-center space-y-4">
-                            <div className="w-20 h-20 bg-emerald-50 text-emerald-600 border border-emerald-200 rounded-full flex items-center justify-center mx-auto shadow-lg shadow-emerald-500/10">
+                            <div className="w-20 h-20 bg-emerald-50 text-emerald-600 border border-emerald-200 rounded-xl flex items-center justify-center mx-auto shadow-lg shadow-emerald-500/10">
                                 <Shield className="w-10 h-10" />
                             </div>
                             <h2 className="text-4xl font-black text-text uppercase italic tracking-tighter font-mono">Confirm Booking</h2>
                             <p className="text-[10px] font-black text-text-muted uppercase tracking-[0.5em] italic">Review your selection before finalizing</p>
                         </div>
 
-                        <div className="bg-surface border border-border rounded-3xl shadow-sm p-10 grid grid-cols-1 md:grid-cols-2 gap-12 relative overflow-hidden">
-                            <div className="absolute right-0 top-0 w-32 h-32 bg-primary/5 -mr-16 -mt-16 rotate-45 border border-primary/10 rounded-3xl" />
+                        <div className="bg-surface border border-border rounded-2xl shadow-sm p-10 grid grid-cols-1 md:grid-cols-2 gap-12 relative overflow-hidden">
+                            <div className="absolute right-0 top-0 w-32 h-32 bg-primary/5 -mr-16 -mt-16 rotate-45 border border-primary/10 rounded-2xl" />
                             
                             <div className="space-y-8 relative z-10">
                                 <div className="space-y-1">
@@ -847,7 +847,7 @@ export default function NewBookingPage() {
                 {/* Customer Registration Modal */}
                 {showCustomerModal && (
                     <div className="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-[200] flex items-center justify-center p-4 animate-in fade-in duration-300" onClick={() => setShowCustomerModal(false)}>
-                        <div className="bg-white rounded-3xl w-full max-w-md shadow-2xl relative overflow-y-auto max-h-[90vh] hide-scrollbar animate-in slide-in-from-top-4 duration-300 border border-slate-200/50" onClick={(e) => e.stopPropagation()}>
+                        <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl relative overflow-y-auto max-h-[90vh] hide-scrollbar animate-in slide-in-from-top-4 duration-300 border border-slate-200/50" onClick={(e) => e.stopPropagation()}>
                             <div className="p-5 bg-white border-b border-slate-100 flex justify-between items-center">
                                 <h4 className="text-[11px] font-black text-slate-900 uppercase flex items-center gap-2 tracking-widest">
                                     <UserPlus className="w-4 h-4 text-slate-800" /> Add Customer

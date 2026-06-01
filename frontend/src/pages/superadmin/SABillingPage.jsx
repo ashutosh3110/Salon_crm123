@@ -74,7 +74,7 @@ function InvoiceModal({ onClose, onSend }) {
     }, []);
 
     const set = (k, v) => setForm(p => ({ ...p, [k]: v }));
-    const inputCls = 'w-full px-3.5 py-2.5 rounded-xl bg-white border border-border text-text text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all';
+    const inputCls = 'w-full px-3.5 py-2.5 rounded-xl bg-white border border-border text-text text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-[#B4912B] transition-all';
     const labelCls = 'block text-[11px] font-bold text-text-muted uppercase tracking-wider mb-1.5';
 
     return (
@@ -150,7 +150,7 @@ function InvoiceModal({ onClose, onSend }) {
                 <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-border">
                     <button onClick={onClose} className="px-4 py-2.5 rounded-xl text-sm font-semibold text-text-secondary hover:bg-surface transition-all">Cancel</button>
                     <button onClick={() => onSend(form)} disabled={!form.tenantId || !form.amount}
-                        className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-primary to-[#8B6F23] text-white text-sm font-bold hover:brightness-110 disabled:opacity-50 shadow-lg shadow-primary/20 transition-all flex items-center gap-2">
+                        className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-primary to-[#8B6F23] text-white text-sm font-bold hover:brightness-110 disabled:opacity-50 shadow-lg shadow-[#B4912B]/20 transition-all flex items-center gap-2">
                         <Send className="w-4 h-4" /> Send Invoice
                     </button>
                 </div>
@@ -419,7 +419,7 @@ export default function SABillingPage() {
                         exportToExcel(MOCK_PAYMENTS, 'Wapixo_Billing_Transactions', 'Payments');
                         showToast('Report exported as Excel!', 'info');
                     }}
-                        className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white border border-border text-text-secondary text-sm font-semibold hover:border-primary/30 hover:text-primary transition-all shadow-sm">
+                        className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white border border-border text-text-secondary text-sm font-semibold hover:border-[#B4912B]/30 hover:text-primary transition-all shadow-sm">
                         <Download className="w-4 h-4" /> Export
                     </button>
 
@@ -435,6 +435,41 @@ export default function SABillingPage() {
                     { label: 'Subscribed Salons', value: stats.totalSubscribedSalons || 0, icon: Building2, gradient: 'from-violet-500 to-purple-600', shadow: 'shadow-violet-500/20', change: 0 },
                 ].map(k => {
                     const isSalonsCard = k.label === 'Subscribed Salons';
+                    const Icon = k.icon;
+                    let colorTheme = 'emerald';
+                    if (k.gradient.includes('blue')) colorTheme = 'blue';
+                    else if (k.gradient.includes('amber') || k.gradient.includes('orange')) colorTheme = 'amber';
+                    else if (k.gradient.includes('violet') || k.gradient.includes('purple')) colorTheme = 'violet';
+                    
+                    const themes = {
+                        emerald: {
+                            iconColorClass: '!text-emerald-600 dark:!text-emerald-400',
+                            iconBgClass: '!bg-emerald-100 dark:!bg-emerald-500/20',
+                            cardBgClass: '!bg-emerald-50 dark:!bg-emerald-500/5',
+                            cardBorderClass: '!border-emerald-100 dark:!border-emerald-500/15 hover:!border-emerald-300 dark:hover:!border-emerald-500/50'
+                        },
+                        blue: {
+                            iconColorClass: '!text-blue-600 dark:!text-blue-400',
+                            iconBgClass: '!bg-blue-100 dark:!bg-blue-500/20',
+                            cardBgClass: '!bg-blue-50 dark:!bg-blue-500/5',
+                            cardBorderClass: '!border-blue-100 dark:!border-blue-500/15 hover:!border-blue-300 dark:hover:!border-blue-500/50'
+                        },
+                        amber: {
+                            iconColorClass: '!text-amber-600 dark:!text-amber-400',
+                            iconBgClass: '!bg-amber-100 dark:!bg-amber-500/20',
+                            cardBgClass: '!bg-amber-50 dark:!bg-amber-500/5',
+                            cardBorderClass: '!border-amber-100 dark:!border-amber-500/15 hover:!border-amber-300 dark:hover:!border-amber-500/50'
+                        },
+                        violet: {
+                            iconColorClass: '!text-violet-600 dark:!text-violet-400',
+                            iconBgClass: '!bg-violet-100 dark:!bg-violet-500/20',
+                            cardBgClass: '!bg-violet-50 dark:!bg-violet-500/5',
+                            cardBorderClass: '!border-violet-100 dark:!border-violet-500/15 hover:!border-violet-300 dark:hover:!border-violet-500/50'
+                        }
+                    };
+                    
+                    const { iconColorClass, iconBgClass, cardBgClass, cardBorderClass } = themes[colorTheme] || themes.emerald;
+
                     return (
                         <div
                             key={k.label}
@@ -444,20 +479,37 @@ export default function SABillingPage() {
                                 else if (k.label === 'Collected Amount') { setTab('payments'); setSF('captured'); }
                                 else if (k.label === 'Pending Amount') { setTab('payments'); setSF('pending'); }
                             }}
-                            className="bg-white rounded-2xl border border-border shadow-sm p-5 hover:shadow-md transition-all cursor-pointer hover:border-primary/20"
+                            className={`!rounded-[16px] !border p-3.5 shadow-[0_2px_8px_-3px_rgba(0,0,0,0.04)] group flex flex-col justify-between min-h-[118px] transition-all hover:-translate-y-0.5 active:scale-[0.98] hover:shadow-md cursor-pointer ${cardBgClass} ${cardBorderClass}`}
                         >
-                            <div className="flex items-center justify-between mb-3">
-                                <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${k.gradient} flex items-center justify-center shadow-lg ${k.shadow}`}>
-                                    <k.icon className="w-5 h-5 text-white" />
+                            <div className="flex !items-start justify-between w-full">
+                                <div className="flex !items-start gap-3 !text-left">
+                                    <div className={`w-9 h-9 rounded-full flex items-center justify-center shrink-0 ${iconBgClass}`}>
+                                        <Icon className={`w-4 h-4 ${iconColorClass}`} strokeWidth={2} />
+                                    </div>
+                                    <div className="flex flex-col !items-start !text-left">
+                                        <span style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '0.03em' }} className="uppercase text-slate-500 dark:text-slate-450 leading-none mb-1.5 !text-left">
+                                            {k.label}
+                                        </span>
+                                        <h3 style={{ fontSize: '24px', fontWeight: 850 }} className="text-slate-800 dark:text-slate-50 leading-none tracking-tight !text-left">
+                                            {k.value}
+                                        </h3>
+                                        <span style={{ fontSize: '12px', fontWeight: 500 }} className="text-slate-500 dark:text-slate-400 mt-1.5 !text-left">
+                                            Stats
+                                        </span>
+                                    </div>
                                 </div>
                                 {k.change !== 0 && k.change !== null && (
-                                    <span className={`text-[11px] font-bold px-2 py-0.5 rounded-full ${k.change >= 0 ? 'bg-emerald-50 text-emerald-600' : 'bg-red-50 text-red-500'}`}>
+                                    <span className={`text-[11px] font-bold px-2 py-0.5 rounded-full shrink-0 ${k.change >= 0 ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-400' : 'bg-red-50 text-red-600 dark:bg-red-500/20 dark:text-red-400'}`}>
                                         {k.change >= 0 ? '↑' : '↓'} {Math.abs(k.change)}%
                                     </span>
                                 )}
                             </div>
-                            <div className="text-xl font-black text-text">{k.value}</div>
-                            <div className="text-xs text-text-muted mt-0.5">{k.label}</div>
+                            <div style={{ fontSize: '11px', fontWeight: 700 }} className="flex !items-center gap-1 mt-auto pt-2 transition-all opacity-90 group-hover:opacity-100 whitespace-nowrap !text-left !justify-start">
+                                <span className={iconColorClass}>View details</span>
+                                <span style={{ fontSize: '12px' }} className={`inline-block transition-transform duration-200 group-hover:translate-x-1 leading-none ${iconColorClass}`}>
+                                    →
+                                </span>
+                            </div>
                         </div>
                     );
                 })}
@@ -467,7 +519,7 @@ export default function SABillingPage() {
             <div className="bg-white rounded-2xl border border-border p-4 shadow-sm flex flex-col lg:flex-row lg:items-center justify-between gap-4">
                 <div className="flex flex-wrap items-center gap-2">
                     <span className="text-xs font-bold text-text-muted uppercase tracking-wider flex items-center gap-1.5 mr-1">
-                        <Calendar className="w-4 h-4 text-primary" /> Filter Period:
+                        <Calendar className="w-4 h-4 text-blue-500" /> Filter Period:
                     </span>
                     {[
                         { key: 'all', label: 'All Time' },
@@ -482,8 +534,8 @@ export default function SABillingPage() {
                             key={p.key}
                             onClick={() => applyPreset(p.key)}
                             className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all border ${datePeriod === p.key
-                                    ? 'bg-primary text-white border-primary shadow-md shadow-primary/20 scale-95'
-                                    : 'bg-white text-text-secondary border-border hover:border-primary/45 hover:text-primary hover:bg-primary/5'
+                                    ? 'bg-[#B4912B] text-white border-[#B4912B] shadow-md shadow-[#B4912B]/20 scale-95'
+                                    : 'bg-white text-text-secondary border-border hover:border-[#B4912B]/45 hover:text-[#B4912B] hover:bg-[#B4912B]/5'
                                 }`}
                         >
                             {p.label}
@@ -500,7 +552,7 @@ export default function SABillingPage() {
                                 type="date"
                                 value={customFrom}
                                 onChange={e => setCustomFrom(e.target.value)}
-                                className="px-2.5 py-1.5 rounded-lg border border-border text-xs text-text bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                                className="px-2.5 py-1.5 rounded-lg border border-border text-xs text-text bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-[#B4912B] transition-all"
                             />
                         </div>
                         <span className="text-xs text-text-muted font-bold">to</span>
@@ -510,7 +562,7 @@ export default function SABillingPage() {
                                 type="date"
                                 value={customTo}
                                 onChange={e => setCustomTo(e.target.value)}
-                                className="px-2.5 py-1.5 rounded-lg border border-border text-xs text-text bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                                className="px-2.5 py-1.5 rounded-lg border border-border text-xs text-text bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-[#B4912B] transition-all"
                             />
                         </div>
                     </div>
@@ -527,7 +579,7 @@ export default function SABillingPage() {
                             key={t.id}
                             onClick={() => { setTab(t.id); setSF(''); }}
                             className={`flex items-center gap-2 px-5 py-3 border-b-2 text-sm font-bold transition-all ${isActive
-                                    ? 'border-primary text-primary font-black animate-in fade-in duration-200'
+                                    ? 'border-[#B4912B] text-primary font-black animate-in fade-in duration-200'
                                     : 'border-transparent text-text-muted hover:text-text hover:border-border'
                                 }`}
                         >
@@ -549,7 +601,7 @@ export default function SABillingPage() {
                             </div>
                             <input value={search} onChange={e => setSearch(e.target.value)}
                                 placeholder="Search salon, invoice, plan…"
-                                className="flex-1 px-4 py-2.5 rounded-xl bg-white border border-border text-sm text-text placeholder-text-muted focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary shadow-sm" />
+                                className="flex-1 px-4 py-2.5 rounded-xl bg-white border border-border text-sm text-text placeholder-text-muted focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-[#B4912B] shadow-sm" />
                         </div>
                         <CustomDropdown
                             value={statusFilter}
@@ -567,7 +619,7 @@ export default function SABillingPage() {
                     </div>
 
                     {/* Payments table */}
-                    <div className="bg-white rounded-2xl border border-border shadow-sm overflow-hidden">
+                    <div className="!bg-white dark:!bg-[#0f172a] !rounded-[24px] !border !border-slate-100 dark:!border-slate-800 shadow-[0_2px_12px_-3px_rgba(0,0,0,0.04)] overflow-hidden">
                         <div className="overflow-x-auto">
                             <table className="w-full">
                                 <thead>
@@ -585,7 +637,7 @@ export default function SABillingPage() {
                                                 <td className="px-4 py-3.5 text-sm font-mono text-primary font-semibold">{p.invoiceNumber}</td>
                                                 <td className="px-4 py-3.5">
                                                     <div className="flex items-center gap-2.5">
-                                                        <div className="w-7 h-7 rounded-lg bg-primary/10 flex items-center justify-center text-xs font-black text-primary shrink-0">
+                                                        <div className="w-7 h-7 rounded-lg bg-emerald-50 flex items-center justify-center text-xs font-black text-primary shrink-0">
                                                             {(p.tenantId?.name || p.salonName || 'S')[0]}
                                                         </div>
                                                         <span className="text-sm text-text font-medium">{p.tenantId?.name || p.salonName || 'Unknown'}</span>
@@ -675,7 +727,7 @@ export default function SABillingPage() {
                             </div>
                             <input value={search} onChange={e => setSearch(e.target.value)}
                                 placeholder="Search by salon, invoice ID…"
-                                className="flex-1 px-4 py-2.5 rounded-xl bg-white border border-border text-sm text-text placeholder-text-muted focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary shadow-sm" />
+                                className="flex-1 px-4 py-2.5 rounded-xl bg-white border border-border text-sm text-text placeholder-text-muted focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-[#B4912B] shadow-sm" />
                         </div>
                         <CustomDropdown
                             value={statusFilter}
@@ -692,7 +744,7 @@ export default function SABillingPage() {
                         />
                     </div>
 
-                    <div className="bg-white rounded-2xl border border-border shadow-sm overflow-hidden">
+                    <div className="!bg-white dark:!bg-[#0f172a] !rounded-[24px] !border !border-slate-100 dark:!border-slate-800 shadow-[0_2px_12px_-3px_rgba(0,0,0,0.04)] overflow-hidden">
                         <div className="overflow-x-auto">
                             <table className="w-full">
                                 <thead>
@@ -760,13 +812,13 @@ export default function SABillingPage() {
 
 
                     {/* Revenue trend chart */}
-                    <div className="bg-white rounded-2xl border border-border shadow-sm p-5">
+                    <div className="!bg-white dark:!bg-[#0f172a] !rounded-[24px] !border !border-slate-100 dark:!border-slate-800 shadow-[0_2px_12px_-3px_rgba(0,0,0,0.04)] p-5">
                         <div className="flex items-center justify-between mb-4">
                             <div>
                                 <h3 className="font-bold text-text">Revenue Trend</h3>
                                 <p className="text-xs text-text-muted mt-0.5">Monthly revenue over last 6 months</p>
                             </div>
-                            <span className="text-[11px] font-bold text-emerald-600 bg-emerald-50 px-2 py-1 rounded-full">↑ 11.9% MoM</span>
+                            <span className="text-[11px] font-bold text-emerald-600 bg-emerald-50 px-2 py-1 rounded-xl">↑ 11.9% MoM</span>
                         </div>
                         <ResponsiveContainer width="100%" height={220}>
                             <AreaChart data={monthlyRevenue} margin={{ top: 5, right: 5, left: 0, bottom: 0 }}>
@@ -789,7 +841,7 @@ export default function SABillingPage() {
                     <div className="grid lg:grid-cols-2 gap-5">
 
                         {/* Plan revenue cards */}
-                        <div className="bg-white rounded-2xl border border-border shadow-sm p-5">
+                        <div className="!bg-white dark:!bg-[#0f172a] !rounded-[24px] !border !border-slate-100 dark:!border-slate-800 shadow-[0_2px_12px_-3px_rgba(0,0,0,0.04)] p-5">
                             <h3 className="font-bold text-text mb-1">Revenue by Plan</h3>
                             <p className="text-xs text-text-muted mb-4">Current month breakdown</p>
                             <div className="space-y-3">
@@ -811,7 +863,7 @@ export default function SABillingPage() {
                                                 </span>
                                             </div>
                                             <div className="h-2 rounded-full bg-slate-100 overflow-hidden">
-                                                <div className="h-full rounded-full transition-all duration-700"
+                                                <div className="h-full rounded-xl transition-all duration-700"
                                                     style={{ width: `${pct}%`, backgroundColor: color }} />
                                             </div>
                                         </div>
@@ -859,7 +911,7 @@ export default function SABillingPage() {
                                 );
                                 showToast('Tax report exported as PDF!', 'info');
                             }}
-                                className="mt-4 w-full flex items-center justify-center gap-2 py-2.5 rounded-xl border border-border text-xs font-bold text-text-secondary hover:border-primary/30 hover:text-primary transition-all">
+                                className="mt-4 w-full flex items-center justify-center gap-2 py-2.5 rounded-xl border border-border text-xs font-bold text-text-secondary hover:border-[#B4912B]/30 hover:text-primary transition-all">
                                 <Download className="w-3.5 h-3.5" /> Export GST Report
                             </button>
                         </div>

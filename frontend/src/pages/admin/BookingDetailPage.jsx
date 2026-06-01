@@ -153,7 +153,7 @@ export default function BookingDetailPage() {
 
     if (!booking) {
         return (
-            <div className="p-12 text-center bg-surface border border-border rounded-3xl shadow-sm">
+            <div className="p-12 text-center bg-surface border border-border rounded-2xl shadow-sm">
                 <AlertCircle className="w-16 h-16 text-rose-500 mx-auto mb-6 opacity-20" />
                 <h2 className="text-2xl font-black uppercase tracking-tight mb-2">Protocol 404</h2>
                 <p className="text-xs text-text-muted font-bold uppercase tracking-widest mb-8">The requested booking record does not exist in the mainframe.</p>
@@ -231,7 +231,7 @@ export default function BookingDetailPage() {
                 {/* Main Content Area */}
                 <div className="lg:col-span-8 space-y-4">
                     {/* Primary Info Card */}
-                    <div className="bg-surface border border-border rounded-3xl p-6 relative overflow-hidden shadow-sm">
+                    <div className="bg-surface border border-border rounded-2xl p-6 relative overflow-hidden shadow-sm">
                         <div className="absolute right-0 top-0 w-64 h-64 bg-primary/5 -mr-32 -mt-32 rounded-full blur-3xl" />
                         
                         <div className="relative z-10 grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -278,7 +278,7 @@ export default function BookingDetailPage() {
                     {/* Services & Payment Sections Grid */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {/* Service Details */}
-                        <div className="bg-surface border border-border rounded-3xl p-5 space-y-4 shadow-sm">
+                        <div className="bg-surface border border-border rounded-2xl p-5 space-y-4 shadow-sm">
                             <div className="flex items-center justify-between pb-3 border-b border-border">
                                 <h3 className="text-[11px] font-black text-text uppercase tracking-widest">Service Profile</h3>
                                 <ShieldCheck className="w-4 h-4 text-text-muted opacity-30" />
@@ -293,7 +293,7 @@ export default function BookingDetailPage() {
                         </div>
 
                         {/* Payment Transaction */}
-                        <div className="bg-surface border border-border rounded-3xl p-5 space-y-4 shadow-sm">
+                        <div className="bg-surface border border-border rounded-2xl p-5 space-y-4 shadow-sm">
                             <div className="flex items-center justify-between pb-3 border-b border-border">
                                 <h3 className="text-[11px] font-black text-text uppercase tracking-widest">Payment Transaction</h3>
                                 <CreditCard className="w-4 h-4 text-text-muted opacity-30" />
@@ -391,7 +391,7 @@ export default function BookingDetailPage() {
                     </div>
 
                     {/* Internal Notes */}
-                    <div className="bg-surface border border-border rounded-3xl p-5 space-y-4 shadow-sm">
+                    <div className="bg-surface border border-border rounded-2xl p-5 space-y-4 shadow-sm">
                         <div className="flex items-center justify-between pb-3 border-b border-border">
                             <div className="flex items-center gap-2">
                                 <h3 className="text-[11px] font-black text-text uppercase tracking-widest">Internal Admin Notes</h3>
@@ -443,7 +443,7 @@ export default function BookingDetailPage() {
                 {/* Right Column - Intelligence & Metadata */}
                 <div className="lg:col-span-4 space-y-4">
                     {/* Customer Intelligence Card */}
-                    <div className="bg-surface border border-border rounded-3xl overflow-hidden shadow-sm customer-intelligence-header">
+                    <div className="bg-surface border border-border rounded-2xl overflow-hidden shadow-sm customer-intelligence-header">
                         <style>{`
                             html body #root .customer-intelligence-header h2,
                             html body #root .customer-intelligence-header h2 *,
@@ -479,7 +479,7 @@ export default function BookingDetailPage() {
                                 </div>
                                 <div>
                                     <h2 className="text-xl font-black uppercase tracking-tight leading-none mb-1">{client.name || 'GUEST'}</h2>
-                                    <span className="px-3 py-1 text-[8px] font-black uppercase tracking-widest rounded-full border loyalty-gold">
+                                    <span className="px-3 py-1 text-[8px] font-black uppercase tracking-widest rounded-xl border loyalty-gold">
                                         Loyalty Rank: Gold
                                     </span>
                                 </div>
@@ -515,7 +515,7 @@ export default function BookingDetailPage() {
                     </div>
 
                     {/* Appointment Venue */}
-                    <div className="bg-surface border border-border rounded-3xl p-5 space-y-4 shadow-sm">
+                    <div className="bg-surface border border-border rounded-2xl p-5 space-y-4 shadow-sm">
                         <h3 className="text-[10px] font-black text-text uppercase tracking-[0.3em] opacity-40">Appointment Venue</h3>
                         <div className="flex gap-4">
                             <div className="w-10 h-10 rounded-2xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
@@ -531,7 +531,7 @@ export default function BookingDetailPage() {
                     </div>
 
                     {/* Booking Audit */}
-                    <div className="bg-surface border border-border rounded-3xl p-5 space-y-4 shadow-sm">
+                    <div className="bg-surface border border-border rounded-2xl p-5 space-y-4 shadow-sm">
                         <h3 className="text-[10px] font-black text-text uppercase tracking-[0.3em] opacity-40">Booking Audit</h3>
                         <div className="space-y-4 relative before:absolute before:left-2 before:top-2 before:bottom-2 before:w-px before:bg-border">
                             <div className="relative pl-8 group">
@@ -556,7 +556,7 @@ export default function BookingDetailPage() {
             {/* Reassign Staff Modal */}
             {isReassignModalOpen && createPortal(
                 <div className="fixed inset-0 bg-[#0f172a]/80 backdrop-blur-sm z-[9999] flex items-center justify-center p-4">
-                    <div className="bg-white dark:bg-[#1e293b] w-full max-w-md rounded-3xl border border-slate-200/80 dark:border-slate-700/80 shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200">
+                    <div className="bg-white dark:bg-[#1e293b] w-full max-w-md rounded-2xl border border-slate-200/80 dark:border-slate-700/80 shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200">
                         {/* Header */}
                         <div className="flex items-center justify-between p-6 border-b border-slate-100 dark:border-slate-700/50">
                             <div className="flex items-center gap-3">

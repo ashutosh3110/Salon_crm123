@@ -341,7 +341,7 @@ export default function Transactions({ outletId }) {
                         <span>Loading transactions...</span>
                     </div>
                 ) : transactions.length === 0 ? (
-                    <div className="py-20 border border-dashed border-border rounded-3xl flex flex-col justify-center items-center text-center p-8 bg-surface-alt">
+                    <div className="py-20 border border-dashed border-border rounded-2xl flex flex-col justify-center items-center text-center p-8 bg-surface-alt">
                         <ArrowDownUp className="w-12 h-12 text-text-muted mb-4 opacity-55" />
                         <h4 className="text-base font-bold text-text">No Transactions Found</h4>
                         <p className="text-xs text-text-secondary max-w-sm mt-1">
@@ -377,19 +377,19 @@ export default function Transactions({ outletId }) {
                                                 </td>
                                                 <td className="px-6 py-4 whitespace-nowrap font-bold">
                                                     {t.type === 'transfer' ? (
-                                                        <span className="px-2.5 py-1 rounded-full text-[10px] uppercase bg-blue-50 text-blue-700 border border-blue-200/50">
+                                                        <span className="px-2.5 py-1 rounded-xl text-[10px] uppercase bg-blue-50 text-blue-700 border border-blue-200/50">
                                                             Transfer
                                                         </span>
                                                     ) : t.category === 'Owner Investment' || t.category === 'Owner Withdrawal' ? (
-                                                        <span className="px-2.5 py-1 rounded-full text-[10px] uppercase bg-violet-50 text-violet-700 border border-violet-200/50">
+                                                        <span className="px-2.5 py-1 rounded-xl text-[10px] uppercase bg-violet-50 text-violet-700 border border-violet-200/50">
                                                             Invest
                                                         </span>
                                                     ) : t.type === 'income' ? (
-                                                        <span className="px-2.5 py-1 rounded-full text-[10px] uppercase bg-emerald-50 text-emerald-700 border border-emerald-200/50">
+                                                        <span className="px-2.5 py-1 rounded-xl text-[10px] uppercase bg-emerald-50 text-emerald-700 border border-emerald-200/50">
                                                             Income
                                                         </span>
                                                     ) : (
-                                                        <span className="px-2.5 py-1 rounded-full text-[10px] uppercase bg-rose-50 text-rose-700 border border-rose-200/50">
+                                                        <span className="px-2.5 py-1 rounded-xl text-[10px] uppercase bg-rose-50 text-rose-700 border border-rose-200/50">
                                                             Expense
                                                         </span>
                                                     )}
@@ -472,7 +472,7 @@ export default function Transactions({ outletId }) {
                                 initial={{ opacity: 0, scale: 0.95 }} 
                                 animate={{ opacity: 1, scale: 1 }} 
                                 exit={{ opacity: 0, scale: 0.95 }}
-                                className="bg-surface border border-border/40 w-full max-w-lg shadow-2xl rounded-3xl relative flex flex-col max-h-[90vh] transition-all text-left"
+                                className="bg-surface border border-border/40 w-full max-w-lg shadow-2xl rounded-2xl relative flex flex-col max-h-[90vh] transition-all text-left"
                                 onClick={e => e.stopPropagation()}
                             >
                                 {/* Modal Header */}
@@ -487,7 +487,7 @@ export default function Transactions({ outletId }) {
                                     <button
                                         type="button"
                                         onClick={() => setIsOpen(false)}
-                                        className="p-2 text-text-muted hover:text-rose-500 rounded-full hover:bg-surface-alt transition-colors"
+                                        className="p-2 text-text-muted hover:text-rose-500 rounded-xl hover:bg-surface-alt transition-colors"
                                     >
                                         <X className="w-5 h-5" />
                                     </button>

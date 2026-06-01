@@ -138,13 +138,13 @@ export default function SACMSPage() {
             <label className="text-[10px] font-black text-text-muted uppercase tracking-wider">{label}</label>
             {type === 'textarea' ? (
                 <textarea
-                    className="w-full bg-surface border border-border p-3 text-sm focus:border-primary outline-none transition-colors min-h-[100px]"
+                    className="w-full bg-surface border border-border p-3 text-sm focus:border-[#B4912B] outline-none transition-colors min-h-[100px]"
                     value={data[page][field]}
                     onChange={(e) => updateField(page, field, e.target.value)}
                 />
             ) : (
                 <input
-                    className="w-full bg-surface border border-border px-3 py-2 text-sm focus:border-primary outline-none transition-colors"
+                    className="w-full bg-surface border border-border px-3 py-2 text-sm focus:border-[#B4912B] outline-none transition-colors"
                     value={data[page][field]}
                     onChange={(e) => updateField(page, field, e.target.value)}
                 />
@@ -156,7 +156,7 @@ export default function SACMSPage() {
         <div className="space-y-6 pb-20 sa-panel">
             {/* Toast feedback */}
             {toast && (
-                <div className="fixed top-20 right-8 bg-primary text-white px-6 py-3 shadow-2xl z-[100] flex items-center gap-3 animate-in slide-in-from-right-10 duration-500">
+                <div className="fixed top-20 right-8 bg-[#B4912B] text-white px-6 py-3 shadow-2xl z-[100] flex items-center gap-3 animate-in slide-in-from-right-10 duration-500">
                     <CheckCircle2 size={18} />
                     <span className="text-xs font-bold uppercase tracking-widest">{toast}</span>
                 </div>
@@ -175,7 +175,7 @@ export default function SACMSPage() {
                     <button
                         onClick={handleSave}
                         disabled={saving}
-                        className="px-6 py-2.5 bg-black text-white text-[10px] font-black uppercase tracking-widest hover:bg-primary transition-all flex items-center gap-2 disabled:opacity-50"
+                        className="px-6 py-2.5 bg-[#B4912B] text-white text-[10px] font-black uppercase tracking-widest hover:bg-[#8B6F23] transition-all flex items-center gap-2 disabled:opacity-50 shadow-lg shadow-[#B4912B]/20"
                     >
                         {saving ? 'Saving...' : <><Save size={14} /> Save Global Changes</>}
                     </button>
@@ -202,7 +202,7 @@ export default function SACMSPage() {
             <div className="grid grid-cols-1 md:grid-cols-12 gap-8 mt-8 relative">
                 {loading && (
                     <div className="absolute inset-0 bg-white/50 backdrop-blur-sm z-50 flex items-center justify-center min-h-[400px]">
-                        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+                        <div className="animate-spin rounded-xl h-12 w-12 border-t-2 border-b-2 border-[#B4912B]"></div>
                     </div>
                 )}
                 {/* Editor Area */}
@@ -213,7 +213,7 @@ export default function SACMSPage() {
                             {/* Hero & Transition Section */}
                             <section className="space-y-6">
                                 <div className="flex items-center gap-4">
-                                    <div className="w-10 h-10 bg-primary/10 flex items-center justify-center text-primary">
+                                    <div className="w-10 h-10 bg-blue-50 flex items-center justify-center text-primary">
                                         <Type size={18} />
                                     </div>
                                     <h2 className="text-lg font-bold tracking-tight">Website Introduction</h2>
@@ -237,7 +237,7 @@ export default function SACMSPage() {
                             {/* Features Grid */}
                             <section className="space-y-6">
                                 <div className="flex items-center gap-4">
-                                    <div className="w-10 h-10 bg-primary/10 flex items-center justify-center text-primary">
+                                    <div className="w-10 h-10 bg-emerald-50 flex items-center justify-center text-primary">
                                         <Package size={18} />
                                     </div>
                                     <h2 className="text-lg font-bold tracking-tight">Key Features</h2>
@@ -249,7 +249,7 @@ export default function SACMSPage() {
                                                 <div className="text-[10px] font-black text-primary uppercase">MODULE 0{idx + 1}</div>
                                                 <div className="space-y-3">
                                                     <input
-                                                        className="w-full bg-transparent border-b border-border/60 py-1 text-sm font-bold focus:border-primary outline-none"
+                                                        className="w-full bg-transparent border-b border-border/60 py-1 text-sm font-bold focus:border-[#B4912B] outline-none"
                                                         value={feature.title}
                                                         onChange={(e) => {
                                                             const newFeatures = [...data.landing_features];
@@ -258,7 +258,7 @@ export default function SACMSPage() {
                                                         }}
                                                     />
                                                     <textarea
-                                                        className="w-full bg-transparent border-b border-border/60 py-1 text-[11px] focus:border-primary outline-none min-h-[60px] resize-none"
+                                                        className="w-full bg-transparent border-b border-border/60 py-1 text-[11px] focus:border-[#B4912B] outline-none min-h-[60px] resize-none"
                                                         value={feature.desc}
                                                         onChange={(e) => {
                                                             const newFeatures = [...data.landing_features];
@@ -276,7 +276,7 @@ export default function SACMSPage() {
                             {/* Testimonials */}
                             <section className="space-y-6">
                                 <div className="flex items-center gap-4">
-                                    <div className="w-10 h-10 bg-primary/10 flex items-center justify-center text-primary">
+                                    <div className="w-10 h-10 bg-indigo-50 flex items-center justify-center text-primary">
                                         <Heart size={18} />
                                     </div>
                                     <h2 className="text-lg font-bold tracking-tight">Customer Reviews</h2>
@@ -388,7 +388,7 @@ export default function SACMSPage() {
                         <section className="space-y-6">
                             <div className="flex items-center justify-between">
                                 <div className="flex items-center gap-4">
-                                    <div className="w-10 h-10 bg-primary/10 flex items-center justify-center text-primary">
+                                    <div className="w-10 h-10 bg-rose-50 flex items-center justify-center text-primary">
                                         <HelpCircle size={18} />
                                     </div>
                                     <h2 className="text-lg font-bold tracking-tight">Landing Page FAQs</h2>
@@ -398,7 +398,7 @@ export default function SACMSPage() {
                                         const newF = [...data.landing_faqs, { id: Date.now(), question: 'New Question?', answer: 'New Answer...' }];
                                         setData(prev => ({ ...prev, landing_faqs: newF }));
                                     }}
-                                    className="px-4 py-2 bg-text text-white text-[10px] font-black uppercase tracking-widest hover:bg-primary transition-all flex items-center gap-2"
+                                    className="px-4 py-2 bg-[#B4912B] text-white text-[10px] font-black uppercase tracking-widest hover:bg-[#8B6F23] transition-all flex items-center gap-2 shadow-lg shadow-[#B4912B]/20"
                                 >
                                     <Plus size={14} /> Add FAQ
                                 </button>
@@ -419,7 +419,7 @@ export default function SACMSPage() {
                                             <div className="space-y-1.5">
                                                 <label className="text-[9px] font-black text-text-muted uppercase tracking-widest">Question</label>
                                                 <input
-                                                    className="w-full bg-white border border-border px-3 py-2 text-sm font-bold focus:border-primary outline-none"
+                                                    className="w-full bg-white border border-border px-3 py-2 text-sm font-bold focus:border-[#B4912B] outline-none"
                                                     value={faq.question}
                                                     onChange={(e) => {
                                                         const newF = [...data.landing_faqs];
@@ -431,7 +431,7 @@ export default function SACMSPage() {
                                             <div className="space-y-1.5">
                                                 <label className="text-[9px] font-black text-text-muted uppercase tracking-widest">Answer</label>
                                                 <textarea
-                                                    className="w-full bg-white border border-border p-3 text-sm focus:border-primary outline-none min-h-[80px]"
+                                                    className="w-full bg-white border border-border p-3 text-sm focus:border-[#B4912B] outline-none min-h-[80px]"
                                                     value={faq.answer}
                                                     onChange={(e) => {
                                                         const newF = [...data.landing_faqs];
@@ -475,10 +475,10 @@ export default function SACMSPage() {
                                         )}
                                         {activeTab === 'legal' && data.legal_privacy && data.legal_terms && (
                                             <div className="p-16 text-white space-y-12 w-full">
-                                                <h1 className="text-5xl font-black border-b border-primary pb-4 inline-block">{data.legal_privacy.title}</h1>
+                                                <h1 className="text-5xl font-black border-b border-[#B4912B] pb-4 inline-block">{data.legal_privacy.title}</h1>
                                                 <div className="prose prose-invert max-w-none opacity-60 text-sm leading-relaxed" dangerouslySetInnerHTML={{ __html: data.legal_privacy.content }} />
                                                 
-                                                <h1 className="text-5xl font-black mt-32 border-b border-primary pb-4 inline-block">{data.legal_terms.title}</h1>
+                                                <h1 className="text-5xl font-black mt-32 border-b border-[#B4912B] pb-4 inline-block">{data.legal_terms.title}</h1>
                                                 <div className="prose prose-invert max-w-none opacity-60 text-sm leading-relaxed" dangerouslySetInnerHTML={{ __html: data.legal_terms.content }} />
                                             </div>
                                         )}

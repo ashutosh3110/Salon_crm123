@@ -11,7 +11,7 @@ export default function StockOverviewPage() {
                 </div>
             </div>
 
-            <div className="bg-surface p-6 border border-border allow-curve rounded-3xl min-h-[600px] shadow-sm">
+            <div className="bg-surface p-6 border border-border allow-curve rounded-2xl min-h-[600px] shadow-sm">
                 <StockOverview />
             </div>
         </div>

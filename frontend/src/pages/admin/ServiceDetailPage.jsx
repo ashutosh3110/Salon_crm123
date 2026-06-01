@@ -207,7 +207,7 @@ export default function ServiceDetailPage() {
                                     </div>
                                     <h3 className="text-sm font-black text-slate-900 uppercase tracking-widest">Operational Outlets</h3>
                                 </div>
-                                <div className="px-4 py-1.5 bg-slate-900 text-white rounded-full text-[10px] font-black uppercase tracking-widest">
+                                <div className="px-4 py-1.5 bg-slate-900 text-white rounded-xl text-[10px] font-black uppercase tracking-widest">
                                     {serviceOutlets.length} TOTAL BRANCHES
                                 </div>
                             </div>

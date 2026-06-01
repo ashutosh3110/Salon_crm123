@@ -40,7 +40,7 @@ export default function InvoicesPage() {
                 <p className="text-[10px] font-black text-text-muted mt-1 uppercase tracking-[0.2em]">{invoices.length} committed transactions</p>
             </div>
 
-            <div className="flex items-center bg-surface-alt rounded-none border border-border px-4 py-3 max-w-md shadow-sm transition-all focus-within:ring-2 focus-within:ring-primary/20">
+            <div className="flex items-center bg-surface-alt rounded-xl border border-border px-4 py-3 max-w-md shadow-sm transition-all focus-within:ring-2 focus-within:ring-primary/20">
                 <Search className="w-4 h-4 text-text-muted mr-3" />
                 <input
                     type="text"
@@ -51,10 +51,10 @@ export default function InvoicesPage() {
                 />
             </div>
 
-            <div className="bg-surface rounded-none border border-border shadow-sm overflow-hidden">
+            <div className="bg-surface rounded-xl border border-border shadow-sm overflow-hidden">
                 {loading ? (
                     <div className="flex items-center justify-center py-24">
-                        <div className="w-10 h-10 border-2 border-primary/20 border-t-primary rounded-none animate-spin" />
+                        <div className="w-10 h-10 border-2 border-primary/20 border-t-primary rounded-xl animate-spin" />
                     </div>
                 ) : filtered.length === 0 ? (
                     <div className="text-center py-24">
@@ -89,7 +89,7 @@ export default function InvoicesPage() {
                                                 </span>
                                             </td>
                                             <td className="px-8 py-5">
-                                                <span className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-none text-[9px] font-black border uppercase tracking-widest ${statusColors[inv.paymentStatus] || 'bg-slate-50 text-slate-500 border-slate-100'}`}>
+                                                <span className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-xl text-[9px] font-black border uppercase tracking-widest ${statusColors[inv.paymentStatus] || 'bg-slate-50 text-slate-500 border-slate-100'}`}>
                                                     {inv.paymentStatus || 'PAID'}
                                                 </span>
                                             </td>

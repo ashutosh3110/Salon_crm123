@@ -419,7 +419,7 @@ export default function RolesPage() {
             </div>
 
             {/* Filters - Compact */}
-            <div className="!bg-white dark:!bg-slate-900 p-1.5 !border-[1.5px] !border-[#e2e8f0] dark:!border-slate-800 flex flex-col md:flex-row gap-2 !rounded-full items-center shadow-sm">
+            <div className="!bg-white dark:!bg-slate-900 p-1.5 !border-[1.5px] !border-[#e2e8f0] dark:!border-slate-800 flex flex-col md:flex-row gap-2 !rounded-xl items-center shadow-sm">
                 <div className="flex items-center gap-3 flex-1 h-10 px-4">
                     <Search className="w-4 h-4 text-slate-400 shrink-0" />
                     <input
@@ -435,7 +435,7 @@ export default function RolesPage() {
                         <option value="all">ALL ROLES</option>
                     </select>
                 </div>
-                <div className="h-9 px-4 flex items-center gap-2 border-[1.5px] border-border !rounded-full cursor-pointer hover:bg-slate-50 transition-colors mr-1">
+                <div className="h-9 px-4 flex items-center gap-2 border-[1.5px] border-border !rounded-xl cursor-pointer hover:bg-slate-50 transition-colors mr-1">
                     <Download className="w-3.5 h-3.5 text-text" />
                     <span className="text-[10px] font-black uppercase tracking-wider text-text">Export</span>
                 </div>
@@ -526,7 +526,7 @@ export default function RolesPage() {
                                                 <span>{Math.round(((role.permissions?.length || 0) / AVAILABLE_PERMISSIONS.length) * 100)}%</span>
                                             </div>
                                             <div className="w-full h-1 bg-slate-100 rounded-full overflow-hidden">
-                                                <div className="h-full rounded-full transition-all duration-500" 
+                                                <div className="h-full rounded-xl transition-all duration-500" 
                                                      style={{ width: `${Math.round(((role.permissions?.length || 0) / AVAILABLE_PERMISSIONS.length) * 100)}%`, backgroundColor: theme.hex }} />
                                             </div>
                                         </div>
@@ -635,7 +635,7 @@ export default function RolesPage() {
                                         <h3 className="text-[12px] font-black text-text uppercase tracking-widest">Assign Permissions</h3>
                                         <p className="text-[9px] font-bold text-slate-400 uppercase tracking-wider mt-1">Select the modules this role can access</p>
                                     </div>
-                                    <div className="px-3 py-1.5 bg-[#FEF3C7] rounded-full">
+                                    <div className="px-3 py-1.5 bg-[#FEF3C7] rounded-xl">
                                         <span className="text-[10px] font-black text-[#D97706] uppercase tracking-wider">{form.permissions.length} Selected</span>
                                     </div>
                                 </div>
@@ -670,7 +670,7 @@ export default function RolesPage() {
                                                             <p className="text-[9px] font-bold text-slate-500 uppercase tracking-widest leading-none opacity-80">{group.description}</p>
                                                         </div>
                                                     </div>
-                                                    <div className="flex items-center gap-4 bg-white px-3 py-1.5 rounded-full shadow-sm">
+                                                    <div className="flex items-center gap-4 bg-white px-3 py-1.5 rounded-xl shadow-sm">
                                                         {group.subPermissions && (
                                                             <span className="text-[10px] font-black text-slate-400 uppercase">
                                                                 {checkedSubCount}/{groupSubIds.length}
@@ -721,7 +721,7 @@ export default function RolesPage() {
                             <div className="flex items-center gap-3 w-full sm:w-1/3">
                                 <div className="flex-1 h-1.5 bg-slate-100 rounded-full overflow-hidden">
                                     <div
-                                        className="h-full bg-[#B4912B] transition-all duration-500 rounded-full"
+                                        className="h-full bg-[#B4912B] transition-all duration-500 rounded-xl"
                                         style={{ width: `${(form.permissions.length / AVAILABLE_PERMISSIONS.length) * 100}%` }}
                                     />
                                 </div>
@@ -731,13 +731,13 @@ export default function RolesPage() {
                                 <button
                                     type="button"
                                     onClick={() => setShowModal(false)}
-                                    className="flex-1 sm:flex-none px-8 py-3.5 bg-slate-100 text-slate-600 hover:text-slate-900 hover:bg-slate-200 text-[10px] font-black uppercase tracking-widest rounded-full transition-all"
+                                    className="flex-1 sm:flex-none px-8 py-3.5 bg-slate-100 text-slate-600 hover:text-slate-900 hover:bg-slate-200 text-[10px] font-black uppercase tracking-widest rounded-xl transition-all"
                                 >
                                     Cancel
                                 </button>
                                 <button
                                     type="submit"
-                                    className="flex-1 sm:flex-none px-10 py-3.5 bg-[#B4912B] text-white text-[10px] font-black uppercase tracking-widest shadow-lg shadow-[#B4912B]/30 hover:bg-black hover:shadow-black/20 rounded-full transition-all active:scale-[0.98]"
+                                    className="flex-1 sm:flex-none px-10 py-3.5 bg-[#B4912B] text-white text-[10px] font-black uppercase tracking-widest shadow-lg shadow-[#B4912B]/30 hover:bg-black hover:shadow-black/20 rounded-xl transition-all active:scale-[0.98]"
                                 >
                                     {editingRole ? 'Save Changes' : 'Create Role'}
                                 </button>

@@ -395,7 +395,7 @@ export default function ServicesPage({ tab = 'list' }) {
             {/* Service Form Modal */}
             {isFormModalOpen && createPortal(
                 <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 sm:p-6 overflow-y-auto bg-slate-900/60 backdrop-blur-sm transition-all" onClick={() => setIsFormModalOpen(false)}>
-                    <div className="relative bg-white dark:bg-slate-800 w-full max-w-6xl shadow-2xl animate-in fade-in zoom-in-95 duration-300 flex flex-col h-[85vh] my-auto rounded-none border border-border overflow-hidden z-10 admin-panel" onClick={(e) => e.stopPropagation()}>
+                    <div className="relative bg-white dark:bg-slate-800 w-full max-w-6xl shadow-2xl animate-in fade-in zoom-in-95 duration-300 flex flex-col h-[85vh] my-auto rounded-xl border border-border overflow-hidden z-10 admin-panel" onClick={(e) => e.stopPropagation()}>
                         <div className="flex items-center justify-between px-6 py-3 border-b border-border bg-slate-50/50">
                             <div className="flex items-center gap-3">
                                 <Scissors className="w-5 h-5 text-text shrink-0" />

@@ -152,7 +152,7 @@ export default function FeedbackList() {
                                             </div>
                                         </td>
                                         <td className="px-6 py-5">
-                                            <div className={`px-2.5 py-1 rounded-none text-[8px] font-black uppercase tracking-widest w-fit mx-auto border ${
+                                            <div className={`px-2.5 py-1 rounded-xl text-[8px] font-black uppercase tracking-widest w-fit mx-auto border ${
                                                 fb.status === 'Approved' ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20' :
                                                 fb.status === 'Rejected' ? 'bg-rose-500/10 text-rose-600 border-rose-500/20' :
                                                 'bg-amber-500/10 text-amber-600 border-amber-500/20'
@@ -202,7 +202,7 @@ export default function FeedbackList() {
             {/* Modal */}
             {selectedFeedback && (
                 <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-[200] flex items-center justify-center p-4">
-                    <div className="bg-white rounded-3xl w-full max-w-lg overflow-hidden shadow-2xl animate-in zoom-in-95 duration-200 border border-border">
+                    <div className="bg-white rounded-2xl w-full max-w-lg overflow-hidden shadow-2xl animate-in zoom-in-95 duration-200 border border-border">
                         <div className="p-6 border-b border-border flex justify-between items-center bg-surface/50">
                             <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-text-muted">Review Moderation</h3>
                             <button onClick={() => setSelectedFeedback(null)} className="p-2 hover:bg-border rounded-xl transition-colors">
@@ -211,7 +211,7 @@ export default function FeedbackList() {
                         </div>
                         
                         <div className="p-8 space-y-6 text-center">
-                            <div className="inline-flex w-20 h-20 rounded-3xl bg-primary text-white items-center justify-center text-3xl font-black shadow-2xl shadow-primary/30 mx-auto">
+                            <div className="inline-flex w-20 h-20 rounded-2xl bg-primary text-white items-center justify-center text-3xl font-black shadow-2xl shadow-primary/30 mx-auto">
                                 {(selectedFeedback.customerId?.name || selectedFeedback.customerName).charAt(0)}
                             </div>
                             

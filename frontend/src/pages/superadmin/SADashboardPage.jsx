@@ -30,8 +30,8 @@ const MOCK_CHURN = superAdminData.churn;
 const planColors = {
     free: 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700',
     basic: 'bg-blue-50 dark:bg-blue-950/30 text-blue-600 dark:text-blue-400 border-blue-200 dark:border-blue-800',
-    pro: 'bg-primary/10 text-primary border-primary/20',
-    premium: 'bg-primary/10 text-primary border-primary/20',
+    pro: 'bg-primary/10 text-primary border-[#B4912B]/20',
+    premium: 'bg-primary/10 text-primary border-[#B4912B]/20',
     enterprise: 'bg-amber-50 dark:bg-amber-950/30 text-amber-600 dark:text-amber-400 border-amber-200 dark:border-amber-800',
 };
 const statusColors = {
@@ -72,29 +72,100 @@ const renderPieLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent })
     );
 };
 
-/* ─── Metric card ────────────────────────────────────────────────────────── */
 function MetricCard({ label, value, icon: Icon, gradient, shadow, change, prefix = '', loading, to, textColor = 'text-text' }) {
+    let colorTheme = 'emerald';
+    if (textColor.includes('blue')) colorTheme = 'blue';
+    else if (textColor.includes('amber')) colorTheme = 'amber';
+    else if (textColor.includes('slate')) colorTheme = 'slate';
+    else if (textColor.includes('violet') || textColor.includes('purple')) colorTheme = 'violet';
+    else if (textColor.includes('red') || textColor.includes('rose')) colorTheme = 'red';
+    else if (textColor.includes('primary')) colorTheme = 'yellow';
+
+    const themes = {
+        emerald: {
+            iconColorClass: '!text-emerald-600 dark:!text-emerald-400',
+            iconBgClass: '!bg-emerald-100 dark:!bg-emerald-500/20',
+            cardBgClass: '!bg-emerald-50 dark:!bg-emerald-500/5',
+            cardBorderClass: '!border-emerald-100 dark:!border-emerald-500/15 hover:!border-emerald-300 dark:hover:!border-emerald-500/50'
+        },
+        blue: {
+            iconColorClass: '!text-blue-600 dark:!text-blue-400',
+            iconBgClass: '!bg-blue-100 dark:!bg-blue-500/20',
+            cardBgClass: '!bg-blue-50 dark:!bg-blue-500/5',
+            cardBorderClass: '!border-blue-100 dark:!border-blue-500/15 hover:!border-blue-300 dark:hover:!border-blue-500/50'
+        },
+        amber: {
+            iconColorClass: '!text-amber-600 dark:!text-amber-400',
+            iconBgClass: '!bg-amber-100 dark:!bg-amber-500/20',
+            cardBgClass: '!bg-amber-50 dark:!bg-amber-500/5',
+            cardBorderClass: '!border-amber-100 dark:!border-amber-500/15 hover:!border-amber-300 dark:hover:!border-amber-500/50'
+        },
+        slate: {
+            iconColorClass: '!text-slate-600 dark:!text-slate-400',
+            iconBgClass: '!bg-slate-100 dark:!bg-slate-500/20',
+            cardBgClass: '!bg-slate-50 dark:!bg-slate-500/5',
+            cardBorderClass: '!border-slate-200 dark:!border-slate-500/15 hover:!border-slate-300 dark:hover:!border-slate-500/50'
+        },
+        violet: {
+            iconColorClass: '!text-violet-600 dark:!text-violet-400',
+            iconBgClass: '!bg-violet-100 dark:!bg-violet-500/20',
+            cardBgClass: '!bg-violet-50 dark:!bg-violet-500/5',
+            cardBorderClass: '!border-violet-100 dark:!border-violet-500/15 hover:!border-violet-300 dark:hover:!border-violet-500/50'
+        },
+        red: {
+            iconColorClass: '!text-red-600 dark:!text-red-400',
+            iconBgClass: '!bg-red-100 dark:!bg-red-500/20',
+            cardBgClass: '!bg-red-50 dark:!bg-red-500/5',
+            cardBorderClass: '!border-red-100 dark:!border-red-500/15 hover:!border-red-300 dark:hover:!border-red-500/50'
+        },
+        yellow: {
+            iconColorClass: '!text-[#B4912B] dark:!text-[#D4AF37]',
+            iconBgClass: '!bg-[#FDF9ED] dark:!bg-[#B4912B]/20',
+            cardBgClass: '!bg-[#FFFDF7] dark:!bg-[#B4912B]/5',
+            cardBorderClass: '!border-[#FDF5DA] dark:!border-[#B4912B]/15 hover:!border-[#E6C975] dark:hover:!border-[#B4912B]/50'
+        }
+    };
+    
+    const { iconColorClass, iconBgClass, cardBgClass, cardBorderClass } = themes[colorTheme] || themes.emerald;
+
     const content = (
-        <div className={`bg-surface rounded-2xl border border-border p-5 hover:border-primary/20 hover:shadow-xl hover:-translate-y-1 transition-all group shadow-sm relative overflow-hidden${to ? ' cursor-pointer' : ''}`}>
-            <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
-                <ArrowUpRight className="w-4 h-4 text-primary" />
-            </div>
-            <div className="flex items-center justify-between mb-4">
-                <div className={`w-11 h-11 rounded-xl bg-gradient-to-br ${gradient} flex items-center justify-center shadow-lg ${shadow} group-hover:scale-110 transition-transform`}>
-                    <Icon className="w-5 h-5 text-white" />
+        <div className={`!rounded-[16px] !border p-3.5 shadow-[0_2px_8px_-3px_rgba(0,0,0,0.04)] group flex flex-col justify-between min-h-[118px] transition-all hover:-translate-y-0.5 active:scale-[0.98] hover:shadow-md ${cardBgClass} ${cardBorderClass}`}>
+            <div className="flex !items-start justify-between w-full">
+                <div className="flex !items-start gap-3 !text-left">
+                    <div className={`w-9 h-9 rounded-full flex items-center justify-center shrink-0 ${iconBgClass}`}>
+                        <Icon className={`w-4 h-4 ${iconColorClass}`} strokeWidth={2} />
+                    </div>
+                    
+                    <div className="flex flex-col !items-start !text-left">
+                        <span style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '0.03em' }} className="uppercase text-slate-500 dark:text-slate-450 leading-none mb-1.5 !text-left">
+                            {label}
+                        </span>
+                        {loading ? (
+                            <div className="h-6 w-20 bg-slate-200 dark:bg-slate-700 rounded-lg animate-pulse" />
+                        ) : (
+                            <h3 style={{ fontSize: '24px', fontWeight: 850 }} className="text-slate-800 dark:text-slate-50 leading-none tracking-tight !text-left">
+                                {prefix}{typeof value === 'number' ? value.toLocaleString('en-IN') : value}
+                            </h3>
+                        )}
+                        <span style={{ fontSize: '12px', fontWeight: 500 }} className="text-slate-500 dark:text-slate-400 mt-1.5 !text-left">
+                            Stats
+                        </span>
+                    </div>
                 </div>
                 {change !== undefined && (
-                    <span className={`text-[11px] font-bold px-2 py-0.5 rounded-full ${change >= 0 ? 'bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400' : 'bg-red-50 dark:bg-red-950/30 text-red-500 dark:text-red-400'}`}>
+                    <span className={`text-[11px] font-bold px-2 py-0.5 rounded-full shrink-0 ${change >= 0 ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-400' : 'bg-red-50 text-red-600 dark:bg-red-500/20 dark:text-red-400'}`}>
                         {change >= 0 ? '↑' : '↓'} {Math.abs(change)}%
                     </span>
                 )}
             </div>
-            {loading ? (
-                <div className="h-8 w-20 bg-gray-100 rounded-lg animate-pulse mb-1" />
-            ) : (
-                <div className={`text-2xl font-black tracking-tight ${textColor}`}>{prefix}{typeof value === 'number' ? value.toLocaleString('en-IN') : value}</div>
+            {to && (
+                <div style={{ fontSize: '11px', fontWeight: 700 }} className="flex !items-center gap-1 mt-auto pt-2 transition-all opacity-90 group-hover:opacity-100 whitespace-nowrap !text-left !justify-start">
+                    <span className={iconColorClass}>View details</span>
+                    <span style={{ fontSize: '12px' }} className={`inline-block transition-transform duration-200 group-hover:translate-x-1 leading-none ${iconColorClass}`}>
+                        →
+                    </span>
+                </div>
             )}
-            <div className="text-xs text-text-muted font-medium mt-1">{label}</div>
         </div>
     );
     if (to) return <Link to={to} className="block no-underline">{content}</Link>;
@@ -253,7 +324,7 @@ export default function SADashboardPage() {
     const salonsWithoutPlan = currentPlanDist.find(p => p.name === 'Free')?.value || 0;
 
     const metricCards = [
-        { label: 'Total Registered', value: kpi.totalSalons, icon: Building2, gradient: 'from-primary to-[#8B6F23]', shadow: 'shadow-primary/20', to: '/superadmin/tenants', textColor: 'text-primary' },
+        { label: 'Total Registered', value: kpi.totalSalons, icon: Building2, gradient: 'from-emerald-500 to-teal-600', shadow: 'shadow-[#B4912B]/20', to: '/superadmin/tenants', textColor: 'text-primary' },
         { label: 'Active Salons', value: kpi.activeSubs, icon: CheckCircle2, gradient: 'from-emerald-500 to-teal-600', shadow: 'shadow-emerald-500/20', to: '/superadmin/tenants?status=active', textColor: 'text-emerald-600 dark:text-emerald-400' },
         { label: 'Pending Approval', value: kpi.pendingSalons, icon: Clock, gradient: 'from-blue-500 to-indigo-600', shadow: 'shadow-blue-500/20', to: '/superadmin/tenants?status=pending', textColor: 'text-blue-600 dark:text-blue-400' },
         { label: 'Salons With Plan', value: salonsWithPlan, icon: Crown, gradient: 'from-amber-500 to-orange-600', shadow: 'shadow-amber-500/20', to: '/superadmin/tenants?plan=subscribed', textColor: 'text-amber-600 dark:text-amber-400' },
@@ -272,7 +343,7 @@ export default function SADashboardPage() {
                     <h1 className="text-2xl font-black text-text tracking-tight flex items-center gap-2">
                         Platform Overview
                         <span className="flex h-2.5 w-2.5 relative">
-                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                            <span className="animate-ping absolute inline-flex h-full w-full rounded-xl bg-emerald-400 opacity-75"></span>
                             <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
                         </span>
                     </h1>
@@ -282,7 +353,7 @@ export default function SADashboardPage() {
                     <button
                         onClick={() => fetchStats(true)}
                         disabled={refreshing}
-                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-surface border border-border text-text-secondary text-xs font-semibold hover:border-primary/30 hover:text-primary transition-all hover:shadow-sm"
+                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-surface border border-border text-text-secondary text-xs font-semibold hover:border-[#B4912B]/30 hover:text-primary transition-all hover:shadow-sm"
                     >
                         <RefreshCw className={`w-3.5 h-3.5 ${refreshing ? 'animate-spin' : ''}`} /> Refresh
                     </button>
@@ -293,7 +364,7 @@ export default function SADashboardPage() {
             <div className="bg-surface/80 backdrop-blur-md rounded-2xl border border-border p-4 shadow-sm flex flex-col lg:flex-row lg:items-center justify-between gap-4">
                 <div className="flex flex-wrap items-center gap-2">
                     <span className="text-xs font-bold text-text-secondary uppercase tracking-wider flex items-center gap-1.5 mr-1">
-                        <Calendar className="w-4 h-4 text-primary" /> Filter Period:
+                        <Calendar className="w-4 h-4 text-emerald-500" /> Filter Period:
                     </span>
                     {[
                         { key: 'all', label: 'All Time' },
@@ -309,8 +380,8 @@ export default function SADashboardPage() {
                             onClick={() => applyPreset(p.key)}
                             className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all border ${
                                 datePeriod === p.key
-                                    ? 'bg-primary text-white border-primary shadow-md shadow-primary/20 scale-95'
-                                    : 'bg-white text-text-secondary border-border hover:border-primary/45 hover:text-primary hover:bg-primary/5'
+                                    ? 'bg-[#B4912B] text-white border-[#B4912B] shadow-md shadow-[#B4912B]/20 scale-95'
+                                    : 'bg-white text-text-secondary border-border hover:border-[#B4912B]/45 hover:text-[#B4912B] hover:bg-[#B4912B]/5'
                             }`}
                         >
                             {p.label}
@@ -327,7 +398,7 @@ export default function SADashboardPage() {
                                 type="date"
                                 value={startDate}
                                 onChange={e => setStartDate(e.target.value)}
-                                className="px-2.5 py-1.5 rounded-lg border border-border text-xs text-text bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                                className="px-2.5 py-1.5 rounded-lg border border-border text-xs text-text bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-[#B4912B] transition-all"
                             />
                         </div>
                         <span className="text-xs text-text-muted font-bold">to</span>
@@ -337,19 +408,19 @@ export default function SADashboardPage() {
                                 type="date"
                                 value={endDate}
                                 onChange={e => setEndDate(e.target.value)}
-                                className="px-2.5 py-1.5 rounded-lg border border-border text-xs text-text bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                                className="px-2.5 py-1.5 rounded-lg border border-border text-xs text-text bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-[#B4912B] transition-all"
                             />
                         </div>
                         <button
                             onClick={handleApplyFilters}
-                            className="px-3.5 py-1.5 bg-primary text-white text-xs font-bold rounded-lg hover:bg-primary/95 shadow-md shadow-primary/20 transition-all"
+                            className="px-3.5 py-1.5 bg-[#B4912B] text-white text-xs font-bold rounded-lg hover:bg-[#8B6F23] shadow-md shadow-[#B4912B]/20 transition-all"
                         >
                             Apply
                         </button>
                         {(startDate || endDate) && (
                             <button
                                 onClick={handleResetFilters}
-                                className="px-2 py-1 bg-surface border border-border text-text-secondary text-[11px] font-bold rounded-lg hover:border-primary/30 hover:text-primary transition-all"
+                                className="px-2 py-1 bg-surface border border-border text-text-secondary text-[11px] font-bold rounded-lg hover:border-[#B4912B]/30 hover:text-primary transition-all"
                             >
                                 Reset
                             </button>
@@ -371,14 +442,14 @@ export default function SADashboardPage() {
                 {/* Monthly Revenue — AreaChart (spans 2 cols) */}
                 <div
                     onClick={() => navigate('/superadmin/billing')}
-                    className="lg:col-span-2 bg-surface rounded-2xl border border-border shadow-sm p-5 group hover:shadow-md transition-all cursor-pointer hover:border-primary/20"
+                    className="lg:col-span-2 bg-surface rounded-2xl border border-border shadow-sm p-5 group hover:shadow-md transition-all cursor-pointer hover:border-[#B4912B]/20"
                 >
                     <SectionHeader
                         title="Income Trends"
                         subtitle="Earnings performance over the last 6 months"
                         action={
                             <div className="flex items-center gap-3">
-                                <span className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/30 px-2 py-1 rounded-full">
+                                <span className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/30 px-2 py-1 rounded-xl">
                                     ↑ 11.9% MoM
                                 </span>
                                 <Link to="/superadmin/billing" className="p-1.5 rounded-lg bg-primary/5 text-primary opacity-0 group-hover:opacity-100 transition-all hover:bg-primary hover:text-white">
@@ -409,7 +480,7 @@ export default function SADashboardPage() {
                 {/* Plan Distribution — PieChart */}
                 <div
                     onClick={() => navigate('/superadmin/tenants')}
-                    className="bg-surface rounded-2xl border border-border shadow-sm p-5 group hover:shadow-md transition-all cursor-pointer hover:border-primary/20"
+                    className="bg-surface rounded-2xl border border-border shadow-sm p-5 group hover:shadow-md transition-all cursor-pointer hover:border-[#B4912B]/20"
                 >
                     <SectionHeader
                         title="Most Popular Plans"
@@ -450,14 +521,14 @@ export default function SADashboardPage() {
                 {/* New Registrations — BarChart */}
                 <div
                     onClick={() => navigate('/superadmin/tenants')}
-                    className="bg-surface rounded-2xl border border-border shadow-sm p-5 group hover:shadow-md transition-all cursor-pointer hover:border-primary/20"
+                    className="bg-surface rounded-2xl border border-border shadow-sm p-5 group hover:shadow-md transition-all cursor-pointer hover:border-[#B4912B]/20"
                 >
                     <SectionHeader
                         title="Salons Joined Recently"
                         subtitle="New monthly registrations"
                         action={
                             <div className="flex items-center gap-3">
-                                <span className="text-[11px] font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/30 px-2 py-1 rounded-full">
+                                <span className="text-[11px] font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/30 px-2 py-1 rounded-xl">
                                     34 this month
                                 </span>
                                 <Link to="/superadmin/tenants" className="p-1.5 rounded-lg bg-primary/5 text-primary opacity-0 group-hover:opacity-100 transition-all hover:bg-primary hover:text-white">
@@ -486,14 +557,14 @@ export default function SADashboardPage() {
                 {/* Churn Rate — LineChart */}
                 <div
                     onClick={() => navigate('/superadmin/tenants?status=expired')}
-                    className="bg-surface rounded-2xl border border-border shadow-sm p-5 group hover:shadow-md transition-all cursor-pointer hover:border-primary/20"
+                    className="bg-surface rounded-2xl border border-border shadow-sm p-5 group hover:shadow-md transition-all cursor-pointer hover:border-[#B4912B]/20"
                 >
                     <SectionHeader
                         title="Cancellations Rate"
                         subtitle="Tracing salons who left our platform"
                         action={
                             <div className="flex items-center gap-3">
-                                <span className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/30 px-2 py-1 rounded-full">
+                                <span className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/30 px-2 py-1 rounded-xl">
                                     ↓ Improving
                                 </span>
                                 <Link to="/superadmin/tenants?status=expired" className="p-1.5 rounded-lg bg-primary/5 text-primary opacity-0 group-hover:opacity-100 transition-all hover:bg-primary hover:text-white">
@@ -524,7 +595,7 @@ export default function SADashboardPage() {
             </div>
 
             {/* ── Recent Signups Table ── */}
-            <div className="bg-surface rounded-2xl border border-border shadow-sm overflow-hidden">
+            <div className="!bg-white dark:!bg-slate-900 !rounded-[24px] !border !border-slate-100 dark:!border-slate-800 shadow-[0_2px_12px_-3px_rgba(0,0,0,0.04)] overflow-hidden">
                 <div className="flex items-center justify-between px-5 py-4 border-b border-border">
                     <div>
                         <h2 className="font-bold text-text">Newly Registered Salons</h2>
@@ -555,7 +626,7 @@ export default function SADashboardPage() {
                                 >
                                     <td className="px-5 py-3.5">
                                         <div className="flex items-center gap-3">
-                                            <div className="w-8 h-8 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center text-xs font-black text-primary shrink-0 group-hover:bg-primary group-hover:text-primary-foreground transition-all">
+                                            <div className="w-8 h-8 rounded-lg bg-indigo-50 border border-[#B4912B]/20 flex items-center justify-center text-xs font-black text-primary shrink-0 group-hover:bg-primary group-hover:text-primary-foreground transition-all">
                                                 {t.name[0]?.toUpperCase() || 'S'}
                                             </div>
                                             <div>
@@ -588,7 +659,7 @@ export default function SADashboardPage() {
                                         </span>
                                     </td>
                                     <td className="px-5 py-3.5 text-right">
-                                        <div className="inline-flex items-center gap-1 text-[11px] font-semibold text-primary border border-primary/20 bg-primary/5 group-hover:bg-primary group-hover:text-primary-foreground px-3 py-1.5 rounded-lg transition-all">
+                                        <div className="inline-flex items-center gap-1 text-[11px] font-semibold text-primary border border-[#B4912B]/20 bg-primary/5 group-hover:bg-primary group-hover:text-primary-foreground px-3 py-1.5 rounded-lg transition-all">
                                             View <ArrowRight className="w-3 h-3" />
                                         </div>
                                     </td>

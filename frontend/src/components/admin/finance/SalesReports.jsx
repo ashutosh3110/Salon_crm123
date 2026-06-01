@@ -139,7 +139,7 @@ export default function SalesReports({ outletId }) {
     return (
         <div className="p-6 space-y-8 animate-reveal text-left font-sans text-text printing:p-0">
             {/* Header controls */}
-            <div className="flex flex-col gap-4 bg-surface p-4 sm:p-6 border border-border shadow-sm rounded-3xl">
+            <div className="flex flex-col gap-4 bg-surface p-4 sm:p-6 border border-border shadow-sm rounded-2xl">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                     <div className="space-y-1">
                         <h2 className="text-xl sm:text-2xl font-black uppercase tracking-tight text-text flex items-center gap-2">
@@ -208,7 +208,7 @@ export default function SalesReports({ outletId }) {
 
             {/* Custom Dates Expandable */}
             {showCustomDates && (
-                <div className="bg-surface border border-border p-4 rounded-3xl shadow-sm flex flex-col sm:flex-row sm:items-end gap-4 animate-reveal">
+                <div className="bg-surface border border-border p-4 rounded-2xl shadow-sm flex flex-col sm:flex-row sm:items-end gap-4 animate-reveal">
                     <div className="space-y-1.5 flex-1">
                         <label className="text-[10px] font-black uppercase tracking-widest text-text-muted ml-1">Start Date</label>
                         <input 
@@ -292,7 +292,7 @@ export default function SalesReports({ outletId }) {
 
             {/* Main reports grid */}
             {kpis.invoiceCount === 0 && !loading ? (
-                <div className="bg-surface border border-border p-12 text-center rounded-3xl shadow-sm max-w-xl mx-auto space-y-6">
+                <div className="bg-surface border border-border p-12 text-center rounded-2xl shadow-sm max-w-xl mx-auto space-y-6">
                     <div className="w-16 h-16 bg-amber-500/10 text-amber-500 rounded-full flex items-center justify-center mx-auto border border-amber-500/20">
                         <Sparkles className="w-8 h-8" />
                     </div>
@@ -316,7 +316,7 @@ export default function SalesReports({ outletId }) {
                     {/* Charts row */}
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                         {/* Revenue Trend Area Chart */}
-                        <div className="bg-surface border border-border p-6 rounded-3xl shadow-sm lg:col-span-2">
+                        <div className="bg-surface border border-border p-6 rounded-2xl shadow-sm lg:col-span-2">
                             <div className="flex items-center justify-between mb-6">
                                 <div>
                                     <h3 className="text-sm font-black uppercase tracking-widest text-text">Revenue Trend</h3>
@@ -381,7 +381,7 @@ export default function SalesReports({ outletId }) {
                         </div>
 
                         {/* Service vs Product Distribution Donut Chart */}
-                        <div className="bg-surface border border-border p-6 rounded-3xl shadow-sm flex flex-col justify-between">
+                        <div className="bg-surface border border-border p-6 rounded-2xl shadow-sm flex flex-col justify-between">
                             <div>
                                 <h3 className="text-sm font-black uppercase tracking-widest text-text mb-1">Sales Mix</h3>
                                 <p className="text-[10px] font-bold text-text-muted uppercase tracking-wider mb-6">
@@ -448,7 +448,7 @@ export default function SalesReports({ outletId }) {
                     {/* Rankings row */}
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                         {/* Service Wise Revenue */}
-                        <div className="bg-surface border border-border p-6 rounded-3xl shadow-sm">
+                        <div className="bg-surface border border-border p-6 rounded-2xl shadow-sm">
                             <div className="flex items-center gap-3 mb-6">
                                 <div className="w-10 h-10 flex items-center justify-center bg-indigo-500/10 rounded-2xl border border-indigo-500/20 text-indigo-500 shrink-0">
                                     <Scissors className="w-5 h-5" />
@@ -474,7 +474,7 @@ export default function SalesReports({ outletId }) {
                                                 </div>
                                                 <div className="w-full bg-surface-alt h-2 rounded-full overflow-hidden border border-border/30">
                                                     <div 
-                                                        className="h-full bg-gradient-to-r from-indigo-500 to-blue-500 rounded-full" 
+                                                        className="h-full bg-gradient-to-r from-indigo-500 to-blue-500 rounded-xl" 
                                                         style={{ width: `${percent}%` }}
                                                     />
                                                 </div>
@@ -486,7 +486,7 @@ export default function SalesReports({ outletId }) {
                         </div>
 
                         {/* Product Wise Revenue */}
-                        <div className="bg-surface border border-border p-6 rounded-3xl shadow-sm">
+                        <div className="bg-surface border border-border p-6 rounded-2xl shadow-sm">
                             <div className="flex items-center gap-3 mb-6">
                                 <div className="w-10 h-10 flex items-center justify-center bg-amber-500/10 rounded-2xl border border-amber-500/20 text-amber-500 shrink-0">
                                     <ShoppingBag className="w-5 h-5" />
@@ -512,7 +512,7 @@ export default function SalesReports({ outletId }) {
                                                 </div>
                                                 <div className="w-full bg-surface-alt h-2 rounded-full overflow-hidden border border-border/30">
                                                     <div 
-                                                        className="h-full bg-gradient-to-r from-amber-500 to-orange-500 rounded-full" 
+                                                        className="h-full bg-gradient-to-r from-amber-500 to-orange-500 rounded-xl" 
                                                         style={{ width: `${percent}%` }}
                                                     />
                                                 </div>
@@ -524,7 +524,7 @@ export default function SalesReports({ outletId }) {
                         </div>
 
                         {/* Staff Contribution */}
-                        <div className="bg-surface border border-border p-6 rounded-3xl shadow-sm">
+                        <div className="bg-surface border border-border p-6 rounded-2xl shadow-sm">
                             <div className="flex items-center gap-3 mb-6">
                                 <div className="w-10 h-10 flex items-center justify-center bg-emerald-500/10 rounded-2xl border border-emerald-500/20 text-emerald-500 shrink-0">
                                     <Award className="w-5 h-5" />
@@ -550,7 +550,7 @@ export default function SalesReports({ outletId }) {
                                                 </div>
                                                 <div className="w-full bg-surface-alt h-2 rounded-full overflow-hidden border border-border/30">
                                                     <div 
-                                                        className="h-full bg-gradient-to-r from-emerald-500 to-teal-500 rounded-full" 
+                                                        className="h-full bg-gradient-to-r from-emerald-500 to-teal-500 rounded-xl" 
                                                         style={{ width: `${percent}%` }}
                                                     />
                                                 </div>
@@ -563,7 +563,7 @@ export default function SalesReports({ outletId }) {
                     </div>
 
                     {/* Sales Transaction List */}
-                    <div className="bg-surface border border-border rounded-3xl shadow-sm overflow-hidden">
+                    <div className="bg-surface border border-border rounded-2xl shadow-sm overflow-hidden">
                         <div className="p-4 sm:p-6 border-b border-border flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                             <div>
                                 <h3 className="text-sm font-black uppercase tracking-widest text-text">Recent Invoices</h3>
@@ -660,7 +660,7 @@ function KPICard({ title, value, icon: Icon, gradient, changePercent, badgeText 
     const isNeutral = changePercent == null;
     const isPositive = isNeutral || changePercent >= 0;
     return (
-        <div className={`bg-surface p-6 rounded-3xl border border-border shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all flex flex-col justify-between overflow-hidden relative group`}>
+        <div className={`bg-surface p-6 rounded-2xl border border-border shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all flex flex-col justify-between overflow-hidden relative group`}>
             {/* Soft decorative background shape */}
             <div className="absolute -right-4 -top-4 w-16 h-16 rounded-full bg-primary/5 group-hover:scale-110 transition-transform duration-300 pointer-events-none" />
             

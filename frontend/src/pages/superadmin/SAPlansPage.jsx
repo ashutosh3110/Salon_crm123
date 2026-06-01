@@ -16,8 +16,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 const planColors = {
     free: 'bg-slate-100 text-slate-600 border-slate-200',
     basic: 'bg-blue-50 text-blue-600 border-blue-200',
-    pro: 'bg-primary/10 text-primary border-primary/25',
-    premium: 'bg-primary/10 text-primary border-primary/25',
+    pro: 'bg-primary/10 text-primary border-[#B4912B]/25',
+    premium: 'bg-primary/10 text-primary border-[#B4912B]/25',
     enterprise: 'bg-amber-50 text-amber-600 border-amber-200',
 };
 
@@ -40,7 +40,7 @@ function PlanCard({ plan, onEdit, onClone, onToggleActive, onDelete, trialDays }
         <motion.div 
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            className={`bg-surface rounded-2xl border transition-all ${plan.popular ? 'border-primary shadow-lg shadow-primary/5' : 'border-border shadow-sm'}`}
+            className={`bg-surface rounded-2xl border transition-all ${plan.popular ? 'border-[#B4912B] shadow-lg shadow-primary/5' : 'border-border shadow-sm'}`}
         >
             <div className="p-6">
                 <div className="flex items-start justify-between mb-4">
@@ -48,14 +48,14 @@ function PlanCard({ plan, onEdit, onClone, onToggleActive, onDelete, trialDays }
                         <div className="flex items-center gap-2">
                              <h3 className="text-xl font-black text-text tracking-tight uppercase">{plan.name}</h3>
                              {plan.popular && (
-                                <span className="bg-amber-100 text-amber-700 text-[9px] font-black px-2 py-0.5 rounded-full uppercase tracking-widest">
+                                <span className="bg-amber-100 text-amber-700 text-[9px] font-black px-2 py-0.5 rounded-xl uppercase tracking-widest">
                                     Best Seller
                                 </span>
                              )}
                         </div>
                         <p className="text-[10px] text-text-muted font-bold uppercase tracking-widest">{plan.price === 0 ? 'Trial / Free' : (plan.billingCycle || 'Standard')} Plan</p>
                     </div>
-                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center border ${plan.popular ? 'bg-primary/10 border-primary/20 text-primary' : 'bg-surface-alt border-border text-text-muted'}`}>
+                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center border ${plan.popular ? 'bg-primary/10 border-[#B4912B]/20 text-primary' : 'bg-surface-alt border-border text-text-muted'}`}>
                         {plan.popular ? <Crown className="w-5 h-5" /> : <Package className="w-5 h-5" />}
                     </div>
                 </div>
@@ -136,7 +136,7 @@ function PlanModal({ plan, onClose, onSave, saving }) {
         };
     }, []);
 
-    const inputCls = 'w-full px-4 py-2.5 rounded-xl bg-surface border border-border text-text text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all font-bold';
+    const inputCls = 'w-full px-4 py-2.5 rounded-xl bg-surface border border-border text-text text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-[#B4912B] transition-all font-bold';
     const labelCls = 'block text-[11px] font-black text-text-muted uppercase tracking-wider mb-1.5 ml-1';
 
     return (
@@ -275,7 +275,7 @@ function PlanModal({ plan, onClose, onSave, saving }) {
                         Cancel
                     </button>
                     <button onClick={() => onSave(form)} disabled={saving || !form.name}
-                        className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-primary to-[#8B6F23] text-white text-[11px] font-black uppercase tracking-widest shadow-lg shadow-primary/20 hover:brightness-110 active:scale-95 transition-all disabled:opacity-50">
+                        className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-primary to-[#8B6F23] text-white text-[11px] font-black uppercase tracking-widest shadow-lg shadow-[#B4912B]/20 hover:brightness-110 active:scale-95 transition-all disabled:opacity-50">
                         {saving ? 'Saving...' : plan?._id ? 'Update Plan' : 'Create Plan'}
                     </button>
                 </div>
@@ -414,7 +414,7 @@ export default function SAPlansPage() {
                 
                 <button 
                     onClick={() => setModal({})}
-                    className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-gradient-to-r from-primary to-[#8B6F23] text-white text-xs font-black uppercase tracking-wider hover:brightness-110 shadow-lg shadow-primary/20 transition-all active:scale-[0.98]"
+                    className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-gradient-to-r from-primary to-[#8B6F23] text-white text-xs font-black uppercase tracking-wider hover:brightness-110 shadow-lg shadow-[#B4912B]/20 transition-all active:scale-[0.98]"
                 >
                     <Plus className="w-4 h-4" /> 
                     <span>Create New Plan</span>
@@ -424,7 +424,7 @@ export default function SAPlansPage() {
             {/* Plans Grid */}
             {loading ? (
                 <div className="flex flex-col items-center justify-center py-24 space-y-4">
-                    <RefreshCw className="w-8 h-8 text-primary animate-spin" />
+                    <RefreshCw className="w-8 h-8 text-blue-500 animate-spin" />
                     <div className="text-[10px] text-text-muted font-black uppercase tracking-widest">Loading Plans...</div>
                 </div>
             ) : (

@@ -432,7 +432,7 @@ export default function POSBillingPage() {
                                         <button
                                             type="button"
                                             onClick={() => setSelectedPromotion(null)}
-                                            className="px-2.5 py-1 bg-rose-100 hover:bg-rose-200 text-rose-600 text-[8px] font-black uppercase tracking-widest rounded-none transition-colors"
+                                            className="px-2.5 py-1 bg-rose-100 hover:bg-rose-200 text-rose-600 text-[8px] font-black uppercase tracking-widest rounded-xl transition-colors"
                                         >
                                             Remove
                                         </button>

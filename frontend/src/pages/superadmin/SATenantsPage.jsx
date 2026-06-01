@@ -61,8 +61,8 @@ const MOCK_TENANTS = [
 const planColors = {
     free: 'bg-slate-50 text-slate-600 border-slate-200',
     basic: 'bg-blue-50 text-blue-600 border-blue-200',
-    pro: 'bg-rose-50 text-primary border-primary/20',
-    premium: 'bg-rose-50 text-primary border-primary/20',
+    pro: 'bg-rose-50 text-primary border-[#B4912B]/20',
+    premium: 'bg-rose-50 text-primary border-[#B4912B]/20',
     enterprise: 'bg-amber-50 text-amber-600 border-amber-200',
 };
 const planIcons = { free: null, basic: null, pro: Crown, premium: Crown, enterprise: Crown };
@@ -156,7 +156,7 @@ function ActionMenu({ tenant, onEdit, onSuspend, onDelete, onResendCredentials, 
         <div ref={ref} className="relative inline-block text-left">
             <button
                 onClick={() => setOpen(!open)}
-                className={`p-2 rounded-xl transition-all duration-200 ${open ? 'bg-primary text-primary-foreground shadow-lg shadow-primary/20 scale-95' : 'bg-surface border border-border text-text-muted hover:text-primary hover:border-primary/30 hover:shadow-md'}`}
+                className={`p-2 rounded-xl transition-all duration-200 ${open ? 'bg-primary text-primary-foreground shadow-lg shadow-[#B4912B]/20 scale-95' : 'bg-surface border border-border text-text-muted hover:text-primary hover:border-[#B4912B]/30 hover:shadow-md'}`}
             >
                 <MoreVertical className="w-4 h-4" />
             </button>
@@ -247,8 +247,8 @@ function PlanChangeModal({ tenant, onClose, onSave, plans = [] }) {
                             key={p._id}
                             onClick={() => onSave(tenant._id, p.name)}
                             className={`w-full flex items-center justify-between p-4 rounded-2xl border transition-all text-left ${tenant.subscriptionPlan === p.name
-                                ? 'border-primary bg-primary/[0.02] ring-2 ring-primary/10'
-                                : 'border-border hover:border-primary/40 hover:bg-surface/50'
+                                ? 'border-[#B4912B] bg-primary/[0.02] ring-2 ring-primary/10'
+                                : 'border-border hover:border-[#B4912B]/40 hover:bg-surface/50'
                                 }`}
                         >
                             <div className="flex items-center gap-3">
@@ -443,7 +443,7 @@ function SalonModal({ mode, tenant, onClose, onSave, saving }) {
 
     const set = (k, v) => setForm(p => ({ ...p, [k]: v }));
 
-    const inputCls = 'w-full px-3.5 py-2.5 rounded-xl bg-surface border border-border text-text text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm';
+    const inputCls = 'w-full px-3.5 py-2.5 rounded-xl bg-surface border border-border text-text text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-[#B4912B] transition-all shadow-sm';
     const labelCls = 'block text-[11px] font-bold text-text-muted uppercase tracking-wider mb-1.5';
 
     return (
@@ -573,7 +573,7 @@ function SalonModal({ mode, tenant, onClose, onSave, saving }) {
                         Cancel
                     </button>
                     <button onClick={() => onSave(form)} disabled={saving || !form.name || !form.ownerName || !form.email}
-                        className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-primary to-[#8B6F23] text-primary-foreground text-sm font-bold hover:brightness-110 disabled:opacity-50 transition-all shadow-lg shadow-primary/20">
+                        className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-primary to-[#8B6F23] text-primary-foreground text-sm font-bold hover:brightness-110 disabled:opacity-50 transition-all shadow-lg shadow-[#B4912B]/20">
                         {saving ? 'Saving…' : mode === 'create' ? 'Create Salon' : 'Save Changes'}
                     </button>
                 </div>
@@ -717,8 +717,8 @@ export default function SATenantsPage() {
         <button
             onClick={() => setShowDateFilter(v => !v)}
             className={`relative flex items-center gap-2 px-3.5 py-2.5 rounded-xl border text-sm font-semibold transition-all shadow-sm ${showDateFilter || isDateFiltered
-                    ? 'bg-primary text-primary-foreground border-primary shadow-primary/20'
-                    : 'bg-surface text-text-secondary border-border hover:border-primary/30 hover:text-primary'
+                    ? 'bg-primary text-primary-foreground border-[#B4912B] shadow-[#B4912B]/20'
+                    : 'bg-surface text-text-secondary border-border hover:border-[#B4912B]/30 hover:text-primary'
                 }`}
         >
             <Filter className="w-4 h-4" />
@@ -730,16 +730,16 @@ export default function SATenantsPage() {
     );
 
     const DateFilterPanel = showDateFilter && (
-        <div className="bg-surface rounded-2xl border border-primary/20 shadow-lg px-4 py-3.5 flex flex-wrap items-center gap-2 animate-in slide-in-from-top-2 duration-200">
-            <Calendar className="w-4 h-4 text-primary shrink-0" />
+        <div className="bg-surface rounded-2xl border border-[#B4912B]/20 shadow-lg px-4 py-3.5 flex flex-wrap items-center gap-2 animate-in slide-in-from-top-2 duration-200">
+            <Calendar className="w-4 h-4 text-blue-500 shrink-0" />
             <span className="text-[11px] font-bold text-text-muted uppercase tracking-wider mr-1">Period:</span>
             {DATE_PERIODS.map(p => (
                 <button
                     key={p.value}
                     onClick={() => { setDatePeriod(p.value); if (p.value !== 'custom') { setCustomFrom(''); setCustomTo(''); } }}
                     className={`px-3 py-1.5 rounded-lg text-xs font-bold border transition-all ${datePeriod === p.value
-                            ? 'bg-primary text-primary-foreground border-primary shadow-md shadow-primary/20'
-                            : 'bg-surface text-text-secondary border-border hover:border-primary/40 hover:text-primary'
+                            ? 'bg-primary text-primary-foreground border-[#B4912B] shadow-md shadow-[#B4912B]/20'
+                            : 'bg-surface text-text-secondary border-border hover:border-[#B4912B]/40 hover:text-primary'
                         }`}
                 >
                     {p.label}
@@ -751,14 +751,14 @@ export default function SATenantsPage() {
                         type="date"
                         value={customFrom}
                         onChange={e => setCustomFrom(e.target.value)}
-                        className="px-2.5 py-1.5 rounded-lg border border-border text-xs text-text bg-surface focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                        className="px-2.5 py-1.5 rounded-lg border border-border text-xs text-text bg-surface focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-[#B4912B] transition-all"
                     />
                     <span className="text-xs text-text-muted font-semibold">to</span>
                     <input
                         type="date"
                         value={customTo}
                         onChange={e => setCustomTo(e.target.value)}
-                        className="px-2.5 py-1.5 rounded-lg border border-border text-xs text-text bg-surface focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                        className="px-2.5 py-1.5 rounded-lg border border-border text-xs text-text bg-surface focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-[#B4912B] transition-all"
                     />
                 </div>
             )}
@@ -991,7 +991,7 @@ export default function SATenantsPage() {
                             exportToExcel(tenants, 'Wapixo_Onboarded_Salons', 'Tenants');
                             showToast('Salons list exported as Excel!', 'info');
                         }}
-                        className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-surface border border-border text-text-secondary text-sm font-semibold hover:border-primary/30 hover:text-primary transition-all shadow-sm">
+                        className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-surface border border-border text-text-secondary text-sm font-semibold hover:border-[#B4912B]/30 hover:text-primary transition-all shadow-sm">
                         <Download className="w-4 h-4" /> Export
                     </button>
                     <button
@@ -1013,7 +1013,7 @@ export default function SATenantsPage() {
                         value={search} 
                         onChange={e => setSearch(e.target.value)}
                         placeholder="Search by salon name, owner, or email..."
-                        className="flex-1 px-4 py-2.5 rounded-xl bg-surface border border-border text-text placeholder-text-muted text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm" 
+                        className="flex-1 px-4 py-2.5 rounded-xl bg-surface border border-border text-text placeholder-text-muted text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-[#B4912B] transition-all shadow-sm" 
                     />
                 </div>
                 
@@ -1065,7 +1065,7 @@ export default function SATenantsPage() {
 
 
             {/* ── Table ── */}
-            <div className="bg-white rounded-3xl border border-border shadow-sm overflow-hidden">
+            <div className="bg-white rounded-2xl border border-border shadow-sm overflow-hidden">
                 {filtered.length === 0 ? (
                     <div className="text-center py-20">
                         <Building2 className="w-12 h-12 text-text-muted mx-auto mb-3 opacity-40" />
@@ -1107,7 +1107,7 @@ export default function SATenantsPage() {
                                                 {/* Salon */}
                                                 <td className="px-4 py-3.5">
                                                     <div className="flex items-center gap-3 group/link">
-                                                        <div className="w-9 h-9 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center text-sm font-black text-primary shrink-0 group-hover:bg-primary group-hover:text-primary-foreground transition-all">
+                                                        <div className="w-9 h-9 rounded-xl bg-emerald-50 border border-[#B4912B]/20 flex items-center justify-center text-sm font-black text-primary shrink-0 group-hover:bg-primary group-hover:text-primary-foreground transition-all">
                                                             {t.name[0].toUpperCase()}
                                                         </div>
                                                         <div>
@@ -1171,7 +1171,7 @@ export default function SATenantsPage() {
                                                         {/* View */}
                                                         <Link 
                                                             to={`/superadmin/tenants/${t._id}`}
-                                                            className="p-2 rounded-lg bg-surface border border-border text-text-muted hover:text-primary hover:border-primary/30 transition-all"
+                                                            className="p-2 rounded-lg bg-surface border border-border text-text-muted hover:text-primary hover:border-[#B4912B]/30 transition-all"
                                                             title="View Profile"
                                                         >
                                                             <EyeIcon className="w-4 h-4" />
@@ -1250,7 +1250,7 @@ export default function SATenantsPage() {
 
                                                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                                                                 {t.outlets && t.outlets.length > 0 ? t.outlets.map(o => (
-                                                                    <div key={o._id} className="flex items-center gap-4 p-4 rounded-xl border border-border bg-surface-alt/30 hover:border-primary/20 transition-all">
+                                                                    <div key={o._id} className="flex items-center gap-4 p-4 rounded-xl border border-border bg-surface-alt/30 hover:border-[#B4912B]/20 transition-all">
                                                                         <div className="w-12 h-12 rounded-lg overflow-hidden bg-slate-100 shrink-0 border border-border">
                                                                             {o.images && o.images[0] ? (
                                                                                 <img src={o.images[0].startsWith('http') ? o.images[0] : `${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/${o.images[0]}`} alt={o.name} className="w-full h-full object-cover" />
@@ -1303,7 +1303,7 @@ export default function SATenantsPage() {
                         <button
                             onClick={() => setPage(p => Math.max(1, p - 1))}
                             disabled={page === 1 || loading}
-                            className="p-2 rounded-xl bg-surface border border-border text-text-secondary disabled:opacity-40 hover:border-primary/30 hover:text-primary transition-all shadow-sm"
+                            className="p-2 rounded-xl bg-surface border border-border text-text-secondary disabled:opacity-40 hover:border-[#B4912B]/30 hover:text-primary transition-all shadow-sm"
                         >
                             <ChevronDown className="w-4 h-4 rotate-90" />
                         </button>
@@ -1315,7 +1315,7 @@ export default function SATenantsPage() {
                         <button
                             onClick={() => setPage(p => Math.min(meta.totalPages, p + 1))}
                             disabled={page === meta.totalPages || loading}
-                            className="p-2 rounded-xl bg-surface border border-border text-text-secondary disabled:opacity-40 hover:border-primary/30 hover:text-primary transition-all shadow-sm"
+                            className="p-2 rounded-xl bg-surface border border-border text-text-secondary disabled:opacity-40 hover:border-[#B4912B]/30 hover:text-primary transition-all shadow-sm"
                         >
                             <ChevronDown className="w-4 h-4 -rotate-90" />
                         </button>

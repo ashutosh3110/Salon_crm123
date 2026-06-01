@@ -31,29 +31,99 @@ const CustomTooltip = ({ active, payload, label }) => {
 
 /* ─── Metric card ────────────────────────────────────────────────────── */
 function MetricCard({ label, value, sub, icon: Icon, gradient, shadow }) {
+    let colorTheme = 'emerald';
+    if (gradient.includes('blue')) colorTheme = 'blue';
+    else if (gradient.includes('amber') || gradient.includes('orange')) colorTheme = 'amber';
+    else if (gradient.includes('slate')) colorTheme = 'slate';
+    else if (gradient.includes('violet') || gradient.includes('purple')) colorTheme = 'violet';
+    else if (gradient.includes('red') || gradient.includes('rose')) colorTheme = 'red';
+    else if (gradient.includes('primary')) colorTheme = 'yellow';
+    
+    const themes = {
+        emerald: {
+            iconColorClass: '!text-emerald-600 dark:!text-emerald-400',
+            iconBgClass: '!bg-emerald-100 dark:!bg-emerald-500/20',
+            cardBgClass: '!bg-emerald-50 dark:!bg-emerald-500/5',
+            cardBorderClass: '!border-emerald-100 dark:!border-emerald-500/15 hover:!border-emerald-300 dark:hover:!border-emerald-500/50'
+        },
+        blue: {
+            iconColorClass: '!text-blue-600 dark:!text-blue-400',
+            iconBgClass: '!bg-blue-100 dark:!bg-blue-500/20',
+            cardBgClass: '!bg-blue-50 dark:!bg-blue-500/5',
+            cardBorderClass: '!border-blue-100 dark:!border-blue-500/15 hover:!border-blue-300 dark:hover:!border-blue-500/50'
+        },
+        amber: {
+            iconColorClass: '!text-amber-600 dark:!text-amber-400',
+            iconBgClass: '!bg-amber-100 dark:!bg-amber-500/20',
+            cardBgClass: '!bg-amber-50 dark:!bg-amber-500/5',
+            cardBorderClass: '!border-amber-100 dark:!border-amber-500/15 hover:!border-amber-300 dark:hover:!border-amber-500/50'
+        },
+        slate: {
+            iconColorClass: '!text-slate-600 dark:!text-slate-400',
+            iconBgClass: '!bg-slate-100 dark:!bg-slate-500/20',
+            cardBgClass: '!bg-slate-50 dark:!bg-slate-500/5',
+            cardBorderClass: '!border-slate-200 dark:!border-slate-500/15 hover:!border-slate-300 dark:hover:!border-slate-500/50'
+        },
+        violet: {
+            iconColorClass: '!text-violet-600 dark:!text-violet-400',
+            iconBgClass: '!bg-violet-100 dark:!bg-violet-500/20',
+            cardBgClass: '!bg-violet-50 dark:!bg-violet-500/5',
+            cardBorderClass: '!border-violet-100 dark:!border-violet-500/15 hover:!border-violet-300 dark:hover:!border-violet-500/50'
+        },
+        red: {
+            iconColorClass: '!text-red-600 dark:!text-red-400',
+            iconBgClass: '!bg-red-100 dark:!bg-red-500/20',
+            cardBgClass: '!bg-red-50 dark:!bg-red-500/5',
+            cardBorderClass: '!border-red-100 dark:!border-red-500/15 hover:!border-red-300 dark:hover:!border-red-500/50'
+        },
+        yellow: {
+            iconColorClass: '!text-[#B4912B] dark:!text-[#D4AF37]',
+            iconBgClass: '!bg-[#FDF9ED] dark:!bg-[#B4912B]/20',
+            cardBgClass: '!bg-[#FFFDF7] dark:!bg-[#B4912B]/5',
+            cardBorderClass: '!border-[#FDF5DA] dark:!border-[#B4912B]/15 hover:!border-[#E6C975] dark:hover:!border-[#B4912B]/50'
+        }
+    };
+    
+    const { iconColorClass, iconBgClass, cardBgClass, cardBorderClass } = themes[colorTheme] || themes.emerald;
+
     return (
-        <div className="bg-white rounded-2xl border border-border shadow-sm p-5 hover:shadow-md transition-all group">
-            <div className="flex items-center justify-between mb-3">
-                <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${gradient} flex items-center justify-center shadow-lg ${shadow}`}>
-                    <Icon className="w-5 h-5 text-white" />
+        <div className={`!rounded-[16px] !border p-3.5 shadow-[0_2px_8px_-3px_rgba(0,0,0,0.04)] group flex flex-col justify-between min-h-[118px] transition-all hover:-translate-y-0.5 active:scale-[0.98] hover:shadow-md ${cardBgClass} ${cardBorderClass}`}>
+            <div className="flex !items-start gap-3 !text-left">
+                <div className={`w-9 h-9 rounded-full flex items-center justify-center shrink-0 ${iconBgClass}`}>
+                    <Icon className={`w-4 h-4 ${iconColorClass}`} strokeWidth={2} />
+                </div>
+                
+                <div className="flex flex-col !items-start !text-left">
+                    <span style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '0.03em' }} className="uppercase text-slate-500 dark:text-slate-450 leading-none mb-1.5 !text-left">
+                        {label}
+                    </span>
+                    <h3 style={{ fontSize: '24px', fontWeight: 850 }} className="text-slate-800 dark:text-slate-50 leading-none tracking-tight !text-left">
+                        {value}
+                    </h3>
+                    <span style={{ fontSize: '12px', fontWeight: 500 }} className="text-slate-500 dark:text-slate-400 mt-1.5 !text-left">
+                        {sub || 'Stats'}
+                    </span>
                 </div>
             </div>
-            <div className="text-2xl font-black text-text">{value}</div>
-            <div className="text-xs text-text-muted mt-0.5 font-bold uppercase tracking-wider">{label}</div>
-            {sub && <div className="text-[11px] text-text-muted mt-1 font-medium">{sub}</div>}
+
+            <div style={{ fontSize: '11px', fontWeight: 700 }} className="flex !items-center gap-1 mt-auto pt-2 transition-all opacity-90 group-hover:opacity-100 whitespace-nowrap !text-left !justify-start">
+                <span className={iconColorClass}>View analytics</span>
+                <span style={{ fontSize: '12px' }} className={`inline-block transition-transform duration-200 group-hover:translate-x-1 leading-none ${iconColorClass}`}>
+                    →
+                </span>
+            </div>
         </div>
     );
 }
 
-/* ─── Section wrapper ────────────────────────────────────────────────── */
 function Section({ title, subtitle, icon: Icon, children }) {
     return (
-        <div className="bg-white rounded-2xl border border-border shadow-sm overflow-hidden">
+        <div className="!bg-white dark:!bg-slate-900 !rounded-[24px] !border !border-slate-100 dark:!border-slate-800 shadow-[0_2px_12px_-3px_rgba(0,0,0,0.04)] group hover:shadow-md transition-all !overflow-hidden flex flex-col justify-between">
             <div className="flex items-center gap-3 px-5 py-4 border-b border-border bg-surface/30">
                 {Icon && <Icon className="w-5 h-5 text-primary" />}
                 <div>
-                    <h3 className="font-bold text-text">{title}</h3>
-                    {subtitle && <p className="text-[10px] uppercase font-black text-text-muted tracking-widest mt-0.5">{subtitle}</p>}
+                    <h3 className="font-bold text-slate-800 dark:text-slate-100 tracking-tight">{title}</h3>
+                    {subtitle && <p className="text-[10px] uppercase font-black text-slate-500 tracking-widest mt-0.5">{subtitle}</p>}
                 </div>
             </div>
             <div className="p-5">{children}</div>
@@ -159,7 +229,7 @@ export default function SAAnalyticsPage() {
     if (loading || !data) {
         return (
             <div className="flex flex-col items-center justify-center min-h-[400px] gap-4">
-                <div className="w-12 h-12 border-4 border-primary/20 border-t-primary rounded-full animate-spin"></div>
+                <div className="w-12 h-12 border-4 border-[#B4912B]/20 border-t-primary rounded-full animate-spin"></div>
                 <p className="text-sm font-bold text-text-secondary animate-pulse">Analyzing business data...</p>
             </div>
         );
@@ -188,7 +258,7 @@ export default function SAAnalyticsPage() {
                         exportToExcel(growth.mrrTrend, 'Wapixo_Analytics_Revenue', 'Revenue');
                         showToast('Report exported successfully!');
                     }}
-                        className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white border border-border text-text-secondary text-sm font-semibold hover:border-primary transition-all shadow-sm">
+                        className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white border border-border text-text-secondary text-sm font-semibold hover:border-[#B4912B] transition-all shadow-sm">
                         <Download className="w-4 h-4" /> Export Data
                     </button>
                 </div>
@@ -198,7 +268,7 @@ export default function SAAnalyticsPage() {
             <div className="bg-white rounded-2xl border border-border p-4 shadow-sm flex flex-col lg:flex-row lg:items-center justify-between gap-4">
                 <div className="flex flex-wrap items-center gap-2">
                     <span className="text-xs font-bold text-text-muted uppercase tracking-wider flex items-center gap-1.5 mr-1">
-                        <Calendar className="w-4 h-4 text-primary" /> Filter Period:
+                        <Calendar className="w-4 h-4 text-indigo-500" /> Filter Period:
                     </span>
                     {[
                         { key: 'all', label: 'All Time' },
@@ -213,8 +283,8 @@ export default function SAAnalyticsPage() {
                             key={p.key}
                             onClick={() => applyPreset(p.key)}
                             className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all border ${activePreset === p.key
-                                    ? 'bg-primary text-white border-primary shadow-md shadow-primary/20 scale-95'
-                                    : 'bg-white text-text-secondary border-border hover:border-primary/45 hover:text-primary hover:bg-primary/5'
+                                    ? 'bg-[#B4912B] text-white border-[#B4912B] shadow-md shadow-[#B4912B]/20 scale-95'
+                                    : 'bg-white text-text-secondary border-border hover:border-[#B4912B]/45 hover:text-[#B4912B] hover:bg-[#B4912B]/5'
                                 }`}
                         >
                             {p.label}
@@ -231,7 +301,7 @@ export default function SAAnalyticsPage() {
                                 type="date"
                                 value={startDate}
                                 onChange={e => setStartDate(e.target.value)}
-                                className="px-2.5 py-1.5 rounded-lg border border-border text-xs text-text bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                                className="px-2.5 py-1.5 rounded-lg border border-border text-xs text-text bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-[#B4912B] transition-all"
                             />
                         </div>
                         <span className="text-xs text-text-muted font-bold">to</span>
@@ -241,7 +311,7 @@ export default function SAAnalyticsPage() {
                                 type="date"
                                 value={endDate}
                                 onChange={e => setEndDate(e.target.value)}
-                                className="px-2.5 py-1.5 rounded-lg border border-border text-xs text-text bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                                className="px-2.5 py-1.5 rounded-lg border border-border text-xs text-text bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-[#B4912B] transition-all"
                             />
                         </div>
                     </div>
@@ -250,7 +320,7 @@ export default function SAAnalyticsPage() {
 
             {/* ── KPI cards ── */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                <MetricCard label="Total Salons" value={kpis.totalSalons} sub={`${kpis.activeSalons} Active accounts`} icon={Building2} gradient="from-primary to-[#8B6F23]" shadow="shadow-primary/20" />
+                <MetricCard label="Total Salons" value={kpis.totalSalons} sub={`${kpis.activeSalons} Active accounts`} icon={Building2} gradient="from-emerald-500 to-teal-600" shadow="shadow-[#B4912B]/20" />
                 <MetricCard label="Monthly Revenue" value={fmtINR(kpis.mrr)} sub="Recurring income this month" icon={DollarSign} gradient="from-emerald-500 to-teal-600" shadow="shadow-emerald-500/20" />
                 <MetricCard label="Yearly Forecast" value={fmtINR(kpis.arr)} sub="Projected annual revenue" icon={TrendingUp} gradient="from-blue-500 to-indigo-600" shadow="shadow-blue-500/20" />
                 <MetricCard label="Lifetime Revenue" value={fmtINR(kpis.totalRevenue)} sub="Total income since launch" icon={BarChart2} gradient="from-amber-500 to-orange-600" shadow="shadow-amber-500/20" />
@@ -341,7 +411,7 @@ export default function SAAnalyticsPage() {
                                             <tr key={g.city} className="hover:bg-surface/40 transition-colors">
                                                 <td className="py-4 px-4">
                                                     <div className="flex items-center gap-3">
-                                                        <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-xs font-black text-primary uppercase">
+                                                        <div className="w-8 h-8 rounded-lg bg-rose-50 flex items-center justify-center text-xs font-black text-primary uppercase">
                                                             {g.city[0]}
                                                         </div>
                                                         <span className="text-sm font-bold text-text">{g.city}</span>
@@ -351,7 +421,7 @@ export default function SAAnalyticsPage() {
                                                 <td className="py-4 px-4 text-right">
                                                     <div className="flex items-center justify-end gap-3">
                                                         <div className="w-24 h-1.5 rounded-full bg-slate-100 overflow-hidden hidden sm:block">
-                                                            <div className="h-full bg-primary rounded-full" style={{ width: `${pct}%` }} />
+                                                            <div className="h-full bg-primary rounded-xl" style={{ width: `${pct}%` }} />
                                                         </div>
                                                         <span className="text-xs font-bold text-text-secondary">{pct}%</span>
                                                     </div>

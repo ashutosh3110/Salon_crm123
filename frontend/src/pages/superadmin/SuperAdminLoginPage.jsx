@@ -50,8 +50,8 @@ export default function SuperAdminLoginPage() {
         <div className="min-h-screen bg-[#050505] text-white selection:bg-primary/30 selection:text-white" style={{ fontFamily: "'Inter', sans-serif" }}>
             {/* Background elements */}
             <div className="fixed inset-0 z-0 overflow-hidden pointer-events-none">
-                <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-primary/10 rounded-full blur-[140px]" />
-                <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-primary/10 rounded-full blur-[140px]" />
+                <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-amber-50 rounded-full blur-[140px]" />
+                <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-teal-50 rounded-full blur-[140px]" />
                 <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-[0.03]" />
             </div>
 
@@ -84,7 +84,7 @@ export default function SuperAdminLoginPage() {
 
                         {/* Portal Switcher */}
                         <div className="w-full grid grid-cols-2 gap-2 bg-black/50 p-2 border border-white/5 rounded-2xl relative z-10">
-                            <div className="bg-primary/20 border border-primary/30 text-primary py-2.5 rounded-xl text-[9px] font-black tracking-[0.2em] text-center uppercase">
+                            <div className="bg-primary/20 border border-[#B4912B]/30 text-primary py-2.5 rounded-xl text-[9px] font-black tracking-[0.2em] text-center uppercase">
                                 SUPER ADMIN
                             </div>
                             <Link to="/login" className="text-white/30 hover:text-white py-2.5 rounded-xl text-[9px] font-black tracking-[0.2em] text-center uppercase transition-all whitespace-nowrap overflow-hidden text-ellipsis px-1">
@@ -99,8 +99,8 @@ export default function SuperAdminLoginPage() {
                             {/* Form Header */}
                             <div className="text-center md:text-left">
                                 <div className="flex items-center gap-3 mb-2 justify-center md:justify-start">
-                                    <div className="w-8 h-8 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center">
-                                        <Shield className="w-4 h-4 text-primary" />
+                                    <div className="w-8 h-8 rounded-full bg-violet-50 border border-[#B4912B]/20 flex items-center justify-center">
+                                        <Shield className="w-4 h-4 text-blue-500" />
                                     </div>
                                     <h2 className="text-2xl font-black uppercase tracking-tight">
                                         Super <span className="text-primary">Secure.</span>
@@ -121,8 +121,8 @@ export default function SuperAdminLoginPage() {
                                     {/* Email */}
                                     <div className="group space-y-2">
                                         <label className="text-[9px] font-black uppercase tracking-[0.2em] text-white/30 ml-1">Email Address</label>
-                                        <div className="flex items-center gap-3 border-b-2 border-white/5 group-focus-within:border-primary transition-all duration-300">
-                                            <Mail className="w-4 h-4 text-white/20 group-focus-within:text-primary transition-colors shrink-0" />
+                                        <div className="flex items-center gap-3 border-b-2 border-white/5 group-focus-within:border-[#B4912B] transition-all duration-300">
+                                            <Mail className="w-4 h-4 text-white/20 group-focus-within:text-emerald-500 transition-colors shrink-0" />
                                             <input
                                                 type="email" name="email" value={form.email} onChange={handleChange} required autoFocus
                                                 className="flex-1 py-3 bg-transparent text-sm focus:outline-none placeholder:text-white/10 font-medium"
@@ -134,8 +134,8 @@ export default function SuperAdminLoginPage() {
                                     {/* Password */}
                                     <div className="group space-y-2">
                                         <label className="text-[9px] font-black uppercase tracking-[0.2em] text-white/30 ml-1">Password</label>
-                                        <div className="flex items-center gap-3 border-b-2 border-white/5 group-focus-within:border-primary transition-all duration-300">
-                                            <Lock className="w-4 h-4 text-white/20 group-focus-within:text-primary transition-colors shrink-0" />
+                                        <div className="flex items-center gap-3 border-b-2 border-white/5 group-focus-within:border-[#B4912B] transition-all duration-300">
+                                            <Lock className="w-4 h-4 text-white/20 group-focus-within:text-indigo-500 transition-colors shrink-0" />
                                             <input
                                                 type={showPassword ? 'text' : 'password'} name="password" value={form.password} onChange={handleChange} required
                                                 className="flex-1 py-3 bg-transparent text-sm focus:outline-none placeholder:text-white/10 font-medium"
@@ -157,15 +157,15 @@ export default function SuperAdminLoginPage() {
                                     </button>
 
                                     {/* Demo Credentials */}
-                                    <div className="p-6 bg-white/[0.01] border border-white/[0.04] rounded-3xl space-y-4 backdrop-blur-sm">
+                                    <div className="p-6 bg-white/[0.01] border border-white/[0.04] rounded-2xl space-y-4 backdrop-blur-sm">
                                         <div className="flex items-center gap-2">
-                                            <Sparkles className="w-3 h-3 text-primary" />
+                                            <Sparkles className="w-3 h-3 text-rose-500" />
                                             <span className="text-[10px] font-black uppercase tracking-widest text-primary/60">Quick Setup</span>
                                         </div>
                                         <button
                                             type="button"
                                             onClick={() => setForm({ email: 'superadmin@gmail.com', password: '123' })}
-                                            className="w-full flex flex-col items-start p-4 bg-white/[0.02] border border-white/[0.08] hover:border-primary/50 transition-all rounded-2xl group shadow-inner bg-gradient-to-br from-white/[0.01] to-white/[0.03] hover:shadow-primary/5"
+                                            className="w-full flex flex-col items-start p-4 bg-white/[0.02] border border-white/[0.08] hover:border-[#B4912B]/50 transition-all rounded-2xl group shadow-inner bg-gradient-to-br from-white/[0.01] to-white/[0.03] hover:shadow-primary/5"
                                         >
                                             <span className="text-[8px] font-black uppercase tracking-widest text-white/20 group-hover:text-primary/60 block mb-1">Use Master Account</span>
                                             <span className="text-[11px] font-black text-white/60 group-hover:text-white tracking-widest uppercase">superadmin@gmail.com</span>

@@ -170,7 +170,7 @@ function AlertCard({ alert, onStockIn }) {
 
     return (
         <div
-            className={`p-6 bg-surface border-2 rounded-3xl transition-all hover:shadow-xl hover:-translate-y-1 group ${isCritical ? 'border-rose-100 dark:border-rose-900/50' : 'border-orange-100 dark:border-orange-900/50'}`}
+            className={`p-6 bg-surface border-2 rounded-2xl transition-all hover:shadow-xl hover:-translate-y-1 group ${isCritical ? 'border-rose-100 dark:border-rose-900/50' : 'border-orange-100 dark:border-orange-900/50'}`}
         >
             <div className="flex justify-between items-start mb-6">
                 <div className="flex items-center gap-3 min-w-0">
