@@ -48,7 +48,7 @@ function Field({ label, icon: Icon, type = 'text', value, onChange, placeholder,
                         onChange={onChange}
                         placeholder={placeholder}
                         readOnly={readOnly}
-                        className={`w-full pl-3.5 ${suffix ? 'pr-10' : 'pr-3.5'} py-2.5 rounded-xl bg-white border border-border text-text text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-[#B4912B] transition-all shadow-sm ${readOnly ? 'bg-surface cursor-not-allowed text-text-muted' : ''}`}
+                        className={`w-full pl-3.5 ${suffix ? 'pr-12' : 'pr-3.5'} py-2.5 rounded-xl bg-white border border-border text-text text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-[#B4912B] transition-all shadow-sm ${readOnly ? 'bg-surface cursor-not-allowed text-text-muted' : ''} ${type === 'number' ? '[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none' : ''}`}
                     />
                     {suffix && (
                         <div className="absolute right-3 top-1/2 -translate-y-1/2">
@@ -399,7 +399,7 @@ export default function SASettingsPage() {
                         <button
                             onClick={handleSaveProfile}
                             disabled={savingProfile}
-                            className="w-full flex items-center justify-center gap-2 py-2.5 px-5 rounded-xl bg-gradient-to-r from-primary to-[#8B6F23] text-white text-sm font-bold hover:brightness-110 disabled:opacity-60 transition-all shadow-lg shadow-[#B4912B]/20 active:scale-[0.98]"
+                            className="w-full flex items-center justify-center gap-2 py-2.5 px-5 rounded-xl !bg-[#B4912B] hover:!bg-[#8B6F23] !text-white text-sm font-bold disabled:cursor-not-allowed disabled:brightness-90 transition-all active:scale-[0.98]"
                         >
                             {savingProfile
                                 ? <><span className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" /> Saving…</>
@@ -511,7 +511,7 @@ export default function SASettingsPage() {
                         <button
                             onClick={handleChangePassword}
                             disabled={savingPassword || !pwd.current || !pwd.newPwd || !pwd.confirm}
-                            className="w-full flex items-center justify-center gap-2 py-2.5 px-5 rounded-xl bg-primary hover:bg-[#8B6F23] text-white text-sm font-bold disabled:opacity-50 transition-all shadow-lg shadow-[#B4912B]/20 active:scale-[0.98]"
+                            className="w-full flex items-center justify-center gap-2 py-2.5 px-5 rounded-xl !bg-[#B4912B] hover:!bg-[#8B6F23] !text-white text-sm font-bold disabled:cursor-not-allowed disabled:brightness-90 transition-all active:scale-[0.98]"
                         >
                             {savingPassword
                                 ? <><span className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" /> Changing…</>
@@ -726,7 +726,7 @@ export default function SASettingsPage() {
                             <button
                                 onClick={handleSavePlatform}
                                 disabled={savingPlatform}
-                                className="w-auto flex items-center justify-center gap-2 py-2.5 px-6 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold disabled:opacity-50 transition-all shadow-lg shadow-blue-200 active:scale-[0.98]"
+                                className="w-auto flex items-center justify-center gap-2 py-2.5 px-6 rounded-xl !bg-blue-600 hover:!bg-blue-700 !text-white text-sm font-bold disabled:opacity-50 transition-all active:scale-[0.98]"
                             >
                                 {savingPlatform ? 'Saving...' : 'Update Platform Settings'}
                             </button>
@@ -786,7 +786,7 @@ export default function SASettingsPage() {
                             <div className="flex items-center gap-3 pt-2">
                                 <button
                                     onClick={() => setLoyal('active', !loyaltyData.active)}
-                                    className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest border transition-all ${loyaltyData.active ? 'bg-green-50 border-green-200 text-green-600' : 'bg-red-50 border-red-200 text-red-600'}`}
+                                    className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest border transition-all ${loyaltyData.active ? '!bg-green-50 dark:!bg-green-500/10 !border-green-200 dark:!border-green-500/30 !text-green-600 dark:!text-green-400' : '!bg-red-50 dark:!bg-red-500/10 !border-red-200 dark:!border-red-500/30 !text-red-600 dark:!text-red-400'}`}
                                 >
                                     System Status: {loyaltyData.active ? 'Enabled' : 'Disabled'}
                                 </button>
@@ -794,7 +794,7 @@ export default function SASettingsPage() {
                                 <button
                                     onClick={handleSaveLoyalty}
                                     disabled={savingLoyalty}
-                                    className="flex items-center justify-center gap-2 py-2.5 px-6 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-bold disabled:opacity-50 transition-all shadow-lg shadow-emerald-200 active:scale-[0.98]"
+                                    className="flex items-center justify-center gap-2 py-2.5 px-6 rounded-xl !bg-emerald-600 hover:!bg-emerald-700 !text-white text-sm font-bold disabled:opacity-50 transition-all active:scale-[0.98]"
                                 >
                                     {savingLoyalty ? 'Applying Rules...' : 'Apply Global Rules'}
                                 </button>

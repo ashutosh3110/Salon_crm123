@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useCMS } from '../../contexts/CMSContext';
 import { useBusiness } from '../../contexts/BusinessContext';
 import { useAuth } from '../../contexts/AuthContext';
@@ -62,6 +62,60 @@ async function compressImageFile(file, maxWidth = 1200, quality = 0.82) {
     });
 }
 
+function CustomSelect({ value, onChange, options, placeholder }) {
+    const [isOpen, setIsOpen] = useState(false);
+    const selectRef = useRef(null);
+
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (selectRef.current && !selectRef.current.contains(event.target)) {
+                setIsOpen(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
+
+    const selectedOption = options.find(opt => String(opt.value) === String(value)) || { label: placeholder, value: '' };
+
+    return (
+        <div className={`relative w-full ${isOpen ? 'z-[200]' : 'z-[100]'}`} ref={selectRef}>
+            <div 
+                className="w-full px-4 py-2.5 bg-white dark:bg-[#121826] border border-border rounded-lg text-sm font-bold flex items-center justify-between cursor-pointer focus-within:border-primary focus-within:ring-1 focus-within:ring-primary transition-all"
+                onClick={() => setIsOpen(!isOpen)}
+            >
+                <span className="truncate pr-4 text-text">{selectedOption.label}</span>
+                <ChevronDown className={`w-4 h-4 text-text-muted transition-transform duration-300 ${isOpen ? 'rotate-180' : ''} shrink-0`} />
+            </div>
+            
+            <AnimatePresence>
+                {isOpen && (
+                    <motion.div 
+                        initial={{ opacity: 0, y: -5 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -5 }}
+                        transition={{ duration: 0.15 }}
+                        className="absolute left-0 right-0 top-full mt-1.5 bg-white dark:bg-surface border border-border rounded-lg shadow-xl overflow-hidden max-h-56 overflow-y-auto z-[200]"
+                    >
+                        {options.filter(opt => String(opt.value) !== String(value)).map((opt) => (
+                            <div
+                                key={opt.value}
+                                className="px-4 py-2.5 text-sm cursor-pointer transition-colors text-text hover:bg-slate-50 dark:hover:bg-slate-800 font-medium"
+                                onClick={() => {
+                                    onChange(opt.value);
+                                    setIsOpen(false);
+                                }}
+                            >
+                                {opt.label}
+                            </div>
+                        ))}
+                    </motion.div>
+                )}
+            </AnimatePresence>
+        </div>
+    );
+}
+
 export default function MarketingCMSPage() {
     const {
         banners, addBanner, updateBanner, deleteBanner, toggleBannerStatus,
@@ -73,7 +127,7 @@ export default function MarketingCMSPage() {
     const { user } = useAuth();
     const isSuperAdmin = user?.role === 'superadmin';
     const { outlets, fetchOutlets, platformSettings } = useBusiness();
-    
+
     useEffect(() => {
         if (isSuperAdmin) {
             fetchOutlets();
@@ -233,12 +287,12 @@ export default function MarketingCMSPage() {
         try {
             const formData = new FormData();
             formData.append('image', file);
-            
+
             // Upload to Cloudinary via backend
             const res = await api.post('/uploads', formData, {
                 headers: { 'Content-Type': 'multipart/form-data' }
             });
-            
+
             if (res.data.success) {
                 setFormData((prev) => ({ ...prev, image: res.data.url }));
             } else {
@@ -265,7 +319,7 @@ export default function MarketingCMSPage() {
                     </div>
                 </div>
                 <div className="flex flex-wrap gap-3">
-                
+
                     <button
                         onClick={() => {
                             let type = 'banner';
@@ -344,33 +398,33 @@ export default function MarketingCMSPage() {
                                         <img src={getImageUrl(banner.image)} alt={banner.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 opacity-80" />
                                         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                                         <div className="absolute top-3 right-3 flex gap-2 z-10">
-                                                <button 
-                                                    onClick={() => window.open(getImageUrl(banner.image), '_blank')}
-                                                    title="View Creative"
-                                                    className="group p-2 bg-white hover:!bg-[#10b981] rounded-lg transition-colors shadow-md"
-                                                >
-                                                    <Eye className="w-3.5 h-3.5 !text-slate-800 group-hover:!text-white" />
-                                                </button>
-                                                <button 
-                                                    onClick={() => handleEdit('banner', banner)}
-                                                    title="Edit Banner"
-                                                    className="group p-2 bg-white hover:!bg-[#B4912B] rounded-lg transition-colors shadow-md"
-                                                >
-                                                    <Edit className="w-3.5 h-3.5 !text-slate-800 group-hover:!text-white" />
-                                                </button>
-                                                <button 
-                                                    onClick={() => handleDelete('banner', banner.id)}
-                                                    title="Delete Banner"
-                                                    className="group p-2 bg-white hover:!bg-rose-600 rounded-lg transition-colors shadow-md"
-                                                >
-                                                    <Trash2 className="w-3.5 h-3.5 !text-rose-600 group-hover:!text-white" />
-                                                </button>
+                                            <button
+                                                onClick={() => window.open(getImageUrl(banner.image), '_blank')}
+                                                title="View Creative"
+                                                className="group p-2 bg-white hover:!bg-[#10b981] rounded-lg transition-colors shadow-md"
+                                            >
+                                                <Eye className="w-3.5 h-3.5 !text-slate-800 group-hover:!text-white" />
+                                            </button>
+                                            <button
+                                                onClick={() => handleEdit('banner', banner)}
+                                                title="Edit Banner"
+                                                className="group p-2 bg-white hover:!bg-[#B4912B] rounded-lg transition-colors shadow-md"
+                                            >
+                                                <Edit className="w-3.5 h-3.5 !text-slate-800 group-hover:!text-white" />
+                                            </button>
+                                            <button
+                                                onClick={() => handleDelete('banner', banner.id)}
+                                                title="Delete Banner"
+                                                className="group p-2 bg-white hover:!bg-rose-600 rounded-lg transition-colors shadow-md"
+                                            >
+                                                <Trash2 className="w-3.5 h-3.5 !text-rose-600 group-hover:!text-white" />
+                                            </button>
                                         </div>
                                         <div className="absolute bottom-3 left-3 flex items-center gap-2">
-                                            <button 
+                                            <button
                                                 onClick={() => handleToggleStatus('banner', banner.id)}
                                                 className={`text-[8px] font-black px-2 py-0.5 rounded-xl uppercase tracking-widest transition-all ${banner.status === 'Active' ? 'bg-emerald-500 text-white dark:text-primary-foreground' : 'bg-surface-alt text-text-muted border border-border hover:bg-primary hover:text-white'
-                                                }`}
+                                                    }`}
                                             >
                                                 {banner.status}
                                             </button>
@@ -382,7 +436,7 @@ export default function MarketingCMSPage() {
                                     <div className="p-5">
                                         <h3 className="text-sm font-black text-text uppercase tracking-tight mb-1">{banner.title}</h3>
                                         <div className="mt-4 flex items-center justify-between">
-                                            <button 
+                                            <button
                                                 onClick={() => handleEdit('banner', banner)}
                                                 className="text-[10px] font-black text-primary uppercase tracking-widest flex items-center gap-1 hover:gap-2 transition-all outline-none"
                                             >
@@ -426,14 +480,14 @@ export default function MarketingCMSPage() {
                             .map((offer) => (
                                 <div key={offer.id} className="bg-surface border border-border/40 p-8 flex flex-col md:flex-row gap-8 hover:border-violet-500/40 transition-all group relative text-left">
                                     <div className="absolute top-0 right-0 p-4 flex gap-2 z-10">
-                                        <button 
+                                        <button
                                             onClick={() => handleEdit('offer', offer)}
                                             title="Edit Offer"
                                             className="group p-2 bg-surface-alt border border-border hover:!bg-[#B4912B] hover:!border-[#B4912B] rounded-lg transition-colors"
                                         >
                                             <Edit className="w-4 h-4 !text-slate-800 group-hover:!text-white" />
                                         </button>
-                                        <button 
+                                        <button
                                             onClick={() => handleDelete('offer', offer.id)}
                                             title="Delete Offer"
                                             className="group p-2 bg-surface-alt border border-border hover:!bg-rose-600 hover:!border-rose-600 rounded-lg transition-colors"
@@ -447,10 +501,10 @@ export default function MarketingCMSPage() {
                                     </div>
                                     <div className="flex-1 space-y-4">
                                         <div className="flex items-center gap-2">
-                                            <button 
+                                            <button
                                                 onClick={() => handleToggleStatus('offer', offer.id)}
                                                 className={`text-[9px] font-black px-2 py-0.5 rounded-xl uppercase tracking-widest transition-all ${offer.status === 'Live' ? 'bg-emerald-500 text-white dark:text-primary-foreground' : 'bg-surface-alt text-text-muted border border-border hover:bg-violet-500 hover:text-white'
-                                                }`}>
+                                                    }`}>
                                                 {offer.status}
                                             </button>
                                             <span className="text-[9px] font-black px-2 py-0.5 rounded-xl uppercase tracking-widest bg-violet-500/10 text-violet-500 border border-violet-500/20">
@@ -468,7 +522,7 @@ export default function MarketingCMSPage() {
                                             <div className="px-4 py-2 bg-background border border-border/40 border-dashed rounded-xl text-xs font-black text-primary tracking-widest uppercase">
                                                 {offer.code}
                                             </div>
-                                            <button 
+                                            <button
                                                 onClick={() => handleEdit('offer', offer)}
                                                 className="text-[10px] font-black text-text-muted uppercase tracking-widest hover:text-violet-500 transition-colors"
                                             >
@@ -496,15 +550,15 @@ export default function MarketingCMSPage() {
                                     <div className="aspect-[3/4] relative overflow-hidden bg-background">
                                         <img src={getImageUrl(item.image)} alt={item.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 opacity-80" />
                                         <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-60 group-hover:opacity-100 transition-opacity" />
-                                        
+
                                         <div className="absolute top-3 right-3 flex gap-2 z-10">
-                                            <button 
+                                            <button
                                                 onClick={() => handleEdit('lookbook', item)}
                                                 className="group p-2 bg-white hover:!bg-[#B4912B] rounded-lg transition-colors shadow-md"
                                             >
                                                 <Edit className="w-3.5 h-3.5 !text-slate-800 group-hover:!text-white" />
                                             </button>
-                                            <button 
+                                            <button
                                                 onClick={() => handleDelete('lookbook', item.id)}
                                                 className="group p-2 bg-white hover:!bg-rose-600 rounded-lg transition-colors shadow-md"
                                             >
@@ -514,10 +568,10 @@ export default function MarketingCMSPage() {
 
                                         <div className="absolute bottom-4 left-4 right-4 text-white">
                                             <div className="flex items-center gap-2 mb-2">
-                                                <button 
+                                                <button
                                                     onClick={() => handleToggleStatus('lookbook', item.id)}
                                                     className={`text-[8px] font-black px-2 py-0.5 rounded-xl uppercase tracking-widest transition-all ${item.status === 'Active' ? 'bg-emerald-500 text-white' : 'bg-surface-alt text-text-muted border border-border hover:bg-primary hover:text-white'
-                                                    }`}
+                                                        }`}
                                                 >
                                                     {item.status}
                                                 </button>
@@ -565,9 +619,8 @@ export default function MarketingCMSPage() {
                                     <img src={getImageUrl(expert.img) || 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=200&q=80'} className="w-16 h-16 rounded-full border border-border object-cover" alt={expert.name} />
                                     <div>
                                         <h3 className="text-sm font-black text-text uppercase tracking-tight">{expert.name}</h3>
-                                        <div className={`text-[8px] font-black uppercase px-2 py-0.5 rounded-xl mt-1 inline-block ${
-                                            expert.status === 'Approved' ? 'bg-emerald-500 text-white' : expert.status === 'Pending' ? 'bg-amber-500 text-white' : 'bg-rose-500 text-white'
-                                        }`}>
+                                        <div className={`text-[8px] font-black uppercase px-2 py-0.5 rounded-xl mt-1 inline-block ${expert.status === 'Approved' ? 'bg-emerald-500 text-white' : expert.status === 'Pending' ? 'bg-amber-500 text-white' : 'bg-rose-500 text-white'
+                                            }`}>
                                             {expert.status}
                                         </div>
                                     </div>
@@ -593,13 +646,13 @@ export default function MarketingCMSPage() {
                                 <div className="flex gap-2 mt-2 pt-4 border-t border-border/20">
                                     {expert.status === 'Pending' && (
                                         <>
-                                            <button 
+                                            <button
                                                 onClick={() => approveExpertProfile(expert.id || expert._id)}
                                                 className="flex-1 py-2 bg-emerald-500 text-white text-[9px] font-black uppercase tracking-widest hover:bg-emerald-600 transition-all"
                                             >
                                                 Approve
                                             </button>
-                                            <button 
+                                            <button
                                                 onClick={() => rejectExpertProfile(expert.id || expert._id)}
                                                 className="flex-1 py-2 bg-rose-500 text-white text-[9px] font-black uppercase tracking-widest hover:bg-rose-600 transition-all"
                                             >
@@ -607,13 +660,13 @@ export default function MarketingCMSPage() {
                                             </button>
                                         </>
                                     )}
-                                    <button 
+                                    <button
                                         onClick={() => expert.status === 'Approved' ? rejectExpertProfile(expert.id || expert._id) : approveExpertProfile(expert.id || expert._id)}
                                         className="p-2 border border-border text-text-muted hover:text-primary transition-all"
                                     >
                                         {expert.status === 'Approved' ? <XCircle className="w-4 h-4" /> : <Star className="w-4 h-4" />}
                                     </button>
-                                    <button 
+                                    <button
                                         onClick={() => deleteExpertProfile(expert.id || expert._id)}
                                         className="p-2 border border-border text-text-muted hover:text-rose-600 transition-all"
                                     >
@@ -649,23 +702,23 @@ export default function MarketingCMSPage() {
                             className="bg-white w-full max-w-xl rounded-2xl border border-border shadow-2xl relative"
                         >
                             <div className="p-5">
-                                    <div className="px-6 py-3 border-b border-border flex items-center justify-between mx-[-1.25rem] mt-[-1.25rem] mb-4">
-                                        <div className="flex items-center gap-3">
-                                            <div className="w-10 h-10 rounded-lg bg-slate-50 flex items-center justify-center text-text-secondary border border-border/50">
-                                                {modalType === 'banner' ? <ImageIcon className="w-5 h-5" /> : <Tag className="w-5 h-5" />}
-                                            </div>
-                                            <div className="text-left">
-                                                <h2 className="text-lg font-black text-text uppercase tracking-tight">
-                                                    {editingId ? 'Edit Content' : 
-                                                     modalType === 'banner' ? 'New Banner' : 
-                                                     modalType === 'offer' ? 'New Offer' : 'New Lookbook Entry'}
-                                                </h2>
-                                            </div>
+                                <div className="px-6 py-3 border-b border-border flex items-center justify-between mx-[-1.25rem] mt-[-1.25rem] mb-4">
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-10 h-10 rounded-lg bg-slate-50 flex items-center justify-center text-text-secondary border border-border/50">
+                                            {modalType === 'banner' ? <ImageIcon className="w-5 h-5" /> : <Tag className="w-5 h-5" />}
                                         </div>
-                                        <button onClick={() => setIsModalOpen(false)} className="p-1.5 hover:bg-slate-50 rounded-lg transition-colors text-text-muted">
-                                            <X className="w-5 h-5" />
-                                        </button>
+                                        <div className="text-left">
+                                            <h2 className="text-lg font-black text-text uppercase tracking-tight">
+                                                {editingId ? 'Edit Content' :
+                                                    modalType === 'banner' ? 'New Banner' :
+                                                        modalType === 'offer' ? 'New Offer' : 'New Lookbook Entry'}
+                                            </h2>
+                                        </div>
                                     </div>
+                                    <button onClick={() => setIsModalOpen(false)} className="p-1.5 hover:bg-slate-50 rounded-lg transition-colors text-text-muted">
+                                        <X className="w-5 h-5" />
+                                    </button>
+                                </div>
 
                                 <form className="space-y-3 text-left" onSubmit={handlePublish}>
                                     {modalType === 'banner' ? (
@@ -673,58 +726,52 @@ export default function MarketingCMSPage() {
                                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                                 <div className="space-y-1">
                                                     <label className="text-[10px] font-black text-text-muted uppercase tracking-widest pl-1">Main text *</label>
-                                                    <input 
-                                                        required 
-                                                        type="text" 
+                                                    <input
+                                                        required
+                                                        type="text"
                                                         value={formData.title}
-                                                        onChange={(e) => setFormData({...formData, title: e.target.value})}
-                                                        placeholder="e.g. ₹200 OFF" 
-                                                        className="w-full px-4 py-2 bg-white border border-border rounded-lg text-sm font-bold focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all placeholder:opacity-30" 
+                                                        onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                                                        placeholder="e.g. ₹200 OFF"
+                                                        className="w-full px-4 py-2 bg-white border border-border rounded-lg text-sm font-bold focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all placeholder:opacity-30"
                                                     />
                                                 </div>
                                                 <div className="space-y-1 relative">
                                                     <label className="text-[10px] font-black text-text-muted uppercase tracking-widest pl-1">Target Outlet</label>
-                                                    <div className="relative">
-                                                        <select 
-                                                            value={formData.outletId}
-                                                            onChange={(e) => setFormData({...formData, outletId: e.target.value})}
-                                                            className="w-full px-4 py-2 bg-white border border-border rounded-lg text-sm font-bold focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all appearance-none cursor-pointer relative z-10"
-                                                        >
-                                                            <option value="">All Outlets</option>
-                                                            {outlets && outlets.length > 0 ? outlets.map(o => (
-                                                                <option key={o._id || o.id} value={o._id || o.id}>{o.name}</option>
-                                                            )) : null}
-                                                        </select>
-                                                        <ChevronDown className="w-4 h-4 text-text-muted absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none z-20" />
-                                                    </div>
+                                                    <CustomSelect
+                                                        value={formData.outletId}
+                                                        onChange={(val) => setFormData({ ...formData, outletId: val })}
+                                                        placeholder="All Outlets"
+                                                        options={[
+                                                            { value: '', label: 'All Outlets' },
+                                                            ...(outlets || []).map(o => ({ value: o._id || o.id, label: o.name }))
+                                                        ]}
+                                                    />
                                                 </div>
                                             </div>
 
                                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                                 <div className="space-y-1">
                                                     <label className="text-[10px] font-black text-text-muted uppercase tracking-widest pl-1">Button label</label>
-                                                    <input 
-                                                        type="text" 
+                                                    <input
+                                                        type="text"
                                                         value={formData.btnText}
-                                                        onChange={(e) => setFormData({...formData, btnText: e.target.value})}
-                                                        placeholder="Apply" 
-                                                        className="w-full px-4 py-2 bg-white border border-border rounded-lg text-sm font-bold focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all placeholder:opacity-30" 
+                                                        onChange={(e) => setFormData({ ...formData, btnText: e.target.value })}
+                                                        placeholder="Apply"
+                                                        className="w-full px-4 py-2 bg-white border border-border rounded-lg text-sm font-bold focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all placeholder:opacity-30"
                                                     />
                                                 </div>
                                                 <div className="space-y-1 relative">
                                                     <label className="text-[10px] font-black text-text-muted uppercase tracking-widest pl-1">Show for</label>
-                                                    <div className="relative">
-                                                        <select 
-                                                            value={formData.gender}
-                                                            onChange={(e) => setFormData({...formData, gender: e.target.value})}
-                                                            className="w-full px-4 py-2 bg-white border border-border rounded-lg text-sm font-bold focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all appearance-none cursor-pointer relative z-10"
-                                                        >
-                                                            <option value="all">Everyone</option>
-                                                            <option value="men">Men only</option>
-                                                            <option value="women">Women only</option>
-                                                        </select>
-                                                        <ChevronDown className="w-4 h-4 text-text-muted absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none z-20" />
-                                                    </div>
+                                                    <CustomSelect
+                                                        value={formData.gender}
+                                                        onChange={(val) => setFormData({ ...formData, gender: val })}
+                                                        placeholder="Everyone"
+                                                        options={[
+                                                            { value: 'all', label: 'Everyone' },
+                                                            { value: 'men', label: 'Men only' },
+                                                            { value: 'women', label: 'Women only' }
+                                                        ]}
+                                                    />
                                                 </div>
                                             </div>
                                             <div className="space-y-1.5">
@@ -741,7 +788,7 @@ export default function MarketingCMSPage() {
                                                     accept="image/*"
                                                     onChange={handleFileUpload}
                                                 />
-                                                <label 
+                                                <label
                                                     htmlFor="banner-upload"
                                                     className="border-2 border-dashed border-border p-4 flex flex-col items-center justify-center gap-2 bg-slate-50 rounded-xl hover:border-primary/40 transition-all cursor-pointer group overflow-hidden relative min-h-[90px]"
                                                 >
@@ -773,37 +820,38 @@ export default function MarketingCMSPage() {
                                             <div className="grid gap-4">
                                                 <div className="space-y-1.5">
                                                     <label className="text-[10px] font-black text-text-muted uppercase tracking-widest pl-1">Look Heading</label>
-                                                    <input 
-                                                        required 
-                                                        type="text" 
+                                                    <input
+                                                        required
+                                                        type="text"
                                                         value={formData.title}
-                                                        onChange={(e) => setFormData({...formData, title: e.target.value})}
-                                                        placeholder="e.g. Classic Taper Ritual" 
-                                                        className="w-full px-4 py-2.5 bg-white border border-border rounded-lg text-sm font-bold focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all placeholder:opacity-30" 
+                                                        onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                                                        placeholder="e.g. Classic Taper Ritual"
+                                                        className="w-full px-4 py-2.5 bg-white border border-border rounded-lg text-sm font-bold focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all placeholder:opacity-30"
                                                     />
                                                 </div>
                                                 <div className="space-y-1.5">
                                                     <label className="text-[10px] font-black text-text-muted uppercase tracking-widest pl-1">Style Subheading (Tag)</label>
-                                                    <input 
-                                                        required 
-                                                        type="text" 
+                                                    <input
+                                                        required
+                                                        type="text"
                                                         value={formData.tag}
-                                                        onChange={(e) => setFormData({...formData, tag: e.target.value})}
-                                                        placeholder="e.g. Fade / Balayage / Bridal" 
-                                                        className="w-full px-4 py-2.5 bg-white border border-border rounded-lg text-sm font-bold focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all placeholder:opacity-30" 
+                                                        onChange={(e) => setFormData({ ...formData, tag: e.target.value })}
+                                                        placeholder="e.g. Fade / Balayage / Bridal"
+                                                        className="w-full px-4 py-2.5 bg-white border border-border rounded-lg text-sm font-bold focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all placeholder:opacity-30"
                                                     />
                                                 </div>
                                             </div>
                                             <div className="space-y-1.5">
                                                 <label className="text-[10px] font-black text-text-muted uppercase tracking-widest pl-1">Gender Segment</label>
-                                                <select 
+                                                <CustomSelect
                                                     value={formData.gender}
-                                                    onChange={(e) => setFormData({...formData, gender: e.target.value})}
-                                                    className="w-full px-4 py-2.5 bg-white border border-border rounded-lg text-sm font-bold focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all appearance-none cursor-pointer"
-                                                >
-                                                    <option value="men">Men's Sector</option>
-                                                    <option value="women">Women's Sector</option>
-                                                </select>
+                                                    onChange={(val) => setFormData({ ...formData, gender: val })}
+                                                    placeholder="Men's Sector"
+                                                    options={[
+                                                        { value: 'men', label: "Men's Sector" },
+                                                        { value: 'women', label: "Women's Sector" }
+                                                    ]}
+                                                />
                                             </div>
                                             <div className="space-y-1.5">
                                                 <div className="flex justify-between items-end mb-1">
@@ -819,7 +867,7 @@ export default function MarketingCMSPage() {
                                                     accept="image/*"
                                                     onChange={handleFileUpload}
                                                 />
-                                                <label 
+                                                <label
                                                     htmlFor="lookbook-upload"
                                                     className="border-2 border-dashed border-border p-4 flex flex-col items-center justify-center gap-2 bg-slate-50 rounded-xl hover:border-primary/40 transition-all cursor-pointer group overflow-hidden relative min-h-[90px]"
                                                 >
@@ -851,59 +899,60 @@ export default function MarketingCMSPage() {
                                             <div className="grid sm:grid-cols-2 gap-4">
                                                 <div className="space-y-1.5">
                                                     <label className="text-[10px] font-black text-text-muted uppercase tracking-widest pl-1">Offer Title</label>
-                                                    <input 
-                                                        required 
-                                                        type="text" 
+                                                    <input
+                                                        required
+                                                        type="text"
                                                         value={formData.title}
-                                                        onChange={(e) => setFormData({...formData, title: e.target.value})}
-                                                        placeholder="e.g. Bridal Glow Package" 
-                                                        className="w-full px-4 py-2.5 bg-white border border-border rounded-lg text-sm font-bold focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all placeholder:opacity-30" 
+                                                        onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                                                        placeholder="e.g. Bridal Glow Package"
+                                                        className="w-full px-4 py-2.5 bg-white border border-border rounded-lg text-sm font-bold focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all placeholder:opacity-30"
                                                     />
                                                 </div>
                                                 <div className="space-y-1.5">
                                                     <label className="text-[10px] font-black text-text-muted uppercase tracking-widest pl-1">Target Sector</label>
-                                                    <select 
+                                                    <CustomSelect
                                                         value={formData.gender}
-                                                        onChange={(e) => setFormData({...formData, gender: e.target.value})}
-                                                        className="w-full px-4 py-2.5 bg-white border border-border rounded-lg text-sm font-bold focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all appearance-none cursor-pointer"
-                                                    >
-                                                        <option value="men">Men Only</option>
-                                                        <option value="women">Women Only</option>
-                                                    </select>
+                                                        onChange={(val) => setFormData({ ...formData, gender: val })}
+                                                        placeholder="Men Only"
+                                                        options={[
+                                                            { value: 'men', label: 'Men Only' },
+                                                            { value: 'women', label: 'Women Only' }
+                                                        ]}
+                                                    />
                                                 </div>
                                             </div>
                                             <div className="grid sm:grid-cols-2 gap-4">
                                                 <div className="space-y-1.5">
                                                     <label className="text-[10px] font-black text-text-muted uppercase tracking-widest pl-1">Promo Code</label>
-                                                    <input 
-                                                        required 
-                                                        type="text" 
+                                                    <input
+                                                        required
+                                                        type="text"
                                                         value={formData.code}
-                                                        onChange={(e) => setFormData({...formData, code: e.target.value})}
-                                                        placeholder="GLOW50" 
-                                                        className="w-full px-4 py-2.5 bg-white border border-border rounded-lg text-sm font-black text-primary focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all" 
-                                                        />
+                                                        onChange={(e) => setFormData({ ...formData, code: e.target.value })}
+                                                        placeholder="GLOW50"
+                                                        className="w-full px-4 py-2.5 bg-white border border-border rounded-lg text-sm font-black text-primary focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all"
+                                                    />
                                                 </div>
                                                 <div className="space-y-1.5">
                                                     <label className="text-[10px] font-black text-text-muted uppercase tracking-widest pl-1">Expiry Date</label>
-                                                    <input 
-                                                        required 
-                                                        type="date" 
+                                                    <input
+                                                        required
+                                                        type="date"
                                                         value={formData.expiry}
-                                                        onChange={(e) => setFormData({...formData, expiry: e.target.value})}
-                                                        className="w-full px-4 py-2.5 bg-white border border-border rounded-lg text-sm font-bold focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all" 
-                                                        />
+                                                        onChange={(e) => setFormData({ ...formData, expiry: e.target.value })}
+                                                        className="w-full px-4 py-2.5 bg-white border border-border rounded-lg text-sm font-bold focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all"
+                                                    />
                                                 </div>
                                             </div>
                                             <div className="space-y-1.5">
                                                 <label className="text-[10px] font-black text-text-muted uppercase tracking-widest pl-1">Short Description</label>
-                                                <textarea 
-                                                    required 
-                                                    rows="2" 
+                                                <textarea
+                                                    required
+                                                    rows="2"
                                                     value={formData.description}
-                                                    onChange={(e) => setFormData({...formData, description: e.target.value})}
-                                                    placeholder="Explain the value proposition..."                                                        className="w-full px-4 py-2 bg-white border border-border rounded-lg text-sm font-bold focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all resize-none placeholder:opacity-30"
-                                                    ></textarea>
+                                                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                                                    placeholder="Explain the value proposition..." className="w-full px-4 py-2 bg-white border border-border rounded-lg text-sm font-bold focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all resize-none placeholder:opacity-30"
+                                                ></textarea>
                                             </div>
                                         </>
                                     )}
