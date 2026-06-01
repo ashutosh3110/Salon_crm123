@@ -619,7 +619,7 @@ export default function SABillingPage() {
                     </div>
 
                     {/* Payments table */}
-                    <div className="!bg-white dark:!bg-slate-900 !rounded-[24px] !border !border-slate-100 dark:!border-slate-800 shadow-[0_2px_12px_-3px_rgba(0,0,0,0.04)] overflow-hidden">
+                    <div className="!bg-white dark:!bg-[#0f172a] !rounded-[24px] !border !border-slate-100 dark:!border-slate-800 shadow-[0_2px_12px_-3px_rgba(0,0,0,0.04)] overflow-hidden">
                         <div className="overflow-x-auto">
                             <table className="w-full">
                                 <thead>
@@ -744,7 +744,7 @@ export default function SABillingPage() {
                         />
                     </div>
 
-                    <div className="!bg-white dark:!bg-slate-900 !rounded-[24px] !border !border-slate-100 dark:!border-slate-800 shadow-[0_2px_12px_-3px_rgba(0,0,0,0.04)] overflow-hidden">
+                    <div className="!bg-white dark:!bg-[#0f172a] !rounded-[24px] !border !border-slate-100 dark:!border-slate-800 shadow-[0_2px_12px_-3px_rgba(0,0,0,0.04)] overflow-hidden">
                         <div className="overflow-x-auto">
                             <table className="w-full">
                                 <thead>
@@ -812,7 +812,7 @@ export default function SABillingPage() {
 
 
                     {/* Revenue trend chart */}
-                    <div className="!bg-white dark:!bg-slate-900 !rounded-[24px] !border !border-slate-100 dark:!border-slate-800 shadow-[0_2px_12px_-3px_rgba(0,0,0,0.04)] p-5">
+                    <div className="!bg-white dark:!bg-[#0f172a] !rounded-[24px] !border !border-slate-100 dark:!border-slate-800 shadow-[0_2px_12px_-3px_rgba(0,0,0,0.04)] p-5">
                         <div className="flex items-center justify-between mb-4">
                             <div>
                                 <h3 className="font-bold text-text">Revenue Trend</h3>
@@ -841,7 +841,7 @@ export default function SABillingPage() {
                     <div className="grid lg:grid-cols-2 gap-5">
 
                         {/* Plan revenue cards */}
-                        <div className="!bg-white dark:!bg-slate-900 !rounded-[24px] !border !border-slate-100 dark:!border-slate-800 shadow-[0_2px_12px_-3px_rgba(0,0,0,0.04)] p-5">
+                        <div className="!bg-white dark:!bg-[#0f172a] !rounded-[24px] !border !border-slate-100 dark:!border-slate-800 shadow-[0_2px_12px_-3px_rgba(0,0,0,0.04)] p-5">
                             <h3 className="font-bold text-text mb-1">Revenue by Plan</h3>
                             <p className="text-xs text-text-muted mb-4">Current month breakdown</p>
                             <div className="space-y-3">

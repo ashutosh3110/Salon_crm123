@@ -275,7 +275,7 @@ export default function MarketingCMSPage() {
                             resetForm();
                             setIsModalOpen(true);
                         }}
-                        className="flex items-center gap-2 px-8 py-3 bg-primary text-primary-foreground rounded-xl text-[10px] font-black uppercase tracking-widest shadow-xl shadow-primary/20 hover:brightness-110 active:scale-95 transition-all"
+                        className="flex items-center gap-2 px-8 py-3 !bg-[#B4912B] !text-white rounded-full text-[10px] font-black uppercase tracking-widest shadow-xl shadow-[#B4912B]/20 hover:brightness-110 active:scale-95 transition-all"
                     >
                         <Plus className="w-4 h-4" /> New {activeTab === 'banners' ? 'Banner' : activeTab === 'offers' ? 'Offer' : 'Look'}
                     </button>
@@ -305,7 +305,7 @@ export default function MarketingCMSPage() {
                     ))}
                 </div>
 
-                <div className="flex bg-surface-alt p-1 rounded-xl border border-border/40">
+                <div className="flex bg-surface-alt p-1 rounded-full border border-border/40">
                     {[
                         { id: 'all', label: 'All Protocols' },
                         { id: 'men', label: 'Men\'s Sector' },
@@ -314,7 +314,7 @@ export default function MarketingCMSPage() {
                         <button
                             key={g.id}
                             onClick={() => setSelectedGender(g.id)}
-                            className={`px-6 py-2 text-[8px] font-black uppercase tracking-widest transition-all ${selectedGender === g.id ? 'bg-primary text-primary-foreground shadow-lg' : 'text-text-muted hover:text-text'
+                            className={`px-6 py-2 text-[8px] font-black uppercase tracking-widest transition-all rounded-full ${selectedGender === g.id ? '!bg-[#B4912B] !text-white shadow-lg' : 'text-text-muted hover:text-text hover:bg-slate-50'
                                 }`}
                         >
                             {g.label}
@@ -343,27 +343,27 @@ export default function MarketingCMSPage() {
                                     <div className="aspect-[21/9] relative overflow-hidden bg-background">
                                         <img src={getImageUrl(banner.image)} alt={banner.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 opacity-80" />
                                         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-                                        <div className="absolute top-3 right-3 flex gap-2 opacity-0 group-hover:opacity-100 translate-y-2 group-hover:translate-y-0 transition-all duration-300 pointer-events-auto z-10">
+                                        <div className="absolute top-3 right-3 flex gap-2 z-10">
                                                 <button 
                                                     onClick={() => window.open(getImageUrl(banner.image), '_blank')}
                                                     title="View Creative"
-                                                    className="p-2 bg-white text-black hover:bg-emerald-500 hover:text-white transition-colors"
+                                                    className="group p-2 bg-white hover:!bg-[#10b981] rounded-lg transition-colors shadow-md"
                                                 >
-                                                    <Eye className="w-3.5 h-3.5" />
+                                                    <Eye className="w-3.5 h-3.5 !text-slate-800 group-hover:!text-white" />
                                                 </button>
                                                 <button 
                                                     onClick={() => handleEdit('banner', banner)}
                                                     title="Edit Banner"
-                                                    className="p-2 bg-white text-black hover:bg-primary hover:text-white transition-colors"
+                                                    className="group p-2 bg-white hover:!bg-[#B4912B] rounded-lg transition-colors shadow-md"
                                                 >
-                                                    <Edit className="w-3.5 h-3.5" />
+                                                    <Edit className="w-3.5 h-3.5 !text-slate-800 group-hover:!text-white" />
                                                 </button>
                                                 <button 
                                                     onClick={() => handleDelete('banner', banner.id)}
                                                     title="Delete Banner"
-                                                    className="p-2 bg-white text-rose-600 hover:bg-rose-600 hover:text-white transition-colors"
+                                                    className="group p-2 bg-white hover:!bg-rose-600 rounded-lg transition-colors shadow-md"
                                                 >
-                                                    <Trash2 className="w-3.5 h-3.5" />
+                                                    <Trash2 className="w-3.5 h-3.5 !text-rose-600 group-hover:!text-white" />
                                                 </button>
                                         </div>
                                         <div className="absolute bottom-3 left-3 flex items-center gap-2">
@@ -425,20 +425,20 @@ export default function MarketingCMSPage() {
                             .filter(o => selectedGender === 'all' || o.gender === selectedGender)
                             .map((offer) => (
                                 <div key={offer.id} className="bg-surface border border-border/40 p-8 flex flex-col md:flex-row gap-8 hover:border-violet-500/40 transition-all group relative text-left">
-                                    <div className="absolute top-0 right-0 p-4 flex gap-2 translate-y-2 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all z-10">
+                                    <div className="absolute top-0 right-0 p-4 flex gap-2 z-10">
                                         <button 
                                             onClick={() => handleEdit('offer', offer)}
                                             title="Edit Offer"
-                                            className="p-2 bg-surface-alt border border-border text-text-muted hover:text-primary"
+                                            className="group p-2 bg-surface-alt border border-border hover:!bg-[#B4912B] hover:!border-[#B4912B] rounded-lg transition-colors"
                                         >
-                                            <Edit className="w-4 h-4" />
+                                            <Edit className="w-4 h-4 !text-slate-800 group-hover:!text-white" />
                                         </button>
                                         <button 
                                             onClick={() => handleDelete('offer', offer.id)}
                                             title="Delete Offer"
-                                            className="p-2 bg-surface-alt border border-border text-text-muted hover:text-rose-600"
+                                            className="group p-2 bg-surface-alt border border-border hover:!bg-rose-600 hover:!border-rose-600 rounded-lg transition-colors"
                                         >
-                                            <Trash2 className="w-4 h-4" />
+                                            <Trash2 className="w-4 h-4 !text-rose-600 group-hover:!text-white" />
                                         </button>
                                     </div>
 
@@ -497,18 +497,18 @@ export default function MarketingCMSPage() {
                                         <img src={getImageUrl(item.image)} alt={item.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 opacity-80" />
                                         <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-60 group-hover:opacity-100 transition-opacity" />
                                         
-                                        <div className="absolute top-3 right-3 flex gap-2 opacity-0 group-hover:opacity-100 translate-y-2 group-hover:translate-y-0 transition-all duration-300 pointer-events-auto z-10">
+                                        <div className="absolute top-3 right-3 flex gap-2 z-10">
                                             <button 
                                                 onClick={() => handleEdit('lookbook', item)}
-                                                className="p-2 bg-white text-black hover:bg-primary hover:text-white transition-colors"
+                                                className="group p-2 bg-white hover:!bg-[#B4912B] rounded-lg transition-colors shadow-md"
                                             >
-                                                <Edit className="w-3.5 h-3.5" />
+                                                <Edit className="w-3.5 h-3.5 !text-slate-800 group-hover:!text-white" />
                                             </button>
                                             <button 
                                                 onClick={() => handleDelete('lookbook', item.id)}
-                                                className="p-2 bg-white text-rose-600 hover:bg-rose-600 hover:text-white transition-colors"
+                                                className="group p-2 bg-white hover:!bg-rose-600 rounded-lg transition-colors shadow-md"
                                             >
-                                                <Trash2 className="w-3.5 h-3.5" />
+                                                <Trash2 className="w-3.5 h-3.5 !text-rose-600 group-hover:!text-white" />
                                             </button>
                                         </div>
 

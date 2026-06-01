@@ -212,13 +212,13 @@ export default function SABlogPage() {
                         className="flex-1 bg-white border border-border px-6 py-4.5 text-xs font-bold uppercase tracking-widest outline-none regular-radius focus:ring-1 ring-primary/20 transition-all shadow-sm"
                     />
                 </div>
-                <div className="flex bg-white p-2 border border-border regular-radius shadow-sm">
+                <div className="flex bg-white p-1.5 border border-border rounded-full shadow-sm">
                     {['all', 'published', 'draft'].map((f) => (
                         <button
                             key={f}
                             onClick={() => setFilter(f)}
-                            className={`px-6 py-3 text-[9px] font-black uppercase tracking-[0.2em] transition-all regular-radius
-                                ${filter === f ? 'bg-black text-white shadow-lg' : 'bg-transparent text-text-muted hover:text-text'}
+                            className={`px-5 py-2.5 text-[9px] font-black uppercase tracking-[0.2em] transition-all rounded-full
+                                ${filter === f ? '!bg-[#B4912B] !text-white shadow-md' : 'bg-transparent text-text-muted hover:text-text hover:bg-slate-50'}
                             `}
                         >
                             {f === 'all' ? 'All Articles' : f}
@@ -244,7 +244,7 @@ export default function SABlogPage() {
                         <motion.div
                             layout
                             key={post._id}
-                            className="group bg-white border border-border regular-radius overflow-hidden flex flex-col h-full hover:shadow-2xl transition-all duration-700"
+                            className="group bg-white border border-border rounded-3xl overflow-hidden flex flex-col h-full hover:shadow-2xl transition-all duration-700"
                         >
                         {/* Preview Asset */}
                         <div className="relative h-64 overflow-hidden bg-black">
@@ -262,11 +262,11 @@ export default function SABlogPage() {
                             </div>
 
                             {/* Hover Actions */}
-                            <div className="absolute inset-x-0 bottom-0 p-6 bg-gradient-to-t from-black to-transparent translate-y-full group-hover:translate-y-0 transition-all duration-500">
+                            <div className="absolute inset-x-0 bottom-0 p-6 bg-gradient-to-t from-black/80 to-transparent transition-all duration-500">
                                 <div className="flex gap-3">
                                     <button
                                         onClick={() => openEditor(post)}
-                                        className="flex-1 bg-white text-black py-3 text-[10px] font-black uppercase tracking-[0.2em] hover:bg-primary transition-all flex items-center justify-center gap-2 regular-radius shadow-xl"
+                                        className="flex-1 bg-white text-black py-3 text-[10px] font-black uppercase tracking-[0.2em] hover:!bg-primary hover:!text-white transition-all flex items-center justify-center gap-2 regular-radius shadow-xl"
                                     >
                                         <Edit2 size={12} /> Edit
                                     </button>

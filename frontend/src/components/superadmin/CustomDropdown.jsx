@@ -45,7 +45,7 @@ export default function CustomDropdown({
 
             {open && (
                 <div className="custom-dropdown-panel absolute z-[100] mt-2 w-full min-w-[200px] bg-white/95 backdrop-blur-xl border border-border rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.15)] py-1.5 animate-in fade-in zoom-in-95 slide-in-from-top-2 duration-300 origin-top overflow-hidden ring-1 ring-black/5">
-                    <div className="max-h-[280px] overflow-y-auto custom-scrollbar">
+                    <div className="max-h-[280px] overflow-y-auto overflow-x-hidden custom-scrollbar">
                         {options.map((opt, i) => (
                             <button
                                 key={opt.value || opt.key || i}
