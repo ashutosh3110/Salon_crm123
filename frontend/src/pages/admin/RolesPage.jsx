@@ -349,7 +349,7 @@ export default function RolesPage() {
                 </div>
                 <button
                     onClick={() => { resetForm(); setShowModal(true); }}
-                    className="flex items-center gap-2 bg-[#B4912B] text-white px-5 py-2.5 text-[10px] font-black uppercase tracking-widest shadow-md hover:bg-[#9ca3af] transition-all !rounded-full active:scale-95"
+                    className="flex items-center gap-2 bg-[#B4912B] text-white px-5 py-2.5 text-[10px] font-black uppercase tracking-widest shadow-md hover:bg-[#9ca3af] transition-all !rounded-xl active:scale-95"
                 >
                     <Plus className="w-3.5 h-3.5" /> Create New Role
                 </button>

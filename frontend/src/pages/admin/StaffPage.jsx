@@ -326,7 +326,7 @@ export default function StaffPage() {
                         setForm({ name: '', email: '', phone: '', role: '', roleId: '', outletId: '', password: '', salary: '', bankName: '', accountNo: '', ifsc: '', avatar: '', stylistBio: '', stylistExperience: '', stylistSpecializations: '', availability: JSON.parse(JSON.stringify(DEFAULT_AVAILABILITY)) });
                         setShowModal(true);
                     }}
-                    className="flex items-center gap-2 bg-[#cca839] text-white px-6 py-3.5 text-[11px] font-black uppercase tracking-widest rounded-full hover:bg-[#b59533] transition-all shadow-sm"
+                    className="flex items-center gap-2 bg-[#cca839] text-white px-6 py-3.5 text-[11px] font-black uppercase tracking-widest rounded-xl hover:bg-[#b59533] transition-all shadow-sm"
                 >
                     <Plus className="w-4 h-4" /> ADD NEW MEMBER
                 </button>

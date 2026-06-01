@@ -108,7 +108,7 @@ export default function OutletsPage() {
                 </div>
                 <button
                     onClick={() => navigate('/admin/outlets/new')}
-                    className="flex items-center gap-2 bg-black text-white px-5 py-2.5 text-[10px] font-black uppercase tracking-widest shadow-md hover:bg-neutral-800 transition-all !rounded-full active:scale-95"
+                    className="flex items-center gap-2 bg-black text-white px-5 py-2.5 text-[10px] font-black uppercase tracking-widest shadow-md hover:bg-neutral-800 transition-all !rounded-xl active:scale-95"
                 >
                     <Plus className="w-3.5 h-3.5" /> Add New Salon
                 </button>

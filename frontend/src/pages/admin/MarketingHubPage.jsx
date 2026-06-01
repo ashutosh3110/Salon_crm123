@@ -213,14 +213,14 @@ function MarketingHubContent() {
                     {selectedCampaignIds.length > 0 && (
                         <button
                             onClick={handleBulkDelete}
-                            className="flex items-center justify-center gap-2 px-4 py-2 rounded-full bg-rose-500 text-white text-[10px] font-black uppercase tracking-widest hover:bg-rose-600 shadow-md active:scale-[0.98] transition-all leading-none"
+                            className="flex items-center justify-center gap-2 px-4 py-2 rounded-xl bg-rose-500 text-white text-[10px] font-black uppercase tracking-widest hover:bg-rose-600 shadow-md active:scale-[0.98] transition-all leading-none"
                         >
                             <Trash2 className="w-3.5 h-3.5" /> Delete Selected ({selectedCampaignIds.length})
                         </button>
                     )}
                     <button
                         onClick={startCampaign}
-                        className="flex-1 lg:flex-none flex items-center justify-center gap-2 px-5 py-2 rounded-full bg-primary text-white text-[10px] font-black uppercase tracking-widest hover:brightness-110 shadow-md shadow-primary/30 active:scale-[0.98] transition-all leading-none"
+                        className="flex-1 lg:flex-none flex items-center justify-center gap-2 px-5 py-2 rounded-xl bg-primary text-white text-[10px] font-black uppercase tracking-widest hover:brightness-110 shadow-md shadow-primary/30 active:scale-[0.98] transition-all leading-none"
                     >
                         <Plus className="w-3.5 h-3.5" /> New {activeTab === 'whatsapp' ? 'WhatsApp' : 'Notification'}
                     </button>

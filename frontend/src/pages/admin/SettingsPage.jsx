@@ -422,7 +422,7 @@ export default function SettingsPage({ section: propSection }) {
                                     <button
                                         type="submit"
                                         disabled={isSaving}
-                                        className="px-5 py-2 bg-primary text-primary-foreground rounded-full font-bold text-[10px] uppercase tracking-widest shadow-md shadow-primary/20 hover:shadow-primary/30 active:scale-95 transition-all disabled:opacity-50"
+                                        className="px-5 py-2 bg-primary text-primary-foreground rounded-xl font-bold text-[10px] uppercase tracking-widest shadow-md shadow-primary/20 hover:shadow-primary/30 active:scale-95 transition-all disabled:opacity-50"
                                     >
                                         {isSaving ? 'Saving…' : 'Save profile'}
                                     </button>
@@ -469,7 +469,7 @@ export default function SettingsPage({ section: propSection }) {
                                     <button
                                         type="submit"
                                         disabled={isSaving || salonLoading}
-                                        className="px-5 py-2 bg-primary text-primary-foreground rounded-full font-bold text-[10px] uppercase tracking-widest shadow-md shadow-primary/20 disabled:opacity-50"
+                                        className="px-5 py-2 bg-primary text-primary-foreground rounded-xl font-bold text-[10px] uppercase tracking-widest shadow-md shadow-primary/20 disabled:opacity-50"
                                     >
                                         {isSaving ? 'Saving…' : 'Save notification preferences'}
                                     </button>
@@ -533,7 +533,7 @@ export default function SettingsPage({ section: propSection }) {
                                     <button
                                         type="submit"
                                         disabled={isSaving}
-                                        className="px-5 py-2 bg-primary text-primary-foreground rounded-full font-bold text-[10px] uppercase tracking-widest shadow-md shadow-primary/20 disabled:opacity-50"
+                                        className="px-5 py-2 bg-primary text-primary-foreground rounded-xl font-bold text-[10px] uppercase tracking-widest shadow-md shadow-primary/20 disabled:opacity-50"
                                     >
                                         {isSaving ? 'Updating…' : 'Update password'}
                                     </button>
@@ -625,7 +625,7 @@ export default function SettingsPage({ section: propSection }) {
                                     <button
                                         type="submit"
                                         disabled={isSaving || salonLoading}
-                                        className="px-5 py-2 bg-primary text-primary-foreground rounded-full font-bold text-[10px] uppercase tracking-widest shadow-md shadow-primary/20 disabled:opacity-50"
+                                        className="px-5 py-2 bg-primary text-primary-foreground rounded-xl font-bold text-[10px] uppercase tracking-widest shadow-md shadow-primary/20 disabled:opacity-50"
                                     >
                                         {isSaving ? 'Saving…' : 'Save business info'}
                                     </button>
@@ -832,7 +832,7 @@ export default function SettingsPage({ section: propSection }) {
                                         type="text"
                                         readOnly
                                         value={`${window.location.origin}/app/booking?tenantId=${salon?._id || ''}`}
-                                        className="flex-1 px-4 py-2.5 text-[13px] font-medium text-text bg-surface border border-border rounded-full outline-none focus:border-primary focus:ring-1 focus:ring-primary/20 transition-all select-all"
+                                        className="flex-1 px-4 py-2.5 text-[13px] font-medium text-text bg-surface border border-border rounded-xl outline-none focus:border-primary focus:ring-1 focus:ring-primary/20 transition-all select-all"
                                     />
                                     <button
                                         type="button"
@@ -841,7 +841,7 @@ export default function SettingsPage({ section: propSection }) {
                                             navigator.clipboard.writeText(link);
                                             toast.success('Booking link copied to clipboard!');
                                         }}
-                                        className="px-6 py-2.5 bg-primary text-primary-foreground font-bold text-[11px] uppercase tracking-widest hover:opacity-90 active:scale-95 transition-all flex items-center justify-center gap-2 shrink-0 rounded-full shadow-sm"
+                                        className="px-6 py-2.5 bg-primary text-primary-foreground font-bold text-[11px] uppercase tracking-widest hover:opacity-90 active:scale-95 transition-all flex items-center justify-center gap-2 shrink-0 rounded-xl shadow-sm"
                                     >
                                         <Copy className="w-4 h-4" /> Copy Link
                                     </button>

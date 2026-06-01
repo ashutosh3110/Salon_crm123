@@ -101,7 +101,7 @@ export default function MembershipPlansTab() {
                 </div>
                 <button
                     onClick={() => { setEditingPlan(null); setShowModal(true); }}
-                    className="flex items-center justify-center gap-1.5 px-4 py-2 bg-[#cca839] text-white font-bold text-[9px] uppercase tracking-widest hover:bg-[#b89531] transition-all rounded-full shadow-sm w-full sm:w-auto"
+                    className="flex items-center justify-center gap-1.5 px-4 py-2 bg-[#cca839] text-white font-bold text-[9px] uppercase tracking-widest hover:bg-[#b89531] transition-all rounded-xl shadow-sm w-full sm:w-auto"
                 >
                     <Plus className="w-3.5 h-3.5" /> CREATE NEW PLAN
                 </button>
@@ -230,7 +230,7 @@ function MembershipCard({ plan, onEdit, onDelete, onToggle }) {
                     </div>
                 </div>
                 
-                <button onClick={onToggle} className={`w-full py-2 rounded-full font-bold text-[9px] uppercase tracking-widest transition-all ${plan.isActive ? 'bg-emerald-50 text-emerald-600 hover:bg-emerald-100' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'}`}>
+                <button onClick={onToggle} className={`w-full py-2 rounded-xl font-bold text-[9px] uppercase tracking-widest transition-all ${plan.isActive ? 'bg-emerald-50 text-emerald-600 hover:bg-emerald-100' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'}`}>
                     {plan.isActive ? 'STATUS: ACTIVE' : 'STATUS: PAUSED'}
                 </button>
             </div>

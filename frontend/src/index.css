@@ -877,8 +877,28 @@ html:not(.dark) .sa-panel button[type="submit"] svg:not([class*="text-green"]):n
    Cards, buttons, inputs — no more rounded corners
    (rounded-full preserved for pills/dots/avatars)
    ============================================= */
-.admin-panel *:not([class*="rounded-full"]):not([class*="rounded-3xl"]):not([class*="rounded-2xl"]):not(input[type="checkbox"]):not(input[type="radio"]):not(.allow-curve):not([class*="allow-curve"]) {
+.admin-panel *:not(button):not([role="button"]):not([class*="btn-"]):not([class*="rounded-full"]):not([class*="rounded-3xl"]):not([class*="rounded-2xl"]):not(input[type="checkbox"]):not(input[type="radio"]):not(.allow-curve):not([class*="allow-curve"]) {
   border-radius: 0 !important;
+}
+
+/* Ensure all admin panel buttons have a premium, slightly rounded corner (12px / 0.75rem) similar to the requested design */
+.admin-panel button,
+.admin-panel [role="button"],
+.admin-panel a[class*="bg-primary"],
+.admin-panel a[class*="border"],
+.admin-panel .btn-primary,
+.admin-panel .btn-secondary,
+.admin-panel .btn-salon,
+.admin-panel .st-premium-btn,
+.sa-panel button,
+.sa-panel [role="button"],
+.sa-panel a[class*="bg-primary"],
+.sa-panel a[class*="border"],
+.sa-panel .btn-primary,
+.sa-panel .btn-secondary,
+.sa-panel .btn-salon,
+.sa-panel .st-premium-btn {
+  border-radius: 12px !important;
 }
 
 .admin-panel .rounded-full,
