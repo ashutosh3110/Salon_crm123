@@ -254,8 +254,8 @@ export default function SAAnalyticsPage() {
                         exportToExcel(growth.mrrTrend, 'Wapixo_Analytics_Revenue', 'Revenue');
                         showToast('Report exported successfully!');
                     }}
-                        className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white dark:bg-slate-800 border border-border text-slate-900 dark:text-slate-100 text-sm !font-bold hover:border-[#B4912B] transition-all shadow-sm">
-                        <Download className="w-4 h-4" /> Export Data
+                        className="flex items-center gap-2 px-6 py-2.5 rounded-xl !bg-gradient-to-r !from-[#B4912B] !to-[#D4AF37] !text-white !border-none text-sm !font-black uppercase tracking-wider hover:!from-[#8B6F23] hover:!to-[#B4912B] transition-all shadow-lg shadow-[#B4912B]/30 active:scale-95">
+                        <Download className="w-4 h-4 !text-white" /> Export Data
                     </button>
                 </div>
             </div>
@@ -394,9 +394,9 @@ export default function SAAnalyticsPage() {
                             <table className="w-full">
                                 <thead>
                                     <tr className="border-b border-border">
-                                        <th className="text-left py-3 px-4 text-xs font-bold text-text-muted uppercase tracking-wider">City</th>
-                                        <th className="text-center py-3 px-4 text-xs font-bold text-text-muted uppercase tracking-wider">Total Salons</th>
-                                        <th className="text-center py-3 px-4 text-xs font-bold text-text-muted uppercase tracking-wider">Market Share</th>
+                                        <th className="!text-left py-3 px-4 text-xs font-bold text-text-muted uppercase tracking-wider">City</th>
+                                        <th className="!text-center py-3 px-4 text-xs font-bold text-text-muted uppercase tracking-wider">Total Salons</th>
+                                        <th className="!text-center py-3 px-4 text-xs font-bold text-text-muted uppercase tracking-wider">Market Share</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-border">
@@ -409,16 +409,16 @@ export default function SAAnalyticsPage() {
                                                         <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ backgroundColor: 'rgba(180, 145, 43, 0.1)' }}>
                                                             <MapPin size={18} color="#B4912B" strokeWidth={2.5} />
                                                         </div>
-                                                        <span className="text-sm font-bold text-text">{g.city}</span>
+                                                        <span className="text-sm font-bold !text-slate-800 dark:!text-slate-100">{g.city}</span>
                                                     </div>
                                                 </td>
-                                                <td className="py-4 px-4 text-center text-sm font-bold text-text">{g.salons}</td>
+                                                <td className="py-4 px-4 text-center text-sm font-bold !text-slate-800 dark:!text-slate-100">{g.salons}</td>
                                                 <td className="py-4 px-4 text-center">
                                                     <div className="flex items-center justify-center gap-3">
-                                                        <div className="w-24 h-1.5 rounded-full bg-slate-100 overflow-hidden hidden sm:block">
+                                                        <div className="w-24 h-1.5 rounded-full bg-slate-200 dark:bg-slate-700 overflow-hidden hidden sm:block">
                                                             <div className="h-full bg-primary rounded-xl" style={{ width: `${pct}%` }} />
                                                         </div>
-                                                        <span className="text-xs font-bold text-text-secondary">{pct}%</span>
+                                                        <span className="text-xs font-bold !text-slate-800 dark:!text-slate-300">{pct}%</span>
                                                     </div>
                                                 </td>
                                             </tr>
