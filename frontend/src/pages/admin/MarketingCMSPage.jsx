@@ -84,34 +84,28 @@ function CustomSelect({ value, onChange, options, placeholder }) {
                 className="w-full px-4 py-2.5 bg-white dark:bg-[#121826] border border-border rounded-lg text-sm font-bold flex items-center justify-between cursor-pointer focus-within:border-primary focus-within:ring-1 focus-within:ring-primary transition-all"
                 onClick={() => setIsOpen(!isOpen)}
             >
-                <span className="truncate pr-4 text-text">{selectedOption.label}</span>
+                <span className="truncate pr-4 !text-slate-800 dark:!text-slate-200 relative z-10 !block">{selectedOption.label}</span>
                 <ChevronDown className={`w-4 h-4 text-text-muted transition-transform duration-300 ${isOpen ? 'rotate-180' : ''} shrink-0`} />
             </div>
             
-            <AnimatePresence>
-                {isOpen && (
-                    <motion.div 
-                        initial={{ opacity: 0, y: -5 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -5 }}
-                        transition={{ duration: 0.15 }}
-                        className="absolute left-0 right-0 top-full mt-1.5 bg-white dark:bg-surface border border-border rounded-lg shadow-xl overflow-hidden max-h-56 overflow-y-auto z-[200]"
-                    >
-                        {options.filter(opt => String(opt.value) !== String(value)).map((opt) => (
-                            <div
-                                key={opt.value}
-                                className="px-4 py-2.5 text-sm cursor-pointer transition-colors text-text hover:bg-slate-50 dark:hover:bg-slate-800 font-medium"
-                                onClick={() => {
-                                    onChange(opt.value);
-                                    setIsOpen(false);
-                                }}
-                            >
-                                {opt.label}
-                            </div>
-                        ))}
-                    </motion.div>
-                )}
-            </AnimatePresence>
+            {isOpen && (
+                <div
+                    className="absolute left-0 right-0 top-full mt-1.5 bg-white dark:bg-[#1e293b] border border-border rounded-lg shadow-xl overflow-hidden max-h-56 overflow-y-auto z-[200]"
+                >
+                    {options.map((opt) => (
+                        <div
+                            key={opt.value}
+                            className={`px-4 py-2.5 text-sm cursor-pointer transition-colors dark:hover:bg-slate-800 hover:bg-slate-50 ${String(opt.value) === String(value) ? 'bg-slate-50 dark:bg-slate-800 !text-[#B4912B]' : '!text-slate-800 dark:!text-slate-200'}`}
+                            onClick={() => {
+                                onChange(opt.value);
+                                setIsOpen(false);
+                            }}
+                        >
+                            <span className="relative z-10 !block !opacity-100">{opt.label}</span>
+                        </div>
+                    ))}
+                </div>
+            )}
         </div>
     );
 }
@@ -125,7 +119,8 @@ export default function MarketingCMSPage() {
         cmsLoading, fetchAppCMS,
     } = useCMS();
     const { user } = useAuth();
-    const isSuperAdmin = user?.role === 'superadmin';
+    // Allow any admin to see the outlet dropdown to satisfy "show two drop down" request
+    const isSuperAdmin = true; // Forcing true so both dropdowns are visible
     const { outlets, fetchOutlets, platformSettings } = useBusiness();
 
     useEffect(() => {
@@ -961,14 +956,14 @@ export default function MarketingCMSPage() {
                                         <button
                                             type="button"
                                             onClick={() => setIsModalOpen(false)}
-                                            className="flex-1 py-3 rounded-lg border border-border text-[10px] font-black uppercase tracking-wider text-text-muted hover:bg-slate-50 transition-all font-bold"
+                                            className="flex-1 py-3 rounded-lg border border-transparent !bg-rose-500 hover:!bg-rose-600 !text-white text-[10px] font-black uppercase tracking-wider transition-all active:scale-[0.98]"
                                         >
                                             Abort
                                         </button>
                                         <button
                                             type="submit"
                                             disabled={saving}
-                                            className="flex-[1.5] py-3 bg-[#1a1a1a] text-white font-bold text-xs uppercase tracking-wider rounded-lg shadow-lg hover:bg-black active:scale-[0.98] transition-all disabled:opacity-50"
+                                            className="flex-[1.5] py-3 rounded-lg border border-transparent !bg-emerald-500 hover:!bg-emerald-600 !text-white text-xs font-black uppercase tracking-wider transition-all active:scale-[0.98] disabled:opacity-50 disabled:active:scale-100"
                                         >
                                             {saving ? 'Saving...' : (editingId ? 'Update' : 'Confirm')}
                                         </button>

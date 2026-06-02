@@ -426,7 +426,7 @@ export default function Sidebar({ collapsed, setCollapsed, isHovered, setIsHover
                                             <item.icon
                                                 className={`w-5 h-5 shrink-0 ${active ? 'text-white' : 'text-slate-500 group-hover:text-[#B4912B]'}`}
                                             />
-                                            {!effectiveCollapsed && <span className="whitespace-nowrap font-bold">{item.label}</span>}
+                                            {!effectiveCollapsed && <span className="whitespace-nowrap font-bold !text-slate-700 dark:!text-slate-300 !block !opacity-100 group-hover:!text-[#B4912B] transition-colors">{item.label}</span>}
                                         </div>
                                         {!effectiveCollapsed && (
                                             <div className="flex items-center gap-1.5">
@@ -507,7 +507,7 @@ export default function Sidebar({ collapsed, setCollapsed, isHovered, setIsHover
                                                 />
                                                 {!effectiveCollapsed && (
                                                     <div className="flex items-center justify-between flex-1">
-                                                        <span className="whitespace-nowrap font-bold">{item.label}</span>
+                                                        <span className={`whitespace-nowrap font-bold !block !opacity-100 ${isItemActive ? '!text-white' : '!text-slate-700 dark:!text-slate-300 group-hover:!text-[#B4912B] transition-colors'}`}>{item.label}</span>
                                                         {isLocked && <Lock className="w-3 h-3 text-text-muted/60" />}
                                                     </div>
                                                 )}
