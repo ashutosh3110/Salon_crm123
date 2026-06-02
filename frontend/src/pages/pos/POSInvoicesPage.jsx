@@ -810,7 +810,7 @@ export default function POSInvoicesPage() {
         }
     };
     return (
-        <div className="space-y-6 animate-in fade-in duration-700 pb-10 bg-[#F8F9FA] min-h-screen px-4 md:px-8 py-6 rounded-3xl">
+        <div className="space-y-6 animate-in fade-in duration-700 pb-10 bg-[#f8fafc] dark:bg-[#121826] min-h-screen px-4 md:px-8 py-6 rounded-3xl">
             {/* Header Area */}
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6 mb-2">
                 <div>

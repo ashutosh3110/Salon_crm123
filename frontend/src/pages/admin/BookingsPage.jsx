@@ -358,7 +358,6 @@ export default function BookingsPage() {
                                             <Cell key={`cell-${index}`} fill={entry.color} />
                                         ))}
                                     </Pie>
-                                    <Tooltip contentStyle={{ backgroundColor: 'white', border: '1px solid #e2e8f0', borderRadius: '8px', fontSize: '10px', fontWeight: '900', textTransform: 'uppercase', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }} />
                                 </PieChart>
                             </ResponsiveContainer>
                         </div>

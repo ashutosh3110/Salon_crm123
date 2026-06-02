@@ -79,7 +79,18 @@
     padding: 0;
     position: relative;
     touch-action: manipulation;
+    transition: background-color 0.3s ease;
     /* Disable double-tap zoom potential as well */
+  }
+
+  html.dark,
+  html.dark body {
+    background-color: #050505;
+  }
+
+  html.dark:has(.admin-panel),
+  html.dark:has(.admin-panel) body {
+    background-color: #121826;
   }
 
   body {
@@ -528,7 +539,7 @@
   --sidebar-accent-foreground: hsl(240 5.9% 10%);
   --sidebar-border: hsl(220 13% 91%);
   --sidebar-ring: hsl(217.2 91.2% 59.8%);
-  --color-text-muted: #e6e8bff;
+  --color-text-muted: #94a3b8;
 }
 
 .dark {
@@ -689,7 +700,10 @@ html:not(.dark) .sa-panel option {
 
 html:not(.dark) .admin-panel span:not([class*="text-green"]):not([class*="text-emerald"]):not([class*="text-red"]):not([class*="text-rose"]):not([class*="text-amber"]):not([class*="text-yellow"]):not([class*="text-blue"]):not([class*="text-indigo"]):not([class*="text-violet"]):not([class*="text-orange"]):not([class*="text-primary"]):not([class*="text-primary-foreground"]):not([class*="recharts"]):not([class*="recharts-"]):not([class*="text-white"]),
 html:not(.dark) .admin-panel div:not([class*="text-green"]):not([class*="text-emerald"]):not([class*="text-red"]):not([class*="text-rose"]):not([class*="text-amber"]):not([class*="text-yellow"]):not([class*="text-blue"]):not([class*="text-indigo"]):not([class*="text-violet"]):not([class*="text-orange"]):not([class*="text-primary"]):not([class*="text-primary-foreground"]):not([class*="recharts"]):not([class*="recharts-"]):not([class*="text-white"]),
-html:not(.dark) .admin-panel button:not(.bg-primary):not([class*="bg-primary"]):not([class*="text-green"]):not([class*="text-red"]):not([class*="text-emerald"]):not([class*="text-rose"]):not([class*="text-primary"]):not([class*="text-primary-foreground"]):not([class*="text-white"]),
+html:not(.dark) .admin-panel button:not(.bg-primary):not([class*="bg-primary"]):not([class*="text-green"]):not([class*="text-red"]):not([class*="text-emerald"]):not([class*="text-rose"]):not([class*="text-primary"]):not([class*="text-primary-foreground"]):not([class*="text-white"]) {
+  color: #000000 !important;
+}
+
 /* --- Make heading/bold texts in admin panels look premium and elegant --- */
 .admin-panel .font-black,
 .admin-panel .font-extrabold,
@@ -865,7 +879,7 @@ html:not(.dark) .sa-panel button[type="submit"] svg:not([class*="text-green"]):n
 /* =============================================
    📐 ADMIN PANEL — Removed Square Corners
    ============================================= */
-.admin-panel *:not(button):not([role="button"]):not([class*="btn-"]):not([class*="rounded-full"]):not([class*="rounded-3xl"]):not([class*="rounded-2xl"]):not(input[type="checkbox"]):not(input[type="radio"]):not(.allow-curve):not([class*="allow-curve"]) {
+.admin-panel *:not(button):not([role="button"]):not([class*="btn-"]):not([class*="rounded-full"]):not([class*="rounded-3xl"]):not([class*="rounded-2xl"]):not(input):not(select):not(textarea):not(.allow-curve):not([class*="allow-curve"]) {
   border-radius: 0 !important;
 }
 

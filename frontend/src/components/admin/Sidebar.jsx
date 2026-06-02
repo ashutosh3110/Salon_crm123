@@ -415,7 +415,7 @@ export default function Sidebar({ collapsed, setCollapsed, isHovered, setIsHover
                                     <button
                                         onClick={() => !isLocked && toggleExpand(item.label)}
                                         title={effectiveCollapsed ? item.label : undefined}
-                                        className={`flex items-center justify-between w-full rounded-2xl text-[15px] font-bold transition-all duration-200 ease-out group relative cursor-pointer
+                                        className={`flex items-center justify-between w-full rounded-lg text-[15px] font-bold transition-all duration-200 ease-out group relative cursor-pointer
                                             ${effectiveCollapsed ? 'justify-center h-11 w-11 mx-auto' : 'px-4 py-3 gap-3'}
                                             ${active
                                                 ? 'bg-[#B4912B] text-white shadow-sm border border-[#B4912B]'
@@ -463,7 +463,7 @@ export default function Sidebar({ collapsed, setCollapsed, isHovered, setIsHover
                                                             key={sub.path}
                                                             to={isLocked ? '#' : sub.path}
                                                             onClick={(e) => { if (isLocked) e.preventDefault(); else setMobileOpen(false); }}
-                                                            className={`flex items-center justify-between py-2.5 px-4 rounded-xl text-[13px] font-bold transition-all duration-200 relative
+                                                            className={`flex items-center justify-between py-2.5 px-4 rounded-md text-[13px] font-bold transition-all duration-200 relative
                                                                 ${isSubActive
                                                                     ? 'bg-[#B4912B] text-white shadow-sm'
                                                                     : 'text-slate-500 dark:text-slate-400 hover:text-[#B4912B] hover:bg-[#B4912B]/10'
@@ -490,7 +490,7 @@ export default function Sidebar({ collapsed, setCollapsed, isHovered, setIsHover
                                     title={effectiveCollapsed ? item.label : undefined}
                                     className={({ isActive: isItemActive }) => {
                                         const currentActive = isItemActive && !isLocked;
-                                        return `flex items-center rounded-2xl text-[15px] font-bold transition-all duration-200 ease-out group relative
+                                        return `flex items-center rounded-lg text-[15px] font-bold transition-all duration-200 ease-out group relative
                                             ${effectiveCollapsed ? 'justify-center h-11 w-11 mx-auto' : 'px-4 py-3 gap-3'}
                                             ${currentActive
                                                 ? 'bg-[#B4912B] text-white shadow-sm border border-[#B4912B]'
@@ -547,7 +547,7 @@ export default function Sidebar({ collapsed, setCollapsed, isHovered, setIsHover
             <div className={`border-t border-[#e2e8f0] dark:border-slate-700/50 ${effectiveCollapsed ? 'p-2' : 'px-4 py-3'}`}>
                 <button
                     onClick={logout}
-                    className={`flex items-center rounded-2xl text-[15px] font-bold text-slate-500 dark:text-slate-400 hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-600 transition-all duration-200 group cursor-pointer border-0
+                    className={`flex items-center rounded-lg text-[15px] font-bold text-slate-500 dark:text-slate-400 hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-600 transition-all duration-200 group cursor-pointer border-0
                         ${effectiveCollapsed ? 'justify-center h-11 w-11 mx-auto relative' : 'w-full px-4 py-3 gap-3'}`}
                     title={effectiveCollapsed ? 'Logout' : undefined}
                 >
