@@ -966,8 +966,47 @@ export default function SATenantsPage() {
         }
     };
 
+    const iconStyles = `
+        html:not(.dark) .sa-panel table .action-btn-emerald:not(:hover),
+        html:not(.dark) .sa-panel table .action-btn-emerald:not(:hover) svg {
+            color: #059669 !important;
+            stroke: #059669 !important;
+        }
+        html:not(.dark) .sa-panel table .action-btn-red:not(:hover),
+        html:not(.dark) .sa-panel table .action-btn-red:not(:hover) svg {
+            color: #DC2626 !important;
+            stroke: #DC2626 !important;
+        }
+        html:not(.dark) .sa-panel table .action-btn-blue:not(:hover),
+        html:not(.dark) .sa-panel table .action-btn-blue:not(:hover) svg {
+            color: #2563EB !important;
+            stroke: #2563EB !important;
+        }
+        html:not(.dark) .sa-panel table .action-btn-primary:not(:hover),
+        html:not(.dark) .sa-panel table .action-btn-primary:not(:hover) svg {
+            color: #B4912B !important;
+            stroke: #B4912B !important;
+        }
+        html:not(.dark) .sa-panel table .action-btn-gray:not(:hover),
+        html:not(.dark) .sa-panel table .action-btn-gray:not(:hover) svg {
+            color: #64748B !important;
+            stroke: #64748B !important;
+        }
+        html:not(.dark) .sa-panel table .action-btn-orange:not(:hover),
+        html:not(.dark) .sa-panel table .action-btn-orange:not(:hover) svg {
+            color: #F97316 !important;
+            stroke: #F97316 !important;
+        }
+        
+        html:not(.dark) .sa-panel table button svg,
+        html:not(.dark) .sa-panel table a svg {
+            stroke-width: 2.5px !important;
+        }
+    `;
+
     return (
         <div className="space-y-5 pb-8">
+            <style>{iconStyles}</style>
 
             {/* Toast */}
             {toast && (
@@ -1168,7 +1207,7 @@ export default function SATenantsPage() {
                                                         {/* View */}
                                                         <Link 
                                                             to={`/superadmin/tenants/${t._id}`}
-                                                            className="p-2 rounded-lg bg-surface border border-border text-text-muted hover:text-primary hover:border-[#B4912B]/30 transition-all"
+                                                            className="action-btn-primary p-2 rounded-lg bg-surface border border-border text-text-muted hover:text-primary hover:border-[#B4912B]/30 transition-all"
                                                             title="View Profile"
                                                         >
                                                             <EyeIcon className="w-4 h-4" />
@@ -1177,7 +1216,7 @@ export default function SATenantsPage() {
                                                         {/* Edit */}
                                                         <button 
                                                             onClick={(e) => { e.stopPropagation(); setModal({ mode: 'edit', tenant: t }); }}
-                                                            className="p-2 rounded-lg bg-surface border border-border text-text-muted hover:text-blue-500 hover:border-blue-200 transition-all"
+                                                            className="action-btn-blue p-2 rounded-lg bg-surface border border-border text-text-muted hover:text-blue-500 hover:border-blue-200 transition-all"
                                                             title="Edit Salon"
                                                         >
                                                             <Edit3 className="w-4 h-4" />
@@ -1188,14 +1227,14 @@ export default function SATenantsPage() {
                                                             <div className="flex items-center gap-1">
                                                                 <button 
                                                                     onClick={(e) => { e.stopPropagation(); handleApprove(t); }}
-                                                                    className="p-2 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-600 hover:bg-emerald-500 hover:text-white transition-all"
+                                                                    className="action-btn-emerald p-2 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-600 hover:bg-emerald-500 hover:text-white transition-all"
                                                                     title="Approve & Activate"
                                                                 >
                                                                     <CheckCircle className="w-4 h-4" />
                                                                 </button>
                                                                 <button 
                                                                     onClick={(e) => { e.stopPropagation(); handleReject(t); }}
-                                                                    className="p-2 rounded-lg bg-red-50 border border-red-200 text-red-600 hover:bg-red-500 hover:text-white transition-all"
+                                                                    className="action-btn-red p-2 rounded-lg bg-red-50 border border-red-200 text-red-600 hover:bg-red-500 hover:text-white transition-all"
                                                                     title="Reject Application"
                                                                 >
                                                                     <XCircle className="w-4 h-4" />
@@ -1205,8 +1244,8 @@ export default function SATenantsPage() {
                                                             <button 
                                                                 onClick={(e) => { e.stopPropagation(); handleSuspend(t); }}
                                                                 className={`p-2 rounded-lg border transition-all ${t.status === 'suspended' 
-                                                                    ? 'bg-emerald-50 border-emerald-200 text-emerald-600 hover:bg-emerald-500 hover:text-white' 
-                                                                    : 'bg-surface border-border text-text-muted hover:text-orange-500 hover:border-orange-200'}`}
+                                                                    ? 'action-btn-emerald bg-emerald-50 border-emerald-200 text-emerald-600 hover:bg-emerald-500 hover:text-white' 
+                                                                    : 'action-btn-orange bg-surface border-border text-text-muted hover:text-orange-500 hover:border-orange-200'}`}
                                                                 title={t.status === 'suspended' ? 'Reactivate' : 'Suspend'}
                                                             >
                                                                 {t.status === 'suspended' ? <RefreshCw className="w-4 h-4" /> : <Ban className="w-4 h-4" />}
@@ -1216,7 +1255,7 @@ export default function SATenantsPage() {
                                                         {/* Delete */}
                                                         <button 
                                                             onClick={(e) => { e.stopPropagation(); handleDelete(t); }}
-                                                            className="p-2 rounded-lg bg-surface border border-border text-text-muted hover:text-red-500 hover:border-red-200 transition-all"
+                                                            className="action-btn-red p-2 rounded-lg bg-surface border border-border text-text-muted hover:text-red-500 hover:border-red-200 transition-all"
                                                             title="Delete Salon"
                                                         >
                                                             <Trash2 className="w-4 h-4" />

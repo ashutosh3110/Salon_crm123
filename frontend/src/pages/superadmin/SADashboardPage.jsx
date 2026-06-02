@@ -445,16 +445,6 @@ export default function SADashboardPage() {
                     <SectionHeader
                         title="Income Trends"
                         subtitle="Earnings performance over the last 6 months"
-                        action={
-                            <div className="flex items-center gap-3">
-                                <span className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/30 px-2 py-1 rounded-xl">
-                                    ↑ 11.9% MoM
-                                </span>
-                                <Link to="/superadmin/billing" className="p-1.5 rounded-lg bg-primary/5 text-primary opacity-0 group-hover:opacity-100 transition-all hover:bg-primary hover:text-white">
-                                    <ArrowUpRight className="w-3.5 h-3.5" />
-                                </Link>
-                            </div>
-                        }
                     />
                     <ResponsiveContainer width="100%" height={220}>
                         <AreaChart data={analytics?.mrrTrend || []} margin={{ top: 5, right: 5, left: 0, bottom: 0 }}>
@@ -465,11 +455,11 @@ export default function SADashboardPage() {
                                 </linearGradient>
                             </defs>
                             <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
-                            <XAxis dataKey="month" tick={{ fontSize: 11, fill: '#94a3b8' }} axisLine={false} tickLine={false} />
-                            <YAxis tick={{ fontSize: 11, fill: '#94a3b8' }} axisLine={false} tickLine={false}
+                            <XAxis dataKey="month" tick={{ fontSize: 11, fill: '#64748b' }} axisLine={false} tickLine={false} />
+                            <YAxis tick={{ fontSize: 11, fill: '#64748b' }} axisLine={false} tickLine={false}
                                 tickFormatter={v => `₹${(v / 1000).toFixed(0)}k`} />
                             <Tooltip content={<CustomTooltip prefix="₹" />} />
-                            <Legend wrapperStyle={{ fontSize: 11 }} />
+                            <Legend wrapperStyle={{ fontSize: 11 }} formatter={(value) => <span className="text-slate-700 dark:text-slate-300 font-bold">{value}</span>} />
                             <Area type="monotone" dataKey="mrr" name="This Period" stroke="#B4912B" strokeWidth={2.5} fill="url(#revGrad)" dot={{ r: 4, fill: '#B4912B', stroke: '#fff', strokeWidth: 2 }} activeDot={{ r: 6 }} />
                         </AreaChart>
                     </ResponsiveContainer>
@@ -483,11 +473,6 @@ export default function SADashboardPage() {
                     <SectionHeader
                         title="Most Popular Plans"
                         subtitle="Subscription breakdown"
-                        action={
-                            <Link to="/superadmin/tenants" className="p-1.5 rounded-lg bg-primary/5 text-primary opacity-0 group-hover:opacity-100 transition-all hover:bg-primary hover:text-white">
-                                <ArrowUpRight className="w-3.5 h-3.5" />
-                            </Link>
-                        }
                     />
                     <ResponsiveContainer width="100%" height={160}>
                         <PieChart>
@@ -524,16 +509,6 @@ export default function SADashboardPage() {
                     <SectionHeader
                         title="Salons Joined Recently"
                         subtitle="New monthly registrations"
-                        action={
-                            <div className="flex items-center gap-3">
-                                <span className="text-[11px] font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/30 px-2 py-1 rounded-xl">
-                                    34 this month
-                                </span>
-                                <Link to="/superadmin/tenants" className="p-1.5 rounded-lg bg-primary/5 text-primary opacity-0 group-hover:opacity-100 transition-all hover:bg-primary hover:text-white">
-                                    <ArrowUpRight className="w-3.5 h-3.5" />
-                                </Link>
-                            </div>
-                        }
                     />
                     <ResponsiveContainer width="100%" height={200}>
                         <BarChart data={analytics?.salonGrowth || []} margin={{ top: 5, right: 5, left: -20, bottom: 0 }} barSize={28}>
@@ -544,8 +519,8 @@ export default function SADashboardPage() {
                                 </linearGradient>
                             </defs>
                             <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
-                            <XAxis dataKey="month" tick={{ fontSize: 11, fill: '#94a3b8' }} axisLine={false} tickLine={false} />
-                            <YAxis tick={{ fontSize: 11, fill: '#94a3b8' }} axisLine={false} tickLine={false} />
+                            <XAxis dataKey="month" tick={{ fontSize: 11, fill: '#64748b' }} axisLine={false} tickLine={false} />
+                            <YAxis tick={{ fontSize: 11, fill: '#64748b' }} axisLine={false} tickLine={false} />
                             <Tooltip content={<CustomTooltip suffix=" salons" />} />
                             <Bar dataKey="salons" name="New Salons" fill="url(#barGrad)" radius={[6, 6, 0, 0]} />
                         </BarChart>
@@ -560,35 +535,31 @@ export default function SADashboardPage() {
                     <SectionHeader
                         title="Cancellations Rate"
                         subtitle="Tracing salons who left our platform"
-                        action={
-                            <div className="flex items-center gap-3">
-                                <span className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/30 px-2 py-1 rounded-xl">
-                                    ↓ Improving
-                                </span>
-                                <Link to="/superadmin/tenants?status=expired" className="p-1.5 rounded-lg bg-primary/5 text-primary opacity-0 group-hover:opacity-100 transition-all hover:bg-primary hover:text-white">
-                                    <ArrowUpRight className="w-3.5 h-3.5" />
-                                </Link>
-                            </div>
-                        }
                     />
-                    <ResponsiveContainer width="100%" height={200}>
-                        <LineChart data={analytics?.churnTrend || []} margin={{ top: 5, right: 5, left: -20, bottom: 0 }}>
-                            <defs>
-                                <linearGradient id="churnGrad" x1="0" y1="0" x2="0" y2="1">
-                                    <stop offset="5%" stopColor="#f59e0b" stopOpacity={0.2} />
-                                    <stop offset="95%" stopColor="#f59e0b" stopOpacity={0} />
-                                </linearGradient>
-                            </defs>
-                            <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
-                            <XAxis dataKey="month" tick={{ fontSize: 11, fill: '#94a3b8' }} axisLine={false} tickLine={false} />
-                            <YAxis tick={{ fontSize: 11, fill: '#94a3b8' }} axisLine={false} tickLine={false}
-                                tickFormatter={v => `${v}%`} domain={[0, 7]} />
-                            <Tooltip content={<CustomTooltip suffix="%" />} />
-                            <Line type="monotone" dataKey="rate" name="Churn Rate" stroke="#f59e0b" strokeWidth={2.5}
-                                dot={{ r: 4, fill: '#f59e0b', stroke: '#fff', strokeWidth: 2 }}
-                                activeDot={{ r: 6 }} />
-                        </LineChart>
-                    </ResponsiveContainer>
+                    {(!analytics?.churnTrend || analytics.churnTrend.length === 0) ? (
+                        <div className="w-full h-[200px] flex items-center justify-center text-sm font-semibold text-text-muted">
+                            No cancellation rate
+                        </div>
+                    ) : (
+                        <ResponsiveContainer width="100%" height={200}>
+                            <LineChart data={analytics.churnTrend} margin={{ top: 5, right: 5, left: -20, bottom: 0 }}>
+                                <defs>
+                                    <linearGradient id="churnGrad" x1="0" y1="0" x2="0" y2="1">
+                                        <stop offset="5%" stopColor="#f59e0b" stopOpacity={0.2} />
+                                        <stop offset="95%" stopColor="#f59e0b" stopOpacity={0} />
+                                    </linearGradient>
+                                </defs>
+                                <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+                                <XAxis dataKey="month" tick={{ fontSize: 11, fill: '#64748b' }} axisLine={false} tickLine={false} />
+                                <YAxis tick={{ fontSize: 11, fill: '#64748b' }} axisLine={false} tickLine={false}
+                                    tickFormatter={v => `${v}%`} domain={[0, 7]} />
+                                <Tooltip content={<CustomTooltip suffix="%" />} />
+                                <Line type="monotone" dataKey="rate" name="Churn Rate" stroke="#f59e0b" strokeWidth={2.5}
+                                    dot={{ r: 4, fill: '#f59e0b', stroke: '#fff', strokeWidth: 2 }}
+                                    activeDot={{ r: 6 }} />
+                            </LineChart>
+                        </ResponsiveContainer>
+                    )}
                 </div>
             </div>
 

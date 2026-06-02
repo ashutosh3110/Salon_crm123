@@ -28,10 +28,10 @@ const STATUS_CFG = {
 /* ─── Action button ──────────────────────────────────────────────────── */
 function ActionBtn({ icon: Icon, label, onClick, variant = 'default', disabled = false }) {
     const varCls = {
-        default: 'bg-white text-text-secondary border-border hover:border-[#B4912B]/30 hover:text-primary shadow-sm',
-        danger: 'bg-white text-red-500 border-red-100 hover:bg-red-50 shadow-sm',
-        primary: 'bg-[#B4912B] text-white border-[#B4912B] hover:brightness-110 shadow-lg shadow-[#B4912B]/20',
-        blue: 'bg-white text-blue-600 border-blue-100 hover:bg-blue-50 shadow-sm',
+        default: 'bg-surface text-text-secondary border-border hover:border-[#B4912B]/30 hover:text-primary shadow-sm',
+        danger: '!bg-gradient-to-r !from-[#B4912B] !to-[#D4AF37] !text-white !border-none shadow-none hover:!from-[#8B6F23] hover:!to-[#B4912B]',
+        primary: '!bg-gradient-to-r !from-[#B4912B] !to-[#D4AF37] !text-white !border-none shadow-none hover:!from-[#8B6F23] hover:!to-[#B4912B]',
+        blue: 'bg-blue-500 text-white border-blue-500 hover:bg-blue-600 shadow-none',
     };
     return (
         <motion.button 
@@ -53,6 +53,7 @@ export default function SATenantDetailPage() {
     const [statusLoading, setStatusLoading] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
     const [selectedTenant, setSelectedTenant] = useState(null);
+    const [isStateDropdownOpen, setIsStateDropdownOpen] = useState(false);
     const [fiscalForm, setFiscalForm] = useState({
         state: '',
         stateCode: '',
@@ -172,7 +173,7 @@ export default function SATenantDetailPage() {
     const tabs = [
         { id: 'info', label: 'Basic Info', icon: Building2 },
         { id: 'plan', label: 'Subscription', icon: CreditCard },
-        { id: 'whatsapp', label: 'WhatsApp', icon: Sparkles },
+        { id: 'whatsapp', label: 'WhatsApp', icon: Phone },
         { id: 'fiscal', label: 'Fiscal', icon: Settings2 },
     ];
 
@@ -215,9 +216,8 @@ export default function SATenantDetailPage() {
                     <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[100%] bg-primary/5 blur-[100px] rounded-full animate-pulse" />
                     <div className="absolute bottom-[-20%] right-[-10%] w-[50%] h-[100%] bg-indigo-500/5 blur-[100px] rounded-full animate-pulse" />
                 </div>
-
-                <div className="h-1.5 bg-gradient-to-r from-primary via-indigo-600 to-[#8B6F23]" />
                 
+
                 <div className="p-8 flex flex-col lg:flex-row lg:items-center gap-8 relative z-10">
                     {/* Avatar with Glow */}
                     <div className="relative shrink-0">
@@ -329,7 +329,7 @@ export default function SATenantDetailPage() {
                                             { label: 'Onboarding Date', value: new Date(selectedTenant.createdAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'long', year: 'numeric' }), icon: Clock }
                                         ].map((r, i) => (
                                             <div key={i} className="space-y-1.5 group">
-                                                <div className="flex items-center gap-2 opacity-40 group-hover:opacity-100 transition-opacity">
+                                                <div className="flex items-center gap-2">
                                                     <r.icon className="w-3 h-3 text-primary" />
                                                     <span className="text-[9px] text-text-muted font-black uppercase tracking-[0.2em]">{r.label}</span>
                                                 </div>
@@ -338,24 +338,24 @@ export default function SATenantDetailPage() {
                                         ))}
                                     </div>
                                 </div>
-                                <div className="bg-gradient-to-br from-slate-900 to-slate-800 rounded-2xl p-8 text-white shadow-2xl shadow-slate-900/20 relative overflow-hidden">
-                                    <div className="absolute top-[-10%] right-[-10%] w-32 h-32 bg-white/5 blur-3xl rounded-full" />
+                                <div className="bg-white rounded-2xl border border-border shadow-sm p-8 relative overflow-hidden">
+                                    <div className="absolute top-[-10%] right-[-10%] w-32 h-32 bg-primary/5 blur-3xl rounded-full" />
                                     <div className="relative z-10 space-y-8">
                                         <div className="space-y-1">
-                                            <p className="text-[9px] font-black text-white/40 uppercase tracking-widest">Postal Address</p>
-                                            <p className="text-sm font-bold leading-relaxed opacity-80">
+                                            <p className="text-[9px] font-black text-text-muted uppercase tracking-widest">Postal Address</p>
+                                            <p className="text-sm font-bold text-text leading-relaxed opacity-80">
                                                 {typeof selectedTenant.address === 'object' 
                                                     ? `${selectedTenant.address?.street || ''}, ${selectedTenant.address?.city || ''}, ${selectedTenant.address?.state || ''} - ${selectedTenant.address?.pincode || ''}` 
                                                     : selectedTenant.address || 'Address not updated'}
                                             </p>
                                         </div>
-                                        <div className="h-px bg-white/10" />
+                                        <div className="h-px bg-border" />
                                         <div className="space-y-6">
                                             <div>
-                                                <p className="text-[9px] font-black text-white/40 uppercase tracking-widest mb-2">Network Status</p>
+                                                <p className="text-[9px] font-black text-text-muted uppercase tracking-widest mb-2">Network Status</p>
                                                 <div className="flex items-center gap-3">
-                                                    <div className="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.5)]" />
-                                                    <span className="text-xs font-black uppercase tracking-widest">Servers Online</span>
+                                                    <div className="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.3)]" />
+                                                    <span className="text-xs font-black text-text uppercase tracking-widest">Servers Online</span>
                                                 </div>
                                             </div>
                                         </div>
@@ -479,7 +479,7 @@ export default function SATenantDetailPage() {
                                                 type="number" 
                                                 id="sa-credits-input"
                                                 placeholder="e.g. +1000 or -500"
-                                                className="w-full h-16 px-6 rounded-2xl border border-border bg-surface text-lg font-black outline-none focus:border-[#B4912B] focus:ring-4 focus:ring-primary/5 transition-all"
+                                                className="w-full h-16 px-6 rounded-2xl border border-border bg-surface text-lg font-black outline-none focus:border-[#B4912B] focus:ring-4 focus:ring-primary/5 transition-all [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                                             />
                                         </div>
                                         <motion.button 
@@ -500,7 +500,7 @@ export default function SATenantDetailPage() {
                                                     showToast('Update failed', 'error');
                                                 }
                                             }}
-                                            className="h-16 px-10 bg-[#B4912B] text-white text-[11px] font-black uppercase tracking-[0.2em] rounded-2xl hover:bg-[#8B6F23] transition-all shadow-xl shadow-[#B4912B]/20 whitespace-nowrap"
+                                            className="h-16 px-10 !bg-gradient-to-r !from-[#B4912B] !to-[#D4AF37] !text-white text-[11px] font-black uppercase tracking-[0.2em] rounded-2xl hover:!from-[#8B6F23] hover:!to-[#B4912B] transition-all shadow-none whitespace-nowrap"
                                         >
                                             Sync Balance
                                         </motion.button>
@@ -537,27 +537,51 @@ export default function SATenantDetailPage() {
                                         <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] pl-1">
                                             Regulatory Jurisdiction
                                         </label>
-                                        <select
-                                            value={fiscalForm.state}
-                                            onChange={(e) => {
-                                                const s = states.find((st) => st.name === e.target.value);
-                                                if (s) setFiscalForm({ ...fiscalForm, state: s.name, stateCode: s.code });
-                                            }}
-                                            className="w-full h-14 px-5 rounded-2xl border border-border text-sm font-bold focus:border-[#B4912B] focus:ring-4 focus:ring-primary/5 outline-none transition-all bg-surface/50 appearance-none"
-                                        >
-                                            {states.map((s) => (
-                                                <option key={s.code} value={s.name}>
-                                                    {s.name} (Code: {s.code})
-                                                </option>
-                                            ))}
-                                        </select>
+                                        <div className="relative">
+                                            <button
+                                                type="button"
+                                                onClick={() => setIsStateDropdownOpen(!isStateDropdownOpen)}
+                                                className="w-full h-14 px-5 rounded-2xl border border-slate-300 shadow-sm text-sm font-bold focus:border-[#B4912B] focus:ring-4 focus:ring-primary/5 outline-none transition-all bg-surface/50 flex items-center justify-between"
+                                            >
+                                                <span>{fiscalForm.state ? `${fiscalForm.state} (Code: ${fiscalForm.stateCode})` : 'Select Jurisdiction'}</span>
+                                                <ChevronRight className={`w-4 h-4 text-text-muted transition-transform ${isStateDropdownOpen ? 'rotate-90' : ''}`} />
+                                            </button>
+
+                                            <AnimatePresence>
+                                                {isStateDropdownOpen && (
+                                                    <>
+                                                        <div className="fixed inset-0 z-40" onClick={() => setIsStateDropdownOpen(false)} />
+                                                        <motion.div
+                                                            initial={{ opacity: 0, y: -10 }}
+                                                            animate={{ opacity: 1, y: 0 }}
+                                                            exit={{ opacity: 0, y: -10 }}
+                                                            className="absolute z-50 w-full mt-2 bg-surface border border-border rounded-2xl shadow-2xl max-h-[300px] overflow-y-auto"
+                                                        >
+                                                            {states.map((s) => (
+                                                                <button
+                                                                    key={s.code}
+                                                                    type="button"
+                                                                    onClick={() => {
+                                                                        setFiscalForm({ ...fiscalForm, state: s.name, stateCode: s.code });
+                                                                        setIsStateDropdownOpen(false);
+                                                                    }}
+                                                                    className={`w-full text-left px-5 py-3 text-sm font-medium transition-colors hover:bg-primary/10 ${fiscalForm.state === s.name ? 'bg-primary/5 text-primary' : 'text-text'}`}
+                                                                >
+                                                                    {s.name} (Code: {s.code})
+                                                                </button>
+                                                            ))}
+                                                        </motion.div>
+                                                    </>
+                                                )}
+                                            </AnimatePresence>
+                                        </div>
                                     </div>
 
                                     <div className="space-y-3">
                                         <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] pl-1">
                                             State ID Code
                                         </label>
-                                        <div className="w-full h-14 px-5 rounded-2xl border border-border bg-surface text-sm font-bold flex items-center opacity-60">
+                                        <div className="w-full h-14 px-5 rounded-2xl border border-slate-300 shadow-sm bg-surface/50 text-text-muted text-sm font-black flex items-center">
                                             {fiscalForm.stateCode}
                                         </div>
                                     </div>
@@ -572,7 +596,7 @@ export default function SATenantDetailPage() {
                                                 type="number"
                                                 value={fiscalForm.serviceGst}
                                                 onChange={(e) => setFiscalForm({ ...fiscalForm, serviceGst: Number(e.target.value) })}
-                                                className="w-full h-14 px-5 rounded-2xl border border-border text-sm font-black focus:border-[#B4912B] focus:ring-4 focus:ring-primary/5 outline-none transition-all bg-surface/50"
+                                                className="w-full h-14 px-5 pr-10 rounded-2xl border border-slate-300 shadow-sm text-sm font-black focus:border-[#B4912B] focus:ring-4 focus:ring-primary/5 outline-none transition-all bg-surface/50 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                                             />
                                             <span className="absolute right-5 top-1/2 -translate-y-1/2 font-black text-text-muted">%</span>
                                         </div>
@@ -588,7 +612,7 @@ export default function SATenantDetailPage() {
                                                 type="number"
                                                 value={fiscalForm.productGst}
                                                 onChange={(e) => setFiscalForm({ ...fiscalForm, productGst: Number(e.target.value) })}
-                                                className="w-full h-14 px-5 rounded-2xl border border-border text-sm font-black focus:border-[#B4912B] focus:ring-4 focus:ring-primary/5 outline-none transition-all bg-surface/50"
+                                                className="w-full h-14 px-5 pr-10 rounded-2xl border border-slate-300 shadow-sm text-sm font-black focus:border-[#B4912B] focus:ring-4 focus:ring-primary/5 outline-none transition-all bg-surface/50 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                                             />
                                             <span className="absolute right-5 top-1/2 -translate-y-1/2 font-black text-text-muted">%</span>
                                         </div>
@@ -601,7 +625,7 @@ export default function SATenantDetailPage() {
                                         whileTap={{ scale: 0.98 }}
                                         onClick={handleUpdateFiscal}
                                         disabled={isSaving}
-                                        className="flex items-center justify-center gap-3 w-full sm:w-auto px-10 py-4 bg-[#B4912B] text-white text-[11px] font-black uppercase tracking-[0.3em] rounded-2xl hover:bg-[#8B6F23] transition-all shadow-xl shadow-[#B4912B]/20 disabled:opacity-50"
+                                        className="flex items-center justify-center gap-3 w-full sm:w-auto px-10 py-4 !bg-gradient-to-r !from-[#B4912B] !to-[#D4AF37] !text-white text-[11px] font-black uppercase tracking-[0.3em] rounded-2xl hover:!from-[#8B6F23] hover:!to-[#B4912B] transition-all shadow-none disabled:opacity-50 disabled:grayscale"
                                     >
                                         {isSaving ? (
                                             <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin" />
