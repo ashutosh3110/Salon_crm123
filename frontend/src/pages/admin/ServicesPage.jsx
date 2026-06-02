@@ -34,7 +34,6 @@ export default function ServicesPage({ tab = 'list' }) {
     const [selectedOutletId, setSelectedOutletId] = useState('all');
     const [searchTerm, setSearchTerm] = useState('');
     const [filterCategory, setFilterCategory] = useState('All');
-    const [filterOutlet, setFilterOutlet] = useState('All Outlets');
     const [importing, setImporting] = useState(false);
 
     const [isFormModalOpen, setIsFormModalOpen] = useState(false);
@@ -69,10 +68,10 @@ export default function ServicesPage({ tab = 'list' }) {
     }, [tab]);
 
     const stats = useMemo(() => ([
-        { label: 'Active Services', value: services.length, icon: Zap, color: 'primary' },
-        { label: 'Catalog Value', value: `₹${services.reduce((s, p) => s + p.price, 0).toLocaleString()}`, icon: TrendingUp, color: 'emerald' },
-        { label: 'Service Categories', value: categories.length, icon: Layers, color: 'orange' },
-        { label: 'Avg. Duration', value: `${Math.round(services.reduce((s, p) => s + p.duration, 0) / (services.length || 1))}m`, icon: Settings2, color: 'violet' }
+        { label: 'Active Services', value: services.length, icon: Zap, color: 'primary', trend: 'Active' },
+        { label: 'Catalog Value', value: `₹${services.reduce((s, p) => s + p.price, 0).toLocaleString()}`, icon: TrendingUp, color: 'emerald', trend: 'Live' },
+        { label: 'Service Categories', value: categories.length, icon: Layers, color: 'orange', trend: 'Active' },
+        { label: 'Avg. Duration', value: `${Math.round(services.reduce((s, p) => s + p.duration, 0) / (services.length || 1))}M`, icon: Settings2, color: 'violet', trend: 'Mean' }
     ]), [services, categories]);
 
     const handleAddClick = () => {
@@ -209,7 +208,6 @@ export default function ServicesPage({ tab = 'list' }) {
     };
 
     const categoriesList = ['All', ...new Set(services.map(s => s.category))];
-    const outletOptions = ['All Outlets', ...outlets.map(o => o.name)];
 
     return (
         <div className="space-y-4 animate-reveal text-left font-black">
@@ -226,20 +224,20 @@ export default function ServicesPage({ tab = 'list' }) {
                 </div>
             </div>
 
-            {/* Stats Row */}
             {activeTab === 'list' && (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 animate-in fade-in slide-in-from-top-4 duration-300">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 animate-in fade-in slide-in-from-top-4 duration-300">
                     {stats.map((stat, i) => (
-                        <div key={i} className="bg-surface p-3.5 border border-border/40 shadow-sm group hover:shadow-lg transition-all relative overflow-hidden rounded-2xl">
-                            <div className={`absolute -right-4 -top-4 w-12 h-12 bg-primary/5 rounded-full blur-xl group-hover:bg-primary/10 transition-all`} />
-                            <div className="relative z-10 flex flex-col gap-1.5">
-                                <div className="flex items-center justify-between">
-                                    <stat.icon className="w-4 h-4 text-text-muted group-hover:text-primary transition-colors" />
-                                    <div className="w-1 h-1 rounded-full bg-primary/20 group-hover:bg-primary animate-pulse" />
+                        <div key={i} className="bg-surface py-6 px-8 !rounded-[24px] border border-border shadow-sm hover:shadow-xl hover:translate-y-[-2px] transition-all group overflow-hidden relative text-left">
+                            <div className="relative z-10 flex flex-col justify-between h-full text-left">
+                                <div className="flex items-center justify-between mb-4 text-left">
+                                    <div className="flex items-center gap-3 text-left">
+                                        <stat.icon className="w-5 h-5 text-text-muted group-hover:text-primary transition-colors" />
+                                        <p className="text-[9px] font-black text-text-secondary uppercase tracking-[0.2em] leading-none text-left">{stat.label}</p>
+                                    </div>
+                                    <span className="text-[8px] font-black text-text-muted uppercase tracking-[0.2em]">{stat.trend}</span>
                                 </div>
-                                <div>
-                                    <p className="text-[8.5px] font-black text-text-muted uppercase tracking-widest leading-none mb-1">{stat.label}</p>
-                                    <h3 className="text-xl font-black text-text tracking-tighter uppercase leading-none">
+                                <div className="flex items-end justify-between text-left">
+                                    <h3 className="text-xl font-black text-text tracking-tighter uppercase leading-none text-left">
                                         {typeof stat.value === 'string' ? stat.value : <AnimatedCounter value={stat.value} />}
                                     </h3>
                                 </div>
@@ -271,12 +269,6 @@ export default function ServicesPage({ tab = 'list' }) {
                             className="flex-1 lg:flex-none min-w-[110px]"
                         />
 
-                        <CustomDropdown
-                            value={filterOutlet}
-                            onChange={setFilterOutlet}
-                            options={outletOptions}
-                            className="flex-1 lg:flex-none min-w-[130px]"
-                        />
 
                         <div className="flex flex-wrap items-center gap-1.5 w-full sm:w-auto">
                             <button
@@ -289,13 +281,13 @@ export default function ServicesPage({ tab = 'list' }) {
 
                             <button
                                 onClick={handleDownloadTemplate}
-                                className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-500 hover:bg-amber-500/20 transition-all active:scale-95 text-[10px] font-black uppercase tracking-wider group"
+                                className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-600 dark:text-amber-500 hover:bg-amber-500/20 transition-all active:scale-95 text-[10px] font-black uppercase tracking-wider group"
                                 title="Download Sample Template"
                             >
-                                <Download className="w-3 h-3 group-hover:scale-110 transition-transform" />
-                                <span>Sample</span>
+                                <Download className="w-3 h-3 !text-amber-600 dark:!text-amber-500 group-hover:scale-110 transition-transform" />
+                                <span className="!text-amber-600 dark:!text-amber-500">Sample</span>
                             </button>
-
+ 
                             <div className="relative flex-1 sm:flex-none">
                                 <input
                                     type="file"
@@ -307,10 +299,14 @@ export default function ServicesPage({ tab = 'list' }) {
                                 <button
                                     onClick={() => document.getElementById('bulk-upload-top').click()}
                                     disabled={importing}
-                                    className="w-full flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 hover:bg-emerald-500/20 transition-all active:scale-95 text-[10px] font-black uppercase tracking-wider disabled:opacity-50 group"
+                                    className="w-full flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl bg-[rgba(16,185,129,0.1)] border border-[rgba(16,185,129,0.2)] text-emerald-600 dark:text-emerald-500 hover:bg-[rgba(16,185,129,0.2)] transition-all active:scale-95 text-[10px] font-black uppercase tracking-wider disabled:opacity-50 group"
                                 >
-                                    {importing ? <RefreshCcw className="w-3 h-3 animate-spin" /> : <Upload className="w-3 h-3 group-hover:scale-110 transition-transform" />}
-                                    <span>{importing ? 'Importing...' : 'Import'}</span>
+                                    {importing ? (
+                                        <RefreshCcw className="w-3 h-3 animate-spin !text-emerald-600 dark:!text-emerald-500" style={{ color: '#059669', stroke: '#059669' }} />
+                                    ) : (
+                                        <Upload className="w-3 h-3 !text-emerald-600 dark:!text-emerald-500 group-hover:scale-110 transition-transform" style={{ color: '#059669', stroke: '#059669' }} />
+                                    )}
+                                    <span className="!text-emerald-600 dark:!text-emerald-500">{importing ? 'Importing...' : 'Import'}</span>
                                 </button>
                             </div>
 
@@ -370,7 +366,7 @@ export default function ServicesPage({ tab = 'list' }) {
                         onAdd={handleAddClick}
                         searchTerm={searchTerm}
                         filterCategory={filterCategory}
-                        filterOutlet={filterOutlet}
+                        filterOutlet="All Outlets"
                     />
                 )}
                 {activeTab === 'categories' && (
