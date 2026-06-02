@@ -311,18 +311,24 @@ export default function SABillingPage() {
     });
 
     // Invoices derived from payments for now
-    const filteredInvoices = filteredPayments.map(p => ({
-        id: p.invoiceNumber,
-        salon: p.tenantId?.name || p.salonName || 'Unknown',
-        plan: p.planName || 'Plan',
-        amount: p.amount,
-        taxAmt: p.taxAmount,
-        total: p.totalAmount,
-        date: p.createdAt?.split('T')[0],
-        dueDate: p.dueDate?.split('T')[0],
-        status: p.status,
-        rawId: p._id
-    }));
+    const filteredInvoices = filteredPayments.map(p => {
+        const createD = p.createdAt ? new Date(p.createdAt) : new Date();
+        const fallbackDue = new Date(createD);
+        fallbackDue.setDate(fallbackDue.getDate() + 7);
+        
+        return {
+            id: p.invoiceNumber,
+            salon: p.tenantId?.name || p.salonName || 'Unknown',
+            plan: p.planName || 'Plan',
+            amount: p.amount,
+            taxAmt: p.taxAmount,
+            total: p.totalAmount,
+            date: p.createdAt?.split('T')[0],
+            dueDate: p.dueDate ? p.dueDate.split('T')[0] : fallbackDue.toISOString().split('T')[0],
+            status: p.status,
+            rawId: p._id
+        };
+    });
 
     /* KPIs */
     const { totalAmount, collectedAmount, pendingAmount, refundedAmount, monthlyRevenue, planDistribution } = stats;
@@ -636,8 +642,8 @@ export default function SABillingPage() {
                                                 <td className="px-4 py-3.5 text-sm font-mono text-primary font-semibold">{p.invoiceNumber}</td>
                                                 <td className="px-4 py-3.5">
                                                     <div className="flex items-center gap-2.5">
-                                                        <div className="w-7 h-7 rounded-lg bg-emerald-50 flex items-center justify-center text-xs font-black text-primary shrink-0">
-                                                            {(p.tenantId?.name || p.salonName || 'S')[0]}
+                                                        <div className="w-7 h-7 rounded-lg bg-[#B4912B]/10 dark:bg-[#B4912B]/20 border border-[#B4912B]/20 flex items-center justify-center text-xs font-black text-[#B4912B] dark:text-[#D4AF37] shrink-0">
+                                                            {(p.tenantId?.name || p.salonName || 'S')[0].toUpperCase()}
                                                         </div>
                                                         <span className="text-sm text-text font-medium">{p.tenantId?.name || p.salonName || 'Unknown'}</span>
                                                     </div>
@@ -759,7 +765,14 @@ export default function SABillingPage() {
                                         return (
                                             <tr key={inv.id} className="hover:bg-surface/40 transition-colors">
                                                 <td className="px-4 py-3.5 text-sm font-mono text-primary font-semibold">{inv.id}</td>
-                                                <td className="px-4 py-3.5 text-sm text-text font-medium">{inv.salon}</td>
+                                                <td className="px-4 py-3.5">
+                                                    <div className="flex items-center gap-2.5">
+                                                        <div className="w-7 h-7 rounded-lg bg-[#B4912B]/10 dark:bg-[#B4912B]/20 border border-[#B4912B]/20 flex items-center justify-center text-xs font-black text-[#B4912B] dark:text-[#D4AF37] shrink-0">
+                                                            {inv.salon[0].toUpperCase()}
+                                                        </div>
+                                                        <span className="text-sm text-text font-medium">{inv.salon}</span>
+                                                    </div>
+                                                </td>
                                                 <td className="px-4 py-3.5 text-sm text-text-secondary">{inv.plan}</td>
                                                 <td className="px-4 py-3.5 text-sm text-text-secondary">₹{inv.amount.toLocaleString('en-IN')}</td>
                                                 <td className="px-4 py-3.5 text-sm text-text-secondary">₹{inv.taxAmt.toLocaleString('en-IN')}</td>
@@ -909,8 +922,8 @@ export default function SABillingPage() {
                                 );
                                 showToast('Tax report exported as PDF!', 'info');
                             }}
-                                className="mt-4 w-full flex items-center justify-center gap-2 py-2.5 rounded-xl border border-border text-xs font-bold text-text-secondary hover:border-[#B4912B]/30 hover:text-primary transition-all">
-                                <Download className="w-3.5 h-3.5" /> Export GST Report
+                                className="mt-4 w-full flex items-center justify-center gap-2 py-2.5 rounded-xl !bg-gradient-to-r !from-[#B4912B] !to-[#D4AF37] !text-white !border-none text-xs !font-black uppercase tracking-wider hover:!from-[#8B6F23] hover:!to-[#B4912B] transition-all shadow-lg shadow-[#B4912B]/30 active:scale-95">
+                                <Download className="w-4 h-4 !text-white" /> Export GST Report
                             </button>
                         </div>
                     </div>

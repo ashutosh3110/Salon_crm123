@@ -573,7 +573,7 @@ function SalonModal({ mode, tenant, onClose, onSave, saving }) {
                         Cancel
                     </button>
                     <button onClick={() => onSave(form)} disabled={saving || !form.name || !form.ownerName || !form.email}
-                        className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-primary to-[#8B6F23] text-primary-foreground text-sm font-bold hover:brightness-110 disabled:opacity-50 transition-all shadow-lg shadow-[#B4912B]/20">
+                        className="px-6 py-2.5 rounded-xl !bg-gradient-to-r !from-[#B4912B] !to-[#D4AF37] !text-white text-sm font-black tracking-wide hover:!from-[#8B6F23] hover:!to-[#B4912B] disabled:opacity-50 transition-all shadow-lg shadow-[#B4912B]/30 active:scale-95">
                         {saving ? 'Saving…' : mode === 'create' ? 'Create Salon' : 'Save Changes'}
                     </button>
                 </div>
@@ -1024,7 +1024,6 @@ export default function SATenantsPage() {
                             onChange={setStatus}
                             placeholder="All Status"
                             options={[
-                                { value: '', label: 'All Status', icon: Layers },
                                 { value: 'active', label: 'Active', icon: CheckCircle },
                                 { value: 'pending', label: 'Pending', icon: Clock },
                                 { value: 'trial', label: 'Trial', icon: Package },
@@ -1041,7 +1040,6 @@ export default function SATenantsPage() {
                             onChange={setPlan}
                             placeholder="All Plans"
                             options={[
-                                { value: '', label: 'All Plans', icon: Crown },
                                 { value: 'subscribed', label: 'Subscribed', icon: Crown },
                                 { value: 'none', label: 'No Plan', icon: Package },
                                 { value: 'basic', label: 'Basic', icon: Package },
@@ -1106,7 +1104,7 @@ export default function SATenantsPage() {
                                                 {/* Salon */}
                                                 <td className="px-4 py-3.5">
                                                     <div className="flex items-center gap-3 group/link">
-                                                        <div className="w-9 h-9 rounded-xl bg-emerald-50 border border-[#B4912B]/20 flex items-center justify-center text-sm font-black text-primary shrink-0 group-hover:bg-primary group-hover:text-primary-foreground transition-all">
+                                                        <div className="w-9 h-9 rounded-xl bg-[#B4912B]/10 dark:bg-[#B4912B]/20 border border-[#B4912B]/20 flex items-center justify-center text-sm font-black text-[#B4912B] dark:text-[#D4AF37] shrink-0 group-hover:bg-primary group-hover:text-white transition-all">
                                                             {t.name[0].toUpperCase()}
                                                         </div>
                                                         <div>
