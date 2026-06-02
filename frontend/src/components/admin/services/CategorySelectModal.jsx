@@ -7,6 +7,20 @@ export default function CategorySelectModal({ isOpen, onClose, onSave, service, 
     const [selectedCategory, setSelectedCategory] = useState(service?.category || '');
 
     useEffect(() => {
+        if (isOpen && service) {
+            document.body.style.overflow = 'hidden';
+            document.documentElement.style.overflow = 'hidden';
+        } else {
+            document.body.style.overflow = '';
+            document.documentElement.style.overflow = '';
+        }
+        return () => {
+            document.body.style.overflow = '';
+            document.documentElement.style.overflow = '';
+        };
+    }, [isOpen, service]);
+
+    useEffect(() => {
         if (service && service !== 'bulk') {
             setSelectedCategory(service.category || '');
         } else {
@@ -29,24 +43,28 @@ export default function CategorySelectModal({ isOpen, onClose, onSave, service, 
     };
 
     return createPortal(
-        <div className="fixed inset-0 z-[110] flex items-center justify-center bg-black/60 backdrop-blur-md animate-in fade-in duration-300 p-4">
-            <div className="bg-surface w-full max-w-sm rounded-2xl shadow-2xl border border-border overflow-hidden animate-in zoom-in-95 duration-300">
-                <div className="p-6 border-b border-border flex items-center justify-between bg-surface-alt/50">
-                    <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-2xl bg-blue-500/10 flex items-center justify-center text-blue-500">
+        <div 
+            className="fixed inset-0 z-[110] flex items-center justify-center bg-black/60 backdrop-blur-md animate-in fade-in duration-300 p-4 overscroll-contain"
+            onWheel={(e) => e.stopPropagation()}
+            onTouchMove={(e) => e.stopPropagation()}
+        >
+            <div className="bg-surface w-full max-w-sm rounded-2xl shadow-2xl border border-border overflow-hidden animate-in zoom-in-95 duration-300 flex flex-col max-h-[90vh] overscroll-contain">
+                <div className="p-6 border-b border-border flex items-center justify-between bg-surface-alt/50 shrink-0">
+                    <div className="flex items-center gap-3 min-w-0">
+                        <div className="w-10 h-10 rounded-2xl bg-blue-500/10 flex items-center justify-center text-blue-500 shrink-0">
                             <Tag className="w-5 h-5" />
                         </div>
-                        <div>
+                        <div className="min-w-0">
                             <h3 className="text-lg font-black text-text leading-none">Select Category</h3>
-                            <p className="text-xs text-text-muted mt-1 font-bold truncate max-w-[180px]">{service.name}</p>
+                            <p className="text-xs text-text-muted mt-1 font-bold break-all">{service.name}</p>
                         </div>
                     </div>
-                    <button onClick={onClose} className="p-2 rounded-xl hover:bg-surface transition-colors">
+                    <button onClick={onClose} className="p-2 rounded-xl hover:bg-surface transition-colors shrink-0">
                         <X className="w-5 h-5 text-text-muted" />
                     </button>
                 </div>
 
-                <div className="p-6 space-y-4">
+                <div className="p-6 space-y-4 overflow-y-auto flex-1 custom-scrollbar overscroll-contain">
                     <div className="relative">
                         <input
                             type="text"
@@ -58,7 +76,7 @@ export default function CategorySelectModal({ isOpen, onClose, onSave, service, 
                         />
                     </div>
 
-                    <div className="max-h-[250px] overflow-y-auto space-y-1.5 pr-2 custom-scrollbar">
+                    <div className="space-y-1.5 pr-1">
                         {filteredCategories.length === 0 ? (
                             <p className="p-4 text-center text-xs font-bold text-text-muted italic">No categories found</p>
                         ) : (
@@ -76,7 +94,7 @@ export default function CategorySelectModal({ isOpen, onClose, onSave, service, 
                     </div>
                 </div>
 
-                <div className="p-6 bg-surface-alt/50 border-t border-border flex items-center gap-3">
+                <div className="p-6 bg-surface-alt/50 border-t border-border flex items-center gap-3 shrink-0">
                     <button
                         onClick={onClose}
                         className="flex-1 px-4 py-2.5 rounded-xl border border-border text-sm font-bold hover:bg-surface transition-all active:scale-95"
