@@ -43,10 +43,10 @@ function PlanCard({ plan, onEdit, onClone, onToggleActive, onDelete, trialDays }
             className={`bg-surface rounded-2xl border transition-all ${plan.popular ? 'border-[#B4912B] shadow-lg shadow-primary/5' : 'border-border shadow-sm'}`}
         >
             <div className="p-6">
-                <div className="flex items-start justify-between mb-4">
-                    <div className="space-y-1">
+                <div className="flex items-start justify-between mb-4 gap-4">
+                    <div className="space-y-1 flex-1 min-w-0">
                         <div className="flex items-center gap-2">
-                             <h3 className="text-xl font-black text-text tracking-tight uppercase">{plan.name}</h3>
+                             <h3 className="text-xl font-black text-text tracking-tight uppercase truncate" title={plan.name}>{plan.name}</h3>
                              {plan.popular && (
                                 <span className="bg-amber-100 text-amber-700 text-[9px] font-black px-2 py-0.5 rounded-xl uppercase tracking-widest">
                                     Best Seller
@@ -209,30 +209,45 @@ function PlanModal({ plan, onClose, onSave, saving }) {
                         <div className="flex items-center justify-between p-4 px-6 bg-surface rounded-xl border border-border">
                             <label className="cursor-pointer select-none">
                                 <span className="flex items-center gap-3">
-                                    <input 
-                                        type="checkbox" 
-                                        checked={form.billingCycle === 'forever'} 
-                                        onChange={e => {
-                                            if (e.target.checked) {
-                                                setForm(p => ({ ...p, billingCycle: 'forever', price: 0 }));
-                                            } else {
-                                                setForm(p => ({ ...p, billingCycle: 'monthly' }));
-                                            }
-                                        }} 
-                                        className="w-4 h-4 accent-primary shrink-0" 
-                                    />
+                                    <div className="relative flex items-center justify-center w-4 h-4 shrink-0">
+                                        <input 
+                                            type="checkbox" 
+                                            checked={form.billingCycle === 'forever'} 
+                                            onChange={e => {
+                                                if (e.target.checked) {
+                                                    setForm(p => ({ ...p, billingCycle: 'forever', price: 0 }));
+                                                } else {
+                                                    setForm(p => ({ ...p, billingCycle: 'monthly' }));
+                                                }
+                                            }} 
+                                            className="peer absolute w-full h-full opacity-0 cursor-pointer z-10" 
+                                        />
+                                        <div className="w-full h-full border-2 border-slate-400 dark:border-slate-500 rounded bg-transparent peer-checked:bg-[#B4912B] peer-checked:border-[#B4912B] transition-all flex items-center justify-center pointer-events-none">
+                                            <svg className="w-2.5 h-2.5 text-white opacity-0 peer-checked:opacity-100" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="4"><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7"/></svg>
+                                        </div>
+                                    </div>
                                     <span className="text-[11px] font-black uppercase text-text-secondary tracking-widest">Free Plan</span>
                                 </span>
                             </label>
                             <label className="cursor-pointer select-none">
                                 <span className="flex items-center gap-3">
-                                    <input type="checkbox" checked={form.popular} onChange={e => set('popular', e.target.checked)} className="w-4 h-4 accent-primary shrink-0" />
+                                    <div className="relative flex items-center justify-center w-4 h-4 shrink-0">
+                                        <input type="checkbox" checked={form.popular} onChange={e => set('popular', e.target.checked)} className="peer absolute w-full h-full opacity-0 cursor-pointer z-10" />
+                                        <div className="w-full h-full border-2 border-slate-400 dark:border-slate-500 rounded bg-transparent peer-checked:bg-[#B4912B] peer-checked:border-[#B4912B] transition-all flex items-center justify-center pointer-events-none">
+                                            <svg className="w-2.5 h-2.5 text-white opacity-0 peer-checked:opacity-100" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="4"><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7"/></svg>
+                                        </div>
+                                    </div>
                                     <span className="text-[11px] font-black uppercase text-text-secondary tracking-widest">Mark as Popular</span>
                                 </span>
                             </label>
                             <label className="cursor-pointer select-none">
                                 <span className="flex items-center gap-3">
-                                    <input type="checkbox" checked={form.isActive} onChange={e => set('isActive', e.target.checked)} className="w-4 h-4 accent-emerald-500 shrink-0" />
+                                    <div className="relative flex items-center justify-center w-4 h-4 shrink-0">
+                                        <input type="checkbox" checked={form.isActive} onChange={e => set('isActive', e.target.checked)} className="peer absolute w-full h-full opacity-0 cursor-pointer z-10" />
+                                        <div className="w-full h-full border-2 border-slate-400 dark:border-slate-500 rounded bg-transparent peer-checked:bg-emerald-500 peer-checked:border-emerald-500 transition-all flex items-center justify-center pointer-events-none">
+                                            <svg className="w-2.5 h-2.5 text-white opacity-0 peer-checked:opacity-100" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="4"><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7"/></svg>
+                                        </div>
+                                    </div>
                                     <span className="text-[11px] font-black uppercase text-text-secondary tracking-widest">Active Plan</span>
                                 </span>
                             </label>
@@ -275,7 +290,7 @@ function PlanModal({ plan, onClose, onSave, saving }) {
                         Cancel
                     </button>
                     <button onClick={() => onSave(form)} disabled={saving || !form.name}
-                        className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-primary to-[#8B6F23] text-white text-[11px] font-black uppercase tracking-widest shadow-lg shadow-[#B4912B]/20 hover:brightness-110 active:scale-95 transition-all disabled:opacity-50">
+                        className="px-6 py-2.5 rounded-xl !bg-gradient-to-r !from-[#B4912B] !to-[#D4AF37] !text-white text-[11px] font-black uppercase tracking-widest shadow-lg shadow-[#B4912B]/30 hover:!from-[#8B6F23] hover:!to-[#B4912B] active:scale-95 transition-all disabled:opacity-70 disabled:brightness-75 disabled:cursor-not-allowed">
                         {saving ? 'Saving...' : plan?._id ? 'Update Plan' : 'Create Plan'}
                     </button>
                 </div>
