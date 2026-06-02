@@ -88,31 +88,24 @@ function CustomSelect({ value, onChange, options, placeholder }) {
                 <ChevronDown className={`w-4 h-4 text-text-muted transition-transform duration-300 ${isOpen ? 'rotate-180' : ''} shrink-0`} />
             </div>
             
-            <AnimatePresence>
-                {isOpen && (
-                    <motion.div 
-                        key="dropdown-panel"
-                        initial={{ opacity: 0, y: -5 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -5 }}
-                        transition={{ duration: 0.15 }}
-                        className="absolute left-0 right-0 top-full mt-1.5 bg-white dark:bg-surface border border-border rounded-lg shadow-xl overflow-hidden max-h-56 overflow-y-auto z-[200]"
-                    >
-                        {options.map((opt) => (
-                                <div
-                                    key={opt.value}
-                                    className={`px-4 py-2.5 text-sm cursor-pointer transition-colors dark:hover:bg-slate-800 hover:bg-slate-50 ${String(opt.value) === String(value) ? 'bg-slate-50 dark:bg-slate-800 !text-[#B4912B]' : '!text-slate-800 dark:!text-slate-200'}`}
-                                    onClick={() => {
-                                        onChange(opt.value);
-                                        setIsOpen(false);
-                                    }}
-                                >
-                                    <span className="relative z-10 !block !opacity-100">{opt.label}</span>
-                                </div>
-                        ))}
-                    </motion.div>
-                )}
-            </AnimatePresence>
+            {isOpen && (
+                <div
+                    className="absolute left-0 right-0 top-full mt-1.5 bg-white dark:bg-[#1e293b] border border-border rounded-lg shadow-xl overflow-hidden max-h-56 overflow-y-auto z-[200]"
+                >
+                    {options.map((opt) => (
+                        <div
+                            key={opt.value}
+                            className={`px-4 py-2.5 text-sm cursor-pointer transition-colors dark:hover:bg-slate-800 hover:bg-slate-50 ${String(opt.value) === String(value) ? 'bg-slate-50 dark:bg-slate-800 !text-[#B4912B]' : '!text-slate-800 dark:!text-slate-200'}`}
+                            onClick={() => {
+                                onChange(opt.value);
+                                setIsOpen(false);
+                            }}
+                        >
+                            <span className="relative z-10 !block !opacity-100">{opt.label}</span>
+                        </div>
+                    ))}
+                </div>
+            )}
         </div>
     );
 }
