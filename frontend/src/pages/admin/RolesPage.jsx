@@ -5,6 +5,7 @@ import {
     Plus,
     Search,
     Edit,
+    Eye,
     Trash2,
     CheckCircle2,
     XCircle,
@@ -210,15 +211,8 @@ export default function RolesPage() {
     const [loading, setLoading] = useState(true);
     const [showModal, setShowModal] = useState(false);
 
-    useEffect(() => {
-        if (showModal) {
-            document.body.style.overflow = 'hidden';
-        } else {
-            document.body.style.overflow = 'auto';
-        }
-        return () => { document.body.style.overflow = 'auto'; };
-    }, [showModal]);
     const [editingRole, setEditingRole] = useState(null);
+    const [viewMode, setViewMode] = useState(false);
     const [search, setSearch] = useState('');
     const [roleFilter, setRoleFilter] = useState('all');
 
@@ -250,6 +244,18 @@ export default function RolesPage() {
             description: role.description || '',
             permissions: role.permissions || []
         });
+        setViewMode(false);
+        setShowModal(true);
+    };
+
+    const handleView = (role) => {
+        setEditingRole(role);
+        setForm({
+            name: role.name,
+            description: role.description || '',
+            permissions: role.permissions || []
+        });
+        setViewMode(true);
         setShowModal(true);
     };
 
@@ -266,6 +272,10 @@ export default function RolesPage() {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        if (form.name.trim().length > 20) {
+            toast.error('Role Name cannot exceed 20 characters');
+            return;
+        }
         try {
             if (editingRole) {
                 await api.put(`/roles/${editingRole._id}`, form);
@@ -285,16 +295,50 @@ export default function RolesPage() {
     const resetForm = () => {
         setForm({ name: '', description: '', permissions: [] });
         setEditingRole(null);
+        setViewMode(false);
     };
 
     // Disable body scroll when modal is open
     useEffect(() => {
         if (showModal) {
-            document.body.style.overflow = 'hidden';
+            // Lock body and html
+            document.body.style.setProperty('overflow', 'hidden', 'important');
+            document.documentElement.style.setProperty('overflow', 'hidden', 'important');
+            
+            // Scan and lock any active scroll containers in the DOM (excluding modal/portal elements)
+            const allElements = document.querySelectorAll('*');
+            allElements.forEach(el => {
+                const style = window.getComputedStyle(el);
+                if (style.overflowY === 'auto' || style.overflowY === 'scroll' || style.overflow === 'auto' || style.overflow === 'scroll') {
+                    if (!el.closest('form') && !el.closest('.fixed')) {
+                        el.style.setProperty('overflow-y', 'hidden', 'important');
+                        el.style.setProperty('overflow', 'hidden', 'important');
+                        el.setAttribute('data-scroll-locked', 'true');
+                    }
+                }
+            });
         } else {
-            document.body.style.overflow = 'unset';
+            document.body.style.removeProperty('overflow');
+            document.documentElement.style.removeProperty('overflow');
+            
+            const lockedElements = document.querySelectorAll('[data-scroll-locked="true"]');
+            lockedElements.forEach(el => {
+                el.style.removeProperty('overflow-y');
+                el.style.removeProperty('overflow');
+                el.removeAttribute('data-scroll-locked');
+            });
         }
-        return () => { document.body.style.overflow = 'unset'; };
+        
+        return () => {
+            document.body.style.removeProperty('overflow');
+            document.documentElement.style.removeProperty('overflow');
+            const lockedElements = document.querySelectorAll('[data-scroll-locked="true"]');
+            lockedElements.forEach(el => {
+                el.style.removeProperty('overflow-y');
+                el.style.removeProperty('overflow');
+                el.removeAttribute('data-scroll-locked');
+            });
+        };
     }, [showModal]);
 
     const handleToggleParent = (group) => {
@@ -543,13 +587,13 @@ export default function RolesPage() {
                             return (
                                 <div key={role._id} className="grid grid-cols-1 md:grid-cols-12 gap-4 py-4 items-start group hover:bg-slate-50/80 transition-colors px-6 rounded-xl mt-1">
                                     {/* Left column */}
-                                    <div className="col-span-12 md:col-span-3 flex items-start gap-3">
+                                    <div className="col-span-12 md:col-span-3 flex items-start gap-3 min-w-0">
                                         <div className={`w-9 h-9 rounded-full flex items-center justify-center shrink-0 mt-0.5 ${theme.bg}`}>
                                             <theme.icon className={`w-4 h-4 ${theme.text}`} strokeWidth={2.5}/>
                                         </div>
-                                        <div className="flex flex-col items-start">
-                                            <h3 className="text-xs font-black text-text uppercase tracking-wider leading-tight">{role.name}</h3>
-                                            <p className="text-[9px] font-bold text-text-muted mt-0.5 tracking-widest opacity-60">
+                                        <div className="flex flex-col items-start min-w-0 flex-1 text-left">
+                                            <h3 className="text-xs font-black text-text uppercase tracking-wider leading-tight break-words break-all w-full">{role.name}</h3>
+                                            <p className="text-[9px] font-bold text-text-muted mt-0.5 tracking-widest opacity-60 break-words w-full">
                                                 {role.description || (n === 'admin' ? 'System Administrator' : 'Custom business role')}
                                             </p>
                                             <div className={`mt-2 px-2 py-0.5 border-[1.5px] rounded-full text-[8px] font-black uppercase tracking-widest ${theme.text}`} style={{ borderColor: theme.hex }}>
@@ -595,8 +639,16 @@ export default function RolesPage() {
                                     <div className="col-span-12 md:col-span-2 flex flex-col items-end gap-2.5 justify-start mt-0.5">
                                         <div className="flex items-center gap-2">
                                             <button
+                                                onClick={() => handleView(role)}
+                                                className="w-7 h-7 rounded-[4px] border-[1.5px] border-slate-200 flex items-center justify-center text-text hover:bg-slate-50 transition-colors shadow-sm"
+                                                title="View Role details"
+                                            >
+                                                <Eye className="w-3.5 h-3.5 text-slate-500" />
+                                            </button>
+                                            <button
                                                 onClick={() => handleEdit(role)}
                                                 className="w-7 h-7 rounded-[4px] border-[1.5px] border-slate-200 flex items-center justify-center text-text hover:bg-slate-50 transition-colors shadow-sm"
+                                                title="Edit Role details"
                                             >
                                                 <Edit className="w-3 h-3" />
                                             </button>
@@ -605,6 +657,7 @@ export default function RolesPage() {
                                                 disabled={role.isDefault}
                                                 className={`w-7 h-7 rounded-[4px] border-[1.5px] flex items-center justify-center transition-colors shadow-sm
                                                     ${role.isDefault ? 'border-slate-100 bg-slate-50 text-slate-300 cursor-not-allowed' : 'border-rose-200 bg-rose-50 text-rose-500 hover:bg-rose-100'}`}
+                                                title={role.isDefault ? 'System default role (cannot delete)' : 'Delete Role'}
                                             >
                                                 <Trash2 className="w-3 h-3" />
                                             </button>
@@ -631,31 +684,33 @@ export default function RolesPage() {
 
             {/* Role Modal - Modern & Colorful Design */}
             {showModal && createPortal(
-                <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 sm:p-6 bg-slate-900/60 backdrop-blur-sm transition-all overflow-hidden" onClick={() => setShowModal(false)}>
+                <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 sm:p-6 bg-[#0f172a]/60 backdrop-blur-sm transition-all overflow-hidden" onClick={() => setShowModal(false)}>
 
                     <form
                         onSubmit={handleSubmit}
-                        className="relative bg-white dark:bg-slate-900 shadow-2xl w-full max-w-3xl flex flex-col animate-reveal !rounded-[24px] max-h-[90vh] overflow-hidden"
+                        className="relative bg-white dark:bg-[#0f172a] shadow-2xl w-full max-w-3xl flex flex-col animate-reveal !rounded-[24px] max-h-[90vh] overflow-hidden"
                         onClick={(e) => e.stopPropagation()}
                     >
 
                         {/* Beautiful Header */}
-                        <div className="flex items-center justify-between px-8 py-6 border-b border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 sticky top-0 z-20">
+                        <div className="flex items-center justify-between px-8 py-6 border-b border-slate-100 dark:border-slate-800 bg-white dark:bg-[#0f172a] sticky top-0 z-20">
                             <div className="flex items-center gap-4 text-left">
                                 <div className="w-12 h-12 rounded-full bg-[#FEF3C7] flex items-center justify-center shrink-0">
                                     <ShieldCheck className="w-6 h-6 text-[#D97706]" strokeWidth={2.5} />
                                 </div>
                                 <div className="text-left">
-                                    <h2 className="text-xl font-black uppercase tracking-tight text-text leading-none mb-1.5">
-                                        {editingRole ? 'Edit Role' : 'Create New Role'}
+                                    <h2 className="text-xl font-black uppercase tracking-tight text-slate-900 dark:text-white leading-none mb-1.5">
+                                        {viewMode ? 'View Role Details' : editingRole ? 'Edit Role' : 'Create New Role'}
                                     </h2>
-                                    <p className="text-[10px] font-bold uppercase tracking-widest text-text-muted opacity-60 leading-none">Configure role details & permissions</p>
+                                    <p className="text-[10px] font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400 leading-none">
+                                        {viewMode ? 'Review role details & permission structure' : 'Configure role details & permissions'}
+                                    </p>
                                 </div>
                             </div>
                             <button
                                 type="button"
                                 onClick={() => setShowModal(false)}
-                                className="w-10 h-10 rounded-full flex items-center justify-center bg-slate-50 hover:bg-rose-50 text-slate-400 hover:text-rose-500 transition-colors"
+                                className="w-10 h-10 rounded-full flex items-center justify-center bg-slate-50 hover:bg-rose-50 dark:bg-slate-800 dark:hover:bg-rose-950 text-slate-400 hover:text-rose-500 transition-colors"
                             >
                                 <XCircle className="w-6 h-6" />
                             </button>
@@ -667,35 +722,41 @@ export default function RolesPage() {
                             {/* Basic Info */}
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div className="space-y-2.5 text-left">
-                                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest pl-1">Role Name</label>
+                                    <div className="flex justify-between items-center pl-1">
+                                        <label className="text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest">Role Name</label>
+                                        <span className="text-[9px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">{form.name.length}/20</span>
+                                    </div>
                                     <input
                                         required
                                         value={form.name}
                                         onChange={(e) => setForm({ ...form, name: e.target.value })}
                                         placeholder="E.g., Senior Stylist"
-                                        className="w-full px-5 py-3.5 bg-slate-50/50 border-[1.5px] border-slate-200 text-sm font-bold tracking-wide focus:border-[#B4912B] focus:ring-4 focus:ring-[#B4912B]/10 outline-none transition-all placeholder:text-slate-400 rounded-xl"
+                                        maxLength={20}
+                                        disabled={viewMode}
+                                        className="w-full px-5 py-3.5 bg-slate-50/50 dark:bg-slate-800/50 border-[1.5px] border-slate-200 dark:border-slate-700 text-sm font-bold tracking-wide focus:border-[#B4912B] focus:ring-4 focus:ring-[#B4912B]/10 outline-none transition-all placeholder:text-slate-400 dark:placeholder:text-slate-500 rounded-xl text-slate-900 dark:text-white disabled:opacity-75 disabled:cursor-not-allowed"
                                     />
                                 </div>
                                 <div className="space-y-2.5 text-left">
-                                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest pl-1">Role Description</label>
+                                    <label className="text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest pl-1">Role Description</label>
                                     <input
                                         value={form.description}
                                         onChange={(e) => setForm({ ...form, description: e.target.value })}
                                         placeholder="What does this role do?"
-                                        className="w-full px-5 py-3.5 bg-slate-50/50 border-[1.5px] border-slate-200 text-sm font-bold tracking-wide focus:border-[#B4912B] focus:ring-4 focus:ring-[#B4912B]/10 outline-none transition-all placeholder:text-slate-400 rounded-xl"
+                                        disabled={viewMode}
+                                        className="w-full px-5 py-3.5 bg-slate-50/50 dark:bg-slate-800/50 border-[1.5px] border-slate-200 dark:border-slate-700 text-sm font-bold tracking-wide focus:border-[#B4912B] focus:ring-4 focus:ring-[#B4912B]/10 outline-none transition-all placeholder:text-slate-400 dark:placeholder:text-slate-500 rounded-xl text-slate-900 dark:text-white disabled:opacity-75 disabled:cursor-not-allowed"
                                     />
                                 </div>
                             </div>
 
                             {/* Permissions Matrix */}
                             <div className="space-y-5">
-                                <div className="flex items-center justify-between pb-4 border-b border-slate-100">
+                                <div className="flex items-center justify-between pb-4 border-b border-slate-100 dark:border-slate-800">
                                     <div>
-                                        <h3 className="text-[12px] font-black text-text uppercase tracking-widest">Assign Permissions</h3>
-                                        <p className="text-[9px] font-bold text-slate-400 uppercase tracking-wider mt-1">Select the modules this role can access</p>
+                                        <h3 className="text-[12px] font-black text-slate-900 dark:text-white uppercase tracking-widest">Assign Permissions</h3>
+                                        <p className="text-[9px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mt-1">Select the modules this role can access</p>
                                     </div>
-                                    <div className="px-3 py-1.5 bg-[#FEF3C7] rounded-xl">
-                                        <span className="text-[10px] font-black text-[#D97706] uppercase tracking-wider">{form.permissions.length} Selected</span>
+                                    <div className="px-3 py-1.5 bg-[#FEF3C7] dark:bg-[#D97706]/20 rounded-xl">
+                                        <span className="text-[10px] font-black text-[#D97706] dark:text-[#FBBF24] uppercase tracking-wider">{form.permissions.length} Selected</span>
                                     </div>
                                 </div>
 
@@ -705,37 +766,43 @@ export default function RolesPage() {
                                         const groupSubIds = (group.subPermissions || []).map(sp => sp.id);
                                         const checkedSubCount = (group.subPermissions || []).filter(sp => form.permissions.includes(sp.id)).length;
                                         
-                                        // Generate an alternating pastel background for groups
-                                        const bgColors = ['bg-blue-50/50', 'bg-emerald-50/50', 'bg-purple-50/50', 'bg-amber-50/50', 'bg-rose-50/50'];
-                                        const iconColors = ['text-blue-500', 'text-emerald-500', 'text-purple-500', 'text-amber-500', 'text-rose-500'];
+                                        // Generate an alternating background for groups
+                                        const bgColors = [
+                                            'bg-blue-50/50 dark:bg-blue-950/20 border-slate-100 dark:border-slate-800/60', 
+                                            'bg-emerald-50/50 dark:bg-emerald-950/20 border-slate-100 dark:border-slate-800/60', 
+                                            'bg-purple-50/50 dark:bg-purple-950/20 border-slate-100 dark:border-slate-800/60', 
+                                            'bg-amber-50/50 dark:bg-amber-950/20 border-slate-100 dark:border-slate-800/60', 
+                                            'bg-rose-50/50 dark:bg-rose-950/20 border-slate-100 dark:border-slate-800/60'
+                                        ];
+                                        const iconColors = ['text-blue-500 dark:text-blue-400', 'text-emerald-500 dark:text-emerald-400', 'text-purple-500 dark:text-purple-400', 'text-amber-500 dark:text-amber-400', 'text-rose-500 dark:text-rose-400'];
                                         const themeIdx = idx % bgColors.length;
 
                                         return (
-                                            <div key={group.id} className={`border-[1.5px] border-slate-100 ${bgColors[themeIdx]} p-5 rounded-[20px] transition-colors hover:border-slate-200`}>
+                                            <div key={group.id} className={`border-[1.5px] ${bgColors[themeIdx]} p-5 rounded-[20px] transition-colors hover:border-slate-200 dark:hover:border-slate-700`}>
                                                 {/* Parent Header */}
                                                 <div
                                                     role="button"
-                                                    onClick={() => handleToggleParent(group)}
-                                                    className="flex items-center justify-between cursor-pointer select-none"
+                                                    onClick={() => !viewMode && handleToggleParent(group)}
+                                                    className={`flex items-center justify-between select-none ${viewMode ? 'cursor-default' : 'cursor-pointer'}`}
                                                 >
                                                     <div className="flex items-center gap-4">
-                                                        <div className={`w-10 h-10 rounded-xl bg-white flex items-center justify-center shadow-sm`}>
+                                                        <div className={`w-10 h-10 rounded-xl bg-white dark:bg-slate-800 flex items-center justify-center shadow-sm`}>
                                                             <group.icon className={`w-5 h-5 ${iconColors[themeIdx]}`} strokeWidth={2.5} />
                                                         </div>
                                                         <div className="text-left">
-                                                            <p className={`text-xs font-black uppercase tracking-wider mb-1 ${(isGroupChecked || checkedSubCount > 0) ? 'text-text' : 'text-slate-600'}`}>
+                                                            <p className={`text-xs font-black uppercase tracking-wider mb-1 ${(isGroupChecked || checkedSubCount > 0) ? 'text-slate-900 dark:text-white' : 'text-slate-600 dark:text-slate-400'}`}>
                                                                 {group.label}
                                                             </p>
-                                                            <p className="text-[9px] font-bold text-slate-500 uppercase tracking-widest leading-none opacity-80">{group.description}</p>
+                                                            <p className="text-[9px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest leading-none opacity-80">{group.description}</p>
                                                         </div>
                                                     </div>
-                                                    <div className="flex items-center gap-4 bg-white px-3 py-1.5 rounded-xl shadow-sm">
+                                                    <div className="flex items-center gap-4 bg-white dark:bg-slate-800 px-3 py-1.5 rounded-xl shadow-sm">
                                                         {group.subPermissions && (
-                                                            <span className="text-[10px] font-black text-slate-400 uppercase">
+                                                            <span className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase">
                                                                 {checkedSubCount}/{groupSubIds.length}
                                                             </span>
                                                         )}
-                                                        <div className={`w-5 h-5 rounded flex items-center justify-center border-2 transition-colors ${isGroupChecked ? 'bg-[#B4912B] border-[#B4912B]' : 'border-slate-300'}`}>
+                                                        <div className={`w-5 h-5 rounded flex items-center justify-center border-2 transition-colors ${isGroupChecked ? 'bg-[#B4912B] border-[#B4912B]' : 'border-slate-400 dark:border-slate-400'}`}>
                                                             {isGroupChecked && <CheckCircle2 className="w-3.5 h-3.5 text-white" />}
                                                         </div>
                                                     </div>
@@ -743,25 +810,25 @@ export default function RolesPage() {
 
                                                 {/* Sub Permissions */}
                                                 {group.subPermissions && (
-                                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-4 pt-4 border-t border-slate-200/50">
+                                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-4 pt-4 border-t border-slate-200/50 dark:border-slate-700/50">
                                                         {group.subPermissions.map((sub) => {
                                                             const isSubChecked = form.permissions.includes(sub.id);
                                                             return (
                                                                 <div
                                                                     key={sub.id}
                                                                     role="button"
-                                                                    onClick={() => handleToggleSub(sub.id, group)}
-                                                                    className={`flex items-center gap-3 p-3 rounded-xl transition-all cursor-pointer ${isSubChecked
-                                                                        ? 'bg-white shadow-sm border border-slate-200 ring-1 ring-[#B4912B]'
-                                                                        : 'bg-white/40 border border-transparent hover:bg-white/80'
+                                                                    onClick={() => !viewMode && handleToggleSub(sub.id, group)}
+                                                                    className={`flex items-center gap-3 p-3 rounded-xl transition-all ${viewMode ? 'cursor-default' : 'cursor-pointer'} ${isSubChecked
+                                                                        ? 'bg-white dark:bg-slate-800 shadow-sm border border-slate-200 dark:border-slate-700 ring-1 ring-[#B4912B]'
+                                                                        : 'bg-white/40 dark:bg-slate-800/20 border border-transparent hover:bg-white/80 dark:hover:bg-slate-800/60'
                                                                         }`}
                                                                 >
-                                                                    <div className={`w-4 h-4 rounded border flex items-center justify-center transition-colors shrink-0 ${isSubChecked ? 'bg-[#B4912B] border-[#B4912B]' : 'bg-white border-slate-300'}`}>
+                                                                    <div className={`w-4 h-4 rounded border flex items-center justify-center transition-colors shrink-0 ${isSubChecked ? 'bg-[#B4912B] border-[#B4912B]' : 'bg-white dark:bg-slate-800 border-slate-400 dark:border-slate-400'}`}>
                                                                         {isSubChecked && <div className="w-1.5 h-1.5 bg-white rounded-sm" />}
                                                                     </div>
-                                                                    <div className="flex-1 min-w-0 pr-2">
-                                                                        <p className={`text-[10px] font-black uppercase tracking-wider mb-0.5 ${isSubChecked ? 'text-text' : 'text-slate-600'}`}>{sub.label}</p>
-                                                                        <p className="text-[8px] font-bold text-slate-400 uppercase tracking-widest leading-tight truncate">{sub.description}</p>
+                                                                    <div className="flex-1 min-w-0 pr-2 text-left">
+                                                                        <p className={`text-[10px] font-black uppercase tracking-wider mb-0.5 ${isSubChecked ? 'text-slate-900 dark:text-white' : 'text-slate-600 dark:text-slate-400'}`}>{sub.label}</p>
+                                                                        <p className="text-[8px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest leading-tight truncate">{sub.description}</p>
                                                                     </div>
                                                                 </div>
                                                             );
@@ -776,30 +843,32 @@ export default function RolesPage() {
                         </div>
 
                         {/* Actions Footer */}
-                        <div className="px-8 py-6 border-t border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 flex flex-col sm:flex-row items-center justify-between gap-6 z-20">
+                        <div className="px-8 py-6 border-t border-slate-100 dark:border-slate-800 bg-white dark:bg-[#0f172a] flex flex-col sm:flex-row items-center justify-between gap-6 z-20">
                             <div className="flex items-center gap-3 w-full sm:w-1/3">
-                                <div className="flex-1 h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                                <div className="flex-1 h-2 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden shadow-inner">
                                     <div
                                         className="h-full bg-[#B4912B] transition-all duration-500 rounded-xl"
                                         style={{ width: `${(form.permissions.length / AVAILABLE_PERMISSIONS.length) * 100}%` }}
                                     />
                                 </div>
-                                <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest whitespace-nowrap">{Math.round((form.permissions.length / AVAILABLE_PERMISSIONS.length) * 100)}% Selected</span>
+                                <span className="text-[10px] font-black text-slate-600 dark:text-slate-300 uppercase tracking-widest whitespace-nowrap">{Math.round((form.permissions.length / AVAILABLE_PERMISSIONS.length) * 100)}% Selected</span>
                             </div>
-                            <div className="flex gap-3 w-full sm:w-auto">
+                             <div className="flex gap-3 w-full sm:w-auto">
                                 <button
                                     type="button"
                                     onClick={() => setShowModal(false)}
-                                    className="flex-1 sm:flex-none px-8 py-3.5 bg-slate-100 text-slate-600 hover:text-slate-900 hover:bg-slate-200 text-[10px] font-black uppercase tracking-widest rounded-xl transition-all"
+                                    className="flex-1 sm:flex-none px-8 py-3.5 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-700 text-[10px] font-black uppercase tracking-widest rounded-xl transition-all"
                                 >
-                                    Cancel
+                                    {viewMode ? 'Close' : 'Cancel'}
                                 </button>
-                                <button
-                                    type="submit"
-                                    className="flex-1 sm:flex-none px-10 py-3.5 bg-[#B4912B] text-white text-[10px] font-black uppercase tracking-widest shadow-lg shadow-[#B4912B]/30 hover:bg-black hover:shadow-black/20 rounded-xl transition-all active:scale-[0.98]"
-                                >
-                                    {editingRole ? 'Save Changes' : 'Create Role'}
-                                </button>
+                                {!viewMode && (
+                                    <button
+                                        type="submit"
+                                        className="flex-1 sm:flex-none px-10 py-3.5 bg-[#B4912B] text-white text-[10px] font-black uppercase tracking-widest shadow-lg shadow-[#B4912B]/30 hover:bg-black hover:shadow-black/20 rounded-xl transition-all active:scale-[0.98]"
+                                    >
+                                        {editingRole ? 'Save Changes' : 'Create Role'}
+                                    </button>
+                                )}
                             </div>
                         </div>
                     </form>

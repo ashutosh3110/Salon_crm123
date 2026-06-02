@@ -34,7 +34,6 @@ export default function ServicesPage({ tab = 'list' }) {
     const [selectedOutletId, setSelectedOutletId] = useState('all');
     const [searchTerm, setSearchTerm] = useState('');
     const [filterCategory, setFilterCategory] = useState('All');
-    const [filterOutlet, setFilterOutlet] = useState('All Outlets');
     const [importing, setImporting] = useState(false);
 
     const [isFormModalOpen, setIsFormModalOpen] = useState(false);
@@ -209,7 +208,6 @@ export default function ServicesPage({ tab = 'list' }) {
     };
 
     const categoriesList = ['All', ...new Set(services.map(s => s.category))];
-    const outletOptions = ['All Outlets', ...outlets.map(o => o.name)];
 
     return (
         <div className="space-y-4 animate-reveal text-left font-black">
@@ -271,12 +269,6 @@ export default function ServicesPage({ tab = 'list' }) {
                             className="flex-1 lg:flex-none min-w-[110px]"
                         />
 
-                        <CustomDropdown
-                            value={filterOutlet}
-                            onChange={setFilterOutlet}
-                            options={outletOptions}
-                            className="flex-1 lg:flex-none min-w-[130px]"
-                        />
 
                         <div className="flex flex-wrap items-center gap-1.5 w-full sm:w-auto">
                             <button
@@ -370,7 +362,7 @@ export default function ServicesPage({ tab = 'list' }) {
                         onAdd={handleAddClick}
                         searchTerm={searchTerm}
                         filterCategory={filterCategory}
-                        filterOutlet={filterOutlet}
+                        filterOutlet="All Outlets"
                     />
                 )}
                 {activeTab === 'categories' && (

@@ -154,6 +154,49 @@ export default function StaffPage() {
         setCurrentPage(1);
     }, [search, roleFilter, outletFilter, staff]);
 
+    // Disable body scroll when modal is open
+    useEffect(() => {
+        if (showModal || !!viewingStaff) {
+            // Lock body and html
+            document.body.style.setProperty('overflow', 'hidden', 'important');
+            document.documentElement.style.setProperty('overflow', 'hidden', 'important');
+            
+            // Scan and lock any active scroll containers in the DOM (excluding modal/portal elements)
+            const allElements = document.querySelectorAll('*');
+            allElements.forEach(el => {
+                const style = window.getComputedStyle(el);
+                if (style.overflowY === 'auto' || style.overflowY === 'scroll' || style.overflow === 'auto' || style.overflow === 'scroll') {
+                    if (!el.closest('form') && !el.closest('.fixed')) {
+                        el.style.setProperty('overflow-y', 'hidden', 'important');
+                        el.style.setProperty('overflow', 'hidden', 'important');
+                        el.setAttribute('data-scroll-locked', 'true');
+                    }
+                }
+            });
+        } else {
+            document.body.style.removeProperty('overflow');
+            document.documentElement.style.removeProperty('overflow');
+            
+            const lockedElements = document.querySelectorAll('[data-scroll-locked="true"]');
+            lockedElements.forEach(el => {
+                el.style.removeProperty('overflow-y');
+                el.style.removeProperty('overflow');
+                el.removeAttribute('data-scroll-locked');
+            });
+        }
+        
+        return () => {
+            document.body.style.removeProperty('overflow');
+            document.documentElement.style.removeProperty('overflow');
+            const lockedElements = document.querySelectorAll('[data-scroll-locked="true"]');
+            lockedElements.forEach(el => {
+                el.style.removeProperty('overflow-y');
+                el.style.removeProperty('overflow');
+                el.removeAttribute('data-scroll-locked');
+            });
+        };
+    }, [showModal, viewingStaff]);
+
     const [avatarFile, setAvatarFile] = useState(null);
 
     const handleImageChange = (e) => {
@@ -372,10 +415,14 @@ export default function StaffPage() {
                         <select
                             value={roleFilter === 'all' ? 'All Roles' : roleFilter.toUpperCase()}
                             onChange={(e) => setRoleFilter(e.target.value === 'All Roles' ? 'all' : e.target.value.toLowerCase())}
-                            className="pl-5 pr-10 py-3.5 bg-white border border-slate-200 rounded-xl text-[11px] font-black tracking-widest outline-none focus:border-slate-300 transition-all appearance-none min-w-[160px] text-slate-700 shadow-sm"
+                            className="pl-5 pr-10 py-3.5 bg-white border border-slate-200 rounded-xl text-[11px] font-black tracking-widest outline-none focus:border-slate-300 transition-all appearance-none w-44 max-w-[180px] text-slate-700 shadow-sm truncate"
                         >
                             <option value="All Roles">All Roles</option>
-                            {roles.map(r => <option key={r._id} value={r.name.toUpperCase()}>{r.name}</option>)}
+                            {roles.map(r => (
+                                <option key={r._id} value={r.name.toUpperCase()}>
+                                    {r.name.length > 18 ? r.name.slice(0, 15) + '...' : r.name}
+                                </option>
+                            ))}
                         </select>
                         <ChevronDown className="absolute right-5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
                     </div>
@@ -448,8 +495,8 @@ export default function StaffPage() {
                                             </span>
                                         </td>
                                         <td className="px-6 py-5">
-                                            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-50 text-[10px] font-black text-slate-500 uppercase tracking-widest border border-slate-100">
-                                                <span className="w-1.5 h-1.5 rounded-full border border-slate-400 bg-transparent"></span> {s.role?.replace('_', ' ')}
+                                            <div className="inline-flex items-center px-3 py-1.5 rounded-lg bg-slate-50 text-[10px] font-black text-slate-500 uppercase tracking-widest border border-slate-100">
+                                                {s.role?.replace('_', ' ')}
                                             </div>
                                         </td>
                                         <td className="px-6 py-5">
@@ -527,10 +574,10 @@ export default function StaffPage() {
 
             {/* Shift Modal - High Density Refinement */}
             {showModal && createPortal(
-                <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 sm:p-6 overflow-y-auto bg-slate-900/60 backdrop-blur-sm transition-all" onClick={() => setShowModal(false)}>
+                <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 sm:p-6 bg-[#0f172a]/60 backdrop-blur-sm transition-all overflow-hidden" onClick={() => setShowModal(false)}>
                     <form
                         onSubmit={handleSubmit}
-                        className="bg-white dark:bg-slate-800 w-full max-w-md shadow-2xl relative border border-border flex flex-col my-auto rounded-xl z-10 max-h-[85vh] overflow-y-auto admin-panel"
+                        className="bg-white dark:bg-[#0f172a] w-full max-w-md shadow-2xl relative border border-border flex flex-col my-auto rounded-xl z-10 max-h-[85vh] overflow-y-auto admin-panel"
                         onClick={(e) => e.stopPropagation()}
                     >
                         <style>{`
@@ -557,6 +604,14 @@ export default function StaffPage() {
                             .dark .staff-modal-close-icon:hover {
                                 color: #ffffff !important;
                                 stroke: #ffffff !important;
+                            }
+                            .dark input[type="date"],
+                            .dark input[type="time"] {
+                                color-scheme: dark !important;
+                            }
+                            .dark input[type="date"]::-webkit-calendar-picker-indicator,
+                            .dark input[type="time"]::-webkit-calendar-picker-indicator {
+                                cursor: pointer;
                             }
                         `}</style>
                         {/* Modal Header */}
@@ -982,9 +1037,9 @@ export default function StaffPage() {
             )}
 
             {viewingStaff && createPortal(
-                <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 sm:p-6 overflow-y-auto bg-slate-900/60 backdrop-blur-sm transition-all" onClick={() => setViewingStaff(null)}>
+                <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 sm:p-6 bg-[#0f172a]/60 backdrop-blur-sm transition-all overflow-hidden" onClick={() => setViewingStaff(null)}>
                     <div 
-                        className="bg-white dark:bg-slate-800 w-full max-w-2xl shadow-2xl relative border border-border flex flex-col my-auto rounded-xl z-10 max-h-[90vh] overflow-y-auto admin-panel"
+                        className="bg-white dark:bg-[#0f172a] w-full max-w-2xl shadow-2xl relative border border-border flex flex-col my-auto rounded-xl z-10 max-h-[90vh] overflow-y-auto admin-panel"
                         onClick={(e) => e.stopPropagation()}
                     >
                         {/* Modal Header */}
