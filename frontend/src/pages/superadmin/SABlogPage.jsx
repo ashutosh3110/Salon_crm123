@@ -174,31 +174,28 @@ export default function SABlogPage() {
             </AnimatePresence>
 
             {/* Header / Command Center */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 bg-white border border-border p-8 regular-radius shadow-sm">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 bg-white dark:bg-slate-900 border border-border p-8 regular-radius shadow-sm">
                 <div className="flex items-center gap-6">
-                    <div className="w-16 h-16 bg-black text-white flex items-center justify-center font-black text-2xl shadow-xl">
-                        W
-                    </div>
                     <div>
                         <h1 className="text-3xl font-black tracking-tighter uppercase leading-none">Articles & <span className="text-primary">News</span></h1>
                         <p className="text-[10px] text-text-muted font-bold uppercase tracking-[0.3em] mt-2">Manage your blog posts and news updates</p>
                     </div>
                 </div>
                 <div className="flex items-center gap-3">
-                    <div className="px-6 py-3 bg-white border border-[#B4912B]/20 shadow-lg shadow-[#B4912B]/5 rounded-2xl flex items-center gap-4">
+                    <div className="px-6 py-3 bg-white dark:bg-slate-900 border border-[#B4912B]/20 shadow-lg shadow-[#B4912B]/5 rounded-2xl flex items-center gap-4">
                         <div className="w-10 h-10 rounded-xl bg-[#B4912B]/10 flex items-center justify-center">
-                            <FileText className="w-5 h-5 text-[#B4912B]" />
+                            <FileText size={20} color="#B4912B" strokeWidth={2.5} />
                         </div>
                         <div className="flex flex-col">
-                            <span className="text-[8px] font-black text-[#B4912B]/70 uppercase tracking-widest leading-none mb-1.5">Total Articles</span>
-                            <span className="text-2xl font-black text-[#B4912B] leading-none">{posts.length}</span>
+                            <span className="text-[8px] font-black !text-[#B4912B] opacity-70 uppercase tracking-widest leading-none mb-1.5">Total Articles</span>
+                            <span className="text-2xl font-black !text-[#B4912B] leading-none">{posts.length}</span>
                         </div>
                     </div>
                     <button
                         onClick={() => openEditor(null)}
-                        className="px-8 py-4 bg-[#B4912B] text-white text-[10px] font-black uppercase tracking-[0.3em] hover:bg-[#8B6F23] transition-all flex items-center gap-3 regular-radius shadow-2xl shadow-[#B4912B]/20 active:scale-[0.98]"
+                        className="px-8 py-4 !bg-gradient-to-r !from-[#B4912B] !to-[#D4AF37] !text-white !border-none text-[10px] font-black uppercase tracking-[0.3em] hover:!from-[#8B6F23] hover:!to-[#B4912B] transition-all flex items-center gap-3 regular-radius shadow-2xl shadow-[#B4912B]/40 dark:shadow-[#D4AF37]/30 active:scale-[0.98]"
                     >
-                        <Plus size={16} /> Create New Article
+                        <Plus size={16} color="#ffffff" /> Create New Article
                     </button>
                 </div>
             </div>
@@ -331,11 +328,8 @@ export default function SABlogPage() {
                         >
 
                             {/* Modal Header */}
-                            <div className="flex items-center justify-between px-8 py-6 border-b border-border bg-white shadow-sm">
+                            <div className="flex items-center justify-between px-8 py-6 border-b border-border bg-white dark:bg-slate-900 shadow-sm">
                                 <div className="flex items-center gap-3">
-                                    <div className="w-10 h-10 rounded-xl bg-rose-50 text-primary flex items-center justify-center shadow-inner">
-                                        <Sparkles className="w-5 h-5" />
-                                    </div>
                                     <div>
                                         <h3 className="text-lg font-black text-text uppercase tracking-tight flex items-center gap-2">
                                             Article <span className="text-primary font-black">Studio</span>
@@ -346,15 +340,15 @@ export default function SABlogPage() {
                                     </div>
                                 </div>
                                 <div className="flex items-center gap-4">
-                                    <div className="flex items-center gap-2 bg-emerald-50 text-emerald-700 px-3.5 py-1.5 rounded-xl border border-emerald-100 shadow-sm animate-pulse">
-                                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                                        <span className="text-[9px] font-black uppercase tracking-wider">Cloud Synchronized</span>
+                                    <div className="flex items-center gap-2 bg-emerald-100 dark:bg-emerald-900/50 px-3.5 py-1.5 rounded-xl border border-emerald-300 dark:border-emerald-500/30 shadow-sm animate-pulse">
+                                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 dark:bg-emerald-400" />
+                                        <span className="text-[9px] font-black uppercase tracking-wider !text-emerald-800 dark:!text-emerald-300">Cloud Synchronized</span>
                                     </div>
                                     <button 
                                         onClick={() => setIsEditorOpen(false)} 
-                                        className="w-10 h-10 flex items-center justify-center hover:bg-red-50 hover:text-red-500 rounded-full transition-all border border-border hover:border-red-200"
+                                        className="w-10 h-10 flex items-center justify-center rounded-full transition-all border border-rose-300 dark:border-rose-500/30 bg-rose-100 dark:bg-rose-900/30 hover:bg-rose-200 dark:hover:bg-rose-800 group shadow-sm"
                                     >
-                                        <X className="w-5 h-5" />
+                                        <X size={20} strokeWidth={3} className="!text-slate-900 dark:!text-rose-400 opacity-70 group-hover:opacity-100 group-hover:!text-rose-700 dark:group-hover:!text-rose-200 transition-all" />
                                     </button>
                                 </div>
                             </div>
@@ -456,14 +450,14 @@ export default function SABlogPage() {
                                             type="button"
                                             onClick={(e) => handleSavePost(e, 'draft')}
                                             disabled={uploading}
-                                            className="py-4 bg-white border border-border text-text-secondary text-[10px] font-black uppercase tracking-[0.2em] hover:bg-slate-50 active:scale-[0.98] transition-all rounded-xl shadow-sm disabled:opacity-50"
+                                            className="py-4 !bg-blue-600 hover:!bg-blue-700 !text-white !border-none !shadow-none text-[10px] font-black uppercase tracking-[0.2em] active:scale-[0.98] transition-all rounded-xl disabled:opacity-50"
                                         >
                                             Save as Draft
                                         </button>
                                         <button 
                                             type="submit" 
                                             disabled={uploading}
-                                            className="py-4 bg-[#B4912B] text-white text-[10px] font-black uppercase tracking-[0.2em] hover:bg-[#8B6F23] active:scale-[0.98] transition-all shadow-xl shadow-[#B4912B]/20 flex items-center justify-center gap-2.5 group disabled:opacity-50 rounded-xl"
+                                            className="py-4 !bg-emerald-600 hover:!bg-emerald-700 !text-white !border-none !shadow-none text-[10px] font-black uppercase tracking-[0.2em] active:scale-[0.98] transition-all flex items-center justify-center gap-2.5 group disabled:opacity-50 rounded-xl"
                                         >
                                             {uploading ? <Loader2 size={14} className="animate-spin" /> : <Globe size={14} />}
                                             {uploading ? 'PUBLISHING...' : 'Publish Article'}
@@ -473,7 +467,7 @@ export default function SABlogPage() {
                                     <button 
                                         type="button" 
                                         onClick={() => setIsEditorOpen(false)} 
-                                        className="w-full py-2 text-[9px] font-black uppercase tracking-widest text-text-muted hover:text-red-500 hover:bg-red-50/50 rounded-xl transition-all text-center"
+                                        className="w-full py-3 !bg-rose-600 hover:!bg-rose-700 !text-white !border-none !shadow-none text-[10px] font-black uppercase tracking-[0.2em] rounded-xl transition-all text-center active:scale-[0.98]"
                                     >
                                         Discard Entry
                                     </button>
