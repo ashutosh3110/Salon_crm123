@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import AnimatedCounter from '../../components/common/AnimatedCounter';
 import api from '../../services/api';
+import { toast } from 'react-hot-toast';
 
 const defaultWeek = () => ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map(name => ({ name, revenue: 0, appointments: 0 }));
 
@@ -15,6 +16,7 @@ export default function DashboardPage() {
     const [showLowCreditAlert, setShowLowCreditAlert] = useState(false);
     const [selectedRange, setSelectedRange] = useState('week'); // 'week' or 'month'
     const [dropdownOpen, setDropdownOpen] = useState(false);
+    const [headerDropdownOpen, setHeaderDropdownOpen] = useState(false);
 
     const loadDashboard = useCallback(async (rangeVal = selectedRange) => {
         setError(null);
@@ -49,6 +51,32 @@ export default function DashboardPage() {
     const revenueData = useMemo(() => {
         return payload?.revenueWeek || defaultWeek();
     }, [payload]);
+
+    const headerDateText = useMemo(() => {
+        const now = new Date();
+        if (selectedRange === 'week') {
+            const currentDay = now.getDay();
+            const distanceToMonday = currentDay === 0 ? -6 : 1 - currentDay;
+            const monday = new Date(now);
+            monday.setDate(now.getDate() + distanceToMonday);
+            
+            const sunday = new Date(monday);
+            sunday.setDate(monday.getDate() + 6);
+            
+            const options = { month: 'short', day: 'numeric' };
+            const start = monday.toLocaleDateString('en-US', options);
+            const end = sunday.toLocaleDateString('en-US', { ...options, year: 'numeric' });
+            return `${start} – ${end}`;
+        } else {
+            const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
+            const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+            
+            const options = { month: 'short', day: 'numeric' };
+            const start = firstDay.toLocaleDateString('en-US', options);
+            const end = lastDay.toLocaleDateString('en-US', { ...options, year: 'numeric' });
+            return `${start} – ${end}`;
+        }
+    }, [selectedRange]);
 
     const totalPeriodRevenue = useMemo(() => {
         return selectedRange === 'month' 
@@ -213,6 +241,58 @@ export default function DashboardPage() {
         });
     }, [liveRecentActivity]);
 
+    const handleExportReport = () => {
+        try {
+            const stats = payload?.stats || {};
+            const revData = revenueData || [];
+            const activity = liveRecentActivity || [];
+            
+            let csvContent = "data:text/csv;charset=utf-8,";
+            
+            // Section 1: Business Stats Summary
+            csvContent += "BUSINESS PERFORMANCE SUMMARY\n";
+            csvContent += `Generated On,${new Date().toLocaleString()}\n`;
+            csvContent += `Reporting Range,${selectedRange === 'week' ? 'Weekly' : 'Monthly'}\n\n`;
+            
+            csvContent += "Metric,Value\n";
+            csvContent += `Total Outlets,${stats.outlets ?? 0}\n`;
+            csvContent += `Total Bookings,${stats.bookingsTotal ?? 0}\n`;
+            csvContent += `Active Clients,${stats.clients ?? 0}\n`;
+            csvContent += `Staff Members,${stats.staff ?? 0}\n`;
+            csvContent += `WhatsApp Credits,${stats.whatsappCredits ?? 0}\n`;
+            csvContent += `This Period Revenue,INR ${totalPeriodRevenue}\n\n`;
+            
+            // Section 2: Revenue Breakdown
+            csvContent += "REVENUE DATA POINTS\n";
+            csvContent += "Period/Day,Revenue (INR)\n";
+            revData.forEach(item => {
+                csvContent += `${item.name},${item.revenue}\n`;
+            });
+            csvContent += "\n";
+            
+            // Section 3: Recent Activity Log
+            csvContent += "RECENT BUSINESS ACTIVITY LOG\n";
+            csvContent += "Activity details,Time,Category,Amount\n";
+            activity.forEach(item => {
+                const title = item.service && item.service !== 'N/A' ? `Booking: ${item.service}` : 'New Client Registration';
+                csvContent += `"${title} (${item.client})",${item.time || 'N/A'},${item.amount ? 'Paid' : 'Pending'},${item.amount || 0}\n`;
+            });
+            
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", `business_report_${selectedRange}_${new Date().toISOString().split('T')[0]}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            toast.success("Business report exported successfully!");
+        } catch (e) {
+            console.error("Failed to export business report:", e);
+            toast.error("Failed to export business report");
+        }
+    };
+
     if (loading) return <div className="p-8 text-center text-text-muted">Loading Dashboard...</div>;
 
     return (
@@ -230,14 +310,48 @@ export default function DashboardPage() {
                 
                 {/* Datepicker dropdown and export report buttons */}
                 <div className="flex items-center gap-3">
-                    <div className="flex items-center gap-2 px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-bold text-slate-500 dark:text-slate-400 cursor-pointer shadow-sm">
-                        <Calendar className="w-3.5 h-3.5 text-slate-400" />
-                        <span>May 20 – May 26, 2025</span>
-                        <span className="text-[7px] text-slate-400 ml-1">▼</span>
+                    <div className="relative z-50">
+                        <button
+                            onClick={() => setHeaderDropdownOpen(!headerDropdownOpen)}
+                            type="button"
+                            className="flex items-center gap-2 px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-bold text-slate-500 dark:text-slate-400 cursor-pointer shadow-sm focus:outline-none select-none min-h-[34px]"
+                        >
+                            <Calendar className="w-3.5 h-3.5 text-[#B4912B]" />
+                            <span>{headerDateText}</span>
+                            <span className="text-[7px] text-slate-400 ml-1">▼</span>
+                        </button>
+                        {headerDropdownOpen && (
+                            <>
+                                <div className="fixed inset-0 z-40 bg-transparent" onClick={() => setHeaderDropdownOpen(false)} />
+                                <div className="absolute right-0 mt-1.5 w-36 rounded-lg border border-slate-100 dark:border-slate-700 bg-white dark:bg-slate-800 py-1.5 shadow-lg z-50 transition-all text-left">
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            setSelectedRange('week');
+                                            setHeaderDropdownOpen(false);
+                                        }}
+                                        className={`w-full text-left px-3.5 py-1.5 text-[11px] font-bold transition-all hover:bg-slate-50 dark:hover:bg-slate-700 block ${selectedRange === 'week' ? '!text-[#B4912B] dark:!text-[#B4912B]' : 'text-slate-500 dark:text-slate-400'}`}
+                                    >
+                                        This Week
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            setSelectedRange('month');
+                                            setHeaderDropdownOpen(false);
+                                        }}
+                                        className={`w-full text-left px-3.5 py-1.5 text-[11px] font-bold transition-all hover:bg-slate-50 dark:hover:bg-slate-700 block ${selectedRange === 'month' ? '!text-[#B4912B] dark:!text-[#B4912B]' : 'text-slate-500 dark:text-slate-400'}`}
+                                    >
+                                        This Month
+                                    </button>
+                                </div>
+                            </>
+                        )}
                     </div>
                     
                     <button
                         type="button"
+                        onClick={handleExportReport}
                         className="flex items-center gap-2 px-4 py-2 rounded-xl bg-[#B4912B] hover:bg-[#A57C1E] text-white text-xs font-extrabold shadow-md transition-all hover:-translate-y-0.5 active:translate-y-0 cursor-pointer"
                     >
                         <Download className="w-3.5 h-3.5 text-white" />

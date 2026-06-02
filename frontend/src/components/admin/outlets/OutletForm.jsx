@@ -535,16 +535,19 @@ export default function OutletForm() {
                                     </div>
                                 </div>
                                 <div className="space-y-2 mt-4 md:mt-0">
-                                    <div className="flex items-center justify-between">
+                                    <label className="text-[10px] font-black text-slate-800 dark:text-slate-300 uppercase tracking-wider">Home Delivery</label>
+                                    <div className="flex items-center justify-between h-[38px] px-3 bg-white dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl shadow-sm">
                                         <div className="flex items-center gap-2">
-                                            <Truck className="w-4 h-4 text-slate-700 dark:text-slate-300" />
-                                            <span className="text-[10px] font-black text-slate-800 dark:text-slate-300 uppercase tracking-wider">Home Delivery</span>
+                                            <Truck className="w-4 h-4 text-slate-600 dark:text-slate-400" />
+                                            <span className="text-[10px] font-black text-slate-750 dark:text-slate-300 uppercase tracking-wider">Enable Delivery</span>
                                         </div>
                                         <div
                                             onClick={() => setForm({ ...form, config: { ...form.config, enableDelivery: !form.config?.enableDelivery } })}
-                                            className={`relative w-11 h-6 rounded-full cursor-pointer transition-all duration-300 shrink-0 border ${form.config?.enableDelivery ? 'bg-orange-50 border-orange-200 dark:bg-orange-950/30 dark:border-orange-900/30' : 'bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-700'}`}
+                                            className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out ${form.config?.enableDelivery ? 'bg-[#B4912B]' : 'bg-slate-300 dark:bg-slate-600'}`}
                                         >
-                                            <div className={`absolute top-[2px] w-4.5 h-4.5 rounded-full shadow-sm transition-all duration-300 ${form.config?.enableDelivery ? 'left-[24px] bg-orange-500 dark:bg-orange-400' : 'left-[2px] bg-slate-300 dark:bg-slate-600'}`} />
+                                            <span
+                                                className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-lg ring-0 transition duration-200 ease-in-out ${form.config?.enableDelivery ? 'translate-x-5' : 'translate-x-0'}`}
+                                            />
                                         </div>
                                     </div>
                                     {form.config?.enableDelivery && (

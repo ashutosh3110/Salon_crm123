@@ -46,6 +46,7 @@ import {
 } from 'lucide-react';
 import api from '../../services/api';
 import toast from 'react-hot-toast';
+import CustomDropdown from '../../components/common/CustomDropdown';
 
 const PERMISSION_STRUCTURE = [
     {
@@ -219,6 +220,7 @@ export default function RolesPage() {
     }, [showModal]);
     const [editingRole, setEditingRole] = useState(null);
     const [search, setSearch] = useState('');
+    const [roleFilter, setRoleFilter] = useState('all');
 
     const [form, setForm] = useState({
         name: '',
@@ -332,9 +334,58 @@ export default function RolesPage() {
         });
     };
 
-    const filteredRoles = roles.filter(r =>
-        r.name.toLowerCase().includes(search.toLowerCase())
-    );
+    const filteredRoles = roles.filter(r => {
+        const matchesSearch = r.name.toLowerCase().includes(search.toLowerCase());
+        const matchesRole = roleFilter === 'all' || String(r._id) === String(roleFilter);
+        return matchesSearch && matchesRole;
+    });
+
+    const handleExport = () => {
+        if (!roles || roles.length === 0) {
+            toast.error('No roles data available to export');
+            return;
+        }
+
+        // CSV Headers
+        const headers = ['Role Name', 'Description', 'Permissions Count', 'Permissions List', 'Role Type'];
+        
+        // CSV Rows
+        const rows = roles.map(role => {
+            const permissionsList = (role.permissions || [])
+                .map(pId => {
+                    const found = AVAILABLE_PERMISSIONS.find(ap => ap.id === pId);
+                    return found ? found.label : pId;
+                })
+                .join('; ');
+
+            return [
+                role.name,
+                role.description || '',
+                role.permissions?.length || 0,
+                permissionsList,
+                role.isDefault ? 'System Default' : 'Custom'
+            ];
+        });
+
+        // Combine into CSV Content
+        const csvContent = [
+            headers.join(','),
+            ...rows.map(row => row.map(val => `"${String(val).replace(/"/g, '""')}"`).join(','))
+        ].join('\n');
+
+        // Create Blob and download link
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.setAttribute('href', url);
+        link.setAttribute('download', `Wapixo_Roles_Permissions_Report_${new Date().toISOString().split('T')[0]}.csv`);
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
+        toast.success('Roles report exported successfully!');
+    };
 
     return (
         <div className="space-y-6 animate-reveal text-left font-sans">
@@ -356,62 +407,62 @@ export default function RolesPage() {
             </div>
 
             {/* Analytics Grid - 4 Columns */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
-                <div className="!bg-white dark:!bg-slate-900 p-3 !border-[1.5px] !border-[#e2e8f0] dark:!border-slate-800 flex items-center gap-3 group hover:!border-black dark:hover:!border-white transition-all min-h-[72px] relative !overflow-hidden !rounded-[12px] shadow-sm">
-                    <div className="w-10 h-10 rounded-full flex items-center justify-center shrink-0 !bg-[#FEF3C7]">
-                        <Users className="w-4 h-4 !text-[#D97706]" strokeWidth={2.5} />
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div className="!bg-white dark:!bg-slate-900 p-4 !border-[1.5px] !border-[#e2e8f0] dark:!border-slate-800 flex items-center gap-4 group hover:!border-black dark:hover:!border-white transition-all min-h-[100px] relative !overflow-hidden !rounded-[16px] shadow-sm">
+                    <div className="w-12 h-12 rounded-full flex items-center justify-center shrink-0 !bg-[#FEF3C7]">
+                        <Users className="w-5 h-5 !text-[#D97706]" strokeWidth={2.5} />
                     </div>
-                    <div className="flex flex-col">
-                        <span className="text-[8.5px] font-bold text-text-muted uppercase tracking-wider">Total Roles</span>
-                        <h3 className="text-lg font-black tracking-tight uppercase leading-none mt-0.5 text-text">
-                            {roles.length || 4}
+                    <div className="flex flex-col text-left">
+                        <span className="text-[9px] font-bold text-text-muted uppercase tracking-wider">Total Roles</span>
+                        <h3 className="text-xl font-black tracking-tight uppercase leading-none mt-1 text-text">
+                            {roles.length || 5}
                         </h3>
-                        <span className="text-[7.5px] font-bold text-text-muted uppercase tracking-[0.2em] mt-0.5 opacity-60">
+                        <span className="text-[8px] font-bold text-text-muted uppercase tracking-[0.2em] mt-1 opacity-60">
                             Configured Roles
                         </span>
                     </div>
                 </div>
 
-                <div className="!bg-white dark:!bg-slate-900 p-3 !border-[1.5px] !border-[#e2e8f0] dark:!border-slate-800 flex items-center gap-3 group hover:!border-black dark:hover:!border-white transition-all min-h-[72px] relative !overflow-hidden !rounded-[12px] shadow-sm">
-                    <div className="w-10 h-10 rounded-full flex items-center justify-center shrink-0 !bg-[#F3E8FF]">
-                        <Lock className="w-4 h-4 !text-[#9333EA]" strokeWidth={2.5} />
+                <div className="!bg-white dark:!bg-slate-900 p-4 !border-[1.5px] !border-[#e2e8f0] dark:!border-slate-800 flex items-center gap-4 group hover:!border-black dark:hover:!border-white transition-all min-h-[100px] relative !overflow-hidden !rounded-[16px] shadow-sm">
+                    <div className="w-12 h-12 rounded-full flex items-center justify-center shrink-0 !bg-[#F3E8FF]">
+                        <Lock className="w-5 h-5 !text-[#9333EA]" strokeWidth={2.5} />
                     </div>
-                    <div className="flex flex-col">
-                        <span className="text-[8.5px] font-bold text-text-muted uppercase tracking-wider">Total Permissions</span>
-                        <h3 className="text-lg font-black tracking-tight uppercase leading-none mt-0.5 text-text">
+                    <div className="flex flex-col text-left">
+                        <span className="text-[9px] font-bold text-text-muted uppercase tracking-wider">Total Permissions</span>
+                        <h3 className="text-xl font-black tracking-tight uppercase leading-none mt-1 text-text">
                             {AVAILABLE_PERMISSIONS.length}
                         </h3>
-                        <span className="text-[7.5px] font-bold text-text-muted uppercase tracking-[0.2em] mt-0.5 opacity-60">
+                        <span className="text-[8px] font-bold text-text-muted uppercase tracking-[0.2em] mt-1 opacity-60">
                             System Permissions
                         </span>
                     </div>
                 </div>
 
-                <div className="!bg-white dark:!bg-slate-900 p-3 !border-[1.5px] !border-[#e2e8f0] dark:!border-slate-800 flex items-center gap-3 group hover:!border-black dark:hover:!border-white transition-all min-h-[72px] relative !overflow-hidden !rounded-[12px] shadow-sm">
-                    <div className="w-10 h-10 rounded-full flex items-center justify-center shrink-0 !bg-[#DCFCE7]">
-                        <UserCheck className="w-4 h-4 !text-[#16A34A]" strokeWidth={2.5} />
+                <div className="!bg-white dark:!bg-slate-900 p-4 !border-[1.5px] !border-[#e2e8f0] dark:!border-slate-800 flex items-center gap-4 group hover:!border-black dark:hover:!border-white transition-all min-h-[100px] relative !overflow-hidden !rounded-[16px] shadow-sm">
+                    <div className="w-12 h-12 rounded-full flex items-center justify-center shrink-0 !bg-[#DCFCE7]">
+                        <UserCheck className="w-5 h-5 !text-[#16A34A]" strokeWidth={2.5} />
                     </div>
-                    <div className="flex flex-col">
-                        <span className="text-[8.5px] font-bold text-text-muted uppercase tracking-wider">Staff Assigned</span>
-                        <h3 className="text-lg font-black tracking-tight uppercase leading-none mt-0.5 text-text">
+                    <div className="flex flex-col text-left">
+                        <span className="text-[9px] font-bold text-text-muted uppercase tracking-wider">Staff Assigned</span>
+                        <h3 className="text-xl font-black tracking-tight uppercase leading-none mt-1 text-text">
                             23
                         </h3>
-                        <span className="text-[7.5px] font-bold text-text-muted uppercase tracking-[0.2em] mt-0.5 opacity-60">
+                        <span className="text-[8px] font-bold text-text-muted uppercase tracking-[0.2em] mt-1 opacity-60">
                             Across All Roles
                         </span>
                     </div>
                 </div>
 
-                <div className="!bg-white dark:!bg-slate-900 p-3 !border-[1.5px] !border-[#e2e8f0] dark:!border-slate-800 flex items-center gap-3 group hover:!border-black dark:hover:!border-white transition-all min-h-[72px] relative !overflow-hidden !rounded-[12px] shadow-sm">
-                    <div className="w-10 h-10 rounded-full flex items-center justify-center shrink-0 !bg-[#DBEAFE]">
-                        <ShieldCheck className="w-4 h-4 !text-[#2563EB]" strokeWidth={2.5} />
+                <div className="!bg-white dark:!bg-slate-900 p-4 !border-[1.5px] !border-[#e2e8f0] dark:!border-slate-800 flex items-center gap-4 group hover:!border-black dark:hover:!border-white transition-all min-h-[100px] relative !overflow-hidden !rounded-[16px] shadow-sm">
+                    <div className="w-12 h-12 rounded-full flex items-center justify-center shrink-0 !bg-[#DBEAFE]">
+                        <ShieldCheck className="w-5 h-5 !text-[#2563EB]" strokeWidth={2.5} />
                     </div>
-                    <div className="flex flex-col">
-                        <span className="text-[8.5px] font-bold text-text-muted uppercase tracking-wider">Last Updated</span>
-                        <h3 className="text-[13px] font-black tracking-tight uppercase leading-none mt-1 text-text">
+                    <div className="flex flex-col text-left">
+                        <span className="text-[9px] font-bold text-text-muted uppercase tracking-wider">Last Updated</span>
+                        <h3 className="text-xl font-black tracking-tight uppercase leading-none mt-1 text-text">
                             15 May 2024
                         </h3>
-                        <span className="text-[7.5px] font-bold text-text-muted uppercase tracking-[0.2em] mt-0.5 opacity-60">
+                        <span className="text-[8px] font-bold text-text-muted uppercase tracking-[0.2em] mt-1 opacity-60">
                             By Admin
                         </span>
                     </div>
@@ -430,14 +481,22 @@ export default function RolesPage() {
                         className="w-full h-full text-[11px] font-bold uppercase tracking-wider outline-none text-neutral-800 dark:text-neutral-200 bg-transparent border-0 focus:ring-0 focus:outline-none focus:border-transparent !border-none !shadow-none placeholder-slate-400"
                     />
                 </div>
-                <div className="min-w-[150px] h-9 border-l border-border px-2 flex items-center">
-                    <select className="w-full h-full bg-transparent border-none outline-none text-[10px] font-bold uppercase tracking-wider text-text cursor-pointer px-2">
-                        <option value="all">ALL ROLES</option>
-                    </select>
+                <div className="min-w-[150px] h-9 border-l border-border px-2">
+                    <CustomDropdown
+                        value={roleFilter}
+                        onChange={(val) => setRoleFilter(val)}
+                        options={[
+                            { label: 'ALL ROLES', value: 'all' },
+                            ...roles.map(role => ({
+                                label: role.name.toUpperCase(),
+                                value: role._id
+                            }))
+                        ]}
+                        className="w-full h-full [&>.custom-dropdown-trigger]:h-full [&>.custom-dropdown-trigger]:!py-0 [&>.custom-dropdown-trigger]:!border-none [&>.custom-dropdown-trigger]:shadow-none [&>.custom-dropdown-trigger]:bg-transparent [&>.custom-dropdown-trigger]:dark:bg-transparent [&>.custom-dropdown-trigger]:!text-[10px]"
+                    />
                 </div>
-                <div className="h-9 px-4 flex items-center gap-2 border-[1.5px] border-border !rounded-xl cursor-pointer hover:bg-slate-50 transition-colors mr-1">
-                    <Download className="w-3.5 h-3.5 text-text" />
-                    <span className="text-[10px] font-black uppercase tracking-wider text-text">Export</span>
+                <div role="button" onClick={handleExport} className="h-9 px-5 flex items-center justify-center border-[1.5px] border-slate-200 dark:border-slate-700 !rounded-xl cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors mr-1 text-slate-700 dark:text-slate-300">
+                    <span className="text-[10px] font-black uppercase tracking-wider">Export</span>
                 </div>
             </div>
 
