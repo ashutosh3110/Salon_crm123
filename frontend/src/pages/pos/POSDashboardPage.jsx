@@ -121,7 +121,7 @@ export default function POSDashboardPage() {
     ];
 
     return (
-        <div className="space-y-6 animate-reveal pb-10 text-left font-black bg-slate-50/50 min-h-screen">
+        <div className="space-y-6 animate-reveal pb-10 text-left font-black bg-slate-50/50 dark:bg-[#121826] min-h-screen">
             {/* Dashboard Header */}
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6 pb-2">
                 <div>
@@ -164,7 +164,7 @@ export default function POSDashboardPage() {
 
             {/* Threshold Alerts */}
             {lowStockItems.length > 0 && showStockAlert && (
-                <div className="bg-[#FFF8ED] border border-[#FDEBCE] rounded-lg p-4 flex items-center justify-between shadow-sm">
+                <div className="bg-[#FFF8ED] dark:bg-amber-950/20 border border-[#FDEBCE] dark:border-amber-900/30 rounded-lg p-4 flex items-center justify-between shadow-sm">
                     <div className="flex items-center gap-4">
                         <AlertTriangle className="w-5 h-5 text-orange-500" />
                         <div>
@@ -179,7 +179,7 @@ export default function POSDashboardPage() {
                         >
                             CHECK STOCK
                         </button>
-                        <button onClick={() => setShowStockAlert(false)} className="p-1.5 hover:bg-orange-100/50 border border-[#FDEBCE] rounded text-text-muted transition-colors bg-white/50">
+                        <button onClick={() => setShowStockAlert(false)} className="p-1.5 hover:bg-orange-100/50 dark:hover:bg-amber-950/40 border border-[#FDEBCE] dark:border-amber-900/30 rounded text-text-muted transition-colors bg-white/50 dark:bg-transparent">
                             <X className="w-3.5 h-3.5" />
                         </button>
                     </div>

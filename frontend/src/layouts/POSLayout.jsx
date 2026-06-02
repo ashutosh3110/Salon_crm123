@@ -253,6 +253,45 @@ export default function POSLayout() {
                     height: 1.1rem !important;
                 }
 
+                /* Light Mode Sidebar Icons & Sub-items Icons Visibility Override */
+                html:not(.dark) .admin-panel aside nav a svg,
+                html:not(.dark) .admin-panel aside nav button svg,
+                html:not(.dark) .admin-panel aside nav a span svg,
+                html:not(.dark) .admin-panel aside nav button span svg {
+                    color: #000000 !important;
+                    stroke: #000000 !important;
+                    fill: none !important;
+                    opacity: 1 !important;
+                }
+
+                /* Hover State for inactive icons */
+                html:not(.dark) .admin-panel aside nav a:hover svg,
+                html:not(.dark) .admin-panel aside nav button:hover svg {
+                    color: #000000 !important;
+                    stroke: #000000 !important;
+                }
+
+                /* Active state icons & text on gold background must stay solid black & white text */
+                html:not(.dark) .admin-panel aside nav a[class*="bg-[#B4912B]"] svg,
+                html:not(.dark) .admin-panel aside nav button[class*="bg-[#B4912B]"] svg,
+                html:not(.dark) .admin-panel aside nav a.active svg,
+                html:not(.dark) .admin-panel aside nav button.active svg {
+                    color: #000000 !important;
+                    stroke: #000000 !important;
+                }
+                html:not(.dark) .admin-panel aside nav a[class*="bg-[#B4912B]"] span,
+                html:not(.dark) .admin-panel aside nav button[class*="bg-[#B4912B]"] span,
+                html:not(.dark) .admin-panel aside nav a.active span,
+                html:not(.dark) .admin-panel aside nav button.active span {
+                    color: #ffffff !important;
+                }
+
+                /* Dark Mode Sidebar Nested Divs Transparency Fix */
+                .dark .admin-panel aside nav div {
+                    background-color: transparent !important;
+                    background: transparent !important;
+                }
+
                 /* Hide sidebar scrollbar */
                 .admin-panel aside nav::-webkit-scrollbar {
                     display: none !important;
@@ -391,7 +430,7 @@ export default function POSLayout() {
                 .dark [role="dialog"] [class*="text-text-secondary"],
                 .dark .fixed.inset-0 .text-text-secondary,
                 .dark .fixed.inset-0 [class*="text-text-secondary"] {
-                    color: #e6e8bff!important; /* slate-400 */
+                    color: #cbd5e1!important; /* slate-400 */
                 }
 
                 .dark .admin-panel .text-text-muted,
@@ -402,7 +441,7 @@ export default function POSLayout() {
                 .dark [role="dialog"] [class*="text-text-muted"],
                 .dark .fixed.inset-0 .text-text-muted,
                 .dark .fixed.inset-0 [class*="text-text-muted"] {
-                    color: #e6e8bff !important; /* slate-500 */
+                    color: #94a3b8 !important; /* slate-500 */
                 }
 
                 /* Ensure dark mode input placeholders and borders are clearly visible */
@@ -427,7 +466,7 @@ export default function POSLayout() {
 
                 /* --- Spacious & Beautiful Tables in Dark Mode --- */
                 .dark .admin-panel table th {
-                    color: #e6e8bff!important; /* slate-400 */
+                    color: #cbd5e1!important; /* slate-400 */
                     background-color: #121826 !important; /* slate-900 */
                     border-bottom: 2px solid rgba(255, 255, 255, 0.08) !important;
                 }
@@ -441,7 +480,7 @@ export default function POSLayout() {
 
                 /* --- Form Controls in Dark Mode --- */
                 .dark .admin-panel label {
-                    color: #e6e8bff!important; /* slate-400 */
+                    color: #cbd5e1!important; /* slate-400 */
                 }
                 .dark .admin-panel input:focus, 
                 .dark .admin-panel select:focus, 

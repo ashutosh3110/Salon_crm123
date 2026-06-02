@@ -173,10 +173,10 @@ export default function StockTransferPage() {
                     color: #cbd5e1 !important; /* slate-300 */
                 }
                 html:not(.dark) .st-modal-subtitle {
-                    color: #e6e8bff !important; /* slate-500 */
+                    color: #94a3b8 !important; /* slate-500 */
                 }
                 .dark .st-modal-subtitle {
-                    color: #e6e8bff!important; /* slate-450 */
+                    color: #94a3b8!important; /* slate-450 */
                 }
                 html:not(.dark) .st-warning-text {
                     color: #B4912B !important; /* Premium Gold */
@@ -192,16 +192,16 @@ export default function StockTransferPage() {
                     color: #B4912B !important;
                     stroke: #B4912B !important;
                 }
-
+ 
                 /* General overrides for light mode inside the modal to cancel global white text resets */
                 html:not(.dark) .st-modal-container label {
-                    color: #e6e8bff !important; /* slate-500 */
+                    color: #94a3b8 !important; /* slate-500 */
                 }
                 html:not(.dark) .st-modal-container input {
                     color: #0f172a !important; /* slate-900 */
                 }
                 html:not(.dark) .st-modal-container input::placeholder {
-                    color: #e6e8bff!important; /* slate-400 */
+                    color: #cbd5e1!important; /* slate-400 */
                 }
                 html:not(.dark) .st-modal-container select {
                     color: #0f172a !important; /* slate-900 */
@@ -214,7 +214,7 @@ export default function StockTransferPage() {
                 html:not(.dark) .st-modal-container svg.text-slate-400,
                 html:not(.dark) .st-modal-container button.text-slate-400,
                 html:not(.dark) .st-modal-container button.text-slate-400 * {
-                    color: #e6e8bff!important;
+                    color: #cbd5e1!important;
                 }
                 html:not(.dark) .st-modal-container [class*="text-[#B4912B]"] {
                     color: #B4912B !important;

@@ -220,7 +220,7 @@ function MarketingHubContent() {
                     )}
                     <button
                         onClick={startCampaign}
-                        className="flex-1 lg:flex-none flex items-center justify-center gap-2 px-5 py-2 rounded-xl bg-primary text-white text-[10px] font-black uppercase tracking-widest hover:brightness-110 shadow-md shadow-primary/30 active:scale-[0.98] transition-all leading-none"
+                        className="flex-1 lg:flex-none flex items-center justify-center gap-2 px-5 py-2 rounded-lg bg-primary text-white text-[10px] font-black uppercase tracking-widest hover:brightness-110 shadow-md shadow-primary/30 active:scale-[0.98] transition-all leading-none"
                     >
                         <Plus className="w-3.5 h-3.5" /> New {activeTab === 'whatsapp' ? 'WhatsApp' : 'Notification'}
                     </button>
@@ -504,7 +504,7 @@ function MarketingHubContent() {
                                             type="button"
                                             onClick={handleSendCampaign}
                                             disabled={!campaignForm.name || !campaignForm.message || (campaignForm.type === 'selective' && campaignForm.selectedCustomers.length === 0) || isSending}
-                                            className="w-full py-4 bg-slate-900 text-white text-[10px] font-black uppercase tracking-[0.3em] rounded-2xl hover:bg-primary transition-all disabled:opacity-40 disabled:cursor-not-allowed active:scale-[0.98] shadow-lg"
+                                            className="w-full py-4 bg-slate-900 text-white text-[10px] font-black uppercase tracking-[0.3em] rounded-xl hover:bg-primary transition-all disabled:opacity-40 disabled:cursor-not-allowed active:scale-[0.98] shadow-lg"
                                         >
                                             {isSending ? 'Sending...' : `Send ${activeTab === 'whatsapp' ? 'WhatsApp' : 'Notification'} Now`}
                                         </button>
