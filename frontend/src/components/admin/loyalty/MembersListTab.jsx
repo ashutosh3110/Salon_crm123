@@ -260,7 +260,7 @@ export default function MembersListTab() {
     }, []);
 
     return (
-        <div className="space-y-4 italic">
+        <div className="space-y-4 italic px-4 sm:px-6 lg:px-8">
             <div className="flex flex-col gap-3">
                 {/* Row 1: Search & Assign */}
                 <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center">
@@ -336,7 +336,7 @@ export default function MembersListTab() {
                         {/* Export CSV */}
                         <button
                             onClick={downloadCsv}
-                            className="p-2 border border-border/40 text-text-muted hover:text-primary hover:bg-primary/5 hover:border-primary/40 transition-all shadow-sm flex items-center justify-center bg-surface"
+                            className="p-2 border border-slate-300 dark:border-slate-700 rounded-xl bg-white dark:bg-slate-800 !text-slate-700 dark:!text-slate-300 hover:!text-primary hover:border-primary/50 hover:shadow-md transition-all flex items-center justify-center"
                             title="Download CSV"
                         >
                             <Download size={16} />
@@ -355,16 +355,16 @@ export default function MembersListTab() {
                                 <Th>Protocol Status</Th>
                                 <Th>Join Cycle</Th>
                                 <Th>Expiry Timeline</Th>
-                                <Th className="text-right">Actions</Th>
+                                <Th className="!text-right">Actions</Th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-border/20">
                             {loading ? (
-                                <tr><td colSpan="6" className="px-6 py-10 text-center text-sm font-bold text-text-muted">Loading active members...</td></tr>
+                                <tr><td colSpan="6" className="px-10 py-10 text-center text-sm font-bold text-text-muted">Loading active members...</td></tr>
                             ) : (
                                 members.map((member) => (
                                     <tr key={member.id} className="hover:bg-surface-alt/30 transition-colors">
-                                        <td className="px-6 py-5">
+                                        <td className="px-10 py-5">
                                             <div className="flex items-center gap-3">
                                                 <div className="w-10 h-10 bg-primary/10 border border-primary/20 flex items-center justify-center text-primary font-black italic">
                                                     {(member.name || 'U')[0]}
@@ -375,31 +375,31 @@ export default function MembersListTab() {
                                                 </div>
                                             </div>
                                         </td>
-                                        <td className="px-6 py-5">
+                                        <td className="px-10 py-5">
                                             <div className="flex items-center gap-2">
                                                 <ShieldCheck className="w-4 h-4 text-primary" />
                                                 <span className="text-xs font-black text-foreground uppercase italic tracking-tighter">{member.loyaltyPlan || 'Standard'}</span>
                                             </div>
                                         </td>
-                                        <td className="px-6 py-5"><StatusBadge status={member.loyaltyStatus || 'active'} /></td>
-                                        <td className="px-6 py-5">
+                                        <td className="px-10 py-5"><StatusBadge status={member.loyaltyStatus || 'active'} /></td>
+                                        <td className="px-10 py-5">
                                             <div className="flex flex-col">
                                                 <span className="text-xs font-bold text-foreground opacity-80">{new Date(member.createdAt).toLocaleDateString()}</span>
                                                 <span className="text-[9px] font-black text-text-muted uppercase tracking-widest leading-none mt-1 italic">Initiated</span>
                                             </div>
                                         </td>
-                                        <td className="px-6 py-5">
+                                        <td className="px-10 py-5">
                                             <div className="flex items-center gap-2 italic">
                                                 <Clock className="w-3 h-3 text-text-muted" />
                                                 <span className="text-xs font-bold">{member.loyaltyExpiry || 'NEVER'}</span>
                                             </div>
                                         </td>
-                                        <td className="px-6 py-5 text-right">
+                                        <td className="px-10 py-5 text-right">
                                             <div className="flex items-center justify-end gap-2">
                                                 {member.invoiceId && (
                                                     <button
                                                         onClick={() => fetchAndShowInvoice(member.invoiceId)}
-                                                        className="p-2 text-text-muted hover:text-primary hover:bg-primary/5 border border-transparent hover:border-primary/20 transition-all"
+                                                        className="p-2 !text-slate-700 dark:!text-slate-300 hover:!text-primary bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl hover:border-primary/50 hover:shadow-md transition-all"
                                                         title="Print Invoice / Bill"
                                                     >
                                                         <Printer size={16} />
@@ -407,12 +407,12 @@ export default function MembersListTab() {
                                                 )}
                                                 <button
                                                     onClick={() => setSelectedMember(member)}
-                                                    className="p-2 text-text-muted hover:text-primary hover:bg-primary/5 border border-transparent hover:border-primary/20 transition-all"
+                                                    className="p-2 !text-slate-700 dark:!text-slate-300 hover:!text-primary bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl hover:border-primary/50 hover:shadow-md transition-all"
                                                     title="View Details"
                                                 >
                                                     <Eye size={16} />
                                                 </button>
-                                                <button className="p-2 text-text-muted hover:text-primary hover:bg-primary/5 border border-transparent hover:border-primary/20 transition-all">
+                                                <button className="p-2 !text-slate-700 dark:!text-slate-300 hover:!text-primary bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl hover:border-primary/50 hover:shadow-md transition-all">
                                                     <Settings size={16} />
                                                 </button>
                                             </div>
@@ -1123,7 +1123,7 @@ export default function MembersListTab() {
 }
 
 function Th({ children, className }) {
-    return <th className={`px-6 py-4 text-[10px] font-black text-text-muted uppercase tracking-widest italic ${className}`}>{children}</th>;
+    return <th className={`px-10 py-4 text-[10px] font-black text-text-muted uppercase tracking-widest italic ${className}`}>{children}</th>;
 }
 
 function StatusBadge({ status }) {

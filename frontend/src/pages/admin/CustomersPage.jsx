@@ -895,7 +895,7 @@ function CustomerDirectory({ customers, onCustomerClick, onDelete, onUpdate, sea
                             <th className="px-4 py-3 text-[10px] font-extrabold text-text-muted uppercase tracking-widest">Customer</th>
                             <th className="px-4 py-3 text-[10px] font-bold text-text-muted uppercase tracking-widest">Last Visit</th>
                             <th className="px-4 py-3 text-[10px] font-bold text-text-muted uppercase tracking-widest">Total Spend</th>
-                            <th className="px-4 py-3 text-[10px] font-bold text-text-muted uppercase tracking-widest text-right">Actions</th>
+                            <th className="px-4 py-3 text-[10px] font-bold text-text-muted uppercase tracking-widest text-left">Actions</th>
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-border bg-surface text-sm">
@@ -937,32 +937,32 @@ function CustomerDirectory({ customers, onCustomerClick, onDelete, onUpdate, sea
                                     {c.lastLogin ? new Date(c.lastLogin).toLocaleDateString() : '-'}
                                 </td>
                                 <td className="px-4 py-3 text-sm font-bold text-text">₹{(c.totalSpend ?? 0).toLocaleString()}</td>
-                                <td className="px-4 py-3 text-right">
-                                    <div className="flex items-center justify-end gap-1.5" onClick={e => e.stopPropagation()}>
+                                <td className="px-4 py-3 text-left">
+                                    <div className="flex items-center justify-start gap-1.5" onClick={e => e.stopPropagation()}>
                                         <button
                                             onClick={() => onUpdate(c._id, { status: c.status === 'active' ? 'inactive' : 'active' })}
-                                            className={`w-7 h-7 flex items-center justify-center border rounded-lg transition-all duration-200 ${c.status === 'inactive' ? 'bg-rose-500 border-rose-500 text-white shadow-sm shadow-rose-500/20' : 'border-border text-text-muted hover:text-rose-500 hover:bg-rose-50/50 dark:hover:bg-rose-950/20'}`}
+                                            className={`w-7 h-7 flex items-center justify-center border rounded-lg transition-all duration-200 ${c.status === 'inactive' ? 'bg-rose-500 border-rose-500 !text-white shadow-sm shadow-rose-500/20' : 'bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-700 !text-slate-700 dark:!text-slate-300 hover:!text-rose-500 hover:border-rose-500/50 shadow-sm'}`}
                                             title={c.status === 'active' ? "Deactivate Customer" : "Activate Customer"}
                                         >
                                             <ShieldAlert className="w-3.5 h-3.5" />
                                         </button>
                                         <button
                                             onClick={() => onUpdate(c._id, { isVIP: !c.isVIP })}
-                                            className={`w-7 h-7 flex items-center justify-center border rounded-lg transition-all duration-200 ${c.isVIP ? 'bg-amber-500 border-amber-500 text-white shadow-sm shadow-amber-500/20' : 'border-border text-text-muted hover:text-amber-500 hover:bg-amber-50/50 dark:hover:bg-amber-950/20'}`}
+                                            className={`w-7 h-7 flex items-center justify-center border rounded-lg transition-all duration-200 ${c.isVIP ? 'bg-amber-500 border-amber-500 !text-white shadow-sm shadow-amber-500/20' : 'bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-700 !text-slate-700 dark:!text-slate-300 hover:!text-amber-500 hover:border-amber-500/50 shadow-sm'}`}
                                             title={c.isVIP ? "Remove VIP Status" : "Mark as VIP"}
                                         >
                                             <Star className={`w-3.5 h-3.5 ${c.isVIP ? 'fill-current' : ''}`} />
                                         </button>
                                         <button
                                             onClick={() => onCustomerClick(c)}
-                                            className="w-7 h-7 flex items-center justify-center border border-border rounded-lg text-text-muted hover:text-primary hover:bg-primary/5 transition-all duration-200"
+                                            className="w-7 h-7 flex items-center justify-center border border-slate-300 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 !text-slate-700 dark:!text-slate-300 hover:!text-primary hover:border-primary/50 shadow-sm transition-all duration-200"
                                             title="View Profile"
                                         >
                                             <Eye className="w-3.5 h-3.5" />
                                         </button>
                                         <button
                                             onClick={() => { if (confirm('Are you sure you want to delete this customer?')) onDelete(c._id); }}
-                                            className="w-7 h-7 flex items-center justify-center border border-border rounded-lg text-text-muted hover:text-rose-500 hover:bg-rose-50/50 dark:hover:bg-rose-950/20 transition-all duration-200"
+                                            className="w-7 h-7 flex items-center justify-center border border-slate-300 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 !text-slate-700 dark:!text-slate-300 hover:!text-rose-500 hover:border-rose-500/50 shadow-sm transition-all duration-200"
                                             title="Delete Customer"
                                         >
                                             <Trash2 className="w-3.5 h-3.5" />

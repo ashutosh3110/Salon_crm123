@@ -282,13 +282,13 @@ export default function AttendanceTracker() {
                         <div className="flex items-center bg-slate-50 dark:bg-slate-750 p-1 border border-slate-200 dark:border-slate-700 rounded-xl shadow-inner text-xs transition-colors">
                             <button
                                 onClick={() => setViewMode('daily')}
-                                className={`px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap ${viewMode === 'daily' ? 'bg-white dark:bg-slate-800 text-primary dark:text-slate-100 shadow-sm border border-slate-200/50 dark:border-slate-700/50' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}
+                                className={`px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap ${viewMode === 'daily' ? 'bg-white dark:bg-slate-800 !text-slate-900 dark:!text-slate-100 shadow-sm border border-slate-200/50 dark:border-slate-700/50' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}
                             >
                                 Daily
                             </button>
                             <button
                                 onClick={() => setViewMode('summary')}
-                                className={`px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap ${viewMode === 'summary' ? 'bg-white dark:bg-slate-800 text-primary dark:text-slate-100 shadow-sm border border-slate-200/50 dark:border-slate-700/50' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}
+                                className={`px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap ${viewMode === 'summary' ? 'bg-white dark:bg-slate-800 !text-slate-900 dark:!text-slate-100 shadow-sm border border-slate-200/50 dark:border-slate-700/50' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}
                             >
                                 Monthly
                             </button>

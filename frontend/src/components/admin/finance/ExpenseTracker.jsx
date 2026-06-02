@@ -160,16 +160,15 @@ function ExpenseList({ onAdd, outletId }) {
                         type="button"
                         onClick={load}
                         disabled={loading}
-                        className="flex items-center gap-2 px-4 py-2.5 bg-white border border-border rounded-2xl text-[10px] font-black uppercase tracking-wider hover:bg-surface disabled:opacity-50"
+                        className="flex items-center gap-2 px-4 py-2.5 bg-white border border-border rounded-2xl text-[10px] font-black uppercase tracking-wider hover:bg-surface disabled:opacity-50 !text-slate-700 dark:!text-slate-200"
                     >
-                        {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <RefreshCw className="w-4 h-4 text-emerald-500" />}
+                        {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <RefreshCw className="w-4 h-4 !text-emerald-500" />}
                         Refresh
                     </button>
                     <button
                         type="button"
                         onClick={exportCsv}
-                        disabled={!filtered.length}
-                        className="flex items-center gap-2 px-4 py-2.5 bg-white border border-border rounded-2xl text-[10px] font-black uppercase tracking-wider hover:bg-surface disabled:opacity-40"
+                        className="flex items-center gap-2 px-4 py-2.5 bg-white border border-border rounded-2xl text-[10px] font-black uppercase tracking-wider hover:bg-surface !text-slate-700 dark:!text-slate-200"
                     >
                         <Download className="w-3.5 h-3.5 text-blue-500" />
                         Export CSV
@@ -209,8 +208,7 @@ function ExpenseList({ onAdd, outletId }) {
                         {!loading && filtered.length === 0 && (
                             <tr>
                                 <td colSpan={5} className="px-8 py-16 text-center text-sm text-text-muted font-bold">
-                                    No expenses yet. Use &quot;Record New Expense&quot; — saved to{' '}
-                                    <span className="font-mono">POST /v1/finance/expenses</span>.
+                                    No expenses recorded yet.
                                 </td>
                             </tr>
                         )}

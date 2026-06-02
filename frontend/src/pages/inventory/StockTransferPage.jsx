@@ -201,7 +201,7 @@ export default function StockTransferPage() {
                     color: #0f172a !important; /* slate-900 */
                 }
                 html:not(.dark) .st-modal-container input::placeholder {
-                    color: #cbd5e1!important; /* slate-400 */
+                    color: #94a3b8 !important; /* slate-500 */
                 }
                 html:not(.dark) .st-modal-container select {
                     color: #0f172a !important; /* slate-900 */
@@ -214,14 +214,21 @@ export default function StockTransferPage() {
                 html:not(.dark) .st-modal-container svg.text-slate-400,
                 html:not(.dark) .st-modal-container button.text-slate-400,
                 html:not(.dark) .st-modal-container button.text-slate-400 * {
-                    color: #cbd5e1!important;
+                    color: #94a3b8 !important; /* slate-500 */
+                    stroke: #94a3b8 !important;
                 }
                 html:not(.dark) .st-modal-container [class*="text-[#B4912B]"] {
                     color: #B4912B !important;
+                    stroke: #B4912B !important;
+                }
+                html:not(.dark) .st-modal-container [class*="text-emerald-500"] {
+                    color: #10b981 !important; /* emerald-500 */
+                    stroke: #10b981 !important;
                 }
                 html:not(.dark) .st-modal-container button.hover\:text-rose-500:hover,
                 html:not(.dark) .st-modal-container button.hover\:text-rose-500:hover * {
                     color: #f43f5e !important; /* rose-500 */
+                    stroke: #f43f5e !important;
                 }
                 html:not(.dark) .st-modal-container button.st-premium-btn {
                     color: #ffffff !important;

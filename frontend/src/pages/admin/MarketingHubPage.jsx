@@ -377,7 +377,7 @@ function MarketingHubContent() {
                                 initial={{ opacity: 0, scale: 0.95, y: 20 }}
                                 animate={{ opacity: 1, scale: 1, y: 0 }}
                                 exit={{ opacity: 0, scale: 0.95, y: 20 }}
-                                className="bg-white dark:bg-slate-900 rounded-[2rem] border border-slate-200 dark:border-slate-800 w-full max-w-lg shadow-2xl relative overflow-hidden flex flex-col max-h-[90vh] md:max-h-[85vh]"
+                                className="bg-white dark:bg-slate-800 rounded-[2rem] border border-slate-200 dark:border-slate-800 w-full max-w-lg shadow-2xl relative overflow-hidden flex flex-col max-h-[90vh] md:max-h-[85vh]"
                             >
                                 {/* Form Side */}
                                 <div className="flex-1 flex flex-col min-h-0">
@@ -499,7 +499,7 @@ function MarketingHubContent() {
                                         )}
                                     </div>
 
-                                    <div className="p-5 border-t border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 shrink-0">
+                                    <div className="p-5 border-t border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800 shrink-0">
                                         <button
                                             type="button"
                                             onClick={handleSendCampaign}
