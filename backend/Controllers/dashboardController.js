@@ -43,8 +43,16 @@ exports.getSalonDashboard = async (req, res) => {
         const daysToFetch = range === 'month' ? 30 : 7;
 
         // Get revenue data for chart
-        const rangeAgo = new Date();
-        rangeAgo.setDate(rangeAgo.getDate() - daysToFetch);
+        let rangeAgo = new Date();
+        if (range === 'week') {
+            const today = new Date();
+            const day = today.getDay();
+            const diff = today.getDate() - day + (day === 0 ? -6 : 1);
+            rangeAgo = new Date(today.setDate(diff));
+            rangeAgo.setHours(0, 0, 0, 0);
+        } else {
+            rangeAgo.setDate(rangeAgo.getDate() - daysToFetch);
+        }
 
         const revenueData = await Booking.aggregate([
             { 
@@ -68,8 +76,8 @@ exports.getSalonDashboard = async (req, res) => {
         const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
         const chartData = [];
         for (let i = 0; i < daysToFetch; i++) {
-            const date = new Date();
-            date.setDate(date.getDate() - (daysToFetch - 1 - i));
+            const date = new Date(rangeAgo);
+            date.setDate(rangeAgo.getDate() + i);
             const dateString = date.toISOString().split('T')[0];
             
             let label = '';

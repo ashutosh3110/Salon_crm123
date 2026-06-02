@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { ChevronDown, Check } from 'lucide-react';
 
-export default function CustomDropdown({ options = [], value, onChange, label, className = '', placeholder = 'Select...' }) {
+export default function CustomDropdown({ options = [], value, onChange, label, className = '', placeholder = 'Select...', showFooter = false }) {
     const [isOpen, setIsOpen] = useState(false);
     const dropdownRef = useRef(null);
 
@@ -98,10 +98,12 @@ export default function CustomDropdown({ options = [], value, onChange, label, c
                     </div>
 
                     {/* Bottom label */}
-                    <div className="px-3 py-1.5 border-t border-border/40 bg-slate-50 flex items-center gap-1.5">
-                        <span className="w-1 h-1 rounded-full bg-primary animate-pulse" />
-                        <span className="text-[9px] font-bold text-text-muted uppercase tracking-wider">Select an option</span>
-                    </div>
+                    {showFooter && (
+                        <div className="px-3 py-1.5 border-t border-border/40 bg-slate-50 flex items-center gap-1.5">
+                            <span className="w-1 h-1 rounded-full bg-primary animate-pulse" />
+                            <span className="text-[9px] font-bold text-text-muted uppercase tracking-wider">Select an option</span>
+                        </div>
+                    )}
                 </div>
             )}
         </div>

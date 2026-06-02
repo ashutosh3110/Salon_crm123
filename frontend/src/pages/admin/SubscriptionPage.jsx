@@ -306,7 +306,7 @@ export default function SubscriptionPage() {
                                             <span className="bg-rose-500/10 text-rose-600 text-[8px] font-black px-2 py-0.5 rounded-xl border border-rose-500/20 uppercase tracking-widest">Inactive</span>
                                         )}
                                     </div>
-                                    <h2 className="text-2xl font-black text-text tracking-tighter uppercase italic">
+                                    <h2 className="text-2xl font-black text-text tracking-tighter uppercase italic break-words w-full" style={{ overflowWrap: 'break-word', wordBreak: 'break-word' }}>
                                         {currentPlan ? currentPlan.name : (
                                             effectiveSalon?.status === 'pending' ? 'Application Under Review' :
                                                 (effectiveSalon?.status === 'trial' ? 'Trial Period' : 'No Active Plan')
@@ -356,7 +356,7 @@ export default function SubscriptionPage() {
 
                             <div className="space-y-2">
                                 <div className="flex items-center justify-between">
-                                    <h4 className="text-lg font-black uppercase italic tracking-tighter text-text">{plan.name}</h4>
+                                    <h4 className="text-lg font-black uppercase italic tracking-tighter text-text break-words w-full" style={{ overflowWrap: 'break-word', wordBreak: 'break-word' }}>{plan.name}</h4>
                                 </div>
                                 <div className="flex flex-col">
                                     {plan.price === 0 || (plan.monthlyPrice === 0) ? (
