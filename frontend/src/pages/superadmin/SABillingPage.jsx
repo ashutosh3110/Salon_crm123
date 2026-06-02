@@ -419,7 +419,7 @@ export default function SABillingPage() {
                         exportToExcel(MOCK_PAYMENTS, 'Wapixo_Billing_Transactions', 'Payments');
                         showToast('Report exported as Excel!', 'info');
                     }}
-                        className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white border border-border text-text-secondary text-sm font-semibold hover:border-[#B4912B]/30 hover:text-primary transition-all shadow-sm">
+                        className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white dark:bg-slate-800 border border-border text-slate-900 dark:text-slate-100 text-sm !font-bold hover:border-[#B4912B]/30 hover:text-primary transition-all shadow-sm">
                         <Download className="w-4 h-4" /> Export
                     </button>
 
@@ -555,7 +555,6 @@ export default function SABillingPage() {
                                 className="px-2.5 py-1.5 rounded-lg border border-border text-xs text-text bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-[#B4912B] transition-all"
                             />
                         </div>
-                        <span className="text-xs text-text-muted font-bold">to</span>
                         <div className="flex items-center gap-2">
                             <label className="text-[10px] font-black uppercase text-text-muted tracking-wider">To</label>
                             <input
@@ -570,7 +569,7 @@ export default function SABillingPage() {
             </div>
 
             {/* ── Tabs Navigation ── */}
-            <div className="flex border-b border-border gap-2">
+            <div className="flex items-center gap-2 mb-2 p-1.5 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-slate-200 dark:border-slate-700/50 w-fit">
                 {TABS.map(t => {
                     const isActive = tab === t.id;
                     const Icon = t.icon;
@@ -578,12 +577,12 @@ export default function SABillingPage() {
                         <button
                             key={t.id}
                             onClick={() => { setTab(t.id); setSF(''); }}
-                            className={`flex items-center gap-2 px-5 py-3 border-b-2 text-sm font-bold transition-all ${isActive
-                                    ? 'border-[#B4912B] text-primary font-black animate-in fade-in duration-200'
-                                    : 'border-transparent text-text-muted hover:text-text hover:border-border'
+                            className={`flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm transition-all outline-none focus:ring-2 focus:ring-[#B4912B]/40 ${isActive
+                                    ? 'bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 !text-[#B4912B] dark:!text-[#D4AF37] shadow-sm font-bold'
+                                    : 'border border-transparent text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 font-semibold hover:bg-slate-200/50 dark:hover:bg-slate-800'
                                 }`}
                         >
-                            <Icon className="w-4 h-4" />
+                            <Icon className={`w-4 h-4 ${isActive ? '!stroke-[#B4912B] dark:!stroke-[#D4AF37]' : ''}`} />
                             {t.label}
                         </button>
                     );
@@ -818,7 +817,6 @@ export default function SABillingPage() {
                                 <h3 className="font-bold text-text">Revenue Trend</h3>
                                 <p className="text-xs text-text-muted mt-0.5">Monthly revenue over last 6 months</p>
                             </div>
-                            <span className="text-[11px] font-bold text-emerald-600 bg-emerald-50 px-2 py-1 rounded-xl">↑ 11.9% MoM</span>
                         </div>
                         <ResponsiveContainer width="100%" height={220}>
                             <AreaChart data={monthlyRevenue} margin={{ top: 5, right: 5, left: 0, bottom: 0 }}>

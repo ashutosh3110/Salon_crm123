@@ -419,7 +419,7 @@ export default function SettingsPage({ section: propSection }) {
                                                 type="text"
                                                 value={profileForm.name}
                                                 onChange={(e) => setProfileForm({ ...profileForm, name: e.target.value })}
-                                                className="w-full pl-12 pr-4 py-2.5 rounded-xl border border-gray-200 text-sm font-medium text-gray-900 focus:border-primary outline-none transition-all bg-white shadow-sm"
+                                                className="w-full pl-12 pr-4 py-2.5 rounded-xl allow-curve border border-gray-200 text-sm font-medium text-gray-900 focus:border-primary outline-none transition-all bg-white shadow-sm"
                                             />
                                         </div>
                                     </div>
@@ -440,7 +440,7 @@ export default function SettingsPage({ section: propSection }) {
                                                 type="email"
                                                 value={profileForm.email}
                                                 onChange={(e) => setProfileForm({ ...profileForm, email: e.target.value })}
-                                                className="w-full pl-12 pr-4 py-2.5 rounded-xl border border-gray-200 text-sm font-medium text-gray-900 focus:border-primary outline-none transition-all bg-white shadow-sm"
+                                                className="w-full pl-12 pr-4 py-2.5 rounded-xl allow-curve border border-gray-200 text-sm font-medium text-gray-900 focus:border-primary outline-none transition-all bg-white shadow-sm"
                                             />
                                         </div>
                                     </div>
@@ -462,7 +462,7 @@ export default function SettingsPage({ section: propSection }) {
                                             type="tel"
                                             value={profileForm.phone}
                                             onChange={(e) => setProfileForm({ ...profileForm, phone: e.target.value })}
-                                            className="w-full pl-12 pr-4 py-2.5 rounded-xl border border-gray-200 text-sm font-medium text-gray-900 focus:border-primary outline-none transition-all bg-white shadow-sm"
+                                            className="w-full pl-12 pr-4 py-2.5 rounded-xl allow-curve border border-gray-200 text-sm font-medium text-gray-900 focus:border-primary outline-none transition-all bg-white shadow-sm"
                                             placeholder="+91..."
                                         />
                                     </div>
@@ -615,7 +615,7 @@ export default function SettingsPage({ section: propSection }) {
                                                 onChange={(e) => setPasswordForm({ ...passwordForm, currentPassword: e.target.value })}
                                                 placeholder="••••••••"
                                                 required
-                                                inputClassName="w-full px-4 py-3 rounded-full border border-gray-200 text-sm font-medium text-gray-900 focus:border-primary outline-none transition-all bg-white shadow-sm"
+                                                inputClassName="w-full px-4 py-3 rounded-xl allow-curve border border-gray-200 text-sm font-medium text-gray-900 focus:border-primary outline-none transition-all bg-white shadow-sm"
                                                 buttonClassName="text-gray-400 hover:text-gray-600 pr-3"
                                             />
                                             <p className="text-[11px] text-gray-500 font-medium pt-1">Enter your current password</p>
@@ -632,7 +632,7 @@ export default function SettingsPage({ section: propSection }) {
                                                 placeholder="••••••••"
                                                 required
                                                 minLength={8}
-                                                inputClassName="w-full px-4 py-3 rounded-full border border-gray-200 text-sm font-medium text-gray-900 focus:border-primary outline-none transition-all bg-white shadow-sm"
+                                                inputClassName="w-full px-4 py-3 rounded-xl allow-curve border border-gray-200 text-sm font-medium text-gray-900 focus:border-primary outline-none transition-all bg-white shadow-sm"
                                                 buttonClassName="text-gray-400 hover:text-gray-600 pr-3"
                                             />
                                             <p className="text-[11px] text-gray-500 font-medium pt-1">Enter your new password</p>
@@ -648,7 +648,7 @@ export default function SettingsPage({ section: propSection }) {
                                                 onChange={(e) => setPasswordForm({ ...passwordForm, confirmPassword: e.target.value })}
                                                 placeholder="••••••••"
                                                 required
-                                                inputClassName="w-full px-4 py-3 rounded-full border border-gray-200 text-sm font-medium text-gray-900 focus:border-primary outline-none transition-all bg-white shadow-sm"
+                                                inputClassName="w-full px-4 py-3 rounded-xl allow-curve border border-gray-200 text-sm font-medium text-gray-900 focus:border-primary outline-none transition-all bg-white shadow-sm"
                                                 buttonClassName="text-gray-400 hover:text-gray-600 pr-3"
                                             />
                                             <p className="text-[11px] text-gray-500 font-medium pt-1">Re-enter your new password</p>
@@ -715,7 +715,7 @@ export default function SettingsPage({ section: propSection }) {
                                                     value={fiscal.businessName}
                                                     onChange={(e) => setFiscal({ ...fiscal, businessName: e.target.value })}
                                                     placeholder="WAPIXO"
-                                                    className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm font-medium text-gray-900 focus:border-primary outline-none transition-all bg-white shadow-sm uppercase"
+                                                    className="w-full px-4 py-2.5 rounded-xl allow-curve border border-gray-200 text-sm font-medium text-gray-900 focus:border-primary outline-none transition-all bg-white shadow-sm uppercase"
                                                 />
                                             </div>
                                             <div className="space-y-2">
@@ -731,7 +731,7 @@ export default function SettingsPage({ section: propSection }) {
                                                     value={fiscal.gstin}
                                                     onChange={(e) => setFiscal({ ...fiscal, gstin: e.target.value.toUpperCase() })}
                                                     placeholder="8979"
-                                                    className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm font-medium text-gray-900 focus:border-primary outline-none transition-all bg-white shadow-sm"
+                                                    className="w-full px-4 py-2.5 rounded-xl allow-curve border border-gray-200 text-sm font-medium text-gray-900 focus:border-primary outline-none transition-all bg-white shadow-sm"
                                                 />
                                             </div>
                                         </div>
@@ -755,7 +755,7 @@ export default function SettingsPage({ section: propSection }) {
                                                         min="0"
                                                         value={fiscal.birthdayPoints}
                                                         onChange={(e) => setFiscal({ ...fiscal, birthdayPoints: e.target.value })}
-                                                        className="w-full pl-12 pr-4 py-2.5 rounded-xl border border-gray-200 text-sm font-bold text-gray-900 focus:border-primary outline-none transition-all bg-white shadow-sm"
+                                                        className="w-full pl-12 pr-4 py-2.5 rounded-xl allow-curve border border-gray-200 text-sm font-bold text-gray-900 focus:border-primary outline-none transition-all bg-white shadow-sm"
                                                     />
                                                 </div>
                                                 <p className="text-[11px] text-gray-500 font-medium pt-1">Points sent to customer on birthday</p>
@@ -778,7 +778,7 @@ export default function SettingsPage({ section: propSection }) {
                                                         min="0"
                                                         value={fiscal.anniversaryPoints}
                                                         onChange={(e) => setFiscal({ ...fiscal, anniversaryPoints: e.target.value })}
-                                                        className="w-full pl-12 pr-4 py-2.5 rounded-xl border border-gray-200 text-sm font-bold text-gray-900 focus:border-primary outline-none transition-all bg-white shadow-sm"
+                                                        className="w-full pl-12 pr-4 py-2.5 rounded-xl allow-curve border border-gray-200 text-sm font-bold text-gray-900 focus:border-primary outline-none transition-all bg-white shadow-sm"
                                                     />
                                                 </div>
                                                 <p className="text-[11px] text-gray-500 font-medium pt-1">Points sent to customer on anniversary</p>
@@ -905,7 +905,7 @@ export default function SettingsPage({ section: propSection }) {
                                             onChange={(e) => setNewTerm(e.target.value)}
                                             onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleAddTerm(); } }}
                                             placeholder="e.g. No refund after 24 hours of service."
-                                            className="flex-1 px-4 py-3 border border-gray-200 rounded-xl text-[13px] font-medium text-gray-800 bg-white outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
+                                            className="flex-1 px-4 py-3 border border-gray-200 rounded-xl allow-curve text-[13px] font-medium text-gray-800 bg-white outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
                                         />
                                         <button
                                             type="button"
@@ -1072,7 +1072,7 @@ export default function SettingsPage({ section: propSection }) {
                                         type="text"
                                         readOnly
                                         value={`${window.location.origin}/app/booking?tenantId=${salon?._id || ''}`}
-                                        className="flex-1 px-4 py-2.5 text-[13px] font-medium text-text bg-surface border border-border rounded-xl outline-none focus:border-primary focus:ring-1 focus:ring-primary/20 transition-all select-all"
+                                        className="flex-1 px-4 py-2.5 text-[13px] font-medium text-text bg-surface border border-border rounded-xl allow-curve outline-none focus:border-primary focus:ring-1 focus:ring-primary/20 transition-all select-all"
                                     />
                                     <button
                                         type="button"

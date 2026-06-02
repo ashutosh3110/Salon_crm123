@@ -230,7 +230,7 @@ function MembershipCard({ plan, onEdit, onDelete, onToggle }) {
                     </div>
                 </div>
                 
-                <button onClick={onToggle} className={`w-full py-2 rounded-full font-bold text-[9px] uppercase tracking-widest transition-all ${plan.isActive ? 'bg-emerald-50 text-emerald-600 hover:bg-emerald-100' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'}`}>
+                <button onClick={onToggle} className={`w-full py-2 rounded-xl font-bold text-[9px] uppercase tracking-widest transition-all ${plan.isActive ? 'bg-emerald-50 text-emerald-600 hover:bg-emerald-100' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'}`}>
                     {plan.isActive ? 'STATUS: ACTIVE' : 'STATUS: PAUSED'}
                 </button>
             </div>

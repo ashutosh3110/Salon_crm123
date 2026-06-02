@@ -479,7 +479,6 @@ export default function DashboardPage() {
                                                 <Cell key={index} fill={entry.color} />
                                             ))}
                                         </Pie>
-                                        <Tooltip />
                                     </PieChart>
                                 </ResponsiveContainer>
                                 {/* Center Labels inside Donut */}

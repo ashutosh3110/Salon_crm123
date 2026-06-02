@@ -185,9 +185,14 @@ export default function SABlogPage() {
                     </div>
                 </div>
                 <div className="flex items-center gap-3">
-                    <div className="px-6 py-3 border border-border bg-surface regular-radius flex flex-col items-center">
-                        <span className="text-[8px] font-black text-text-muted uppercase tracking-widest leading-none mb-1">Total Articles</span>
-                        <span className="text-lg font-black leading-none">{posts.length}</span>
+                    <div className="px-6 py-3 bg-white border border-[#B4912B]/20 shadow-lg shadow-[#B4912B]/5 rounded-2xl flex items-center gap-4">
+                        <div className="w-10 h-10 rounded-xl bg-[#B4912B]/10 flex items-center justify-center">
+                            <FileText className="w-5 h-5 text-[#B4912B]" />
+                        </div>
+                        <div className="flex flex-col">
+                            <span className="text-[8px] font-black text-[#B4912B]/70 uppercase tracking-widest leading-none mb-1.5">Total Articles</span>
+                            <span className="text-2xl font-black text-[#B4912B] leading-none">{posts.length}</span>
+                        </div>
                     </div>
                     <button
                         onClick={() => openEditor(null)}
@@ -208,7 +213,7 @@ export default function SABlogPage() {
                         type="text"
                         placeholder="Search article titles or categories..."
                         value={search}
-                        onChange={(e) => setSearch(e.target.value)}
+                        onChange={(e) => setSearch(e.target.value.trimStart())}
                         className="flex-1 bg-white border border-border px-6 py-4.5 text-xs font-bold uppercase tracking-widest outline-none regular-radius focus:ring-1 ring-primary/20 transition-all shadow-sm"
                     />
                 </div>
@@ -266,13 +271,13 @@ export default function SABlogPage() {
                                 <div className="flex gap-3">
                                     <button
                                         onClick={() => openEditor(post)}
-                                        className="flex-1 bg-white text-black py-3 text-[10px] font-black uppercase tracking-[0.2em] hover:!bg-primary hover:!text-white transition-all flex items-center justify-center gap-2 regular-radius shadow-xl"
+                                        className="group flex-1 bg-white text-black py-3 text-[10px] font-black uppercase tracking-[0.2em] hover:!bg-primary hover:!text-white transition-all flex items-center justify-center gap-2 regular-radius shadow-xl"
                                     >
-                                        <Edit2 size={12} /> Edit
+                                        <Edit2 size={16} strokeWidth={2.5} className="!stroke-black group-hover:!stroke-white" /> Edit
                                     </button>
                                     <button
                                         onClick={() => handleDelete(post._id)}
-                                        className="w-12 h-12 bg-red-600/90 text-white flex items-center justify-center hover:bg-black transition-all shadow-xl"
+                                        className="w-12 h-12 bg-red-600/90 text-white flex items-center justify-center hover:bg-red-800 transition-all shadow-xl"
                                     >
                                         <Trash2 size={16} />
                                     </button>
@@ -322,7 +327,7 @@ export default function SABlogPage() {
                             animate={{ opacity: 1, scale: 1, y: 0 }} 
                             exit={{ opacity: 0, scale: 0.96, y: 30 }} 
                             transition={{ type: "spring", duration: 0.5 }}
-                            className="relative bg-surface w-full max-w-3xl h-[92vh] overflow-hidden flex flex-col shadow-2xl rounded-2xl border border-border"
+                            className="relative bg-surface w-full max-w-xl h-[85vh] overflow-hidden flex flex-col shadow-2xl rounded-2xl border border-border"
                         >
 
                             {/* Modal Header */}
@@ -359,8 +364,11 @@ export default function SABlogPage() {
                                     
                                     {/* Headline Card */}
                                     <div className="bg-white border border-border p-6 rounded-2xl shadow-sm space-y-3">
-                                        <label className="text-[10px] font-black text-text-muted uppercase tracking-widest flex items-center gap-1.5">
-                                            <Megaphone className="w-3.5 h-3.5 text-blue-500" /> Article Headline
+                                        <label className="text-[10px] font-black text-text-muted uppercase tracking-widest block mb-2">
+                                            <div className="flex items-center gap-2">
+                                                <Megaphone className="w-3.5 h-3.5 text-blue-500 shrink-0" /> 
+                                                <span>Article Headline</span>
+                                            </div>
                                         </label>
                                         <input
                                             required 
@@ -373,8 +381,11 @@ export default function SABlogPage() {
 
                                     {/* Cover Media Card */}
                                     <div className="bg-white border border-border p-6 rounded-2xl shadow-sm space-y-3">
-                                        <label className="text-[10px] font-black text-text-muted uppercase tracking-widest flex items-center gap-1.5">
-                                            <ImageIcon className="w-3.5 h-3.5 text-emerald-500" /> Cover Media Asset
+                                        <label className="text-[10px] font-black text-text-muted uppercase tracking-widest block mb-2">
+                                            <div className="flex items-center gap-2">
+                                                <ImageIcon className="w-3.5 h-3.5 text-emerald-500 shrink-0" /> 
+                                                <span>Cover Media Asset</span>
+                                            </div>
                                         </label>
                                         <div 
                                             onClick={() => fileInputRef.current?.click()}
@@ -417,8 +428,11 @@ export default function SABlogPage() {
                                     {/* Intel Slate (Content Editor) */}
                                     <div className="bg-white border border-border p-6 rounded-2xl shadow-sm space-y-3">
                                         <div className="flex justify-between items-center">
-                                            <label className="text-[10px] font-black text-text-muted uppercase tracking-widest flex items-center gap-1.5">
-                                                <FileText className="w-3.5 h-3.5 text-indigo-500" /> Story Intel
+                                            <label className="text-[10px] font-black text-text-muted uppercase tracking-widest block mb-2">
+                                                <div className="flex items-center gap-2">
+                                                    <FileText className="w-3.5 h-3.5 text-indigo-500 shrink-0" /> 
+                                                    <span>Story Intel</span>
+                                                </div>
                                             </label>
                                             <div className="flex items-center gap-2 text-[9px] text-text-muted font-bold uppercase tracking-wider">
                                                 <span>Words: <strong className="text-text">{wordCount}</strong></span>

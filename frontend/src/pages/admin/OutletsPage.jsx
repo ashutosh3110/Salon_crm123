@@ -134,7 +134,7 @@ export default function OutletsPage() {
                 ))}
 
                 {/* Regional Distribution Chart */}
-                <div className="!bg-white dark:!bg-slate-900 p-4 !border-[1.5px] !border-[#e2e8f0] dark:!border-slate-800 flex items-center gap-4 group hover:!border-black dark:hover:!border-white transition-all min-h-[100px] relative !overflow-hidden !rounded-[16px]">
+                <div className="!bg-white dark:!bg-slate-900 p-4 !border-[1.5px] !border-[#e2e8f0] dark:!border-slate-800 flex items-center gap-4 group hover:!border-black dark:hover:!border-white transition-all min-h-[100px] relative !rounded-[16px]">
                     <div className="w-12 h-12 relative shrink-0">
                         <ResponsiveContainer width="100%" height="100%">
                             <PieChart>
@@ -143,7 +143,7 @@ export default function OutletsPage() {
                                         <Cell key={`cell-${index}`} fill="#B4912B" opacity={1 - (index * 0.2)} />
                                     ))}
                                 </Pie>
-                                <Tooltip content={<CustomTooltip />} cursor={{ fill: 'transparent' }} />
+                                <Tooltip content={<CustomTooltip />} cursor={{ fill: 'transparent' }} position={{ y: -65 }} />
                             </PieChart>
                         </ResponsiveContainer>
                     </div>

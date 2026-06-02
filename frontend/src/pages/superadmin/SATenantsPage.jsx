@@ -753,7 +753,6 @@ export default function SATenantsPage() {
                         onChange={e => setCustomFrom(e.target.value)}
                         className="px-2.5 py-1.5 rounded-lg border border-border text-xs text-text bg-surface focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-[#B4912B] transition-all"
                     />
-                    <span className="text-xs text-text-muted font-semibold">to</span>
                     <input
                         type="date"
                         value={customTo}

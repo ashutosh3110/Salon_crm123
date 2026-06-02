@@ -248,8 +248,8 @@ export default function SASupportPage() {
                 <div className="space-y-6 pt-2">
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-4">
-                            <div className="w-10 h-10 bg-amber-50 flex items-center justify-center text-primary">
-                                <MessageSquare size={18} />
+                            <div className="w-10 h-10 rounded-xl bg-amber-100 dark:bg-amber-500/20 flex items-center justify-center !text-amber-600 dark:!text-amber-400">
+                                <MessageSquare size={18} className="!stroke-amber-600 dark:!stroke-amber-400" />
                             </div>
                             <div>
                                 <h2 className="text-lg font-bold tracking-tight leading-none">Salon Support Tickets</h2>
@@ -360,8 +360,8 @@ export default function SASupportPage() {
                 <div className="space-y-6 pt-2">
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-4">
-                            <div className="w-10 h-10 bg-violet-50 flex items-center justify-center text-primary">
-                                <HelpCircle size={18} />
+                            <div className="w-10 h-10 rounded-xl bg-violet-100 dark:bg-violet-500/20 flex items-center justify-center !text-violet-600 dark:!text-violet-400">
+                                <HelpCircle size={18} className="!stroke-violet-600 dark:!stroke-violet-400" />
                             </div>
                             <div>
                                 <h2 className="text-lg font-bold tracking-tight leading-none">Platform FAQs</h2>
@@ -430,13 +430,13 @@ export default function SASupportPage() {
                                                 <button 
                                                     onClick={() => handleSaveFaq(faq)}
                                                     disabled={savingFaqs}
-                                                    className="flex items-center gap-2 px-4 py-2 bg-emerald-500 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-emerald-600 transition-all disabled:opacity-50"
+                                                    className="flex items-center gap-2 px-4 py-2 !bg-emerald-500 dark:!bg-emerald-600 !text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:!bg-emerald-600 dark:hover:!bg-emerald-500 transition-all disabled:opacity-50"
                                                 >
                                                     <Save className="w-3 h-3" /> {faq._id ? 'Update' : 'Save New'}
                                                 </button>
                                                 <button 
                                                     onClick={() => removeFaq(faq, i)}
-                                                    className="flex items-center gap-2 px-4 py-2 bg-rose-50 text-rose-500 border border-rose-100 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-rose-100 transition-all"
+                                                    className="flex items-center gap-2 px-4 py-2 !bg-rose-50 dark:!bg-rose-500/10 !text-rose-600 dark:!text-rose-400 border !border-rose-200 dark:!border-rose-500/20 rounded-xl text-[10px] font-black uppercase tracking-widest hover:!bg-rose-100 dark:hover:!bg-rose-500/20 transition-all"
                                                 >
                                                     <Trash2 className="w-3 h-3" /> Delete
                                                 </button>
