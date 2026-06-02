@@ -216,10 +216,10 @@ export default function ProductCategoryManager() {
                                             <div className="flex items-center justify-start gap-2">
                                                 <button
                                                     onClick={() => handleEdit(cat)}
-                                                    className="p-2.5 allow-curve rounded-xl border border-border bg-surface text-text-muted hover:bg-text hover:text-background hover:border-text transition-all active:scale-95 shadow-sm shrink-0"
+                                                    className="group/btn p-2.5 allow-curve rounded-xl border border-border bg-surface !text-slate-500 hover:!bg-slate-800 hover:!text-white hover:!border-slate-800 transition-all active:scale-95 shadow-sm shrink-0"
                                                     title="Edit Metadata"
                                                 >
-                                                    <Edit2 className="w-4 h-4" />
+                                                    <Edit2 className="w-4 h-4 !stroke-slate-500 group-hover/btn:!stroke-white" />
                                                 </button>
                                                 <button
                                                     onClick={() => {
@@ -227,10 +227,10 @@ export default function ProductCategoryManager() {
                                                             deleteProductCategory(cat._id);
                                                         }
                                                     }}
-                                                    className="p-2.5 allow-curve rounded-xl border border-border bg-surface text-text-muted hover:bg-rose-500 hover:text-white hover:border-rose-500 transition-all active:scale-95 shadow-sm shrink-0"
+                                                    className="group/btn p-2.5 allow-curve rounded-xl border border-border bg-surface !text-slate-500 hover:!bg-rose-500 hover:!text-white hover:!border-rose-500 transition-all active:scale-95 shadow-sm shrink-0"
                                                     title="Purge Entry"
                                                 >
-                                                    <Trash2 className="w-4 h-4" />
+                                                    <Trash2 className="w-4 h-4 !stroke-slate-500 group-hover/btn:!stroke-white" />
                                                 </button>
                                             </div>
                                         </td>

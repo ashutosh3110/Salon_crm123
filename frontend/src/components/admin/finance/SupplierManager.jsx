@@ -109,17 +109,17 @@ function SupplierTable({ suppliers, onEdit, onDelete }) {
             <table className="w-full text-left border-collapse min-w-[1000px]">
                 <thead>
                     <tr className="bg-surface/50 border-b border-border">
-                        <th className="px-8 py-4 text-[10px] font-bold text-text-secondary uppercase tracking-widest">Supplier Name</th>
-                        <th className="px-8 py-4 text-[10px] font-bold text-text-secondary uppercase tracking-widest">Contact Info</th>
-                        <th className="px-8 py-4 text-[10px] font-bold text-text-secondary uppercase tracking-widest">GSTIN</th>
-                        <th className="px-8 py-4 text-[10px] font-bold text-text-secondary uppercase tracking-widest">Status</th>
-                        <th className="px-8 py-4 text-[10px] font-bold text-text-secondary uppercase tracking-widest text-right">Actions</th>
+                        <th className="px-6 py-4 text-[10px] font-bold text-text-secondary uppercase tracking-widest">Supplier Name</th>
+                        <th className="px-6 py-4 text-[10px] font-bold text-text-secondary uppercase tracking-widest">Contact Info</th>
+                        <th className="px-6 py-4 text-[10px] font-bold text-text-secondary uppercase tracking-widest">GSTIN</th>
+                        <th className="px-6 py-4 text-[10px] font-bold text-text-secondary uppercase tracking-widest">Status</th>
+                        <th className="px-6 py-4 text-[10px] font-bold text-text-secondary uppercase tracking-widest text-left">Actions</th>
                     </tr>
                 </thead>
                 <tbody className="divide-y divide-border">
                     {suppliers.length === 0 && (
                         <tr>
-                            <td colSpan={5} className="px-8 py-16 text-center text-sm font-medium text-text-muted">
+                            <td colSpan={5} className="px-6 py-16 text-center text-sm font-medium text-text-muted">
                                 No suppliers yet. Click &quot;Add New Supplier&quot; to create one.
                             </td>
                         </tr>
@@ -128,13 +128,13 @@ function SupplierTable({ suppliers, onEdit, onDelete }) {
                         const rowId = supplier.id || supplier._id;
                         return (
                         <tr key={rowId} className="hover:bg-surface/30 transition-colors group cursor-default">
-                            <td className="px-8 py-5">
+                            <td className="px-6 py-5">
                                 <div className="flex flex-col">
                                     <span className="font-bold text-text text-sm group-hover:text-primary transition-colors">{supplier.name}</span>
                                     <span className="text-[10px] text-text-muted font-bold uppercase tracking-wider mt-0.5">Contact: {supplier.contact}</span>
                                 </div>
                             </td>
-                            <td className="px-8 py-5">
+                            <td className="px-6 py-5">
                                 <div className="flex flex-col gap-1">
                                     <div className="flex items-center gap-1.5 text-xs font-semibold text-text-secondary">
                                         <Phone className="w-3 h-3 opacity-50" />
@@ -146,18 +146,18 @@ function SupplierTable({ suppliers, onEdit, onDelete }) {
                                     </div>
                                 </div>
                             </td>
-                            <td className="px-8 py-5">
+                            <td className="px-6 py-5">
                                 <span className="text-[10px] font-bold text-text-secondary bg-surface px-2 py-1 allow-curve rounded-lg border border-border">{supplier.gstin}</span>
                             </td>
 
-                            <td className="px-8 py-5">
+                            <td className="px-6 py-5">
                                 <span className={`px-2.5 py-1 allow-curve rounded-xl text-[9px] font-bold uppercase tracking-widest border ${supplier.status === 'Overdue' ? 'bg-rose-50 text-rose-600 border-rose-100' : 'bg-emerald-50 text-emerald-600 border-emerald-100'
                                     }`}>
                                     {supplier.status}
                                 </span>
                             </td>
-                            <td className="px-8 py-5 text-right">
-                                <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <td className="px-6 py-5 text-left">
+                                <div className="flex items-center justify-start gap-2 transition-opacity">
                                     <button
                                         onClick={() => onEdit(supplier)}
                                         className="p-2 allow-curve rounded-xl border border-border bg-white text-text-secondary hover:bg-primary/10 hover:text-primary transition-all"

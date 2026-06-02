@@ -216,7 +216,7 @@ export default function AddProductForm({ onSave, initialData, onCancel }) {
             {/* Header */}
             <div className="bg-surface p-6 rounded-2xl border border-border shadow-sm mb-6 flex items-center justify-between gap-4 flex-wrap">
                 <div className="flex items-center gap-4 min-w-0">
-                    <div className="p-3 rounded-2xl bg-primary/10 text-primary border border-primary/20 shrink-0">
+                    <div className="p-3 rounded-2xl bg-[#B4912B]/10 text-primary border border-[#B4912B]/20 shrink-0">
                         <FileText className="w-6 h-6" />
                     </div>
                     <div className="min-w-0">
@@ -251,7 +251,7 @@ export default function AddProductForm({ onSave, initialData, onCancel }) {
                 {/* 1. Core Identity & Pricing */}
                 <div className="bg-surface p-8 border border-border shadow-sm space-y-8 h-full rounded-2xl">
                     <div className="flex items-center gap-3 border-b border-border pb-4">
-                        <div className="w-10 h-10 bg-primary/10 flex items-center justify-center text-primary rounded-xl">
+                        <div className="w-10 h-10 bg-[#B4912B]/10 flex items-center justify-center text-primary rounded-xl">
                             <FileText className="w-5 h-5" />
                         </div>
                         <div>
@@ -298,9 +298,9 @@ export default function AddProductForm({ onSave, initialData, onCancel }) {
                         </div>
 
                         {/* Shop Visibility Toggle */}
-                        <div className="p-4 bg-primary/5 border border-primary/20 rounded-2xl flex items-center justify-between group hover:bg-primary/10 transition-all">
+                        <div className="p-4 bg-[#B4912B]/5 border border-[#B4912B]/20 rounded-2xl flex items-center justify-between group hover:bg-[#B4912B]/10 transition-all">
                             <div className="flex items-center gap-3">
-                                <div className="w-8 h-8 bg-primary/20 rounded-lg flex items-center justify-center text-primary">
+                                <div className="w-8 h-8 bg-[#B4912B]/20 rounded-lg flex items-center justify-center text-primary">
                                     <ShoppingBag className="w-4 h-4" />
                                 </div>
                                 <div>
@@ -311,9 +311,9 @@ export default function AddProductForm({ onSave, initialData, onCancel }) {
                             <button
                                 type="button"
                                 onClick={() => setFormData(prev => ({ ...prev, isShopProduct: !prev.isShopProduct }))}
-                                className={`w-12 h-6 rounded-full p-1 transition-all duration-300 ${formData.isShopProduct ? 'bg-primary' : 'bg-border'}`}
+                                className={`w-12 h-6 rounded-full p-1 transition-all duration-300 ${formData.isShopProduct ? 'bg-primary' : 'bg-slate-300 dark:bg-slate-700'}`}
                             >
-                                <div className={`w-4 h-4 rounded-full bg-white transition-all duration-300 transform ${formData.isShopProduct ? 'translate-x-6' : 'translate-x-0'}`} />
+                                <div className={`w-4 h-4 rounded-full bg-white transition-all duration-300 transform shadow-sm ${formData.isShopProduct ? 'translate-x-6' : 'translate-x-0'}`} />
                             </button>
                         </div>
 
@@ -334,15 +334,15 @@ export default function AddProductForm({ onSave, initialData, onCancel }) {
                             </div>
                             <div className="space-y-1.5">
                                 <label className="text-[9px] font-black text-text-muted uppercase tracking-[0.2em]">Tax Config</label>
-                                <div 
+                                <div
                                     onClick={() => setFormData(prev => ({ ...prev, isInclusiveTax: !prev.isInclusiveTax }))}
-                                    className={`flex items-center justify-between px-4 py-3 border cursor-pointer transition-all ${formData.isInclusiveTax ? 'bg-primary/5 border-primary' : 'bg-background border-border'}`}
+                                    className={`flex items-center justify-between px-4 py-3 border cursor-pointer transition-all ${formData.isInclusiveTax ? 'bg-[#B4912B]/5 border-[#B4912B]' : 'bg-background border-border'}`}
                                 >
                                     <div className="flex flex-col">
-                                        <span className={`text-[10px] font-black uppercase tracking-tight ${formData.isInclusiveTax ? 'text-primary' : 'text-text'}`}>Incl. GST</span>
+                                        <span className={`text-[10px] font-black uppercase tracking-tight ${formData.isInclusiveTax ? 'text-[#B4912B]' : 'text-text'}`}>Incl. GST</span>
                                         <span className="text-[8px] font-bold text-text-muted uppercase tracking-tighter">Tax included in MRP</span>
                                     </div>
-                                    <div className={`w-10 h-5 rounded-full p-1 transition-all duration-300 ${formData.isInclusiveTax ? 'bg-primary' : 'bg-slate-300'}`}>
+                                    <div className={`w-10 h-5 rounded-full p-1 transition-all duration-300 ${formData.isInclusiveTax ? 'bg-[#B4912B]' : 'bg-slate-300'}`}>
                                         <div className={`w-3 h-3 rounded-full bg-white transition-all duration-300 transform ${formData.isInclusiveTax ? 'translate-x-5' : 'translate-x-0'}`} />
                                     </div>
                                 </div>
@@ -353,7 +353,7 @@ export default function AddProductForm({ onSave, initialData, onCancel }) {
                             <label className="text-[9px] font-black text-text-muted uppercase tracking-[0.2em] text-emerald-600">Loyalty Points Earned</label>
                             <input
                                 type="number"
-                                className="w-full px-4 py-3 bg-background border border-border rounded-lg text-sm font-black focus:border-primary outline-none transition-all text-emerald-600"
+                                className="w-full px-4 py-3 bg-background border border-border rounded-lg text-sm font-black focus:border-[#B4912B] outline-none transition-all text-emerald-600"
                                 placeholder="0"
                                 value={formData.loyaltyPoints || ''}
                                 onFocus={(e) => { if (e.target.value === '0') setFormData(prev => ({ ...prev, loyaltyPoints: '' })); }}
@@ -381,7 +381,7 @@ export default function AddProductForm({ onSave, initialData, onCancel }) {
                                 <label className="text-[9px] font-black text-text-muted uppercase tracking-[0.2em]">SKU (Internal Code) *</label>
                                 <input
                                     type="text"
-                                    className="w-full px-4 py-3 bg-background border border-border rounded-lg text-sm font-black focus:border-primary outline-none transition-all uppercase"
+                                    className="w-full px-4 py-3 bg-background border border-border rounded-lg text-sm font-black focus:border-[#B4912B] outline-none transition-all uppercase"
                                     placeholder="e.g. SKU_001"
                                     value={formData.sku}
                                     onChange={(e) => setFormData({ ...formData, sku: e.target.value })}
@@ -403,7 +403,7 @@ export default function AddProductForm({ onSave, initialData, onCancel }) {
                                 <label className="text-[9px] font-black text-text-muted uppercase tracking-[0.2em]">Initial Qty</label>
                                 <input
                                     type="number"
-                                    className="w-full px-4 py-3 bg-background border border-border rounded-lg text-sm font-black focus:border-primary outline-none transition-all"
+                                    className="w-full px-4 py-3 bg-background border border-border rounded-lg text-sm font-black focus:border-[#B4912B] outline-none transition-all"
                                     placeholder="0"
                                     value={formData.stock}
                                     onFocus={(e) => { if (e.target.value === '0') setFormData(prev => ({ ...prev, stock: '' })); }}
@@ -417,7 +417,7 @@ export default function AddProductForm({ onSave, initialData, onCancel }) {
                                 <label className="text-[9px] font-black text-text-muted uppercase tracking-[0.2em]">Low Stock Alert (Units)</label>
                                 <input
                                     type="number"
-                                    className="w-full px-4 py-3 bg-background border border-border rounded-lg text-sm font-black focus:border-primary outline-none transition-all text-rose-600"
+                                    className="w-full px-4 py-3 bg-background border border-border rounded-lg text-sm font-black focus:border-[#B4912B] outline-none transition-all text-rose-600"
                                     placeholder="5"
                                     value={formData.threshold}
                                     onFocus={(e) => { if (e.target.value === '0') setFormData(prev => ({ ...prev, threshold: '' })); }}
@@ -428,7 +428,7 @@ export default function AddProductForm({ onSave, initialData, onCancel }) {
                                 <label className="text-[9px] font-black text-text-muted uppercase tracking-[0.2em]">HSN Code</label>
                                 <input
                                     type="text"
-                                    className="w-full px-4 py-3 bg-background border border-border rounded-lg text-sm font-black focus:border-primary outline-none transition-all uppercase"
+                                    className="w-full px-4 py-3 bg-background border border-border rounded-lg text-sm font-black focus:border-[#B4912B] outline-none transition-all uppercase"
                                     placeholder="e.g. 3305"
                                     value={formData.hsnCode}
                                     onChange={(e) => setFormData({ ...formData, hsnCode: e.target.value })}
@@ -458,7 +458,7 @@ export default function AddProductForm({ onSave, initialData, onCancel }) {
                                     <div className="relative">
                                         <input
                                             type="date"
-                                            className="w-full px-4 py-3 bg-background border border-border rounded-lg text-sm font-bold focus:border-primary outline-none transition-all"
+                                            className="w-full px-4 py-3 bg-background border border-border rounded-lg text-sm font-bold focus:border-[#B4912B] outline-none transition-all"
                                             value={formData.mfgDate ? (typeof formData.mfgDate === 'string' && formData.mfgDate.includes('T') ? formData.mfgDate.split('T')[0] : formData.mfgDate) : ''}
                                             onChange={(e) => setFormData({ ...formData, mfgDate: e.target.value })}
                                         />
@@ -469,13 +469,12 @@ export default function AddProductForm({ onSave, initialData, onCancel }) {
                                     <div className="relative">
                                         <input
                                             type="date"
-                                            className={`w-full px-4 py-3 bg-background border rounded-lg text-sm font-bold focus:border-primary outline-none transition-all ${
-                                                formData.expiryDate && new Date(formData.expiryDate) < new Date()
+                                            className={`w-full px-4 py-3 bg-background border rounded-lg text-sm font-bold focus:border-[#B4912B] outline-none transition-all ${formData.expiryDate && new Date(formData.expiryDate) < new Date()
                                                     ? 'border-rose-400 text-rose-600 bg-rose-50/50'
                                                     : formData.expiryDate && new Date(formData.expiryDate) < new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
                                                         ? 'border-amber-400 text-amber-600 bg-amber-50/50'
                                                         : 'border-border'
-                                            }`}
+                                                }`}
                                             value={formData.expiryDate ? (typeof formData.expiryDate === 'string' && formData.expiryDate.includes('T') ? formData.expiryDate.split('T')[0] : formData.expiryDate) : ''}
                                             onChange={(e) => setFormData({ ...formData, expiryDate: e.target.value })}
                                         />
@@ -510,11 +509,10 @@ export default function AddProductForm({ onSave, initialData, onCancel }) {
 
                     <div className="flex flex-col md:flex-row gap-6">
                         <div className="w-full md:w-1/3 space-y-3">
-                            <label className={`flex items-center gap-3 p-4 border transition-all cursor-pointer rounded-xl ${
-                                formData.availability === 'all' 
-                                    ? 'bg-primary/10 border-primary text-primary font-black shadow-sm shadow-primary/5' 
+                            <label className={`flex items-center gap-3 p-4 border transition-all cursor-pointer rounded-xl ${formData.availability === 'all'
+                                    ? 'bg-[#B4912B]/10 border-[#B4912B] text-[#B4912B] font-black shadow-sm shadow-[#B4912B]/5'
                                     : 'bg-slate-50 dark:bg-slate-800/40 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:border-slate-400 dark:hover:border-slate-500'
-                            }`}>
+                                }`}>
                                 <input
                                     type="radio"
                                     name="outlet"
@@ -522,17 +520,15 @@ export default function AddProductForm({ onSave, initialData, onCancel }) {
                                     onChange={() => setFormData({ ...formData, availability: 'all', outletIds: [] })}
                                     className="hidden"
                                 />
-                                <span className={`text-[10px] font-black uppercase tracking-widest ${
-                                    formData.availability === 'all' ? 'text-primary' : 'text-slate-700 dark:text-slate-300'
-                                }`}>
+                                <span className={`text-[10px] font-black uppercase tracking-widest ${formData.availability === 'all' ? 'text-[#B4912B]' : 'text-slate-700 dark:text-slate-300'
+                                    }`}>
                                     Global (All Nodes)
                                 </span>
                             </label>
-                            <label className={`flex items-center gap-3 p-4 border transition-all cursor-pointer rounded-xl ${
-                                formData.availability === 'selected' 
-                                    ? 'bg-primary/10 border-primary text-primary font-black shadow-sm shadow-primary/5' 
+                            <label className={`flex items-center gap-3 p-4 border transition-all cursor-pointer rounded-xl ${formData.availability === 'selected'
+                                    ? 'bg-[#B4912B]/10 border-[#B4912B] text-[#B4912B] font-black shadow-sm shadow-[#B4912B]/5'
                                     : 'bg-slate-50 dark:bg-slate-800/40 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:border-slate-400 dark:hover:border-slate-500'
-                            }`}>
+                                }`}>
                                 <input
                                     type="radio"
                                     name="outlet"
@@ -540,9 +536,8 @@ export default function AddProductForm({ onSave, initialData, onCancel }) {
                                     onChange={() => setFormData({ ...formData, availability: 'selected' })}
                                     className="hidden"
                                 />
-                                <span className={`text-[10px] font-black uppercase tracking-widest ${
-                                    formData.availability === 'selected' ? 'text-primary' : 'text-slate-700 dark:text-slate-300'
-                                }`}>
+                                <span className={`text-[10px] font-black uppercase tracking-widest ${formData.availability === 'selected' ? 'text-[#B4912B]' : 'text-slate-700 dark:text-slate-300'
+                                    }`}>
                                     Targeted (Manual)
                                 </span>
                             </label>
@@ -561,11 +556,11 @@ export default function AddProductForm({ onSave, initialData, onCancel }) {
                                             setFormData({ ...formData, outletIds: ids });
                                         }}
                                         className={`flex items-center gap-3 px-4 py-3 border text-left transition-all ${(formData.outletIds || []).includes(outlet._id)
-                                            ? 'bg-primary/5 border-primary text-primary shadow-sm font-black'
+                                            ? 'bg-[#B4912B]/5 border-[#B4912B] text-[#B4912B] shadow-sm font-black'
                                             : 'bg-background border-border text-text-muted opacity-50'
-                                        }`}
+                                            }`}
                                     >
-                                        <div className={`w-3 h-3 rounded-full border ${(formData.outletIds || []).includes(outlet._id) ? 'bg-primary border-primary' : 'bg-background border-border'}`} />
+                                        <div className={`w-3 h-3 rounded-full border ${(formData.outletIds || []).includes(outlet._id) ? 'bg-[#B4912B] border-[#B4912B]' : 'bg-background border-border'}`} />
                                         <span className="text-[9px] uppercase tracking-tighter">{outlet.name}</span>
                                     </button>
                                 ))}
@@ -577,7 +572,7 @@ export default function AddProductForm({ onSave, initialData, onCancel }) {
                 {/* 5. Shop Experience (Visible only if isShopProduct is true) */}
                 <AnimatePresence>
                     {formData.isShopProduct && (
-                        <motion.div 
+                        <motion.div
                             initial={{ opacity: 0, height: 0 }}
                             animate={{ opacity: 1, height: 'auto' }}
                             exit={{ opacity: 0, height: 0 }}
@@ -597,7 +592,7 @@ export default function AddProductForm({ onSave, initialData, onCancel }) {
                                 <div className="space-y-1.5 md:col-span-2">
                                     <label className="text-[9px] font-black text-text-muted uppercase tracking-[0.2em]">Shop Description (Detailed)</label>
                                     <textarea
-                                        className="w-full px-4 py-3 bg-background border border-border rounded-lg text-sm font-medium focus:border-primary outline-none transition-all min-h-[100px] resize-none"
+                                        className="w-full px-4 py-3 bg-background border border-border rounded-lg text-sm font-medium focus:border-[#B4912B] outline-none transition-all min-h-[100px] resize-none"
                                         placeholder="Detailed description for the customer app..."
                                         value={formData.shopDescription}
                                         onChange={(e) => setFormData({ ...formData, shopDescription: e.target.value })}
@@ -608,7 +603,7 @@ export default function AddProductForm({ onSave, initialData, onCancel }) {
                                     <label className="text-[9px] font-black text-text-muted uppercase tracking-[0.2em]">Care Instructions (Pro Tip)</label>
                                     <input
                                         type="text"
-                                        className="w-full px-4 py-3 bg-background border border-border rounded-lg text-sm font-medium focus:border-primary outline-none transition-all"
+                                        className="w-full px-4 py-3 bg-background border border-border rounded-lg text-sm font-medium focus:border-[#B4912B] outline-none transition-all"
                                         placeholder="e.g. Keep in a cool place"
                                         value={formData.appCare}
                                         onChange={(e) => setFormData({ ...formData, appCare: e.target.value })}
@@ -619,7 +614,7 @@ export default function AddProductForm({ onSave, initialData, onCancel }) {
                                     <label className="text-[9px] font-black text-text-muted uppercase tracking-[0.2em]">Usage Guide (Application)</label>
                                     <input
                                         type="text"
-                                        className="w-full px-4 py-3 bg-background border border-border rounded-lg text-sm font-medium focus:border-primary outline-none transition-all"
+                                        className="w-full px-4 py-3 bg-background border border-border rounded-lg text-sm font-medium focus:border-[#B4912B] outline-none transition-all"
                                         placeholder="e.g. Apply twice daily"
                                         value={formData.appUsage}
                                         onChange={(e) => setFormData({ ...formData, appUsage: e.target.value })}
@@ -630,7 +625,7 @@ export default function AddProductForm({ onSave, initialData, onCancel }) {
                                     <label className="text-[9px] font-black text-text-muted uppercase tracking-[0.2em]">Formula Type</label>
                                     <input
                                         type="text"
-                                        className="w-full px-4 py-3 bg-background border border-border rounded-lg text-sm font-medium focus:border-primary outline-none transition-all"
+                                        className="w-full px-4 py-3 bg-background border border-border rounded-lg text-sm font-medium focus:border-[#B4912B] outline-none transition-all"
                                         placeholder="e.g. Premium Ritual"
                                         value={formData.appFormulaType}
                                         onChange={(e) => setFormData({ ...formData, appFormulaType: e.target.value })}
@@ -641,7 +636,7 @@ export default function AddProductForm({ onSave, initialData, onCancel }) {
                                     <label className="text-[9px] font-black text-text-muted uppercase tracking-[0.2em]">Consistency</label>
                                     <input
                                         type="text"
-                                        className="w-full px-4 py-3 bg-background border border-border rounded-lg text-sm font-medium focus:border-primary outline-none transition-all"
+                                        className="w-full px-4 py-3 bg-background border border-border rounded-lg text-sm font-medium focus:border-[#B4912B] outline-none transition-all"
                                         placeholder="e.g. Creamy / Lightweight"
                                         value={formData.appConsistency}
                                         onChange={(e) => setFormData({ ...formData, appConsistency: e.target.value })}
@@ -652,7 +647,7 @@ export default function AddProductForm({ onSave, initialData, onCancel }) {
                                     <label className="text-[9px] font-black text-text-muted uppercase tracking-[0.2em]">Ritual Status</label>
                                     <input
                                         type="text"
-                                        className="w-full px-4 py-3 bg-background border border-border rounded-lg text-sm font-medium focus:border-primary outline-none transition-all"
+                                        className="w-full px-4 py-3 bg-background border border-border rounded-lg text-sm font-medium focus:border-[#B4912B] outline-none transition-all"
                                         placeholder="e.g. Dermatologically Tested"
                                         value={formData.appRitualStatus}
                                         onChange={(e) => setFormData({ ...formData, appRitualStatus: e.target.value })}
@@ -663,7 +658,7 @@ export default function AddProductForm({ onSave, initialData, onCancel }) {
                                     <label className="text-[9px] font-black text-text-muted uppercase tracking-[0.2em]">Return Policy</label>
                                     <input
                                         type="text"
-                                        className="w-full px-4 py-3 bg-background border border-border rounded-lg text-sm font-medium focus:border-primary outline-none transition-all"
+                                        className="w-full px-4 py-3 bg-background border border-border rounded-lg text-sm font-medium focus:border-[#B4912B] outline-none transition-all"
                                         placeholder="Specific return policy for this product"
                                         value={formData.appReturnPolicy}
                                         onChange={(e) => setFormData({ ...formData, appReturnPolicy: e.target.value })}
@@ -673,7 +668,7 @@ export default function AddProductForm({ onSave, initialData, onCancel }) {
                                 <div className="space-y-1.5 md:col-span-2">
                                     <label className="text-[9px] font-black text-text-muted uppercase tracking-[0.2em]">Vendor / Manufacturing Details</label>
                                     <textarea
-                                        className="w-full px-4 py-3 bg-background border border-border rounded-lg text-sm font-medium focus:border-primary outline-none transition-all min-h-[60px] resize-none"
+                                        className="w-full px-4 py-3 bg-background border border-border rounded-lg text-sm font-medium focus:border-[#B4912B] outline-none transition-all min-h-[60px] resize-none"
                                         placeholder="Produced by..."
                                         value={formData.appVendorDetails}
                                         onChange={(e) => setFormData({ ...formData, appVendorDetails: e.target.value })}
@@ -703,7 +698,7 @@ export default function AddProductForm({ onSave, initialData, onCancel }) {
                                 <div key={idx} className="relative aspect-square bg-background border border-border group overflow-hidden">
                                     <img src={getImageUrl(img)} className="w-full h-full object-cover" alt={`Gallery ${idx}`} />
                                     <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                                        <button 
+                                        <button
                                             onClick={() => {
                                                 const newImgs = formData.images.filter((_, i) => i !== idx);
                                                 setFormData({ ...formData, images: newImgs });
@@ -715,40 +710,40 @@ export default function AddProductForm({ onSave, initialData, onCancel }) {
                                     </div>
                                 </div>
                             ))}
-                            <label className="aspect-square border-2 border-dashed border-border hover:border-primary hover:bg-primary/5 transition-all flex flex-col items-center justify-center gap-2 cursor-pointer group">
+                            <label className="aspect-square border-2 border-dashed border-border hover:border-[#B4912B] hover:bg-[#B4912B]/5 transition-all flex flex-col items-center justify-center gap-2 cursor-pointer group">
                                 <CloudUpload className="w-6 h-6 text-text-muted group-hover:scale-110 transition-all" />
                                 <span className="text-[8px] font-black uppercase tracking-widest text-text-muted">Add Image</span>
-                                <input 
-                                    type="file" 
-                                    className="hidden" 
-                                    multiple 
-                                    accept="image/*" 
+                                <input
+                                    type="file"
+                                    className="hidden"
+                                    multiple
+                                    accept="image/*"
                                     onChange={async (e) => {
                                         const files = Array.from(e.target.files);
                                         if (files.length === 0) return;
-                                        
+
                                         setUploading(true);
                                         try {
                                             const newImageUrls = [];
                                             for (let file of files) {
                                                 // 1. Convert to WebP
                                                 const webpFile = await convertToWebP(file);
-                                                
+
                                                 // 2. Prepare FormData for upload
                                                 const uploadFormData = new FormData();
                                                 uploadFormData.append('image', webpFile);
-                                                
+
                                                 // 3. Upload to server
                                                 const { data: resData } = await api.post('/uploads', uploadFormData, {
                                                     headers: { 'Content-Type': 'multipart/form-data' }
                                                 });
-                                                
+
                                                 if (resData.success) {
                                                     const url = resData.url || resData.data?.url;
                                                     if (url) newImageUrls.push(url);
                                                 }
                                             }
-                                            
+
                                             setFormData(prev => {
                                                 const updatedImages = [...(prev.images || []), ...newImageUrls];
                                                 return {
@@ -786,9 +781,9 @@ export default function AddProductForm({ onSave, initialData, onCancel }) {
                     <button
                         onClick={handleSave}
                         disabled={!isFormValid}
-                        className={`flex items-center gap-2 px-8 py-3 rounded-2xl text-primary-foreground text-sm font-bold shadow-lg transition-all active:scale-95 ${isFormValid ? 'bg-primary shadow-primary/20 hover:shadow-xl hover:shadow-primary/30' : 'bg-slate-300 dark:bg-slate-800 shadow-none cursor-not-allowed'}`}
+                        className={`flex items-center gap-2 px-8 py-3 rounded-2xl text-sm font-bold shadow-lg transition-all active:scale-95 ${isFormValid ? 'bg-primary text-primary-foreground shadow-primary/20 hover:shadow-xl hover:shadow-primary/30 border border-transparent' : 'bg-[#B4912B]/10 !text-[#B4912B] border border-[#B4912B]/20 shadow-none cursor-not-allowed'}`}
                     >
-                        <Save className="w-4 h-4" />
+                        <Save className={`w-4 h-4 ${!isFormValid ? '!stroke-[#B4912B]' : ''}`} />
                         {initialData ? 'Update Product' : 'Save Product'}
                     </button>
                 </div>

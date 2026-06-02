@@ -160,7 +160,7 @@ export default function ProductManager({ products = [], onDelete, onToggleStatus
                                                 type="button"
                                                 onClick={() => onToggleStatus?.(product.id || product._id)}
                                                 className={`inline-flex items-center gap-1.5 px-2.5 py-1 text-[9px] font-black uppercase tracking-widest border rounded-md transition-all font-mono ${isActive(product)
-                                                    ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                                                    ? 'bg-[#ecfdf5] text-[#047857] border-[#a7f3d0]'
                                                     : 'bg-slate-50 text-slate-600 border-slate-200'
                                                     }`}
                                                 title="Click to toggle Active / Inactive"

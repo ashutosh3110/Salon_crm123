@@ -627,9 +627,9 @@ export default function SupplierInvoices() {
     };
 
     return (
-        <div className="flex flex-col h-full slide-right overflow-hidden">
+        <div className="flex flex-col slide-right overflow-hidden p-4 sm:p-6 space-y-6">
             {/* ─── Summary Cards ─── */}
-            <div className="p-6 pb-0 grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <div className="bg-white border border-border rounded-2xl p-4 flex items-center gap-3 hover:shadow-md transition-shadow">
                     <div className="p-2.5 rounded-xl bg-indigo-50 text-indigo-600">
                         <Receipt className="w-5 h-5" />
@@ -671,100 +671,101 @@ export default function SupplierInvoices() {
                 </div>
             </div>
 
-            <div className="p-6 border-b border-border bg-surface/30 flex flex-col md:flex-row justify-between items-center gap-4">
-                <div className="flex items-center gap-4 flex-1 w-full md:w-auto flex-wrap">
-                    <div className="relative flex-1 max-w-md group">
-                        <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-primary transition-colors" />
-                        <input
-                            type="text"
-                            value={search}
-                            onChange={(e) => setSearch(e.target.value)}
-                            placeholder="Filter by invoice # or supplier..."
-                            className="w-full pl-10 pr-4 py-2.5 bg-white border border-border rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary/10 transition-all"
-                        />
-                    </div>
-                    <div className="flex gap-2 flex-wrap items-center">
-                        <div className="flex items-center gap-2 px-3 py-2 bg-white border border-border rounded-xl text-xs font-bold text-text-secondary">
-                            <Filter className="w-4 h-4" />
-                            <select
-                                value={statusFilter}
-                                onChange={(e) => setStatusFilter(e.target.value)}
-                                className="bg-transparent outline-none font-bold"
-                            >
-                                {statusOptions.map((s) => (
-                                    <option key={s} value={s}>
-                                        {s}
-                                    </option>
-                                ))}
-                            </select>
+            {/* ─── Filter & Table Section ─── */}
+            <div className="flex-1 bg-white rounded-[2rem] border border-border shadow-sm overflow-hidden flex flex-col min-h-[400px]">
+                <div className="p-5 border-b border-border bg-surface/30 flex flex-col md:flex-row justify-between items-center gap-4">
+                    <div className="flex items-center gap-4 flex-1 w-full md:w-auto flex-wrap">
+                        <div className="relative flex-1 max-w-md group">
+                            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-primary transition-colors" />
+                            <input
+                                type="text"
+                                value={search}
+                                onChange={(e) => setSearch(e.target.value)}
+                                placeholder="Filter by invoice # or supplier..."
+                                className="w-full pl-10 pr-4 py-2.5 bg-white border border-border rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary/10 transition-all"
+                            />
                         </div>
+                        <div className="flex gap-2 flex-wrap items-center">
+                            <div className="flex items-center gap-2 px-3 py-2 bg-white border border-border rounded-xl text-xs font-bold text-text-secondary">
+                                <Filter className="w-4 h-4" />
+                                <select
+                                    value={statusFilter}
+                                    onChange={(e) => setStatusFilter(e.target.value)}
+                                    className="bg-transparent outline-none font-bold"
+                                >
+                                    {statusOptions.map((s) => (
+                                        <option key={s} value={s}>
+                                            {s}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+                            <button
+                                type="button"
+                                onClick={load}
+                                disabled={loading}
+                                className="flex items-center gap-2 px-4 py-2.5 bg-white border border-border rounded-xl text-xs font-bold text-text-secondary hover:bg-surface transition-all disabled:opacity-50"
+                            >
+                                {loading ? (
+                                    <Loader2 className="w-4 h-4 animate-spin" />
+                                ) : (
+                                    <RefreshCw className="w-4 h-4" />
+                                )}
+                                Refresh
+                            </button>
+                        </div>
+                    </div>
+                    <div className="flex items-center gap-2">
                         <button
                             type="button"
-                            onClick={load}
-                            disabled={loading}
-                            className="flex items-center gap-2 px-4 py-2.5 bg-white border border-border rounded-xl text-xs font-bold text-text-secondary hover:bg-surface transition-all disabled:opacity-50"
+                            onClick={exportCsv}
+                            className="flex items-center gap-2 bg-emerald-600 text-white px-5 py-2.5 rounded-xl text-xs font-bold hover:shadow-lg hover:shadow-emerald-600/30 transition-all scale-active"
                         >
-                            {loading ? (
-                                <Loader2 className="w-4 h-4 animate-spin" />
-                            ) : (
-                                <RefreshCw className="w-4 h-4" />
-                            )}
-                            Refresh
+                            <Download className="w-4 h-4" />
+                            Export CSV
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => setShowCreateModal(true)}
+                            className="flex items-center gap-2 bg-primary text-white px-5 py-2.5 rounded-xl text-xs font-bold hover:shadow-lg hover:shadow-primary/30 transition-all scale-active"
+                        >
+                            <Plus className="w-4 h-4" />
+                            Record Invoice
                         </button>
                     </div>
                 </div>
-                <div className="flex items-center gap-2">
-                    <button
-                        type="button"
-                        onClick={exportCsv}
-                        disabled={!filtered.length}
-                        className="flex items-center gap-2 bg-emerald-600 text-white px-5 py-2.5 rounded-xl text-xs font-bold hover:shadow-lg hover:shadow-emerald-600/30 transition-all scale-active disabled:opacity-40"
-                    >
-                        <Download className="w-4 h-4" />
-                        Export CSV
-                    </button>
-                    <button
-                        type="button"
-                        onClick={() => setShowCreateModal(true)}
-                        className="flex items-center gap-2 bg-primary text-white px-5 py-2.5 rounded-xl text-xs font-bold hover:shadow-lg hover:shadow-primary/30 transition-all scale-active"
-                    >
-                        <Plus className="w-4 h-4" />
-                        Record Invoice
-                    </button>
-                </div>
-            </div>
 
-            {error && (
-                <div className="px-6 py-3 bg-rose-500/10 text-rose-700 text-sm font-bold border-b border-rose-500/20">
-                    {error}
-                </div>
-            )}
-
-            <div className="flex-1 overflow-y-auto no-scrollbar bg-white p-0 table-responsive relative">
-                {loading && (
-                    <div className="absolute inset-0 z-10 flex items-center justify-center bg-white/70">
-                        <Loader2 className="w-10 h-10 text-primary animate-spin" />
+                {error && (
+                    <div className="px-6 py-3 bg-rose-500/10 text-rose-700 text-sm font-bold border-b border-rose-500/20">
+                        {error}
                     </div>
                 )}
-                <table className="w-full text-left border-collapse min-w-[1000px]">
+
+                <div className="flex-1 overflow-y-auto no-scrollbar p-0 table-responsive relative">
+                    {loading && (
+                        <div className="absolute inset-0 z-10 flex items-center justify-center bg-white/70">
+                            <Loader2 className="w-10 h-10 text-primary animate-spin" />
+                        </div>
+                    )}
+                    <table className="w-full text-left border-collapse min-w-[1000px]">
                     <thead>
                         <tr className="bg-surface/50 border-b border-border">
-                            <th className="px-8 py-4 text-[10px] font-bold text-text-secondary uppercase tracking-widest">
+                            <th className="px-6 py-4 text-[10px] font-bold text-text-secondary uppercase tracking-widest">
                                 Supplier & Invoice
                             </th>
-                            <th className="px-8 py-4 text-[10px] font-bold text-text-secondary uppercase tracking-widest">
+                            <th className="px-6 py-4 text-[10px] font-bold text-text-secondary uppercase tracking-widest">
                                 Billing Date
                             </th>
-                            <th className="px-8 py-4 text-[10px] font-bold text-text-secondary uppercase tracking-widest text-right">
+                            <th className="px-6 py-4 text-[10px] font-bold text-text-secondary uppercase tracking-widest text-left">
                                 Invoice Amount
                             </th>
-                            <th className="px-8 py-4 text-[10px] font-bold text-text-secondary uppercase tracking-widest">
+                            <th className="px-6 py-4 text-[10px] font-bold text-text-secondary uppercase tracking-widest">
                                 Due Date
                             </th>
-                            <th className="px-8 py-4 text-[10px] font-bold text-text-secondary uppercase tracking-widest">
+                            <th className="px-6 py-4 text-[10px] font-bold text-text-secondary uppercase tracking-widest">
                                 Settlement
                             </th>
-                            <th className="px-8 py-4 text-[10px] font-bold text-text-secondary uppercase tracking-widest text-right">
+                            <th className="px-6 py-4 text-[10px] font-bold text-text-secondary uppercase tracking-widest text-left">
                                 Actions
                             </th>
                         </tr>
@@ -772,14 +773,14 @@ export default function SupplierInvoices() {
                     <tbody className="divide-y divide-border">
                         {!loading && filtered.length === 0 && (
                             <tr>
-                                <td colSpan={6} className="px-8 py-16 text-center text-sm text-text-muted font-bold">
+                                <td colSpan={6} className="px-6 py-16 text-center text-sm text-text-muted font-bold">
                                     No supplier invoices yet. Record stock-in with an invoice # under Inventory → Stock In.
                                 </td>
                             </tr>
                         )}
                         {filtered.map((inv) => (
                             <tr key={inv.invoiceKey} className="hover:bg-surface/30 transition-colors group cursor-default">
-                                <td className="px-8 py-5">
+                                <td className="px-6 py-5">
                                     <div className="flex items-center gap-3">
                                         <div
                                             className={`p-2 rounded-lg ${inv.status === 'Paid'
@@ -798,52 +799,44 @@ export default function SupplierInvoices() {
                                             </span>
                                             {inv.isAdHoc && (
                                                 <span className="text-[9px] text-amber-600 font-bold mt-0.5">
-                                                    Add invoice # on future stock-ins to group lines
+                                                    Ad-hoc Invoice
                                                 </span>
                                             )}
                                         </div>
                                     </div>
                                 </td>
-                                <td className="px-8 py-5">
+                                <td className="px-6 py-5">
                                     <span className="text-xs font-semibold text-text-secondary">
-                                        {inv.invoiceDate
-                                            ? new Date(inv.invoiceDate).toLocaleDateString()
-                                            : '—'}
+                                        {inv.invoiceDate ? new Date(inv.invoiceDate).toLocaleDateString() : '—'}
                                     </span>
                                 </td>
-                                <td className="px-8 py-5 text-right">
-                                    <span className="text-sm font-bold text-text tracking-tight">
-                                        ₹{Number(inv.amount || 0).toLocaleString('en-IN')}
-                                    </span>
-                                    {inv.paidAmount > 0 && (
-                                        <p className="text-[10px] text-text-muted mt-0.5">
-                                            Paid ₹{Number(inv.paidAmount).toLocaleString('en-IN')}
-                                        </p>
-                                    )}
-                                </td>
-                                <td className="px-8 py-5">
-                                    <div className="flex items-center gap-2">
-                                        <Clock
-                                            className={`w-3.5 h-3.5 ${inv.status === 'Overdue' ? 'text-rose-500' : 'text-text-muted'
-                                                }`}
-                                        />
-                                        <span
-                                            className={`text-xs font-semibold ${inv.status === 'Overdue' ? 'text-rose-600' : 'text-text-secondary'
-                                                }`}
-                                        >
-                                            {inv.dueDate ? new Date(inv.dueDate).toLocaleDateString() : '—'}
+                                <td className="px-6 py-5 text-left">
+                                    <div className="flex flex-col items-start">
+                                        <span className="text-sm font-bold text-text">
+                                            ₹{Number(inv.amount || 0).toLocaleString('en-IN')}
                                         </span>
+                                        {inv.paidAmount > 0 && (
+                                            <span className="text-[10px] font-bold text-text-muted uppercase tracking-wider mt-0.5">
+                                                Paid ₹{Number(inv.paidAmount).toLocaleString('en-IN')}
+                                            </span>
+                                        )}
                                     </div>
                                 </td>
-                                <td className="px-8 py-5">
+                                <td className="px-6 py-5">
+                                    <div className="flex items-center gap-1.5 text-xs font-semibold text-text-secondary">
+                                        <Clock className="w-3.5 h-3.5 opacity-50" />
+                                        {inv.dueDate ? new Date(inv.dueDate).toLocaleDateString() : '—'}
+                                    </div>
+                                </td>
+                                <td className="px-6 py-5">
                                     <span
-                                        className={`px-2.5 py-1 rounded-lg text-[9px] font-bold uppercase tracking-widest border ${inv.status === 'Paid'
+                                        className={`px-2.5 py-1 rounded-xl text-[9px] font-bold uppercase tracking-widest border ${inv.status === 'Paid'
                                                 ? 'bg-emerald-50 text-emerald-600 border-emerald-100'
-                                                : inv.status === 'Overdue'
-                                                    ? 'bg-rose-50 text-rose-600 border-rose-100'
-                                                    : inv.status === 'Partial'
-                                                        ? 'bg-sky-50 text-sky-600 border-sky-100'
-                                                        : 'bg-orange-50 text-orange-500 border-orange-100'
+                                                : inv.status === 'Partial'
+                                                    ? 'bg-amber-50 text-amber-600 border-amber-100'
+                                                    : inv.status === 'Overdue'
+                                                        ? 'bg-rose-50 text-rose-600 border-rose-100'
+                                                        : 'bg-slate-50 text-slate-600 border-slate-200'
                                             }`}
                                     >
                                         {inv.status}
@@ -854,8 +847,8 @@ export default function SupplierInvoices() {
                                         </p>
                                     )}
                                 </td>
-                                <td className="px-8 py-5 text-right">
-                                    <div className="flex items-center justify-end gap-1.5">
+                                <td className="px-6 py-5 text-left">
+                                    <div className="flex items-center justify-start gap-1.5">
                                         {inv.status !== 'Paid' && inv.outstanding > 0 && (
                                             <button
                                                 type="button"
@@ -891,6 +884,7 @@ export default function SupplierInvoices() {
                         ))}
                     </tbody>
                 </table>
+            </div>
             </div>
 
             {createPortal(
