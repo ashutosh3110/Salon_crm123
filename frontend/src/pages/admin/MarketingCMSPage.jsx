@@ -97,10 +97,10 @@ function CustomSelect({ value, onChange, options, placeholder }) {
                         transition={{ duration: 0.15 }}
                         className="absolute left-0 right-0 top-full mt-1.5 bg-white dark:bg-surface border border-border rounded-lg shadow-xl overflow-hidden max-h-56 overflow-y-auto z-[200]"
                     >
-                        {options.filter(opt => String(opt.value) !== String(value)).map((opt) => (
+                        {options.map((opt) => (
                             <div
                                 key={opt.value}
-                                className="px-4 py-2.5 text-sm cursor-pointer transition-colors text-text hover:bg-slate-50 dark:hover:bg-slate-800 font-medium"
+                                className={`px-4 py-2.5 text-sm cursor-pointer transition-colors text-text hover:bg-slate-50 dark:hover:bg-slate-800 font-medium ${String(opt.value) === String(value) ? 'bg-slate-50 dark:bg-slate-800 text-primary' : ''}`}
                                 onClick={() => {
                                     onChange(opt.value);
                                     setIsOpen(false);
@@ -961,14 +961,14 @@ export default function MarketingCMSPage() {
                                         <button
                                             type="button"
                                             onClick={() => setIsModalOpen(false)}
-                                            className="flex-1 py-3 rounded-lg border border-border text-[10px] font-black uppercase tracking-wider text-text-muted hover:bg-slate-50 transition-all font-bold"
+                                            className="flex-1 py-3 rounded-lg border border-transparent !bg-rose-500 hover:!bg-rose-600 !text-white text-[10px] font-black uppercase tracking-wider transition-all active:scale-[0.98]"
                                         >
                                             Abort
                                         </button>
                                         <button
                                             type="submit"
                                             disabled={saving}
-                                            className="flex-[1.5] py-3 bg-[#1a1a1a] text-white font-bold text-xs uppercase tracking-wider rounded-lg shadow-lg hover:bg-black active:scale-[0.98] transition-all disabled:opacity-50"
+                                            className="flex-[1.5] py-3 rounded-lg border border-transparent !bg-emerald-500 hover:!bg-emerald-600 !text-white text-xs font-black uppercase tracking-wider transition-all active:scale-[0.98] disabled:opacity-50 disabled:active:scale-100"
                                         >
                                             {saving ? 'Saving...' : (editingId ? 'Update' : 'Confirm')}
                                         </button>
