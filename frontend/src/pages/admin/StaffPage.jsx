@@ -126,9 +126,53 @@ export default function StaffPage() {
             newErrors.avatar = 'Profile photo is required';
         }
 
-        if (form.pan) {
+        if (!form.dob) {
+            newErrors.dob = 'Date of birth is required';
+        } else {
+            const today = new Date();
+            const birthDate = new Date(form.dob);
+            let age = today.getFullYear() - birthDate.getFullYear();
+            const m = today.getMonth() - birthDate.getMonth();
+            if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+                age--;
+            }
+            if (age < 18) {
+                newErrors.dob = 'Staff member must be at least 18 years old';
+            }
+        }
+
+        if (!form.pan) {
+            newErrors.pan = 'PAN number is required';
+        } else {
             const panRegex = /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/;
             if (!panRegex.test(form.pan)) newErrors.pan = 'Invalid PAN format (ABCDE1234F)';
+        }
+
+        if (!form.address?.trim()) {
+            newErrors.address = 'Address is required';
+        }
+
+        if (!form.salary) {
+            newErrors.salary = 'Base salary is required';
+        } else if (Number(form.salary) <= 0) {
+            newErrors.salary = 'Salary must be a positive number';
+        }
+
+        if (!form.bankName?.trim()) {
+            newErrors.bankName = 'Bank name is required';
+        }
+
+        if (!form.accountNo?.trim()) {
+            newErrors.accountNo = 'Account number is required';
+        } else if (!/^\d{9,18}$/.test(form.accountNo)) {
+            newErrors.accountNo = 'Must be 9 to 18 digits';
+        }
+
+        if (!form.ifsc?.trim()) {
+            newErrors.ifsc = 'IFSC code is required';
+        } else {
+            const ifscRegex = /^[A-Z]{4}0[A-Z0-9]{6}$/;
+            if (!ifscRegex.test(form.ifsc)) newErrors.ifsc = 'Invalid IFSC format (e.g. SBIN0001234)';
         }
 
         setErrors(newErrors);
@@ -369,7 +413,7 @@ export default function StaffPage() {
                         setForm({ name: '', email: '', phone: '', role: '', roleId: '', outletId: '', password: '', salary: '', bankName: '', accountNo: '', ifsc: '', avatar: '', stylistBio: '', stylistExperience: '', stylistSpecializations: '', availability: JSON.parse(JSON.stringify(DEFAULT_AVAILABILITY)) });
                         setShowModal(true);
                     }}
-                    className="flex items-center gap-2 bg-[#cca839] text-white px-6 py-3.5 text-[11px] font-black uppercase tracking-widest rounded-xl hover:bg-[#b59533] transition-all shadow-sm"
+                    className="flex items-center gap-2 !bg-[#cca839] dark:!bg-[#cca839] !text-white dark:!text-white px-6 py-3.5 text-[11px] font-black uppercase tracking-widest rounded-xl hover:!bg-[#b59533] dark:hover:!bg-[#b59533] transition-all shadow-sm"
                 >
                     <Plus className="w-4 h-4" /> ADD NEW MEMBER
                 </button>
@@ -505,10 +549,17 @@ export default function StaffPage() {
                                             </div>
                                         </td>
                                         <td className="px-6 py-5">
-                                            <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-emerald-50 text-[10px] font-black text-emerald-500 uppercase tracking-widest border border-emerald-100">
-                                                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-                                                {s.status || 'ACTIVE'}
-                                            </span>
+                                            {(s.status?.toLowerCase() === 'inactive' || s.status?.toLowerCase() === 'suspended') ? (
+                                                <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-rose-50 dark:bg-rose-950/30 text-[10px] font-black text-rose-500 dark:text-rose-400 uppercase tracking-widest border border-rose-100 dark:border-rose-900/30">
+                                                    <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse"></span>
+                                                    {s.status || 'INACTIVE'}
+                                                </span>
+                                            ) : (
+                                                <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/30 text-[10px] font-black text-emerald-500 dark:text-emerald-400 uppercase tracking-widest border border-emerald-100 dark:border-emerald-900/30">
+                                                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                                                    {s.status || 'ACTIVE'}
+                                                </span>
+                                            )}
                                         </td>
                                         <td className="px-6 py-5">
                                             <div className="flex items-center justify-center gap-2">
@@ -760,17 +811,34 @@ export default function StaffPage() {
                                         type="date"
                                         max={new Date().toISOString().split('T')[0]}
                                         value={form.dob || ''}
-                                        onChange={(e) => setForm({ ...form, dob: e.target.value })}
-                                        className="w-full px-3 py-2 bg-surface-alt border border-border text-[10px] font-black outline-none focus:border-text font-mono"
+                                        onChange={(e) => {
+                                            setForm({ ...form, dob: e.target.value });
+                                            if (errors.dob) setErrors(prev => ({ ...prev, dob: null }));
+                                        }}
+                                        className={`w-full px-3 py-2 bg-surface-alt border ${errors.dob ? 'border-rose-500' : 'border-border'} text-[10px] font-black outline-none focus:border-text font-mono`}
                                     />
+                                    {errors.dob && <p className="text-[8px] font-bold text-rose-500 mt-1 uppercase">{errors.dob}</p>}
                                 </div>
                                 <div className="space-y-1">
                                     <label className="text-[9px] font-black text-text-muted uppercase tracking-widest font-mono">PAN Number</label>
                                     <input
                                         type="text"
+                                        maxLength={10}
                                         value={form.pan || ''}
                                         onChange={(e) => {
-                                            setForm({ ...form, pan: e.target.value.toUpperCase() });
+                                            const rawVal = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+                                            let val = '';
+                                            for (let i = 0; i < rawVal.length && i < 10; i++) {
+                                                const char = rawVal[i];
+                                                if (i < 5) {
+                                                    if (/[A-Z]/.test(char)) val += char;
+                                                } else if (i < 9) {
+                                                    if (/[0-9]/.test(char)) val += char;
+                                                } else {
+                                                    if (/[A-Z]/.test(char)) val += char;
+                                                }
+                                            }
+                                            setForm({ ...form, pan: val });
                                             if (errors.pan) setErrors(prev => ({ ...prev, pan: null }));
                                         }}
                                         className={`w-full px-3 py-2 bg-surface-alt border ${errors.pan ? 'border-rose-500' : 'border-border'} text-[10px] font-black outline-none focus:border-text font-mono`}
@@ -782,10 +850,14 @@ export default function StaffPage() {
                                     <label className="text-[9px] font-black text-text-muted uppercase tracking-widest font-mono">Residential Address</label>
                                     <textarea
                                         value={form.address || ''}
-                                        onChange={(e) => setForm({ ...form, address: e.target.value })}
-                                        className="w-full px-3 py-1.5 bg-surface-alt border border-border text-[10px] font-black outline-none focus:border-text font-mono resize-none h-12"
+                                        onChange={(e) => {
+                                            setForm({ ...form, address: e.target.value });
+                                            if (errors.address) setErrors(prev => ({ ...prev, address: null }));
+                                        }}
+                                        className={`w-full px-3 py-1.5 bg-surface-alt border ${errors.address ? 'border-rose-500' : 'border-border'} text-[10px] font-black outline-none focus:border-text font-mono resize-none h-12`}
                                         placeholder="FULL ADDRESS"
                                     />
+                                    {errors.address && <p className="text-[8px] font-bold text-rose-500 mt-1 uppercase">{errors.address}</p>}
                                 </div>
 
                                 <div className="col-span-2 pt-2 border-t border-border mt-2">
@@ -794,42 +866,74 @@ export default function StaffPage() {
                                 <div className="space-y-1">
                                     <label className="text-[9px] font-black text-text-muted uppercase tracking-widest font-mono">Base Salary (₹)</label>
                                     <input
-                                        type="number"
+                                        type="text"
                                         value={form.salary || ''}
-                                        onChange={(e) => setForm({ ...form, salary: e.target.value })}
-                                        className="w-full px-3 py-2 bg-surface-alt border border-border text-[10px] font-black outline-none focus:border-text font-mono"
+                                        onChange={(e) => {
+                                            const val = e.target.value.replace(/\D/g, '');
+                                            setForm({ ...form, salary: val });
+                                            if (errors.salary) setErrors(prev => ({ ...prev, salary: null }));
+                                        }}
+                                        className={`w-full px-3 py-2 bg-surface-alt border ${errors.salary ? 'border-rose-500' : 'border-border'} text-[10px] font-black outline-none focus:border-text font-mono`}
                                         placeholder="ENTER BASE SALARY"
                                     />
+                                    {errors.salary && <p className="text-[8px] font-bold text-rose-500 mt-1 uppercase">{errors.salary}</p>}
                                 </div>
                                 <div className="space-y-1">
                                     <label className="text-[9px] font-black text-text-muted uppercase tracking-widest font-mono">Bank Institution</label>
                                     <input
                                         type="text"
                                         value={form.bankName || ''}
-                                        onChange={(e) => setForm({ ...form, bankName: e.target.value })}
-                                        className="w-full px-3 py-2 bg-surface-alt border border-border text-[10px] font-black outline-none focus:border-text font-mono"
+                                        onChange={(e) => {
+                                            setForm({ ...form, bankName: e.target.value });
+                                            if (errors.bankName) setErrors(prev => ({ ...prev, bankName: null }));
+                                        }}
+                                        className={`w-full px-3 py-2 bg-surface-alt border ${errors.bankName ? 'border-rose-500' : 'border-border'} text-[10px] font-black outline-none focus:border-text font-mono`}
                                         placeholder="BANK NAME"
                                     />
+                                    {errors.bankName && <p className="text-[8px] font-bold text-rose-500 mt-1 uppercase">{errors.bankName}</p>}
                                 </div>
                                 <div className="space-y-1">
                                     <label className="text-[9px] font-black text-text-muted uppercase tracking-widest font-mono">Account Number</label>
                                     <input
                                         type="text"
+                                        maxLength={18}
                                         value={form.accountNo || ''}
-                                        onChange={(e) => setForm({ ...form, accountNo: e.target.value })}
-                                        className="w-full px-3 py-2 bg-surface-alt border border-border text-[10px] font-black outline-none focus:border-text font-mono"
+                                        onChange={(e) => {
+                                            const val = e.target.value.replace(/\D/g, '').slice(0, 18);
+                                            setForm({ ...form, accountNo: val });
+                                            if (errors.accountNo) setErrors(prev => ({ ...prev, accountNo: null }));
+                                        }}
+                                        className={`w-full px-3 py-2 bg-surface-alt border ${errors.accountNo ? 'border-rose-500' : 'border-border'} text-[10px] font-black outline-none focus:border-text font-mono`}
                                         placeholder="ACCOUNT NUMBER"
                                     />
+                                    {errors.accountNo && <p className="text-[8px] font-bold text-rose-500 mt-1 uppercase">{errors.accountNo}</p>}
                                 </div>
                                 <div className="space-y-1">
                                     <label className="text-[9px] font-black text-text-muted uppercase tracking-widest font-mono">IFSC Code</label>
                                     <input
                                         type="text"
+                                        maxLength={11}
                                         value={form.ifsc || ''}
-                                        onChange={(e) => setForm({ ...form, ifsc: e.target.value.toUpperCase() })}
-                                        className="w-full px-3 py-2 bg-surface-alt border border-border text-[10px] font-black outline-none focus:border-text font-mono"
+                                        onChange={(e) => {
+                                            const rawVal = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+                                            let val = '';
+                                            for (let i = 0; i < rawVal.length && i < 11; i++) {
+                                                const char = rawVal[i];
+                                                if (i < 4) {
+                                                    if (/[A-Z]/.test(char)) val += char;
+                                                } else if (i === 4) {
+                                                    if (char === '0') val += char;
+                                                } else {
+                                                    if (/[A-Z0-9]/.test(char)) val += char;
+                                                }
+                                            }
+                                            setForm({ ...form, ifsc: val });
+                                            if (errors.ifsc) setErrors(prev => ({ ...prev, ifsc: null }));
+                                        }}
+                                        className={`w-full px-3 py-2 bg-surface-alt border ${errors.ifsc ? 'border-rose-500' : 'border-border'} text-[10px] font-black outline-none focus:border-text font-mono`}
                                         placeholder="IFSC CODE"
                                     />
+                                    {errors.ifsc && <p className="text-[8px] font-bold text-rose-500 mt-1 uppercase">{errors.ifsc}</p>}
                                 </div>
 
                                 {['stylist'].includes(form.role?.toLowerCase()) && (
@@ -1011,23 +1115,23 @@ export default function StaffPage() {
                             </div>
                         </div>
 
-                        <div className="flex gap-3 p-6 border-t border-slate-200 bg-surface-alt/10 shrink-0">
+                        <div className="flex gap-3 p-6 border-t border-border bg-surface shrink-0">
                             <div
                                 role="button"
                                 onClick={() => setShowModal(false)}
-                                className="flex-1 py-3 text-[9px] font-black uppercase tracking-widest text-text-muted hover:bg-surface-alt transition-colors font-mono cursor-pointer text-center bg-white border border-slate-200 flex items-center justify-center"
+                                className="flex-1 py-3 text-[10px] font-black uppercase tracking-widest text-slate-500 dark:text-slate-400 hover:bg-slate-500/10 transition-colors font-mono cursor-pointer text-center bg-transparent border border-slate-200 dark:border-slate-700/60 rounded-xl flex items-center justify-center"
                             >
                                 Cancel
                             </div>
                             <button
                                 type="submit"
                                 disabled={loading}
-                                className="flex-1 bg-text text-white py-3 shadow-lg flex items-center justify-center gap-2 hover:bg-primary transition-all active:scale-95 disabled:opacity-30"
+                                className="flex-1 bg-[#cca839] hover:bg-[#b59533] text-white py-3 shadow-lg flex items-center justify-center gap-2 transition-all active:scale-95 disabled:opacity-30 rounded-xl"
                             >
                                 {loading ? (
                                     <div className="w-4 h-4 border-2 border-white/30 border-t-white animate-spin" />
                                 ) : (
-                                    <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-white">{editing ? 'Save Changes' : 'Add Member'}</span>
+                                    <span className="text-[10px] font-black uppercase tracking-[0.2em] text-white">{editing ? 'Save Changes' : 'Add Member'}</span>
                                 )}
                             </button>
                         </div>

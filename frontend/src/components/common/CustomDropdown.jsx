@@ -75,22 +75,22 @@ export default function CustomDropdown({ options = [], value, onChange, label, c
                                     }}
                                     className={`custom-dropdown-option w-full flex items-center justify-between px-3 py-1.5 text-left transition-colors duration-150 group border-b border-border/10 last:border-0
                                         ${isSelected
-                                            ? 'bg-primary/5 text-primary'
-                                            : 'text-text-secondary hover:bg-slate-50 hover:text-text'
+                                            ? 'bg-[#cca839]/10 text-[#cca839] hover:bg-[#cca839]/20 dark:bg-[#cca839]/20 dark:text-[#cca839]'
+                                            : 'text-text-secondary hover:bg-slate-50 hover:text-text dark:hover:bg-slate-800/80'
                                         }
                                     `}
                                 >
                                     <div className="flex items-center gap-2">
                                         {/* Left accent dot */}
                                         <span
-                                            className={`w-1 h-1 rounded-full shrink-0 transition-colors ${isSelected ? 'bg-primary' : 'bg-border group-hover:bg-primary/40'}`}
+                                            className={`w-1 h-1 rounded-full shrink-0 transition-colors ${isSelected ? 'bg-[#cca839]' : 'bg-border group-hover:bg-[#cca839]/40'}`}
                                         />
                                         <span className="text-[10px] font-bold tracking-wider leading-none">
                                             {opt.label}
                                         </span>
                                     </div>
                                     {isSelected && (
-                                        <Check className="w-3.5 h-3.5 text-primary shrink-0" strokeWidth={3} />
+                                        <Check className="w-3.5 h-3.5 text-[#cca839] shrink-0" strokeWidth={3} />
                                     )}
                                 </button>
                             );

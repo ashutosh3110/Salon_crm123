@@ -450,10 +450,10 @@ export default function ServiceForm({ onSave, onCancel, categories = [], initial
                                     <h3 className="text-[9px] font-bold uppercase tracking-widest text-text">4. Commission</h3>
                                 </div>
                                 <label className="flex items-center gap-2 cursor-pointer">
-                                    <div className={`w-8 h-4 rounded-full p-0.5 transition-all ${formData.commissionApplicable ? 'bg-rose-500' : 'bg-slate-300 dark:bg-slate-700'}`} onClick={() => setFormData({ ...formData, commissionApplicable: !formData.commissionApplicable })}>
-                                        <div className={`w-3 h-3 bg-white rounded-full transition-all ${formData.commissionApplicable ? 'translate-x-4' : 'translate-x-0'}`} />
+                                    <div className={`relative w-11 h-6 rounded-full transition-all duration-300 cursor-pointer ${formData.commissionApplicable ? 'bg-primary' : 'bg-slate-200 dark:bg-slate-700 border border-slate-300 dark:border-slate-600'}`} onClick={() => setFormData({ ...formData, commissionApplicable: !formData.commissionApplicable })}>
+                                        <div className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full transition-all duration-300 shadow-sm ${formData.commissionApplicable ? 'translate-x-5' : 'translate-x-0'}`} />
                                     </div>
-                                    <span className="text-[8px] font-bold uppercase tracking-widest opacity-50 text-text">Active</span>
+                                    <span className={`text-[9px] font-black uppercase tracking-widest transition-colors duration-300 ${formData.commissionApplicable ? 'text-primary' : 'text-text-muted'}`}>Active</span>
                                 </label>
                             </div>
 
