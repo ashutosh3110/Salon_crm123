@@ -389,6 +389,18 @@ export default function Sidebar({ collapsed, setCollapsed, isHovered, setIsHover
                     stroke: #ffffff !important;
                 }
 
+                /* Active state link text color override */
+                html:not(.dark) .sidebar-container nav a[class*="bg-[#B4912B]"],
+                html:not(.dark) .sidebar-container nav a[class*="bg-[#B4912B]"] *,
+                html:not(.dark) .sidebar-container nav a.bg-\[\#B4912B\],
+                html:not(.dark) .sidebar-container nav a.bg-\[\#B4912B\] *,
+                html:not(.dark) .sidebar-container nav a.active-submenu-item,
+                html:not(.dark) .sidebar-container nav a.active-submenu-item *,
+                html:not(.dark) .sidebar-container nav a.active,
+                html:not(.dark) .sidebar-container nav a.active * {
+                    color: #ffffff !important;
+                }
+
                 /* Dark Mode Sidebar Icons styling */
                 .dark .sidebar-container nav a svg.sidebar-svg-icon,
                 .dark .sidebar-container nav button svg.sidebar-svg-icon,
@@ -526,11 +538,11 @@ export default function Sidebar({ collapsed, setCollapsed, isHovered, setIsHover
                                                             onClick={(e) => { if (isLocked) e.preventDefault(); else setMobileOpen(false); }}
                                                             className={`flex items-center justify-between py-2.5 px-4 rounded-md text-[13px] font-bold transition-all duration-200 relative
                                                                 ${isSubActive
-                                                                    ? 'bg-[#B4912B] text-white shadow-sm'
+                                                                    ? 'bg-[#B4912B] text-white shadow-sm active-submenu-item'
                                                                     : 'text-slate-500 dark:text-slate-400 hover:text-[#B4912B] hover:bg-[#B4912B]/10'
                                                                 } ${isLocked ? 'opacity-40 !pointer-events-none !cursor-not-allowed !select-none' : ''}`}
                                                         >
-                                                            <span className="font-bold">{sub.label}</span>
+                                                            <span className={`font-bold ${isSubActive ? 'text-white !text-white' : ''}`}>{sub.label}</span>
                                                             {!isLocked && sub.badge && (
                                                                 <span className={`px-1.5 py-0.5 rounded-md text-[9px] text-white font-semibold ${sub.badge.color}`}>
                                                                     {sub.badge.count}
