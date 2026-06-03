@@ -330,6 +330,144 @@ export default function BaseRoleLayout({ SidebarComponent, title, accentColor = 
                     border-color: rgba(255, 255, 255, 0.25) !important;
                     color: #ffffff !important;
                 }
+
+                 /* --- BULLETPROOF LIGHT MODE SVG COLOR & STROKE VISIBILITY SYSTEM --- */
+                /* By default, force all SVG icons and their paths to be dark slate/black in light mode for 100% visibility */
+                html:not(.dark) .admin-panel svg,
+                html:not(.dark) .admin-panel svg * {
+                    color: #1e293b !important;
+                    stroke: #1e293b !important;
+                }
+
+                /* EXCEPT if the SVG or its parent has a green/emerald text class, force it to green */
+                html:not(.dark) .admin-panel [class*="text-emerald"] svg,
+                html:not(.dark) .admin-panel [class*="text-emerald"] svg *,
+                html:not(.dark) .admin-panel svg[class*="text-emerald"],
+                html:not(.dark) .admin-panel svg[class*="text-emerald"] *,
+                html:not(.dark) .admin-panel [class*="text-green"] svg,
+                html:not(.dark) .admin-panel [class*="text-green"] svg *,
+                html:not(.dark) .admin-panel svg[class*="text-green"],
+                html:not(.dark) .admin-panel svg[class*="text-green"] * {
+                    color: #059669 !important;
+                    stroke: #059669 !important;
+                }
+
+                /* EXCEPT if the SVG or its parent has a red/rose text class, force it to red */
+                html:not(.dark) .admin-panel [class*="text-rose"] svg,
+                html:not(.dark) .admin-panel [class*="text-rose"] svg *,
+                html:not(.dark) .admin-panel svg[class*="text-rose"],
+                html:not(.dark) .admin-panel svg[class*="text-rose"] *,
+                html:not(.dark) .admin-panel [class*="text-red"] svg,
+                html:not(.dark) .admin-panel [class*="text-red"] svg *,
+                html:not(.dark) .admin-panel svg[class*="text-red"],
+                html:not(.dark) .admin-panel svg[class*="text-red"] * {
+                    color: #dc2626 !important;
+                    stroke: #dc2626 !important;
+                }
+
+                /* EXCEPT if the SVG or its parent has a gold/amber/yellow text class, force it to gold */
+                html:not(.dark) .admin-panel [class*="text-amber"] svg,
+                html:not(.dark) .admin-panel [class*="text-amber"] svg *,
+                html:not(.dark) .admin-panel svg[class*="text-amber"],
+                html:not(.dark) .admin-panel svg[class*="text-amber"] *,
+                html:not(.dark) .admin-panel [class*="text-yellow"] svg,
+                html:not(.dark) .admin-panel [class*="text-yellow"] svg *,
+                html:not(.dark) .admin-panel svg[class*="text-yellow"],
+                html:not(.dark) .admin-panel svg[class*="text-yellow"] *,
+                html:not(.dark) .admin-panel [class*="text-primary"] svg,
+                html:not(.dark) .admin-panel [class*="text-primary"] svg *,
+                html:not(.dark) .admin-panel svg[class*="text-primary"],
+                html:not(.dark) .admin-panel svg[class*="text-primary"] * {
+                    color: #b45309 !important;
+                    stroke: #b45309 !important;
+                }
+
+                /* EXCEPT if the SVG or its parent has a blue/indigo text class, force it to blue */
+                html:not(.dark) .admin-panel [class*="text-blue"] svg,
+                html:not(.dark) .admin-panel [class*="text-blue"] svg *,
+                html:not(.dark) .admin-panel svg[class*="text-blue"],
+                html:not(.dark) .admin-panel svg[class*="text-blue"] *,
+                html:not(.dark) .admin-panel [class*="text-indigo"] svg,
+                html:not(.dark) .admin-panel [class*="text-indigo"] svg *,
+                html:not(.dark) .admin-panel svg[class*="text-indigo"],
+                html:not(.dark) .admin-panel svg[class*="text-indigo"] * {
+                    color: #2563eb !important;
+                    stroke: #2563eb !important;
+                }
+
+                /* EXCEPT if the SVG or its parent has a purple/violet text class, force it to purple */
+                html:not(.dark) .admin-panel [class*="text-purple"] svg,
+                html:not(.dark) .admin-panel [class*="text-purple"] svg *,
+                html:not(.dark) .admin-panel svg[class*="text-purple"],
+                html:not(.dark) .admin-panel svg[class*="text-purple"] *,
+                html:not(.dark) .admin-panel [class*="text-violet"] svg,
+                html:not(.dark) .admin-panel [class*="text-violet"] svg *,
+                html:not(.dark) .admin-panel svg[class*="text-violet"],
+                html:not(.dark) .admin-panel svg[class*="text-violet"] * {
+                    color: #7c3aed !important;
+                    stroke: #7c3aed !important;
+                }
+
+                /* EXCEPT if the SVG is inside a soft colored background container, force matching color */
+                html:not(.dark) .admin-panel [class*="bg-emerald-"] svg,
+                html:not(.dark) .admin-panel [class*="bg-emerald-"] svg *,
+                html:not(.dark) .admin-panel [class*="bg-green-"] svg,
+                html:not(.dark) .admin-panel [class*="bg-green-"] svg *,
+                html:not(.dark) .admin-panel [class*="bg-[#DCFCE7]"] svg,
+                html:not(.dark) .admin-panel [class*="bg-[#DCFCE7]"] svg * {
+                    color: #047857 !important;
+                    stroke: #047857 !important;
+                }
+                html:not(.dark) .admin-panel [class*="bg-rose-"] svg,
+                html:not(.dark) .admin-panel [class*="bg-rose-"] svg *,
+                html:not(.dark) .admin-panel [class*="bg-red-"] svg,
+                html:not(.dark) .admin-panel [class*="bg-red-"] svg *,
+                html:not(.dark) .admin-panel [class*="bg-rose-100"] svg,
+                html:not(.dark) .admin-panel [class*="bg-rose-100"] svg * {
+                    color: #b91c1c !important;
+                    stroke: #b91c1c !important;
+                }
+                html:not(.dark) .admin-panel [class*="bg-blue-"] svg,
+                html:not(.dark) .admin-panel [class*="bg-blue-"] svg *,
+                html:not(.dark) .admin-panel [class*="bg-[#DBEAFE]"] svg,
+                html:not(.dark) .admin-panel [class*="bg-[#DBEAFE]"] svg * {
+                    color: #1d4ed8 !important;
+                    stroke: #1d4ed8 !important;
+                }
+                html:not(.dark) .admin-panel [class*="bg-amber-"] svg,
+                html:not(.dark) .admin-panel [class*="bg-amber-"] svg *,
+                html:not(.dark) .admin-panel [class*="bg-yellow-"] svg,
+                html:not(.dark) .admin-panel [class*="bg-yellow-"] svg *,
+                html:not(.dark) .admin-panel [class*="bg-[#FEF3C7]"] svg,
+                html:not(.dark) .admin-panel [class*="bg-[#FEF3C7]"] svg * {
+                    color: #b45309 !important;
+                    stroke: #b45309 !important;
+                }
+                html:not(.dark) .admin-panel [class*="bg-violet-"] svg,
+                html:not(.dark) .admin-panel [class*="bg-violet-"] svg *,
+                html:not(.dark) .admin-panel [class*="bg-purple-"] svg,
+                html:not(.dark) .admin-panel [class*="bg-purple-"] svg *,
+                html:not(.dark) .admin-panel [class*="bg-[#F3E8FF]"] svg,
+                html:not(.dark) .admin-panel [class*="bg-[#F3E8FF]"] svg * {
+                    color: #6d28d9 !important;
+                    stroke: #6d28d9 !important;
+                }
+                html:not(.dark) .admin-panel [class*="bg-cyan-"] svg,
+                html:not(.dark) .admin-panel [class*="bg-cyan-"] svg * {
+                    color: #0891b2 !important;
+                    stroke: #0891b2 !important;
+                }
+                html:not(.dark) .admin-panel [class*="bg-fuchsia-"] svg,
+                html:not(.dark) .admin-panel [class*="bg-fuchsia-"] svg * {
+                    color: #c026d3 !important;
+                    stroke: #c026d3 !important;
+                }
+                html:not(.dark) .admin-panel [class*="bg-indigo-"] svg,
+                html:not(.dark) .admin-panel [class*="bg-indigo-"] svg * {
+                    color: #4f46e5 !important;
+                    stroke: #4f46e5 !important;
+                }
+
             `}</style>
             {/* Sidebar */}
             <SidebarComponent
