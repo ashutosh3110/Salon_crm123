@@ -426,7 +426,7 @@ export default function Sidebar({ collapsed, setCollapsed, isHovered, setIsHover
                                             <item.icon
                                                 className={`w-5 h-5 shrink-0 ${active ? 'text-white' : 'text-slate-500 group-hover:text-[#B4912B]'}`}
                                             />
-                                            {!effectiveCollapsed && <span className="whitespace-nowrap font-bold !text-slate-700 dark:!text-slate-300 !block !opacity-100 group-hover:!text-[#B4912B] transition-colors">{item.label}</span>}
+                                            {!effectiveCollapsed && <span className={`whitespace-nowrap font-bold !block !opacity-100 transition-colors ${active ? '!text-white' : '!text-slate-700 dark:!text-slate-300 group-hover:!text-[#B4912B]'}`}>{item.label}</span>}
                                         </div>
                                         {!effectiveCollapsed && (
                                             <div className="flex items-center gap-1.5">

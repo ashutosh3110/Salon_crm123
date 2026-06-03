@@ -477,7 +477,7 @@ export default function POSBillingPage() {
                     price: item.price,
                     quantity: item.quantity
                 }))
-            });
+            }, { skipToast: true });
 
             if (res.data.success && res.data.data) {
                 const { promotion, discount } = res.data.data;
@@ -1684,7 +1684,11 @@ export default function POSBillingPage() {
                                     setServiceMode('bookings');
                                     setSelectedCategory('All');
                                 }}
-                                className={`px-4 py-1.5 text-xs font-semibold uppercase tracking-wider rounded-md ${activeTab === 'services' && serviceMode === 'bookings' ? 'bg-background text-primary shadow-sm' : 'text-text-secondary'}`}
+                                className={`px-4 py-1.5 text-xs font-semibold uppercase tracking-wider rounded-md transition-all ${
+                                    activeTab === 'services' && serviceMode === 'bookings'
+                                        ? '!bg-[#cca839] !text-slate-950 shadow-sm font-black'
+                                        : '!bg-transparent !text-slate-400 hover:!text-slate-200'
+                                }`}
                             >Completed Bookings</button>
                             <button
                                 onClick={() => {
@@ -1692,12 +1696,16 @@ export default function POSBillingPage() {
                                     setServiceMode('orders');
                                     setSelectedCategory('All');
                                 }}
-                                className={`px-4 py-1.5 text-xs font-semibold uppercase tracking-wider rounded-md ${activeTab === 'services' && serviceMode === 'orders' ? 'bg-background text-primary shadow-sm' : 'text-text-secondary'}`}
+                                className={`px-4 py-1.5 text-xs font-semibold uppercase tracking-wider rounded-md transition-all ${
+                                    activeTab === 'services' && serviceMode === 'orders'
+                                        ? '!bg-[#cca839] !text-slate-950 shadow-sm font-black'
+                                        : '!bg-transparent !text-slate-400 hover:!text-slate-200'
+                                }`}
                             >Completed Orders</button>
                         </div>
                     </div>
 
-                    <div className="flex-1 overflow-y-auto grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3 pr-2 scrollbar-thin">
+                    <div className="flex-1 overflow-y-auto grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3 p-1 pr-2 custom-scrollbar">
                         {filteredItems.map((item, idx) => {
                             const isSelected = item.isAppointment
                                 ? selectedBookingIds.includes(item._id)
@@ -1714,11 +1722,11 @@ export default function POSBillingPage() {
                                         }`}
                                 >
                                     {isSelected ? (
-                                        <div className="absolute top-0 right-0 bg-primary/10 text-primary text-[9px] font-bold px-2 py-0.5 uppercase tracking-wider rounded-tr-xl rounded-bl-xl shadow-sm z-10">
+                                        <div className="absolute top-1.5 right-1.5 !bg-[#cca839] !text-slate-950 text-[9px] font-black px-2 py-0.5 uppercase tracking-wider rounded-md shadow-sm z-10">
                                             In Cart
                                         </div>
                                     ) : (
-                                        <div className="absolute top-0 right-0 p-2 opacity-0 group-hover:opacity-100 transition-opacity z-10">
+                                        <div className="absolute top-1.5 right-1.5 opacity-0 group-hover:opacity-100 transition-opacity z-10">
                                             <span className="text-[10px] font-bold text-primary transition-colors">ADD</span>
                                         </div>
                                     )}
@@ -1757,7 +1765,7 @@ export default function POSBillingPage() {
                         </div>
 
                         {/* CONTENT - Scrollable area */}
-                        <div className="flex-1 p-2 space-y-3 overflow-y-auto scrollbar-thin">
+                        <div className="flex-1 p-2 space-y-3 overflow-y-auto custom-scrollbar">
 
                             {/* CLIENT + OUTLET */}
                             <div className="grid grid-cols-2 gap-2">
@@ -1971,10 +1979,10 @@ export default function POSBillingPage() {
                                             <select
                                                 value={p.method}
                                                 onChange={(e) => updatePayment(i, "method", e.target.value)}
-                                                className="flex-1 h-8 rounded-lg border border-border px-2 text-[10px] font-bold outline-none focus:border-primary transition-all uppercase"
+                                                className="flex-1 h-8 rounded-lg !border !border-slate-200 dark:!border-slate-700 !bg-white dark:!bg-slate-800 px-2 text-[10px] font-bold outline-none focus:border-primary transition-all uppercase !text-slate-800 dark:!text-white"
                                             >
-                                                <option value="cash">CASH</option>
-                                                <option value="online">ONLINE</option>
+                                                <option value="cash" className="bg-white dark:bg-slate-800 text-slate-800 dark:text-white">CASH</option>
+                                                <option value="online" className="bg-white dark:bg-slate-800 text-slate-800 dark:text-white">ONLINE</option>
                                             </select>
 
                                             <div className="relative">
@@ -2114,7 +2122,7 @@ export default function POSBillingPage() {
                             <div className="grid grid-cols-2 gap-2">
                                 <button
                                     onClick={() => setShowDiscountModal(true)}
-                                    className="h-10 rounded-xl border border-border bg-background text-xs font-bold uppercase hover:bg-surface-alt transition-colors"
+                                    className="h-10 rounded-xl !border !border-slate-300 dark:!border-slate-800 !bg-slate-100 dark:!bg-slate-900 text-xs font-bold uppercase hover:!bg-slate-200 dark:hover:!bg-slate-800 transition-colors !text-slate-800 dark:!text-slate-200"
                                 >
                                     Offers
                                 </button>
@@ -2141,22 +2149,22 @@ export default function POSBillingPage() {
                             <button onClick={() => setShowDiscountModal(false)} className="text-text-muted hover:text-rose-500"><X className="w-5 h-5" /></button>
                         </div>
 
-                        <div className="p-6 overflow-y-auto scrollbar-thin max-h-[60vh]">
+                        <div className="p-6 overflow-y-auto custom-scrollbar max-h-[60vh]">
                             <div className="space-y-6">
                                 <div className="bg-surface-alt p-4 border border-border rounded-xl">
-                                    <label className="text-[10px] font-semibold text-text-muted uppercase tracking-wider mb-3 block">Flat or Percentage Adjustment</label>
-                                    <div className="flex border border-border bg-background rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-primary/10 transition-all">
+                                    <label className="text-[10px] font-black text-text-muted uppercase tracking-wider mb-3 block">Flat or Percentage Adjustment</label>
+                                    <div className="flex !border !border-slate-300 dark:!border-slate-700 !bg-white dark:!bg-slate-800 rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-primary/10 transition-all">
                                         <select
-                                            className="bg-surface-alt border-r border-border text-[10px] font-bold p-3 text-text outline-none"
+                                            className="bg-transparent border-r !border-slate-300 dark:!border-slate-700 text-[10px] font-bold p-3 !text-slate-800 dark:!text-white outline-none"
                                             value={manualDiscount.type}
                                             onChange={(e) => setManualDiscount({ ...manualDiscount, type: e.target.value })}
                                         >
-                                            <option value="fixed">FLAT ₹</option>
-                                            <option value="percentage">% OFF</option>
+                                            <option value="fixed" className="bg-white dark:bg-slate-800 text-slate-800 dark:text-white">FLAT ₹</option>
+                                            <option value="percentage" className="bg-white dark:bg-slate-800 text-slate-800 dark:text-white">% OFF</option>
                                         </select>
                                         <input
                                             type="number"
-                                            className="flex-1 p-3 text-sm font-black bg-background text-text outline-none"
+                                            className="flex-1 p-3 text-sm font-black bg-transparent !text-slate-800 dark:!text-white outline-none"
                                             value={manualDiscount.value || ''}
                                             onChange={(e) => setManualDiscount({ ...manualDiscount, value: Number(e.target.value) })}
                                             onFocus={(e) => { if (manualDiscount.value === 0) setManualDiscount({ ...manualDiscount, value: '' }) }}
@@ -2166,7 +2174,7 @@ export default function POSBillingPage() {
                                 </div>
 
                                 <div className="bg-surface-alt p-4 border border-border rounded-xl">
-                                    <label className="text-[10px] font-semibold text-text-muted uppercase tracking-wider mb-3 block">Coupon Code</label>
+                                    <label className="text-[10px] font-black text-text-muted uppercase tracking-wider mb-3 block">Coupon Code</label>
                                     {appliedPromotion ? (
                                         <div className="flex items-center justify-between p-3 bg-primary/10 border border-primary/20 rounded-lg">
                                             <div className="text-left">
@@ -2182,11 +2190,11 @@ export default function POSBillingPage() {
                                             </button>
                                         </div>
                                     ) : (
-                                        <div className="flex border border-border bg-background rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-primary/10 transition-all">
+                                        <div className="flex !border !border-slate-300 dark:!border-slate-700 !bg-white dark:!bg-slate-800 rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-primary/10 transition-all">
                                             <input
                                                 type="text"
                                                 placeholder="ENTER COUPON CODE"
-                                                className="flex-1 p-3 text-xs font-black bg-background text-text outline-none uppercase tracking-widest placeholder:opacity-50"
+                                                className="flex-1 p-3 text-xs font-black bg-transparent !text-slate-800 dark:!text-white outline-none uppercase tracking-widest placeholder:opacity-50"
                                                 value={couponCodeInput}
                                                 onChange={(e) => setCouponCodeInput(e.target.value.toUpperCase())}
                                             />
@@ -2194,7 +2202,7 @@ export default function POSBillingPage() {
                                                 type="button"
                                                 onClick={handleApplyCoupon}
                                                 disabled={applyingCoupon || !couponCodeInput}
-                                                className="bg-primary hover:brightness-110 text-white font-black text-[10px] uppercase tracking-wider px-5 transition-all disabled:opacity-40"
+                                                className="!bg-[#cca839] hover:brightness-110 !text-slate-950 font-black text-[10px] uppercase tracking-wider px-5 transition-all disabled:opacity-40"
                                             >
                                                 {applyingCoupon ? 'Checking...' : 'Apply'}
                                             </button>
@@ -2205,19 +2213,19 @@ export default function POSBillingPage() {
                                 {selectedClient && (
                                     <div className="space-y-4">
                                         {/* Wallet Balance */}
-                                        <div className="bg-emerald-50/50 p-4 border border-emerald-100 rounded-xl">
+                                        <div className="!bg-emerald-50/5 dark:!bg-emerald-950/20 p-4 !border !border-emerald-200/50 dark:!border-emerald-900/20 rounded-xl">
                                             <div className="flex justify-between items-center mb-2">
                                                 <div className="flex items-center gap-2">
-                                                    <Wallet className="w-4 h-4 text-emerald-500" />
-                                                    <span className="text-[10px] font-black text-emerald-900 uppercase tracking-widest">Wallet Balance</span>
+                                                    <Wallet className="w-4 h-4 !text-emerald-500" />
+                                                    <span className="text-[10px] font-black !text-emerald-700 dark:!text-emerald-400 uppercase tracking-widest">Wallet Balance</span>
                                                 </div>
-                                                <span className="text-xs font-black text-emerald-600">₹{clientWalletBalance.toFixed(0)}</span>
+                                                <span className="text-xs font-black !text-emerald-600 dark:!text-emerald-400">₹{clientWalletBalance.toFixed(0)}</span>
                                             </div>
                                             <div className="flex gap-2">
                                                 <input
                                                     type="number"
                                                     placeholder="Amount to redeem"
-                                                    className="flex-1 p-2.5 text-sm font-black bg-white border border-emerald-200 outline-none focus:border-emerald-500 rounded-lg transition-all"
+                                                    className="flex-1 p-2.5 text-sm font-black !bg-white dark:!bg-slate-800 !text-slate-800 dark:!text-white !border !border-slate-300 dark:!border-slate-700 outline-none focus:border-emerald-500 rounded-lg transition-all"
                                                     value={redeemWallet || ''}
                                                     onChange={(e) => {
                                                         const totalPaid = payments.reduce((acc, p) => acc + (Number(p.amount) || 0), 0);
@@ -2228,7 +2236,7 @@ export default function POSBillingPage() {
                                                 />
                                                 <button
                                                     onClick={handleRedeemWallet}
-                                                    className={`px-4 py-2.5 text-[10px] font-black uppercase tracking-widest rounded-lg transition-all ${redeemWallet > 0 ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/20' : 'bg-emerald-100 text-emerald-600 hover:bg-emerald-100'}`}
+                                                    className={`px-4 py-2.5 text-[10px] font-black uppercase tracking-widest rounded-lg transition-all ${redeemWallet > 0 ? '!bg-[#cca839] !text-slate-950 shadow-lg shadow-black/10' : '!bg-slate-200 dark:!bg-slate-700 !text-slate-700 dark:!text-slate-300'}`}
                                                 >
                                                     {redeemWallet > 0 ? 'Reset' : 'Use Max'}
                                                 </button>
@@ -2244,7 +2252,7 @@ export default function POSBillingPage() {
                                 <p className="text-[9px] font-black text-text-muted uppercase">Total Reductions</p>
                                 <p className="text-xl font-black text-primary">₹{(Number(totals.discount) + Number(totals.membershipDiscount) + Number(totals.redeemWallet || 0)).toFixed(0)}</p>
                             </div>
-                            <button onClick={() => setShowDiscountModal(false)} className="px-10 py-3 bg-text text-background font-black text-xs uppercase tracking-widest hover:opacity-90 transition-opacity shadow-lg shadow-black/10 active:scale-95 transition-all">
+                            <button onClick={() => setShowDiscountModal(false)} className="px-10 py-3 !bg-[#cca839] !text-slate-950 hover:!bg-[#b59533] font-black text-xs uppercase tracking-widest transition-opacity shadow-lg shadow-black/10 active:scale-95 transition-all">
                                 Confirm & Apply
                             </button>
                         </div>

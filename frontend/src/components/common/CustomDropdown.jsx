@@ -73,7 +73,7 @@ export default function CustomDropdown({ options = [], value, onChange, label, c
                                         onChange(opt.value);
                                         setIsOpen(false);
                                     }}
-                                    className={`custom-dropdown-option w-full flex items-center justify-between px-3 py-1.5 text-left transition-colors duration-150 group border-b border-border/10 last:border-0
+                                    className={`custom-dropdown-option w-full flex items-center justify-between px-3 py-1.5 text-left transition-colors duration-150 group !border-0 !rounded-none last:!border-0
                                         ${isSelected
                                             ? 'bg-[#cca839]/10 text-[#cca839] hover:bg-[#cca839]/20 dark:bg-[#cca839]/20 dark:text-[#cca839]'
                                             : 'text-text-secondary hover:bg-slate-50 hover:text-text dark:hover:bg-slate-800/80'

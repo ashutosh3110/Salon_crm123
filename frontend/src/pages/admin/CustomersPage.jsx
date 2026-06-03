@@ -1149,8 +1149,11 @@ function PaymentRemindersView({ onCustomerClick, setWhatsappModal, fetchCustomer
                 <div className="flex flex-wrap items-center gap-4">
                     {/* Toggle Switch */}
                     <label className="flex items-center gap-2 cursor-pointer select-none group">
-                        <div className={`relative w-8 h-4.5 rounded-full transition-all duration-300 ${autoReminder ? 'bg-emerald-500' : 'bg-border/60'}`}>
-                            <div className={`absolute top-0.5 w-3.5 h-3.5 bg-white rounded-full shadow-sm transition-all duration-300 ${autoReminder ? 'left-[16px]' : 'left-0.5'}`} />
+                        <div className={`relative w-9 h-5 rounded-full transition-all duration-300 ${autoReminder ? 'bg-emerald-500' : 'bg-slate-300 dark:bg-slate-750'}`}>
+                            <div 
+                                className={`absolute top-0.5 w-4 h-4 rounded-full shadow-sm transition-all duration-300 ${autoReminder ? 'left-[18px]' : 'left-0.5'}`}
+                                style={{ backgroundColor: '#ffffff' }}
+                            />
                         </div>
                         <div className="flex flex-col line-clamp-1 text-left">
                             <span className="text-[9px] font-black uppercase text-text tracking-wider">Auto Pilot</span>
@@ -1250,11 +1253,11 @@ function PaymentRemindersView({ onCustomerClick, setWhatsappModal, fetchCustomer
                     <table className="w-full text-left min-w-[800px]">
                         <thead className="bg-surface-alt border-b border-border/40">
                             <tr>
-                                <th className="px-4 py-2 text-[9px] font-bold text-text-muted uppercase tracking-widest">Client profile</th>
-                                <th className="px-4 py-2 text-[9px] font-bold text-text-muted uppercase tracking-widest text-right">Dues Amount</th>
-                                <th className="px-4 py-2 text-[9px] font-bold text-text-muted uppercase tracking-widest text-center">Reminders</th>
-                                <th className="px-4 py-2 text-[9px] font-bold text-text-muted uppercase tracking-widest text-center">Last Reminded</th>
-                                <th className="px-4 py-2 text-[9px] font-bold text-text-muted uppercase tracking-widest text-right">Actions</th>
+                                <th className="px-4 py-2 text-[9px] font-bold text-text-muted uppercase tracking-widest w-[22%]" style={{ textAlign: 'left' }}>Client profile</th>
+                                <th className="px-4 py-2 text-[9px] font-bold text-text-muted uppercase tracking-widest text-right w-[18%]" style={{ textAlign: 'right' }}>Dues Amount</th>
+                                <th className="px-4 py-2 text-[9px] font-bold text-text-muted uppercase tracking-widest text-center w-[18%]" style={{ textAlign: 'center' }}>Reminders</th>
+                                <th className="px-4 py-2 text-[9px] font-bold text-text-muted uppercase tracking-widest text-center w-[22%]" style={{ textAlign: 'center' }}>Last Reminded</th>
+                                <th className="px-4 py-2 text-[9px] font-bold text-text-muted uppercase tracking-widest text-center w-[20%]" style={{ textAlign: 'center' }}>Actions</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-border/20">
@@ -1287,8 +1290,8 @@ function PaymentRemindersView({ onCustomerClick, setWhatsappModal, fetchCustomer
                                             {c.lastPaymentReminderSentAt ? new Date(c.lastPaymentReminderSentAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : 'NEVER'}
                                         </span>
                                     </td>
-                                    <td className="px-4 py-2 text-right">
-                                        <div className="flex items-center justify-end" onClick={e => e.stopPropagation()}>
+                                    <td className="px-4 py-2 text-center">
+                                        <div className="flex items-center justify-center" onClick={e => e.stopPropagation()}>
                                             <button
                                                 onClick={() => handleSendReminder(c)}
                                                 className="flex items-center justify-center gap-1 px-2.5 py-1 bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-500 rounded-lg hover:bg-emerald-500/20 transition-all text-[9px] font-black uppercase tracking-wider active:scale-95"
