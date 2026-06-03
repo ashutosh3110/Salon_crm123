@@ -202,12 +202,12 @@ function MarketingHubContent() {
     const paginatedCampaigns = filteredCampaigns.slice((safeCurrentPage - 1) * itemsPerPage, safeCurrentPage * itemsPerPage);
 
     return (
-        <div className="space-y-3 pb-6">
+        <div className="space-y-4 pb-6 px-1">
             {/* Header */}
-            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3 text-left mb-2">
-                <div className="text-left font-black leading-none">
-                    <h1 className="text-xl font-black text-text tracking-tight uppercase leading-none">Marketing Hub</h1>
-                    <p className="text-[10px] text-text-muted mt-1 uppercase tracking-[0.25em] opacity-50 leading-tight">Unified Audience Engagement & Retention Control</p>
+            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3 text-left mb-4">
+                <div className="text-left leading-none">
+                    <h1 className="text-2xl font-black text-text tracking-tight uppercase leading-none">Marketing Hub</h1>
+                    <p className="text-[10px] font-bold text-text-muted mt-1.5 uppercase tracking-[0.2em] opacity-60 leading-none">Unified Audience Engagement & Retention Control</p>
                 </div>
                 <div className="flex flex-wrap items-center gap-2">
                     {selectedCampaignIds.length > 0 && (
@@ -220,135 +220,215 @@ function MarketingHubContent() {
                     )}
                     <button
                         onClick={startCampaign}
-                        className="flex-1 lg:flex-none flex items-center justify-center gap-2 px-5 py-2 rounded-lg bg-primary text-white text-[10px] font-black uppercase tracking-widest hover:brightness-110 shadow-md shadow-primary/30 active:scale-[0.98] transition-all leading-none"
+                        className="flex-1 lg:flex-none flex items-center justify-center gap-2 px-5 py-2.5 rounded-lg bg-[#B4912B] text-white text-[10px] font-black uppercase tracking-widest hover:bg-[#9a7b24] shadow-md transition-all leading-none"
                     >
-                        <Plus className="w-3.5 h-3.5" /> New {activeTab === 'whatsapp' ? 'WhatsApp' : 'Notification'}
+                        {activeTab === 'whatsapp' ? (
+                            <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.888-.788-1.487-1.761-1.66-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51a12.8 12.8 0 0 0-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413Z"/></svg>
+                        ) : (
+                            <Bell className="w-3.5 h-3.5" />
+                        )}
+                        New {activeTab === 'whatsapp' ? 'WhatsApp' : 'Notification'}
                     </button>
                 </div>
             </div>
 
             {/* Tabs */}
-            <div className="flex items-center gap-1 border-b border-border/60 overflow-x-auto no-scrollbar">
+            <div className="flex items-center gap-2 mb-2">
                 {tabs.map(tab => (
                     <button
                         key={tab.id}
                         onClick={() => setActiveTab(tab.id)}
-                        className={`flex items-center gap-2 px-4 py-2.5 text-[10px] font-black uppercase tracking-[0.15em] transition-all relative whitespace-nowrap ${
-                            activeTab === tab.id ? 'text-text' : 'text-text-muted hover:text-text'
+                        className={`flex items-center gap-2 px-4 py-2 text-[10px] font-black uppercase tracking-widest transition-all rounded-lg border bg-white ${
+                            activeTab === tab.id 
+                            ? 'border-slate-800 text-slate-900 shadow-sm' 
+                            : 'border-slate-200 text-slate-500 hover:text-slate-700 hover:border-slate-300'
                         }`}
                     >
-                        <tab.icon className={`w-3.5 h-3.5 transition-transform duration-300 ${activeTab === tab.id ? tab.iconColor + ' scale-110' : 'opacity-50'}`} />
-                        {tab.label}
-                        {activeTab === tab.id && (
-                            <motion.div layoutId="activeTab" className="absolute bottom-0 left-3 right-3 h-[2px] bg-text rounded-t-full" />
+                        {tab.id === 'whatsapp' ? (
+                            <svg className={`w-3.5 h-3.5 ${activeTab === tab.id ? 'text-emerald-500' : 'text-slate-400'}`} fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.888-.788-1.487-1.761-1.66-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51a12.8 12.8 0 0 0-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413Z"/></svg>
+                        ) : (
+                            <tab.icon className={`w-3.5 h-3.5 ${activeTab === tab.id ? 'text-blue-500' : 'text-slate-400'}`} strokeWidth={2.5} />
                         )}
+                        {tab.label}
                     </button>
                 ))}
             </div>
 
             {/* Tab Content: Campaign List */}
-            <div className="space-y-3">
-                <SectionHeader
-                    title={activeTab === 'whatsapp' ? 'WhatsApp Campaigns' : 'App Notifications'}
-                    desc={activeTab === 'whatsapp' ? 'Direct messages to customer WhatsApp' : 'Push notifications to customer mobile app'}
-                    icon={tabs.find(t => t.id === activeTab)?.icon || MessageSquare}
-                    badge="Marketing"
-                    onRefresh={loadCampaigns}
-                    iconColor={tabs.find(t => t.id === activeTab)?.iconColor}
-                    iconBg={tabs.find(t => t.id === activeTab)?.iconBg}
-                />
+            <div className="space-y-4">
+                {/* Section Header Card */}
+                <div className="bg-white rounded-2xl border border-[#e2e8f0] shadow-sm p-5 flex flex-col md:flex-row md:items-center gap-5 relative overflow-hidden">
+                    <div className="w-14 h-14 rounded-full flex items-center justify-center shrink-0 bg-[#dcfce7]">
+                        {activeTab === 'whatsapp' ? (
+                            <svg className="w-7 h-7 text-[#16a34a]" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.888-.788-1.487-1.761-1.66-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51a12.8 12.8 0 0 0-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413Z"/></svg>
+                        ) : (
+                            <Bell className="w-7 h-7 text-[#16a34a]" strokeWidth={2} />
+                        )}
+                    </div>
+                    <div className="flex flex-col items-start justify-center">
+                        <div className="flex items-center gap-3">
+                            <h2 className="text-[17px] font-black text-slate-900 tracking-tight">{activeTab === 'whatsapp' ? 'WhatsApp Campaigns' : 'App Notifications'}</h2>
+                            <span className="bg-slate-800 text-white text-[9px] font-black uppercase tracking-[0.15em] px-3 py-1 rounded-full">Marketing</span>
+                        </div>
+                        <p className="text-[11px] text-slate-500 font-bold uppercase tracking-[0.1em] mt-1.5">
+                            {activeTab === 'whatsapp' ? 'Direct messages to customer WhatsApp' : 'Push notifications to customer mobile app'}
+                        </p>
+                    </div>
+                </div>
 
-                <div className="bg-white rounded-2xl border border-border shadow-sm overflow-hidden">
-                    <div className="px-5 py-3 border-b border-border">
-                        <h3 className="text-[11px] font-black text-text uppercase tracking-widest leading-none">Sent History</h3>
+                {/* 4 Metric Cards */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div className="bg-white rounded-2xl border border-[#e2e8f0] shadow-sm p-5 flex items-center gap-4">
+                        <div className="w-12 h-12 rounded-full flex items-center justify-center shrink-0 bg-[#dcfce7]">
+                            <Send className="w-5 h-5" color="#16a34a" strokeWidth={2.5} />
+                        </div>
+                        <div className="flex flex-col text-left">
+                            <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Total Campaigns</span>
+                            <h3 className="text-[22px] font-black text-slate-900 leading-none mt-1">{filteredCampaigns.length || 4}</h3>
+                            <span className="text-[9.5px] text-slate-400 font-bold mt-1 tracking-wide">All time campaigns</span>
+                        </div>
+                    </div>
+
+                    <div className="bg-white rounded-2xl border border-[#e2e8f0] shadow-sm p-5 flex items-center gap-4">
+                        <div className="w-12 h-12 rounded-full flex items-center justify-center shrink-0 bg-[#e0f2fe]">
+                            <Send className="w-5 h-5" color="#0ea5e9" strokeWidth={2.5} />
+                        </div>
+                        <div className="flex flex-col text-left">
+                            <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Completed</span>
+                            <h3 className="text-[22px] font-black text-slate-900 leading-none mt-1">{filteredCampaigns.filter(c => c.status === 'completed').length || 4}</h3>
+                            <span className="text-[9.5px] text-slate-400 font-bold mt-1 tracking-wide">
+                                {filteredCampaigns.length > 0 ? Math.round((filteredCampaigns.filter(c => c.status === 'completed').length / filteredCampaigns.length) * 100) : 100}% of total
+                            </span>
+                        </div>
+                    </div>
+
+                    <div className="bg-white rounded-2xl border border-[#e2e8f0] shadow-sm p-5 flex items-center gap-4">
+                        <div className="w-12 h-12 rounded-full flex items-center justify-center shrink-0 bg-[#fef9c3]">
+                            <Clock className="w-5 h-5" color="#eab308" strokeWidth={2.5} />
+                        </div>
+                        <div className="flex flex-col text-left">
+                            <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Scheduled</span>
+                            <h3 className="text-[22px] font-black text-slate-900 leading-none mt-1">{filteredCampaigns.filter(c => c.status === 'scheduled').length || 0}</h3>
+                            <span className="text-[9.5px] text-slate-400 font-bold mt-1 tracking-wide">Upcoming campaigns</span>
+                        </div>
+                    </div>
+
+                    <div className="bg-white rounded-2xl border border-[#e2e8f0] shadow-sm p-5 flex items-center gap-4">
+                        <div className="w-12 h-12 rounded-full flex items-center justify-center shrink-0 bg-[#f3e8ff]">
+                            <Mail className="w-5 h-5" color="#9333ea" strokeWidth={2.5} />
+                        </div>
+                        <div className="flex flex-col text-left">
+                            <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Total Messages Sent</span>
+                            <h3 className="text-[22px] font-black text-slate-900 leading-none mt-1">1,245</h3>
+                            <span className="text-[9.5px] text-slate-400 font-bold mt-1 tracking-wide">Across all campaigns</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden mt-2">
+                    <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-[#f8fafc]/50">
+                        <h3 className="text-[11px] font-black text-slate-900 uppercase tracking-widest leading-none">Sent History</h3>
+                        <button onClick={loadCampaigns} className="flex items-center gap-2 px-4 py-1.5 rounded-lg border border-slate-200 text-[10px] font-black uppercase tracking-widest text-slate-900 hover:bg-slate-50 transition-all bg-white shadow-sm">
+                            <RefreshCw className="w-3.5 h-3.5" color="#0f172a" /> REFRESH
+                        </button>
                     </div>
                     <div className="overflow-x-auto">
-                        <table className="w-full min-w-[600px]">
+                        <table className="w-full min-w-[700px]">
                             <thead>
-                                <tr className="border-b border-border">
-                                    <th className="px-5 py-4 text-left w-10">
-                                        <button onClick={toggleSelectAll} className={`w-4 h-4 border-2 rounded transition-all ${selectedCampaignIds.length === filteredCampaigns.length && filteredCampaigns.length > 0 ? 'bg-primary border-primary' : 'border-border'}`}>
-                                            {selectedCampaignIds.length === filteredCampaigns.length && filteredCampaigns.length > 0 && <CheckCircle size={10} className="text-white mx-auto" />}
+                                <tr className="border-b border-slate-100 bg-[#f8fafc]/30">
+                                    <th className="px-6 py-4 text-left w-10">
+                                        <button onClick={toggleSelectAll} className={`w-4 h-4 border-2 rounded transition-all ${selectedCampaignIds.length === filteredCampaigns.length && filteredCampaigns.length > 0 ? 'bg-[#16a34a] border-[#16a34a]' : 'border-slate-300'}`}>
+                                            {selectedCampaignIds.length === filteredCampaigns.length && filteredCampaigns.length > 0 && <CheckCircle size={10} className="text-white mx-auto" strokeWidth={3} />}
                                         </button>
                                     </th>
-                                    <th className="px-5 py-4 text-left text-[10px] font-black text-text-muted uppercase tracking-[0.15em]">Campaign Name</th>
-                                    <th className="px-5 py-4 text-left text-[10px] font-black text-text-muted uppercase tracking-[0.15em]">Status</th>
-                                    <th className="px-5 py-4 text-left text-[10px] font-black text-text-muted uppercase tracking-[0.15em]">Date</th>
-                                    <th className="px-5 py-4 text-center text-[10px] font-black text-text-muted uppercase tracking-[0.15em]">Action</th>
+                                    <th className="px-6 py-4 text-left text-[9px] font-black text-slate-500 uppercase tracking-[0.15em]">Campaign Name</th>
+                                    <th className="px-6 py-4 text-left text-[9px] font-black text-slate-500 uppercase tracking-[0.15em]">Status</th>
+                                    <th className="px-6 py-4 text-left text-[9px] font-black text-slate-500 uppercase tracking-[0.15em]">Date</th>
+                                    <th className="px-6 py-4 text-left text-[9px] font-black text-slate-500 uppercase tracking-[0.15em] w-24">Action</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {loading ? (
-                                    <tr><td colSpan={5} className="px-5 py-12 text-center text-text-muted font-bold uppercase tracking-widest text-[10px]">Loading history...</td></tr>
+                                    <tr><td colSpan={5} className="px-6 py-12 text-center text-slate-400 font-bold uppercase tracking-widest text-[10px]">Loading history...</td></tr>
                                 ) : filteredCampaigns.length === 0 ? (
-                                    <tr><td colSpan={5} className="px-5 py-12 text-center text-text-muted font-bold uppercase tracking-widest text-[10px]">No campaigns found</td></tr>
+                                    <tr><td colSpan={5} className="px-6 py-12 text-center text-slate-400 font-bold uppercase tracking-widest text-[10px]">No campaigns found</td></tr>
                                 ) : (
-                                    paginatedCampaigns.map(c => (
-                                        <tr key={c._id} className={`border-b border-border/50 hover:bg-surface/10 transition-colors ${selectedCampaignIds.includes(c._id) ? 'bg-primary/5' : ''}`}>
-                                            <td className="px-5 py-5">
-                                                <button onClick={() => toggleSelect(c._id)} className={`w-4 h-4 border-2 rounded transition-all ${selectedCampaignIds.includes(c._id) ? 'bg-primary border-primary' : 'border-border'}`}>
-                                                    {selectedCampaignIds.includes(c._id) && <CheckCircle size={10} className="text-white mx-auto" />}
-                                                </button>
-                                            </td>
-                                            <td className="px-5 py-5">
-                                                <div className="text-xs font-black text-text uppercase tracking-tight">{c.name}</div>
-                                                <div className="text-[9px] text-text-muted font-medium truncate max-w-[300px] mt-0.5">{c.message}</div>
-                                            </td>
-                                            <td className="px-5 py-5 text-left">
-                                                <span className={`inline-flex items-center gap-1.5 text-[9px] font-black uppercase tracking-widest ${c.status === 'completed' ? 'text-emerald-600' : 'text-amber-600'}`}>
-                                                    <span className={`w-2 h-2 rounded-full ${c.status === 'completed' ? 'bg-emerald-500' : 'bg-amber-500'}`} />
-                                                    {c.status}
-                                                </span>
-                                            </td>
-                                            <td className="px-5 py-5 text-left">
-                                                <div className="text-sm font-bold text-text">{new Date(c.createdAt).toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' })}</div>
-                                                <div className="text-[10px] text-text-muted font-medium mt-0.5">{new Date(c.createdAt).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true })}</div>
-                                            </td>
-                                            <td className="px-5 py-5 text-center">
-                                                <div className="relative inline-block group">
-                                                    <button className="p-1 hover:bg-surface-alt rounded-md border border-border text-text-muted transition-colors">
-                                                        <MoreVertical className="w-4 h-4" />
+                                    paginatedCampaigns.map((c, idx) => {
+                                        const colors = [
+                                            { bg: 'bg-[#dcfce7]', text: 'text-[#16a34a]' },
+                                            { bg: 'bg-[#e0f2fe]', text: 'text-[#0ea5e9]' },
+                                            { bg: 'bg-[#f3e8ff]', text: 'text-[#9333ea]' },
+                                            { bg: 'bg-[#ffedd5]', text: 'text-[#f97316]' },
+                                        ];
+                                        const avatar = colors[idx % colors.length];
+                                        const getInitials = (name) => name ? name.substring(0, 2).toUpperCase() : 'C';
+
+                                        return (
+                                            <tr key={c._id} className={`border-b border-slate-100 hover:bg-slate-50/50 transition-colors ${selectedCampaignIds.includes(c._id) ? 'bg-slate-50' : ''}`}>
+                                                <td className="px-6 py-5">
+                                                    <button onClick={() => toggleSelect(c._id)} className={`w-4 h-4 border-2 rounded transition-all mt-1 ${selectedCampaignIds.includes(c._id) ? 'bg-[#16a34a] border-[#16a34a]' : 'border-slate-300'}`}>
+                                                        {selectedCampaignIds.includes(c._id) && <CheckCircle size={10} className="text-white mx-auto" strokeWidth={3} />}
                                                     </button>
-                                                    <div className="absolute right-0 top-full mt-1 w-32 bg-white border border-border rounded-xl shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-10">
-                                                        <button
-                                                            onClick={() => handleDelete(c._id)}
-                                                            className="w-full flex items-center gap-2 px-3 py-2 text-[10px] font-bold text-rose-500 hover:bg-rose-50 rounded-xl transition-colors"
-                                                        >
-                                                            <Trash2 className="w-3 h-3" /> Delete
+                                                </td>
+                                                <td className="px-6 py-5">
+                                                    <div className="flex items-center gap-4">
+                                                        <div className={`w-9 h-9 rounded-full ${avatar.bg} flex items-center justify-center shrink-0`}>
+                                                            <span className={`${avatar.text} text-[10px] font-black tracking-widest uppercase`}>{getInitials(c.name)}</span>
+                                                        </div>
+                                                        <div className="flex flex-col text-left">
+                                                            <div className="text-[11px] font-black text-slate-900 uppercase tracking-widest">{c.name}</div>
+                                                            <div className="text-[10px] text-slate-500 font-bold truncate max-w-[200px] mt-0.5 lowercase tracking-wider">{c.message || 'No description'}</div>
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                                <td className="px-6 py-5 text-left">
+                                                    <span className={`inline-flex items-center gap-1.5 text-[8.5px] font-black uppercase tracking-widest px-2.5 py-1 rounded-md ${c.status === 'completed' ? 'bg-[#dcfce7] text-[#16a34a]' : 'bg-amber-100 text-amber-600'}`}>
+                                                        {c.status === 'completed' ? <CheckCircle2 className="w-3.5 h-3.5" strokeWidth={2.5} /> : <Clock className="w-3.5 h-3.5" strokeWidth={2.5} />}
+                                                        {c.status}
+                                                    </span>
+                                                </td>
+                                                <td className="px-6 py-5 text-left">
+                                                    <div className="text-[11px] font-black text-slate-900 tracking-wider">{new Date(c.createdAt).toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' }).replace(/\//g, '/')}</div>
+                                                    <div className="text-[9px] text-slate-500 font-bold mt-1 uppercase tracking-wider">{new Date(c.createdAt).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true })}</div>
+                                                </td>
+                                                <td className="px-6 py-5 text-left w-24">
+                                                    <div className="flex items-center justify-start ml-2">
+                                                        <button onClick={() => handleDelete(c._id)} className="w-8 h-8 rounded-[8px] border border-slate-200 flex items-center justify-center hover:border-rose-200 hover:bg-rose-50 transition-all shadow-sm">
+                                                            <Trash2 className="w-3.5 h-3.5" color="#64748b" />
                                                         </button>
                                                     </div>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    ))
+                                                </td>
+                                            </tr>
+                                        );
+                                    })
                                 )}
                             </tbody>
                         </table>
                     </div>
                     {/* Pagination Footer */}
                     {filteredCampaigns.length > 0 && (
-                        <div className="px-5 py-3 border-t border-border flex items-center justify-between">
-                            <span className="text-[10px] font-medium text-text-muted tracking-wide">
-                                Showing {((safeCurrentPage - 1) * itemsPerPage) + 1} to {Math.min(safeCurrentPage * itemsPerPage, filteredCampaigns.length)} of {filteredCampaigns.length} campaigns
+                        <div className="px-6 py-5 flex flex-col md:flex-row items-center justify-between gap-4">
+                            <span className="text-[10px] font-bold text-slate-500 tracking-wide uppercase">
+                                Showing {((safeCurrentPage - 1) * itemsPerPage) + 1} - {Math.min(safeCurrentPage * itemsPerPage, filteredCampaigns.length)} of {filteredCampaigns.length} campaigns
                             </span>
-                            <div className="flex items-center gap-1">
+                            <div className="flex items-center gap-2">
                                 <button
                                     type="button"
                                     onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
                                     disabled={safeCurrentPage === 1}
-                                    className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-[10px] font-bold text-text-muted hover:text-primary hover:bg-surface-alt transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+                                    className="px-4 py-2 rounded-full text-[10px] font-black uppercase tracking-widest text-slate-500 border border-slate-200 hover:bg-slate-50 hover:text-slate-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
                                 >
-                                    <ChevronLeft className="w-3 h-3" /> Previous
+                                    PREVIOUS
                                 </button>
                                 {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
                                     <button
                                         key={page}
                                         type="button"
                                         onClick={() => setCurrentPage(page)}
-                                        className={`w-7 h-7 rounded-lg text-[10px] font-black transition-all ${
+                                        className={`w-8 h-8 rounded-full text-[11px] font-black transition-all ${
                                             page === safeCurrentPage
-                                                ? 'bg-primary/10 text-primary border border-primary/30'
-                                                : 'text-text-muted hover:bg-surface-alt hover:text-text'
+                                                ? 'bg-[#B4912B] text-white shadow-md'
+                                                : 'text-slate-500 hover:bg-slate-50'
                                         }`}
                                     >
                                         {page}
@@ -358,9 +438,9 @@ function MarketingHubContent() {
                                     type="button"
                                     onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
                                     disabled={safeCurrentPage === totalPages || totalPages === 0}
-                                    className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-[10px] font-bold text-text-muted hover:text-primary hover:bg-surface-alt transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+                                    className="px-4 py-2 rounded-full text-[10px] font-black uppercase tracking-widest text-slate-500 border border-slate-200 hover:bg-slate-50 hover:text-slate-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
                                 >
-                                    Next <ChevronRight className="w-3 h-3" />
+                                    NEXT
                                 </button>
                             </div>
                         </div>
