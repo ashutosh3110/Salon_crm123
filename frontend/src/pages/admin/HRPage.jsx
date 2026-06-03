@@ -78,15 +78,22 @@ export default function HRPage({ tab = 'attendance' }) {
     return (
         <div className="space-y-6 animate-reveal text-left font-black">
             {/* Header section - matching ServicesPage/StaffPage pattern */}
-            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6 mb-2">
                 <div>
-                    <div className="flex items-center gap-2 text-[10px] font-black text-text-muted uppercase tracking-[0.2em] mb-3">
-                        <span className="opacity-60">Operations</span>
+                    <div className="flex items-center gap-2 text-[10px] font-black text-slate-500 uppercase tracking-widest mb-3">
+                        <span className="opacity-70">Operations</span>
                         <ChevronRight className="w-3.5 h-3.5 opacity-40" />
-                        <span className="text-primary">Human Resources</span>
+                        <span className="text-[#B4912B]">Human Resources</span>
                     </div>
-                    <h1 className="text-3xl font-black text-text tracking-tighter uppercase leading-none">{activeTab.label}</h1>
-                    <p className="text-[10px] font-black text-text-muted mt-2 uppercase tracking-[0.3em] opacity-60">{tabHint}</p>
+                    <h1 className="text-2xl font-black text-[#0B0A1A] tracking-tight uppercase">{activeTab.label}</h1>
+                    <p className="text-sm font-medium text-slate-500 mt-1">{tabHint}</p>
+                </div>
+                <div className="flex items-center gap-3">
+                    <button className="flex items-center gap-2 bg-white border border-slate-200 px-4 py-2 rounded-full text-xs font-bold text-slate-700 shadow-sm hover:bg-slate-50 transition-all">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-slate-500"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+                        REHAN HAIR - INDORE
+                        <ChevronRight className="w-4 h-4 text-slate-400 rotate-90" />
+                    </button>
                 </div>
             </div>
 

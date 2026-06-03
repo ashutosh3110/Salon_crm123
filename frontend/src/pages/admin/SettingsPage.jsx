@@ -411,15 +411,15 @@ export default function SettingsPage({ section: propSection }) {
                                         </div>
                                         <div className="relative">
                                             <div className="absolute inset-y-0 left-0 pl-1.5 flex items-center pointer-events-none">
-                                                <div className="w-7 h-7 rounded-full bg-blue-100 flex items-center justify-center">
-                                                    <UserIcon className="w-4 h-4 text-blue-700" />
+                                                <div className="w-7 h-7 rounded-full bg-blue-100 dark:bg-blue-500/20 flex items-center justify-center">
+                                                    <UserIcon className="w-4 h-4 text-blue-700 dark:text-blue-400" />
                                                 </div>
                                             </div>
                                             <input
                                                 type="text"
                                                 value={profileForm.name}
                                                 onChange={(e) => setProfileForm({ ...profileForm, name: e.target.value })}
-                                                className="w-full pl-12 pr-4 py-2.5 rounded-xl allow-curve border border-gray-200 text-sm font-medium text-gray-900 focus:border-primary outline-none transition-all bg-white shadow-sm"
+                                                className="w-full !pl-11 pr-4 py-2.5 rounded-xl allow-curve border border-gray-200 dark:border-slate-700 text-sm font-medium text-gray-900 dark:text-slate-100 focus:border-primary outline-none transition-all bg-white dark:bg-slate-800 shadow-sm"
                                             />
                                         </div>
                                     </div>
@@ -432,15 +432,15 @@ export default function SettingsPage({ section: propSection }) {
                                         </div>
                                         <div className="relative">
                                             <div className="absolute inset-y-0 left-0 pl-1.5 flex items-center pointer-events-none">
-                                                <div className="w-7 h-7 rounded-full bg-purple-100 flex items-center justify-center">
-                                                    <Mail className="w-4 h-4 text-purple-700" />
+                                                <div className="w-7 h-7 rounded-full bg-purple-100 dark:bg-purple-500/20 flex items-center justify-center">
+                                                    <Mail className="w-4 h-4 text-purple-700 dark:text-purple-400" />
                                                 </div>
                                             </div>
                                             <input
                                                 type="email"
                                                 value={profileForm.email}
                                                 onChange={(e) => setProfileForm({ ...profileForm, email: e.target.value })}
-                                                className="w-full pl-12 pr-4 py-2.5 rounded-xl allow-curve border border-gray-200 text-sm font-medium text-gray-900 focus:border-primary outline-none transition-all bg-white shadow-sm"
+                                                className="w-full !pl-11 pr-4 py-2.5 rounded-xl allow-curve border border-gray-200 dark:border-slate-700 text-sm font-medium text-gray-900 dark:text-slate-100 focus:border-primary outline-none transition-all bg-white dark:bg-slate-800 shadow-sm"
                                             />
                                         </div>
                                     </div>
@@ -454,15 +454,15 @@ export default function SettingsPage({ section: propSection }) {
                                     </div>
                                     <div className="relative">
                                         <div className="absolute inset-y-0 left-0 pl-1.5 flex items-center pointer-events-none">
-                                            <div className="w-7 h-7 rounded-full bg-green-100 flex items-center justify-center">
-                                                <Phone className="w-4 h-4 text-green-700" />
+                                            <div className="w-7 h-7 rounded-full bg-green-100 dark:bg-green-500/20 flex items-center justify-center">
+                                                <Phone className="w-4 h-4 text-green-700 dark:text-green-400" />
                                             </div>
                                         </div>
                                         <input
                                             type="tel"
                                             value={profileForm.phone}
                                             onChange={(e) => setProfileForm({ ...profileForm, phone: e.target.value })}
-                                            className="w-full pl-12 pr-4 py-2.5 rounded-xl allow-curve border border-gray-200 text-sm font-medium text-gray-900 focus:border-primary outline-none transition-all bg-white shadow-sm"
+                                            className="w-full !pl-11 pr-4 py-2.5 rounded-xl allow-curve border border-gray-200 dark:border-slate-700 text-sm font-medium text-gray-900 dark:text-slate-100 focus:border-primary outline-none transition-all bg-white dark:bg-slate-800 shadow-sm"
                                             placeholder="+91..."
                                         />
                                     </div>
@@ -470,13 +470,13 @@ export default function SettingsPage({ section: propSection }) {
 
                                 {/* Footer Tip and Submit */}
                                 <div className="pt-6 border-t border-gray-100 flex flex-col sm:flex-row items-center justify-between gap-6">
-                                    <div className="bg-[#FFF9F0] border border-orange-50 rounded-xl p-5 flex items-start gap-4 shadow-sm w-full sm:w-auto flex-1">
+                                    <div className="bg-[#FFF9F0] dark:bg-orange-900/10 border border-orange-50 dark:border-orange-500/20 rounded-xl p-5 flex items-start gap-4 shadow-sm w-full sm:w-auto flex-1">
                                         <div className="mt-0.5 shrink-0">
                                             <Lightbulb className="w-5 h-5 text-[#D99A29]" />
                                         </div>
                                         <div>
-                                            <h4 className="text-[13px] font-bold text-gray-900">Keep your profile information updated</h4>
-                                            <p className="text-[12px] text-gray-600 mt-0.5 font-medium">
+                                            <h4 className="text-[13px] font-bold text-gray-900 dark:text-orange-100/90">Keep your profile information updated</h4>
+                                            <p className="text-[12px] text-gray-600 dark:text-orange-100/70 mt-0.5 font-medium">
                                                 This information is used for account recovery, notifications, and important communication.
                                             </p>
                                         </div>
@@ -567,10 +567,10 @@ export default function SettingsPage({ section: propSection }) {
                                 <div className="py-6 space-y-8">
                                     <div className="grid md:grid-cols-2 gap-x-6 gap-y-8">
                                         {/* Row 1, Col 1: Best Practices */}
-                                        <div className="flex items-start gap-3 p-4 bg-[#F8FAFC] border border-gray-100 rounded-xl h-full">
-                                            <Info className="w-5 h-5 text-blue-600 mt-0.5 shrink-0" />
-                                            <p className="text-[13px] leading-relaxed text-gray-600">
-                                                <span className="font-bold text-gray-900">Password best practices</span> Use at least 8 characters with a mix of letters, numbers, and symbols.
+                                        <div className="flex items-start gap-3 p-4 bg-[#F8FAFC] dark:bg-slate-800/50 border border-gray-100 dark:border-slate-700 rounded-xl h-full">
+                                            <Info className="w-5 h-5 text-blue-600 dark:text-blue-400 mt-0.5 shrink-0" />
+                                            <p className="text-[13px] leading-relaxed text-gray-600 dark:text-slate-300">
+                                                <span className="font-bold text-gray-900 dark:text-slate-100">Password best practices</span> Use at least 8 characters with a mix of letters, numbers, and symbols.
                                             </p>
                                         </div>
 
@@ -657,17 +657,17 @@ export default function SettingsPage({ section: propSection }) {
                                 </div>
 
                                 {/* Tip Banner and Submit Button */}
-                                <div className="bg-[#FFF9F0] border border-orange-100/50 rounded-xl p-5 flex flex-col sm:flex-row items-center justify-between gap-4 mt-2">
+                                <div className="bg-[#FFF9F0] dark:bg-orange-900/10 border border-orange-100/50 dark:border-orange-500/20 rounded-xl p-5 flex flex-col sm:flex-row items-center justify-between gap-4 mt-2">
                                     <div className="flex items-center gap-3">
                                         <Lightbulb className="w-5 h-5 text-orange-400 shrink-0" />
-                                        <p className="text-[13px] text-gray-700">
+                                        <p className="text-[13px] text-gray-700 dark:text-orange-100/90">
                                             <span className="font-bold">Tip:</span> Avoid using easily guessable information like your name, phone number, or birthdate.
                                         </p>
                                     </div>
                                     <button
                                         type="submit"
                                         disabled={isSaving}
-                                        className="px-6 py-3 bg-[#D99A29] hover:bg-[#c88d25] text-white rounded-lg font-bold text-[11px] uppercase tracking-widest transition-colors flex items-center justify-center gap-2 shrink-0 shadow-sm disabled:opacity-50"
+                                        className="px-6 py-3 bg-[#D99A29] dark:bg-[#D99A29] hover:bg-[#c88d25] dark:hover:bg-[#c88d25] text-white dark:text-white rounded-lg font-bold text-[11px] uppercase tracking-widest transition-colors flex items-center justify-center gap-2 shrink-0 shadow-sm disabled:opacity-50"
                                     >
                                         <Lock className="w-3.5 h-3.5" />
                                         {isSaving ? 'UPDATING…' : 'UPDATE PASSWORD'}
@@ -715,7 +715,7 @@ export default function SettingsPage({ section: propSection }) {
                                                     value={fiscal.businessName}
                                                     onChange={(e) => setFiscal({ ...fiscal, businessName: e.target.value })}
                                                     placeholder="WAPIXO"
-                                                    className="w-full px-4 py-2.5 rounded-xl allow-curve border border-gray-200 text-sm font-medium text-gray-900 focus:border-primary outline-none transition-all bg-white shadow-sm uppercase"
+                                                    className="w-full px-4 py-2.5 rounded-xl allow-curve border border-gray-200 dark:border-slate-700 text-sm font-medium text-gray-900 dark:text-slate-100 focus:border-primary outline-none transition-all bg-white dark:bg-slate-800 shadow-sm uppercase"
                                                 />
                                             </div>
                                             <div className="space-y-2">
@@ -731,7 +731,7 @@ export default function SettingsPage({ section: propSection }) {
                                                     value={fiscal.gstin}
                                                     onChange={(e) => setFiscal({ ...fiscal, gstin: e.target.value.toUpperCase() })}
                                                     placeholder="8979"
-                                                    className="w-full px-4 py-2.5 rounded-xl allow-curve border border-gray-200 text-sm font-medium text-gray-900 focus:border-primary outline-none transition-all bg-white shadow-sm"
+                                                    className="w-full px-4 py-2.5 rounded-xl allow-curve border border-gray-200 dark:border-slate-700 text-sm font-medium text-gray-900 dark:text-slate-100 focus:border-primary outline-none transition-all bg-white dark:bg-slate-800 shadow-sm"
                                                 />
                                             </div>
                                         </div>
@@ -746,8 +746,8 @@ export default function SettingsPage({ section: propSection }) {
                                                 </div>
                                                 <div className="relative">
                                                     <div className="absolute inset-y-0 left-0 pl-1.5 flex items-center pointer-events-none">
-                                                        <div className="w-7 h-7 rounded-lg bg-purple-100 flex items-center justify-center">
-                                                            <Gift className="w-4 h-4 text-purple-700" />
+                                                        <div className="w-7 h-7 rounded-lg bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center">
+                                                            <Gift className="w-4 h-4 text-purple-700 dark:text-purple-400" />
                                                         </div>
                                                     </div>
                                                     <input
@@ -755,7 +755,7 @@ export default function SettingsPage({ section: propSection }) {
                                                         min="0"
                                                         value={fiscal.birthdayPoints}
                                                         onChange={(e) => setFiscal({ ...fiscal, birthdayPoints: e.target.value })}
-                                                        className="w-full pl-12 pr-4 py-2.5 rounded-xl allow-curve border border-gray-200 text-sm font-bold text-gray-900 focus:border-primary outline-none transition-all bg-white shadow-sm"
+                                                        className="w-full !pl-11 pr-4 py-2.5 rounded-xl allow-curve border border-gray-200 dark:border-slate-700 text-sm font-bold text-gray-900 dark:text-slate-100 focus:border-primary outline-none transition-all bg-white dark:bg-slate-800 shadow-sm"
                                                     />
                                                 </div>
                                                 <p className="text-[11px] text-gray-500 font-medium pt-1">Points sent to customer on birthday</p>
@@ -769,8 +769,8 @@ export default function SettingsPage({ section: propSection }) {
                                                 </div>
                                                 <div className="relative">
                                                     <div className="absolute inset-y-0 left-0 pl-1.5 flex items-center pointer-events-none">
-                                                        <div className="w-7 h-7 rounded-lg bg-purple-100 flex items-center justify-center">
-                                                            <Gift className="w-4 h-4 text-purple-700" />
+                                                        <div className="w-7 h-7 rounded-lg bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center">
+                                                            <Gift className="w-4 h-4 text-purple-700 dark:text-purple-400" />
                                                         </div>
                                                     </div>
                                                     <input
@@ -778,7 +778,7 @@ export default function SettingsPage({ section: propSection }) {
                                                         min="0"
                                                         value={fiscal.anniversaryPoints}
                                                         onChange={(e) => setFiscal({ ...fiscal, anniversaryPoints: e.target.value })}
-                                                        className="w-full pl-12 pr-4 py-2.5 rounded-xl allow-curve border border-gray-200 text-sm font-bold text-gray-900 focus:border-primary outline-none transition-all bg-white shadow-sm"
+                                                        className="w-full !pl-11 pr-4 py-2.5 rounded-xl allow-curve border border-gray-200 dark:border-slate-700 text-sm font-bold text-gray-900 dark:text-slate-100 focus:border-primary outline-none transition-all bg-white dark:bg-slate-800 shadow-sm"
                                                     />
                                                 </div>
                                                 <p className="text-[11px] text-gray-500 font-medium pt-1">Points sent to customer on anniversary</p>
@@ -786,13 +786,13 @@ export default function SettingsPage({ section: propSection }) {
                                         </div>
 
                                         {/* Tip Banner */}
-                                        <div className="bg-[#FFF9F0] rounded-xl p-4 flex items-start gap-3 shadow-sm border border-orange-50">
+                                        <div className="bg-[#FFF9F0] dark:bg-orange-900/10 rounded-xl p-4 flex items-start gap-3 shadow-sm border border-orange-50 dark:border-orange-500/20">
                                             <div className="mt-0.5 shrink-0">
                                                 <Info className="w-5 h-5 text-[#D99A29]" />
                                             </div>
                                             <div>
-                                                <h4 className="text-[13px] font-bold text-gray-900">About loyalty points</h4>
-                                                <p className="text-[12px] text-gray-600 mt-0.5 font-medium">
+                                                <h4 className="text-[13px] font-bold text-gray-900 dark:text-orange-100/90">About loyalty points</h4>
+                                                <p className="text-[12px] text-gray-600 dark:text-orange-200/70 mt-0.5 font-medium">
                                                     These points will be automatically added to the customer's wallet on their special day.
                                                 </p>
                                             </div>
@@ -801,37 +801,37 @@ export default function SettingsPage({ section: propSection }) {
 
                                     {/* Right Column: Information */}
                                     <div className="w-full md:w-[320px] shrink-0">
-                                        <div className="bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl p-5 shadow-sm h-full">
-                                            <h3 className="text-[14px] font-bold text-gray-900 mb-5 tracking-tight">Information</h3>
-                                            
+                                        <div className="bg-[#F8FAFC] dark:bg-slate-800/50 border border-[#E2E8F0] dark:border-slate-700 rounded-xl p-5 shadow-sm h-full">
+                                            <h3 className="text-[14px] font-bold text-gray-900 dark:text-slate-100 mb-5 tracking-tight">Information</h3>
+
                                             <div className="space-y-5">
                                                 <div className="flex items-start gap-3">
-                                                    <div className="w-9 h-9 rounded-full bg-transparent border-[1.5px] border-blue-200 flex items-center justify-center shrink-0">
-                                                        <FileText className="w-4 h-4 text-blue-700" />
+                                                    <div className="w-9 h-9 rounded-full bg-transparent border-[1.5px] border-blue-200 dark:border-blue-500/30 flex items-center justify-center shrink-0">
+                                                        <FileText className="w-4 h-4 text-blue-700 dark:text-blue-400" />
                                                     </div>
                                                     <div>
-                                                        <h4 className="text-[12px] font-bold text-gray-900">Legal name</h4>
-                                                        <p className="text-[11px] text-gray-500 font-medium mt-0.5">Used on invoices and receipts.</p>
+                                                        <h4 className="text-[12px] font-bold text-gray-900 dark:text-slate-200">Legal name</h4>
+                                                        <p className="text-[11px] text-gray-500 dark:text-slate-400 font-medium mt-0.5">Used on invoices and receipts.</p>
                                                     </div>
                                                 </div>
-                                                
+
                                                 <div className="flex items-start gap-3">
-                                                    <div className="w-9 h-9 rounded-full bg-transparent border-[1.5px] border-blue-200 flex items-center justify-center shrink-0">
-                                                        <Gift className="w-4 h-4 text-blue-700" />
+                                                    <div className="w-9 h-9 rounded-full bg-transparent border-[1.5px] border-blue-200 dark:border-blue-500/30 flex items-center justify-center shrink-0">
+                                                        <Gift className="w-4 h-4 text-blue-700 dark:text-blue-400" />
                                                     </div>
                                                     <div>
-                                                        <h4 className="text-[12px] font-bold text-gray-900">GSTIN</h4>
-                                                        <p className="text-[11px] text-gray-500 font-medium mt-0.5">Used for tax calculation and compliance.</p>
+                                                        <h4 className="text-[12px] font-bold text-gray-900 dark:text-slate-200">GSTIN</h4>
+                                                        <p className="text-[11px] text-gray-500 dark:text-slate-400 font-medium mt-0.5">Used for tax calculation and compliance.</p>
                                                     </div>
                                                 </div>
-                                                
+
                                                 <div className="flex items-start gap-3">
-                                                    <div className="w-9 h-9 rounded-full bg-transparent border-[1.5px] border-blue-200 flex items-center justify-center shrink-0">
-                                                        <ShieldCheck className="w-4 h-4 text-blue-700" />
+                                                    <div className="w-9 h-9 rounded-full bg-transparent border-[1.5px] border-blue-200 dark:border-blue-500/30 flex items-center justify-center shrink-0">
+                                                        <ShieldCheck className="w-4 h-4 text-blue-700 dark:text-blue-400" />
                                                     </div>
                                                     <div>
-                                                        <h4 className="text-[12px] font-bold text-gray-900">Loyalty points</h4>
-                                                        <p className="text-[11px] text-gray-500 font-medium mt-0.5">Awarded automatically on special days.</p>
+                                                        <h4 className="text-[12px] font-bold text-gray-900 dark:text-slate-200">Loyalty points</h4>
+                                                        <p className="text-[11px] text-gray-500 dark:text-slate-400 font-medium mt-0.5">Awarded automatically on special days.</p>
                                                     </div>
                                                 </div>
                                             </div>
@@ -910,7 +910,6 @@ export default function SettingsPage({ section: propSection }) {
                                         <button
                                             type="button"
                                             onClick={handleAddTerm}
-                                            disabled={!newTerm.trim()}
                                             className="px-6 py-3 bg-primary text-white rounded-md font-bold text-[11px] uppercase tracking-widest hover:opacity-90 transition-colors flex items-center justify-center gap-2 shrink-0 shadow-sm"
                                         >
                                             <Plus className="w-4 h-4" /> Add
@@ -997,27 +996,27 @@ export default function SettingsPage({ section: propSection }) {
 
                             {/* Preview Card */}
                             {termsList.length > 0 && (
-                                <div className="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden mt-6">
-                                    <div className="bg-[#fdfaf5] border-b border-gray-200 px-6 py-4 flex items-center justify-between">
-                                        <h3 className="text-[11px] font-black text-gray-700 uppercase tracking-widest">
+                                <div className="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-2xl shadow-sm overflow-hidden mt-6">
+                                    <div className="bg-[#fdfaf5] dark:bg-slate-900/50 border-b border-gray-200 dark:border-slate-700 px-6 py-4 flex items-center justify-between">
+                                        <h3 className="text-[11px] font-black text-gray-700 dark:text-slate-300 uppercase tracking-widest">
                                             Invoice Preview
                                         </h3>
-                                        <button className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-gray-600 bg-white border border-gray-200 px-4 py-2 rounded-lg hover:bg-gray-50 transition-colors shadow-sm">
+                                        <button className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-gray-600 dark:text-slate-400 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-600 px-4 py-2 rounded-lg hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors shadow-sm">
                                             <Eye className="w-3.5 h-3.5" /> Preview on Invoice
                                         </button>
                                     </div>
                                     <div className="p-6">
                                         <div className="flex gap-4">
-                                            <div className="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center shrink-0">
-                                                <FileText className="w-5 h-5 text-amber-600" />
+                                            <div className="w-10 h-10 rounded-full bg-amber-100 dark:bg-amber-500/20 flex items-center justify-center shrink-0">
+                                                <FileText className="w-5 h-5 text-amber-600 dark:text-amber-400" />
                                             </div>
                                             <div className="flex-1 pt-1">
-                                                <h4 className="text-[11px] font-black text-gray-800 uppercase tracking-widest mb-3">
+                                                <h4 className="text-[11px] font-black text-gray-800 dark:text-slate-200 uppercase tracking-widest mb-3">
                                                     Terms & Conditions (Preview)
                                                 </h4>
                                                 <ol className="list-decimal list-inside space-y-2">
                                                     {termsList.map((t, i) => (
-                                                        <li key={i} className="text-[13px] font-semibold text-gray-600">{t}</li>
+                                                        <li key={i} className="text-[13px] font-semibold text-gray-600 dark:text-slate-400">{t}</li>
                                                     ))}
                                                 </ol>
                                             </div>
@@ -1027,19 +1026,19 @@ export default function SettingsPage({ section: propSection }) {
                             )}
 
                             {/* Bottom Banner */}
-                            <div className="bg-[#f5f8ff] border border-blue-100 rounded-2xl p-6 flex flex-col sm:flex-row items-center gap-4 shadow-sm mt-6">
-                                <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center shrink-0">
-                                    <Lightbulb className="w-6 h-6 text-blue-600" />
+                            <div className="bg-[#f5f8ff] dark:bg-blue-500/10 border border-blue-100 dark:border-blue-500/20 rounded-2xl p-6 flex flex-col sm:flex-row items-center gap-4 shadow-sm mt-6">
+                                <div className="w-12 h-12 rounded-full bg-blue-100 dark:bg-blue-500/20 flex items-center justify-center shrink-0">
+                                    <Lightbulb className="w-6 h-6 text-blue-600 dark:text-blue-400" />
                                 </div>
                                 <div className="flex-1 text-center sm:text-left">
-                                    <h3 className="text-[14px] font-bold text-gray-900 mb-1">
+                                    <h3 className="text-[14px] font-bold text-gray-900 dark:text-slate-100 mb-1">
                                         Display professional terms and conditions on every invoice.
                                     </h3>
-                                    <p className="text-[12px] font-medium text-gray-500">
+                                    <p className="text-[12px] font-medium text-gray-500 dark:text-slate-400">
                                         Build trust and avoid misunderstandings with clear policies.
                                     </p>
                                 </div>
-                                <button className="px-5 py-2.5 bg-white border border-gray-200 text-blue-600 rounded-lg font-bold text-[11px] hover:bg-blue-50 transition-colors flex items-center justify-center gap-2 shrink-0 shadow-sm mt-2 sm:mt-0">
+                                <button className="px-5 py-2.5 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-blue-600 dark:text-blue-400 rounded-lg font-bold text-[11px] hover:bg-blue-50 dark:hover:bg-slate-700 transition-colors flex items-center justify-center gap-2 shrink-0 shadow-sm mt-2 sm:mt-0">
                                     Learn more <ExternalLink className="w-3.5 h-3.5" />
                                 </button>
                             </div>
@@ -1223,9 +1222,9 @@ export default function SettingsPage({ section: propSection }) {
                         </div>
                     </div>
                     <div className="hidden md:flex shrink-0 absolute right-12 bottom-0 top-0 items-center justify-center">
-                        <img 
-                            src="/vectoreimage.png" 
-                            alt="Support Team" 
+                        <img
+                            src="/vectoreimage.png"
+                            alt="Support Team"
                             className="h-[80px] w-auto object-contain transform translate-y-2"
                         />
                     </div>
@@ -1234,56 +1233,56 @@ export default function SettingsPage({ section: propSection }) {
 
             {/* Bottom Banner for Security */}
             {activeTab === 'security' && (
-                <div className="bg-[#F0FDF4] border border-[#bbf7d0] rounded-2xl p-6 sm:p-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 shadow-sm w-full">
+                <div className="bg-[#F0FDF4] dark:bg-green-900/10 border border-[#bbf7d0] dark:border-green-500/20 rounded-2xl p-6 sm:p-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 shadow-sm w-full">
                     <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 rounded-full bg-[#16a34a] flex items-center justify-center shrink-0">
+                        <div className="w-12 h-12 rounded-full bg-[#16a34a] dark:bg-green-600 flex items-center justify-center shrink-0">
                             <ShieldCheck className="w-6 h-6 text-white" />
                         </div>
                         <div>
-                            <h3 className="text-[14px] font-bold text-gray-900 tracking-tight">Your security matters</h3>
-                            <p className="text-[13px] text-gray-600 font-medium mt-0.5 max-w-xl">
+                            <h3 className="text-[14px] font-bold text-gray-900 dark:text-slate-100 tracking-tight">Your security matters</h3>
+                            <p className="text-[13px] text-gray-600 dark:text-slate-400 font-medium mt-0.5 max-w-xl">
                                 We use industry-standard encryption to protect your data and keep your account safe.
                             </p>
                         </div>
                     </div>
-                    <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6 sm:pl-6 sm:border-l border-green-200/60 shrink-0">
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6 sm:pl-6 sm:border-l border-green-200/60 dark:border-green-500/20 shrink-0">
                         <div>
-                            <h3 className="text-[14px] font-bold text-gray-900 tracking-tight">Need help?</h3>
-                            <p className="text-[13px] text-gray-600 font-medium mt-0.5">
+                            <h3 className="text-[14px] font-bold text-gray-900 dark:text-slate-100 tracking-tight">Need help?</h3>
+                            <p className="text-[13px] text-gray-600 dark:text-slate-400 font-medium mt-0.5">
                                 Reach out to our support team for any security related assistance.
                             </p>
                         </div>
-                        <button className="px-5 py-2.5 bg-white border border-[#22c55e] text-[#16a34a] rounded-lg font-bold text-xs hover:bg-[#F0FDF4] transition-colors flex items-center gap-2 shrink-0 whitespace-nowrap">
+                        <button className="px-5 py-2.5 bg-white dark:bg-slate-800 border border-[#22c55e] dark:border-green-500 text-[#16a34a] dark:text-white rounded-lg font-bold text-xs hover:bg-[#F0FDF4] dark:hover:bg-slate-700 transition-colors flex items-center gap-2 shrink-0 whitespace-nowrap">
                             <Headset className="w-4 h-4" />
-                            Contact Support
+                            <span>Contact Support</span>
                         </button>
                     </div>
                 </div>
             )}
             {/* Bottom Banner for Business */}
             {activeTab === 'business' && (
-                <div className="bg-[#F0FDF4] border border-[#bbf7d0] rounded-2xl p-6 sm:p-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 shadow-sm w-full mt-6">
+                <div className="bg-[#F0FDF4] dark:bg-green-900/10 border border-[#bbf7d0] dark:border-green-500/20 rounded-2xl p-6 sm:p-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 shadow-sm w-full mt-6">
                     <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 rounded-full bg-[#16a34a] flex items-center justify-center shrink-0">
+                        <div className="w-12 h-12 rounded-full bg-[#16a34a] dark:bg-green-600 flex items-center justify-center shrink-0">
                             <ShieldCheck className="w-6 h-6 text-white" />
                         </div>
                         <div>
-                            <h3 className="text-[14px] font-bold text-gray-900 tracking-tight">Secure & Compliant</h3>
-                            <p className="text-[13px] text-gray-600 font-medium mt-0.5 max-w-xl">
+                            <h3 className="text-[14px] font-bold text-gray-900 dark:text-slate-100 tracking-tight">Secure & Compliant</h3>
+                            <p className="text-[13px] text-gray-600 dark:text-slate-400 font-medium mt-0.5 max-w-xl">
                                 Your business data is encrypted and protected. We never share your information.
                             </p>
                         </div>
                     </div>
-                    <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6 sm:pl-6 sm:border-l border-green-200/60 shrink-0">
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6 sm:pl-6 sm:border-l border-green-200/60 dark:border-green-500/20 shrink-0">
                         <div>
-                            <h3 className="text-[14px] font-bold text-gray-900 tracking-tight">Need help?</h3>
-                            <p className="text-[13px] text-gray-600 font-medium mt-0.5">
+                            <h3 className="text-[14px] font-bold text-gray-900 dark:text-slate-100 tracking-tight">Need help?</h3>
+                            <p className="text-[13px] text-gray-600 dark:text-slate-400 font-medium mt-0.5">
                                 Contact support for any queries related to business & tax information.
                             </p>
                         </div>
-                        <button className="px-5 py-2.5 bg-white border border-[#22c55e] text-[#16a34a] rounded-lg font-bold text-xs hover:bg-[#F0FDF4] transition-colors flex items-center gap-2 shrink-0 whitespace-nowrap shadow-sm">
+                        <button className="px-5 py-2.5 bg-white dark:bg-slate-800 border border-[#22c55e] dark:border-green-500 text-[#16a34a] dark:text-white rounded-lg font-bold text-xs hover:bg-[#F0FDF4] dark:hover:bg-slate-700 transition-colors flex items-center gap-2 shrink-0 whitespace-nowrap">
                             <Headset className="w-4 h-4" />
-                            Contact Support
+                            <span>Contact Support</span>
                         </button>
                     </div>
                 </div>
@@ -1291,20 +1290,20 @@ export default function SettingsPage({ section: propSection }) {
 
             {/* Bottom Banner for Profile */}
             {activeTab === 'profile' && (
-                <div className="bg-[#F0FDF4] border border-[#bbf7d0] rounded-2xl p-6 sm:p-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 shadow-sm w-full mt-6">
+                <div className="bg-[#F0FDF4] dark:bg-green-900/10 border border-[#bbf7d0] dark:border-green-500/20 rounded-2xl p-6 sm:p-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 shadow-sm w-full mt-6">
                     <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 rounded-full bg-[#16a34a] flex items-center justify-center shrink-0">
+                        <div className="w-12 h-12 rounded-full bg-[#16a34a] dark:bg-green-600 flex items-center justify-center shrink-0">
                             <ShieldCheck className="w-6 h-6 text-white" />
                         </div>
                         <div>
-                            <h3 className="text-[14px] font-bold text-gray-900 tracking-tight">Your data is safe with us</h3>
-                            <p className="text-[13px] text-gray-600 font-medium mt-0.5 max-w-xl">
+                            <h3 className="text-[14px] font-bold text-gray-900 dark:text-slate-100 tracking-tight">Your data is safe with us</h3>
+                            <p className="text-[13px] text-gray-600 dark:text-slate-400 font-medium mt-0.5 max-w-xl">
                                 We use industry-standard encryption to protect your personal information.
                             </p>
                         </div>
                     </div>
                     <div className="flex shrink-0">
-                        <button className="px-5 py-2.5 bg-white border border-[#22c55e] text-[#16a34a] rounded-lg font-bold text-xs hover:bg-[#F0FDF4] transition-colors flex items-center gap-2 shadow-sm">
+                        <button className="px-5 py-2.5 bg-white dark:bg-slate-800 border border-[#22c55e] dark:border-green-500 text-[#16a34a] dark:text-green-400 rounded-lg font-bold text-xs hover:bg-[#F0FDF4] dark:hover:bg-slate-700 transition-colors flex items-center gap-2 shadow-sm">
                             Learn about security <ExternalLink className="w-4 h-4" />
                         </button>
                     </div>

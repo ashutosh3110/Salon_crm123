@@ -182,10 +182,12 @@ export default function StaffPage() {
     useEffect(() => {
         let result = staff;
         if (search) {
+            const searchLower = search.toLowerCase();
+            const searchDigits = search.replace(/\D/g, '');
             result = result.filter(s =>
-                s.name?.toLowerCase().includes(search.toLowerCase()) ||
-                s.email?.toLowerCase().includes(search.toLowerCase()) ||
-                s.phone?.replace(/\D/g, '').includes(search.replace(/\D/g, ''))
+                (s.name && s.name.toLowerCase().includes(searchLower)) ||
+                (s.email && s.email.toLowerCase().includes(searchLower)) ||
+                (s.phone && searchDigits && s.phone.toString().replace(/\D/g, '').includes(searchDigits))
             );
         }
         if (roleFilter !== 'all') {
@@ -516,15 +518,15 @@ export default function StaffPage() {
                                     >
                                         <td className="px-6 py-5">
                                             <div className="flex items-center gap-4">
-                                                <div className={`w-10 h-10 rounded-full flex items-center justify-center font-black text-[14px] uppercase border border-slate-100 ${getAvatarColor(s.name)}`}>
-                                                    {s.avatar ? (
+                                                <div className={`relative w-10 h-10 rounded-full flex items-center justify-center font-black text-[14px] uppercase border border-slate-100 overflow-hidden ${getAvatarColor(s.name)}`}>
+                                                    <span>{s.name?.charAt(0) || 'U'}</span>
+                                                    {s.avatar && (
                                                         <img
                                                             src={getImageUrl(s.avatar)}
-                                                            alt={s.name}
-                                                            className="w-full h-full rounded-xl object-cover"
+                                                            alt=""
+                                                            className="absolute inset-0 w-full h-full object-cover"
+                                                            onError={(e) => { e.target.style.display = 'none'; }}
                                                         />
-                                                    ) : (
-                                                        s.name?.charAt(0) || 'U'
                                                     )}
                                                 </div>
                                                 <div>

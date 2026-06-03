@@ -51,13 +51,18 @@ export default function LoyaltyMembershipPage({ tab: initialTab = 'plans' }) {
         <div className="space-y-4 pb-4">
             {/* Header Section */}
             <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
-                <div>
-                    <h1 className="text-base sm:text-lg font-black text-black tracking-tight uppercase leading-none">
-                        LOYALTY & MEMBERSHIP
-                    </h1>
-                    <p className="text-[9px] font-black text-text-muted mt-1.5 uppercase tracking-[0.2em] opacity-60 leading-none">
-                        PROTOCOL MANAGEMENT / <span className="text-text font-black">{TABS.find(t => t.id === activeTab)?.label}</span>
-                    </p>
+                <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-[#B4912B] flex items-center justify-center shadow-md">
+                        <Crown className="w-6 h-6 text-white" />
+                    </div>
+                    <div>
+                        <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight uppercase leading-none">
+                            LOYALTY & MEMBERSHIP
+                        </h1>
+                        <p className="text-[10px] font-black text-slate-400 mt-1.5 uppercase tracking-[0.2em] leading-none">
+                            PROTOCOL MANAGEMENT / <span className="text-slate-600 font-black">{TABS.find(t => t.id === activeTab)?.label}</span>
+                        </p>
+                    </div>
                 </div>
 
                 <div className="flex flex-col sm:items-end">
@@ -69,7 +74,7 @@ export default function LoyaltyMembershipPage({ tab: initialTab = 'plans' }) {
             </div>
 
             {/* Navigation Tabs - Horizontal Scrollable on Mobile */}
-            <div className="flex overflow-x-auto no-scrollbar bg-white border border-slate-200 rounded-2xl shadow-sm w-fit overflow-hidden">
+            <div className="flex overflow-x-auto no-scrollbar bg-white border border-slate-200 rounded-xl shadow-sm w-fit overflow-hidden">
                 {TABS.map((tab, idx) => {
                     const isActive = activeTab === tab.id;
                     const Icon = tab.icon;
@@ -77,18 +82,18 @@ export default function LoyaltyMembershipPage({ tab: initialTab = 'plans' }) {
                         <button
                             key={tab.id}
                             onClick={() => navigate(`/admin/loyalty/${tab.id}`)}
-                            className={`flex items-center gap-2 px-4.5 py-2.5 transition-all duration-300 relative group whitespace-nowrap ${isActive
-                                ? 'bg-[#cca839] text-white'
-                                : 'text-slate-800 hover:bg-slate-50'
+                            className={`flex items-center gap-2 px-5 py-3 transition-all duration-300 relative group whitespace-nowrap ${isActive
+                                ? 'bg-[#B4912B] text-white'
+                                : 'text-slate-700 hover:bg-slate-50'
                                 }`}
                         >
                             <Icon 
-                                className={`transition-colors duration-300 ${isActive ? 'text-white' : 'text-slate-500 group-hover:text-black'}`}
-                                style={{ width: '15px', height: '15px' }}
+                                className={`transition-colors duration-300 ${isActive ? 'text-white' : 'text-slate-500 group-hover:text-slate-900'}`}
+                                style={{ width: '16px', height: '16px' }}
                             />
                             <span 
                                 className="block uppercase tracking-widest transition-colors duration-300"
-                                style={{ fontSize: '10.5px', fontWeight: 800 }}
+                                style={{ fontSize: '11px', fontWeight: 800 }}
                             >
                                 {tab.label}
                             </span>
