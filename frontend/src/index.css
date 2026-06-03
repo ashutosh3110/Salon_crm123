@@ -1970,3 +1970,25 @@ html .sa-panel .rounded-full:has(svg),
 html .sa-panel div[class*="w-"][class*="h-"]:has(svg) {
     border-radius: 12px !important;
 }
+
+/* Golden buttons / elements text color override to be always white */
+html button[class*="bg-[#B4912B]"],
+html a[class*="bg-[#B4912B]"],
+html [class*="bg-[#B4912B]"],
+html .bg-primary,
+html [class*="bg-primary"],
+html button[class*="bg-primary"],
+html button[class*="bg-[#B4912B]"] *,
+html a[class*="bg-[#B4912B]"] *,
+html [class*="bg-[#B4912B]"] *,
+html .bg-primary *,
+html [class*="bg-primary"] *,
+html button[class*="bg-primary"] *,
+html .bg-\[\#B4912B\],
+html button.bg-\[\#B4912B\],
+html a.bg-\[\#B4912B\],
+html .bg-\[\#B4912B\] *,
+html button.bg-\[\#B4912B\] *,
+html a.bg-\[\#B4912B\] * {
+    color: #ffffff !important;
+}
