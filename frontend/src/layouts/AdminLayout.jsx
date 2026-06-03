@@ -854,28 +854,41 @@ export default function AdminLayout() {
                 /* Light Mode Sidebar Icons & Sub-items Icons Visibility Override */
                 html:not(.dark) .admin-panel aside nav a svg,
                 html:not(.dark) .admin-panel aside nav button svg,
-                html:not(.dark) .admin-panel aside nav a span svg,
-                html:not(.dark) .admin-panel aside nav button span svg {
-                    color: #000000 !important;
-                    stroke: #000000 !important;
+                html:not(.dark) .admin-panel aside nav a svg *,
+                html:not(.dark) .admin-panel aside nav button svg * {
+                    color: #475569 !important;
+                    stroke: #475569 !important;
                     fill: none !important;
                     opacity: 1 !important;
                 }
 
-                /* Hover State for inactive icons */
-                html:not(.dark) .admin-panel aside nav a:hover svg,
-                html:not(.dark) .admin-panel aside nav button:hover svg {
-                    color: #000000 !important;
-                    stroke: #000000 !important;
+                /* Override currentColor rule from index.css for paths specifically */
+                html:not(.dark) .admin-panel aside nav [class*="text-"] svg *,
+                html:not(.dark) .admin-panel aside nav svg[class*="text-"] * {
+                    color: #475569 !important;
+                    stroke: #475569 !important;
                 }
 
-                /* Active state icons & text on gold background must stay solid black & white text */
+                /* Hover State for inactive icons */
+                html:not(.dark) .admin-panel aside nav a:hover svg,
+                html:not(.dark) .admin-panel aside nav button:hover svg,
+                html:not(.dark) .admin-panel aside nav a:hover svg *,
+                html:not(.dark) .admin-panel aside nav button:hover svg * {
+                    color: #B4912B !important;
+                    stroke: #B4912B !important;
+                }
+
+                /* Active state icons & text on gold background must stay solid white */
                 html:not(.dark) .admin-panel aside nav a[class*="bg-[#B4912B]"] svg,
                 html:not(.dark) .admin-panel aside nav button[class*="bg-[#B4912B]"] svg,
                 html:not(.dark) .admin-panel aside nav a.active svg,
-                html:not(.dark) .admin-panel aside nav button.active svg {
-                    color: #000000 !important;
-                    stroke: #000000 !important;
+                html:not(.dark) .admin-panel aside nav button.active svg,
+                html:not(.dark) .admin-panel aside nav a[class*="bg-[#B4912B]"] svg *,
+                html:not(.dark) .admin-panel aside nav button[class*="bg-[#B4912B]"] svg *,
+                html:not(.dark) .admin-panel aside nav a.active svg *,
+                html:not(.dark) .admin-panel aside nav button.active svg * {
+                    color: #ffffff !important;
+                    stroke: #ffffff !important;
                 }
                 html:not(.dark) .admin-panel aside nav a[class*="bg-[#B4912B]"] span,
                 html:not(.dark) .admin-panel aside nav button[class*="bg-[#B4912B]"] span,

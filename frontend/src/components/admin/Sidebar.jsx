@@ -355,14 +355,63 @@ export default function Sidebar({ collapsed, setCollapsed, isHovered, setIsHover
                     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
                     font-style: normal !important;
                 }
+
+                /* Light Mode Sidebar Icons Visibility Fixes */
+                html:not(.dark) .sidebar-container nav a svg.sidebar-svg-icon,
+                html:not(.dark) .sidebar-container nav button svg.sidebar-svg-icon,
+                html:not(.dark) .sidebar-container nav a svg.sidebar-svg-icon *,
+                html:not(.dark) .sidebar-container nav button svg.sidebar-svg-icon * {
+                    color: #475569 !important;
+                    stroke: #475569 !important;
+                    fill: none !important;
+                    opacity: 1 !important;
+                }
+
+                /* Hover State for inactive icons */
+                html:not(.dark) .sidebar-container nav a:hover svg.sidebar-svg-icon,
+                html:not(.dark) .sidebar-container nav button:hover svg.sidebar-svg-icon,
+                html:not(.dark) .sidebar-container nav a:hover svg.sidebar-svg-icon *,
+                html:not(.dark) .sidebar-container nav button:hover svg.sidebar-svg-icon * {
+                    color: #B4912B !important;
+                    stroke: #B4912B !important;
+                }
+
+                /* Active state icons & text on gold background */
+                html:not(.dark) .sidebar-container nav a[class*="bg-[#B4912B]"] svg.sidebar-svg-icon,
+                html:not(.dark) .sidebar-container nav button[class*="bg-[#B4912B]"] svg.sidebar-svg-icon,
+                html:not(.dark) .sidebar-container nav a.active svg.sidebar-svg-icon,
+                html:not(.dark) .sidebar-container nav button.active svg.sidebar-svg-icon,
+                html:not(.dark) .sidebar-container nav a[class*="bg-[#B4912B]"] svg.sidebar-svg-icon *,
+                html:not(.dark) .sidebar-container nav button[class*="bg-[#B4912B]"] svg.sidebar-svg-icon *,
+                html:not(.dark) .sidebar-container nav a.active svg.sidebar-svg-icon *,
+                html:not(.dark) .sidebar-container nav button.active svg.sidebar-svg-icon * {
+                    color: #ffffff !important;
+                    stroke: #ffffff !important;
+                }
+
+                /* Dark Mode Sidebar Icons styling */
+                .dark .sidebar-container nav a svg.sidebar-svg-icon,
+                .dark .sidebar-container nav button svg.sidebar-svg-icon,
+                .dark .sidebar-container nav a svg.sidebar-svg-icon *,
+                .dark .sidebar-container nav button svg.sidebar-svg-icon * {
+                    color: #94a3b8 !important;
+                    stroke: #94a3b8 !important;
+                }
+                .dark .sidebar-container nav a:hover svg.sidebar-svg-icon,
+                .dark .sidebar-container nav button:hover svg.sidebar-svg-icon,
+                .dark .sidebar-container nav a:hover svg.sidebar-svg-icon *,
+                .dark .sidebar-container nav button:hover svg.sidebar-svg-icon * {
+                    color: #B4912B !important;
+                    stroke: #B4912B !important;
+                }
             `}</style>
 
 
 
             {/* Logo */}
-            <div className="flex items-center justify-between h-20 px-6 border-b border-[#e2e8f0] dark:border-slate-700/50">
-                <div className="flex-1 flex items-center justify-center overflow-hidden">
-                    <div className={`${effectiveCollapsed ? 'h-8 w-8' : 'h-16 w-56'} flex items-center justify-center shrink-0`}>
+            <div className={`flex ${effectiveCollapsed ? 'flex-col gap-2 h-24 py-3 justify-center' : 'flex-row justify-between h-20 px-6'} items-center border-b border-[#e2e8f0] dark:border-slate-700/50 relative`}>
+                <div className="flex items-center justify-center overflow-hidden">
+                    <div className={`${effectiveCollapsed ? 'h-7 w-7' : 'h-16 w-40'} flex items-center justify-center shrink-0`}>
                         <img
                             src={logoSrc}
                             alt="Logo"
@@ -370,6 +419,18 @@ export default function Sidebar({ collapsed, setCollapsed, isHovered, setIsHover
                         />
                     </div>
                 </div>
+                {/* Desktop Collapse/Expand Button */}
+                <button
+                    onClick={() => setCollapsed(!collapsed)}
+                    className="hidden lg:flex w-7 h-7 rounded-lg items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors text-slate-500 hover:text-[#0f172a] cursor-pointer"
+                    title={collapsed ? "Expand Sidebar" : "Collapse Sidebar"}
+                >
+                    {collapsed ? (
+                        <ChevronRight className="w-4 h-4" />
+                    ) : (
+                        <ChevronLeft className="w-4 h-4" />
+                    )}
+                </button>
                 <button
                     onClick={() => setMobileOpen(false)}
                     className="lg:hidden absolute top-4 right-4 w-8 h-8 rounded-lg flex items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors shrink-0"
@@ -424,7 +485,7 @@ export default function Sidebar({ collapsed, setCollapsed, isHovered, setIsHover
                                     >
                                         <div className="flex items-center gap-3">
                                             <item.icon
-                                                className={`w-5 h-5 shrink-0 ${active ? 'text-white' : 'text-slate-500 group-hover:text-[#B4912B]'}`}
+                                                className={`w-5 h-5 shrink-0 sidebar-svg-icon ${active ? 'text-white' : ''}`}
                                             />
                                             {!effectiveCollapsed && <span className={`whitespace-nowrap font-bold !block !opacity-100 transition-colors ${active ? '!text-white' : '!text-slate-700 dark:!text-slate-300 group-hover:!text-[#B4912B]'}`}>{item.label}</span>}
                                         </div>
@@ -503,7 +564,7 @@ export default function Sidebar({ collapsed, setCollapsed, isHovered, setIsHover
                                         return (
                                             <>
                                                 <item.icon
-                                                    className={`w-5 h-5 shrink-0 ${currentActive ? 'text-white' : 'text-slate-500 group-hover:text-[#B4912B]'}`}
+                                                    className={`w-5 h-5 shrink-0 sidebar-svg-icon ${currentActive ? 'text-white' : ''}`}
                                                 />
                                                 {!effectiveCollapsed && (
                                                     <div className="flex items-center justify-between flex-1">
@@ -571,18 +632,6 @@ export default function Sidebar({ collapsed, setCollapsed, isHovered, setIsHover
             >
                 {sidebarContent}
 
-                {/* Collapse toggle */}
-                <button
-                    onClick={() => setCollapsed(!collapsed)}
-                    className="hidden lg:flex absolute -right-3 top-[28px] w-6 h-6 rounded-full bg-white border border-[#e2e8f0] items-center justify-center shadow-md hover:shadow-lg hover:scale-110 hover:text-[#0f172a] transition-all duration-200 z-50 cursor-pointer text-slate-500"
-                    title={collapsed ? "Expand Sidebar" : "Collapse Sidebar"}
-                >
-                    {collapsed ? (
-                        <ChevronRight className="w-3.5 h-3.5" />
-                    ) : (
-                        <ChevronLeft className="w-3.5 h-3.5" />
-                    )}
-                </button>
             </aside>
 
             {/* Mobile Overlay */}
