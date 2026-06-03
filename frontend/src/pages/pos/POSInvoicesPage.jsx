@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
     Search, Calendar, Eye, X, Download,
     Clock, CreditCard, Banknote, Smartphone, Ban,
@@ -578,6 +579,7 @@ const StandardInvoicePDF = ({ invoice, salon }) => {
 };
 
 export default function POSInvoicesPage() {
+    const navigate = useNavigate();
     const { salon, outlets, activeOutletId, setActiveOutletId } = useBusiness();
     const [invoices, setInvoices] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -839,47 +841,24 @@ export default function POSInvoicesPage() {
                     <button className="w-10 h-10 bg-white border border-slate-200 rounded-2xl flex items-center justify-center text-slate-500 hover:text-slate-800 hover:border-slate-300 transition-all shadow-sm">
                         <RefreshCw className="w-4 h-4" />
                     </button>
-                    <button className="px-5 py-2.5 bg-[#B4912B] text-white text-[10px] font-black uppercase tracking-widest rounded-2xl shadow-sm hover:bg-[#9c7d24] transition-all flex items-center gap-2">
+                    <button 
+                        onClick={() => navigate('/pos/billing')}
+                        className="px-5 py-2.5 bg-[#B4912B] text-white text-[10px] font-black uppercase tracking-widest rounded-2xl shadow-sm hover:bg-[#9c7d24] transition-all flex items-center gap-2"
+                    >
                         <FileText className="w-3.5 h-3.5" />
                         Create Bill
                     </button>
                 </div>
             </div>
 
-            {/* Unified Tabs Row */}
-            <div className="flex items-center gap-2 bg-white p-1.5 rounded-3xl border border-slate-200 shadow-sm overflow-x-auto no-scrollbar">
-                {[
-                    { id: 'today', label: 'Today', icon: Calendar, filterType: 'date' },
-                    { id: 'all_time', label: 'All Time', icon: FileText, filterType: 'date' },
-                    { id: 'all_inv', label: 'All Invoices', icon: FileText, filterType: 'type' },
-                    { id: 'service', label: 'Services', icon: FileText, filterType: 'type' },
-                    { id: 'product', label: 'Products', icon: Box, filterType: 'type' }
-                ].map(f => {
-                    const isActive = (f.filterType === 'date' && dateFilter === (f.id === 'all_time' ? 'all' : f.id)) ||
-                                     (f.filterType === 'type' && typeFilter === (f.id === 'all_inv' ? 'all' : f.id));
-                    return (
-                        <button
-                            key={f.id}
-                            onClick={() => {
-                                if (f.filterType === 'date') setDateFilter(f.id === 'all_time' ? 'all' : f.id);
-                                if (f.filterType === 'type') setTypeFilter(f.id === 'all_inv' ? 'all' : f.id);
-                                setPage(1);
-                            }}
-                            className={`flex-1 min-w-[120px] flex items-center justify-center gap-2 px-4 py-3 text-[10px] font-black uppercase tracking-widest transition-all rounded-2xl whitespace-nowrap ${isActive ? 'bg-[#B4912B] text-white shadow-md' : 'text-slate-500 hover:text-slate-800 hover:bg-slate-50'}`}
-                        >
-                            <f.icon className="w-3.5 h-3.5 shrink-0" /> {f.label}
-                        </button>
-                    );
-                })}
-            </div>
 
             {/* Earning Stats */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 {[
-                    { title: "Total Revenue", badge: "Overall", value: `₹${invoices.reduce((s, i) => s + (i.total || 0), 0).toLocaleString()}`, subtitle: "vs Yesterday ₹0 (0%)", icon: Banknote, color: "text-emerald-500", bg: "bg-emerald-50" },
-                    { title: "Today's Earnings", badge: "Today", value: `₹${invoices.filter(i => new Date(i.createdAt).toDateString() === new Date().toDateString()).reduce((s, i) => s + (i.total || 0), 0).toLocaleString()}`, subtitle: "vs Yesterday ₹0 (0%)", icon: Calendar, color: "text-emerald-500", bg: "bg-emerald-50" },
-                    { title: "UPI / Card", badge: "Digital", value: `₹${invoices.filter(i => ['online', 'card', 'upi'].includes(i.paymentMethod)).reduce((s, i) => s + (i.total || 0), 0).toLocaleString()}`, subtitle: "vs Yesterday ₹0 (0%)", icon: Smartphone, color: "text-blue-500", bg: "bg-blue-50" },
-                    { title: "Cash Collected", badge: "Physical", value: `₹${invoices.filter(i => i.paymentMethod === 'cash' || !i.paymentMethod).reduce((s, i) => s + (i.total || 0), 0).toLocaleString()}`, subtitle: "vs Yesterday ₹0 (0%)", icon: Banknote, color: "text-orange-500", bg: "bg-orange-50" }
+                    { title: "Total Revenue", badge: "Overall", value: `₹${invoices.reduce((s, i) => s + (i.total || 0), 0).toLocaleString()}`, subtitle: "vs Yesterday ₹0 (0%)", icon: Banknote, color: "text-emerald-500 dark:text-emerald-400", bg: "bg-emerald-50 dark:bg-emerald-950/30" },
+                    { title: "Today's Earnings", badge: "Today", value: `₹${invoices.filter(i => new Date(i.createdAt).toDateString() === new Date().toDateString()).reduce((s, i) => s + (i.total || 0), 0).toLocaleString()}`, subtitle: "vs Yesterday ₹0 (0%)", icon: Calendar, color: "text-emerald-500 dark:text-emerald-400", bg: "bg-emerald-50 dark:bg-emerald-950/30" },
+                    { title: "UPI / Card", badge: "Digital", value: `₹${invoices.filter(i => ['online', 'card', 'upi'].includes(i.paymentMethod)).reduce((s, i) => s + (i.total || 0), 0).toLocaleString()}`, subtitle: "vs Yesterday ₹0 (0%)", icon: Smartphone, color: "text-blue-500 dark:text-blue-400", bg: "bg-blue-50 dark:bg-blue-950/30" },
+                    { title: "Cash Collected", badge: "Physical", value: `₹${invoices.filter(i => i.paymentMethod === 'cash' || !i.paymentMethod).reduce((s, i) => s + (i.total || 0), 0).toLocaleString()}`, subtitle: "vs Yesterday ₹0 (0%)", icon: Banknote, color: "text-orange-500 dark:text-orange-400", bg: "bg-orange-50 dark:bg-orange-950/30" }
                 ].map((stat, i) => (
                     <div key={i} className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm flex flex-col justify-between relative overflow-hidden group">
                         <div className="flex justify-between items-start mb-4">
@@ -1013,6 +992,41 @@ export default function POSInvoicesPage() {
                 </div>
             </div>
 
+            {/* Unified Tabs Row */}
+            <div className="flex items-center gap-2 bg-white p-1.5 rounded-3xl border border-slate-200 shadow-sm overflow-x-auto no-scrollbar mb-2">
+                {[
+                    { id: 'today', label: 'Today', icon: Calendar, filterType: 'date' },
+                    { id: 'all_time', label: 'All Time', icon: FileText, filterType: 'date' },
+                    { id: 'all_inv', label: 'All Invoices', icon: FileText, filterType: 'type' },
+                    { id: 'service', label: 'Services', icon: FileText, filterType: 'type' },
+                    { id: 'product', label: 'Products', icon: Box, filterType: 'type' }
+                ].map(f => {
+                    const isActive = (f.filterType === 'date' && dateFilter === (f.id === 'all_time' ? 'all' : f.id)) ||
+                                     (f.filterType === 'type' && typeFilter === (f.id === 'all_inv' ? 'all' : f.id));
+                    return (
+                        <button
+                            key={f.id}
+                            onClick={() => {
+                                if (f.id === 'all_inv') {
+                                    setTypeFilter('all');
+                                    setDateFilter('all');
+                                } else if (f.id === 'all_time') {
+                                    setDateFilter('all');
+                                    setTypeFilter('all');
+                                } else {
+                                    if (f.filterType === 'date') setDateFilter(f.id);
+                                    if (f.filterType === 'type') setTypeFilter(f.id);
+                                }
+                                setPage(1);
+                            }}
+                            className={`flex-1 min-w-[120px] flex items-center justify-center gap-2 px-4 py-3 text-[10px] font-black uppercase tracking-widest transition-all rounded-2xl whitespace-nowrap ${isActive ? 'bg-[#B4912B] text-white shadow-md' : 'text-slate-500 hover:text-slate-800 hover:bg-slate-50'}`}
+                        >
+                            <f.icon className="w-3.5 h-3.5 shrink-0" /> {f.label}
+                        </button>
+                    );
+                })}
+            </div>
+
             {/* Table */}
             <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden min-h-[400px] flex flex-col p-2">
                 <div className="p-4 flex items-center justify-between border-b border-slate-100">
@@ -1118,8 +1132,9 @@ export default function POSInvoicesPage() {
 
             {/* Invoice Detail Modal */}
             {selectedInvoice && (
-                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-                    <div className="bg-surface rounded-none w-full max-w-lg p-0 shadow-[0_0_50px_rgba(0,0,0,0.5)] animate-in zoom-in-95 duration-300 border border-border overflow-hidden">
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+                    <div className="fixed -inset-[100vmax] bg-black/60 backdrop-blur-sm" onClick={() => setSelectedInvoice(null)} />
+                    <div className="bg-surface rounded-none w-full max-w-lg p-0 shadow-[0_0_50px_rgba(0,0,0,0.5)] animate-in zoom-in-95 duration-300 border border-border overflow-hidden relative z-10">
                         <div className="flex items-center justify-between p-5 bg-surface-alt border-b border-border relative overflow-hidden">
                             <div className="absolute top-0 right-0 w-24 h-24 bg-primary/5 -mr-10 -mt-10 rotate-45 pointer-events-none" />
                             <div className="relative z-10">

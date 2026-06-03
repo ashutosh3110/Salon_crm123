@@ -94,6 +94,10 @@ api.interceptors.response.use(
             'color: #888;', 
             'color: #ff5252;');
 
+        if (error.config?.skipToast) {
+            return Promise.reject(error);
+        }
+
         if (!error.response) {
             // This usually means the server is unreachable (Network Error)
             const isLocalhost = API_URL.includes('localhost');

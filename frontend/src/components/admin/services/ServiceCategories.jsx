@@ -42,11 +42,16 @@ export default function ServiceCategories({
     // Lock body scroll when modal is open
     useEffect(() => {
         if (modalState.isOpen) {
-            document.body.style.overflow = 'hidden';
+            document.body.classList.add('modal-open');
+            document.documentElement.classList.add('modal-open');
         } else {
-            document.body.style.overflow = 'unset';
+            document.body.classList.remove('modal-open');
+            document.documentElement.classList.remove('modal-open');
         }
-        return () => { document.body.style.overflow = 'unset'; };
+        return () => {
+            document.body.classList.remove('modal-open');
+            document.documentElement.classList.remove('modal-open');
+        };
     }, [modalState.isOpen]);
 
     // Form States
@@ -138,6 +143,66 @@ export default function ServiceCategories({
 
     return (
         <div className="space-y-6">
+            <style>{`
+                body.modal-open, html.modal-open {
+                    overflow: hidden !important;
+                    height: 100vh !important;
+                    position: fixed !important;
+                    width: 100% !important;
+                }
+
+                .dark .admin-panel button.btn-custom-sample:not(aside *),
+                .dark .admin-panel button.btn-custom-sample {
+                    background-color: #1e293b !important;
+                    border: 1px solid rgba(255, 255, 255, 0.15) !important;
+                    color: #cbd5e1 !important;
+                }
+                .dark .admin-panel button.btn-custom-sample:not(aside *):hover {
+                    background-color: #334155 !important;
+                    color: #ffffff !important;
+                    border-color: rgba(255, 255, 255, 0.3) !important;
+                }
+                
+                /* Import Button Overrides */
+                .dark .admin-panel button.btn-custom-import:not(aside *),
+                .dark .admin-panel button.btn-custom-import {
+                    background-color: rgba(16, 185, 129, 0.12) !important;
+                    border: 1px solid rgba(16, 185, 129, 0.3) !important;
+                    color: #34d399 !important;
+                }
+                .dark .admin-panel button.btn-custom-import:not(aside *):hover {
+                    background-color: rgba(16, 185, 129, 0.25) !important;
+                    color: #10b981 !important;
+                    border-color: rgba(16, 185, 129, 0.5) !important;
+                }
+                .dark .admin-panel button.btn-custom-import svg {
+                    color: #34d399 !important;
+                    stroke: #34d399 !important;
+                }
+                .dark .admin-panel button.btn-custom-import:hover svg {
+                    color: #10b981 !important;
+                    stroke: #10b981 !important;
+                }
+                
+                /* Light Mode Import Icon Visibility Fix */
+                html:not(.dark) .admin-panel button.btn-custom-import svg {
+                    color: #047857 !important;
+                    stroke: #047857 !important;
+                }
+                
+                .dark .admin-panel button.btn-custom-initialize:not(aside *),
+                .dark .admin-panel button.btn-custom-initialize {
+                    background-color: #B4912B !important;
+                    border: 1px solid #B4912B !important;
+                    color: #ffffff !important;
+                }
+                .dark .admin-panel button.btn-custom-initialize:not(aside *):hover {
+                    background-color: #d4af37 !important;
+                    border-color: #d4af37 !important;
+                    color: #ffffff !important;
+                }
+            `}</style>
+
             {/* Header */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 bg-surface p-2.5 rounded-2xl border border-border/40 shadow-sm">
                 <div className="relative flex-1 max-w-md">
@@ -165,7 +230,7 @@ export default function ServiceCategories({
                     {onDownloadTemplate && (
                         <button
                             onClick={onDownloadTemplate}
-                            className="flex items-center justify-center gap-1 px-3 py-2 rounded-xl bg-surface-alt border border-border text-foreground hover:text-primary transition-all active:scale-95 text-[10px] font-bold uppercase tracking-wider"
+                            className="flex items-center justify-center gap-1 px-3 py-2 rounded-xl bg-surface-alt border border-border text-foreground hover:text-primary transition-all active:scale-95 text-[10px] font-bold uppercase tracking-wider btn-custom-sample"
                             title="Download Sample Template"
                         >
                             <Download className="w-3 h-3" />
@@ -185,7 +250,7 @@ export default function ServiceCategories({
                             <button
                                 onClick={() => document.getElementById('category-bulk-upload-integrated').click()}
                                 disabled={importing}
-                                className="flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 hover:bg-emerald-500/20 transition-all active:scale-95 text-[10px] font-black uppercase tracking-widest disabled:opacity-50 group"
+                                className="flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 hover:bg-emerald-500/20 transition-all active:scale-95 text-[10px] font-black uppercase tracking-widest disabled:opacity-50 group btn-custom-import"
                             >
                                 {importing ? <RefreshCcw className="w-3 h-3 animate-spin" /> : <Upload className="w-3 h-3 group-hover:scale-110 transition-transform" />}
                                 <span>{importing ? 'Importing...' : 'Import'}</span>
@@ -195,7 +260,7 @@ export default function ServiceCategories({
 
                     <button
                         onClick={openAddModal}
-                        className="flex items-center gap-1.5 bg-primary text-primary-foreground border border-primary px-4 py-2 rounded-xl text-[10px] font-bold uppercase tracking-wider shadow-md shadow-primary/10 hover:bg-primary/90 transition-all active:scale-95"
+                        className="flex items-center gap-1.5 bg-primary text-primary-foreground border border-primary px-4 py-2 rounded-xl text-[10px] font-bold uppercase tracking-wider shadow-md shadow-primary/10 hover:bg-primary/90 transition-all active:scale-95 btn-custom-initialize"
                     >
                         <Plus className="w-3.5 h-3.5" /> Initialize Category
                     </button>
@@ -241,10 +306,12 @@ export default function ServiceCategories({
                             className="relative z-10 cursor-pointer group/content"
                             onClick={() => navigate('/admin/services/list', { state: { category: cat.name } })}
                         >
-                            <div className="flex items-center gap-1.5">
-                                <h3 className="text-base font-bold text-text leading-tight uppercase tracking-tight group-hover/content:text-primary transition-colors">{cat.name}</h3>
-                                <span className={`w-1.5 h-1.5 rounded-full ${cat.status === 'active' ? 'bg-emerald-500' : 'bg-muted-foreground/30'}`} />
-                                <ArrowUpRight className="w-3.5 h-3.5 opacity-0 group-hover/content:opacity-100 group-hover/content:translate-x-0.5 group-hover/content:-translate-y-0.5 transition-all text-primary" />
+                            <div className="flex items-center gap-1.5 flex-wrap min-w-0 w-full">
+                                <h3 className="text-base font-bold text-text leading-tight uppercase tracking-tight group-hover/content:text-primary transition-colors break-words break-all min-w-0 flex-1">
+                                    {cat.name}
+                                </h3>
+                                <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${cat.status === 'active' ? 'bg-emerald-500' : 'bg-muted-foreground/30'}`} />
+                                <ArrowUpRight className="w-3.5 h-3.5 opacity-0 group-hover/content:opacity-100 group-hover/content:translate-x-0.5 group-hover/content:-translate-y-0.5 transition-all text-primary shrink-0" />
                             </div>
                             <div className="flex items-center flex-wrap gap-1.5 mt-2">
                                 <div className="flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-surface-alt text-text-secondary text-[8.5px] font-black uppercase tracking-widest border border-border/50">
@@ -285,7 +352,11 @@ export default function ServiceCategories({
 
             {/* Quick Add/Edit Modal */}
             {modalState.isOpen && createPortal(
-                <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
+                <div 
+                    className="fixed inset-0 z-[9999] flex items-center justify-center p-4 overscroll-contain"
+                    onWheel={(e) => e.stopPropagation()}
+                    onTouchMove={(e) => e.stopPropagation()}
+                >
                     <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onClick={closeModal} />
                     <div className="bg-white dark:bg-slate-800 rounded-xl p-6 w-full max-w-md relative z-10 shadow-2xl animate-in zoom-in-95 duration-200 border border-border admin-panel" onClick={(e) => e.stopPropagation()}>
                         <div className="flex items-center justify-between mb-5">

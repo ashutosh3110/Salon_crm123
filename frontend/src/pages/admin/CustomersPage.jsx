@@ -1149,8 +1149,11 @@ function PaymentRemindersView({ onCustomerClick, setWhatsappModal, fetchCustomer
                 <div className="flex flex-wrap items-center gap-4">
                     {/* Toggle Switch */}
                     <label className="flex items-center gap-2 cursor-pointer select-none group">
-                        <div className={`relative w-8 h-4.5 rounded-full transition-all duration-300 ${autoReminder ? 'bg-emerald-500' : 'bg-border/60'}`}>
-                            <div className={`absolute top-0.5 w-3.5 h-3.5 bg-white rounded-full shadow-sm transition-all duration-300 ${autoReminder ? 'left-[16px]' : 'left-0.5'}`} />
+                        <div className={`relative w-9 h-5 rounded-full transition-all duration-300 ${autoReminder ? 'bg-emerald-500' : 'bg-slate-300 dark:bg-slate-750'}`}>
+                            <div 
+                                className={`absolute top-0.5 w-4 h-4 rounded-full shadow-sm transition-all duration-300 ${autoReminder ? 'left-[18px]' : 'left-0.5'}`}
+                                style={{ backgroundColor: '#ffffff' }}
+                            />
                         </div>
                         <div className="flex flex-col line-clamp-1 text-left">
                             <span className="text-[9px] font-black uppercase text-text tracking-wider">Auto Pilot</span>
@@ -1257,11 +1260,19 @@ function PaymentRemindersView({ onCustomerClick, setWhatsappModal, fetchCustomer
                         </colgroup>
                         <thead className="bg-surface-alt border-b border-border/40">
                             <tr>
+<<<<<<< HEAD
                                 <th className="px-4 py-2 text-[9px] font-bold text-text-muted uppercase tracking-widest text-left">Client profile</th>
                                 <th className="px-4 py-2 text-[9px] font-bold text-text-muted uppercase tracking-widest text-left">Dues Amount</th>
                                 <th className="px-4 py-2 text-[9px] font-bold text-text-muted uppercase tracking-widest text-left">Reminders</th>
                                 <th className="px-4 py-2 text-[9px] font-bold text-text-muted uppercase tracking-widest text-left">Last Reminded</th>
                                 <th className="px-4 py-2 text-[9px] font-bold text-text-muted uppercase tracking-widest text-left">Actions</th>
+=======
+                                <th className="px-4 py-2 text-[9px] font-bold text-text-muted uppercase tracking-widest w-[22%]" style={{ textAlign: 'left' }}>Client profile</th>
+                                <th className="px-4 py-2 text-[9px] font-bold text-text-muted uppercase tracking-widest text-right w-[18%]" style={{ textAlign: 'right' }}>Dues Amount</th>
+                                <th className="px-4 py-2 text-[9px] font-bold text-text-muted uppercase tracking-widest text-center w-[18%]" style={{ textAlign: 'center' }}>Reminders</th>
+                                <th className="px-4 py-2 text-[9px] font-bold text-text-muted uppercase tracking-widest text-center w-[22%]" style={{ textAlign: 'center' }}>Last Reminded</th>
+                                <th className="px-4 py-2 text-[9px] font-bold text-text-muted uppercase tracking-widest text-center w-[20%]" style={{ textAlign: 'center' }}>Actions</th>
+>>>>>>> a86b5793c530a01d4eba053fa8a7ba96cd8940ea
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-border/20">
@@ -1294,6 +1305,7 @@ function PaymentRemindersView({ onCustomerClick, setWhatsappModal, fetchCustomer
                                             {c.lastPaymentReminderSentAt ? new Date(c.lastPaymentReminderSentAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : 'NEVER'}
                                         </span>
                                     </td>
+<<<<<<< HEAD
                                     <td className="px-4 py-2.5 overflow-hidden text-left">
                                         <button
                                             onClick={(e) => { e.stopPropagation(); handleSendReminder(c); }}
@@ -1301,6 +1313,17 @@ function PaymentRemindersView({ onCustomerClick, setWhatsappModal, fetchCustomer
                                         >
                                             <Send className="w-3 h-3 flex-shrink-0" /> Transmit Alert
                                         </button>
+=======
+                                    <td className="px-4 py-2 text-center">
+                                        <div className="flex items-center justify-center" onClick={e => e.stopPropagation()}>
+                                            <button
+                                                onClick={() => handleSendReminder(c)}
+                                                className="flex items-center justify-center gap-1 px-2.5 py-1 bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-500 rounded-lg hover:bg-emerald-500/20 transition-all text-[9px] font-black uppercase tracking-wider active:scale-95"
+                                            >
+                                                <Send className="w-3 h-3" /> Transmit Alert
+                                            </button>
+                                        </div>
+>>>>>>> a86b5793c530a01d4eba053fa8a7ba96cd8940ea
                                     </td>
                                 </tr>
                             ))}

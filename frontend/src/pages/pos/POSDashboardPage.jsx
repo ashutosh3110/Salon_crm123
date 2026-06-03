@@ -32,12 +32,13 @@ export default function POSDashboardPage() {
     const [loading, setLoading] = useState(true);
     const { products, bookings, activeOutletId, setActiveOutletId, outlets, fetchProducts, fetchBookings, salon } = useBusiness();
     const [refreshing, setRefreshing] = useState(false);
-    const lastLoadedRef = useRef({ outletId: null, salonId: null });
-    const loadDashboard = async () => {
+    const [range, setRange] = useState('today');
+    const lastLoadedRef = useRef({ outletId: null, salonId: null, range: null });
+    const loadDashboard = async (selectedRange = range) => {
         try {
             setLoading(true);
             const response = await api.get('/pos/dashboard', {
-                params: { outletId: activeOutletId }
+                params: { outletId: activeOutletId, range: selectedRange }
             });
             if (response.data?.success) {
                 setDashboardData(response.data.data);
@@ -52,19 +53,44 @@ export default function POSDashboardPage() {
     };
 
     useEffect(() => {
-        // Prevent redundant loads if IDs haven't changed
-        if (lastLoadedRef.current.outletId === activeOutletId && lastLoadedRef.current.salonId === salon?._id) {
+        // Prevent redundant loads if IDs and range haven't changed
+        if (
+            lastLoadedRef.current.outletId === activeOutletId && 
+            lastLoadedRef.current.salonId === salon?._id &&
+            lastLoadedRef.current.range === range
+        ) {
             return;
         }
 
-        loadDashboard();
+        loadDashboard(range);
         // Also ensure bookings for this outlet are fresh
         if (salon?._id) {
             fetchBookings?.();
         }
         
-        lastLoadedRef.current = { outletId: activeOutletId, salonId: salon?._id };
-    }, [activeOutletId, salon?._id]);
+        lastLoadedRef.current = { outletId: activeOutletId, salonId: salon?._id, range };
+    }, [activeOutletId, salon?._id, range]);
+
+    useEffect(() => {
+        if (showAppointments) {
+            document.body.style.overflow = 'hidden';
+            document.documentElement.style.overflow = 'hidden';
+        } else {
+            document.body.style.overflow = '';
+            document.documentElement.style.overflow = '';
+        }
+        return () => {
+            document.body.style.overflow = '';
+            document.documentElement.style.overflow = '';
+        };
+    }, [showAppointments]);
+
+    const rangeLabel = {
+        today: "Today",
+        yesterday: "Yesterday",
+        '7days': "7 Days",
+        '30days': "30 Days"
+    }[range] || "Today";
 
     const lowStockItems = useMemo(() => {
         return (products || []).filter((p) => {
@@ -107,10 +133,46 @@ export default function POSDashboardPage() {
     };
 
     const statCards = [
-        { label: "TODAY'S REVENUE", value: `₹${stats.revenue.toLocaleString()}`, icon: DollarSign, trend: 'LIVE', positive: true, iconBg: 'bg-indigo-50', iconColor: 'text-indigo-600', trendColor: 'text-emerald-500 bg-emerald-50 border border-emerald-100' },
-        { label: 'TOTAL INVOICES', value: stats.count, icon: Receipt, trend: 'REAL-TIME', positive: true, iconBg: 'bg-blue-50', iconColor: 'text-blue-500', trendColor: 'text-emerald-500 bg-emerald-50 border border-emerald-100' },
-        { label: 'UNPAID BILLS', value: stats.unpaidCount, icon: Clock, trend: 'ACTION REQ', positive: false, iconBg: 'bg-orange-50', iconColor: 'text-orange-500', trendColor: 'text-rose-500 bg-rose-50 border border-rose-100' },
-        { label: 'AVG. TICKET', value: `₹${stats.avgBill.toLocaleString()}`, icon: TrendingUp, trend: 'CALCULATED', positive: true, iconBg: 'bg-emerald-50', iconColor: 'text-emerald-500', trendColor: 'text-emerald-500 bg-emerald-50 border border-emerald-100' },
+        { 
+            label: `${rangeLabel.toUpperCase()}'S REVENUE`, 
+            value: `₹${stats.revenue.toLocaleString()}`, 
+            icon: DollarSign, 
+            trend: 'LIVE', 
+            positive: true, 
+            iconBg: 'bg-indigo-50 dark:bg-indigo-950/40', 
+            iconColor: 'text-indigo-600 dark:text-indigo-400', 
+            trendColor: '!text-emerald-700 dark:!text-emerald-400 !bg-emerald-50 dark:!bg-emerald-950/40 !border !border-emerald-200/50 dark:!border-emerald-900/30' 
+        },
+        { 
+            label: 'TOTAL INVOICES', 
+            value: stats.count, 
+            icon: Receipt, 
+            trend: 'REAL-TIME', 
+            positive: true, 
+            iconBg: 'bg-blue-50 dark:bg-blue-950/40', 
+            iconColor: 'text-blue-500 dark:text-blue-400', 
+            trendColor: '!text-emerald-700 dark:!text-emerald-400 !bg-emerald-50 dark:!bg-emerald-950/40 !border !border-emerald-200/50 dark:!border-emerald-900/30' 
+        },
+        { 
+            label: 'UNPAID BILLS', 
+            value: stats.unpaidCount, 
+            icon: Clock, 
+            trend: 'ACTION REQ', 
+            positive: false, 
+            iconBg: 'bg-orange-50 dark:bg-orange-950/40', 
+            iconColor: 'text-orange-500 dark:text-orange-400', 
+            trendColor: '!text-rose-700 dark:!text-rose-400 !bg-rose-50 dark:!bg-rose-950/40 !border !border-rose-200/50 dark:!border-rose-900/30' 
+        },
+        { 
+            label: 'AVG. TICKET', 
+            value: `₹${stats.avgBill.toLocaleString()}`, 
+            icon: TrendingUp, 
+            trend: 'CALCULATED', 
+            positive: true, 
+            iconBg: 'bg-emerald-50 dark:bg-emerald-950/40', 
+            iconColor: 'text-emerald-500 dark:text-emerald-400', 
+            trendColor: '!text-emerald-700 dark:!text-emerald-400 !bg-emerald-50 dark:!bg-emerald-950/40 !border !border-emerald-200/50 dark:!border-emerald-900/30' 
+        },
     ];
 
     const quickActions = [
@@ -156,8 +218,8 @@ export default function POSDashboardPage() {
                     >
                         <RefreshCcw className="w-4 h-4" />
                     </button>
-                    <button onClick={() => navigate('/pos/billing')} className="px-6 py-3 bg-[#cca839] text-white rounded-lg font-black text-[11px] uppercase tracking-widest hover:bg-[#b59533] transition-all flex items-center gap-2 shadow-sm border-b-2 border-black/10">
-                        <Zap className="w-4 h-4" /> CREATE BILL
+                    <button onClick={() => navigate('/pos/billing')} className="px-6 py-3 !bg-[#cca839] !text-slate-950 rounded-lg font-black text-[11px] uppercase tracking-widest hover:!bg-[#b59533] transition-all flex items-center gap-2 shadow-sm border-b-2 border-black/10">
+                        <Zap className="w-4 h-4 !text-[#0f172a] !stroke-[#0f172a]" /> <span className="!text-slate-950">CREATE BILL</span>
                     </button>
                 </div>
             </div>
@@ -220,7 +282,7 @@ export default function POSDashboardPage() {
                     <div className="flex items-center justify-between mb-8">
                         <div>
                             <h3 className="text-[12px] font-black text-text tracking-[0.2em] uppercase">PAYMENT SUMMARY</h3>
-                            <p className="text-[10px] text-text-muted font-black uppercase tracking-widest mt-1">TODAY'S PAYMENT COLLECTION BY METHOD</p>
+                            <p className="text-[10px] text-text-muted font-black uppercase tracking-widest mt-1">{rangeLabel.toUpperCase()}'S PAYMENT COLLECTION BY METHOD</p>
                         </div>
                         <div className="flex gap-6 items-center">
                             <div className="flex gap-4 items-center">
@@ -228,8 +290,20 @@ export default function POSDashboardPage() {
                                 <div className="flex items-center gap-2"><div className="w-3 h-3 rounded-sm bg-purple-500"/><span className="text-[10px] font-black uppercase tracking-widest text-text">UPI</span></div>
                                 <div className="flex items-center gap-2"><div className="w-3 h-3 rounded-sm bg-amber-500"/><span className="text-[10px] font-black uppercase tracking-widest text-text">UNPAID</span></div>
                             </div>
-                            <div className="flex items-center gap-2 border border-slate-200 px-4 py-2 rounded-lg bg-white shadow-sm cursor-pointer text-[10px] font-black uppercase tracking-widest text-text hover:bg-slate-50">
-                                Today <ChevronDown className="w-4 h-4" />
+                            <div className="relative group">
+                                <select
+                                    value={range}
+                                    onChange={(e) => setRange(e.target.value)}
+                                    className="pl-4 pr-8 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-[10px] font-black uppercase tracking-widest outline-none focus:border-primary transition-all cursor-pointer appearance-none min-w-[120px] shadow-sm text-text"
+                                >
+                                    <option value="today">Today</option>
+                                    <option value="yesterday">Yesterday</option>
+                                    <option value="7days">7 Days</option>
+                                    <option value="30days">30 Days</option>
+                                </select>
+                                <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
+                                    <ChevronDown className="w-3.5 h-3.5 text-text-muted" />
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -253,7 +327,7 @@ export default function POSDashboardPage() {
 
                     <div className="grid grid-cols-4 mt-12 pt-6 border-t border-slate-100 divide-x divide-slate-100 relative">
                         <div className="flex items-center gap-4 px-4">
-                            <div className="w-10 h-10 rounded-lg bg-emerald-50 flex items-center justify-center border border-emerald-100 shrink-0"><DollarSign className="w-5 h-5 text-emerald-500"/></div>
+                            <div className="w-10 h-10 rounded-lg bg-emerald-50 dark:bg-emerald-950/30 flex items-center justify-center border border-emerald-100 dark:border-emerald-900/30 shrink-0"><DollarSign className="w-5 h-5 text-emerald-500 dark:text-emerald-400"/></div>
                             <div className="flex flex-col justify-center">
                                 <p className="text-base font-black text-text">₹{paymentBreakdown.find(p=>p.name==='Cash')?.value||0}</p>
                                 <p className="text-[9px] font-black text-text-muted uppercase tracking-widest mt-1">CASH COLLECTED</p>
@@ -261,7 +335,7 @@ export default function POSDashboardPage() {
                             <ChevronRight className="w-4 h-4 text-slate-300 absolute right-0 -mr-2 opacity-50" />
                         </div>
                         <div className="flex items-center gap-4 px-6 relative">
-                            <div className="w-10 h-10 rounded-lg bg-purple-50 flex items-center justify-center border border-purple-100 shrink-0"><Smartphone className="w-5 h-5 text-purple-500"/></div>
+                            <div className="w-10 h-10 rounded-lg bg-purple-50 dark:bg-purple-950/30 flex items-center justify-center border border-purple-100 dark:border-purple-900/30 shrink-0"><Smartphone className="w-5 h-5 text-purple-500 dark:text-purple-400"/></div>
                             <div className="flex flex-col justify-center">
                                 <p className="text-base font-black text-text">₹{paymentBreakdown.find(p=>p.name==='UPI')?.value||0}</p>
                                 <p className="text-[9px] font-black text-text-muted uppercase tracking-widest mt-1">UPI COLLECTED</p>
@@ -269,7 +343,7 @@ export default function POSDashboardPage() {
                             <ChevronRight className="w-4 h-4 text-slate-300 absolute right-0 -mr-2 opacity-50" />
                         </div>
                         <div className="flex items-center gap-4 px-6 relative">
-                            <div className="w-10 h-10 rounded-lg bg-orange-50 flex items-center justify-center border border-orange-100 shrink-0"><Receipt className="w-5 h-5 text-orange-500"/></div>
+                            <div className="w-10 h-10 rounded-lg bg-orange-50 dark:bg-orange-950/30 flex items-center justify-center border border-orange-100 dark:border-orange-900/30 shrink-0"><Receipt className="w-5 h-5 text-orange-500 dark:text-orange-400"/></div>
                             <div className="flex flex-col justify-center">
                                 <p className="text-base font-black text-text">₹{paymentBreakdown.find(p=>p.name==='Unpaid')?.value||0}</p>
                                 <p className="text-[9px] font-black text-text-muted uppercase tracking-widest mt-1">UNPAID AMOUNT</p>
@@ -277,7 +351,7 @@ export default function POSDashboardPage() {
                             <ChevronRight className="w-4 h-4 text-slate-300 absolute right-0 -mr-2 opacity-50" />
                         </div>
                         <div className="flex items-center gap-4 px-6">
-                            <div className="w-10 h-10 rounded-lg bg-blue-50 flex items-center justify-center border border-blue-100 shrink-0"><RefreshCcw className="w-5 h-5 text-blue-500"/></div>
+                            <div className="w-10 h-10 rounded-lg bg-blue-50 dark:bg-blue-950/30 flex items-center justify-center border border-blue-100 dark:border-blue-900/30 shrink-0"><RefreshCcw className="w-5 h-5 text-blue-500 dark:text-blue-400"/></div>
                             <div className="flex flex-col justify-center">
                                 <p className="text-base font-black text-text">{stats.count||0}</p>
                                 <p className="text-[9px] font-black text-text-muted uppercase tracking-widest mt-1">TRANSACTIONS</p>
@@ -302,7 +376,7 @@ export default function POSDashboardPage() {
                             </ResponsiveContainer>
                             <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
                                 <p className="text-2xl font-black text-text uppercase">₹{Math.round(stats.revenue/1000)}K</p>
-                                <p className="text-[10px] font-black text-text uppercase tracking-widest mt-1">TODAY TOTAL</p>
+                                <p className="text-[10px] font-black text-text uppercase tracking-widest mt-1">{rangeLabel.toUpperCase()} TOTAL</p>
                             </div>
                         </div>
                     </div>
@@ -310,17 +384,17 @@ export default function POSDashboardPage() {
                     <div className="bg-[#0f172a] rounded-xl shadow-lg p-6 flex flex-col h-[200px]">
                         <h3 className="text-[11px] font-black text-white uppercase tracking-[0.1em] mb-4">QUICK ACTIONS</h3>
                         <div className="grid grid-cols-2 gap-4 h-full">
-                            <button onClick={() => navigate('/pos/billing')} className="bg-[#cca839] hover:bg-[#b59533] transition-colors rounded-lg border-b-2 border-black/20 flex items-center justify-center gap-3 text-white shadow-sm h-full">
-                                <Receipt className="w-5 h-5" /> <span className="text-[11px] font-black uppercase tracking-widest pt-0.5">NEW BILL</span>
+                            <button onClick={() => navigate('/pos/billing')} className="!bg-[#cca839] hover:!bg-[#b59533] transition-colors rounded-lg border-b-2 border-black/20 flex items-center justify-center gap-3 !text-slate-950 shadow-sm h-full">
+                                <Receipt className="w-5 h-5 !text-[#0f172a] !stroke-[#0f172a]" /> <span className="text-[11px] font-black uppercase tracking-widest pt-0.5 !text-slate-950">NEW BILL</span>
                             </button>
-                            <button onClick={() => setShowAppointments(true)} className="bg-[#cca839] hover:bg-[#b59533] transition-colors rounded-lg border-b-2 border-black/20 flex items-center justify-center gap-3 text-white shadow-sm h-full">
-                                <Calendar className="w-5 h-5" /> <span className="text-[11px] font-black uppercase tracking-widest pt-0.5">APPOINTMENTS</span>
+                            <button onClick={() => setShowAppointments(true)} className="!bg-[#cca839] hover:!bg-[#b59533] transition-colors rounded-lg border-b-2 border-black/20 flex items-center justify-center gap-3 !text-slate-950 shadow-sm h-full">
+                                <Calendar className="w-5 h-5 !text-[#0f172a] !stroke-[#0f172a]" /> <span className="text-[11px] font-black uppercase tracking-widest pt-0.5 !text-slate-950">APPOINTMENTS</span>
                             </button>
-                            <button onClick={() => navigate('/pos/invoices')} className="bg-[#cca839] hover:bg-[#b59533] transition-colors rounded-lg border-b-2 border-black/20 flex items-center justify-center gap-3 text-white shadow-sm h-full">
-                                <Printer className="w-5 h-5" /> <span className="text-[11px] font-black uppercase tracking-widest pt-0.5">INVOICES</span>
+                            <button onClick={() => navigate('/pos/invoices')} className="!bg-[#cca839] hover:!bg-[#b59533] transition-colors rounded-lg border-b-2 border-black/20 flex items-center justify-center gap-3 !text-slate-950 shadow-sm h-full">
+                                <Printer className="w-5 h-5 !text-[#0f172a] !stroke-[#0f172a]" /> <span className="text-[11px] font-black uppercase tracking-widest pt-0.5 !text-slate-950">INVOICES</span>
                             </button>
-                            <button onClick={() => navigate('/pos/billing')} className="bg-[#cca839] hover:bg-[#b59533] transition-colors rounded-lg border-b-2 border-black/20 flex items-center justify-center gap-3 text-white shadow-sm h-full">
-                                <Package className="w-5 h-5" /> <span className="text-[11px] font-black uppercase tracking-widest pt-0.5">PACKAGES</span>
+                            <button onClick={() => navigate('/pos/billing')} className="!bg-[#cca839] hover:!bg-[#b59533] transition-colors rounded-lg border-b-2 border-black/20 flex items-center justify-center gap-3 !text-slate-950 shadow-sm h-full">
+                                <Package className="w-5 h-5 !text-[#0f172a] !stroke-[#0f172a]" /> <span className="text-[11px] font-black uppercase tracking-widest pt-0.5 !text-slate-950">PACKAGES</span>
                             </button>
                         </div>
                     </div>

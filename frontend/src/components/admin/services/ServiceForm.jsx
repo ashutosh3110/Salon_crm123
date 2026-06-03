@@ -115,7 +115,7 @@ export default function ServiceForm({ onSave, onCancel, categories = [], initial
                 if (key === 'image') return; // Handled separately
                 if (key === 'outletIds') {
                     const ids = formData.outlet === 'all' ? [] : formData.outletIds;
-                    ids.forEach(id => submissionData.append('outletIds[]', id));
+                    ids.forEach(id => submissionData.append('outletIds', id));
                     return;
                 }
                 if (formData[key] !== null && formData[key] !== undefined) {
@@ -197,13 +197,17 @@ export default function ServiceForm({ onSave, onCancel, categories = [], initial
 
                     <div className="grid grid-cols-2 gap-3">
                         <div className="space-y-1">
-                            <label className="text-[9px] font-bold text-text-muted uppercase tracking-tighter shrink-0">Service Name <span className="text-rose-500">*</span></label>
+                            <div className="flex justify-between items-center">
+                                <label className="text-[9px] font-bold text-text-muted uppercase tracking-tighter shrink-0">Service Name <span className="text-rose-500">*</span></label>
+                                <span className="text-[8px] font-bold text-text-muted/70">{formData.name.length}/30</span>
+                            </div>
                             <input
                                 type="text"
+                                maxLength={30}
                                 className={`w-full px-3 py-1.5 rounded-xl bg-surface-alt border border-border text-[11px] focus:ring-2 focus:ring-primary/20 transition-all font-bold`}
                                 placeholder="e.g. Executive Haircut"
                                 value={formData.name}
-                                onChange={(e) => setFormData({ ...formData, name: e.target.value.replace(/[^a-zA-Z0-9\s()&/-]/g, '') })}
+                                onChange={(e) => setFormData({ ...formData, name: e.target.value.replace(/[^a-zA-Z0-9\s()&/-]/g, '').slice(0, 30) })}
                             />
                         </div>
 
@@ -527,9 +531,9 @@ export default function ServiceForm({ onSave, onCancel, categories = [], initial
                                     <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
                                     <h3 className="text-[9px] font-bold text-text uppercase tracking-widest">6. Status</h3>
                                 </div>
-                                <div className="flex bg-surface-alt rounded-xl p-0.5 border border-border">
-                                    <button onClick={() => setFormData({ ...formData, status: 'active' })} className={`flex-1 py-1 text-[9px] font-bold rounded-lg transition-all ${formData.status === 'active' ? 'bg-emerald-500 text-white shadow-sm' : 'text-text-muted'}`}>ACTIVE</button>
-                                    <button onClick={() => setFormData({ ...formData, status: 'inactive' })} className={`flex-1 py-1 text-[9px] font-bold rounded-lg transition-all ${formData.status === 'inactive' ? 'bg-rose-500 text-white shadow-sm' : 'text-text-muted'}`}>OFF</button>
+                                <div className="flex bg-surface-alt rounded-xl p-0.5 border border-slate-200 dark:border-slate-800/80">
+                                    <button onClick={() => setFormData({ ...formData, status: 'active' })} className={`flex-1 py-1 text-[9px] font-bold rounded-lg transition-all ${formData.status === 'active' ? '!bg-emerald-500 !text-white shadow-sm' : 'text-text-muted'}`}>ACTIVE</button>
+                                    <button onClick={() => setFormData({ ...formData, status: 'inactive' })} className={`flex-1 py-1 text-[9px] font-bold rounded-lg transition-all ${formData.status === 'inactive' ? '!bg-rose-500 !text-white shadow-sm' : 'text-text-muted'}`}>OFF</button>
                                 </div>
                             </div>
                         </div>

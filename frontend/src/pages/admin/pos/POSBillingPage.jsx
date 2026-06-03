@@ -43,7 +43,7 @@ export default function POSBillingPage() {
                     price: item.price,
                     quantity: item.quantity
                 }))
-            });
+            }, { skipToast: true });
 
             if (res.data.success && res.data.data) {
                 const { promotion, discount } = res.data.data;

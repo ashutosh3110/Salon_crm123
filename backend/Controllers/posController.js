@@ -329,17 +329,46 @@ exports.getInvoices = async (req, res) => {
 exports.getDashboard = async (req, res) => {
     try {
         const salonId = req.user.salonId;
-        const { outletId } = req.query;
+        const { outletId, range = 'today' } = req.query;
 
         const now = new Date();
         const istOffset = 5.5 * 60 * 60 * 1000;
-        const todayStart = new Date(now.getTime() + istOffset);
-        todayStart.setUTCHours(0, 0, 0, 0);
-        const startOfDay = new Date(todayStart.getTime() - istOffset);
+        
+        let startOfDay, endOfDay;
 
-        const todayEnd = new Date(now.getTime() + istOffset);
-        todayEnd.setUTCHours(23, 59, 59, 999);
-        const endOfDay = new Date(todayEnd.getTime() - istOffset);
+        if (range === 'yesterday') {
+            const yesterdayStart = new Date(now.getTime() - 24 * 60 * 60 * 1000 + istOffset);
+            yesterdayStart.setUTCHours(0, 0, 0, 0);
+            startOfDay = new Date(yesterdayStart.getTime() - istOffset);
+
+            const yesterdayEnd = new Date(now.getTime() - 24 * 60 * 60 * 1000 + istOffset);
+            yesterdayEnd.setUTCHours(23, 59, 59, 999);
+            endOfDay = new Date(yesterdayEnd.getTime() - istOffset);
+        } else if (range === '7days') {
+            const prevStart = new Date(now.getTime() - 6 * 24 * 60 * 60 * 1000 + istOffset);
+            prevStart.setUTCHours(0, 0, 0, 0);
+            startOfDay = new Date(prevStart.getTime() - istOffset);
+
+            const todayEnd = new Date(now.getTime() + istOffset);
+            todayEnd.setUTCHours(23, 59, 59, 999);
+            endOfDay = new Date(todayEnd.getTime() - istOffset);
+        } else if (range === '30days') {
+            const prevStart = new Date(now.getTime() - 29 * 24 * 60 * 60 * 1000 + istOffset);
+            prevStart.setUTCHours(0, 0, 0, 0);
+            startOfDay = new Date(prevStart.getTime() - istOffset);
+
+            const todayEnd = new Date(now.getTime() + istOffset);
+            todayEnd.setUTCHours(23, 59, 59, 999);
+            endOfDay = new Date(todayEnd.getTime() - istOffset);
+        } else {
+            const todayStart = new Date(now.getTime() + istOffset);
+            todayStart.setUTCHours(0, 0, 0, 0);
+            startOfDay = new Date(todayStart.getTime() - istOffset);
+
+            const todayEnd = new Date(now.getTime() + istOffset);
+            todayEnd.setUTCHours(23, 59, 59, 999);
+            endOfDay = new Date(todayEnd.getTime() - istOffset);
+        }
 
         const statsQuery = { salonId, createdAt: { $gte: startOfDay, $lte: endOfDay } };
         if (outletId) statsQuery.outletId = outletId;
