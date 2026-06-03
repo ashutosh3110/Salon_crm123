@@ -1210,26 +1210,25 @@ export default function SettingsPage({ section: propSection }) {
 
             {/* Bottom Banner for Booking Link */}
             {activeTab === 'booking-link' && (
-                <div className="bg-[#f0fdf4] border border-[#bbf7d0] rounded-xl p-4 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-sm w-full">
-                    <div className="flex items-center gap-3 w-full">
-                        <div className="w-9 h-9 rounded-full bg-[#16a34a] flex items-center justify-center shrink-0 shadow-sm">
-                            <ShieldCheck className="w-4 h-4 text-white" />
+                <div className="bg-white border border-slate-100 rounded-2xl px-6 flex items-center justify-between shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)] overflow-hidden relative">
+                    <div className="flex items-center gap-4 py-5 z-10 w-full md:w-2/3">
+                        <div className="w-[52px] h-[52px] rounded-full bg-[#f0fdf4] flex items-center justify-center shrink-0">
+                            <ShieldCheck className="w-6 h-6 text-[#16a34a]" strokeWidth={2.5} />
                         </div>
-                        <div>
-                            <h3 className="text-[11px] font-bold text-[#14532d] tracking-wide">Booking made easy for your customers</h3>
-                            <p className="text-[10px] text-[#166534] font-medium mt-0.5">
-                                A seamless, mobile-friendly booking experience that drives more appointments and happier customers.
+                        <div className="flex flex-col justify-center">
+                            <h3 className="text-[15px] font-black text-slate-900 tracking-tight mb-1">We're here to help!</h3>
+                            <p className="text-[12px] font-medium text-slate-500">
+                                Your satisfaction is our priority. Reach out anytime.
                             </p>
                         </div>
                     </div>
-                    <a
-                        href={`${window.location.origin}/app/booking?tenantId=${salon?._id || ''}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="px-4 py-2 bg-white text-[#16a34a] border border-[#bbf7d0] rounded-lg font-bold text-[9px] uppercase tracking-widest hover:bg-[#f0fdf4] transition-colors flex items-center justify-center gap-1.5 shrink-0 shadow-sm min-w-max"
-                    >
-                        Preview Booking Page <ExternalLink className="w-2.5 h-2.5" />
-                    </a>
+                    <div className="hidden md:flex shrink-0 absolute right-12 bottom-0 top-0 items-center justify-center">
+                        <img 
+                            src="/vectoreimage.png" 
+                            alt="Support Team" 
+                            className="h-[80px] w-auto object-contain transform translate-y-2"
+                        />
+                    </div>
                 </div>
             )}
 
