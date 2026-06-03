@@ -369,8 +369,8 @@ export default function DashboardPage() {
                       >
                           {/* Upper Section: Icon on Left, Column of Labels on Right */}
                           <div className="flex !items-start gap-3 !text-left">
-                              {/* Circle Icon */}
-                              <div className={`w-9 h-9 rounded-full flex items-center justify-center shrink-0 ${stat.iconBgClass}`}>
+                              {/* Rounded Square Icon */}
+                              <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${stat.iconBgClass}`} style={{ borderRadius: '12px' }}>
                                   <stat.icon className={`w-4 h-4 ${stat.iconColorClass}`} strokeWidth={2} />
                               </div>
                               

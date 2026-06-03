@@ -454,7 +454,7 @@ export default function RolesPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 <div className="!bg-white dark:!bg-slate-900 p-4 !border-[1.5px] !border-[#e2e8f0] dark:!border-slate-800 flex items-center gap-4 group hover:!border-black dark:hover:!border-white transition-all min-h-[100px] relative !overflow-hidden !rounded-[16px] shadow-sm">
                     <div className="w-12 h-12 rounded-full flex items-center justify-center shrink-0 !bg-[#FEF3C7]">
-                        <Users className="w-5 h-5 !text-[#D97706]" strokeWidth={2.5} />
+                        <Users className="w-5 h-5" color="#D97706" strokeWidth={2.5} />
                     </div>
                     <div className="flex flex-col text-left">
                         <span className="text-[9px] font-bold text-text-muted uppercase tracking-wider">Total Roles</span>
@@ -469,7 +469,7 @@ export default function RolesPage() {
 
                 <div className="!bg-white dark:!bg-slate-900 p-4 !border-[1.5px] !border-[#e2e8f0] dark:!border-slate-800 flex items-center gap-4 group hover:!border-black dark:hover:!border-white transition-all min-h-[100px] relative !overflow-hidden !rounded-[16px] shadow-sm">
                     <div className="w-12 h-12 rounded-full flex items-center justify-center shrink-0 !bg-[#F3E8FF]">
-                        <Lock className="w-5 h-5 !text-[#9333EA]" strokeWidth={2.5} />
+                        <Lock className="w-5 h-5" color="#9333EA" strokeWidth={2.5} />
                     </div>
                     <div className="flex flex-col text-left">
                         <span className="text-[9px] font-bold text-text-muted uppercase tracking-wider">Total Permissions</span>
@@ -484,7 +484,7 @@ export default function RolesPage() {
 
                 <div className="!bg-white dark:!bg-slate-900 p-4 !border-[1.5px] !border-[#e2e8f0] dark:!border-slate-800 flex items-center gap-4 group hover:!border-black dark:hover:!border-white transition-all min-h-[100px] relative !overflow-hidden !rounded-[16px] shadow-sm">
                     <div className="w-12 h-12 rounded-full flex items-center justify-center shrink-0 !bg-[#DCFCE7]">
-                        <UserCheck className="w-5 h-5 !text-[#16A34A]" strokeWidth={2.5} />
+                        <UserCheck className="w-5 h-5" color="#16A34A" strokeWidth={2.5} />
                     </div>
                     <div className="flex flex-col text-left">
                         <span className="text-[9px] font-bold text-text-muted uppercase tracking-wider">Staff Assigned</span>
@@ -499,7 +499,7 @@ export default function RolesPage() {
 
                 <div className="!bg-white dark:!bg-slate-900 p-4 !border-[1.5px] !border-[#e2e8f0] dark:!border-slate-800 flex items-center gap-4 group hover:!border-black dark:hover:!border-white transition-all min-h-[100px] relative !overflow-hidden !rounded-[16px] shadow-sm">
                     <div className="w-12 h-12 rounded-full flex items-center justify-center shrink-0 !bg-[#DBEAFE]">
-                        <ShieldCheck className="w-5 h-5 !text-[#2563EB]" strokeWidth={2.5} />
+                        <ShieldCheck className="w-5 h-5" color="#2563EB" strokeWidth={2.5} />
                     </div>
                     <div className="flex flex-col text-left">
                         <span className="text-[9px] font-bold text-text-muted uppercase tracking-wider">Last Updated</span>
@@ -659,7 +659,7 @@ export default function RolesPage() {
                                                     ${role.isDefault ? 'border-slate-100 bg-slate-50 text-slate-300 cursor-not-allowed' : 'border-rose-200 bg-rose-50 text-rose-500 hover:bg-rose-100'}`}
                                                 title={role.isDefault ? 'System default role (cannot delete)' : 'Delete Role'}
                                             >
-                                                <Trash2 className="w-3 h-3" />
+                                                <Trash2 className="w-3 h-3" color={role.isDefault ? '#cbd5e1' : '#f43f5e'} />
                                             </button>
                                         </div>
                                         <div className="text-right mt-0.5">

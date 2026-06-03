@@ -84,9 +84,9 @@ export default function OutletsPage() {
     }, [outlets]);
 
     const stats = useMemo(() => ([
-        { label: 'Total Salons', value: outlets.length, icon: Store, trend: 'Active Outlets', color: '#B4912B', bgColor: '#B4912B15' },
-        { label: 'Cities Covered', value: cities.length - 1, icon: MapPin, trend: 'Locations', color: '#B4912B', bgColor: '#B4912B15' },
-        { label: 'Business Health', value: 'Excellent', icon: ShieldCheck, trend: 'Online State', color: '#22c55e', bgColor: '#22c55e15', valueColor: 'text-emerald-500' }
+        { label: 'Total Salons', value: outlets.length, icon: Store, trend: 'Active Outlets', color: '#B4912B', bgColor: 'rgba(180, 145, 43, 0.15)' },
+        { label: 'Cities Covered', value: cities.length - 1, icon: MapPin, trend: 'Locations', color: '#B4912B', bgColor: 'rgba(180, 145, 43, 0.15)' },
+        { label: 'Business Health', value: 'Excellent', icon: ShieldCheck, trend: 'Online State', color: '#059669', bgColor: 'rgba(5, 150, 105, 0.15)', valueColor: 'text-emerald-600 dark:text-emerald-500' }
     ]), [outlets, cities]);
 
     const handleDelete = (id) => {
@@ -118,8 +118,8 @@ export default function OutletsPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 {stats.map((stat, i) => (
                     <div key={i} className="!bg-white dark:!bg-slate-900 p-4 !border-[1.5px] !border-[#e2e8f0] dark:!border-slate-800 flex items-center gap-4 group hover:!border-black dark:hover:!border-white transition-all min-h-[100px] relative !overflow-hidden !rounded-[16px]">
-                        <div className="w-12 h-12 rounded-full flex items-center justify-center shrink-0" style={{ backgroundColor: stat.bgColor }}>
-                            <stat.icon className="w-5 h-5" style={{ color: stat.color }} strokeWidth={2.5} />
+                        <div className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0" style={{ backgroundColor: stat.bgColor, borderRadius: '12px' }}>
+                            <stat.icon className="w-5 h-5" color={stat.color} strokeWidth={2.5} />
                         </div>
                         <div className="flex flex-col">
                             <span className="text-[9px] font-bold text-text-muted uppercase tracking-wider">{stat.label}</span>

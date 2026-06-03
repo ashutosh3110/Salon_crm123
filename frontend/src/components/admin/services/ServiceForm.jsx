@@ -79,7 +79,7 @@ export default function ServiceForm({ onSave, onCancel, categories = [], initial
                 // Convert to WebP for optimization
                 const webpFile = await convertToWebP(file);
                 setImageFile(webpFile);
-                
+
                 const reader = new FileReader();
                 reader.onloadend = () => {
                     setFormData({ ...formData, image: reader.result });
@@ -109,7 +109,7 @@ export default function ServiceForm({ onSave, onCancel, categories = [], initial
         try {
             // Use FormData for multi-part submission (image support)
             const submissionData = new FormData();
-            
+
             // Append all fields to FormData
             Object.keys(formData).forEach(key => {
                 if (key === 'image') return; // Handled separately
@@ -138,7 +138,7 @@ export default function ServiceForm({ onSave, onCancel, categories = [], initial
             } else if (typeof formData.image === 'string') {
                 submissionData.append('image', formData.image);
             }
-            
+
             if (formData._id) {
                 await onSave?.(submissionData);
             } else {
@@ -241,24 +241,24 @@ export default function ServiceForm({ onSave, onCancel, categories = [], initial
                         </div>
                     ) : (
                         <div className={`${isModal ? 'space-y-2' : 'space-y-3'}`}>
-                            <CustomSelect 
+                            <CustomSelect
                                 label={isModal ? "" : "Category *"}
                                 placeholder="Select Category *"
-                                value={formData.category} 
-                                onChange={(val) => setFormData({ ...formData, category: val })} 
-                                options={categories.map(c => c.name)} 
+                                value={formData.category}
+                                onChange={(val) => setFormData({ ...formData, category: val })}
+                                options={categories.map(c => c.name)}
                                 className={isModal ? "py-0" : ""}
                             />
 
-                            <CustomSelect 
+                            <CustomSelect
                                 label={isModal ? "" : "Target Gender *"}
                                 placeholder="Select Gender *"
-                                value={formData.gender === 'men' ? 'Men Only' : formData.gender === 'women' ? 'Women Only' : 'Both (Unisex)'} 
+                                value={formData.gender === 'men' ? 'Men Only' : formData.gender === 'women' ? 'Women Only' : 'Both (Unisex)'}
                                 onChange={(val) => {
                                     const mapping = { 'Men Only': 'men', 'Women Only': 'women', 'Both (Unisex)': 'both' };
                                     setFormData({ ...formData, gender: mapping[val] });
-                                }} 
-                                options={['Both (Unisex)', 'Men Only', 'Women Only']} 
+                                }}
+                                options={['Both (Unisex)', 'Men Only', 'Women Only']}
                                 className={isModal ? "py-0" : ""}
                             />
                         </div>
@@ -269,17 +269,17 @@ export default function ServiceForm({ onSave, onCancel, categories = [], initial
                         <div className="relative group">
                             {formData.image ? (
                                 <div className="relative aspect-video rounded-2xl overflow-hidden border border-border group">
-                                    <img 
-                                        src={formData.image.startsWith('data:') || formData.image.startsWith('http') ? formData.image : `${API_BASE_URL}${formData.image}`} 
-                                        alt="Preview" 
-                                        className="w-full h-full object-cover" 
+                                    <img
+                                        src={formData.image.startsWith('data:') || formData.image.startsWith('http') ? formData.image : `${API_BASE_URL}${formData.image}`}
+                                        alt="Preview"
+                                        className="w-full h-full object-cover"
                                     />
                                     <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3">
                                         <label className="p-2 bg-white rounded-xl text-primary cursor-pointer hover:scale-110 transition-transform">
                                             <Upload className="w-4 h-4" />
                                             <input type="file" className="hidden" accept="image/*" onChange={handleImageUpload} />
                                         </label>
-                                        <button 
+                                        <button
                                             onClick={() => setFormData({ ...formData, image: '' })}
                                             className="p-2 bg-white rounded-xl text-rose-500 hover:scale-110 transition-transform"
                                         >
@@ -311,11 +311,10 @@ export default function ServiceForm({ onSave, onCancel, categories = [], initial
                             <div
                                 role="button"
                                 onClick={() => setFormData({ ...formData, resourceType: 'chair' })}
-                                className={`flex items-center justify-center gap-2 p-2 px-4 rounded-xl border transition-all cursor-pointer ${
-                                    formData.resourceType === 'chair'
+                                className={`flex items-center justify-center gap-2 p-2 px-4 rounded-xl border transition-all cursor-pointer ${formData.resourceType === 'chair'
                                         ? 'bg-primary border-primary text-white shadow-sm'
                                         : 'bg-surface-alt border-border text-text-muted hover:border-primary/40'
-                                }`}
+                                    }`}
                             >
                                 <Armchair className={`w-4 h-4 shrink-0 ${formData.resourceType === 'chair' ? 'text-white' : 'text-text-muted'}`} />
                                 <span className={`text-[9px] font-black uppercase tracking-tight ${formData.resourceType === 'chair' ? 'text-white' : 'text-text'}`}>Chair</span>
@@ -324,11 +323,10 @@ export default function ServiceForm({ onSave, onCancel, categories = [], initial
                             <div
                                 role="button"
                                 onClick={() => setFormData({ ...formData, resourceType: 'room' })}
-                                className={`flex items-center justify-center gap-2 p-2 px-4 rounded-xl border transition-all cursor-pointer ${
-                                    formData.resourceType === 'room'
+                                className={`flex items-center justify-center gap-2 p-2 px-4 rounded-xl border transition-all cursor-pointer ${formData.resourceType === 'room'
                                         ? 'bg-primary border-primary text-white shadow-sm'
                                         : 'bg-surface-alt border-border text-text-muted hover:border-primary/40'
-                                }`}
+                                    }`}
                             >
                                 <DoorClosed className={`w-4 h-4 shrink-0 ${formData.resourceType === 'room' ? 'text-white' : 'text-text-muted'}`} />
                                 <span className={`text-[9px] font-black uppercase tracking-tight ${formData.resourceType === 'room' ? 'text-white' : 'text-text'}`}>Room</span>
@@ -387,7 +385,7 @@ export default function ServiceForm({ onSave, onCancel, categories = [], initial
                         <div className="grid grid-cols-2 gap-3 pt-2">
                             <div className="space-y-1">
                                 <label className="text-[9px] font-bold text-text-muted uppercase tracking-tighter italic">Tax Mode</label>
-                                <select 
+                                <select
                                     className="w-full px-2 py-1.5 rounded-lg bg-surface-alt border border-border text-[9px] font-black uppercase tracking-tighter"
                                     value={formData.isInclusiveTax ? 'including' : 'excluding'}
                                     onChange={(e) => setFormData({ ...formData, isInclusiveTax: e.target.value === 'including' })}
@@ -398,12 +396,12 @@ export default function ServiceForm({ onSave, onCancel, categories = [], initial
                             </div>
                             <div className="space-y-1">
                                 <label className="text-[9px] font-bold text-text-muted uppercase tracking-tighter italic">GST Rate (%)</label>
-                                <select 
+                                <select
                                     className="w-full px-2 py-1.5 rounded-lg bg-surface-alt border border-border text-[9px] font-black uppercase tracking-tighter"
                                     value={formData.gst}
                                     onChange={(e) => setFormData({ ...formData, gst: Number(e.target.value) })}
                                 >
-                                    {[0, 5, 12, 18, 28, Number(platformSettings?.serviceGst)].filter((r, idx, self) => r !== undefined && r !== null && !isNaN(r) && self.indexOf(r) === idx).sort((a,b)=>a-b).map(rate => (
+                                    {[0, 5, 12, 18, 28, Number(platformSettings?.serviceGst)].filter((r, idx, self) => r !== undefined && r !== null && !isNaN(r) && self.indexOf(r) === idx).sort((a, b) => a - b).map(rate => (
                                         <option key={rate} value={rate}>{rate}% {rate === 0 ? 'Exempt' : 'GST'}</option>
                                     ))}
                                 </select>
@@ -492,7 +490,7 @@ export default function ServiceForm({ onSave, onCancel, categories = [], initial
                                     <Building2 className="w-3.5 h-3.5 text-violet-500" />
                                     <h3 className="text-[9px] font-bold text-text uppercase tracking-widest">5. Outlets</h3>
                                 </div>
-                                <select 
+                                <select
                                     className="w-full bg-surface-alt border border-border rounded-xl px-2 py-1 text-[10px] font-bold outline-none mt-1"
                                     value={formData.outlet}
                                     onChange={(e) => setFormData({ ...formData, outlet: e.target.value })}
@@ -502,12 +500,12 @@ export default function ServiceForm({ onSave, onCancel, categories = [], initial
                                 </select>
 
                                 {formData.outlet === 'selected' && (
-                                    <div className="mt-2 space-y-1 max-h-[80px] overflow-y-auto px-1 scrollbar-hide border-t border-border pt-2">
+                                    <div className="mt-2 space-y-1.5 max-h-[180px] overflow-y-auto overflow-x-hidden custom-scrollbar px-1 border-t border-border pt-2">
                                         {outlets.map((o) => (
-                                            <label key={o._id} className="flex items-center gap-2 p-1.5 bg-surface-alt rounded-lg border border-border/50 hover:border-primary/30 cursor-pointer transition-all">
+                                            <label key={o._id} className="flex items-start gap-2 p-2 bg-surface-alt rounded-lg border border-border/50 hover:border-primary/30 cursor-pointer transition-all">
                                                 <input
                                                     type="checkbox"
-                                                    className="w-3 h-3 rounded border-border text-primary focus:ring-primary"
+                                                    className="w-3.5 h-3.5 mt-0.5 rounded border-border text-primary focus:ring-primary shrink-0"
                                                     checked={formData.outletIds.includes(o._id)}
                                                     onChange={(e) => {
                                                         const newIds = e.target.checked
@@ -516,9 +514,9 @@ export default function ServiceForm({ onSave, onCancel, categories = [], initial
                                                         setFormData({ ...formData, outletIds: newIds });
                                                     }}
                                                 />
-                                                <div className="flex flex-col">
-                                                    <span className="text-[9px] font-black uppercase text-text tracking-tighter leading-none">{o.name}</span>
-                                                    <span className="text-[7px] font-bold text-text-muted uppercase leading-tight">{o.address?.city}</span>
+                                                <div className="flex flex-col min-w-0">
+                                                    <span className="text-[10px] font-black uppercase text-text tracking-tighter leading-tight break-words">{o.name}</span>
+                                                    {o.address?.city && <span className="text-[8px] font-bold text-text-muted uppercase leading-tight mt-0.5 truncate">{o.address.city}</span>}
                                                 </div>
                                             </label>
                                         ))}
@@ -552,7 +550,7 @@ export default function ServiceForm({ onSave, onCancel, categories = [], initial
                 <button
                     onClick={handleSave}
                     disabled={!isFormValid || isSaving}
-                    className={`flex items-center justify-center gap-2 px-8 py-2.5 rounded-xl text-primary-foreground text-xs font-bold shadow-lg transition-all active:scale-95 ${isFormValid && !isSaving ? 'bg-primary shadow-primary/20 hover:shadow-xl hover:shadow-primary/30' : 'bg-slate-300 dark:bg-slate-800 shadow-none cursor-not-allowed'}`}
+                    className="flex items-center justify-center gap-2 px-8 py-2.5 rounded-xl text-white bg-primary text-xs font-bold shadow-lg shadow-primary/20 hover:shadow-xl hover:shadow-primary/30 transition-all active:scale-95 disabled:bg-slate-800 disabled:text-slate-400 disabled:shadow-none disabled:cursor-not-allowed disabled:hover:shadow-none dark:disabled:bg-slate-900 dark:disabled:text-slate-500"
                 >
                     <Save className="w-3.5 h-3.5" />
                     {isSaving ? 'Saving...' : 'Save Service'}

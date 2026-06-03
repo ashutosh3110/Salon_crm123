@@ -706,12 +706,28 @@ export default function SuperAdminLayout() {
                     background-color: #1e293b !important;
                 }
 
-                 /* --- BULLETPROOF LIGHT MODE SVG COLOR & STROKE VISIBILITY SYSTEM --- */
-                /* By default, force all SVG icons and their paths to be dark slate/black in light mode for 100% visibility */
-                html:not(.dark) .sa-panel svg,
-                html:not(.dark) .sa-panel svg * {
+                /* --- BULLETPROOF LIGHT MODE SVG COLOR & STROKE VISIBILITY SYSTEM --- */
+                /* By default, force all SVG icons and their paths to be dark slate/black in light mode for 100% visibility, EXCEPT those with inline style colors/strokes or text/stroke classes */
+                html:not(.dark) .sa-panel svg:not([style*="color"]):not([style*="stroke"]):not([class*="text-"]):not([class*="stroke-"]),
+                html:not(.dark) .sa-panel svg:not([style*="color"]):not([style*="stroke"]):not([class*="text-"]):not([class*="stroke-"]) * {
                     color: #1e293b !important;
                     stroke: #1e293b !important;
+                }
+
+                /* Respect inline style colors or strokes, but ensure children paths inherit them properly */
+                html:not(.dark) .sa-panel svg[style*="color"] *,
+                html:not(.dark) .sa-panel svg[style*="stroke"] * {
+                    stroke: currentColor !important;
+                }
+
+                /* Respect text/stroke color classes (including custom hex codes like text-[#7C3AED]) on SVGs or their parent containers */
+                html:not(.dark) .sa-panel [class*="text-"] svg *,
+                html:not(.dark) .sa-panel svg[class*="text-"] * {
+                    stroke: currentColor !important;
+                }
+                html:not(.dark) .sa-panel [class*="stroke-"] svg *,
+                html:not(.dark) .sa-panel svg[class*="stroke-"] * {
+                    stroke: currentColor !important;
                 }
 
                 /* EXCEPT if the SVG or its parent has a green/emerald text class, force it to green */
@@ -841,6 +857,12 @@ export default function SuperAdminLayout() {
                 html:not(.dark) .sa-panel [class*="bg-indigo-"] svg * {
                     color: #4f46e5 !important;
                     stroke: #4f46e5 !important;
+                }
+
+                /* Force all stat card / dashboard / page icon containers to be rounded squares (not circular, not sharp) */
+                html .sa-panel .rounded-full:has(svg),
+                html .sa-panel div[class*="w-"][class*="h-"]:has(svg) {
+                    border-radius: 12px !important;
                 }
 
             `}</style>

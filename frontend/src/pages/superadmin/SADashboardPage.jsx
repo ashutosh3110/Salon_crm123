@@ -132,7 +132,7 @@ function MetricCard({ label, value, icon: Icon, gradient, shadow, change, prefix
         <div className={`!rounded-[16px] !border p-3.5 shadow-[0_2px_8px_-3px_rgba(0,0,0,0.04)] group flex flex-col justify-between min-h-[118px] transition-all hover:-translate-y-0.5 active:scale-[0.98] hover:shadow-md ${cardBgClass} ${cardBorderClass}`}>
             <div className="flex !items-start justify-between w-full">
                 <div className="flex !items-start gap-3 !text-left">
-                    <div className={`w-9 h-9 rounded-full flex items-center justify-center shrink-0 ${iconBgClass}`}>
+                    <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${iconBgClass}`} style={{ borderRadius: '12px' }}>
                         <Icon className={`w-4 h-4 ${iconColorClass}`} strokeWidth={2} />
                     </div>
 

@@ -375,8 +375,8 @@ export default function BookingsPage() {
                 {/* Source Chart */}
                 <div className="!bg-white dark:!bg-slate-900 p-4 !rounded-[24px] !border !border-slate-100 dark:!border-slate-800 shadow-[0_2px_12px_-3px_rgba(0,0,0,0.04)] group hover:shadow-md transition-all !overflow-hidden flex flex-col h-full justify-between">
                     <div className="flex items-center gap-3 mb-3">
-                        <div className="w-9 h-9 rounded-full flex items-center justify-center shrink-0 bg-yellow-50 dark:bg-yellow-500/10 border border-yellow-100 dark:border-yellow-900/20">
-                            <Briefcase className="w-4 h-4 text-yellow-550 dark:text-yellow-400" />
+                        <div className="w-9 h-9 rounded-full flex items-center justify-center shrink-0 bg-amber-200 dark:bg-amber-500/25 border border-amber-300 dark:border-amber-700/40">
+                            <Briefcase className="w-4 h-4 text-amber-800 dark:text-amber-300" />
                         </div>
                         <span 
                             style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '0.03em' }} 

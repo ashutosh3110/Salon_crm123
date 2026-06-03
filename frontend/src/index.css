@@ -14,6 +14,7 @@
   --color-secondary-custom-dark: #E9E9E9;
 
   /* shadcn / UI variables */
+  --radius: 0.625rem;
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
@@ -843,13 +844,35 @@ html:not(.dark) .sa-panel svg[class*="text-[#2563EB]"] {
 }
 
 /* --- BULLETPROOF LIGHT MODE SVG COLOR & STROKE VISIBILITY SYSTEM --- */
-/* By default, force all SVG icons and their paths to be dark slate/black in light mode for 100% visibility */
-html:not(.dark) .admin-panel svg,
-html:not(.dark) .admin-panel svg *,
-html:not(.dark) .sa-panel svg,
-html:not(.dark) .sa-panel svg * {
+/* By default, force all SVG icons and their paths to be dark slate/black in light mode for 100% visibility, EXCEPT those with inline style colors/strokes or text/stroke classes */
+html:not(.dark) .admin-panel svg:not([style*="color"]):not([style*="stroke"]):not([class*="text-"]):not([class*="stroke-"]),
+html:not(.dark) .admin-panel svg:not([style*="color"]):not([style*="stroke"]):not([class*="text-"]):not([class*="stroke-"]) *,
+html:not(.dark) .sa-panel svg:not([style*="color"]):not([style*="stroke"]):not([class*="text-"]):not([class*="stroke-"]),
+html:not(.dark) .sa-panel svg:not([style*="color"]):not([style*="stroke"]):not([class*="text-"]):not([class*="stroke-"]) * {
   color: #1e293b !important;
   stroke: #1e293b !important;
+}
+
+/* Respect inline style colors or strokes, but ensure children paths inherit them properly */
+html:not(.dark) .admin-panel svg[style*="color"] *,
+html:not(.dark) .admin-panel svg[style*="stroke"] *,
+html:not(.dark) .sa-panel svg[style*="color"] *,
+html:not(.dark) .sa-panel svg[style*="stroke"] * {
+  stroke: currentColor !important;
+}
+
+/* Respect text/stroke color classes (including custom hex codes like text-[#7C3AED]) on SVGs or their parent containers */
+html:not(.dark) .admin-panel [class*="text-"] svg *,
+html:not(.dark) .admin-panel svg[class*="text-"] *,
+html:not(.dark) .sa-panel [class*="text-"] svg *,
+html:not(.dark) .sa-panel svg[class*="text-"] * {
+  stroke: currentColor !important;
+}
+html:not(.dark) .admin-panel [class*="stroke-"] svg *,
+html:not(.dark) .admin-panel svg[class*="stroke-"] *,
+html:not(.dark) .sa-panel [class*="stroke-"] svg *,
+html:not(.dark) .sa-panel svg[class*="stroke-"] * {
+  stroke: currentColor !important;
 }
 
 /* EXCEPT if the SVG or its parent has a green/emerald text class, force it to green */
@@ -1176,7 +1199,7 @@ html:not(.dark) .sa-panel [class*="bg-indigo-"] svg * {
 /* =============================================
    📐 ADMIN PANEL — Removed Square Corners
    ============================================= */
-.admin-panel *:not(button):not([role="button"]):not([class*="btn-"]):not([class*="rounded-full"]):not([class*="rounded-3xl"]):not([class*="rounded-2xl"]):not(input):not(select):not(textarea):not(.allow-curve):not([class*="allow-curve"]) {
+.admin-panel *:not(button):not([role="button"]):not([class*="btn-"]):not([class*="rounded-"]):not(input):not(select):not(textarea):not(.allow-curve):not([class*="allow-curve"]) {
   border-radius: 0 !important;
 }
 
@@ -1938,4 +1961,12 @@ html:not(.dark) select option {
   }
 
   /* Override hardcoded pixels */
+}
+
+/* Force all stat card / dashboard / page icon containers to be rounded squares (not circular, not sharp) */
+html .admin-panel .rounded-full:has(svg),
+html .admin-panel div[class*="w-"][class*="h-"]:has(svg),
+html .sa-panel .rounded-full:has(svg),
+html .sa-panel div[class*="w-"][class*="h-"]:has(svg) {
+    border-radius: 12px !important;
 }
