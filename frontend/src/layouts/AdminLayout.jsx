@@ -47,31 +47,32 @@ export default function AdminLayout() {
                     letter-spacing: -0.01em;
                 }
 
-                                /* --- Headers & Titles (Completely Sans-Serif, Inter, Clean, Uniform & Flat) --- */
-                html:not(.dark) .admin-panel h1, 
-                html:not(.dark) .admin-panel h2, 
-                html:not(.dark) .admin-panel h3, 
-                html:not(.dark) .admin-panel h4, 
-                html:not(.dark) .admin-panel h5, 
-                html:not(.dark) .admin-panel h6,
-                html:not(.dark) .admin-panel .font-serif,
-                html:not(.dark) .admin-panel [class*="font-serif"],
-                html:not(.dark) .admin-panel .font-mono,
-                html:not(.dark) .admin-panel [class*="font-mono"],
-                html:not(.dark) .admin-panel .italic,
-                html:not(.dark) .admin-panel [class*="italic"],
-                html:not(.dark) [role="dialog"] h1,
-                html:not(.dark) [role="dialog"] h2,
-                html:not(.dark) [role="dialog"] h3,
-                html:not(.dark) [role="dialog"] h4,
-                html:not(.dark) [role="dialog"] h5,
-                html:not(.dark) [role="dialog"] h6 {
+                /* --- Headers & Titles (Completely Clean & Standard) --- */
+                .admin-panel h1, 
+                .admin-panel h2, 
+                .admin-panel h3, 
+                .admin-panel h4, 
+                .admin-panel h5, 
+                .admin-panel h6,
+                .admin-panel .font-serif,
+                .admin-panel [class*="font-serif"],
+                .admin-panel .font-mono,
+                .admin-panel [class*="font-mono"],
+                .admin-panel .italic,
+                .admin-panel [class*="italic"],
+                [role="dialog"] h1,
+                [role="dialog"] h2,
+                [role="dialog"] h3,
+                [role="dialog"] h4,
+                [role="dialog"] h5,
+                [role="dialog"] h6 {
                     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
-                    font-style: normal !important; /* Force standard, clean, non-cursive upright text */
+                    font-style: normal !important;
+                    font-weight: 700 !important; /* Reduced from 800/900 for cleaner aesthetics */
                     letter-spacing: -0.02em !important;
                 }
 
-                /* --- Global Font Size Scale Amplifiers (Slightly larger & crisp) --- */
+                /* --- Global Elegant & Compact Font Size Scale --- */
                 .admin-panel .text-\\[7px\\],
                 .admin-panel .text-\\[8px\\],
                 .admin-panel .text-\\[9px\\],
@@ -81,55 +82,55 @@ export default function AdminLayout() {
                 .fixed.inset-0 .text-\\[7px\\],
                 .fixed.inset-0 .text-\\[8px\\],
                 .fixed.inset-0 .text-\\[9px\\] {
-                    font-size: 13.5px !important;
-                    letter-spacing: 0.03em !important;
-                    font-weight: 700 !important;
+                    font-size: 8.5px !important;
+                    letter-spacing: 0.01em !important;
+                    font-weight: 600 !important;
                 }
                 .admin-panel .text-\\[10px\\],
                 [role="dialog"] .text-\\[10px\\],
                 .fixed.inset-0 .text-\\[10px\\] {
-                    font-size: 15px !important;
-                    letter-spacing: 0.02em !important;
+                    font-size: 9.5px !important;
+                    letter-spacing: 0.01em !important;
                     font-weight: 600 !important;
                 }
                 .admin-panel .text-\\[11px\\],
                 [role="dialog"] .text-\\[11px\\],
                 .fixed.inset-0 .text-\\[11px\\] {
-                    font-size: 16px !important;
+                    font-size: 10.5px !important;
                     letter-spacing: 0.01em !important;
                     font-weight: 500 !important;
                 }
                 .admin-panel .text-xs {
-                    font-size: 1rem !important; /* 16px instead of 14px */
-                    line-height: 1.5rem !important;
+                    font-size: 0.72rem !important; /* ~11.5px */
+                    line-height: 1.1rem !important;
                 }
                 .admin-panel .text-sm {
-                    font-size: 1.1rem !important; /* ~17.6px instead of 15.6px */
-                    line-height: 1.7rem !important;
+                    font-size: 0.8rem !important; /* ~12.8px */
+                    line-height: 1.25rem !important;
                 }
                 .admin-panel .text-base {
-                    font-size: 1.22rem !important; /* ~19.5px instead of 18px */
-                    line-height: 1.9rem !important;
+                    font-size: 0.9rem !important; /* ~14.5px */
+                    line-height: 1.4rem !important;
                 }
                 .admin-panel .text-lg {
-                    font-size: 1.38rem !important; /* ~22px instead of 20px */
-                    line-height: 2.05rem !important;
+                    font-size: 1.05rem !important; /* ~16.8px */
+                    line-height: 1.5rem !important;
                 }
                 .admin-panel .text-xl {
-                    font-size: 1.63rem !important; /* ~26px instead of 24px */
-                    line-height: 2.25rem !important;
+                    font-size: 1.2rem !important; /* ~19px */
+                    line-height: 1.65rem !important;
                 }
                 .admin-panel .text-2xl {
-                    font-size: 2rem !important; /* ~32px instead of 30px */
-                    line-height: 2.4rem !important;
-                    font-weight: 800 !important;
-                    letter-spacing: -0.025em !important;
+                    font-size: 1.45rem !important; /* ~23px */
+                    line-height: 1.9rem !important;
+                    font-weight: 700 !important;
+                    letter-spacing: -0.015em !important;
                 }
                 .admin-panel .text-3xl {
-                    font-size: 2.45rem !important; /* ~39.2px instead of 36px */
-                    line-height: 2.75rem !important;
-                    font-weight: 900 !important;
-                    letter-spacing: -0.03em !important;
+                    font-size: 1.8rem !important; /* ~29px */
+                    line-height: 2.2rem !important;
+                    font-weight: 700 !important;
+                    letter-spacing: -0.02em !important;
                 }
 
                                 /* --- Spacious & Beautiful Tables --- */
