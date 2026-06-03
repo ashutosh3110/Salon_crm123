@@ -289,19 +289,23 @@ export default function SubscriptionPage() {
                 )}
             </AnimatePresence>
 
-            <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 mt-4">
+            <div className="flex flex-col md:flex-row md:items-center justify-between mb-10 mt-6 relative">
                 <div className="flex flex-col">
                     <div className="flex items-center gap-2 mb-1">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4" className="w-2.5 h-2.5 text-slate-300"><path d="M9 5l7 7-7 7"/></svg>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4" className="w-2.5 h-2.5 text-slate-300"><path d="M9 5l7 7-7 7" /></svg>
                         <span className="text-[11px] font-black uppercase tracking-widest text-[#8b5cf6]">Subscription Management</span>
                     </div>
-                    <h1 className="text-[42px] font-black text-slate-900 tracking-tighter leading-none mt-1">
+                    <h1 className="text-[48px] font-black text-slate-900 tracking-tighter leading-none mt-1">
                         Our <span className="text-[#8b5cf6]">Plans.</span>
                     </h1>
                 </div>
-                <div className="hidden md:block">
-                    {/* Placeholder for the 3D illustration shown in the screenshot */}
-                    <img src="/plans-bg.png" alt="" className="h-24 w-auto object-contain" onError={(e) => e.target.style.display = 'none'} />
+                <div className="hidden md:block absolute right-0 bottom-[-15px] z-10">
+                    <img
+                        src="/vectore iamge 2.png"
+                        alt="Subscription Plans"
+                        className="h-[120px] w-auto object-contain"
+                        onError={(e) => e.target.style.display = 'none'}
+                    />
                 </div>
             </div>
 
@@ -333,7 +337,7 @@ export default function SubscriptionPage() {
                     <div className="space-y-1">
                         <p className="text-[11px] font-black text-slate-900 uppercase tracking-widest">Outlet Limit</p>
                         <p className="text-[32px] leading-none font-black text-slate-900 tracking-tighter mt-3">
-                            {currentPlan ? currentPlan.limits?.outletLimit : (effectiveSalon?.status === 'trial' ? effectiveSalon?.limits?.outletLimit : '0')} 
+                            {currentPlan ? currentPlan.limits?.outletLimit : (effectiveSalon?.status === 'trial' ? effectiveSalon?.limits?.outletLimit : '0')}
                             <span className="text-[12px] font-bold text-slate-400 uppercase tracking-widest ml-2">Branche(s)</span>
                         </p>
                     </div>
@@ -365,7 +369,7 @@ export default function SubscriptionPage() {
                     return (
                         <div
                             key={plan.id}
-                            className="bg-white rounded-[24px] border border-slate-100 shadow-sm p-8 flex flex-col relative"
+                            className="bg-white rounded-[24px] border border-slate-100 shadow-sm p-6 flex flex-col relative"
                         >
                             {isCurrent && (
                                 <div className="absolute -top-3 right-6 bg-[#8b5cf6] text-white text-[10px] font-black uppercase tracking-widest px-4 py-1.5 rounded-lg shadow-sm">
@@ -373,58 +377,59 @@ export default function SubscriptionPage() {
                                 </div>
                             )}
 
-                            <div className="flex flex-col items-center text-center space-y-4 mb-8 mt-2">
-                                <div className={`w-[68px] h-[68px] rounded-full flex items-center justify-center shrink-0 ${style.iconBg}`}>
-                                    <PlanIcon className={`w-8 h-8 ${style.iconColor}`} strokeWidth={2} />
+                            <div className="flex flex-col items-center text-center space-y-3 mb-5">
+                                <div className={`w-[56px] h-[56px] rounded-full flex items-center justify-center shrink-0 ${style.iconBg}`}>
+                                    <PlanIcon className={`w-7 h-7 ${style.iconColor}`} strokeWidth={2} />
                                 </div>
-                                <div className="space-y-2 w-full">
-                                    <h4 className="text-[12px] font-black text-slate-900 uppercase tracking-widest">{plan.name} PLAN</h4>
-                                    <div className="mt-1">
+                                <div className="space-y-1 w-full">
+                                    <h4 className="text-[11px] font-black text-slate-900 uppercase tracking-widest">
+                                        {(plan.name || '').toUpperCase().replace(' PLAN', '')} PLAN
+                                    </h4>
+                                    <div>
                                         {plan.price === 0 || (plan.monthlyPrice === 0) ? (
                                             <>
-                                                <div className="text-[44px] font-black text-slate-900 tracking-tighter uppercase leading-none mt-2">FREE</div>
-                                                <div className="text-[10px] font-black text-[#10b981] uppercase tracking-widest mt-3">Validity: {trialDays} Days</div>
+                                                <div className="text-[36px] font-black text-slate-900 tracking-tighter uppercase leading-none mt-2">FREE</div>
+                                                <div className="text-[9px] font-black text-[#10b981] uppercase tracking-widest mt-2">Validity: {trialDays} Days</div>
                                             </>
                                         ) : (
-                                            <div className="flex items-baseline justify-center gap-1 mt-2">
-                                                <span className="text-[44px] font-black text-slate-900 tracking-tighter leading-none">₹{(plan.monthlyPrice || 0).toLocaleString()}</span>
-                                                <span className="text-[12px] font-black text-[#8b5cf6] uppercase tracking-widest">/mo</span>
+                                            <div className="flex items-baseline justify-center gap-1 mt-1">
+                                                <span className="text-[36px] font-black text-slate-900 tracking-tighter leading-none">₹{(plan.monthlyPrice || 0).toLocaleString()}</span>
+                                                <span className="text-[11px] font-black text-[#8b5cf6] uppercase tracking-widest">/mo</span>
                                             </div>
                                         )}
                                     </div>
                                 </div>
                             </div>
 
-                            <div className="h-px bg-slate-100 w-full mb-8" />
+                            <div className="h-px bg-slate-100 w-full mb-5" />
 
-                            <ul className="space-y-5 flex-1 px-2">
+                            <ul className="space-y-3 flex-1 px-1">
                                 {[
                                     { icon: UserCog, label: `${plan.limits?.staffLimit || 0} Staff Members` },
                                     { icon: Store, label: `${plan.limits?.outletLimit || 0} Salon Branch${plan.limits?.outletLimit > 1 ? 'es' : ''}` },
                                     { icon: Square, label: `${plan.limits?.whatsappLimit || 0} AI Automations` },
                                 ].map((item, i) => (
-                                    <li key={i} className="flex items-center gap-4">
-                                        <div className="w-7 h-7 rounded bg-[#f8fafc] border border-slate-100 flex items-center justify-center shrink-0">
-                                            <item.icon className="w-3.5 h-3.5 text-slate-600" strokeWidth={2} />
+                                    <li key={i} className="flex items-center gap-3">
+                                        <div className="w-6 h-6 rounded bg-[#f8fafc] border border-slate-100 flex items-center justify-center shrink-0">
+                                            <item.icon className="w-3 h-3 text-slate-600" strokeWidth={2} />
                                         </div>
-                                        <span className="text-[12px] font-bold text-slate-700 uppercase tracking-widest">{item.label}</span>
+                                        <span className="text-[11px] font-bold text-slate-700 uppercase tracking-widest">{item.label}</span>
                                     </li>
                                 ))}
                             </ul>
 
-                            <div className="mt-10">
+                            <div className="mt-6">
                                 <button
                                     onClick={() => handleUpgrade(plan)}
                                     disabled={isCurrent || (effectiveSalon?.isActive && currentPlan && currentPlan.price > 0 && !isCurrent) || upgrading === plan.id}
-                                    className={`w-full py-3.5 rounded-xl text-[11px] font-black uppercase tracking-widest transition-all ${
-                                        isCurrent 
+                                    className={`w-full py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${isCurrent
                                             ? `${style.btnActiveBg} ${style.btnActiveText} ${style.btnActiveBorder}`
                                             : (effectiveSalon?.isActive && currentPlan?.price > 0 && !isCurrent)
                                                 ? `${style.btnActiveBg} ${style.btnActiveText} ${style.btnActiveBorder} opacity-50 cursor-not-allowed`
                                                 : upgrading === plan.id
                                                     ? 'bg-slate-100 text-slate-500 cursor-wait'
                                                     : `${style.btnActiveBg} ${style.btnActiveText} ${style.btnActiveBorder}`
-                                    }`}
+                                        }`}
                                 >
                                     {isCurrent
                                         ? 'Current Plan'
