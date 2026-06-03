@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import {
     CheckCircle, XCircle, Crown, Zap, Shield, CreditCard, ArrowRight, Package, Calendar, Users, Store, Smartphone, BarChart2, MessageSquare, Heart, Target, Activity, Star, DollarSign, Sparkles,
-    Megaphone, Briefcase, Layout, ClipboardList, Bell, UserCog, Check
+    Megaphone, Briefcase, Layout, ClipboardList, Bell, UserCog, Check, CalendarDays, Rocket, Gift, Square, ShieldCheck, Headphones, RefreshCw, Tag
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../../contexts/AuthContext';
@@ -262,160 +262,203 @@ export default function SubscriptionPage() {
         method: b.paymentMethod || 'Manual'
     }));
 
+    const getPlanStyle = (planName) => {
+        const name = (planName || '').toLowerCase();
+        if (name.includes('free')) return {
+            iconBg: 'bg-[#ecfdf5]', iconColor: 'text-[#10b981]', icon: Gift,
+            btnActiveBg: 'bg-white', btnActiveText: 'text-[#10b981]', btnActiveBorder: 'border-2 border-[#10b981] hover:bg-[#ecfdf5]'
+        };
+        if (name.includes('basic')) return {
+            iconBg: 'bg-[#eff6ff]', iconColor: 'text-[#3b82f6]', icon: Rocket,
+            btnActiveBg: 'bg-white', btnActiveText: 'text-[#3b82f6]', btnActiveBorder: 'border-2 border-[#3b82f6] hover:bg-[#eff6ff]'
+        };
+        return { // Pro
+            iconBg: 'bg-[#fff7ed]', iconColor: 'text-[#f59e0b]', icon: Crown,
+            btnActiveBg: 'bg-[#8b5cf6]', btnActiveText: 'text-white', btnActiveBorder: 'border-2 border-[#8b5cf6] hover:bg-[#7c3aed]'
+        };
+    };
+
     return (
-        <div className="space-y-4 pb-6 relative font-sans">
+        <div className="space-y-6 pb-12 font-sans min-h-screen bg-[#fafbfc] px-2">
             <AnimatePresence>
                 {showSuccess && (
-                    <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="fixed top-20 left-1/2 -translate-x-1/2 z-[100] bg-emerald-600 text-white px-4 py-2 shadow-lg flex items-center gap-3 border border-emerald-500/50">
+                    <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="fixed top-20 left-1/2 -translate-x-1/2 z-[100] bg-emerald-600 text-white px-4 py-2 shadow-lg flex items-center gap-3 border border-emerald-500/50 rounded-xl">
                         <CheckCircle className="w-4 h-4" />
                         <p className="text-xs font-semibold tracking-wide">Sync Complete</p>
                     </motion.div>
                 )}
             </AnimatePresence>
 
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-6">
-                <div className="space-y-1">
-                    <div className="flex items-center gap-2 mb-0.5">
-                        <div className="w-1 h-4 bg-[#B4912B] rounded-full" />
-                        <span className="text-[9px] font-black uppercase tracking-[0.3em] text-[#B4912B]">Subscription Management</span>
+            <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 mt-4">
+                <div className="flex flex-col">
+                    <div className="flex items-center gap-2 mb-1">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4" className="w-2.5 h-2.5 text-slate-300"><path d="M9 5l7 7-7 7"/></svg>
+                        <span className="text-[11px] font-black uppercase tracking-widest text-[#8b5cf6]">Subscription Management</span>
                     </div>
-                    <h1 className="text-2xl font-black text-text tracking-tighter uppercase italic leading-none">
-                        Our <span className="text-text-muted opacity-50">Plans.</span>
+                    <h1 className="text-[42px] font-black text-slate-900 tracking-tighter leading-none mt-1">
+                        Our <span className="text-[#8b5cf6]">Plans.</span>
                     </h1>
+                </div>
+                <div className="hidden md:block">
+                    {/* Placeholder for the 3D illustration shown in the screenshot */}
+                    <img src="/plans-bg.png" alt="" className="h-24 w-auto object-contain" onError={(e) => e.target.style.display = 'none'} />
                 </div>
             </div>
 
             {/* Current Plan Banner */}
-            <div className="relative group mb-8">
-                <div className="absolute inset-0 bg-gradient-to-r from-[#B4912B]/20 via-transparent to-transparent rounded-[1.5rem] blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
-                <div className="relative !bg-white dark:!bg-slate-900 !rounded-[24px] !border-[1.5px] !border-[#e2e8f0] dark:!border-slate-800 p-6 !overflow-hidden shadow-sm hover:shadow-xl transition-all duration-500">
-                    <div className="absolute top-0 right-0 w-48 h-48 bg-gradient-to-br from-[#B4912B]/5 to-transparent rounded-xl -translate-y-1/2 translate-x-1/2" />
-
-                    <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
-                        <div className="space-y-3">
-                            <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 rounded-xl bg-[#B4912B]/15 flex items-center justify-center border border-[#B4912B]/30">
-                                    <Crown className="w-5 h-5 !text-[#8B6F23] dark:!text-[#B4912B]" strokeWidth={2.5} />
-                                </div>
-                                <div className="space-y-0.5">
-                                    <div className="flex items-center gap-2">
-                                        <span className="text-[9px] font-black text-[#B4912B] uppercase tracking-[0.2em] block">Your Current Plan</span>
-                                        {effectiveSalon?.isActive ? (
-                                            <span className="bg-emerald-500/10 text-emerald-600 text-[8px] font-black px-2 py-0.5 rounded-xl border border-emerald-500/20 uppercase tracking-widest">Active</span>
-                                        ) : (
-                                            <span className="bg-rose-500/10 text-rose-600 text-[8px] font-black px-2 py-0.5 rounded-xl border border-rose-500/20 uppercase tracking-widest">Inactive</span>
-                                        )}
-                                    </div>
-                                    <h2 className="text-2xl font-black text-text tracking-tighter uppercase italic break-words w-full" style={{ overflowWrap: 'break-word', wordBreak: 'break-word' }}>
-                                        {currentPlan ? currentPlan.name : (
-                                            effectiveSalon?.status === 'pending' ? 'Application Under Review' :
-                                                (effectiveSalon?.status === 'trial' ? 'Trial Period' : 'No Active Plan')
-                                        )}
-                                    </h2>
-                                </div>
-                            </div>
+            <div className="bg-white rounded-[24px] border border-slate-100 p-8 shadow-sm mb-6 flex flex-col md:flex-row md:items-center justify-between gap-6">
+                <div className="flex items-center gap-6 w-full md:w-auto">
+                    <div className="w-[76px] h-[76px] rounded-2xl bg-[#f3e8ff] flex items-center justify-center shrink-0">
+                        <Crown className="w-10 h-10 text-[#9333ea]" strokeWidth={2} />
+                    </div>
+                    <div className="flex flex-col justify-center">
+                        <div className="flex items-center gap-3 mb-1">
+                            <span className="text-[11px] font-black text-slate-900 uppercase tracking-widest">Your Current Plan</span>
+                            {effectiveSalon?.isActive ? (
+                                <span className="bg-[#ecfdf5] text-[#10b981] text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-widest">Active</span>
+                            ) : (
+                                <span className="bg-rose-50 text-rose-600 text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-widest">Inactive</span>
+                            )}
                         </div>
+                        <h2 className="text-[44px] font-black text-slate-900 tracking-tighter uppercase leading-none mt-1">
+                            {currentPlan ? currentPlan.name : (
+                                effectiveSalon?.status === 'pending' ? 'Reviewing' :
+                                    (effectiveSalon?.status === 'trial' ? 'Trial' : 'No Plan')
+                            )}
+                        </h2>
+                    </div>
+                </div>
 
-                        <div className="flex flex-wrap gap-8 md:border-l border-border md:pl-8">
-                            <div className="space-y-1">
-                                <p className="text-[9px] font-black text-text-muted uppercase tracking-[0.2em]">Outlet Limit</p>
-                                <p className="text-lg font-black text-text tracking-tighter">{currentPlan ? currentPlan.limits?.outletLimit : (effectiveSalon?.status === 'trial' ? effectiveSalon?.limits?.outletLimit : '0')} <span className="text-[10px] font-bold text-text-muted opacity-40">BRANCHE(S)</span></p>
-                            </div>
-                            <div className="space-y-1">
-                                <p className="text-[9px] font-black text-text-muted uppercase tracking-[0.2em]">
-                                    {effectiveSalon?.status === 'trial' ? 'Trial Ends On' : 'Expires On'}
-                                </p>
-                                <p className="text-lg font-black text-text tracking-tighter">
-                                    {(effectiveSalon?.subscriptionExpiry && (currentPlan || effectiveSalon?.status === 'trial'))
-                                        ? (new Date(effectiveSalon.subscriptionExpiry).getFullYear() > new Date().getFullYear() + 50
-                                            ? 'Life Time'
-                                            : new Date(effectiveSalon.subscriptionExpiry).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }))
-                                        : '—'}
-                                </p>
-                            </div>
+                <div className="flex flex-wrap gap-16 md:border-l border-slate-200 md:pl-16 py-2">
+                    <div className="space-y-1">
+                        <p className="text-[11px] font-black text-slate-900 uppercase tracking-widest">Outlet Limit</p>
+                        <p className="text-[32px] leading-none font-black text-slate-900 tracking-tighter mt-3">
+                            {currentPlan ? currentPlan.limits?.outletLimit : (effectiveSalon?.status === 'trial' ? effectiveSalon?.limits?.outletLimit : '0')} 
+                            <span className="text-[12px] font-bold text-slate-400 uppercase tracking-widest ml-2">Branche(s)</span>
+                        </p>
+                    </div>
+                    <div className="space-y-1">
+                        <p className="text-[11px] font-black text-slate-900 uppercase tracking-widest">
+                            {effectiveSalon?.status === 'trial' ? 'Trial Ends On' : 'Expires On'}
+                        </p>
+                        <div className="flex items-center gap-4 mt-3">
+                            <p className="text-[32px] leading-none font-black text-slate-900 tracking-tighter">
+                                {(effectiveSalon?.subscriptionExpiry && (currentPlan || effectiveSalon?.status === 'trial'))
+                                    ? (new Date(effectiveSalon.subscriptionExpiry).getFullYear() > new Date().getFullYear() + 50
+                                        ? 'Life Time'
+                                        : new Date(effectiveSalon.subscriptionExpiry).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }))
+                                    : '—'}
+                            </p>
+                            <CalendarDays className="w-7 h-7 text-[#9333ea]" />
                         </div>
                     </div>
                 </div>
             </div>
 
             {/* Plans Grid */}
-            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {displayPlans.map((plan) => {
                     const isCurrent = currentPlanName?.toLowerCase() === plan.name?.toLowerCase();
+                    const style = getPlanStyle(plan.name);
+                    const PlanIcon = style.icon;
 
                     return (
                         <div
                             key={plan.id}
-                            className={`group relative !bg-white dark:!bg-slate-900 !rounded-[24px] !border-[1.5px] p-5 flex flex-col gap-5 transition-all duration-500 hover:-translate-y-1.5 ${isCurrent ? 'ring-2 ring-[#B4912B] shadow-xl shadow-[#B4912B]/5 !border-transparent dark:!border-transparent' : 'hover:shadow-lg !border-[#e2e8f0] dark:!border-slate-800'}`}
+                            className="bg-white rounded-[24px] border border-slate-100 shadow-sm p-8 flex flex-col relative"
                         >
                             {isCurrent && (
-                                <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-[#B4912B] text-white text-[8px] font-black uppercase tracking-[0.2em] px-3.5 py-1 rounded-xl shadow-md">
+                                <div className="absolute -top-3 right-6 bg-[#8b5cf6] text-white text-[10px] font-black uppercase tracking-widest px-4 py-1.5 rounded-lg shadow-sm">
                                     Active Now
                                 </div>
                             )}
 
-                            <div className="space-y-2">
-                                <div className="flex items-center justify-between">
-                                    <h4 className="text-lg font-black uppercase italic tracking-tighter text-text break-words w-full" style={{ overflowWrap: 'break-word', wordBreak: 'break-word' }}>{plan.name}</h4>
+                            <div className="flex flex-col items-center text-center space-y-4 mb-8 mt-2">
+                                <div className={`w-[68px] h-[68px] rounded-full flex items-center justify-center shrink-0 ${style.iconBg}`}>
+                                    <PlanIcon className={`w-8 h-8 ${style.iconColor}`} strokeWidth={2} />
                                 </div>
-                                <div className="flex flex-col">
-                                    {plan.price === 0 || (plan.monthlyPrice === 0) ? (
-                                        <>
-                                            <span className="text-xl font-black tracking-tighter text-emerald-600 italic uppercase">Free</span>
-                                            <span className="text-[8px] font-black text-emerald-600/60 uppercase tracking-[0.2em] mt-0.5">Validity: {trialDays} Days</span>
-                                        </>
-                                    ) : (
-                                        <div className="flex items-baseline gap-0.5">
-                                            <span className="text-xl font-black tracking-tighter">₹{(plan.monthlyPrice || 0).toLocaleString()}</span>
-                                            <span className="text-[8px] font-bold text-text-muted uppercase tracking-widest">/mo</span>
-                                        </div>
-                                    )}
+                                <div className="space-y-2 w-full">
+                                    <h4 className="text-[12px] font-black text-slate-900 uppercase tracking-widest">{plan.name} PLAN</h4>
+                                    <div className="mt-1">
+                                        {plan.price === 0 || (plan.monthlyPrice === 0) ? (
+                                            <>
+                                                <div className="text-[44px] font-black text-slate-900 tracking-tighter uppercase leading-none mt-2">FREE</div>
+                                                <div className="text-[10px] font-black text-[#10b981] uppercase tracking-widest mt-3">Validity: {trialDays} Days</div>
+                                            </>
+                                        ) : (
+                                            <div className="flex items-baseline justify-center gap-1 mt-2">
+                                                <span className="text-[44px] font-black text-slate-900 tracking-tighter leading-none">₹{(plan.monthlyPrice || 0).toLocaleString()}</span>
+                                                <span className="text-[12px] font-black text-[#8b5cf6] uppercase tracking-widest">/mo</span>
+                                            </div>
+                                        )}
+                                    </div>
                                 </div>
                             </div>
 
-                            <div className="h-px bg-border group-hover:bg-[#B4912B]/20 transition-colors" />
+                            <div className="h-px bg-slate-100 w-full mb-8" />
 
-                            <ul className="space-y-2 flex-1 overflow-y-auto max-h-[220px] custom-scrollbar pr-1">
-                                {/* Limits First */}
+                            <ul className="space-y-5 flex-1 px-2">
                                 {[
-                                    { icon: Users, label: `${plan.limits?.staffLimit || 0} Staff Members`, active: true },
-                                    { icon: Store, label: `${plan.limits?.outletLimit || 0} Salon Branches`, active: true },
-                                    { icon: MessageSquare, label: `${plan.limits?.whatsappLimit || 0} AI Automations`, active: true },
+                                    { icon: UserCog, label: `${plan.limits?.staffLimit || 0} Staff Members` },
+                                    { icon: Store, label: `${plan.limits?.outletLimit || 0} Salon Branch${plan.limits?.outletLimit > 1 ? 'es' : ''}` },
+                                    { icon: Square, label: `${plan.limits?.whatsappLimit || 0} AI Automations` },
                                 ].map((item, i) => (
-                                    <li key={i} className="flex items-center gap-2">
-                                        <div className="w-5 h-5 rounded-md bg-emerald-100/80 dark:bg-emerald-900/40 flex items-center justify-center shrink-0 border border-emerald-200 dark:border-emerald-800">
-                                            <item.icon className="w-3 h-3 !text-emerald-700 dark:!text-emerald-400" strokeWidth={2.5} />
+                                    <li key={i} className="flex items-center gap-4">
+                                        <div className="w-7 h-7 rounded bg-[#f8fafc] border border-slate-100 flex items-center justify-center shrink-0">
+                                            <item.icon className="w-3.5 h-3.5 text-slate-600" strokeWidth={2} />
                                         </div>
-                                        <span className="text-[9px] font-bold text-text uppercase tracking-wider">{item.label}</span>
+                                        <span className="text-[12px] font-bold text-slate-700 uppercase tracking-widest">{item.label}</span>
                                     </li>
                                 ))}
                             </ul>
 
-                            <button
-                                onClick={() => handleUpgrade(plan)}
-                                disabled={isCurrent || (effectiveSalon?.isActive && currentPlan && currentPlan.price > 0 && !isCurrent) || upgrading === plan.id}
-                                className={`w-full h-10 rounded-full text-[9px] font-black uppercase tracking-[0.3em] transition-all duration-500 shadow-md ${isCurrent
-                                        ? 'bg-surface text-text-muted cursor-default'
-                                        : (effectiveSalon?.isActive && currentPlan?.price > 0 && !isCurrent)
-                                            ? 'bg-slate-100 text-slate-400 cursor-not-allowed border-dashed border-2 border-slate-200 shadow-none'
-                                            : upgrading === plan.id
-                                                ? 'bg-[#B4912B]/50 text-white cursor-wait'
-                                                : 'bg-text text-white hover:bg-[#B4912B] hover:shadow-[#B4912B]/20 active:scale-95'
+                            <div className="mt-10">
+                                <button
+                                    onClick={() => handleUpgrade(plan)}
+                                    disabled={isCurrent || (effectiveSalon?.isActive && currentPlan && currentPlan.price > 0 && !isCurrent) || upgrading === plan.id}
+                                    className={`w-full py-3.5 rounded-xl text-[11px] font-black uppercase tracking-widest transition-all ${
+                                        isCurrent 
+                                            ? `${style.btnActiveBg} ${style.btnActiveText} ${style.btnActiveBorder}`
+                                            : (effectiveSalon?.isActive && currentPlan?.price > 0 && !isCurrent)
+                                                ? `${style.btnActiveBg} ${style.btnActiveText} ${style.btnActiveBorder} opacity-50 cursor-not-allowed`
+                                                : upgrading === plan.id
+                                                    ? 'bg-slate-100 text-slate-500 cursor-wait'
+                                                    : `${style.btnActiveBg} ${style.btnActiveText} ${style.btnActiveBorder}`
                                     }`}
-                            >
-                                {isCurrent
-                                    ? 'Current Plan'
-                                    : (effectiveSalon?.isActive && currentPlan && currentPlan.price > 0 && !isCurrent)
-                                        ? 'Subscription Active'
-                                        : upgrading === plan.id
-                                            ? 'Processing...'
-                                            : 'Upgrade'}
-                            </button>
+                                >
+                                    {isCurrent
+                                        ? 'Current Plan'
+                                        : (effectiveSalon?.isActive && currentPlan && currentPlan.price > 0 && !isCurrent)
+                                            ? 'Subscription Active'
+                                            : upgrading === plan.id
+                                                ? 'Processing...'
+                                                : 'Subscription Active'}
+                                </button>
+                            </div>
                         </div>
                     );
                 })}
             </div>
 
+            {/* Bottom Features Banner */}
+            <div className="mt-8 bg-[#fafbfc] rounded-[24px] px-8 py-8 border border-slate-100 flex flex-col md:flex-row items-center justify-between gap-6 shadow-sm">
+                {[
+                    { icon: ShieldCheck, iconColor: 'text-blue-600', iconBg: 'bg-blue-100', title: 'Secure & Reliable', desc: 'Your data is always safe' },
+                    { icon: Headphones, iconColor: 'text-teal-600', iconBg: 'bg-teal-100', title: 'Priority Support', desc: 'Get help when you need' },
+                    { icon: RefreshCw, iconColor: 'text-purple-600', iconBg: 'bg-purple-100', title: 'Easy Upgrades', desc: 'Switch plans anytime' },
+                    { icon: Tag, iconColor: 'text-amber-500', iconBg: 'bg-amber-100', title: 'Best Value', desc: 'Pay less, get more' },
+                ].map((f, i) => (
+                    <div key={i} className="flex items-center gap-4">
+                        <div className={`w-12 h-12 rounded-full flex items-center justify-center shrink-0 ${f.iconBg}`}>
+                            <f.icon className={`w-5 h-5 ${f.iconColor}`} strokeWidth={2} />
+                        </div>
+                        <div className="flex flex-col">
+                            <span className="text-[12px] font-black text-slate-900">{f.title}</span>
+                            <span className="text-[11px] text-slate-500 font-bold mt-0.5">{f.desc}</span>
+                        </div>
+                    </div>
+                ))}
+            </div>
         </div>
     );
 }
