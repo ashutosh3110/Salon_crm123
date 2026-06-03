@@ -279,7 +279,7 @@ export default function SubscriptionPage() {
     };
 
     return (
-        <div className="space-y-6 pb-12 font-sans min-h-screen bg-[#fafbfc] px-2">
+        <div className="space-y-4 pb-6 font-sans min-h-screen bg-[#fafbfc] px-2">
             <AnimatePresence>
                 {showSuccess && (
                     <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="fixed top-20 left-1/2 -translate-x-1/2 z-[100] bg-emerald-600 text-white px-4 py-2 shadow-lg flex items-center gap-3 border border-emerald-500/50 rounded-xl">
@@ -289,42 +289,42 @@ export default function SubscriptionPage() {
                 )}
             </AnimatePresence>
 
-            <div className="flex flex-col md:flex-row md:items-center justify-between mb-10 mt-6 relative">
+            <div className="flex flex-col md:flex-row md:items-center justify-between mb-4 mt-2 relative">
                 <div className="flex flex-col">
-                    <div className="flex items-center gap-2 mb-1">
+                    <div className="flex items-center gap-2 mb-0.5">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4" className="w-2.5 h-2.5 text-slate-300"><path d="M9 5l7 7-7 7" /></svg>
-                        <span className="text-[11px] font-black uppercase tracking-widest text-[#8b5cf6]">Subscription Management</span>
+                        <span className="text-[10px] font-black uppercase tracking-widest text-[#8b5cf6]">Subscription Management</span>
                     </div>
-                    <h1 className="text-[48px] font-black text-slate-900 tracking-tighter leading-none mt-1">
+                    <h1 className="text-[26px] font-black text-slate-900 tracking-tighter leading-none mt-0.5">
                         Our <span className="text-[#8b5cf6]">Plans.</span>
                     </h1>
                 </div>
-                <div className="hidden md:block absolute right-0 bottom-[-15px] z-10">
+                <div className="hidden md:block absolute right-0 bottom-[-5px] z-10">
                     <img
                         src="/vectore iamge 2.png"
                         alt="Subscription Plans"
-                        className="h-[120px] w-auto object-contain"
+                        className="h-[60px] w-auto object-contain"
                         onError={(e) => e.target.style.display = 'none'}
                     />
                 </div>
             </div>
 
             {/* Current Plan Banner */}
-            <div className="bg-white rounded-[24px] border border-slate-100 p-8 shadow-sm mb-6 flex flex-col md:flex-row md:items-center justify-between gap-6">
-                <div className="flex items-center gap-6 w-full md:w-auto">
-                    <div className="w-[76px] h-[76px] rounded-2xl bg-[#f3e8ff] flex items-center justify-center shrink-0">
-                        <Crown className="w-10 h-10 text-[#9333ea]" strokeWidth={2} />
+            <div className="bg-white rounded-[16px] border border-slate-100 p-4 shadow-sm mb-4 flex flex-col md:flex-row md:items-center justify-between gap-3">
+                <div className="flex items-center gap-3 w-full md:w-auto">
+                    <div className="w-[40px] h-[40px] rounded-lg bg-[#f3e8ff] flex items-center justify-center shrink-0">
+                        <Crown className="w-5.5 h-5.5 text-[#9333ea]" strokeWidth={2} />
                     </div>
                     <div className="flex flex-col justify-center">
-                        <div className="flex items-center gap-3 mb-1">
-                            <span className="text-[11px] font-black text-slate-900 uppercase tracking-widest">Your Current Plan</span>
+                        <div className="flex items-center gap-2 mb-0.5">
+                            <span className="text-[9px] font-black text-slate-900 uppercase tracking-widest">Your Current Plan</span>
                             {effectiveSalon?.isActive ? (
-                                <span className="bg-[#ecfdf5] text-[#10b981] text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-widest">Active</span>
+                                <span className="bg-[#ecfdf5] text-[#10b981] text-[8px] font-black px-1.5 py-0.5 rounded-full uppercase tracking-widest">Active</span>
                             ) : (
-                                <span className="bg-rose-50 text-rose-600 text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-widest">Inactive</span>
+                                <span className="bg-rose-50 text-rose-600 text-[8px] font-black px-1.5 py-0.5 rounded-full uppercase tracking-widest">Inactive</span>
                             )}
                         </div>
-                        <h2 className="text-[44px] font-black text-slate-900 tracking-tighter uppercase leading-none mt-1">
+                        <h2 className="text-[22px] font-black text-slate-900 tracking-tighter uppercase leading-none mt-0.5">
                             {currentPlan ? currentPlan.name : (
                                 effectiveSalon?.status === 'pending' ? 'Reviewing' :
                                     (effectiveSalon?.status === 'trial' ? 'Trial' : 'No Plan')
@@ -333,34 +333,34 @@ export default function SubscriptionPage() {
                     </div>
                 </div>
 
-                <div className="flex flex-wrap gap-16 md:border-l border-slate-200 md:pl-16 py-2">
-                    <div className="space-y-1">
-                        <p className="text-[11px] font-black text-slate-900 uppercase tracking-widest">Outlet Limit</p>
-                        <p className="text-[32px] leading-none font-black text-slate-900 tracking-tighter mt-3">
+                <div className="flex flex-wrap gap-8 md:border-l border-slate-200 md:pl-8 py-0.5">
+                    <div className="space-y-0.5">
+                        <p className="text-[9px] font-black text-slate-900 uppercase tracking-widest">Outlet Limit</p>
+                        <p className="text-[18px] leading-none font-black text-slate-900 tracking-tighter mt-1">
                             {currentPlan ? currentPlan.limits?.outletLimit : (effectiveSalon?.status === 'trial' ? effectiveSalon?.limits?.outletLimit : '0')}
-                            <span className="text-[12px] font-bold text-slate-400 uppercase tracking-widest ml-2">Branche(s)</span>
+                            <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest ml-1">Branche(s)</span>
                         </p>
                     </div>
-                    <div className="space-y-1">
-                        <p className="text-[11px] font-black text-slate-900 uppercase tracking-widest">
+                    <div className="space-y-0.5">
+                        <p className="text-[9px] font-black text-slate-900 uppercase tracking-widest">
                             {effectiveSalon?.status === 'trial' ? 'Trial Ends On' : 'Expires On'}
                         </p>
-                        <div className="flex items-center gap-4 mt-3">
-                            <p className="text-[32px] leading-none font-black text-slate-900 tracking-tighter">
+                        <div className="flex items-center gap-2 mt-1">
+                            <p className="text-[18px] leading-none font-black text-slate-900 tracking-tighter">
                                 {(effectiveSalon?.subscriptionExpiry && (currentPlan || effectiveSalon?.status === 'trial'))
                                     ? (new Date(effectiveSalon.subscriptionExpiry).getFullYear() > new Date().getFullYear() + 50
                                         ? 'Life Time'
                                         : new Date(effectiveSalon.subscriptionExpiry).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }))
                                     : '—'}
                             </p>
-                            <CalendarDays className="w-7 h-7 text-[#9333ea]" />
+                            <CalendarDays className="w-4 h-4 text-[#9333ea]" />
                         </div>
                     </div>
                 </div>
             </div>
 
             {/* Plans Grid */}
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
                 {displayPlans.map((plan) => {
                     const isCurrent = currentPlanName?.toLowerCase() === plan.name?.toLowerCase();
                     const style = getPlanStyle(plan.name);
@@ -369,31 +369,32 @@ export default function SubscriptionPage() {
                     return (
                         <div
                             key={plan.id}
-                            className="bg-white rounded-[24px] border border-slate-100 shadow-sm p-6 flex flex-col relative"
+                            className="bg-white rounded-[24px] border border-slate-100/80 shadow-sm p-6 flex flex-col relative text-left"
                         >
                             {isCurrent && (
-                                <div className="absolute -top-3 right-6 bg-[#8b5cf6] text-white text-[10px] font-black uppercase tracking-widest px-4 py-1.5 rounded-lg shadow-sm">
+                                <div className="absolute -top-3 right-6 bg-[#8b5cf6] text-white text-[9px] font-black uppercase tracking-widest px-3.5 py-1.5 rounded-lg shadow-sm">
                                     Active Now
                                 </div>
                             )}
 
-                            <div className="flex flex-col items-center text-center space-y-3 mb-5">
-                                <div className={`w-[56px] h-[56px] rounded-full flex items-center justify-center shrink-0 ${style.iconBg}`}>
-                                    <PlanIcon className={`w-7 h-7 ${style.iconColor}`} strokeWidth={2} />
+                            {/* Upper Section: Side-by-Side positioning */}
+                            <div className="flex items-center gap-4 mb-4">
+                                <div className={`w-[50px] h-[50px] rounded-full flex items-center justify-center shrink-0 ${style.iconBg}`}>
+                                    <PlanIcon className={`w-6 h-6 ${style.iconColor}`} strokeWidth={2} />
                                 </div>
-                                <div className="space-y-1 w-full">
-                                    <h4 className="text-[11px] font-black text-slate-900 uppercase tracking-widest">
+                                <div className="flex flex-col items-start justify-center">
+                                    <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">
                                         {(plan.name || '').toUpperCase().replace(' PLAN', '')} PLAN
                                     </h4>
                                     <div>
                                         {plan.price === 0 || (plan.monthlyPrice === 0) ? (
                                             <>
-                                                <div className="text-[36px] font-black text-slate-900 tracking-tighter uppercase leading-none mt-2">FREE</div>
-                                                <div className="text-[9px] font-black text-[#10b981] uppercase tracking-widest mt-2">Validity: {trialDays} Days</div>
+                                                <div className="text-[28px] font-black text-slate-900 tracking-tighter uppercase leading-none">FREE</div>
+                                                <div className="text-[9px] font-black text-[#10b981] uppercase tracking-widest mt-1">Validity: {trialDays} Days</div>
                                             </>
                                         ) : (
-                                            <div className="flex items-baseline justify-center gap-1 mt-1">
-                                                <span className="text-[36px] font-black text-slate-900 tracking-tighter leading-none">₹{(plan.monthlyPrice || 0).toLocaleString()}</span>
+                                            <div className="flex items-baseline gap-0.5">
+                                                <span className="text-[28px] font-black text-slate-900 tracking-tighter leading-none">₹{(plan.monthlyPrice || 0).toLocaleString()}</span>
                                                 <span className="text-[11px] font-black text-[#8b5cf6] uppercase tracking-widest">/mo</span>
                                             </div>
                                         )}
@@ -401,7 +402,7 @@ export default function SubscriptionPage() {
                                 </div>
                             </div>
 
-                            <div className="h-px bg-slate-100 w-full mb-5" />
+                            <div className="h-px bg-slate-100 w-full mb-4" />
 
                             <ul className="space-y-3 flex-1 px-1">
                                 {[
@@ -410,20 +411,20 @@ export default function SubscriptionPage() {
                                     { icon: Square, label: `${plan.limits?.whatsappLimit || 0} AI Automations` },
                                 ].map((item, i) => (
                                     <li key={i} className="flex items-center gap-3">
-                                        <div className="w-6 h-6 rounded bg-[#f8fafc] border border-slate-100 flex items-center justify-center shrink-0">
-                                            <item.icon className="w-3 h-3 text-slate-600" strokeWidth={2} />
+                                        <div className={`w-6 h-6 rounded-md flex items-center justify-center shrink-0 ${style.iconBg}`}>
+                                            <item.icon className={`w-3.5 h-3.5 ${style.iconColor}`} strokeWidth={2} />
                                         </div>
-                                        <span className="text-[11px] font-bold text-slate-700 uppercase tracking-widest">{item.label}</span>
+                                        <span className="text-[10px] font-bold text-slate-700 uppercase tracking-widest">{item.label}</span>
                                     </li>
                                 ))}
                             </ul>
 
-                            <div className="mt-6">
+                            <div className="mt-5">
                                 <button
                                     onClick={() => handleUpgrade(plan)}
                                     disabled={isCurrent || (effectiveSalon?.isActive && currentPlan && currentPlan.price > 0 && !isCurrent) || upgrading === plan.id}
                                     className={`w-full py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${isCurrent
-                                            ? `${style.btnActiveBg} ${style.btnActiveText} ${style.btnActiveBorder}`
+                                            ? 'bg-[#8b5cf6] text-white border border-[#8b5cf6]'
                                             : (effectiveSalon?.isActive && currentPlan?.price > 0 && !isCurrent)
                                                 ? `${style.btnActiveBg} ${style.btnActiveText} ${style.btnActiveBorder} opacity-50 cursor-not-allowed`
                                                 : upgrading === plan.id
@@ -446,20 +447,20 @@ export default function SubscriptionPage() {
             </div>
 
             {/* Bottom Features Banner */}
-            <div className="mt-8 bg-[#fafbfc] rounded-[24px] px-8 py-8 border border-slate-100 flex flex-col md:flex-row items-center justify-between gap-6 shadow-sm">
+            <div className="mt-4 bg-[#fafbfc] rounded-[16px] p-3 border border-slate-100 flex flex-col md:flex-row items-center justify-between gap-3 shadow-sm">
                 {[
-                    { icon: ShieldCheck, iconColor: 'text-blue-600', iconBg: 'bg-blue-100', title: 'Secure & Reliable', desc: 'Your data is always safe' },
-                    { icon: Headphones, iconColor: 'text-teal-600', iconBg: 'bg-teal-100', title: 'Priority Support', desc: 'Get help when you need' },
+                    { icon: ShieldCheck, iconColor: 'text-blue-600', iconBg: 'bg-blue-100', title: 'Secure & Reliable', desc: 'Your data is safe' },
+                    { icon: Headphones, iconColor: 'text-teal-600', iconBg: 'bg-teal-100', title: 'Priority Support', desc: 'Help when needed' },
                     { icon: RefreshCw, iconColor: 'text-purple-600', iconBg: 'bg-purple-100', title: 'Easy Upgrades', desc: 'Switch plans anytime' },
                     { icon: Tag, iconColor: 'text-amber-500', iconBg: 'bg-amber-100', title: 'Best Value', desc: 'Pay less, get more' },
                 ].map((f, i) => (
-                    <div key={i} className="flex items-center gap-4">
-                        <div className={`w-12 h-12 rounded-full flex items-center justify-center shrink-0 ${f.iconBg}`}>
-                            <f.icon className={`w-5 h-5 ${f.iconColor}`} strokeWidth={2} />
+                    <div key={i} className="flex items-center gap-2">
+                        <div className={`w-7 h-7 rounded-full flex items-center justify-center shrink-0 ${f.iconBg}`}>
+                            <f.icon className={`w-3.5 h-3.5 ${f.iconColor}`} strokeWidth={2} />
                         </div>
                         <div className="flex flex-col">
-                            <span className="text-[12px] font-black text-slate-900">{f.title}</span>
-                            <span className="text-[11px] text-slate-500 font-bold mt-0.5">{f.desc}</span>
+                            <span className="text-[10px] font-black text-slate-900">{f.title}</span>
+                            <span className="text-[9px] text-slate-500 font-bold mt-0.5">{f.desc}</span>
                         </div>
                     </div>
                 ))}

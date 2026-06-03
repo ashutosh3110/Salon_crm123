@@ -77,14 +77,19 @@ export default function LoyaltyMembershipPage({ tab: initialTab = 'plans' }) {
                         <button
                             key={tab.id}
                             onClick={() => navigate(`/admin/loyalty/${tab.id}`)}
-                            className={`flex items-center gap-1.5 px-4 py-2 transition-all duration-300 relative group whitespace-nowrap ${isActive
+                            className={`flex items-center gap-2 px-4.5 py-2.5 transition-all duration-300 relative group whitespace-nowrap ${isActive
                                 ? 'bg-[#cca839] text-white'
                                 : 'text-slate-800 hover:bg-slate-50'
                                 }`}
                         >
-                            <Icon className={`w-3.5 h-3.5 transition-colors duration-300 ${isActive ? 'text-white' : 'text-slate-500 group-hover:text-black'
-                                }`} />
-                            <span className={`block text-[9px] font-black uppercase tracking-widest transition-colors duration-300`}>
+                            <Icon 
+                                className={`transition-colors duration-300 ${isActive ? 'text-white' : 'text-slate-500 group-hover:text-black'}`}
+                                style={{ width: '15px', height: '15px' }}
+                            />
+                            <span 
+                                className="block uppercase tracking-widest transition-colors duration-300"
+                                style={{ fontSize: '10.5px', fontWeight: 800 }}
+                            >
                                 {tab.label}
                             </span>
                         </button>

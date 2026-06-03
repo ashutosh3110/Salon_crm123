@@ -39,70 +39,90 @@ export default function SuperAdminLayout() {
                 html:not(.dark) .sa-panel h3, 
                 html:not(.dark) .sa-panel h4, 
                 html:not(.dark) .sa-panel h5, 
-                html:not(.dark) .sa-panel h6,
-                html:not(.dark) .sa-panel .font-serif,
-                html:not(.dark) .sa-panel [class*="font-serif"],
-                html:not(.dark) .sa-panel .italic,
-                html:not(.dark) .sa-panel [class*="italic"] {
-                    font-family: 'Inter', sans-serif !important;
-                    font-weight: 800 !important;
+                /* --- Headers & Titles (Completely Clean & Standard) --- */
+                .sa-panel h1, 
+                .sa-panel h2, 
+                .sa-panel h3, 
+                .sa-panel h4, 
+                .sa-panel h5, 
+                .sa-panel h6,
+                .sa-panel .font-serif,
+                .sa-panel [class*="font-serif"],
+                .sa-panel .font-mono,
+                .sa-panel [class*="font-mono"],
+                .sa-panel .italic,
+                .sa-panel [class*="italic"],
+                [role="dialog"] h1,
+                [role="dialog"] h2,
+                [role="dialog"] h3,
+                [role="dialog"] h4,
+                [role="dialog"] h5,
+                [role="dialog"] h6 {
+                    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
                     font-style: normal !important;
-                    letter-spacing: -0.025em !important;
-                    color: #000000 !important;
+                    font-weight: 700 !important; /* Reduced from 800/900 for cleaner aesthetics */
+                    letter-spacing: -0.02em !important;
                 }
 
-                /* --- Global Font Size Scale Amplifiers (Big, eye-catching & readable) --- */
-                .sa-panel .text-\[10px\],
-                .sa-panel .text-\[10px\] * {
-                    font-size: 11px !important;
-                    letter-spacing: 0.04em !important;
-                    font-weight: 700 !important;
-                    text-transform: uppercase !important;
-                }
-                .sa-panel .text-\[11px\],
-                .sa-panel .text-\[11px\] * {
-                    font-size: 12px !important;
-                    letter-spacing: 0.03em !important;
+                /* --- Global Elegant & Compact Font Size Scale --- */
+                .sa-panel .text-\[7px\],
+                .sa-panel .text-\[8px\],
+                .sa-panel .text-\[9px\],
+                [role="dialog"] .text-\[7px\],
+                [role="dialog"] .text-\[8px\],
+                [role="dialog"] .text-\[9px\],
+                .fixed.inset-0 .text-\[7px\],
+                .fixed.inset-0 .text-\[8px\],
+                .fixed.inset-0 .text-\[9px\] {
+                    font-size: 8.5px !important;
+                    letter-spacing: 0.01em !important;
                     font-weight: 600 !important;
                 }
-                .sa-panel .text-xs,
-                .sa-panel .text-xs * {
-                    font-size: 0.85rem !important; /* Adjusted */
+                .sa-panel .text-\[10px\],
+                [role="dialog"] .text-\[10px\],
+                .fixed.inset-0 .text-\[10px\] {
+                    font-size: 9.5px !important;
+                    letter-spacing: 0.01em !important;
+                    font-weight: 600 !important;
+                }
+                .sa-panel .text-\[11px\],
+                [role="dialog"] .text-\[11px\],
+                .fixed.inset-0 .text-\[11px\] {
+                    font-size: 10.5px !important;
+                    letter-spacing: 0.01em !important;
+                    font-weight: 500 !important;
+                }
+                .sa-panel .text-xs {
+                    font-size: 0.72rem !important; /* ~11.5px */
+                    line-height: 1.1rem !important;
+                }
+                .sa-panel .text-sm {
+                    font-size: 0.8rem !important; /* ~12.8px */
                     line-height: 1.25rem !important;
                 }
-                .sa-panel .text-sm,
-                .sa-panel .text-sm * {
-                    font-size: 0.95rem !important;
-                    line-height: 1.45rem !important;
+                .sa-panel .text-base {
+                    font-size: 0.9rem !important; /* ~14.5px */
+                    line-height: 1.4rem !important;
                 }
-                .sa-panel .text-base,
-                .sa-panel .text-base * {
-                    font-size: 1.05rem !important;
-                    line-height: 1.55rem !important;
+                .sa-panel .text-lg {
+                    font-size: 1.05rem !important; /* ~16.8px */
+                    line-height: 1.5rem !important;
                 }
-                .sa-panel .text-lg,
-                .sa-panel .text-lg * {
-                    font-size: 1.15rem !important;
+                .sa-panel .text-xl {
+                    font-size: 1.2rem !important; /* ~19px */
                     line-height: 1.65rem !important;
                 }
-                .sa-panel .text-xl,
-                .sa-panel .text-xl * {
-                    font-size: 1.35rem !important;
-                    line-height: 1.85rem !important;
+                .sa-panel .text-2xl {
+                    font-size: 1.45rem !important; /* ~23px */
+                    line-height: 1.9rem !important;
+                    font-weight: 700 !important;
+                    letter-spacing: -0.015em !important;
                 }
-                .sa-panel .text-2xl,
-                .sa-panel .text-2xl * {
-                    font-size: 1.6rem !important;
-                    line-height: 2.1rem !important;
-                    font-weight: 850 !important;
-                    letter-spacing: -0.03em !important;
-                }
-                .sa-panel .text-3xl,
-                .sa-panel .text-3xl * {
-                    font-size: 1.95rem !important;
-                    line-height: 2.5rem !important;
-                    font-weight: 900 !important;
-                    letter-spacing: -0.04em !important;
+                .sa-panel .text-3xl {
+                    font-size: 1.8rem !important; /* ~29px */
+                    line-height: 2.2rem !important;
+                    font-weight: 700 !important;
+                    letter-spacing: -0.02em !important;
                 }
 
                 /* --- Spacious, Clean & Beautifully Aligned Tables --- */
