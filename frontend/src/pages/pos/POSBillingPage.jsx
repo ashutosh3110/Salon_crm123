@@ -2028,92 +2028,92 @@ export default function POSBillingPage() {
                         {/* FOOTER - Fixed at bottom */}
                         <div className="p-3 border-t border-border bg-surface space-y-3 shrink-0">
                             {/* TOTAL */}
-                            <div className="pos-billing-cart-total-box border border-border rounded-xl bg-slate-900 !text-white p-3 shadow-lg shadow-slate-950/10">
-                                <div className="flex justify-between text-[11px] font-bold mb-1 opacity-90">
-                                    <span className="!text-white">Subtotal</span>
-                                    <span className="!text-white">₹{totals.subtotal.toFixed(2)}</span>
+                            <div className="pos-billing-cart-total-box border border-border rounded-xl bg-surface-alt p-3 shadow-lg">
+                                <div className="flex justify-between text-[11px] font-bold mb-1 opacity-90 text-text">
+                                    <span>Subtotal</span>
+                                    <span>₹{totals.subtotal.toFixed(2)}</span>
                                 </div>
 
                                 {totals.cgst > 0 && (
-                                    <div className="flex justify-between text-[11px] font-bold mb-1 opacity-90">
-                                        <span className="!text-white">
+                                    <div className="flex justify-between text-[11px] font-bold mb-1 opacity-90 text-text">
+                                        <span>
                                             CGST {cart.every(i => i.type === 'service') ? `(${(totals.serviceGstRate) / 2}%)` :
                                                 cart.every(i => i.type === 'product') ? `(${(totals.productGstRate) / 2}%)` :
                                                     totals.serviceGstRate === totals.productGstRate ? `(${(totals.serviceGstRate) / 2}%)` : ''}
                                         </span>
-                                        <div className="flex gap-1 text-right !text-white">
-                                            {totals.cgst > totals.cgstExcl && <span className="text-emerald-400/80 font-normal">(Included)</span>}
-                                            {totals.cgstExcl > 0 && <span className="!text-white">+</span>}
-                                            <span className="!text-white">₹{totals.cgst.toFixed(2)}</span>
+                                        <div className="flex gap-1 text-right">
+                                            {totals.cgst > totals.cgstExcl && <span className="text-emerald-600 dark:text-emerald-400/80 font-normal">(Included)</span>}
+                                            {totals.cgstExcl > 0 && <span>+</span>}
+                                            <span>₹{totals.cgst.toFixed(2)}</span>
                                         </div>
                                     </div>
                                 )}
                                 {totals.sgst > 0 && (
-                                    <div className="flex justify-between text-[11px] font-bold mb-1 opacity-90">
-                                        <span className="!text-white">
+                                    <div className="flex justify-between text-[11px] font-bold mb-1 opacity-90 text-text">
+                                        <span>
                                             SGST {cart.every(i => i.type === 'service') ? `(${(totals.serviceGstRate) / 2}%)` :
                                                 cart.every(i => i.type === 'product') ? `(${(totals.productGstRate) / 2}%)` :
                                                     totals.serviceGstRate === totals.productGstRate ? `(${(totals.serviceGstRate) / 2}%)` : ''}
                                         </span>
-                                        <div className="flex gap-1 text-right !text-white">
-                                            {totals.sgst > totals.sgstExcl && <span className="text-emerald-400/80 font-normal">(Included)</span>}
-                                            {totals.sgstExcl > 0 && <span className="!text-white">+</span>}
-                                            <span className="!text-white">₹{totals.sgst.toFixed(2)}</span>
+                                        <div className="flex gap-1 text-right">
+                                            {totals.sgst > totals.sgstExcl && <span className="text-emerald-600 dark:text-emerald-400/80 font-normal">(Included)</span>}
+                                            {totals.sgstExcl > 0 && <span>+</span>}
+                                            <span>₹{totals.sgst.toFixed(2)}</span>
                                         </div>
                                     </div>
                                 )}
                                 {totals.igst > 0 && (
-                                    <div className="flex justify-between text-[11px] font-bold mb-1 opacity-90">
-                                        <span className="!text-white">IGST {totals.serviceGstRate === totals.productGstRate ? `(${totals.serviceGstRate}%)` : ''}</span>
-                                        <div className="flex gap-1 text-right !text-white">
-                                            {totals.igst > totals.totalExclusiveTax && <span className="text-emerald-400/80 font-normal">(Included)</span>}
-                                            {totals.totalExclusiveTax > 0 && <span className="!text-white">+</span>}
-                                            <span className="!text-white">₹{totals.igst.toFixed(2)}</span>
+                                    <div className="flex justify-between text-[11px] font-bold mb-1 opacity-90 text-text">
+                                        <span>IGST {totals.serviceGstRate === totals.productGstRate ? `(${totals.serviceGstRate}%)` : ''}</span>
+                                        <div className="flex gap-1 text-right">
+                                            {totals.igst > totals.totalExclusiveTax && <span className="text-emerald-600 dark:text-emerald-400/80 font-normal">(Included)</span>}
+                                            {totals.totalExclusiveTax > 0 && <span>+</span>}
+                                            <span>₹{totals.igst.toFixed(2)}</span>
                                         </div>
                                     </div>
                                 )}
 
                                 {totals.discount > 0 && (
-                                    <div className="flex justify-between text-[11px] font-bold mb-1 !text-emerald-400">
-                                        <span className="!text-emerald-400">Discount</span>
-                                        <span className="!text-emerald-400">-₹{totals.discount.toFixed(2)}</span>
+                                    <div className="flex justify-between text-[11px] font-bold mb-1 text-emerald-600 dark:text-emerald-400">
+                                        <span>Discount</span>
+                                        <span>-₹{totals.discount.toFixed(2)}</span>
                                     </div>
                                 )}
                                 {totals.membershipDiscount > 0 && (
-                                    <div className="flex justify-between text-[11px] font-bold mb-1 !text-emerald-400">
-                                        <span className="!text-emerald-400">Membership Disc</span>
-                                        <span className="!text-emerald-400">-₹{totals.membershipDiscount.toFixed(2)}</span>
+                                    <div className="flex justify-between text-[11px] font-bold mb-1 text-emerald-600 dark:text-emerald-400">
+                                        <span>Membership Disc</span>
+                                        <span>-₹{totals.membershipDiscount.toFixed(2)}</span>
                                     </div>
                                 )}
                                 {includePreviousDue && Number(selectedClient?.dueAmount || 0) > 0 && (
-                                    <div className="flex justify-between text-[11px] font-bold mb-1 !text-rose-400 animate-pulse">
-                                        <span className="!text-rose-400">Previous Dues Added</span>
-                                        <span className="!text-rose-400">+₹{Number(selectedClient.dueAmount).toFixed(2)}</span>
+                                    <div className="flex justify-between text-[11px] font-bold mb-1 text-rose-600 dark:text-rose-400 animate-pulse">
+                                        <span>Previous Dues Added</span>
+                                        <span>+₹{Number(selectedClient.dueAmount).toFixed(2)}</span>
                                     </div>
                                 )}
-                                <div className="border-t border-white/10 mt-2 pt-2 flex items-center justify-between">
-                                    <span className="text-sm font-bold uppercase tracking-wider !text-emerald-400">TOTAL</span>
-                                    <span className="text-2xl font-bold tracking-tight !text-white">₹{totals.total.toFixed(2)}</span>
+                                <div className="border-t border-border/50 mt-2 pt-2 flex items-center justify-between">
+                                    <span className="text-sm font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">TOTAL</span>
+                                    <span className="text-2xl font-bold tracking-tight text-text">₹{totals.total.toFixed(2)}</span>
                                 </div>
 
                                 {totals.redeemWallet > 0 && (
-                                    <div className="flex justify-between text-[11px] font-bold mt-2 !text-emerald-400">
-                                        <span className="!text-emerald-400">Wallet Used</span>
-                                        <span className="!text-emerald-400">-₹{totals.redeemWallet.toFixed(2)}</span>
+                                    <div className="flex justify-between text-[11px] font-bold mt-2 text-emerald-600 dark:text-emerald-400">
+                                        <span>Wallet Used</span>
+                                        <span>-₹{totals.redeemWallet.toFixed(2)}</span>
                                     </div>
                                 )}
 
                                 {totals.total - totals.redeemWallet - payments.reduce((s, p) => s + p.amount, 0) > 0.5 && (
-                                    <div className="flex justify-between text-xs font-semibold !text-rose-400 mt-2 bg-rose-500/5 p-2 rounded-lg border border-rose-500/20 animate-pulse">
-                                        <span className="uppercase tracking-widest !text-rose-400">Balance Due</span>
-                                        <span className="!text-rose-400">₹{(totals.total - totals.redeemWallet - payments.reduce((s, p) => s + p.amount, 0)).toFixed(2)}</span>
+                                    <div className="flex justify-between text-xs font-semibold text-rose-600 dark:text-rose-400 mt-2 bg-rose-50 dark:bg-rose-500/5 p-2 rounded-lg border border-rose-200 dark:border-rose-500/20 animate-pulse">
+                                        <span className="uppercase tracking-widest">Balance Due</span>
+                                        <span>₹{(totals.total - totals.redeemWallet - payments.reduce((s, p) => s + p.amount, 0)).toFixed(2)}</span>
                                     </div>
                                 )}
 
                                 {payments.reduce((s, p) => s + p.amount, 0) - (totals.total - totals.redeemWallet) > 0.005 && (
-                                    <div className="flex justify-between text-xs font-semibold text-rose-400 mt-2 bg-rose-500/10 p-2 rounded-lg border border-rose-500/20 animate-pulse">
-                                        <span className="uppercase tracking-widest text-rose-400">Overpaid</span>
-                                        <span className="text-rose-400">₹{(payments.reduce((s, p) => s + p.amount, 0) - (totals.total - totals.redeemWallet)).toFixed(2)}</span>
+                                    <div className="flex justify-between text-xs font-semibold text-rose-600 dark:text-rose-400 mt-2 bg-rose-50 dark:bg-rose-500/10 p-2 rounded-lg border border-rose-200 dark:border-rose-500/20 animate-pulse">
+                                        <span className="uppercase tracking-widest">Overpaid</span>
+                                        <span>₹{(payments.reduce((s, p) => s + p.amount, 0) - (totals.total - totals.redeemWallet)).toFixed(2)}</span>
                                     </div>
                                 )}
                             </div>
@@ -2202,7 +2202,7 @@ export default function POSBillingPage() {
                                                 type="button"
                                                 onClick={handleApplyCoupon}
                                                 disabled={applyingCoupon || !couponCodeInput}
-                                                className="!bg-[#cca839] hover:brightness-110 !text-slate-950 font-black text-[10px] uppercase tracking-wider px-5 transition-all disabled:opacity-40"
+                                                className="!bg-slate-900 dark:!bg-white hover:!bg-slate-800 dark:hover:!bg-slate-100 !text-white dark:!text-slate-900 font-black text-[10px] uppercase tracking-wider px-5 rounded-r-lg transition-all disabled:opacity-40"
                                             >
                                                 {applyingCoupon ? 'Checking...' : 'Apply'}
                                             </button>
@@ -3833,16 +3833,16 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                         </div>
 
                         {/* Grand Total & Finalize Unified Checkout Card */}
-                        <div className="flex flex-col bg-gradient-to-br from-slate-900 via-slate-950 to-slate-900 text-white rounded-xl p-1.5 lg:p-2 shadow-xl border border-slate-800 shrink-0 w-[190px] lg:w-[220px] xl:w-[245px] ml-auto">
+                        <div className="flex flex-col bg-surface-alt rounded-xl p-1.5 lg:p-2 shadow-xl border border-border shrink-0 w-[190px] lg:w-[220px] xl:w-[245px] ml-auto">
                             {/* Top row: Net Bill & Total to Pay */}
-                            <div className="flex items-center justify-between border-b border-white/10 pb-1 mb-1">
+                            <div className="flex items-center justify-between border-b border-border/50 pb-1 mb-1">
                                 <div className="flex flex-col items-start pr-3">
-                                    <span className="text-[10px] font-medium uppercase tracking-wider text-white/40 leading-none mb-1">Net Bill</span>
-                                    <span className="text-sm md:text-base font-bold font-mono text-white leading-none">₹{totals.total.toFixed(2)}</span>
+                                    <span className="text-[10px] font-medium uppercase tracking-wider text-text-muted leading-none mb-1">Net Bill</span>
+                                    <span className="text-sm md:text-base font-bold font-mono text-text leading-none">₹{totals.total.toFixed(2)}</span>
                                 </div>
                                 <div className="flex flex-col items-end">
-                                    <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-400/80 leading-none mb-1">Total to Pay</span>
-                                    <span className="text-base lg:text-lg xl:text-xl font-bold font-mono text-emerald-400 leading-none">₹{totals.totalWithPrevDue.toFixed(2)}</span>
+                                    <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400/80 leading-none mb-1">Total to Pay</span>
+                                    <span className="text-base lg:text-lg xl:text-xl font-bold font-mono text-emerald-600 dark:text-emerald-400 leading-none">₹{totals.totalWithPrevDue.toFixed(2)}</span>
                                 </div>
                             </div>
 
@@ -3850,7 +3850,7 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                             <button
                                 onClick={handleConfirm}
                                 disabled={isProcessing || qCart.length === 0 || isOverpaid}
-                                className="w-full mt-1 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-[11px] uppercase tracking-wider transition-all rounded-lg disabled:opacity-50 flex items-center justify-center gap-1.5 shadow-lg shadow-emerald-600/20 relative overflow-hidden group border border-emerald-500/30"
+                                className="w-full mt-1 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-[11px] uppercase tracking-wider transition-all rounded-lg disabled:bg-emerald-800 disabled:text-emerald-300/50 disabled:border-emerald-900 disabled:shadow-none dark:disabled:bg-emerald-900/60 dark:disabled:text-emerald-700 dark:disabled:border-emerald-800/50 flex items-center justify-center gap-1.5 shadow-lg shadow-emerald-600/20 relative overflow-hidden group border border-emerald-500/30"
                             >
                                 <div className="absolute top-0 left-0 w-full h-full bg-white/10 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700" />
                                 {isProcessing ? <Loader2 className="w-4 h-4 animate-spin" /> : (
