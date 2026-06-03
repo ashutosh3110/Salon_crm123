@@ -853,10 +853,10 @@ export default function SettingsPage({ section: propSection }) {
                                             <Check className="w-3.5 h-3.5 text-white absolute pointer-events-none opacity-0 peer-checked:opacity-100 transition-opacity" />
                                         </div>
                                         <div>
-                                            <label htmlFor="inclusive" className="text-[13px] font-bold text-gray-900 cursor-pointer select-none">
+                                            <label htmlFor="inclusive" className="text-[13px] font-bold text-gray-900 dark:text-slate-100 cursor-pointer select-none">
                                                 Prices are inclusive of tax
                                             </label>
-                                            <p className="text-[11px] text-gray-500 font-medium mt-0.5">
+                                            <p className="text-[11px] text-gray-500 dark:text-slate-400 font-medium mt-0.5">
                                                 All prices and loyalty points are calculated including applicable taxes.
                                             </p>
                                         </div>
@@ -865,10 +865,10 @@ export default function SettingsPage({ section: propSection }) {
                                     <button
                                         type="submit"
                                         disabled={isSaving || salonLoading}
-                                        className="px-6 py-3 bg-[#D99A29] hover:bg-[#c88d25] text-white rounded-lg font-bold text-[11px] uppercase tracking-widest transition-colors flex items-center justify-center gap-2 shrink-0 shadow-sm disabled:opacity-50"
+                                        className="px-6 py-3 !bg-[#D99A29] hover:!bg-[#c88d25] !text-white !border-0 rounded-lg font-bold text-[11px] uppercase tracking-widest transition-colors flex items-center justify-center gap-2 shrink-0 shadow-sm disabled:opacity-50"
                                     >
                                         <Save className="w-4 h-4" />
-                                        {isSaving ? 'SAVING…' : 'Save Business Info'}
+                                        {isSaving ? 'SAVING…' : 'SAVE BUSINESS INFO'}
                                     </button>
                                 </div>
                             </form>
