@@ -2929,198 +2929,97 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
     }, [showClientDropdown, qFilteredClients, qFocusedClientIndex, qSelectedCategory, qActiveTab, qFilteredServices, qFilteredProducts, qFocusedItemIndex, showNewClient]);
 
     return (
-        <div className="fixed inset-0 bg-[#0f172a]/90 backdrop-blur-md z-[100] flex items-center justify-center p-0 sm:p-2 overflow-hidden">
+        <div className="fixed inset-0 bg-[#0f172a]/80 backdrop-blur-sm z-[100] flex items-center justify-center p-0 sm:p-2 overflow-hidden">
             <motion.div
-                initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                initial={{ opacity: 0, scale: 0.97, y: 16 }}
                 animate={{ opacity: 1, scale: 1, y: 0 }}
-                className="bg-checkout-modal w-full max-w-[96%] h-full sm:h-[95vh] shadow-2xl flex flex-col sm:rounded-2xl border overflow-hidden"
+                transition={{ duration: 0.22, ease: 'easeOut' }}
+                className="w-full max-w-[99vw] h-full sm:h-[97vh] shadow-2xl flex flex-col sm:rounded-2xl overflow-hidden"
+                style={{ background: '#fff', fontFamily: 'inherit' }}
             >
                 <style>{`
-                    /* --- Custom scoped styles to override global admin overrides cleanly --- */
-                    .bg-checkout-modal {
-                        background-color: #ffffff !important;
-                        border: 1px solid #e2e8f0 !important;
-                    }
-                    .dark .bg-checkout-modal {
-                        background-color: #0b0f19 !important;
-                        border: 1px solid rgba(255, 255, 255, 0.08) !important;
-                    }
-                    .bg-checkout-modal-sub {
-                        background-color: #ffffff !important;
-                    }
-                    .dark .bg-checkout-modal-sub {
-                        background-color: #0d1220 !important;
-                    }
-                    .bg-checkout-header {
-                        background-color: #f8fafc !important;
-                        border-bottom: 1px solid #e2e8f0 !important;
-                    }
-                    .dark .bg-checkout-header {
-                        background-color: #111726 !important;
-                        border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
-                    }
-                    .bg-checkout-topbar {
-                        background-color: #f8fafc !important;
-                        border-bottom: 1px solid #e2e8f0 !important;
-                    }
-                    .dark .bg-checkout-topbar {
-                        background-color: #121826 !important;
-                        border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
-                    }
-                    .bg-checkout-right-panel {
-                        background-color: #f8fafc !important;
-                    }
-                    .dark .bg-checkout-right-panel {
-                        background-color: #0b0f19 !important;
-                    }
-                    .bg-checkout-bar {
-                        background-color: #ffffff !important;
-                    }
-                    .dark .bg-checkout-bar {
-                        background-color: #090d16 !important;
-                    }
-                    .bg-checkout-box {
-                        background-color: #f8fafc !important;
-                        border: 1px solid #e2e8f0 !important;
-                    }
-                    .dark .bg-checkout-box {
-                        background-color: #161e2e !important;
-                        border: 1px solid rgba(255, 255, 255, 0.08) !important;
-                    }
-                    .bg-checkout-box:hover {
-                        border-color: #cbd5e1 !important;
-                    }
-                    .dark .bg-checkout-box:hover {
-                        border-color: rgba(255, 255, 255, 0.2) !important;
-                    }
-                    .bg-checkout-box-inner {
-                        background-color: #ffffff !important;
-                    }
-                    .dark .bg-checkout-box-inner {
-                        background-color: #1a2333 !important;
-                    }
-                    .bg-checkout-box-error {
-                        background-color: rgba(244, 63, 94, 0.03) !important;
-                        border: 1px solid #fca5a5 !important;
-                    }
-                    .dark .bg-checkout-box-error {
-                        background-color: rgba(244, 63, 94, 0.08) !important;
-                        border: 1px solid rgba(244, 63, 94, 0.5) !important;
-                    }
-                    .bg-discount-btn {
-                        background-color: rgba(244, 63, 94, 0.08) !important;
-                        color: #e11d48 !important;
-                    }
-                    .dark .bg-discount-btn {
-                        background-color: rgba(244, 63, 94, 0.2) !important;
-                        color: #fda4af !important;
-                    }
-                    .bg-discount-btn:hover {
-                        background-color: rgba(244, 63, 94, 0.15) !important;
-                    }
-                    .dark .bg-discount-btn:hover {
-                        background-color: rgba(244, 63, 94, 0.3) !important;
-                    }
+                    .qi-scroll::-webkit-scrollbar { width: 4px; }
+                    .qi-scroll::-webkit-scrollbar-track { background: transparent; }
+                    .qi-scroll::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 99px; }
+                    .qi-noscroll::-webkit-scrollbar { display: none; }
+                    .qi-noscroll { -ms-overflow-style: none; scrollbar-width: none; }
+                    /* ---- Force LIGHT mode on left column regardless of dark-mode parent ---- */
+                    .qi-left { background-color: #ffffff !important; color: #1e293b !important; }
+                    .qi-left * { color: inherit; }
+                    .qi-left h3, .qi-left h4, .qi-left p, .qi-left span:not(.qi-gold):not(.qi-emerald):not(.qi-rose):not(.qi-blue):not(.qi-violet) { color: inherit !important; }
+                    .qi-left input { color: #1e293b !important; background: transparent !important; }
+                    .qi-left input::placeholder { color: #94a3b8 !important; }
+                    .qi-left label { color: #64748b !important; }
+                    .qi-catcard { background-color: #ffffff !important; border-color: #e2e8f0 !important; }
+                    .qi-catcard:hover { border-color: #C69A20 !important; }
+                    .qi-svccard { background-color: #ffffff !important; border-color: #e2e8f0 !important; }
+                    .qi-svccard:hover { border-color: #C69A20 !important; box-shadow: 0 2px 12px rgba(180,145,43,0.12); }
+                    .qi-svccard .qi-svc-icon { background-color: rgba(198,154,32,0.08) !important; }
+                    .qi-svccard:hover .qi-svc-icon { background-color: rgba(198,154,32,0.18) !important; }
+                    .qi-svccard .qi-svc-plus { border-color: rgba(198,154,32,0.3) !important; color: #C69A20 !important; }
+                    .qi-svccard:hover .qi-svc-plus { background-color: #C69A20 !important; color: #fff !important; }
+                    .qi-breadcrumb { background-color: #ffffff !important; border-bottom-color: #f1f5f9 !important; }
+                    .qi-kpi { background-color: #ffffff !important; border-top-color: #f1f5f9 !important; }
+                    .qi-strip { background-color: #ffffff !important; border-top-color: #e2e8f0 !important; }
+                    .qi-tab-row { background-color: #f8fafc !important; border-bottom-color: #e2e8f0 !important; }
+                    .qi-tab-services-active { background: linear-gradient(90deg,#C29323,#DAA520) !important; color: #fff !important; }
+                    .qi-tab-inactive { background-color: #f1f5f9 !important; color: #64748b !important; }
+                    .qi-topbar { background-color: #ffffff !important; border-bottom-color: #f1f5f9 !important; }
+                    .qi-outlet-btn { background-color: #ffffff !important; border-color: #e2e8f0 !important; color: #1e293b !important; }
+                    .qi-outlet-btn:hover { border-color: #C69A20 !important; }
+                    .qi-client-input { background-color: #ffffff !important; border-color: #e2e8f0 !important; color: #1e293b !important; }
+                    .qi-client-input:focus { border-color: #C69A20 !important; outline: none !important; }
+                    /* ---- Right column dark ---- */
+                    .qi-right { background-color: #0F172A !important; }
+                    .qi-cart-item { background-color: #ffffff !important; color: #1e293b !important; }
+                    .qi-cart-item * { color: inherit; }
+                    .qi-bottom-card { background-color: #0A0F1E !important; border-color: rgba(255,255,255,0.08) !important; }
                 `}</style>
 
-                {/* Header */}
-                <div className="px-4 py-2.5 bg-checkout-header flex items-center justify-between border-b border-slate-100/50">
-                    <div className="flex items-center gap-6">
-                        <div className="flex items-center gap-2 border-r border-slate-200 pr-6">
-                            <img src="/new wapixo logo .png" alt="Wapixo" className="h-6 object-contain" />
-                            <div className="flex flex-col">
-                                <span className="text-[7px] font-black tracking-widest text-slate-400 uppercase leading-none">Powering Smart Businesses</span>
-                            </div>
-                        </div>
-                        <div className="flex items-center gap-3">
-                            <div className="bg-emerald-600 p-2 rounded-xl text-white">
-                                <Sparkles className="w-5 h-5" />
-                            </div>
-                            <div>
-                                <h2 className="text-xl font-bold text-slate-900 uppercase tracking-tight">Instant POS Billing</h2>
-                                <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mt-0.5">Quick Invoice Without Appointments</p>
-                            </div>
-                        </div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                        <button
-                            onClick={() => {
-                                setQCart([]);
-                                setQClient(null);
-                                setQPayments({ cash: 0, online: 0 });
-                                setQManualDiscount({ type: 'fixed', value: 0 });
-                                setIsPaymentEdited(false);
-                            }}
-                            className="px-4 py-2 text-xs font-bold text-slate-400 hover:text-rose-500 uppercase tracking-wider transition-colors"
-                        >
-                            Reset Form
-                        </button>
-                        <button onClick={onClose} className="pos-billing-close-btn p-2 hover:bg-slate-200 rounded-full transition-colors group">
-                            <X className="w-6 h-6 text-slate-400 group-hover:text-slate-900" />
-                        </button>
-                    </div>
-                </div>
+                <div className="flex-1 min-h-0 flex flex-col lg:flex-row overflow-hidden">
 
-                <div className="flex-1 min-h-0 flex flex-col lg:flex-row overflow-hidden bg-checkout-modal-sub">
-                    {/* Left Panel: Configuration & Services */}
-                    <div className="flex-1 min-h-0 flex flex-col bg-checkout-modal-sub overflow-hidden border-r border-slate-100/50">
-                        {/* Top Bar: Compact Outlet & Client */}
-                        <div className="p-4 bg-gradient-to-br from-slate-50 via-white to-slate-50 grid grid-cols-1 md:grid-cols-2 gap-4 shrink-0">
+                    {/* ══════════════ LEFT COLUMN (always light) ══════════════ */}
+                    <div className="qi-left flex-1 min-h-0 flex flex-col overflow-hidden border-r border-slate-200">
+
+                        {/* TOP BAR: Outlet + Client */}
+                        <div className="qi-topbar grid grid-cols-1 md:grid-cols-2 gap-4 px-5 pt-4 pb-3 border-b border-slate-100 shrink-0">
+
+                            {/* Outlet Selector */}
                             <div className="space-y-1 relative">
-                                <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider flex items-center gap-1">
-                                    <Building2 className="w-3.5 h-3.5 text-slate-500" /> Outlet
+                                <label className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest" style={{ color: '#64748b' }}>
+                                    <Building2 className="w-3.5 h-3.5" /> Outlet
                                 </label>
-                                <div className="relative" id="outlet-dropdown-container">
+                                <div id="outlet-dropdown-container" className="relative">
                                     <button
-                                        onClick={() => setShowQOutletPicker(prev => !prev)}
-                                        className="w-full bg-gradient-to-r from-white to-slate-50 border border-slate-200 py-1.5 px-3 allow-curve rounded-lg flex items-center gap-2.5 hover:border-primary/50 transition-all"
+                                        onClick={() => setShowQOutletPicker(p => !p)}
+                                        className="qi-outlet-btn w-full flex items-center gap-3 border rounded-xl px-3 py-2.5 transition-all shadow-sm text-left"
                                     >
                                         {(() => {
                                             const sel = outlets.find(o => String(o._id) === String(qOutletId));
                                             const img = sel?.image || sel?.images?.[0];
                                             return sel ? (
                                                 <>
-                                                    <div className="w-6 h-6 rounded-lg overflow-hidden border border-slate-100 flex-shrink-0 bg-slate-50 shadow-sm">
-                                                        {img
-                                                            ? <img src={getImageUrl(img)} className="w-full h-full object-cover" alt={sel.name} onError={e => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'flex'; }} />
-                                                            : null
-                                                        }
-                                                        <div className={`w-full h-full items-center justify-center bg-primary/10 ${img ? 'hidden' : 'flex'}`}><Building2 className="w-3 h-3 text-primary" /></div>
+                                                    <div className="w-8 h-8 rounded-lg overflow-hidden border border-slate-100 flex-shrink-0 bg-slate-50 flex items-center justify-center">
+                                                        {img ? <img src={getImageUrl(img)} className="w-full h-full object-cover" alt={sel.name} /> : <Building2 className="w-4 h-4" style={{ color: '#C69A20' }} />}
                                                     </div>
-                                                    <span className="text-xs font-bold uppercase text-slate-900 truncate">{sel.name}</span>
+                                                    <span className="text-sm font-bold truncate flex-1" style={{ color: '#1e293b' }}>{sel.name}</span>
                                                 </>
-                                            ) : <span className="text-xs italic text-slate-400">Select outlet...</span>;
+                                            ) : <span className="text-sm italic flex-1" style={{ color: '#94a3b8' }}>Select outlet…</span>;
                                         })()}
-                                        <ChevronDown className={`w-3.5 h-3.5 text-slate-400 ml-auto transition-transform ${showQOutletPicker ? 'rotate-180 text-primary' : ''}`} />
+                                        <ChevronDown className={`w-4 h-4 ml-auto flex-shrink-0 transition-transform ${showQOutletPicker ? 'rotate-180' : ''}`} style={{ color: '#94a3b8' }} />
                                     </button>
                                     <AnimatePresence>
                                         {showQOutletPicker && (
-                                            <motion.div
-                                                initial={{ opacity: 0, y: 6, scale: 0.98 }}
-                                                animate={{ opacity: 1, y: 0, scale: 1 }}
-                                                exit={{ opacity: 0, y: 6, scale: 0.98 }}
-                                                className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-200 shadow-2xl rounded-2xl overflow-hidden z-[60]"
-                                            >
+                                            <motion.div initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 5 }}
+                                                className="absolute top-full left-0 right-0 mt-1.5 shadow-2xl rounded-2xl overflow-hidden z-[60]"
+                                                style={{ background: '#fff', border: '1px solid #e2e8f0' }}>
                                                 {outlets.map(o => (
-                                                    <button
-                                                        key={o._id}
+                                                    <button key={o._id}
                                                         onClick={() => { setQOutletId(o._id); setQCart([]); setShowQOutletPicker(false); }}
-                                                        className={`w-full flex items-center gap-3 px-3 py-3 hover:bg-slate-50 border-b border-slate-50 last:border-0 transition-colors ${String(o._id) === String(qOutletId) ? 'bg-primary/5' : ''}`}
+                                                        className={`w-full flex items-center gap-3 px-4 py-3 border-b border-slate-100 last:border-0 transition-colors ${String(o._id) === String(qOutletId) ? 'bg-amber-50' : 'hover:bg-slate-50'}`}
                                                     >
-                                                        <div className="w-10 h-10 rounded-xl overflow-hidden border border-slate-100 flex-shrink-0 bg-slate-50 shadow-sm transition-transform group-hover:scale-105">
-                                                            {(() => {
-                                                                const img = o.image || o.images?.[0];
-                                                                return img ? (
-                                                                    <img src={getImageUrl(img)} className="w-full h-full object-cover" alt={o.name} onError={e => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'flex'; }} />
-                                                                ) : null;
-                                                            })()}
-                                                            <div className={`w-full h-full items-center justify-center bg-primary/10 ${o.image || o.images?.[0] ? 'hidden' : 'flex'}`}><Building2 className="w-5 h-5 text-primary" /></div>
-                                                        </div>
-                                                        <div className="flex-1 text-left min-w-0">
-                                                            <p className="text-xs font-bold uppercase text-slate-800 truncate">{o.name}</p>
-                                                            {(() => { const a = typeof o.address === 'string' ? o.address : typeof o.address === 'object' && o.address ? [o.address.street, o.address.city].filter(Boolean).join(', ') : [o.location?.street, o.location?.city].filter(s => typeof s === 'string' && s).join(', '); return a ? <p className="text-[10px] font-semibold text-slate-400 truncate">{a}</p> : null; })()}
-                                                        </div>
-                                                        {String(o._id) === String(qOutletId) && <Check className="w-4 h-4 text-primary flex-shrink-0" />}
+                                                        <span className="text-sm font-bold" style={{ color: '#1e293b' }}>{o.name}</span>
+                                                        {String(o._id) === String(qOutletId) && <Check className="w-4 h-4 ml-auto" style={{ color: '#C69A20' }} />}
                                                     </button>
                                                 ))}
                                             </motion.div>
@@ -3129,84 +3028,44 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                                 </div>
                             </div>
 
+                            {/* Client */}
                             <div className="space-y-1 relative">
-                                <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider flex items-center gap-1">
-                                    <User className="w-3.5 h-3.5 text-slate-500" /> Client
+                                <label className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest" style={{ color: '#64748b' }}>
+                                    <User className="w-3.5 h-3.5" /> Client
                                 </label>
                                 {qClient ? (
-                                    <div className={`flex items-center justify-between py-1.5 px-2.5 allow-curve rounded-lg border ${Number(qClient.dueAmount || 0) > 0 ? 'bg-amber-50 border-amber-300' : 'bg-emerald-50 border-emerald-200'}`}>
+                                    <div className={`flex items-center justify-between px-3 py-2 rounded-xl border ${Number(qClient.dueAmount || 0) > 0 ? 'bg-amber-50 border-amber-200' : 'bg-emerald-50 border-emerald-200'}`}>
                                         <div className="flex items-center gap-2.5 min-w-0 flex-1">
-                                            <div className={`w-8 h-8 flex-shrink-0 text-white flex items-center justify-center font-bold rounded-lg text-sm ${Number(qClient.dueAmount || 0) > 0 ? 'bg-amber-500' : 'bg-emerald-600'}`}>
-                                                {qClient?.name?.charAt(0).toUpperCase() || 'U'}
+                                            <div className={`w-8 h-8 rounded-lg flex items-center justify-center font-bold text-sm text-white flex-shrink-0 ${Number(qClient.dueAmount || 0) > 0 ? 'bg-amber-500' : 'bg-emerald-600'}`}>
+                                                {qClient.name?.charAt(0).toUpperCase()}
                                             </div>
                                             <div className="min-w-0">
-                                                <p className="text-xs font-bold text-slate-900 truncate">{qClient.name}</p>
-                                                <div className="flex flex-wrap items-center gap-1.5 mt-0.5">
-                                                    {Number(qClient.dueAmount || 0) > 0 && (
-                                                        <p className="text-[10px] font-semibold text-amber-600 flex items-center gap-0.5">
-                                                            <AlertTriangle className="w-3 h-3 text-amber-600" /> ₹{Number(qClient.dueAmount).toFixed(0)} pending
-                                                        </p>
-                                                    )}
-                                                    {qActiveMembership && (
-                                                        <span className="text-[9px] font-semibold bg-primary text-white px-2 py-0.5 rounded uppercase tracking-wider flex items-center gap-1">
-                                                            <Sparkles className="w-2.5 h-2.5" /> {qActiveMembership.planId?.name}
-                                                        </span>
-                                                    )}
-
-                                                </div>
+                                                <p className="text-sm font-bold truncate" style={{ color: '#1e293b' }}>{qClient.name}</p>
+                                                <p className="text-xs font-mono" style={{ color: '#64748b' }}>{qClient.phone}</p>
                                             </div>
                                         </div>
-                                        <div className="flex items-center gap-2 flex-shrink-0">
-                                            {Number(qClient.dueAmount || 0) > 0 && (
-                                                <div className="flex items-center gap-1.5 bg-white border border-amber-200 rounded-lg px-2 py-0.5 shadow-sm">
-                                                    <span className="text-[10px] font-bold text-amber-600 uppercase tracking-tight">Collect:</span>
-                                                    <div className="relative">
-                                                        <span className="absolute left-1.5 top-1/2 -translate-y-1/2 text-xs font-bold text-amber-500">₹</span>
-                                                        <input
-                                                            type="number"
-                                                            min="0"
-                                                            max={Math.ceil(Number(qClient.dueAmount))}
-                                                            className="w-16 pl-3 bg-transparent text-xs font-bold text-slate-800 outline-none font-mono text-center h-5"
-                                                            placeholder="0"
-                                                            value={qCollectedPrevDue || ''}
-                                                            onChange={(e) => {
-                                                                const val = Math.min(Math.ceil(Number(qClient.dueAmount)), Math.max(0, Number(e.target.value) || 0));
-                                                                setQCollectedPrevDue(val);
-                                                                setQPayments(prev => ({ ...prev, cash: totals.total + val }));
-                                                            }}
-                                                        />
-                                                    </div>
-                                                </div>
-                                            )}
-                                            {qClientWalletBalance > 0 && (
-                                                <button
-                                                    onClick={() => setQRedeemWallet(qRedeemWallet > 0 ? 0 : Math.min(qClientWalletBalance, totals.totalWithPrevDue))}
-                                                    className={`px-2 py-1 rounded-lg border flex flex-col items-center transition-all ${qRedeemWallet > 0 ? 'bg-emerald-500 border-emerald-500 text-white' : 'bg-white border-emerald-200 text-emerald-600 hover:bg-emerald-50'}`}
-                                                >
-                                                    <span className="text-[9px] font-bold uppercase leading-none">Wallet</span>
-                                                    <span className="text-xs font-bold leading-none mt-0.5">₹{qClientWalletBalance.toFixed(0)}</span>
-                                                </button>
-                                            )}
-                                            <button onClick={() => { setQClient(null); setQCollectedPrevDue(0); }} className="text-slate-400 hover:text-rose-500 p-1 flex-shrink-0"><X className="w-4 h-4" /></button>
-                                        </div>
+                                        <button onClick={() => { setQClient(null); setQCollectedPrevDue(0); }} className="p-1 flex-shrink-0 ml-2 hover:text-red-500" style={{ color: '#94a3b8' }}>
+                                            <X className="w-4 h-4" />
+                                        </button>
                                     </div>
                                 ) : (
                                     <div className="relative" id="client-dropdown-container">
                                         <div className="flex items-center gap-2">
-                                            <div className="relative group flex-1">
-                                                <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" />
+                                            <div className="relative flex-1">
+                                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: '#94a3b8' }} />
                                                 <input
                                                     type="text"
-                                                    placeholder="Search client..."
-                                                    className="w-full bg-gradient-to-r from-white to-slate-50 border border-slate-200 pl-8 pr-2 py-1.5 text-xs font-medium text-slate-900 outline-none focus:border-primary allow-curve rounded-lg"
+                                                    placeholder="Search client name or mobile..."
+                                                    className="qi-client-input w-full border rounded-xl pl-9 pr-3 py-2.5 text-sm font-medium outline-none shadow-sm"
                                                     value={qSearchClient}
                                                     onFocus={() => setShowClientDropdown(true)}
-                                                    onChange={(e) => { setQSearchClient(e.target.value); setShowClientDropdown(true); }}
+                                                    onChange={e => { setQSearchClient(e.target.value); setShowClientDropdown(true); }}
                                                 />
                                             </div>
                                             <button
                                                 onClick={() => { setShowNewClient(true); setShowClientDropdown(false); }}
-                                                className="bg-gradient-to-br from-primary/10 to-primary/5 border border-primary/20 text-primary p-2 allow-curve rounded-lg hover:from-primary hover:to-primary/90 hover:text-white transition-all shadow-sm"
+                                                className="w-10 h-10 rounded-xl border flex items-center justify-center flex-shrink-0 transition-all hover:bg-amber-500 hover:text-white hover:border-amber-500"
+                                                style={{ background: '#f1f5f9', color: '#64748b', borderColor: '#e2e8f0' }}
                                                 title="Quick Add New Client"
                                             >
                                                 <UserPlus className="w-4 h-4" />
@@ -3214,49 +3073,39 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                                         </div>
                                         <AnimatePresence>
                                             {showClientDropdown && (
-                                                <motion.div
-                                                    initial={{ opacity: 0, y: 5, scale: 0.98 }}
-                                                    animate={{ opacity: 1, y: 0, scale: 1 }}
-                                                    exit={{ opacity: 0, y: 5 }}
-                                                    className="absolute top-full left-0 right-0 bg-white border border-slate-200 shadow-2xl z-[80] mt-1.5 rounded-2xl overflow-hidden"
-                                                >
+                                                <motion.div initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 5 }}
+                                                    className="absolute top-full left-0 right-0 mt-1.5 shadow-2xl z-[80] rounded-2xl overflow-hidden"
+                                                    style={{ background: '#fff', border: '1px solid #e2e8f0' }}>
                                                     {qFilteredClients.length > 0 ? (
-                                                        <div className="max-h-[220px] overflow-y-auto scrollbar-thin">
-                                                            {qFilteredClients.map((c, idx) => {
-                                                                const isFocused = idx === qFocusedClientIndex;
-                                                                return (
-                                                                    <button
-                                                                        id={`q-client-item-${idx}`}
-                                                                        key={c._id}
-                                                                        onClick={() => handleSelectClient(c)}
-                                                                        className={`w-full p-2.5 text-left hover:bg-slate-50 border-b border-slate-100 last:border-0 flex items-center gap-2.5 group transition-colors ${isFocused ? 'bg-primary/10 border-primary ring-1 ring-primary' : ''
-                                                                            }`}
-                                                                    >
-                                                                        <div className={`w-8 h-8 flex-shrink-0 flex items-center justify-center font-bold rounded-xl text-xs ${Number(c.dueAmount || 0) > 0 ? 'bg-amber-100 text-amber-700' : 'bg-primary/10 text-primary'}`}>{c.name.charAt(0).toUpperCase()}</div>
-                                                                        <div className="flex-1 min-w-0">
-                                                                            <p className="text-xs font-bold text-slate-900 truncate">{c.name}</p>
-                                                                            <div className="flex items-center gap-2">
-                                                                                <p className="text-[10px] font-semibold text-slate-400">{c.phone}</p>
-                                                                                {Number(c.dueAmount || 0) > 0 && <span className="text-[9px] font-bold text-amber-600 bg-amber-50 px-2 py-0.5 rounded border border-amber-100">Due ₹{Number(c.dueAmount).toFixed(0)}</span>}
-                                                                            </div>
-                                                                        </div>
-                                                                        {allWallets?.[c._id]?.balance > 0 && (
-                                                                            <div className="flex flex-col items-end px-2 py-0.5 bg-emerald-50 border border-emerald-100 rounded-lg shrink-0">
-                                                                                <span className="text-[9px] font-bold text-emerald-600 uppercase tracking-wider leading-none">Wallet</span>
-                                                                                <span className="text-xs font-bold text-emerald-600 leading-none mt-0.5">₹{allWallets[c._id].balance.toFixed(0)}</span>
-                                                                            </div>
-                                                                        )}
-                                                                    </button>
-                                                                );
-                                                            })}
+                                                        <div className="max-h-[220px] overflow-y-auto qi-scroll">
+                                                            {qFilteredClients.map((c, idx) => (
+                                                                <button
+                                                                    id={`q-client-item-${idx}`}
+                                                                    key={c._id}
+                                                                    onClick={() => handleSelectClient(c)}
+                                                                    className={`w-full px-4 py-3 text-left border-b border-slate-100 last:border-0 flex items-center gap-3 transition-colors ${idx === qFocusedClientIndex ? 'bg-amber-50' : 'hover:bg-slate-50'}`}
+                                                                >
+                                                                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center font-bold text-xs flex-shrink-0 ${Number(c.dueAmount || 0) > 0 ? 'bg-amber-100 text-amber-700' : 'bg-amber-50 text-amber-600'}`}>
+                                                                        {c.name.charAt(0).toUpperCase()}
+                                                                    </div>
+                                                                    <div className="flex-1 min-w-0">
+                                                                        <p className="text-sm font-bold truncate" style={{ color: '#1e293b' }}>{c.name}</p>
+                                                                        <p className="text-xs font-mono" style={{ color: '#94a3b8' }}>{c.phone}</p>
+                                                                    </div>
+                                                                    {Number(c.dueAmount || 0) > 0 && (
+                                                                        <span className="text-[10px] font-bold bg-amber-50 border border-amber-100 px-2 py-0.5 rounded-lg flex-shrink-0" style={{ color: '#d97706' }}>
+                                                                            Due {Number(c.dueAmount).toFixed(0)}
+                                                                        </span>
+                                                                    )}
+                                                                </button>
+                                                            ))}
                                                         </div>
                                                     ) : (
                                                         <div className="p-4 text-center space-y-2">
-                                                            <p className="text-xs font-semibold text-slate-400 italic">{qSearchClient ? `No client found for "${qSearchClient}"` : 'Start typing to search...'}</p>
-                                                            <button
-                                                                onClick={() => { setShowNewClient(true); setShowClientDropdown(false); }}
-                                                                className="w-full py-2 bg-primary text-white text-xs font-bold uppercase rounded-xl flex items-center justify-center gap-1.5"
-                                                            >
+                                                            <p className="text-sm italic" style={{ color: '#94a3b8' }}>No client found</p>
+                                                            <button onClick={() => { setShowNewClient(true); setShowClientDropdown(false); }}
+                                                                className="w-full py-2 text-xs font-bold uppercase rounded-xl flex items-center justify-center gap-1.5 text-white"
+                                                                style={{ background: '#C69A20' }}>
                                                                 <UserPlus className="w-3.5 h-3.5" /> Quick Add New Client
                                                             </button>
                                                         </div>
@@ -3269,774 +3118,642 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                             </div>
                         </div>
 
-                        {/* Tab Switcher */}
-                        <div className="flex w-full mb-4 shrink-0 shadow-sm border-b border-slate-200">
+                        {/* TABS: SERVICES | PRODUCTS */}
+                        <div className="qi-tab-row flex w-full shrink-0 border-b border-slate-200">
                             <button
                                 onClick={() => { setQActiveTab('services'); setQSelectedCategory(null); }}
-                                className={`flex-1 flex items-center justify-center gap-2 py-3 text-[11px] font-black uppercase tracking-widest transition-all ${
-                                    qActiveTab === 'services'
-                                        ? 'bg-gradient-to-r from-[#C29323] to-[#DAA520] text-white shadow-inner'
-                                        : 'bg-[#F2F4F7] text-slate-500 hover:bg-[#E5E7EB]'
-                                }`}
+                                className={`flex-1 flex items-center justify-center gap-2 py-3 text-[11px] font-black uppercase tracking-widest transition-all ${qActiveTab === 'services' ? 'qi-tab-services-active' : 'qi-tab-inactive hover:bg-slate-100'}`}
                             >
                                 <Scissors className="w-4 h-4" /> Services
                             </button>
                             <button
                                 onClick={() => { setQActiveTab('products'); setQSelectedCategory(null); }}
-                                className={`flex-1 flex items-center justify-center gap-2 py-3 text-[11px] font-black uppercase tracking-widest transition-all border-l border-slate-200 ${
-                                    qActiveTab === 'products'
-                                        ? 'bg-gradient-to-r from-[#C29323] to-[#DAA520] text-white shadow-inner'
-                                        : 'bg-[#F2F4F7] text-slate-500 hover:bg-[#E5E7EB]'
-                                }`}
+                                className={`flex-1 flex items-center justify-center gap-2 py-3 text-[11px] font-black uppercase tracking-widest transition-all border-l border-slate-200 ${qActiveTab === 'products' ? 'qi-tab-services-active' : 'qi-tab-inactive hover:bg-slate-100'}`}
                             >
                                 <Package className="w-4 h-4" /> Products
                             </button>
                         </div>
 
-                        {/* Service/Product Selection Section */}
-                        <div className="flex-1 overflow-hidden flex flex-col px-4 space-y-3">
-                            <div className="flex items-center justify-between shrink-0 mb-2">
-                                <div className="flex items-center gap-3">
-                                    {qSelectedCategory && (
+                        {/* BREADCRUMB / COUNT BAR */}
+                        <div className="qi-breadcrumb flex items-center justify-between px-5 py-2.5 border-b border-slate-100 shrink-0">
+                            <div className="flex items-center gap-2">
+                                {qSelectedCategory && (
+                                    <button onClick={() => setQSelectedCategory(null)} className="transition-colors" style={{ color: '#64748b' }}>
+                                        <ChevronDown className="w-4 h-4 rotate-90" strokeWidth={3} />
+                                    </button>
+                                )}
+                                <h3 className="text-[11px] font-black uppercase tracking-widest" style={{ color: '#1e293b' }}>
+                                    {qSelectedCategory || (qActiveTab === 'services' ? 'Service Categories' : 'Product Categories')}
+                                </h3>
+                            </div>
+                            <span className="text-[10px] font-bold bg-slate-100 border border-slate-200 px-2.5 py-1 rounded-md uppercase tracking-wider" style={{ color: '#475569' }}>
+                                {qSelectedCategory
+                                    ? `${(qActiveTab === 'services' ? qFilteredServices : qFilteredProducts).filter(i => qSelectedCategory === 'All' || i.category === qSelectedCategory).length} ${qActiveTab === 'services' ? 'Services' : 'Products'}`
+                                    : `${qCategories.length} Categories`}
+                            </span>
+                        </div>
+
+                        {/* SERVICE / CATEGORY GRID */}
+                        <div className="flex-1 overflow-y-auto qi-scroll px-5 py-3">
+                            {!qSelectedCategory ? (
+                                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                                    {qCategories.map(cat => (
                                         <button
-                                            onClick={() => setQSelectedCategory(null)}
-                                            className="text-slate-800 hover:text-slate-500 transition-colors flex items-center"
-                                            title="Back to Categories"
+                                            key={cat.name}
+                                            onClick={() => setQSelectedCategory(cat.name)}
+                                            className="border rounded-xl overflow-hidden flex flex-col group h-[76px] transition-all"
+                                            style={{ background: '#ffffff', borderColor: '#e2e8f0' }}
+                                            onMouseOver={e => e.currentTarget.style.borderColor = '#C69A20'}
+                                            onMouseOut={e => e.currentTarget.style.borderColor = '#e2e8f0'}
                                         >
-                                            <ChevronDown className="w-4 h-4 rotate-90" strokeWidth={3} />
+                                            <div className="h-9 w-full relative overflow-hidden flex-shrink-0 flex items-center justify-center" style={{ background: '#f8fafc' }}>
+                                                {cat.image ? (
+                                                    <img src={getImageUrl(cat.image)} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-400" alt={cat.name} />
+                                                ) : (
+                                                    <div className="flex items-center justify-center w-full h-full" style={{ background: 'rgba(198,154,32,0.05)' }}>
+                                                        {cat.name === 'All' ? <LayoutGrid className="w-5 h-5" style={{ color: 'rgba(198,154,32,0.5)' }} /> : <Tag className="w-4 h-4" style={{ color: 'rgba(198,154,32,0.4)' }} />}
+                                                    </div>
+                                                )}
+                                            </div>
+                                            <div className="flex-1 flex items-center justify-center px-2" style={{ background: '#ffffff' }}>
+                                                <span className="text-[10px] font-bold uppercase tracking-tight text-center leading-tight" style={{ color: '#475569' }}>{cat.name}</span>
+                                            </div>
                                         </button>
-                                    )}
-                                    <h3 className="text-[11px] font-black text-slate-800 uppercase tracking-widest">
-                                        {qSelectedCategory || (qActiveTab === 'services' ? 'Service Categories' : 'Product Categories')}
-                                    </h3>
+                                    ))}
                                 </div>
-                                <div className="text-[10px] font-bold text-slate-600 bg-slate-100 px-2.5 py-1 rounded-sm uppercase tracking-wider border border-slate-200">
-                                    {qSelectedCategory
-                                        ? `${(qActiveTab === 'services' ? qFilteredServices : qFilteredProducts).filter(i => qSelectedCategory === 'All' || i.category === qSelectedCategory).length} ${qActiveTab === 'services' ? 'Services' : 'Products'}`
-                                        : `${qCategories.length} Categories`
-                                    }
+                            ) : (
+                                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                                    {(qActiveTab === 'services' ? qFilteredServices : qFilteredProducts)
+                                        .filter(i => qSelectedCategory === 'All' || i.category === qSelectedCategory)
+                                        .map((item, idx) => {
+                                            const isFocused = idx === qFocusedItemIndex;
+                                            return (
+                                                <button
+                                                    id={`q-item-item-${idx}`}
+                                                    key={item._id}
+                                                    onClick={() => addToQCart(item, qActiveTab === 'services' ? 'service' : 'product')}
+                                                    className={`border rounded-xl p-3 flex items-start gap-3 text-left group transition-all relative ${isFocused ? 'ring-1 ring-amber-400' : ''}`}
+                                                    style={{ background: '#ffffff', borderColor: isFocused ? '#C69A20' : '#e2e8f0' }}
+                                                    onMouseOver={e => { e.currentTarget.style.borderColor = '#C69A20'; e.currentTarget.style.boxShadow = '0 2px 12px rgba(180,145,43,0.12)'; }}
+                                                    onMouseOut={e => { e.currentTarget.style.borderColor = isFocused ? '#C69A20' : '#e2e8f0'; e.currentTarget.style.boxShadow = 'none'; }}
+                                                >
+                                                    <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 transition-colors" style={{ background: 'rgba(198,154,32,0.08)' }}>
+                                                        {qActiveTab === 'services'
+                                                            ? <Scissors className="w-5 h-5" style={{ color: '#C69A20' }} strokeWidth={1.5} />
+                                                            : <Package className="w-5 h-5" style={{ color: '#C69A20' }} strokeWidth={1.5} />}
+                                                    </div>
+                                                    <div className="flex-1 min-w-0">
+                                                        <p className="text-[12px] font-bold leading-snug line-clamp-2" style={{ color: '#1e293b' }}>{item.name}</p>
+                                                        {item.duration && <p className="text-[10px] mt-0.5" style={{ color: '#94a3b8' }}>&#9201; {item.duration} min</p>}
+                                                        <p className="text-[13px] font-black mt-1" style={{ color: '#C69A20' }}>&#8377;{item.price}</p>
+                                                    </div>
+                                                    <div className="absolute top-2 right-2 w-5 h-5 border rounded flex items-center justify-center transition-all" style={{ borderColor: 'rgba(198,154,32,0.3)', color: '#C69A20' }}>
+                                                        <Plus className="w-3 h-3" />
+                                                    </div>
+                                                </button>
+                                            );
+                                        })}
+                                    <button
+                                        onClick={() => toast('Feature to add custom services coming soon!', { icon: '✨' })}
+                                        className="border-2 border-dashed rounded-xl p-3 flex items-center justify-center gap-2 transition-all"
+                                        style={{ borderColor: '#e2e8f0', color: '#94a3b8' }}
+                                        onMouseOver={e => { e.currentTarget.style.borderColor = '#C69A20'; e.currentTarget.style.color = '#C69A20'; }}
+                                        onMouseOut={e => { e.currentTarget.style.borderColor = '#e2e8f0'; e.currentTarget.style.color = '#94a3b8'; }}
+                                    >
+                                        <Plus className="w-4 h-4" />
+                                        <span className="text-[11px] font-bold uppercase tracking-wider">Add Custom Service</span>
+                                    </button>
+                                </div>
+                            )}
+                        </div>
+
+                        {/* KPI ROW */}
+                        <div className="qi-kpi grid grid-cols-2 md:grid-cols-4 gap-0 border-t border-slate-100 shrink-0 divide-x divide-slate-100 px-0">
+                            <div className="flex flex-col gap-0.5 px-4 py-3">
+                                <span className="text-[9px] font-black uppercase tracking-widest" style={{ color: '#94a3b8' }}>Today&#39;s Sales</span>
+                                <div className="flex items-end justify-between">
+                                    <div>
+                                        <span className="text-base font-black" style={{ color: '#1e293b' }}>&#8377;12,650</span>
+                                        <span className="text-[9px] font-bold ml-1.5" style={{ color: '#10b981' }}>+24.5%</span>
+                                    </div>
+                                    <svg className="w-14 h-7 shrink-0" viewBox="0 0 100 30" fill="none" stroke="#10b981" strokeWidth="2.5">
+                                        <path d="M0 25 L20 22 L40 28 L60 15 L80 18 L100 5" strokeLinecap="round" strokeLinejoin="round" />
+                                    </svg>
+                                </div>
+                                <span className="text-[9px]" style={{ color: '#94a3b8' }}>vs yesterday</span>
+                            </div>
+                            <div className="flex flex-col gap-0.5 px-4 py-3">
+                                <span className="text-[9px] font-black uppercase tracking-widest" style={{ color: '#94a3b8' }}>Invoices</span>
+                                <div className="flex items-end justify-between">
+                                    <div>
+                                        <span className="text-base font-black" style={{ color: '#1e293b' }}>18</span>
+                                        <span className="text-[9px] font-bold ml-1.5" style={{ color: '#8b5cf6' }}>+12</span>
+                                    </div>
+                                    <svg className="w-14 h-7 shrink-0" viewBox="0 0 100 30" fill="none" stroke="#8b5cf6" strokeWidth="2.5">
+                                        <path d="M0 28 L20 25 L40 18 L60 22 L80 10 L100 5" strokeLinecap="round" strokeLinejoin="round" />
+                                    </svg>
+                                </div>
+                                <span className="text-[9px]" style={{ color: '#94a3b8' }}>vs yesterday</span>
+                            </div>
+                            <div className="flex flex-col gap-0.5 px-4 py-3">
+                                <span className="text-[9px] font-black uppercase tracking-widest" style={{ color: '#94a3b8' }}>Average Bill Value</span>
+                                <div className="flex items-end justify-between">
+                                    <div>
+                                        <span className="text-base font-black" style={{ color: '#1e293b' }}>&#8377;702</span>
+                                        <span className="text-[9px] font-bold ml-1.5" style={{ color: '#3b82f6' }}>+8.5%</span>
+                                    </div>
+                                    <svg className="w-14 h-7 shrink-0" viewBox="0 0 100 30" fill="none" stroke="#3b82f6" strokeWidth="2.5">
+                                        <path d="M0 20 L20 28 L40 22 L60 15 L80 18 L100 8" strokeLinecap="round" strokeLinejoin="round" />
+                                    </svg>
+                                </div>
+                                <span className="text-[9px]" style={{ color: '#94a3b8' }}>vs yesterday</span>
+                            </div>
+                            <div className="flex flex-col gap-0.5 px-4 py-3">
+                                <span className="text-[9px] font-black uppercase tracking-widest" style={{ color: '#94a3b8' }}>Top Service</span>
+                                <div className="flex items-center gap-2 mt-1">
+                                    <div className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0" style={{ background: 'rgba(198,154,32,0.1)' }}>
+                                        <Star className="w-4 h-4" style={{ color: '#C69A20' }} fill="#C69A20" />
+                                    </div>
+                                    <div>
+                                        <p className="text-[11px] font-black uppercase leading-none" style={{ color: '#C69A20' }}>Facial O3+ Whitening</p>
+                                        <p className="text-[9px] mt-0.5" style={{ color: '#94a3b8' }}>4 Bills</p>
+                                    </div>
                                 </div>
                             </div>
-                            <div className="flex-1 overflow-y-auto pr-1 scrollbar-thin">
-                                {!qSelectedCategory ? (
-                                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
-                                        {qCategories.map(cat => (
-                                            <button
-                                                key={cat.name}
-                                                onClick={() => setQSelectedCategory(cat.name)}
-                                                className="bg-checkout-box hover:border-primary hover:shadow-md transition-all rounded-xl overflow-hidden flex flex-col group h-[70px]"
-                                            >
-                                                <div className="h-10 w-full bg-checkout-box-inner relative overflow-hidden flex-shrink-0">
-                                                    {cat.image ? (
-                                                        <img
-                                                            src={getImageUrl(cat.image)}
-                                                            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                                                            alt={cat.name}
-                                                        />
-                                                    ) : (
-                                                        <div className="w-full h-full flex items-center justify-center bg-primary/5">
-                                                            {cat.name === 'All' ? (
-                                                                <LayoutGrid className="w-5 h-5 text-primary/40" />
-                                                            ) : (
-                                                                <Tag className="w-4 h-4 text-primary/30" />
-                                                            )}
-                                                        </div>
-                                                    )}
-                                                    <div className="absolute inset-0 bg-black/5 group-hover:bg-black/0 transition-colors" />
-                                                </div>
-                                                <div className="flex-1 flex items-center justify-center p-1">
-                                                    <span className="text-[10px] font-bold !text-slate-800 dark:!text-slate-200 uppercase tracking-tight text-center leading-tight group-hover:!text-primary transition-colors">{cat.name}</span>
-                                                </div>
-                                            </button>
-                                        ))}
+                        </div>
+
+                        {/* BILLING STRIP */}
+                        <div className="qi-strip flex-shrink-0 border-t" style={{ borderTopColor: '#e2e8f0' }}>
+                            <div className="w-full px-4 py-2.5 flex items-center gap-0 overflow-x-auto qi-noscroll whitespace-nowrap divide-x divide-slate-200">
+
+                                <div className="flex flex-col shrink-0 pr-4">
+                                    <span className="text-[9px] font-black uppercase tracking-widest" style={{ color: '#64748b' }}>Subtotal</span>
+                                    <span className="text-[13px] font-black font-mono mt-0.5" style={{ color: '#1e293b' }}>&#8377;{totals.subtotal.toFixed(2)}</span>
+                                </div>
+
+                                {totals.cgst > 0 && (
+                                    <div className="flex flex-col shrink-0 px-4">
+                                        <span className="text-[9px] font-black uppercase tracking-widest" style={{ color: '#64748b' }}>
+                                            CGST {totals.serviceGstRate > 0 ? `(${totals.serviceGstRate / 2}%)` : ''}
+                                        </span>
+                                        <span className="text-[13px] font-black font-mono mt-0.5" style={{ color: '#1e293b' }}>&#8377;{totals.cgst.toFixed(2)}</span>
                                     </div>
-                                ) : (
-                                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                                        {(qActiveTab === 'services' ? qFilteredServices : qFilteredProducts)
-                                            .filter(i => qSelectedCategory === 'All' || i.category === qSelectedCategory)
-                                            .map((item, idx) => {
-                                                const isFocused = idx === qFocusedItemIndex;
-                                                return (
-                                                    <button
-                                                        id={`q-item-item-${idx}`}
-                                                        key={item._id}
-                                                        onClick={() => addToQCart(item, qActiveTab === 'services' ? 'service' : 'product')}
-                                                        className={`bg-white border border-slate-200 hover:border-[#D4A336] transition-all rounded shadow-sm relative overflow-hidden flex flex-col group h-36 p-3 ${
-                                                            isFocused ? 'ring-1 ring-[#D4A336] border-[#D4A336] shadow z-10' : ''
-                                                        }`}
-                                                    >
-                                                        <div className="flex justify-between w-full mb-auto">
-                                                            <div className="flex-1 flex justify-center mt-2 opacity-50">
-                                                                {qActiveTab === 'services' ? (
-                                                                    <Scissors className="w-8 h-8 text-slate-300 group-hover:text-[#D4A336]" strokeWidth={1.5} />
-                                                                ) : (
-                                                                    <Package className="w-8 h-8 text-slate-300 group-hover:text-[#D4A336]" strokeWidth={1.5} />
-                                                                )}
-                                                            </div>
-                                                            <div className="absolute top-3 right-3 border border-amber-200 rounded p-1 opacity-80 group-hover:opacity-100 transition-opacity">
-                                                                <Plus className="w-3 h-3 text-amber-500" strokeWidth={3} />
-                                                            </div>
-                                                        </div>
-                                                        <div className="mt-4 flex flex-col items-start text-left w-full border-t border-slate-50 pt-2">
-                                                            <p className="text-[11px] font-bold text-slate-900 line-clamp-2 leading-tight w-full">{item.name}</p>
-                                                            <p className="text-[13px] font-black text-emerald-500 mt-1">₹{item.price}</p>
-                                                        </div>
-                                                    </button>
-                                                );
-                                            })}
+                                )}
+
+                                {totals.sgst > 0 && (
+                                    <div className="flex flex-col shrink-0 px-4">
+                                        <span className="text-[9px] font-black uppercase tracking-widest" style={{ color: '#64748b' }}>
+                                            SGST {totals.serviceGstRate > 0 ? `(${totals.serviceGstRate / 2}%)` : ''}
+                                        </span>
+                                        <span className="text-[13px] font-black font-mono mt-0.5" style={{ color: '#1e293b' }}>&#8377;{totals.sgst.toFixed(2)}</span>
+                                    </div>
+                                )}
+
+                                {/* Discount */}
+                                <div className="flex flex-col shrink-0 px-4 min-w-[100px]">
+                                    <span className="text-[9px] font-black uppercase tracking-widest" style={{ color: '#64748b' }}>Discount</span>
+                                    <div className="flex items-center gap-1 mt-1">
+                                        <div className="flex items-center rounded-lg overflow-hidden h-[22px]" style={{ border: '1px solid #fecdd3', background: '#fff1f2' }}>
+                                            <button
+                                                type="button"
+                                                onClick={() => setQManualDiscount(p => ({ ...p, type: p.type === 'fixed' ? 'percentage' : 'fixed' }))}
+                                                className="px-1.5 text-[10px] font-black h-full flex items-center gap-0.5 border-r"
+                                                style={{ borderColor: '#fecdd3', color: '#e11d48' }}
+                                            >
+                                                <Tag className="w-2.5 h-2.5" />
+                                                {qManualDiscount.type === 'fixed' ? ' ₹' : ' %'}
+                                            </button>
+                                            <input
+                                                type="number"
+                                                className="w-11 text-[11px] font-black outline-none text-center px-1"
+                                                style={{ background: 'transparent', color: '#e11d48' }}
+                                                value={qManualDiscount.value || ''}
+                                                onChange={e => setQManualDiscount({ ...qManualDiscount, value: Number(e.target.value) })}
+                                                placeholder="0"
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Payment Date */}
+                                <div className="flex flex-col shrink-0 px-4 min-w-[130px]">
+                                    <span className="text-[9px] font-black uppercase tracking-widest" style={{ color: !qPaymentDate ? '#e11d48' : '#64748b' }}>Payment Date</span>
+                                    <div className="flex items-center gap-1.5 mt-1">
+                                        <Calendar className="w-3.5 h-3.5 flex-shrink-0" style={{ color: '#94a3b8' }} />
+                                        <input
+                                            type="date"
+                                            required
+                                            className="text-[11px] font-black outline-none uppercase cursor-pointer"
+                                            style={{ background: 'transparent', color: '#1e293b', width: 'auto' }}
+                                            value={qPaymentDate}
+                                            onChange={e => setQPaymentDate(e.target.value)}
+                                        />
+                                    </div>
+                                </div>
+
+                                {/* Cash */}
+                                <div className="flex flex-col shrink-0 px-4 min-w-[110px]">
+                                    <span className="text-[9px] font-black uppercase tracking-widest" style={{ color: '#64748b' }}>Cash Payment</span>
+                                    <div className="flex items-center gap-1 mt-1 rounded-lg px-2 h-[22px]" style={{ border: '1px solid #e2e8f0', background: '#fff' }}>
+                                        <Banknote className="w-3 h-3" style={{ color: '#94a3b8' }} />
+                                        <input
+                                            type="number"
+                                            className="w-14 text-[11px] font-black outline-none font-mono"
+                                            style={{ background: 'transparent', color: '#1e293b' }}
+                                            value={qPayments.cash || ''}
+                                            onChange={e => { setIsPaymentEdited(true); setQPayments({ ...qPayments, cash: Number(e.target.value) }); }}
+                                            placeholder="0"
+                                        />
+                                    </div>
+                                </div>
+
+                                {/* Online/UPI */}
+                                <div className="flex flex-col shrink-0 px-4 min-w-[110px]">
+                                    <span className="text-[9px] font-black uppercase tracking-widest" style={{ color: '#64748b' }}>Online/UPI</span>
+                                    <div className="flex items-center gap-1 mt-1 rounded-lg px-2 h-[22px]" style={{ border: '1px solid #e2e8f0', background: '#fff' }}>
+                                        <Smartphone className="w-3 h-3" style={{ color: '#94a3b8' }} />
+                                        <input
+                                            type="number"
+                                            className="w-14 text-[11px] font-black outline-none font-mono"
+                                            style={{ background: 'transparent', color: '#1e293b' }}
+                                            value={qPayments.online || ''}
+                                            onChange={e => { setIsPaymentEdited(true); setQPayments({ ...qPayments, online: Number(e.target.value) }); }}
+                                            placeholder="0"
+                                        />
+                                    </div>
+                                </div>
+
+                                {qClient && qClientWalletBalance > 0 && (
+                                    <div className="flex flex-col shrink-0 px-4 min-w-[110px]">
+                                        <span className="text-[9px] font-black uppercase tracking-widest" style={{ color: '#10b981' }}>Wallet (&#8377;{qClientWalletBalance.toFixed(0)})</span>
+                                        <div className="flex items-center gap-1 mt-1 rounded-lg px-2 h-[22px]" style={{ border: '1px solid #a7f3d0', background: '#f0fdf4' }}>
+                                            <Wallet className="w-3 h-3" style={{ color: '#10b981' }} />
+                                            <input
+                                                type="number"
+                                                className="w-14 text-[11px] font-black outline-none font-mono"
+                                                style={{ background: 'transparent', color: '#065f46' }}
+                                                value={qRedeemWallet || ''}
+                                                onChange={e => setQRedeemWallet(Math.min(qClientWalletBalance, Math.min(totals.totalWithPrevDue, Number(e.target.value))))}
+                                                placeholder="0"
+                                            />
+                                        </div>
                                     </div>
                                 )}
                             </div>
                         </div>
                     </div>
+                    {/* ══ END LEFT COLUMN ══ */}
 
-                    {/* Right Panel: Invoice Summary */}
-                    <div className="w-full lg:w-[480px] bg-checkout-right-panel flex flex-col border-t lg:border-t-0 lg:border-l border-slate-200 overflow-hidden h-[300px] lg:h-full min-h-0">
-                        <div className="p-3 bg-[#FFFBF0] flex items-center justify-between shrink-0 border-b border-[#F4EAC4]">
-                            <div className="flex items-center gap-2">
-                                <ShoppingCart className="w-4 h-4 text-[#C69A20]" />
-                                <h3 className="text-[11px] font-black text-[#C69A20] uppercase tracking-widest">Cart Items ({qCart.length})</h3>
+
+                    {/* ══════════════ RIGHT COLUMN (dark navy) ══════════════ */}
+                    <div className="qi-right w-full lg:w-[460px] flex flex-col overflow-hidden min-h-[300px] lg:h-full">
+
+                        {/* Cart Header */}
+                        <div className="flex items-center justify-between px-5 py-3.5 shrink-0" style={{ borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
+                            <div className="flex items-center gap-2.5">
+                                <ShoppingCart className="w-4 h-4" style={{ color: '#C69A20' }} />
+                                <h3 className="text-[11px] font-black uppercase tracking-widest" style={{ color: '#C69A20' }}>Cart Items ({qCart.length})</h3>
                             </div>
-                            <button
-                                onClick={() => {
-                                    setQCart([]);
-                                    setQPayments({ cash: 0, online: 0 });
-                                    setIsPaymentEdited(false);
-                                }}
-                                className="text-[10px] font-black text-rose-500 uppercase tracking-widest hover:underline"
-                            >
-                                Clear All
-                            </button>
+                            <div className="flex items-center gap-2">
+                                <button
+                                    onClick={() => { setQCart([]); setQPayments({ cash: 0, online: 0 }); setIsPaymentEdited(false); }}
+                                    className="text-[10px] font-black uppercase tracking-widest transition-colors"
+                                    style={{ color: '#f87171' }}
+                                >
+                                    Clear All
+                                </button>
+                                <div className="w-px h-4 mx-1" style={{ background: 'rgba(255,255,255,0.1)' }} />
+                                <button onClick={onClose} className="p-1 transition-colors" style={{ color: 'rgba(255,255,255,0.4)' }}
+                                    onMouseOver={e => e.currentTarget.style.color = 'rgba(255,255,255,0.8)'}
+                                    onMouseOut={e => e.currentTarget.style.color = 'rgba(255,255,255,0.4)'}>
+                                    <X className="w-5 h-5" />
+                                </button>
+                            </div>
                         </div>
 
-                        <div className="flex-1 overflow-y-auto p-2.5 space-y-2 scrollbar-thin">
+                        {/* Cart Items */}
+                        <div className="flex-1 overflow-y-auto qi-scroll p-3 space-y-3">
                             {qCart.length === 0 ? (
-                                <div className="h-full flex flex-col items-center justify-center opacity-30 italic text-slate-400 text-center space-y-3">
-                                    <div className="w-16 h-16 bg-checkout-box rounded-full flex items-center justify-center border-2 border-dashed border-slate-200">
-                                        <ShoppingBag className="w-8 h-8" />
-                                    </div>
-                                    <p className="text-xs font-bold uppercase tracking-wider">Select services to begin</p>
+                                <div className="h-full flex flex-col items-center justify-center text-center py-16 space-y-3" style={{ color: 'rgba(255,255,255,0.15)' }}>
+                                    <ShoppingBag className="w-14 h-14" />
+                                    <p className="text-xs font-bold uppercase tracking-widest">Select services to begin</p>
                                 </div>
                             ) : qCart.map((item, idx) => (
-                                <div key={idx} className="bg-white border-b border-slate-100 p-4 relative flex flex-col space-y-3 hover:bg-slate-50 transition-colors">
+                                <div key={idx} className="qi-cart-item rounded-xl p-4 flex flex-col space-y-3 relative shadow-sm">
+                                    {/* Item name + delete */}
                                     <div className="flex justify-between items-start">
-                                        <div className="flex-1 pr-10">
-                                            <p className="text-[12px] font-black text-slate-900 uppercase leading-tight line-clamp-2">{item.name}</p>
+                                        <p className="text-[12px] font-black uppercase leading-tight pr-8 line-clamp-2" style={{ color: '#1e293b' }}>{item.name}</p>
+                                        <button
+                                            onClick={() => setQCart(qCart.filter((_, i) => i !== idx))}
+                                            className="absolute top-3 right-3 w-7 h-7 rounded-lg flex items-center justify-center transition-all"
+                                            style={{ border: '1px solid #fecaca', background: '#fff1f2', color: '#ef4444' }}
+                                            onMouseOver={e => { e.currentTarget.style.background = '#ef4444'; e.currentTarget.style.color = '#fff'; }}
+                                            onMouseOut={e => { e.currentTarget.style.background = '#fff1f2'; e.currentTarget.style.color = '#ef4444'; }}
+                                        >
+                                            <Trash2 className="w-3.5 h-3.5" />
+                                        </button>
+                                    </div>
+
+                                    {/* Price / Tax / Qty / Discount */}
+                                    <div className="grid grid-cols-4 gap-2" style={{ borderTop: '1px solid #f1f5f9', paddingTop: '10px' }}>
+                                        <div className="flex flex-col gap-1">
+                                            <span className="text-[9px] font-black uppercase tracking-widest" style={{ color: '#64748b' }}>Price</span>
+                                            <p className="text-[12px] font-black" style={{ color: '#1e293b' }}>&#8377;{item.price}</p>
+                                        </div>
+                                        <div className="flex flex-col gap-1">
+                                            <span className="text-[9px] font-black uppercase tracking-widest" style={{ color: '#64748b' }}>Tax</span>
+                                            {(() => {
+                                                const isIncl = (item.isInclusiveTax === true || String(item.isInclusiveTax) === 'true' || (item.isInclusiveTax === undefined && !!fiscal?.inclusiveTax));
+                                                const rate = item.type === 'service' ? totals.serviceGstRate : totals.productGstRate;
+                                                return isIncl
+                                                    ? <span className="text-[10px] font-black px-2 py-0.5 rounded-md leading-none w-fit" style={{ background: '#d1fae5', color: '#065f46' }}>{rate}%</span>
+                                                    : <span className="text-[10px] font-black px-2 py-0.5 rounded-md leading-none w-fit" style={{ background: '#dbeafe', color: '#1d4ed8' }}>Excl.</span>;
+                                            })()}
+                                        </div>
+                                        <div className="flex flex-col gap-1">
+                                            <span className="text-[9px] font-black uppercase tracking-widest" style={{ color: '#64748b' }}>Qty</span>
+                                            <div className="flex items-center rounded-lg overflow-hidden h-6 w-fit" style={{ border: '1px solid #e2e8f0', background: '#fff' }}>
+                                                <button type="button" onClick={() => updateQQty(idx, -1)} className="px-1.5 h-full flex items-center hover:bg-slate-50" style={{ borderRight: '1px solid #e2e8f0', color: '#64748b' }}>
+                                                    <Minus className="w-3 h-3" />
+                                                </button>
+                                                <span className="px-2 text-[11px] font-black h-full flex items-center" style={{ color: '#1e293b' }}>{item.quantity}</span>
+                                                <button type="button" onClick={() => updateQQty(idx, 1)} className="px-1.5 h-full flex items-center hover:bg-slate-50" style={{ borderLeft: '1px solid #e2e8f0', color: '#64748b' }}>
+                                                    <Plus className="w-3 h-3" />
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <div className="flex flex-col gap-1">
+                                            <span className="text-[9px] font-black uppercase tracking-widest" style={{ color: '#64748b' }}>Discount</span>
+                                            <div className="flex items-center rounded-lg h-6 overflow-hidden w-[90px]" style={{ border: '1px solid #e2e8f0', background: '#fff' }}>
+                                                <button type="button"
+                                                    onClick={() => updateQItemMembershipDiscount(idx, 'percentage', item.membershipDiscountValue || 0)}
+                                                    className="px-1.5 text-[10px] font-black h-full"
+                                                    style={{ borderRight: '1px solid #e2e8f0', background: (item.membershipDiscountType || 'percentage') === 'percentage' ? '#1e293b' : 'transparent', color: (item.membershipDiscountType || 'percentage') === 'percentage' ? '#fff' : '#64748b' }}
+                                                >%</button>
+                                                <button type="button"
+                                                    onClick={() => updateQItemMembershipDiscount(idx, 'fixed', item.membershipDiscountValue || 0)}
+                                                    className="px-1.5 text-[10px] font-black h-full"
+                                                    style={{ borderRight: '1px solid #e2e8f0', background: item.membershipDiscountType === 'fixed' ? '#1e293b' : 'transparent', color: item.membershipDiscountType === 'fixed' ? '#fff' : '#64748b' }}
+                                                >&#8377;</button>
+                                                <input
+                                                    type="number"
+                                                    className="flex-1 text-[11px] font-black outline-none text-center h-full"
+                                                    style={{ background: 'transparent', color: '#1e293b' }}
+                                                    value={item.membershipDiscountValue || 0}
+                                                    onChange={e => updateQItemMembershipDiscount(idx, item.membershipDiscountType || 'percentage', Math.max(0, Number(e.target.value) || 0))}
+                                                />
+                                            </div>
                                         </div>
                                     </div>
 
-                                    <div className="grid grid-cols-4 gap-2 w-full mt-2">
-                                        <div className="flex flex-col gap-1 items-start">
-                                            <span className="text-[9px] font-black text-slate-800 uppercase tracking-widest">Price</span>
-                                            <p className="text-[11px] font-black text-slate-800 h-6 flex items-center">₹{item.price}</p>
-                                        </div>
-
-                                        <div className="flex flex-col gap-1 items-start">
-                                            <span className="text-[9px] font-black text-slate-800 uppercase tracking-widest">Tax</span>
-                                            <span className="text-[10px] font-bold text-slate-600 uppercase h-6 flex items-center">
-                                                {(item.isInclusiveTax === true || String(item.isInclusiveTax) === 'true' || (item.isInclusiveTax === undefined && fiscal?.inclusiveTax)) ? 'INCL.' : 'EXCL.'}
-                                            </span>
-                                        </div>
-
-                                        {(item.type === 'service' || item.type === 'product') && (
-                                            <div className="flex flex-col gap-1 items-start">
-                                                <span className="text-[9px] font-black text-slate-800 uppercase tracking-widest">Qty</span>
-                                                <div className="flex items-center border border-slate-200 allow-curve rounded-md overflow-hidden h-6 bg-white">
-                                                    <button type="button" onClick={() => updateQQty(idx, -1)} className="px-1.5 hover:bg-slate-50 text-slate-400 h-full flex items-center border-r border-slate-200"><Minus className="w-3 h-3" /></button>
-                                                    <span className="px-2 text-[10px] font-black text-slate-800 flex items-center h-full justify-center bg-white">{item.quantity}</span>
-                                                    <button type="button" onClick={() => updateQQty(idx, 1)} className="px-1.5 hover:bg-slate-50 text-slate-400 h-full flex items-center border-l border-slate-200"><Plus className="w-3 h-3" /></button>
-                                                </div>
-                                            </div>
-                                        )}
-
-                                        {(item.type === 'service' || item.type === 'product') && (
-                                            <div className="flex flex-col gap-1 items-start">
-                                                <span className="text-[9px] font-black text-slate-800 uppercase tracking-widest">Discount</span>
-                                                <div className="flex items-center border border-slate-200 allow-curve rounded-md h-6 w-20 bg-white overflow-hidden shrink-0">
-                                                    {/* Toggle between % and ₹ */}
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => {
-                                                            const fallbackType = item.type === 'service'
-                                                                ? (qActiveMembership?.planId?.serviceDiscountType || 'percentage')
-                                                                : (qActiveMembership?.planId?.productDiscountType || 'percentage');
-                                                            const fallbackValue = item.type === 'service'
-                                                                ? (qActiveMembership?.planId?.serviceDiscountType === 'fixed' ? qActiveMembership.planId.serviceDiscountValue : (qActiveMembership?.planId?.serviceDiscountValue || 0))
-                                                                : (qActiveMembership?.planId?.productDiscountType === 'fixed' ? qActiveMembership.planId.productDiscountValue : (qActiveMembership?.planId?.productDiscountValue || 0));
-                                                            updateQItemMembershipDiscount(idx, 'percentage', item.membershipDiscountValue !== undefined ? item.membershipDiscountValue : fallbackValue);
-                                                        }}
-                                                        className={`px-1.5 text-[10px] font-black h-full flex items-center ${(item.membershipDiscountType !== undefined
-                                                            ? item.membershipDiscountType
-                                                            : (item.type === 'service'
-                                                                ? (qActiveMembership?.planId?.serviceDiscountType || 'percentage')
-                                                                : (qActiveMembership?.planId?.productDiscountType || 'percentage')
-                                                            )
-                                                        ) === 'percentage'
-                                                            ? 'bg-slate-800 dark:bg-slate-950 text-white'
-                                                            : 'text-slate-400 hover:bg-slate-200/50 dark:hover:bg-slate-700/50'
-                                                            }`}
-                                                    >
-                                                        %
-                                                    </button>
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => {
-                                                            const fallbackType = item.type === 'service'
-                                                                ? (qActiveMembership?.planId?.serviceDiscountType || 'percentage')
-                                                                : (qActiveMembership?.planId?.productDiscountType || 'percentage');
-                                                            const fallbackValue = item.type === 'service'
-                                                                ? (qActiveMembership?.planId?.serviceDiscountType === 'fixed' ? qActiveMembership.planId.serviceDiscountValue : (qActiveMembership?.planId?.serviceDiscountValue || 0))
-                                                                : (qActiveMembership?.planId?.productDiscountType === 'fixed' ? qActiveMembership.planId.productDiscountValue : (qActiveMembership?.planId?.productDiscountValue || 0));
-                                                            updateQItemMembershipDiscount(idx, 'fixed', item.membershipDiscountValue !== undefined ? item.membershipDiscountValue : fallbackValue);
-                                                        }}
-                                                        className={`px-1.5 text-[10px] font-black h-full flex items-center ${(item.membershipDiscountType !== undefined
-                                                            ? item.membershipDiscountType
-                                                            : (item.type === 'service'
-                                                                ? (qActiveMembership?.planId?.serviceDiscountType || 'percentage')
-                                                                : (qActiveMembership?.planId?.productDiscountType || 'percentage')
-                                                            )
-                                                        ) === 'fixed'
-                                                            ? 'bg-slate-800 dark:bg-slate-950 text-white'
-                                                            : 'text-slate-400 hover:bg-slate-200/50 dark:hover:bg-slate-700/50'
-                                                            }`}
-                                                    >
-                                                        ₹
-                                                    </button>
-                                                    <input
-                                                        type="number"
-                                                        min="0"
-                                                        max={
-                                                            (item.membershipDiscountType !== undefined
-                                                                ? item.membershipDiscountType
-                                                                : (item.type === 'service'
-                                                                    ? (qActiveMembership?.planId?.serviceDiscountType || 'percentage')
-                                                                    : (qActiveMembership?.planId?.productDiscountType || 'percentage')
-                                                                )
-                                                            ) === 'percentage'
-                                                                ? '100'
-                                                                : String(item.price)
-                                                        }
-                                                        value={
-                                                            item.membershipDiscountValue !== undefined
-                                                                ? item.membershipDiscountValue
-                                                                : (item.type === 'service'
-                                                                    ? (qActiveMembership?.planId?.serviceDiscountValue || 0)
-                                                                    : (qActiveMembership?.planId?.productDiscountValue || 0)
-                                                                )
-                                                        }
-                                                        onChange={(e) => {
-                                                            const val = Math.max(0, Number(e.target.value) || 0);
-                                                            const currentType = item.membershipDiscountType !== undefined
-                                                                ? item.membershipDiscountType
-                                                                : (item.type === 'service'
-                                                                    ? (qActiveMembership?.planId?.serviceDiscountType || 'percentage')
-                                                                    : (qActiveMembership?.planId?.productDiscountType || 'percentage')
-                                                                );
-                                                            updateQItemMembershipDiscount(idx, currentType, val);
-                                                        }}
-                                                        className="w-10 bg-transparent text-[10px] font-black text-center h-full focus:outline-none focus:border-slate-500 text-slate-800 shrink-0"
-                                                    />
-                                                </div>
-                                            </div>
-                                        )}
-                                    </div>
-                                    <button onClick={() => setQCart(qCart.filter((_, i) => i !== idx))} className="absolute top-5 right-5 p-1.5 bg-rose-50 hover:bg-rose-500 text-rose-500 hover:text-white rounded-full transition-all shadow-sm border border-rose-100 hover:border-rose-500 flex items-center justify-center group shrink-0" title="Delete item">
-                                        <Trash2 className="w-3.5 h-3.5 transition-transform duration-200 group-hover:scale-110" />
-                                    </button>
-
-                                    {(item.type === 'service' || item.type === 'product') && (
-                                        <div className="mt-4 border-t border-slate-100 pt-3">
-                                            <label className={`text-[10px] font-black uppercase tracking-widest flex items-center gap-1.5 mb-2 ${(!item.staffIds || item.staffIds.length === 0) ? 'text-slate-800' : 'text-slate-800'}`}>
-                                                <User className="w-3 h-3 text-slate-500" /> {item.type === 'service' ? 'Assign Stylists' : 'Assign Sales Staff'}
+                                    {/* Stylist Assignment */}
+                                    {item.type === 'service' && (
+                                        <div className="relative" style={{ borderTop: '1px solid #f1f5f9', paddingTop: '10px' }} id={`staff-dropdown-container-${idx}`}>
+                                            <label className="flex items-center gap-1.5 text-[9px] font-black uppercase tracking-widest mb-1.5" style={{ color: '#64748b' }}>
+                                                <User className="w-3 h-3" /> Assign Stylists
                                             </label>
-
-                                            <div className="relative" id={`staff-dropdown-container-${idx}`}>
-                                                <div
-                                                    className="min-h-[36px] bg-white border border-slate-200 allow-curve rounded-md p-1.5 flex flex-wrap gap-1.5 cursor-pointer hover:border-slate-300 transition-all"
-                                                    onClick={() => setOpenStaffIdx(openStaffIdx === idx ? null : idx)}
-                                                >
-                                                    {(item.staffIds || []).length > 0 ? (
-                                                        item.staffIds.map(sId => {
-                                                            const s = staff.find(st => String(st._id) === String(sId));
-                                                            return (
-                                                                <div key={sId} className="bg-slate-100 text-slate-800 border border-slate-200 text-[10px] font-black pl-2 pr-1.5 py-1 rounded flex items-center gap-1.5">
-                                                                    <span className="uppercase">{s?.name || (item.type === 'service' ? 'Stylist' : 'Staff')}</span>
-                                                                    <button
-                                                                        onClick={(e) => { e.stopPropagation(); toggleStaffInItem(idx, sId); }}
-                                                                        className="w-4 h-4 hover:bg-white/20 rounded flex items-center justify-center transition-colors"
-                                                                    >
-                                                                        <X className="w-2.5 h-2.5" />
-                                                                    </button>
-                                                                </div>
-                                                            );
-                                                        })
-                                                    ) : (
-                                                        <span className="text-xs font-bold text-slate-500 italic flex items-center px-2 py-1">{item.type === 'service' ? 'Select stylists...' : 'Select sales staff...'}</span>
-                                                    )}
-                                                    <div className="ml-auto px-1 flex items-center text-slate-400 border-l border-slate-100">
-                                                        <ChevronDown className={`w-3.5 h-3.5 transition-transform ${openStaffIdx === idx ? 'rotate-180' : ''}`} />
-                                                    </div>
-                                                </div>
-
-                                                <AnimatePresence>
-                                                    {openStaffIdx === idx && (
-                                                        <motion.div
-                                                            initial={{ opacity: 0, y: 5, scale: 0.98 }}
-                                                            animate={{ opacity: 1, y: 0, scale: 1 }}
-                                                            exit={{ opacity: 0, y: 5, scale: 0.98 }}
-                                                            className="absolute top-full left-0 right-0 z-[100] mt-2 bg-white border border-slate-200 shadow-2xl rounded-2xl overflow-hidden flex flex-col"
-                                                        >
-                                                            <div className="p-2 border-b border-slate-50 bg-slate-50/30">
-                                                                <div className="relative">
-                                                                    <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3 h-3 text-slate-400" />
-                                                                    <input
-                                                                        autoFocus
-                                                                        type="text"
-                                                                        placeholder={item.type === 'service' ? 'Search stylist...' : 'Search sales staff...'}
-                                                                        className="w-full bg-white border border-slate-200 pl-8 pr-3 py-1.5 text-xs font-bold text-slate-900 outline-none rounded-lg focus:border-primary transition-all shadow-sm"
-                                                                        value={staffSearch}
-                                                                        onChange={(e) => setStaffSearch(e.target.value)}
-                                                                        onClick={(e) => e.stopPropagation()}
-                                                                    />
-                                                                </div>
+                                            <div
+                                                className="min-h-[32px] rounded-lg px-2 py-1.5 flex flex-wrap gap-1.5 items-center cursor-pointer transition-colors"
+                                                style={{ border: '1px solid #e2e8f0', background: '#fff' }}
+                                                onClick={() => setOpenStaffIdx(openStaffIdx === idx ? null : idx)}
+                                            >
+                                                {(item.staffIds || []).length > 0 ? (
+                                                    item.staffIds.map(sId => {
+                                                        const s = staff.find(st => String(st._id) === String(sId));
+                                                        return (
+                                                            <div key={sId} className="flex items-center gap-1 text-[10px] font-bold pl-2 pr-1.5 py-0.5 rounded-md" style={{ background: '#f1f5f9', border: '1px solid #e2e8f0', color: '#475569' }}>
+                                                                <span className="uppercase">{s?.name || 'Stylist'}</span>
+                                                                <button onClick={e => { e.stopPropagation(); toggleStaffInItem(idx, sId); }} className="w-3.5 h-3.5 rounded flex items-center justify-center hover:bg-slate-200">
+                                                                    <X className="w-2 h-2" />
+                                                                </button>
                                                             </div>
-                                                            <div className="max-h-[180px] overflow-y-auto scrollbar-thin">
-                                                                {qFilteredStaff.filter(s => {
-                                                                    const matchesSearch = s.name.toLowerCase().includes(staffSearch.toLowerCase());
-                                                                    const matchesRole = item.type === 'service'
-                                                                        ? (s.role && s.role.toLowerCase() === 'stylist')
-                                                                        : true;
-                                                                    return matchesSearch && matchesRole;
-                                                                }).length > 0 ? (
-                                                                    qFilteredStaff.filter(s => {
-                                                                        const matchesSearch = s.name.toLowerCase().includes(staffSearch.toLowerCase());
-                                                                        const matchesRole = item.type === 'service'
-                                                                            ? (s.role && s.role.toLowerCase() === 'stylist')
-                                                                            : true;
-                                                                        return matchesSearch && matchesRole;
-                                                                    }).map(s => {
-                                                                        const isSelected = (item.staffIds || []).includes(String(s._id));
-                                                                        return (
-                                                                            <button
-                                                                                key={s._id}
-                                                                                onClick={(e) => { e.stopPropagation(); toggleStaffInItem(idx, s._id); setOpenStaffIdx(null); }}
-                                                                                className={`w-full p-2.5 text-left flex items-center gap-3 hover:bg-slate-50 border-b border-slate-50 last:border-0 transition-colors ${isSelected ? 'bg-primary/5' : ''}`}
-                                                                            >
-                                                                                <div className={`w-8 h-8 rounded-lg flex items-center justify-center font-bold text-xs transition-all ${isSelected ? 'bg-primary text-white' : 'bg-slate-100 text-slate-500'}`}>
-                                                                                    {isSelected ? <Check className="w-4 h-4" /> : s.name.charAt(0).toUpperCase()}
-                                                                                </div>
-                                                                                <div className="flex-1">
-                                                                                    <p className={`text-xs font-bold uppercase tracking-tight ${isSelected ? 'text-primary' : 'text-slate-700'}`}>{s.name}</p>
-                                                                                    <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider italic">{s.role || 'Staff'}</p>
-                                                                                </div>
-                                                                            </button>
-                                                                        );
-                                                                    })
-                                                                ) : (
-                                                                    <div className="p-6 text-center text-slate-400 italic text-xs font-bold uppercase tracking-wider">No staff found</div>
-                                                                )}
-                                                            </div>
-                                                        </motion.div>
-                                                    )}
-                                                </AnimatePresence>
+                                                        );
+                                                    })
+                                                ) : (
+                                                    <span className="text-[11px] italic px-1" style={{ color: '#94a3b8' }}>Assign stylist…</span>
+                                                )}
+                                                <ChevronDown className="w-3.5 h-3.5 ml-auto shrink-0" style={{ color: '#94a3b8' }} />
                                             </div>
+                                            <AnimatePresence>
+                                                {openStaffIdx === idx && (
+                                                    <motion.div initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 4 }}
+                                                        className="absolute top-full left-0 right-0 z-[100] mt-1 shadow-2xl rounded-xl overflow-hidden"
+                                                        style={{ background: '#fff', border: '1px solid #e2e8f0' }}>
+                                                        <div className="max-h-[140px] overflow-y-auto qi-scroll">
+                                                            {qFilteredStaff.map(s => {
+                                                                const isSelected = (item.staffIds || []).includes(String(s._id));
+                                                                return (
+                                                                    <button key={s._id}
+                                                                        onClick={e => { e.stopPropagation(); toggleStaffInItem(idx, s._id); setOpenStaffIdx(null); }}
+                                                                        className="w-full px-3 py-2 text-left flex items-center justify-between border-b border-slate-100 last:border-0 transition-colors hover:bg-slate-50"
+                                                                        style={{ background: isSelected ? 'rgba(198,154,32,0.05)' : undefined }}
+                                                                    >
+                                                                        <span className="text-xs font-bold uppercase" style={{ color: isSelected ? '#C69A20' : '#1e293b' }}>{s.name}</span>
+                                                                        {isSelected && <Check className="w-3.5 h-3.5" style={{ color: '#C69A20' }} />}
+                                                                    </button>
+                                                                );
+                                                            })}
+                                                        </div>
+                                                    </motion.div>
+                                                )}
+                                            </AnimatePresence>
                                         </div>
                                     )}
                                 </div>
                             ))}
                         </div>
-                    </div>{/* End Right Panel */}
-                </div>{/* End flex body */}
 
-                {/* Bottom Billing Row */}
-                <div className="flex-shrink-0 bg-checkout-bar shadow-[0_-8px_30px_rgba(0,0,0,0.08)] z-20 w-full overflow-hidden" style={{ borderTop: '1px solid rgba(128, 128, 128, 0.15)' }}>
-                    <div className="w-full px-3 py-1.5 flex items-center justify-start gap-4 lg:gap-6 overflow-x-auto whitespace-nowrap scrollbar-thin">
-                        {/* Totals Breakdown */}
-                        <div className="flex items-center gap-2 px-2 shrink-0">
-                            <div className="flex flex-col shrink-0 bg-white border border-slate-200 allow-curve rounded-xl p-1.5 min-w-[90px] h-[54px] justify-between">
-                                <span className="text-[9px] font-black text-slate-800 uppercase tracking-widest leading-none">Subtotal (Excl)</span>
-                                <span className="text-[12px] font-black text-slate-900 font-mono leading-none">₹{totals.subtotal.toFixed(2)}</span>
+                        {/* Add Note */}
+                        <div className="px-3 pb-2 shrink-0">
+                            <div className="flex items-center gap-2 rounded-xl p-3" style={{ border: '1px solid rgba(255,255,255,0.08)', background: 'rgba(255,255,255,0.04)' }}>
+                                <FileText className="w-4 h-4 flex-shrink-0" style={{ color: 'rgba(255,255,255,0.25)' }} />
+                                <input
+                                    type="text"
+                                    placeholder="+ Add Note (Optional)"
+                                    className="w-full border-0 outline-none text-xs font-medium"
+                                    style={{ background: 'transparent', color: 'rgba(255,255,255,0.6)', caretColor: '#C69A20' }}
+                                />
                             </div>
-                            {totals.cgst > 0 && (
-                                <div className="flex flex-col shrink-0 bg-white border border-slate-200 allow-curve rounded-xl p-1.5 min-w-[90px] h-[54px] justify-between">
-                                    <span className="text-[9px] font-black text-slate-800 uppercase tracking-widest leading-none">
-                                        CGST {qCart.every(i => i.type === 'service') ? `(${(totals.serviceGstRate) / 2}%)` :
-                                            qCart.every(i => i.type === 'product') ? `(${(totals.productGstRate) / 2}%)` :
-                                                totals.serviceGstRate === totals.productGstRate ? `(${(totals.serviceGstRate) / 2}%)` : ''}
-                                    </span>
-                                    <span className="text-[12px] font-black text-slate-900 font-mono leading-none">
-                                        {totals.cgst > totals.cgstExcl && <span className="text-emerald-600 text-[9px] font-bold align-top mr-1">(INCL)</span>}
-                                        ₹{totals.cgst.toFixed(2)}
-                                    </span>
-                                </div>
-                            )}
-                            {totals.sgst > 0 && (
-                                <div className="flex flex-col shrink-0 bg-white border border-slate-200 allow-curve rounded-xl p-1.5 min-w-[90px] h-[54px] justify-between">
-                                    <span className="text-[9px] font-black text-slate-800 uppercase tracking-widest leading-none">
-                                        SGST {qCart.every(i => i.type === 'service') ? `(${(totals.serviceGstRate) / 2}%)` :
-                                            qCart.every(i => i.type === 'product') ? `(${(totals.productGstRate) / 2}%)` :
-                                                totals.serviceGstRate === totals.productGstRate ? `(${(totals.serviceGstRate) / 2}%)` : ''}
-                                    </span>
-                                    <span className="text-[12px] font-black text-slate-900 font-mono leading-none">
-                                        {totals.sgst > totals.sgstExcl && <span className="text-emerald-600 text-[9px] font-bold align-top mr-1">(INCL)</span>}
-                                        ₹{totals.sgst.toFixed(2)}
-                                    </span>
-                                </div>
-                            )}
-                            {totals.igst > 0 && (
-                                <div className="flex flex-col shrink-0 bg-white border border-slate-200 allow-curve rounded-xl p-1.5 min-w-[90px] h-[54px] justify-between">
-                                    <span className="text-[9px] font-black text-slate-800 uppercase tracking-widest leading-none">IGST {totals.serviceGstRate === totals.productGstRate ? `(${totals.serviceGstRate}%)` : ''}</span>
-                                    <span className="text-[12px] font-black text-slate-900 font-mono leading-none">
-                                        {totals.igst > totals.totalExclusiveTax && <span className="text-emerald-600 text-[9px] font-bold align-top mr-1">(INCL)</span>}
-                                        ₹{totals.igst.toFixed(2)}
-                                    </span>
-                                </div>
-                            )}
-                            
-                            <div className="flex flex-col shrink-0 bg-[#FFF1F2] border border-[#FECDD3] allow-curve rounded-xl p-1.5 min-w-[110px] h-[54px] justify-between">
-                                <span className="text-[9px] font-black text-slate-800 uppercase tracking-widest leading-none">Discount</span>
-                                <div className="flex items-center allow-curve rounded-lg overflow-hidden bg-white border border-[#FECDD3] h-[22px] mt-auto">
-                                    <button
-                                        type="button"
-                                        onClick={() => setQManualDiscount(prev => ({ ...prev, type: prev.type === 'fixed' ? 'percentage' : 'fixed' }))}
-                                        className="px-1.5 text-[10px] font-black text-slate-600 border-r border-[#FECDD3] h-full"
-                                    >
-                                        {qManualDiscount.type === 'fixed' ? '₹' : '%'} <ChevronDown className="w-2.5 h-2.5 inline" />
-                                    </button>
-                                    <input
-                                        type="number"
-                                        className="w-12 bg-transparent text-[11px] font-black text-slate-800 outline-none font-mono text-center px-1"
-                                        value={qManualDiscount.value || ''}
-                                        onChange={(e) => setQManualDiscount({ ...qManualDiscount, value: Number(e.target.value) })}
-                                        placeholder="0"
-                                    />
-                                </div>
-                            </div>
-
-                            {totals.membershipDiscount > 0 && (
-                                <div className="flex flex-col shrink-0 allow-curve rounded-xl p-1.5 h-[54px] justify-between">
-                                    <span className="text-xs font-semibold text-emerald-600 uppercase tracking-wider flex items-center gap-1 leading-none">
-                                        <Sparkles className="w-3 h-3 text-emerald-500" /> Save
-                                    </span>
-                                    <span className="text-xs lg:text-sm xl:text-base font-bold text-emerald-600 font-mono leading-none">-₹{totals.membershipDiscount.toFixed(2)}</span>
-                                </div>
-                            )}
-                            {qClient && Number(qClient.dueAmount || 0) > 0 && (
-                                <div className="flex flex-col shrink-0 allow-curve rounded-xl p-1.5 h-[54px] justify-between">
-                                    <span className="text-xs font-semibold text-amber-500 uppercase tracking-wider leading-none">Prev. Due</span>
-                                    <span className="text-xs lg:text-sm xl:text-base font-bold text-amber-600 font-mono leading-none">₹{Number(qClient.dueAmount).toFixed(2)}</span>
-                                </div>
-                            )}
-                            {qCollectedPrevDue > 0 && (
-                                <div className="flex flex-col shrink-0 allow-curve rounded-xl p-1.5 h-[54px] justify-between">
-                                    <span className="text-xs font-semibold text-emerald-500 uppercase tracking-wider leading-none">Due Paid</span>
-                                    <span className="text-xs lg:text-sm xl:text-base font-bold text-emerald-600 font-mono leading-none">+₹{qCollectedPrevDue.toFixed(2)}</span>
-                                </div>
-                            )}
                         </div>
 
-                        {/* Payment Inputs Row */}
-                        <div className={`flex gap-2 shrink-0`}>
-                            {/* Payment Date Input */}
-                            <div className="bg-white border border-slate-200 allow-curve rounded-xl p-1.5 focus-within:border-slate-400 transition-all shrink-0 w-[130px] h-[54px] flex flex-col justify-between">
-                                <label className={`text-[9px] font-black uppercase tracking-wider block leading-none ${!qPaymentDate ? 'text-rose-500' : 'text-slate-800'}`}>
-                                    Payment Date
-                                </label>
-                                <div className="flex items-center gap-1.5">
-                                    <Calendar className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                                    <input
-                                        type="date"
-                                        required
-                                        className="bg-transparent text-[10px] font-black outline-none uppercase text-slate-800 w-full cursor-pointer leading-none"
-                                        value={qPaymentDate}
-                                        onChange={(e) => setQPaymentDate(e.target.value)}
-                                    />
-                                </div>
-                            </div>
-
-                            <div className="bg-[#F0FDF4] border border-[#BBF7D0] p-1.5 allow-curve rounded-xl min-w-[110px] flex flex-col justify-between h-[54px]">
-                                <label className="text-[9px] font-black text-slate-800 uppercase tracking-widest block leading-none">Cash Payment</label>
-                                <div className="flex items-center gap-1">
-                                    <span className="text-[12px] font-black text-slate-800 leading-none">₹</span>
-                                    <input
-                                        type="number"
-                                        className="w-full bg-transparent text-[12px] font-black text-slate-800 outline-none font-mono leading-none"
-                                        value={qPayments.cash || ''}
-                                        onChange={(e) => {
-                                            setIsPaymentEdited(true);
-                                            setQPayments({ ...qPayments, cash: Number(e.target.value) });
-                                        }}
-                                        placeholder="0"
-                                    />
-                                </div>
-                            </div>
-                            <div className="bg-[#F0F9FF] border border-[#BAE6FD] p-1.5 allow-curve rounded-xl min-w-[110px] flex flex-col justify-between h-[54px]">
-                                <label className="text-[9px] font-black text-slate-800 uppercase tracking-widest block leading-none">Online/UPI</label>
-                                <div className="flex items-center gap-1">
-                                    <span className="text-[12px] font-black text-slate-800 leading-none">₹</span>
-                                    <input
-                                        type="number"
-                                        className="w-full bg-transparent text-[12px] font-black text-slate-800 outline-none font-mono leading-none"
-                                        value={qPayments.online || ''}
-                                        onChange={(e) => {
-                                            setIsPaymentEdited(true);
-                                            setQPayments({ ...qPayments, online: Number(e.target.value) });
-                                        }}
-                                        placeholder="0"
-                                    />
-                                </div>
-                            </div>
-                            
-                            <div className="bg-white border border-slate-200 p-1.5 allow-curve rounded-xl min-w-[100px] flex flex-col justify-between h-[54px]">
-                                <label className="text-[9px] font-black text-slate-800 uppercase tracking-widest block leading-none text-slate-400">On-Hold (₹)</label>
-                                <div className="flex items-center gap-1">
-                                    <input
-                                        type="number"
-                                        className="w-full bg-transparent text-[12px] font-black text-slate-400 outline-none font-mono leading-none"
-                                        disabled
-                                        value="0"
-                                        placeholder="0"
-                                    />
-                                </div>
-                            </div>
-                            
-                            <div className="bg-white border border-slate-200 p-1.5 allow-curve rounded-xl min-w-[100px] flex flex-col justify-between h-[54px] opacity-20">
-                            </div>
-
-                            {qClient && qClientWalletBalance > 0 && (
-                                <div className="bg-emerald-50/50 dark:bg-emerald-950/20 border border-emerald-100/80 dark:border-emerald-900/60 p-1.5 rounded-lg focus-within:border-emerald-500 focus-within:bg-white dark:focus-within:bg-slate-900 focus-within:shadow-sm transition-all shadow-sm group hover:border-emerald-200 dark:hover:border-emerald-800 animate-pulse">
-                                    <label className="text-[9px] font-bold text-emerald-600 dark:text-emerald-500 uppercase tracking-wider block mb-0.5">Wallet (₹{qClientWalletBalance.toFixed(0)})</label>
-                                    <div className="flex items-center justify-between gap-1.5">
-                                        <div className="flex items-center gap-1.5 flex-1 min-w-0">
-                                            <Wallet className="w-4 h-4 text-emerald-500 shrink-0" />
-                                            <input
-                                                type="number"
-                                                className="w-full bg-transparent text-xs lg:text-sm font-bold text-emerald-600 dark:text-emerald-450 outline-none font-mono"
-                                                value={qRedeemWallet || ''}
-                                                onChange={(e) => setQRedeemWallet(Math.min(qClientWalletBalance, Math.min(totals.totalWithPrevDue, Number(e.target.value))))}
-                                                placeholder="0"
-                                            />
-                                        </div>
-                                        <button
-                                            type="button"
-                                            onClick={() => {
-                                                const maxRedeemable = Math.min(qClientWalletBalance, totals.totalWithPrevDue);
-                                                setQRedeemWallet(maxRedeemable);
-                                            }}
-                                            className="text-[9px] font-black text-emerald-700 dark:text-emerald-300 bg-emerald-100 dark:bg-emerald-900/60 hover:bg-emerald-200 dark:hover:bg-emerald-800 px-1.5 py-1 rounded-md uppercase tracking-wider transition-colors shrink-0 shadow-sm"
-                                        >
-                                            USE WALLET
-                                        </button>
+                        {/* NET BILL + FINALIZE CARD */}
+                        <div className="px-3 pb-3 shrink-0">
+                            <div className="qi-bottom-card rounded-xl p-4" style={{ border: '1px solid rgba(255,255,255,0.08)' }}>
+                                {/* Amounts */}
+                                <div className="flex items-start justify-between mb-4">
+                                    <div>
+                                        <span className="text-[9px] font-bold uppercase tracking-widest block" style={{ color: 'rgba(255,255,255,0.35)' }}>Net Bill</span>
+                                        <span className="text-xl font-black font-mono block mt-0.5" style={{ color: '#ffffff' }}>&#8377;{totals.total.toFixed(2)}</span>
+                                    </div>
+                                    <div className="text-right">
+                                        <span className="text-[9px] font-bold uppercase tracking-widest block" style={{ color: 'rgba(255,255,255,0.35)' }}>Total to Pay</span>
+                                        <span className="text-2xl font-black font-mono block mt-0.5" style={{ color: '#C69A20' }}>&#8377;{totals.totalWithPrevDue.toFixed(2)}</span>
                                     </div>
                                 </div>
-                            )}
-                        </div>
 
-                        {/* Grand Total & Finalize Unified Checkout Card */}
-                        <div className="flex flex-col bg-surface-alt rounded-xl p-1.5 lg:p-2 shadow-xl border border-border shrink-0 w-[190px] lg:w-[220px] xl:w-[245px] ml-auto">
-                            {/* Top row: Net Bill & Total to Pay */}
-                            <div className="flex items-center justify-between border-b border-border/50 pb-1 mb-1">
-                                <div className="flex flex-col items-start pr-3">
-                                    <span className="text-[10px] font-medium uppercase tracking-wider text-text-muted leading-none mb-1">Net Bill</span>
-                                    <span className="text-sm md:text-base font-bold font-mono text-text leading-none">₹{totals.total.toFixed(2)}</span>
-                                </div>
-                                <div className="flex flex-col items-end">
-                                    <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400/80 leading-none mb-1">Total to Pay</span>
-                                    <span className="text-base lg:text-lg xl:text-xl font-bold font-mono text-emerald-600 dark:text-emerald-400 leading-none">₹{totals.totalWithPrevDue.toFixed(2)}</span>
+                                {/* Finalize Button */}
+                                <button
+                                    onClick={handleConfirm}
+                                    disabled={isProcessing || qCart.length === 0}
+                                    className="w-full py-3.5 font-black text-[11px] uppercase tracking-widest rounded-xl flex items-center justify-center gap-2 shadow-lg transition-all mb-3"
+                                    style={{
+                                        background: (isProcessing || qCart.length === 0) ? '#334155' : '#C69A20',
+                                        color: (isProcessing || qCart.length === 0) ? 'rgba(255,255,255,0.3)' : '#fff'
+                                    }}
+                                    onMouseOver={e => { if (!isProcessing && qCart.length > 0) e.currentTarget.style.background = '#B8881C'; }}
+                                    onMouseOut={e => { if (!isProcessing && qCart.length > 0) e.currentTarget.style.background = '#C69A20'; }}
+                                >
+                                    {isProcessing ? <Loader2 className="w-4 h-4 animate-spin" /> : (
+                                        <>
+                                            <CreditCard className="w-4 h-4" />
+                                            <span>Finalize Bill</span>
+                                        </>
+                                    )}
+                                </button>
+
+                                {/* Payment Pills */}
+                                <div className="grid grid-cols-4 gap-2">
+                                    {[
+                                        { label: 'Cash', icon: Banknote, activeCheck: () => qPayments.cash > 0 && qPayments.online === 0 && qRedeemWallet === 0, action: () => { setIsPaymentEdited(true); setQPayments({ cash: totals.totalWithPrevDue, online: 0 }); setQRedeemWallet(0); }, activeColor: '#10b981', activeShadow: 'rgba(16,185,129,0.3)', inactiveColor: '#10b981' },
+                                        { label: 'Card', icon: CreditCard, activeCheck: () => qPayments.online > 0 && qPayments.cash === 0 && qRedeemWallet === 0, action: () => { setIsPaymentEdited(true); setQPayments({ cash: 0, online: totals.totalWithPrevDue }); setQRedeemWallet(0); }, activeColor: '#3b82f6', activeShadow: 'rgba(59,130,246,0.3)', inactiveColor: '#3b82f6' },
+                                        { label: 'UPI', icon: Smartphone, activeCheck: () => qPayments.online > 0 && qPayments.cash === 0 && qRedeemWallet === 0, action: () => { setIsPaymentEdited(true); setQPayments({ cash: 0, online: totals.totalWithPrevDue }); setQRedeemWallet(0); }, activeColor: '#8b5cf6', activeShadow: 'rgba(139,92,246,0.3)', inactiveColor: '#8b5cf6' },
+                                        { label: 'Wallet', icon: Wallet, activeCheck: () => qRedeemWallet > 0, action: () => { if (qClientWalletBalance > 0) { setQRedeemWallet(qRedeemWallet > 0 ? 0 : Math.min(qClientWalletBalance, totals.totalWithPrevDue)); } else { toast.error('Client has no wallet balance'); } }, activeColor: '#f59e0b', activeShadow: 'rgba(245,158,11,0.3)', inactiveColor: '#f59e0b' },
+                                    ].map(({ label, icon: Icon, activeCheck, action, activeColor, activeShadow, inactiveColor }) => {
+                                        const isActive = activeCheck();
+                                        return (
+                                            <button
+                                                key={label}
+                                                onClick={action}
+                                                className="py-2.5 rounded-xl text-[10px] font-black uppercase tracking-wider flex flex-col items-center gap-1 transition-all"
+                                                style={{
+                                                    background: isActive ? activeColor : `${inactiveColor}18`,
+                                                    color: isActive ? '#fff' : inactiveColor,
+                                                    boxShadow: isActive ? `0 4px 12px ${activeShadow}` : 'none'
+                                                }}
+                                            >
+                                                <Icon className="w-4 h-4" />
+                                                <span>{label}</span>
+                                            </button>
+                                        );
+                                    })}
                                 </div>
                             </div>
-
-                            {/* Finalize Button */}
-                            <button
-                                onClick={handleConfirm}
-                                disabled={isProcessing || qCart.length === 0 || isOverpaid}
-                                className="w-full mt-1 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-[11px] uppercase tracking-wider transition-all rounded-lg disabled:bg-emerald-800 disabled:text-emerald-300/50 disabled:border-emerald-900 disabled:shadow-none dark:disabled:bg-emerald-900/60 dark:disabled:text-emerald-700 dark:disabled:border-emerald-800/50 flex items-center justify-center gap-1.5 shadow-lg shadow-emerald-600/20 relative overflow-hidden group border border-emerald-500/30"
-                            >
-                                <div className="absolute top-0 left-0 w-full h-full bg-white/10 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700" />
-                                {isProcessing ? <Loader2 className="w-4 h-4 animate-spin" /> : (
-                                    <>
-                                        <CheckCircle2 className="w-3.5 h-3.5 opacity-80" />
-                                        <span>Finalize Bill</span>
-                                    </>
-                                )}
-                            </button>
                         </div>
                     </div>
+                    {/* ══ END RIGHT COLUMN ══ */}
+
                 </div>
             </motion.div>
 
-            {/* Outstanding Due Warning Popup */}
+            {/* ── Outstanding Due Warning ── */}
             <AnimatePresence>
                 {showDueWarning && pendingClientSelect && (
-                    <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        className="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-[120] flex items-center justify-center p-4"
-                    >
-                        <motion.div
-                            initial={{ scale: 0.9, y: 20 }}
-                            animate={{ scale: 1, y: 0 }}
-                            exit={{ scale: 0.9, y: 20 }}
-                            className="bg-white w-full max-w-md rounded-2xl shadow-2xl border border-amber-200 overflow-hidden"
-                        >
-                            {/* Warning Header */}
-                            <div className="bg-gradient-to-r from-amber-500 to-orange-500 p-5 flex items-center gap-4">
-                                <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center flex-shrink-0">
-                                    <AlertTriangle className="w-6 h-6 text-white" />
-                                </div>
+                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                        className="fixed inset-0 backdrop-blur-sm z-[120] flex items-center justify-center p-4"
+                        style={{ background: 'rgba(15,23,42,0.8)' }}>
+                        <motion.div initial={{ scale: 0.9, y: 20 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.9, y: 20 }}
+                            className="w-full max-w-md rounded-2xl shadow-2xl overflow-hidden"
+                            style={{ background: '#fff', border: '1px solid #fde68a' }}>
+                            <div className="p-5 flex items-center gap-4" style={{ background: 'linear-gradient(90deg,#f59e0b,#f97316)' }}>
+                                <AlertTriangle className="w-6 h-6 text-white" />
                                 <div>
-                                    <h4 className="text-white font-bold text-sm uppercase tracking-tight">Outstanding Due Alert</h4>
-                                    <p className="text-amber-100 text-xs font-semibold uppercase tracking-wider mt-0.5">Previous balance detected</p>
+                                    <h4 className="text-white font-bold text-sm uppercase">Outstanding Due Alert</h4>
+                                    <p className="text-amber-100 text-xs font-semibold uppercase mt-0.5">Previous balance detected</p>
                                 </div>
                             </div>
-
-                            {/* Content */}
                             <div className="p-6 space-y-4">
-                                <div className="flex items-center gap-4 bg-amber-50 border border-amber-100 p-4 rounded-xl">
-                                    <div className="w-12 h-12 bg-amber-500 text-white font-bold rounded-lg flex items-center justify-center text-lg flex-shrink-0">
+                                <div className="flex items-center gap-4 p-4 rounded-xl" style={{ background: '#fffbeb', border: '1px solid #fde68a' }}>
+                                    <div className="w-12 h-12 rounded-lg flex items-center justify-center font-bold text-lg text-white flex-shrink-0" style={{ background: '#f59e0b' }}>
                                         {pendingClientSelect.name.charAt(0).toUpperCase()}
                                     </div>
                                     <div>
-                                        <p className="text-xs md:text-sm font-bold text-slate-900 uppercase tracking-tight">{pendingClientSelect.name}</p>
-                                        <p className="text-xs font-semibold text-slate-500 font-mono mt-0.5">{pendingClientSelect.phone}</p>
+                                        <p className="text-sm font-bold uppercase" style={{ color: '#1e293b' }}>{pendingClientSelect.name}</p>
+                                        <p className="text-xs font-mono mt-0.5" style={{ color: '#64748b' }}>{pendingClientSelect.phone}</p>
                                     </div>
                                     <div className="ml-auto text-right">
-                                        <p className="text-xs font-semibold text-amber-500 uppercase tracking-wider">Owes</p>
-                                        <p className="text-xl font-bold text-amber-600 font-mono italic mt-0.5">₹{clientPrevDue.toFixed(0)}</p>
+                                        <p className="text-xs font-semibold uppercase" style={{ color: '#f59e0b' }}>Owes</p>
+                                        <p className="text-xl font-bold font-mono mt-0.5" style={{ color: '#d97706' }}>&#8377;{clientPrevDue.toFixed(0)}</p>
                                     </div>
                                 </div>
-
-                                <p className="text-xs font-bold text-slate-500 text-center leading-relaxed">
-                                    This client has a pending outstanding balance from a previous visit. You may collect it now along with this bill or proceed and add to their running dues.
-                                </p>
-
-                                {/* Quick Collect Option */}
-                                <div className="bg-emerald-50 border border-emerald-200 p-3 rounded-xl">
-                                    <p className="text-xs font-semibold text-emerald-600 uppercase tracking-wider mb-2 flex items-center gap-1">
-                                        <CheckCircle2 className="w-3 h-3 text-emerald-600" /> Quick collect previous due now
-                                    </p>
-                                    <div className="flex items-center gap-2">
-                                        <Banknote className="w-4 h-4 text-emerald-500 flex-shrink-0" />
-                                        <input
-                                            type="number"
-                                            placeholder={`Up to ₹${clientPrevDue.toFixed(0)}`}
-                                            className="flex-1 bg-white border border-emerald-200 px-3 py-2 text-xs md:text-sm font-bold text-slate-900 outline-none rounded-lg focus:border-emerald-500 transition-all font-mono"
-                                            value={qCollectedPrevDue || ''}
-                                            onChange={(e) => setQCollectedPrevDue(Math.min(Math.ceil(clientPrevDue), Number(e.target.value)))}
-                                            max={Math.ceil(clientPrevDue)}
-                                        />
-                                    </div>
+                                <div className="p-3 rounded-xl" style={{ background: '#f0fdf4', border: '1px solid #bbf7d0' }}>
+                                    <p className="text-xs font-semibold uppercase tracking-wider mb-2" style={{ color: '#16a34a' }}>Collect previous due now</p>
+                                    <input type="number"
+                                        className="w-full px-3 py-2 text-sm font-bold rounded-lg outline-none"
+                                        style={{ background: '#fff', border: '1px solid #bbf7d0', color: '#1e293b' }}
+                                        value={qCollectedPrevDue || ''}
+                                        onChange={e => setQCollectedPrevDue(Math.min(Math.ceil(clientPrevDue), Number(e.target.value)))}
+                                        max={Math.ceil(clientPrevDue)} />
                                 </div>
                             </div>
-
-                            {/* Actions */}
-                            <div className="p-5 bg-slate-50 border-t border-slate-100 flex gap-3">
-                                <button
-                                    onClick={() => { setShowDueWarning(false); setPendingClientSelect(null); }}
-                                    className="flex-1 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider border border-slate-200 rounded-xl hover:bg-slate-100 transition-all"
-                                >
-                                    Cancel
-                                </button>
-                                <button
-                                    onClick={() => {
-                                        setQClient(pendingClientSelect);
-                                        setShowDueWarning(false);
-                                        setPendingClientSelect(null);
-                                    }}
-                                    className="flex-1 py-3 text-xs font-bold text-white uppercase tracking-wider bg-emerald-600 hover:bg-emerald-700 rounded-xl transition-all shadow-lg shadow-emerald-500/20"
-                                >
-                                    Collect & Proceed
-                                </button>
+                            <div className="p-5 flex gap-3" style={{ background: '#f8fafc', borderTop: '1px solid #f1f5f9' }}>
+                                <button onClick={() => { setShowDueWarning(false); setPendingClientSelect(null); }}
+                                    className="flex-1 py-3 text-xs font-bold uppercase rounded-xl transition-all hover:bg-slate-100"
+                                    style={{ border: '1px solid #e2e8f0', color: '#64748b' }}>Cancel</button>
+                                <button onClick={() => { setQClient(pendingClientSelect); setShowDueWarning(false); setPendingClientSelect(null); }}
+                                    className="flex-1 py-3 text-xs font-bold text-white uppercase rounded-xl transition-all"
+                                    style={{ background: '#16a34a' }}>Collect &amp; Proceed</button>
                             </div>
                         </motion.div>
                     </motion.div>
                 )}
             </AnimatePresence>
 
-            {/* Quick Create Client Modal */}
+            {/* ── Quick Create Client ── */}
             <AnimatePresence>
                 {showNewClient && (
-                    <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        className="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-[110] flex items-center justify-center p-4"
-                    >
-                        <motion.form
-                            initial={{ scale: 0.9, y: 10 }}
-                            animate={{ scale: 1, y: 0 }}
-                            onSubmit={handleQuickCreateClient}
-                            className="bg-white w-full max-w-sm rounded-2xl shadow-2xl border border-slate-200 overflow-hidden"
-                        >
-                            <div className="p-5 bg-slate-50 border-b border-slate-200 flex justify-between items-center">
-                                <h4 className="text-xs font-bold text-slate-900 uppercase flex items-center gap-2">
-                                    <UserPlus className="w-4 h-4 text-primary" /> New Quick Client
+                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                        className="fixed inset-0 backdrop-blur-sm z-[110] flex items-center justify-center p-4"
+                        style={{ background: 'rgba(15,23,42,0.8)' }}>
+                        <motion.form initial={{ scale: 0.9, y: 10 }} animate={{ scale: 1, y: 0 }} onSubmit={handleQuickCreateClient}
+                            className="w-full max-w-sm rounded-2xl shadow-2xl overflow-hidden"
+                            style={{ background: '#fff', border: '1px solid #e2e8f0' }}>
+                            <div className="p-5 flex justify-between items-center" style={{ background: '#f8fafc', borderBottom: '1px solid #e2e8f0' }}>
+                                <h4 className="text-xs font-bold uppercase flex items-center gap-2" style={{ color: '#1e293b' }}>
+                                    <UserPlus className="w-4 h-4" style={{ color: '#C69A20' }} /> New Quick Client
                                 </h4>
-                                <button type="button" onClick={() => setShowNewClient(false)} className="text-slate-400 hover:text-rose-500"><X className="w-5 h-5" /></button>
+                                <button type="button" onClick={() => setShowNewClient(false)} style={{ color: '#94a3b8' }} className="hover:text-red-500">
+                                    <X className="w-5 h-5" />
+                                </button>
                             </div>
                             <div className="p-6 space-y-4">
-                                <div className="space-y-1.5">
-                                    <label className="text-xs font-semibold text-slate-500 uppercase">Customer Name</label>
-                                    <input
-                                        required
-                                        type="text"
-                                        placeholder="e.g. John Doe"
-                                        className="w-full bg-slate-50 border border-slate-200 p-3 text-xs font-bold text-slate-900 outline-none rounded-xl"
-                                        value={newClientForm.name}
-                                        onChange={(e) => setNewClientForm({ ...newClientForm, name: e.target.value })}
-                                    />
-                                </div>
-                                <div className="space-y-1.5">
-                                    <label className="text-xs font-semibold text-slate-500 uppercase">Contact Number</label>
-                                    <input
-                                        required
-                                        type="tel"
-                                        placeholder="10-digit mobile"
-                                        className="w-full bg-slate-50 border border-slate-200 p-3 text-xs font-bold text-slate-900 outline-none rounded-xl"
-                                        value={newClientForm.phone}
-                                        onChange={(e) => setNewClientForm({ ...newClientForm, phone: e.target.value.replace(/\D/g, '').slice(0, 10) })}
-                                    />
-                                </div>
-                                <div className="space-y-1.5">
-                                    <label className="text-xs font-semibold text-slate-500 uppercase">Referral Code (Optional)</label>
-                                    <input
-                                        type="text"
-                                        placeholder="e.g. WAP-XXXXXX"
-                                        className="w-full bg-slate-50 border border-slate-200 p-3 text-xs font-bold text-slate-900 outline-none rounded-xl"
-                                        value={newClientForm.appliedReferralCode || ''}
-                                        onChange={(e) => setNewClientForm({ ...newClientForm, appliedReferralCode: e.target.value.toUpperCase().trim() })}
-                                    />
-                                </div>
+                                {[
+                                    { label: 'Customer Name', key: 'name', type: 'text', placeholder: 'e.g. John Doe', required: true },
+                                    { label: 'Contact Number', key: 'phone', type: 'tel', placeholder: '10-digit mobile', required: true },
+                                    { label: 'Referral Code (Optional)', key: 'appliedReferralCode', type: 'text', placeholder: 'e.g. WAP-XXXXXX', required: false },
+                                ].map(({ label, key, type, placeholder, required }) => (
+                                    <div key={key} className="space-y-1.5">
+                                        <label className="text-xs font-semibold uppercase" style={{ color: '#64748b' }}>{label}</label>
+                                        <input required={required} type={type} placeholder={placeholder}
+                                            className="w-full p-3 text-sm font-bold rounded-xl outline-none"
+                                            style={{ background: '#f8fafc', border: '1px solid #e2e8f0', color: '#1e293b' }}
+                                            value={newClientForm[key] || ''}
+                                            onChange={e => setNewClientForm({ ...newClientForm, [key]: key === 'phone' ? e.target.value.replace(/\D/g, '').slice(0, 10) : key === 'appliedReferralCode' ? e.target.value.toUpperCase().trim() : e.target.value })}
+                                        />
+                                    </div>
+                                ))}
                                 <div className="grid grid-cols-2 gap-4">
-                                    <div className="space-y-1.5">
-                                        <label className="text-xs font-semibold text-slate-500 uppercase">Birth Date</label>
-                                        <input
-                                            type="date"
-                                            max={new Date().toISOString().split('T')[0]}
-                                            className="w-full bg-slate-50 border border-slate-200 p-3 text-[11px] font-bold text-slate-900 outline-none rounded-xl dark:[color-scheme:dark]"
-                                            value={newClientForm.dob}
-                                            onChange={(e) => setNewClientForm({ ...newClientForm, dob: e.target.value })}
-                                        />
-                                    </div>
-                                    <div className="space-y-1.5">
-                                        <label className="text-xs font-semibold text-slate-500 uppercase">Anniversary</label>
-                                        <input
-                                            type="date"
-                                            max={new Date().toISOString().split('T')[0]}
-                                            className="w-full bg-slate-50 border border-slate-200 p-3 text-[11px] font-bold text-slate-900 outline-none rounded-xl dark:[color-scheme:dark]"
-                                            value={newClientForm.anniversary}
-                                            onChange={(e) => setNewClientForm({ ...newClientForm, anniversary: e.target.value })}
-                                        />
-                                    </div>
+                                    {[
+                                        { label: 'Birth Date', key: 'dob' },
+                                        { label: 'Anniversary', key: 'anniversary' },
+                                    ].map(({ label, key }) => (
+                                        <div key={key} className="space-y-1.5">
+                                            <label className="text-xs font-semibold uppercase" style={{ color: '#64748b' }}>{label}</label>
+                                            <input type="date" max={new Date().toISOString().split('T')[0]}
+                                                className="w-full p-3 text-xs font-bold rounded-xl outline-none"
+                                                style={{ background: '#f8fafc', border: '1px solid #e2e8f0', color: '#1e293b' }}
+                                                value={newClientForm[key]}
+                                                onChange={e => setNewClientForm({ ...newClientForm, [key]: e.target.value })}
+                                            />
+                                        </div>
+                                    ))}
                                 </div>
                             </div>
-                            <div className="p-6 bg-slate-50 border-t border-slate-200">
-                                <button
-                                    type="submit"
-                                    disabled={isSubmittingClient}
-                                    className="w-full py-3 bg-primary text-white font-bold text-xs uppercase tracking-wider rounded-xl shadow-lg shadow-primary/20 hover:opacity-90 disabled:opacity-50"
-                                >
+                            <div className="p-6" style={{ background: '#f8fafc', borderTop: '1px solid #e2e8f0' }}>
+                                <button type="submit" disabled={isSubmittingClient}
+                                    className="w-full py-3 text-white font-bold text-xs uppercase tracking-wider rounded-xl shadow-lg disabled:opacity-50 transition-all"
+                                    style={{ background: '#C69A20' }}
+                                    onMouseOver={e => e.currentTarget.style.background = '#B8881C'}
+                                    onMouseOut={e => e.currentTarget.style.background = '#C69A20'}>
                                     {isSubmittingClient ? 'Creating...' : 'Create & Select'}
                                 </button>
                             </div>
