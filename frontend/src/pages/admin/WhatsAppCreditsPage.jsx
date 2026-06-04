@@ -408,14 +408,23 @@ export default function WhatsAppCreditsPage() {
                                             onClick={() => setCreditsToBuy(qty)}
                                             className={`p-4 rounded-xl border text-left transition-all cursor-pointer ${isSelected ? 'bg-[#0F172A] border-[#0F172A] text-white shadow-md' : 'bg-white border-slate-200 hover:border-slate-300'}`}
                                         >
+<<<<<<< HEAD
+                                            <div className={`text-[8px] font-black uppercase tracking-[0.2em] mb-2 ${isSelected ? 'text-white-muted-force' : 'text-slate-500'}`}>Pack</div>
+                                            <div className="flex items-center justify-between">
+                                                <div>
+                                                    <div className={`text-[17px] font-black leading-none mb-1.5 ${isSelected ? 'text-white-force' : 'text-slate-900'}`}>{qty.toLocaleString()}</div>
+                                                    <div className={`text-[9px] font-bold ${isSelected ? 'text-white-muted-force' : 'text-slate-500'}`}>messages</div>
+=======
                                             <div className={`text-[8px] font-black uppercase tracking-[0.2em] mb-2 ${isSelected ? 'text-slate-400 text-white' : 'text-slate-500'}`}>Pack</div>
                                             <div className="flex items-center justify-between">
                                                 <div>
                                                     <div className={`text-[17px] font-black leading-none mb-1.5 ${isSelected ? 'text-white' : 'text-slate-900'}`}>{qty.toLocaleString()}</div>
                                                     <div className={`text-[9px] font-bold ${isSelected ? 'text-slate-300 text-white' : 'text-slate-500'}`}>messages</div>
+>>>>>>> ef2083e2158a7f8cbacc09a3d1d52a6305e069d9
                                                 </div>
-                                                {isSelected && <CheckCircle2 className="w-4 h-4 text-white" />}
+                                                {isSelected && <CheckCircle2 className="w-4 h-4 text-white-force" />}
                                             </div>
+
                                         </button>
                                     )
                                 })}

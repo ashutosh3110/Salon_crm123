@@ -92,8 +92,8 @@ export default function LoyaltyMembershipPage({ tab: initialTab = 'plans' }) {
                                 style={{ width: '16px', height: '16px' }}
                             />
                             <span 
-                                className={`block uppercase tracking-widest transition-colors duration-300 ${isActive ? 'text-white' : ''}`}
-                                style={{ fontSize: '11px', fontWeight: 800 }}
+                                className="block uppercase tracking-widest transition-colors duration-300"
+                                style={{ fontSize: '9.5px', fontWeight: 800 }}
                             >
                                 {tab.label}
                             </span>

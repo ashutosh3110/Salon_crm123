@@ -1,5 +1,5 @@
 @import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400..700&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;600;700;800;900&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400..700;1,400..700&family=Noto+Serif:ital,wght@0,100..900;1,100..900&family=Open+Sans:ital,wght@0,300..800;1,300..800&display=swap');
 @import "tailwindcss";
 
@@ -215,6 +215,17 @@
   html:not(.dark) .new-theme .text-white\/20 {
     color: #64748B !important;
   }
+
+  .text-white-force,
+  html:not(.dark) .admin-panel .text-white-force {
+    color: #ffffff !important;
+  }
+
+  .text-white-muted-force,
+  html:not(.dark) .admin-panel .text-white-muted-force {
+    color: rgba(255, 255, 255, 0.7) !important;
+  }
+
 
 
   html:not(.dark) .new-theme .group:hover .group-hover\:text-white\/40 {
@@ -1510,9 +1521,14 @@ html:not(.dark) .fixed.inset-0 .commission-dark-card *,
 html:not(.dark) .commission-dark-card,
 html:not(.dark) .commission-dark-card *,
 html:not(.dark) [class*="bg-slate-900"],
-html:not(.dark) [class*="bg-slate-900"] * {
+html:not(.dark) [class*="bg-slate-900"] *,
+html:not(.dark) [class*="bg-[#0F172A]"],
+html:not(.dark) [class*="bg-[#0F172A]"] *,
+html:not(.dark) [class*="bg-[#0f172a]"],
+html:not(.dark) [class*="bg-[#0f172a]"] * {
   color: #ffffff !important;
 }
+
 
 /* Specific heading text color */
 html:not(.dark) .admin-panel .commission-dark-card .commission-title,

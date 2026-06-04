@@ -423,7 +423,7 @@ export default function Transactions({ outletId }) {
                             <table className="w-full text-left border-collapse">
                                 <thead>
                                     <tr className="bg-white border-b border-slate-200 text-[10px] font-black text-slate-800 uppercase tracking-widest">
-                                        <th className="px-6 py-4"><div className="flex items-center gap-1">Date <ArrowDownUp className="w-3 h-3 text-slate-400" /></div></th>
+                                        <th className="pr-6 py-4" style={{ paddingLeft: '40px' }}><div className="flex items-center gap-1">Date <ArrowDownUp className="w-3 h-3 text-slate-400" /></div></th>
                                         <th className="px-6 py-4"><div className="flex items-center gap-1">Type <ArrowDownUp className="w-3 h-3 text-slate-400" /></div></th>
                                         <th className="px-6 py-4"><div className="flex items-center gap-1">Category <ArrowDownUp className="w-3 h-3 text-slate-400" /></div></th>
                                         <th className="px-6 py-4"><div className="flex items-center gap-1">Outlet <ArrowDownUp className="w-3 h-3 text-slate-400" /></div></th>
@@ -439,7 +439,9 @@ export default function Transactions({ outletId }) {
                                         
                                         return (
                                             <tr key={t._id} className="hover:bg-slate-50/50 transition-colors relative group">
-                                                <td className="pl-6 pr-6 py-4 font-bold whitespace-nowrap">
+                                                
+                                                <td className="pr-6 py-4 font-bold whitespace-nowrap relative" style={{ paddingLeft: '40px' }}>
+                                                    <div className="absolute left-0 top-1 bottom-1 w-1 rounded-r-md" style={{ backgroundColor: isIncome ? '#10b981' : '#f43f5e' }} />
                                                     <div className="flex flex-col">
                                                         <span className="text-slate-800">
                                                             {new Date(t.date).toLocaleDateString('en-GB', {

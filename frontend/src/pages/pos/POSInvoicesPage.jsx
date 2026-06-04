@@ -881,10 +881,10 @@ export default function POSInvoicesPage() {
                 {/* Stats Cards */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                     {[
-                        { title: "Total Revenue", badge: "OVERALL", badgeColor: "bg-slate-100 text-slate-600", value: `\u20B9${invoices.reduce((s, i) => s + (i.total || 0), 0).toLocaleString()}`, subtitle: "vs Yesterday \u20B90 (0%)", icon: Banknote, areaColor: '#10b981', areaId: 'sg0' },
-                        { title: "Today's Earnings", badge: "TODAY", badgeColor: "bg-emerald-100 text-emerald-600", value: `\u20B9${invoices.filter(i => new Date(i.createdAt).toDateString() === new Date().toDateString()).reduce((s, i) => s + (i.total || 0), 0).toLocaleString()}`, subtitle: "vs Yesterday \u20B90 (0%)", icon: Calendar, areaColor: '#10b981', areaId: 'sg1' },
-                        { title: "UPI / Card", badge: "DIGITAL", badgeColor: "bg-blue-100 text-blue-600", value: `\u20B9${invoices.filter(i => ['online', 'card', 'upi'].includes(i.paymentMethod)).reduce((s, i) => s + (i.total || 0), 0).toLocaleString()}`, subtitle: "vs Yesterday \u20B90 (0%)", icon: Smartphone, areaColor: '#3b82f6', areaId: 'sg2' },
-                        { title: "Cash Collected", badge: "PHYSICAL", badgeColor: "bg-orange-100 text-orange-600", value: `\u20B9${invoices.filter(i => i.paymentMethod === 'cash' || !i.paymentMethod).reduce((s, i) => s + (i.total || 0), 0).toLocaleString()}`, subtitle: "vs Yesterday \u20B90 (0%)", icon: Banknote, areaColor: '#f97316', areaId: 'sg3' }
+                        { title: "Total Revenue", badge: "OVERALL", badgeColor: "bg-slate-100 text-slate-600", value: `₹${invoices.reduce((s, i) => s + (i.total || 0), 0).toLocaleString()}`, subtitle: "vs Yesterday ₹0 (0%)", icon: Banknote, areaColor: '#10b981', areaId: 'sg0' },
+                        { title: "Today's Earnings", badge: "TODAY", badgeColor: "bg-emerald-100 text-emerald-600", value: `₹${invoices.filter(i => new Date(i.createdAt).toDateString() === new Date().toDateString()).reduce((s, i) => s + (i.total || 0), 0).toLocaleString()}`, subtitle: "vs Yesterday ₹0 (0%)", icon: Calendar, areaColor: '#10b981', areaId: 'sg1' },
+                        { title: "UPI / Card", badge: "DIGITAL", badgeColor: "bg-blue-100 text-blue-600", value: `₹${invoices.filter(i => ['online', 'card', 'upi'].includes(i.paymentMethod)).reduce((s, i) => s + (i.total || 0), 0).toLocaleString()}`, subtitle: "vs Yesterday ₹0 (0%)", icon: Smartphone, areaColor: '#3b82f6', areaId: 'sg2' },
+                        { title: "Cash Collected", badge: "PHYSICAL", badgeColor: "bg-orange-100 text-orange-600", value: `₹${invoices.filter(i => i.paymentMethod === 'cash' || !i.paymentMethod).reduce((s, i) => s + (i.total || 0), 0).toLocaleString()}`, subtitle: "vs Yesterday ₹0 (0%)", icon: Banknote, areaColor: '#f97316', areaId: 'sg3' }
                     ].map((stat, i) => (
                         <div key={i} className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm overflow-hidden relative">
                             <div className="flex items-start justify-between mb-3">
@@ -966,8 +966,8 @@ export default function POSInvoicesPage() {
                             <ResponsiveContainer width="100%" height="100%">
                                 <BarChart data={paymentData} margin={{ top: 0, right: 0, left: -20, bottom: 0 }} barGap={1} barCategoryGap="30%">
                                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                                    <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 8, fontWeight: 700, fill: '#94a3b8' }} dy={8} />
-                                    <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 8, fontWeight: 700, fill: '#94a3b8' }} tickFormatter={(val) => '\u20B9'+val} />
+                                    <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 8, fontWeight: 500, fill: '#64748b' }} dy={8} />
+                                    <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 8, fontWeight: 500, fill: '#64748b' }} tickFormatter={(val) => '₹'+val} />
                                     <RechartsTooltip cursor={{fill: 'rgba(0,0,0,0.03)'}} contentStyle={{ borderRadius: '8px', border: '1px solid #e2e8f0', fontSize: '10px', fontWeight: 'bold' }} />
                                     <Bar dataKey="Cash" fill="#10b981" radius={[3, 3, 0, 0]} maxBarSize={8} />
                                     <Bar dataKey="UPI" fill="#8b5cf6" radius={[3, 3, 0, 0]} maxBarSize={8} />
@@ -976,9 +976,9 @@ export default function POSInvoicesPage() {
                             </ResponsiveContainer>
                         </div>
                         <div className="flex justify-between pt-3 border-t border-slate-100 mt-1">
-                            <div><span className="text-[9px] font-black text-slate-500 uppercase">Cash</span> <span className="text-[9px] font-black text-emerald-500 ml-1">\u20B9{donutData[0].value}</span></div>
-                            <div><span className="text-[9px] font-black text-slate-500 uppercase">UPI</span> <span className="text-[9px] font-black text-purple-500 ml-1">\u20B9{donutData[1].value}</span></div>
-                            <div><span className="text-[9px] font-black text-slate-500 uppercase">Unpaid</span> <span className="text-[9px] font-black text-orange-500 ml-1">\u20B9{donutData[2].value}</span></div>
+                            <div><span className="text-[9px] font-black text-slate-500 uppercase">Cash</span> <span className="text-[9px] font-black text-emerald-500 ml-1">₹{donutData[0].value}</span></div>
+                            <div><span className="text-[9px] font-black text-slate-500 uppercase">UPI</span> <span className="text-[9px] font-black text-purple-500 ml-1">₹{donutData[1].value}</span></div>
+                            <div><span className="text-[9px] font-black text-slate-500 uppercase">Unpaid</span> <span className="text-[9px] font-black text-orange-500 ml-1">₹{donutData[2].value}</span></div>
                         </div>
                     </div>
 
@@ -997,7 +997,7 @@ export default function POSInvoicesPage() {
                                 </PieChart>
                             </ResponsiveContainer>
                             <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                                <span className="text-sm font-black text-slate-800">\u20B9{(donutData[0].value + donutData[1].value).toLocaleString()}</span>
+                                <span className="text-sm font-black text-slate-800">₹{(donutData[0].value + donutData[1].value).toLocaleString()}</span>
                                 <span className="text-[7px] font-bold text-slate-400 uppercase tracking-widest">Total Collection</span>
                             </div>
                         </div>
@@ -1013,14 +1013,14 @@ export default function POSInvoicesPage() {
                                         </div>
                                         <div className="flex items-center gap-3">
                                             <span className="text-slate-400">{pct}%</span>
-                                            <span className="text-slate-700 font-black">\u20B9{entry.value}</span>
+                                            <span className="text-slate-700 font-black">₹{entry.value}</span>
                                         </div>
                                     </div>
                                 );
                             })}
                             <div className="flex items-center justify-between text-[9px] font-black text-slate-700 uppercase pt-2 border-t border-slate-100">
                                 <span>Total</span>
-                                <span>\u20B9{donutData[0].value + donutData[1].value + donutData[2].value}</span>
+                                <span>₹{donutData[0].value + donutData[1].value + donutData[2].value}</span>
                             </div>
                         </div>
                     </div>
