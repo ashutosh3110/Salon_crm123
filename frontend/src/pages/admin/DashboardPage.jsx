@@ -477,7 +477,7 @@ export default function DashboardPage() {
                         {/* Line Chart */}
                         <div className="h-[200px] w-full min-w-0 overflow-hidden mb-5">
                             <ResponsiveContainer width="100%" height="100%" minWidth={0}>
-                                <AreaChart data={revenueData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                                <AreaChart data={revenueData} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
                                     <defs>
                                         <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
                                             <stop offset="5%" stopColor="#A57C1E" stopOpacity={0.15} />
@@ -489,13 +489,15 @@ export default function DashboardPage() {
                                         dataKey="name"
                                         axisLine={false}
                                         tickLine={false}
-                                        tick={{ fontSize: 11, fontWeight: 700, fill: '#94a3b8' }}
+                                        tick={{ fontSize: 11, fontWeight: 100, fill: '#94a3b8' }}
+                                        tickMargin={10}
                                     />
                                     <YAxis
                                         axisLine={false}
                                         tickLine={false}
-                                        tick={{ fontSize: 11, fontWeight: 700, fill: '#94a3b8' }}
+                                        tick={{ fontSize: 11, fontWeight: 100, fill: '#94a3b8' }}
                                         tickFormatter={(val) => `₹${val}`}
+                                        tickMargin={10}
                                     />
                                     <Tooltip
                                         content={({ active, payload }) => {

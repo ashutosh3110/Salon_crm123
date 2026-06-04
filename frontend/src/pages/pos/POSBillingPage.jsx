@@ -7,7 +7,7 @@ import {
     Sparkles, User, UserPlus, ArrowRight, Percent, Info,
     Tag, Star, Wallet, Printer, Banknote, Smartphone, FileText, Download,
     ShoppingBag, CreditCard, Ticket, Gift, History, Calendar, Globe, Building2, ChevronDown,
-    AlertTriangle, CheckCircle2, UserMinus, LayoutGrid, ArrowDown
+    AlertTriangle, CheckCircle2, UserMinus, LayoutGrid, ArrowDown, Clock
 } from 'lucide-react';
 import api from '../../services/api';
 import {
@@ -2423,7 +2423,7 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
     const [clientPrevDue, setClientPrevDue] = useState(0);
     const [pendingClientSelect, setPendingClientSelect] = useState(null);
     const [showQOutletPicker, setShowQOutletPicker] = useState(false);
-    const [qSelectedCategory, setQSelectedCategory] = useState(null);
+    const [qSelectedCategory, setQSelectedCategory] = useState('All');
     const [qActiveTab, setQActiveTab] = useState('services');
     const [qCollectedPrevDue, setQCollectedPrevDue] = useState(0);
     const [qRedeemWallet, setQRedeemWallet] = useState(0);
@@ -2553,7 +2553,7 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
     }, [qFilteredServices, qFilteredProducts, qActiveTab]);
 
     useEffect(() => {
-        setQSelectedCategory(null);
+        setQSelectedCategory('All');
     }, [qOutletId]);
 
     const qFilteredStaff = useMemo(() => {
@@ -3135,82 +3135,74 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                         {/* BREADCRUMB / COUNT BAR */}
                         <div className="qi-breadcrumb flex items-center justify-between px-5 py-2.5 border-b border-slate-100 shrink-0">
                             <div className="flex items-center gap-2">
-                                {qSelectedCategory && (
-                                    <button onClick={() => setQSelectedCategory(null)} className="transition-colors" style={{ color: '#64748b' }}>
-                                        <ChevronDown className="w-4 h-4 rotate-90" strokeWidth={3} />
-                                    </button>
-                                )}
                                 <h3 className="text-[11px] font-black uppercase tracking-widest" style={{ color: '#1e293b' }}>
-                                    {qSelectedCategory || (qActiveTab === 'services' ? 'Service Categories' : 'Product Categories')}
+                                    {qActiveTab === 'services' ? 'Services' : 'Products'} - {qSelectedCategory}
                                 </h3>
                             </div>
                             <span className="text-[10px] font-bold bg-slate-100 border border-slate-200 px-2.5 py-1 rounded-md uppercase tracking-wider" style={{ color: '#475569' }}>
-                                {qSelectedCategory
-                                    ? `${(qActiveTab === 'services' ? qFilteredServices : qFilteredProducts).filter(i => qSelectedCategory === 'All' || i.category === qSelectedCategory).length} ${qActiveTab === 'services' ? 'Services' : 'Products'}`
-                                    : `${qCategories.length} Categories`}
+                                {`${(qActiveTab === 'services' ? qFilteredServices : qFilteredProducts).filter(i => qSelectedCategory === 'All' || i.category === qSelectedCategory).length} Items`}
                             </span>
                         </div>
 
                         {/* SERVICE / CATEGORY GRID */}
-                        <div className="flex-1 overflow-y-auto qi-scroll px-5 py-3">
-                            {!qSelectedCategory ? (
-                                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                                    {qCategories.map(cat => (
-                                        <button
-                                            key={cat.name}
-                                            onClick={() => setQSelectedCategory(cat.name)}
-                                            className="border rounded-xl overflow-hidden flex flex-col group h-[76px] transition-all"
-                                            style={{ background: '#ffffff', borderColor: '#e2e8f0' }}
-                                            onMouseOver={e => e.currentTarget.style.borderColor = '#C69A20'}
-                                            onMouseOut={e => e.currentTarget.style.borderColor = '#e2e8f0'}
-                                        >
-                                            <div className="h-9 w-full relative overflow-hidden flex-shrink-0 flex items-center justify-center" style={{ background: '#f8fafc' }}>
-                                                {cat.image ? (
-                                                    <img src={getImageUrl(cat.image)} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-400" alt={cat.name} />
-                                                ) : (
-                                                    <div className="flex items-center justify-center w-full h-full" style={{ background: 'rgba(198,154,32,0.05)' }}>
-                                                        {cat.name === 'All' ? <LayoutGrid className="w-5 h-5" style={{ color: 'rgba(198,154,32,0.5)' }} /> : <Tag className="w-4 h-4" style={{ color: 'rgba(198,154,32,0.4)' }} />}
-                                                    </div>
-                                                )}
-                                            </div>
-                                            <div className="flex-1 flex items-center justify-center px-2" style={{ background: '#ffffff' }}>
-                                                <span className="text-[10px] font-bold uppercase tracking-tight text-center leading-tight" style={{ color: '#475569' }}>{cat.name}</span>
-                                            </div>
-                                        </button>
-                                    ))}
-                                </div>
-                            ) : (
-                                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                                    {(qActiveTab === 'services' ? qFilteredServices : qFilteredProducts)
-                                        .filter(i => qSelectedCategory === 'All' || i.category === qSelectedCategory)
-                                        .map((item, idx) => {
-                                            const isFocused = idx === qFocusedItemIndex;
-                                            return (
-                                                <button
-                                                    id={`q-item-item-${idx}`}
-                                                    key={item._id}
-                                                    onClick={() => addToQCart(item, qActiveTab === 'services' ? 'service' : 'product')}
-                                                    className={`border rounded-xl p-3 flex items-start gap-3 text-left group transition-all relative ${isFocused ? 'ring-1 ring-amber-400' : ''}`}
-                                                    style={{ background: '#ffffff', borderColor: isFocused ? '#C69A20' : '#e2e8f0' }}
-                                                    onMouseOver={e => { e.currentTarget.style.borderColor = '#C69A20'; e.currentTarget.style.boxShadow = '0 2px 12px rgba(180,145,43,0.12)'; }}
-                                                    onMouseOut={e => { e.currentTarget.style.borderColor = isFocused ? '#C69A20' : '#e2e8f0'; e.currentTarget.style.boxShadow = 'none'; }}
-                                                >
-                                                    <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 transition-colors" style={{ background: 'rgba(198,154,32,0.08)' }}>
-                                                        {qActiveTab === 'services'
+                        <div className="flex-1 overflow-y-auto qi-scroll px-5 py-3 flex flex-col gap-4">
+                            {/* Horizontal Category Pills */}
+                            <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-1 shrink-0 border-b border-slate-100/60">
+                                {qCategories.map(cat => (
+                                    <button
+                                        key={cat.name}
+                                        onClick={() => setQSelectedCategory(cat.name)}
+                                        className="px-4 py-2 border rounded-full text-[10px] font-black uppercase tracking-wider transition-all whitespace-nowrap cursor-pointer hover:bg-slate-50"
+                                        style={{
+                                            backgroundColor: qSelectedCategory === cat.name ? '#C69A20' : '#ffffff',
+                                            borderColor: qSelectedCategory === cat.name ? '#C69A20' : '#e2e8f0',
+                                            color: qSelectedCategory === cat.name ? '#ffffff' : '#475569'
+                                        }}
+                                    >
+                                        {cat.name}
+                                    </button>
+                                ))}
+                            </div>
+
+                            {/* Items Grid */}
+                            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                                {(qActiveTab === 'services' ? qFilteredServices : qFilteredProducts)
+                                    .filter(i => qSelectedCategory === 'All' || i.category === qSelectedCategory)
+                                    .map((item, idx) => {
+                                        const isFocused = idx === qFocusedItemIndex;
+                                        const img = item.image || item.images?.[0];
+                                        return (
+                                            <button
+                                                id={`q-item-item-${idx}`}
+                                                key={item._id}
+                                                onClick={() => addToQCart(item, qActiveTab === 'services' ? 'service' : 'product')}
+                                                className={`border rounded-2xl p-4 flex items-center gap-4 text-left group transition-all relative ${isFocused ? 'ring-2 ring-amber-400' : ''}`}
+                                                style={{ background: '#ffffff', borderColor: isFocused ? '#C69A20' : '#f1f5f9' }}
+                                                onMouseOver={e => { e.currentTarget.style.borderColor = '#C69A20'; e.currentTarget.style.boxShadow = '0 4px 15px rgba(180,145,43,0.08)'; }}
+                                                onMouseOut={e => { e.currentTarget.style.borderColor = isFocused ? '#C69A20' : '#f1f5f9'; e.currentTarget.style.boxShadow = 'none'; }}
+                                            >
+                                                <div className="w-12 h-12 rounded-full overflow-hidden flex items-center justify-center flex-shrink-0 border border-amber-100 bg-amber-50/40 transition-all group-hover:scale-105">
+                                                    {img ? (
+                                                        <img src={getImageUrl(img)} alt={item.name} className="w-full h-full object-cover" />
+                                                    ) : (
+                                                        qActiveTab === 'services'
                                                             ? <Scissors className="w-5 h-5" style={{ color: '#C69A20' }} strokeWidth={1.5} />
-                                                            : <Package className="w-5 h-5" style={{ color: '#C69A20' }} strokeWidth={1.5} />}
-                                                    </div>
-                                                    <div className="flex-1 min-w-0">
-                                                        <p className="text-[12px] font-bold leading-snug line-clamp-2" style={{ color: '#1e293b' }}>{item.name}</p>
-                                                        {item.duration && <p className="text-[10px] mt-0.5" style={{ color: '#94a3b8' }}>&#9201; {item.duration} min</p>}
-                                                        <p className="text-[13px] font-black mt-1" style={{ color: '#C69A20' }}>&#8377;{item.price}</p>
-                                                    </div>
-                                                    <div className="absolute top-2 right-2 w-5 h-5 border rounded flex items-center justify-center transition-all" style={{ borderColor: 'rgba(198,154,32,0.3)', color: '#C69A20' }}>
-                                                        <Plus className="w-3 h-3" />
-                                                    </div>
-                                                </button>
-                                            );
-                                        })}
+                                                            : <Package className="w-5 h-5" style={{ color: '#C69A20' }} strokeWidth={1.5} />
+                                                    )}
+                                                </div>
+                                                <div className="flex-1 min-w-0 text-left">
+                                                    <p className="text-[12px] font-black tracking-tight leading-tight text-slate-800 line-clamp-1 group-hover:text-slate-900">{item.name}</p>
+                                                    {item.duration && (
+                                                        <div className="flex items-center gap-1 text-[9.5px] font-bold text-slate-400 dark:text-slate-500 mt-1 uppercase tracking-wide">
+                                                            <Clock className="w-3.5 h-3.5 text-amber-500" strokeWidth={2.5} />
+                                                            <span>{item.duration} min</span>
+                                                        </div>
+                                                    )}
+                                                    <p className="text-[12.5px] font-extrabold text-slate-800 mt-1.5">&#8377;{item.price?.toLocaleString('en-IN')}</p>
+                                                </div>
+                                            </button>
+                                        );
+                                    })}
                                     <button
                                         onClick={() => toast('Feature to add custom services coming soon!', { icon: '✨' })}
                                         className="border-2 border-dashed rounded-xl p-3 flex items-center justify-center gap-2 transition-all"

@@ -688,7 +688,7 @@ export default function RolesPage() {
 
                     <form
                         onSubmit={handleSubmit}
-                        className="relative bg-white dark:bg-[#0f172a] shadow-2xl w-full max-w-3xl flex flex-col animate-reveal !rounded-[24px] max-h-[90vh] overflow-hidden"
+                        className="relative bg-white dark:bg-[#0f172a] shadow-2xl w-full max-w-3xl flex flex-col animate-reveal !rounded-[24px] max-h-[90vh] overflow-hidden admin-panel"
                         onClick={(e) => e.stopPropagation()}
                     >
 
