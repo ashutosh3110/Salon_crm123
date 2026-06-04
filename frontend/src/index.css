@@ -2051,18 +2051,18 @@ html .sa-panel div[class*="w-"][class*="h-"]:has(svg) {
 }
 
 /* Golden buttons / elements text color override to be always white */
-html button[class*="bg-[#B4912B]"],
-html a[class*="bg-[#B4912B]"],
-html [class*="bg-[#B4912B]"],
+html button[class~="bg-[#B4912B]"],
+html a[class~="bg-[#B4912B]"],
+html [class~="bg-[#B4912B]"],
 html .bg-primary,
-html [class*="bg-primary"],
-html button[class*="bg-primary"],
-html button[class*="bg-[#B4912B]"] *,
-html a[class*="bg-[#B4912B]"] *,
-html [class*="bg-[#B4912B]"] *,
+html button.bg-primary,
+html a.bg-primary,
+html button[class~="bg-[#B4912B]"] *,
+html a[class~="bg-[#B4912B]"] *,
+html [class~="bg-[#B4912B]"] *,
 html .bg-primary *,
-html [class*="bg-primary"] *,
-html button[class*="bg-primary"] *,
+html button.bg-primary *,
+html a.bg-primary *,
 html .bg-\[\#B4912B\],
 html button.bg-\[\#B4912B\],
 html a.bg-\[\#B4912B\],
@@ -2070,4 +2070,28 @@ html .bg-\[\#B4912B\] *,
 html button.bg-\[\#B4912B\] *,
 html a.bg-\[\#B4912B\] * {
     color: #ffffff !important;
+}
+
+/* Specific class for SuperAdmin Login button to ensure high contrast in all modes */
+.sa-login-submit-btn {
+  background-color: #ffffff !important;
+  color: #000000 !important;
+}
+.sa-login-submit-btn span {
+  color: #000000 !important;
+}
+.sa-login-submit-btn svg {
+  color: #000000 !important;
+  stroke: #000000 !important;
+}
+.sa-login-submit-btn:hover {
+  background: linear-gradient(to right, var(--color-primary-custom, #B4912B), var(--color-primary-custom-dark, #8B6F23)) !important;
+  color: #ffffff !important;
+}
+.sa-login-submit-btn:hover span {
+  color: #ffffff !important;
+}
+.sa-login-submit-btn:hover svg {
+  color: #ffffff !important;
+  stroke: #ffffff !important;
 }
