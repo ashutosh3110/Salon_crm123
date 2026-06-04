@@ -190,7 +190,7 @@ export default function OutletsPage() {
                     filteredOutlets.map((outlet) => (
                         <div
                             key={outlet._id}
-                            className="group relative !bg-white dark:!bg-slate-900 !border-[1.5px] !border-[#e2e8f0] dark:!border-slate-800 !overflow-hidden transition-all duration-500 hover:!border-black dark:hover:!border-white hover:shadow-[0_20px_50px_rgba(0,0,0,0.1)] flex flex-col h-[300px] !rounded-[24px]"
+                            className="group relative !bg-white dark:!bg-slate-900 !border-[1.5px] !border-[#e2e8f0] dark:!border-slate-800 !overflow-hidden transition-all duration-500 hover:!border-black dark:hover:!border-white hover:shadow-[0_20px_50px_rgba(0,0,0,0.1)] flex flex-col h-[350px] !rounded-[24px]"
                         >
                             {/* Card Image Banner */}
                             <div className="relative h-40 overflow-hidden bg-slate-100 flex-shrink-0">

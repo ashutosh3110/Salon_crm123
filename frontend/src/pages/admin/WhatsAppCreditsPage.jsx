@@ -186,7 +186,6 @@ export default function WhatsAppCreditsPage() {
                                 </div>
                                 <div className="relative z-10 mb-10">
                                     <div className="text-[32px] font-black text-slate-900 mb-1.5 leading-none tracking-tight">{salon?.whatsappSettings?.whatsappCredits?.toLocaleString() || '1,097'}</div>
-                                    <div className="text-xs text-slate-500 font-bold tracking-wide">Messages</div>
                                 </div>
                                 
                                 {/* Area Chart SVG mock */}
@@ -409,11 +408,19 @@ export default function WhatsAppCreditsPage() {
                                             onClick={() => setCreditsToBuy(qty)}
                                             className={`p-4 rounded-xl border text-left transition-all cursor-pointer ${isSelected ? 'bg-[#0F172A] border-[#0F172A] text-white shadow-md' : 'bg-white border-slate-200 hover:border-slate-300'}`}
                                         >
+<<<<<<< HEAD
                                             <div className={`text-[8px] font-black uppercase tracking-[0.2em] mb-2 ${isSelected ? 'text-white-muted-force' : 'text-slate-500'}`}>Pack</div>
                                             <div className="flex items-center justify-between">
                                                 <div>
                                                     <div className={`text-[17px] font-black leading-none mb-1.5 ${isSelected ? 'text-white-force' : 'text-slate-900'}`}>{qty.toLocaleString()}</div>
                                                     <div className={`text-[9px] font-bold ${isSelected ? 'text-white-muted-force' : 'text-slate-500'}`}>messages</div>
+=======
+                                            <div className={`text-[8px] font-black uppercase tracking-[0.2em] mb-2 ${isSelected ? 'text-slate-400 text-white' : 'text-slate-500'}`}>Pack</div>
+                                            <div className="flex items-center justify-between">
+                                                <div>
+                                                    <div className={`text-[17px] font-black leading-none mb-1.5 ${isSelected ? 'text-white' : 'text-slate-900'}`}>{qty.toLocaleString()}</div>
+                                                    <div className={`text-[9px] font-bold ${isSelected ? 'text-slate-300 text-white' : 'text-slate-500'}`}>messages</div>
+>>>>>>> ef2083e2158a7f8cbacc09a3d1d52a6305e069d9
                                                 </div>
                                                 {isSelected && <CheckCircle2 className="w-4 h-4 text-white-force" />}
                                             </div>
@@ -441,7 +448,7 @@ export default function WhatsAppCreditsPage() {
                                 disabled={loading}
                                 className="w-full cursor-pointer bg-[#0F172A] hover:bg-[#1e293b] text-white rounded-xl py-4 flex items-center justify-center gap-2 font-black text-[10px] uppercase tracking-[0.15em] shadow-md transition-colors disabled:opacity-70"
                             >
-                                {loading ? <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <>COMPLETE PURCHASE <ArrowRight className="w-3.5 h-3.5" /></>}
+                                {loading ? <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <>COMPLETE PURCHASE <ArrowRight className="w-3.5 h-3.5 text-white" /></>}
                             </button>
                             <div className="text-center mt-5 text-[8px] font-bold text-slate-500 uppercase tracking-widest flex justify-center items-center gap-1.5">
                                 <ShieldCheck className="w-3.5 h-3.5" /> SAFE & SECURED TRANSACTIONS
@@ -471,12 +478,12 @@ export default function WhatsAppCreditsPage() {
                         </div>
 
                         {/* Support Banner */}
-                        <div className="bg-emerald-50 rounded-2xl p-5 flex flex-col xl:flex-row gap-4 items-start xl:items-center justify-between border border-emerald-100/50">
+                        <div className="bg-emerald-50 dark:bg-emerald-950/20 rounded-2xl p-5 flex flex-col xl:flex-row gap-4 items-start xl:items-center justify-between border border-emerald-100/50 dark:border-emerald-900/30">
                             <div>
-                                <h3 className="text-[13px] font-black text-slate-900 mb-1 leading-none tracking-tight">Need help?</h3>
-                                <p className="text-[10px] text-slate-600 font-medium leading-relaxed">Contact support for bulk plans and custom solutions.</p>
+                                <h3 className="text-[13px] font-black text-slate-900 dark:text-emerald-400 mb-1 leading-none tracking-tight">Need help?</h3>
+                                <p className="text-[10px] text-slate-600 dark:text-emerald-300/80 font-medium leading-relaxed">Contact support for bulk plans and custom solutions.</p>
                             </div>
-                            <button className="px-4 cursor-pointer py-2.5 bg-white text-emerald-600 rounded-lg text-[10px] font-black shadow-sm border border-emerald-200 whitespace-nowrap hover:bg-emerald-100 transition-colors uppercase tracking-widest">
+                            <button className="px-4 cursor-pointer py-2.5 bg-white dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 rounded-lg text-[10px] font-black shadow-sm border border-emerald-200 dark:border-emerald-800/30 whitespace-nowrap hover:bg-emerald-100 dark:hover:bg-emerald-900/50 transition-colors uppercase tracking-widest">
                                 Contact Support
                             </button>
                         </div>
