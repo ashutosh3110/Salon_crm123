@@ -143,6 +143,85 @@
     transition: background-color 0.5s ease, color 0.5s ease;
   }
 
+  /* Light Mode Specific Overrides for Landing/Auth pages */
+  html:not(.dark) .new-theme {
+    --wapixo-bg: #FFFFFF;
+    --wapixo-bg-alt: #F8F9FA;
+    --wapixo-text: #000000;
+    --wapixo-text-muted: #334155;
+    --wapixo-border: rgba(0, 0, 0, 0.12);
+    --wapixo-primary: #B4912B;
+    background-color: #FFFFFF !important;
+    color: #000000 !important;
+  }
+
+  html:not(.dark) .new-theme h1,
+  html:not(.dark) .new-theme h2,
+  html:not(.dark) .new-theme h3,
+  html:not(.dark) .new-theme h4,
+  html:not(.dark) .new-theme p,
+  html:not(.dark) .new-theme span,
+  html:not(.dark) .new-theme input,
+  html:not(.dark) .new-theme textarea,
+  html:not(.dark) .new-theme select,
+  html:not(.dark) .new-theme button,
+  html:not(.dark) .new-theme a {
+    color: #000000 !important;
+  }
+
+  /* Keep the primary gold branding color for gold texts and gold links */
+  html:not(.dark) .new-theme .text-\[\#B4912B\],
+  html:not(.dark) .new-theme span[class*="text-[#B4912B]"],
+  html:not(.dark) .new-theme button[class*="text-[#B4912B]"],
+  html:not(.dark) .new-theme a[class*="text-[#B4912B]"] {
+    color: #B4912B !important;
+  }
+
+  html:not(.dark) .new-theme label {
+    color: #475569 !important;
+  }
+
+  html:not(.dark) .new-theme a {
+    color: var(--wapixo-text-muted) !important;
+  }
+  html:not(.dark) .new-theme a:hover {
+    color: var(--wapixo-primary) !important;
+  }
+
+  html:not(.dark) .new-theme .text-\[11px\] {
+    color: #475569 !important;
+  }
+
+  html:not(.dark) .new-theme input::placeholder,
+  html:not(.dark) .new-theme textarea::placeholder {
+    color: #94A3B8 !important;
+  }
+
+  html:not(.dark) .new-theme svg,
+  html:not(.dark) .new-theme svg * {
+    color: #334155 !important;
+    stroke: #334155 !important;
+  }
+
+  html:not(.dark) .new-theme button:hover svg,
+  html:not(.dark) .new-theme button:hover svg *,
+  html:not(.dark) .new-theme a:hover svg,
+  html:not(.dark) .new-theme a:hover svg * {
+    color: #B4912B !important;
+    stroke: #B4912B !important;
+  }
+
+
+  html:not(.dark) .new-theme .text-white\/20 {
+    color: #64748B !important;
+  }
+
+
+  html:not(.dark) .new-theme .group:hover .group-hover\:text-white\/40 {
+    color: #334155 !important;
+  }
+
+
   * {
     @apply border-border outline-ring/50;
     -webkit-tap-highlight-color: transparent;
