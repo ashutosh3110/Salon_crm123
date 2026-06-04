@@ -11,6 +11,7 @@ import {
     Activity,
     Package,
     ChevronDown,
+    MapPin,
 } from 'lucide-react';
 import {
     PieChart,
@@ -41,7 +42,7 @@ function formatInrShort(n) {
     return `₹${Math.round(v).toLocaleString('en-IN')}`;
 }
 
-function CustomDropdown({ value, onChange, options, placeholder }) {
+function CustomDropdown({ value, onChange, options, placeholder, className = '' }) {
     const [isOpen, setIsOpen] = useState(false);
     const ref = useRef(null);
     useEffect(() => {
@@ -55,12 +56,12 @@ function CustomDropdown({ value, onChange, options, placeholder }) {
         <div className="relative w-full sm:w-auto" ref={ref}>
             <button
                 onClick={() => setIsOpen(!isOpen)}
-                className="flex items-center justify-between w-full sm:min-w-[180px] gap-3 bg-surface border border-border px-6 py-3.5 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] text-text hover:border-primary transition-all shadow-sm active:scale-[0.98]"
+                className={`flex items-center justify-between w-full sm:min-w-[180px] gap-3 bg-white border border-slate-200 px-6 py-2.5 rounded-full text-xs font-bold uppercase tracking-wider text-slate-800 hover:border-slate-300 transition-all shadow-sm active:scale-[0.98] ${className}`}
             >
                 <span className="truncate">
                     {options.find(o => o.value === value)?.label || placeholder}
                 </span>
-                <ChevronDown className={`w-3.5 h-3.5 text-text-muted shrink-0 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
+                <ChevronDown className={`w-3.5 h-3.5 text-slate-400 shrink-0 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
             </button>
             <AnimatePresence>
                 {isOpen && (
@@ -223,21 +224,30 @@ export default function FinancePage({ tab = 'dashboard' }) {
                     </div>
                 </>
             ) : (
-                <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6 text-left border-b border-border pb-4">
-                    <div className="text-left font-black leading-none">
-                        <h1 className="text-3xl font-black text-text uppercase tracking-tight leading-none text-left">Finances</h1>
-                        <p className="text-[10px] font-black text-text-muted mt-2 uppercase tracking-[0.3em] opacity-60 leading-relaxed text-left max-w-2xl">
-                            Live Workspace · <span className="font-mono">/finance/{activeTab}</span>
-                        </p>
+                <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6 text-left mb-2">
+                    <div className="flex items-center gap-4">
+                        <div className="w-12 h-12 rounded-xl bg-amber-50 border border-amber-100 flex items-center justify-center shrink-0">
+                            <BarChart3 className="w-6 h-6 text-[#B4912B]" />
+                        </div>
+                        <div className="text-left font-black leading-none">
+                            <h1 className="text-3xl font-black text-slate-900 uppercase tracking-tight leading-none text-left mb-1.5">Finances</h1>
+                            <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest text-left flex items-center gap-2">
+                                <span>Live Workspace</span> <span className="w-1 h-1 rounded-full bg-slate-300"></span> <span>Finance</span> <span className="w-1 h-1 rounded-full bg-slate-300"></span> <span className="text-[#B4912B]">{activeTab.replace('-', ' ')}</span>
+                            </p>
+                        </div>
                     </div>
                     {outlets.length > 0 && (
                         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 text-left font-black w-full lg:w-auto mt-4 lg:mt-0">
-                            <CustomDropdown
-                                value={selectedOutletId}
-                                onChange={setSelectedOutletId}
-                                options={outlets.map(o => ({ value: o._id, label: o.name }))}
-                                placeholder="All Outlets"
-                            />
+                            <div className="relative">
+                                <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 z-10 pointer-events-none" />
+                                <CustomDropdown
+                                    value={selectedOutletId}
+                                    onChange={setSelectedOutletId}
+                                    options={outlets.map(o => ({ value: o._id, label: o.name }))}
+                                    placeholder="All Outlets"
+                                    className="pl-10"
+                                />
+                            </div>
                         </div>
                     )}
                 </div>

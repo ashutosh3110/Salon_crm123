@@ -19,7 +19,8 @@ import {
     CreditCard,
     Calendar,
     ArrowRight,
-    Loader2
+    Loader2,
+    FilePlus
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import api from '../../services/api';
@@ -393,9 +394,14 @@ export default function ShopOrdersPage() {
                         <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em]">Accessing order archives...</p>
                     </div>
                 ) : filteredOrders.length === 0 ? (
-                    <div className="py-24 text-center bg-slate-50/50">
-                        <Package className="w-12 h-12 text-slate-300 mx-auto mb-4" />
-                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em]">No active order transmissions found</p>
+                    <div className="py-24 text-center bg-white flex flex-col items-center justify-center">
+                        <img src="/vector image 3.png" alt="No Orders" className="w-48 h-48 object-contain mb-6" />
+                        <h3 className="text-sm font-black text-slate-800 uppercase tracking-widest mb-2">No active order transmissions found</h3>
+                        <p className="text-[11px] font-bold text-slate-500 max-w-sm mb-6">Shop order transmissions will appear here<br/>once they are created.</p>
+                        <button className="flex items-center gap-2 px-6 py-3 bg-[#B4912B] hover:bg-[#a18023] text-white text-[10px] font-black uppercase tracking-widest allow-curve rounded-xl transition-all shadow-md shadow-[#B4912B]/20">
+                            <FilePlus className="w-4 h-4" />
+                            Create New Order
+                        </button>
                     </div>
                 ) : (
                     <div className="overflow-x-auto">

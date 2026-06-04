@@ -265,7 +265,7 @@ export default function ServiceList({ services = [], onDelete, onToggleStatus, o
                                             {service.image ? (
                                                 <img
                                                     src={getImageUrl(service.image)}
-                                                    alt={service.name}
+                                                    alt="Service"
                                                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                                                 />
                                             ) : (
@@ -300,13 +300,13 @@ export default function ServiceList({ services = [], onDelete, onToggleStatus, o
                                                 <button
                                                     type="button"
                                                     onClick={() => onToggleStatus?.(service._id)}
-                                                    className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[9px] font-bold uppercase tracking-wider shadow-sm transition-all active:scale-90 border-0 ${
+                                                    className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[9px] font-bold uppercase tracking-wider shadow-md transition-all active:scale-90 border ${
                                                         service.status === 'active'
-                                                            ? 'bg-[#10b981]/10 hover:bg-[#10b981]/20 backdrop-blur-md !text-emerald-500 dark:!text-emerald-400 border border-[#10b981]/20'
-                                                            : 'bg-[#f43f5e]/10 hover:bg-[#f43f5e]/20 backdrop-blur-md !text-rose-500 dark:!text-rose-400 border border-[#f43f5e]/20'
+                                                            ? 'bg-white/95 hover:bg-white backdrop-blur-md text-emerald-600 border-emerald-100'
+                                                            : 'bg-white/95 hover:bg-white backdrop-blur-md text-rose-600 border-rose-100'
                                                     }`}
                                                 >
-                                                    <div className={`w-1.5 h-1.5 rounded-full ${service.status === 'active' ? 'bg-emerald-400' : 'bg-rose-400'} animate-pulse`} />
+                                                    <div className={`w-1.5 h-1.5 rounded-full ${service.status === 'active' ? 'bg-emerald-500' : 'bg-rose-500'} animate-pulse`} />
                                                     {service.status}
                                                 </button>
                                             </div>

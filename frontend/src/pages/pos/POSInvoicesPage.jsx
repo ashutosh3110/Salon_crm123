@@ -379,7 +379,7 @@ export const POSReceiptPDF = ({ invoice, salon }) => {
                 {/* Final Footer */}
                 <View style={{ marginTop: 15 }}>
                     <Text style={{ textAlign: 'center', fontSize: 8 }}>----------------------------------------</Text>
-                    <Text style={{ textAlign: 'center', fontSize: 9, fontWeight: 700, marginVertical: 4 }}>THANK YOU • VISIT AGAIN</Text>
+                    <Text style={{ textAlign: 'center', fontSize: 9, fontWeight: 700, marginVertical: 4 }}>THANK YOU â€¢ VISIT AGAIN</Text>
                     <Text style={{ textAlign: 'center', fontSize: 8 }}>========================================</Text>
                 </View>
             </Page>
@@ -460,7 +460,7 @@ const StandardInvoicePDF = ({ invoice, salon }) => {
                         <View key={i} style={{ flexDirection: 'row', padding: 10, borderBottom: 1, borderColor: '#eee', alignItems: 'center' }}>
                             <Text style={{ flex: 2 }}>{item.name} {item.isInclusiveTax ? '(Incl. GST)' : ''}</Text>
                             <Text style={{ flex: 1.5, fontSize: 9 }}>{item.stylistIds?.map(s => typeof s === 'object' ? s.name : s).join(', ') || '-'}</Text>
-                            <Text style={{ flex: 1, textAlign: 'right', fontWeight: 700 }}>₹{(item.total || (item.price * item.quantity) || 0).toFixed(2)}</Text>
+                            <Text style={{ flex: 1, textAlign: 'right', fontWeight: 700 }}>â‚¹{(item.total || (item.price * item.quantity) || 0).toFixed(2)}</Text>
                         </View>
                     ))}
                 </View>
@@ -473,53 +473,53 @@ const StandardInvoicePDF = ({ invoice, salon }) => {
                         <View style={{ borderTop: 1, borderColor: '#eee', paddingTop: 10 }}>
                             <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 5 }}>
                                 <Text style={{ color: '#666' }}>Taxable Value</Text>
-                                <Text>₹{(invoice.baseAmount || invoice.subtotal || 0).toFixed(2)}</Text>
+                                <Text>â‚¹{(invoice.baseAmount || invoice.subtotal || 0).toFixed(2)}</Text>
                             </View>
                             {invoice.cgst > 0 && (
                                 <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 5 }}>
                                     <Text style={{ color: '#666' }}>CGST ({(invoice.gstPercent) / 2}%)</Text>
-                                    <Text>+₹{(invoice.cgst || 0).toFixed(2)}</Text>
+                                    <Text>+â‚¹{(invoice.cgst || 0).toFixed(2)}</Text>
                                 </View>
                             )}
                             {invoice.sgst > 0 && (
                                 <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 5 }}>
                                     <Text style={{ color: '#666' }}>SGST ({(invoice.gstPercent) / 2}%)</Text>
-                                    <Text>+₹{(invoice.sgst || 0).toFixed(2)}</Text>
+                                    <Text>+â‚¹{(invoice.sgst || 0).toFixed(2)}</Text>
                                 </View>
                             )}
                             {(!invoice.cgst && (invoice.tax || 0) > 0) && (
                                 <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 5 }}>
                                     <Text style={{ color: '#666' }}>GST ({invoice.gstPercent}%)</Text>
-                                    <Text>+₹{(invoice.tax || 0).toFixed(2)}</Text>
+                                    <Text>+â‚¹{(invoice.tax || 0).toFixed(2)}</Text>
                                 </View>
                             )}
                             {(invoice.membershipDiscount || 0) > 0 && (
                                 <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 5 }}>
                                     <Text style={{ color: '#10b981' }}>Membership Discount</Text>
-                                    <Text style={{ color: '#10b981' }}>-₹{(invoice.membershipDiscount || 0).toFixed(2)}</Text>
+                                    <Text style={{ color: '#10b981' }}>-â‚¹{(invoice.membershipDiscount || 0).toFixed(2)}</Text>
                                 </View>
                             )}
                             {(invoice.discount || 0) > 0 && (
                                 <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 5 }}>
                                     <Text style={{ color: '#10b981' }}>Additional Discount</Text>
-                                    <Text style={{ color: '#10b981' }}>-₹{(invoice.discount || 0).toFixed(2)}</Text>
+                                    <Text style={{ color: '#10b981' }}>-â‚¹{(invoice.discount || 0).toFixed(2)}</Text>
                                 </View>
                             )}
                             {(invoice.walletRedeemed || 0) > 0 && (
                                 <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 5 }}>
                                     <Text style={{ color: '#10b981' }}>Wallet Redeemed</Text>
-                                    <Text style={{ color: '#10b981' }}>-₹{(invoice.walletRedeemed || 0).toFixed(2)}</Text>
+                                    <Text style={{ color: '#10b981' }}>-â‚¹{(invoice.walletRedeemed || 0).toFixed(2)}</Text>
                                 </View>
                             )}
                             {(invoice.previousDueCollected || 0) > 0 && (
                                 <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 5 }}>
                                     <Text style={{ color: '#3b82f6' }}>Prev. Due Collected</Text>
-                                    <Text style={{ color: '#3b82f6' }}>+₹{(invoice.previousDueCollected || 0).toFixed(2)}</Text>
+                                    <Text style={{ color: '#3b82f6' }}>+â‚¹{(invoice.previousDueCollected || 0).toFixed(2)}</Text>
                                 </View>
                             )}
                             <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 10, paddingTop: 10, borderTop: 2, borderColor: '#C8956C' }}>
                                 <Text style={{ fontSize: 14, fontWeight: 700 }}>Grand Total</Text>
-                                <Text style={{ fontSize: 14, fontWeight: 700, color: '#C8956C' }}>₹{((invoice.total || 0) + (invoice.previousDueCollected || 0)).toFixed(2)}</Text>
+                                <Text style={{ fontSize: 14, fontWeight: 700, color: '#C8956C' }}>â‚¹{((invoice.total || 0) + (invoice.previousDueCollected || 0)).toFixed(2)}</Text>
                             </View>
                         </View>
                     </View>
@@ -534,15 +534,15 @@ const StandardInvoicePDF = ({ invoice, salon }) => {
                             </View>
                             <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 5 }}>
                                 <Text style={{ color: '#666' }}>Cash Paid</Text>
-                                <Text>₹{cashPaid.toFixed(2)}</Text>
+                                <Text>â‚¹{cashPaid.toFixed(2)}</Text>
                             </View>
                             <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 5 }}>
                                 <Text style={{ color: '#666' }}>Online Paid</Text>
-                                <Text>₹{onlinePaid.toFixed(2)}</Text>
+                                <Text>â‚¹{onlinePaid.toFixed(2)}</Text>
                             </View>
                             <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 5 }}>
                                 <Text style={{ color: '#e11d48', fontWeight: 700 }}>Due Amount</Text>
-                                <Text style={{ color: '#e11d48', fontWeight: 700 }}>₹{(invoice.dueAmount || 0).toFixed(2)}</Text>
+                                <Text style={{ color: '#e11d48', fontWeight: 700 }}>â‚¹{(invoice.dueAmount || 0).toFixed(2)}</Text>
                             </View>
                             <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 5 }}>
                                 <Text style={{ color: '#666' }}>Payment Status</Text>
@@ -561,7 +561,7 @@ const StandardInvoicePDF = ({ invoice, salon }) => {
                         <View style={{ gap: 4 }}>
                             {salon.termsAndConditions.map((term, idx) => (
                                 <Text key={idx} style={{ fontSize: 8, color: '#666' }}>
-                                    • {term}
+                                    â€¢ {term}
                                 </Text>
                             ))}
                         </View>
@@ -670,7 +670,7 @@ export default function POSInvoicesPage() {
 
     const sendWhatsAppBill = async (inv) => {
         const phone = inv.customerId?.phone;
-        if (!phone) return toast('Customer phone not found', { icon: 'ℹ️' });
+        if (!phone) return toast('Customer phone not found', { icon: 'â„¹ï¸' });
 
         console.log(`[Frontend-POSInvoicesPage] sendWhatsAppBill initiated for Invoice: ${inv.invoiceNumber}, Phone: ${phone}`);
         setIsSendingWhatsApp(inv._id);
@@ -707,7 +707,7 @@ export default function POSInvoicesPage() {
 
     const sendEmailBill = async (inv) => {
         const email = inv.customerId?.email;
-        if (!email) return toast('Customer email not found', { icon: 'ℹ️' });
+        if (!email) return toast('Customer email not found', { icon: 'â„¹ï¸' });
 
         setIsSendingEmail(inv._id);
         try {
@@ -812,359 +812,378 @@ export default function POSInvoicesPage() {
         }
     };
     return (
-        <div className="space-y-6 animate-in fade-in duration-700 pb-10 bg-[#f8fafc] dark:bg-[#121826] min-h-screen px-4 md:px-8 py-6 rounded-3xl">
-            {/* Header Area */}
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6 mb-2">
-                <div>
-                    <h1 className="text-3xl font-black text-slate-800 uppercase tracking-tighter leading-none">Invoices</h1>
-                    <p className="text-[10px] font-black text-slate-500 mt-1 uppercase tracking-widest flex items-center gap-2">
-                        History Ledger & Financial Analytics
-                    </p>
-                </div>
-
-                <div className="flex flex-wrap items-center gap-3">
-                    {/* Outlet Selection */}
-                    <div className="relative group min-w-[220px]">
-                        <select
-                            value={activeOutletId || ''}
-                            onChange={(e) => setActiveOutletId(e.target.value)}
-                            className="w-full pl-9 pr-10 py-2.5 bg-white border border-slate-200 rounded-2xl text-[10px] font-black uppercase tracking-widest outline-none focus:border-[#B4912B] transition-all cursor-pointer appearance-none shadow-sm text-slate-900"
+        <div className="min-h-screen bg-[#f5f6fa] pb-12">
+            {/* Top Header */}
+            <div className="bg-white border-b border-slate-200 px-6 md:px-10 py-5">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                    <div>
+                        <h1 className="text-2xl font-black text-slate-900 uppercase tracking-tight leading-none">INVOICES</h1>
+                        <p className="text-[9px] font-bold text-slate-400 mt-1 uppercase tracking-[0.2em]">History Ledger &amp; Financial Analytics</p>
+                    </div>
+                    <div className="flex items-center gap-3 flex-wrap">
+                        <div className="relative">
+                            <select
+                                value={activeOutletId || ''}
+                                onChange={(e) => setActiveOutletId(e.target.value)}
+                                className="pl-8 pr-8 py-2.5 bg-white border border-slate-200 rounded-xl text-[10px] font-bold uppercase tracking-widest outline-none focus:border-[#B4912B] transition-all cursor-pointer appearance-none shadow-sm text-slate-700"
+                            >
+                                <option value="">All Outlets</option>
+                                {(outlets || []).map(o => (
+                                    <option key={o._id} value={o._id}>{o.name}</option>
+                                ))}
+                            </select>
+                            <MapPin className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 pointer-events-none" />
+                            <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 pointer-events-none" />
+                        </div>
+                        <button className="w-9 h-9 bg-white border border-slate-200 rounded-xl flex items-center justify-center text-slate-500 hover:border-slate-300 transition-all shadow-sm">
+                            <RefreshCw className="w-3.5 h-3.5" />
+                        </button>
+                        <button
+                            onClick={() => navigate('/pos/billing')}
+                            className="px-5 py-2.5 bg-[#B4912B] text-white text-[10px] font-black uppercase tracking-widest rounded-xl shadow-sm hover:bg-[#9c7d24] transition-all flex items-center gap-2"
                         >
-                            <option value="">All Outlets</option>
-                            {(outlets || []).map(o => (
-                                <option key={o._id} value={o._id}>{o.name}</option>
-                            ))}
-                        </select>
-                        <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 pointer-events-none" />
-                        <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 pointer-events-none" />
-                    </div>
-                    <button className="w-10 h-10 bg-white border border-slate-200 rounded-2xl flex items-center justify-center text-slate-500 hover:text-slate-800 hover:border-slate-300 transition-all shadow-sm">
-                        <RefreshCw className="w-4 h-4" />
-                    </button>
-                    <button 
-                        onClick={() => navigate('/pos/billing')}
-                        className="px-5 py-2.5 bg-[#B4912B] text-white text-[10px] font-black uppercase tracking-widest rounded-2xl shadow-sm hover:bg-[#9c7d24] transition-all flex items-center gap-2"
-                    >
-                        <FileText className="w-3.5 h-3.5" />
-                        Create Bill
-                    </button>
-                </div>
-            </div>
-
-
-            {/* Earning Stats */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                {[
-                    { title: "Total Revenue", badge: "Overall", value: `₹${invoices.reduce((s, i) => s + (i.total || 0), 0).toLocaleString()}`, subtitle: "vs Yesterday ₹0 (0%)", icon: Banknote, color: "text-emerald-500 dark:text-emerald-400", bg: "bg-emerald-50 dark:bg-emerald-950/30" },
-                    { title: "Today's Earnings", badge: "Today", value: `₹${invoices.filter(i => new Date(i.createdAt).toDateString() === new Date().toDateString()).reduce((s, i) => s + (i.total || 0), 0).toLocaleString()}`, subtitle: "vs Yesterday ₹0 (0%)", icon: Calendar, color: "text-emerald-500 dark:text-emerald-400", bg: "bg-emerald-50 dark:bg-emerald-950/30" },
-                    { title: "UPI / Card", badge: "Digital", value: `₹${invoices.filter(i => ['online', 'card', 'upi'].includes(i.paymentMethod)).reduce((s, i) => s + (i.total || 0), 0).toLocaleString()}`, subtitle: "vs Yesterday ₹0 (0%)", icon: Smartphone, color: "text-blue-500 dark:text-blue-400", bg: "bg-blue-50 dark:bg-blue-950/30" },
-                    { title: "Cash Collected", badge: "Physical", value: `₹${invoices.filter(i => i.paymentMethod === 'cash' || !i.paymentMethod).reduce((s, i) => s + (i.total || 0), 0).toLocaleString()}`, subtitle: "vs Yesterday ₹0 (0%)", icon: Banknote, color: "text-orange-500 dark:text-orange-400", bg: "bg-orange-50 dark:bg-orange-950/30" }
-                ].map((stat, i) => (
-                    <div key={i} className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm flex flex-col justify-between relative overflow-hidden group">
-                        <div className="flex justify-between items-start mb-4">
-                            <div>
-                                <div className="flex items-center gap-2 mb-2">
-                                    <h3 className="text-[10px] font-black text-slate-800 uppercase tracking-widest">{stat.title}</h3>
-                                    <span className={`text-[8px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded ${stat.bg} ${stat.color}`}>{stat.badge}</span>
-                                </div>
-                                <p className="text-2xl font-black text-slate-800 tracking-tighter">{stat.value}</p>
-                                <p className="text-[9px] font-bold text-slate-400 mt-1">{stat.subtitle}</p>
-                            </div>
-                            <div className={`w-10 h-10 rounded-full flex items-center justify-center ${stat.bg} ${stat.color}`}>
-                                <stat.icon className="w-5 h-5" />
-                            </div>
-                        </div>
-                        <div className="h-10 w-full mt-2 -mb-2 -mx-2 w-[calc(100%+16px)]">
-                            <ResponsiveContainer width="100%" height="100%">
-                                <AreaChart data={[{v:2},{v:3},{v:1},{v:4},{v:2},{v:5}]}>
-                                    <defs>
-                                        <linearGradient id={`color${i}`} x1="0" y1="0" x2="0" y2="1">
-                                            <stop offset="5%" stopColor={stat.color.includes('emerald') ? '#10b981' : stat.color.includes('blue') ? '#3b82f6' : '#f97316'} stopOpacity={0.2}/>
-                                            <stop offset="95%" stopColor={stat.color.includes('emerald') ? '#10b981' : stat.color.includes('blue') ? '#3b82f6' : '#f97316'} stopOpacity={0}/>
-                                        </linearGradient>
-                                    </defs>
-                                    <Area type="monotone" dataKey="v" stroke={stat.color.includes('emerald') ? '#10b981' : stat.color.includes('blue') ? '#3b82f6' : '#f97316'} fillOpacity={1} fill={`url(#color${i})`} strokeWidth={2} />
-                                </AreaChart>
-                            </ResponsiveContainer>
-                        </div>
-                    </div>
-                ))}
-            </div>
-
-            {/* Search Bar */}
-            <div className="relative max-w-2xl mx-auto group w-full">
-                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-[#B4912B] transition-colors" />
-                <input
-                    type="text"
-                    value={search}
-                    onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-                    placeholder="Search by invoice number, customer name, or phone..."
-                    className="w-full pl-11 pr-4 py-3 bg-white border border-slate-200 rounded-2xl text-[10px] font-black text-slate-800 placeholder:text-slate-400 focus:outline-none focus:border-[#B4912B] transition-all shadow-sm uppercase tracking-widest"
-                />
-            </div>
-
-            {/* Analytics Grid */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                {/* Payment Summary */}
-                <div className="lg:col-span-2 bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
-                    <div className="flex justify-between items-start mb-6">
-                        <div>
-                            <h3 className="text-[10px] font-black text-slate-800 uppercase tracking-widest">Payment Summary</h3>
-                            <p className="text-[9px] font-bold text-slate-500 mt-1">Today's payment collection by method</p>
-                        </div>
-                        <button className="flex items-center gap-2 px-3 py-1.5 border border-slate-200 rounded-2xl text-[9px] font-black text-slate-600 uppercase tracking-widest hover:bg-slate-50 transition-all">
-                            This Month <ChevronDown className="w-3 h-3" />
+                            <FileText className="w-3.5 h-3.5" />
+                            Create Bill
                         </button>
                     </div>
-                    <div className="h-48 w-full">
-                        <ResponsiveContainer width="100%" height="100%">
-                            <BarChart data={paymentData} margin={{ top: 0, right: 0, left: -20, bottom: 0 }} barGap={2}>
-                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
-                                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 9, fontWeight: 700, fill: '#64748b' }} dy={10} />
-                                <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 9, fontWeight: 700, fill: '#64748b' }} tickFormatter={(val) => '₹'+val} />
-                                <RechartsTooltip cursor={{fill: 'transparent'}} contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)', fontSize: '10px', fontWeight: 'bold' }} />
-                                <Legend wrapperStyle={{ fontSize: '9px', fontWeight: 'bold', textTransform: 'uppercase', color: '#64748b' }} iconType="square" iconSize={8} />
-                                <Bar dataKey="Cash" fill="#10b981" radius={[4, 4, 0, 0]} maxBarSize={12} />
-                                <Bar dataKey="UPI" fill="#8b5cf6" radius={[4, 4, 0, 0]} maxBarSize={12} />
-                                <Bar dataKey="Unpaid" fill="#f97316" radius={[4, 4, 0, 0]} maxBarSize={12} />
-                            </BarChart>
-                        </ResponsiveContainer>
-                    </div>
-                    <div className="flex justify-between mt-4 border-t border-slate-100 pt-4 px-2">
-                        <div className="flex items-center gap-2">
-                            <span className="text-[10px] font-black text-slate-800 uppercase tracking-widest">Cash</span>
-                            <span className="text-[10px] font-black text-emerald-500 tracking-tighter">₹{donutData[0].value}</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                            <span className="text-[10px] font-black text-slate-800 uppercase tracking-widest">UPI</span>
-                            <span className="text-[10px] font-black text-purple-500 tracking-tighter">₹{donutData[1].value}</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                            <span className="text-[10px] font-black text-slate-800 uppercase tracking-widest">Unpaid</span>
-                            <span className="text-[10px] font-black text-orange-500 tracking-tighter">₹{donutData[2].value}</span>
-                        </div>
-                    </div>
                 </div>
 
-                {/* Collections Split */}
-                <div className="lg:col-span-1 bg-white border border-slate-200 rounded-2xl p-6 shadow-sm flex flex-col">
-                    <h3 className="text-[10px] font-black text-slate-800 uppercase tracking-widest mb-6">Collections Split</h3>
-                    <div className="flex-1 flex flex-col items-center justify-center relative">
-                        <div className="h-40 w-full">
+                {/* Navigation Tabs */}
+                <div className="flex items-center gap-2 mt-5 overflow-x-auto no-scrollbar">
+                    {[
+                        { id: 'today', label: 'Today', icon: Calendar, filterType: 'date' },
+                        { id: 'all_time', label: 'All Time', icon: FileText, filterType: 'date' },
+                        { id: 'all_inv', label: 'All Invoices', icon: FileText, filterType: 'type' },
+                        { id: 'service', label: 'Services', icon: FileText, filterType: 'type' },
+                        { id: 'product', label: 'Products', icon: Box, filterType: 'type' }
+                    ].map(f => {
+                        const isActive = (f.filterType === 'date' && dateFilter === (f.id === 'all_time' ? 'all' : f.id)) ||
+                                         (f.filterType === 'type' && typeFilter === (f.id === 'all_inv' ? 'all' : f.id));
+                        return (
+                            <button
+                                key={f.id}
+                                onClick={() => {
+                                    if (f.id === 'all_inv') { setTypeFilter('all'); setDateFilter('all'); }
+                                    else if (f.id === 'all_time') { setDateFilter('all'); setTypeFilter('all'); }
+                                    else { if (f.filterType === 'date') setDateFilter(f.id); if (f.filterType === 'type') setTypeFilter(f.id); }
+                                    setPage(1);
+                                }}
+                                className={`flex items-center gap-2 px-5 py-2.5 text-[10px] font-bold uppercase tracking-wide transition-all rounded-lg whitespace-nowrap border ${isActive ? 'bg-[#B4912B] text-white border-[#B4912B] shadow-sm' : 'text-slate-500 border-slate-200 bg-white hover:bg-slate-50'}`}
+                            >
+                                <f.icon className="w-3.5 h-3.5 shrink-0" /> {f.label}
+                            </button>
+                        );
+                    })}
+                </div>
+            </div>
+
+            <div className="px-6 md:px-10 py-6 space-y-6">
+                {/* Stats Cards */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    {[
+                        { title: "Total Revenue", badge: "OVERALL", badgeColor: "bg-slate-100 text-slate-600", value: `\u20B9${invoices.reduce((s, i) => s + (i.total || 0), 0).toLocaleString()}`, subtitle: "vs Yesterday \u20B90 (0%)", icon: Banknote, areaColor: '#10b981', areaId: 'sg0' },
+                        { title: "Today's Earnings", badge: "TODAY", badgeColor: "bg-emerald-100 text-emerald-600", value: `\u20B9${invoices.filter(i => new Date(i.createdAt).toDateString() === new Date().toDateString()).reduce((s, i) => s + (i.total || 0), 0).toLocaleString()}`, subtitle: "vs Yesterday \u20B90 (0%)", icon: Calendar, areaColor: '#10b981', areaId: 'sg1' },
+                        { title: "UPI / Card", badge: "DIGITAL", badgeColor: "bg-blue-100 text-blue-600", value: `\u20B9${invoices.filter(i => ['online', 'card', 'upi'].includes(i.paymentMethod)).reduce((s, i) => s + (i.total || 0), 0).toLocaleString()}`, subtitle: "vs Yesterday \u20B90 (0%)", icon: Smartphone, areaColor: '#3b82f6', areaId: 'sg2' },
+                        { title: "Cash Collected", badge: "PHYSICAL", badgeColor: "bg-orange-100 text-orange-600", value: `\u20B9${invoices.filter(i => i.paymentMethod === 'cash' || !i.paymentMethod).reduce((s, i) => s + (i.total || 0), 0).toLocaleString()}`, subtitle: "vs Yesterday \u20B90 (0%)", icon: Banknote, areaColor: '#f97316', areaId: 'sg3' }
+                    ].map((stat, i) => (
+                        <div key={i} className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm overflow-hidden relative">
+                            <div className="flex items-start justify-between mb-3">
+                                <div>
+                                    <div className="flex items-center gap-2 mb-2">
+                                        <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wide">{stat.title}</span>
+                                        <span className={`text-[8px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded ${stat.badgeColor}`}>{stat.badge}</span>
+                                    </div>
+                                    <p className="text-2xl font-black text-slate-900 tracking-tight">{stat.value}</p>
+                                    <p className="text-[9px] text-slate-400 font-semibold mt-1">{stat.subtitle}</p>
+                                </div>
+                                <div className="w-10 h-10 rounded-full bg-slate-50 border border-slate-200 flex items-center justify-center shrink-0">
+                                    <stat.icon className="w-5 h-5 text-slate-400" />
+                                </div>
+                            </div>
+                            <div className="h-14 -mx-5 -mb-5 mt-2">
+                                <ResponsiveContainer width="100%" height="100%">
+                                    <AreaChart data={[{v:1},{v:4},{v:2},{v:5},{v:3},{v:6},{v:4},{v:7}]} margin={{top:0,right:0,left:0,bottom:0}}>
+                                        <defs>
+                                            <linearGradient id={stat.areaId} x1="0" y1="0" x2="0" y2="1">
+                                                <stop offset="5%" stopColor={stat.areaColor} stopOpacity={0.25}/>
+                                                <stop offset="95%" stopColor={stat.areaColor} stopOpacity={0}/>
+                                            </linearGradient>
+                                        </defs>
+                                        <Area type="monotone" dataKey="v" stroke={stat.areaColor} fillOpacity={1} fill={`url(#${stat.areaId})`} strokeWidth={2} dot={false} />
+                                    </AreaChart>
+                                </ResponsiveContainer>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+
+                {/* Search + Filters Bar */}
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+                    <div className="relative flex-1">
+                        <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                        <input
+                            type="text"
+                            value={search}
+                            onChange={(e) => { setSearch(e.target.value); setPage(1); }}
+                            placeholder="Search by invoice number, customer name, or phone..."
+                            className="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl text-xs font-semibold text-slate-700 placeholder:text-slate-400 focus:outline-none focus:border-[#B4912B] transition-all shadow-sm"
+                        />
+                    </div>
+                    <button className="flex items-center gap-2 px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-xs font-bold text-slate-600 shadow-sm hover:bg-slate-50 transition-all whitespace-nowrap">
+                        <Calendar className="w-3.5 h-3.5 text-slate-400" />
+                        01 May 2026 - 28 May 2026
+                        <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
+                    </button>
+                    <button className="flex items-center gap-2 px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-xs font-bold text-slate-600 shadow-sm hover:bg-slate-50 transition-all">
+                        <Filter className="w-3.5 h-3.5 text-slate-400" />
+                        Filters
+                    </button>
+                    <button className="flex items-center gap-2 px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-xs font-bold text-slate-600 shadow-sm hover:bg-slate-50 transition-all">
+                        <Download className="w-3.5 h-3.5 text-slate-400" />
+                        Export
+                    </button>
+                </div>
+
+                {/* Analytics + Quick Actions Row */}
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+                    {/* Payment Summary Chart */}
+                    <div className="lg:col-span-1 bg-white rounded-2xl border border-slate-200 p-5 shadow-sm">
+                        <div className="flex items-start justify-between mb-2">
+                            <div>
+                                <h3 className="text-[10px] font-black text-slate-800 uppercase tracking-widest">Payment Summary</h3>
+                                <p className="text-[9px] text-slate-400 font-semibold mt-0.5">Today's payment collection by method</p>
+                            </div>
+                            <button className="flex items-center gap-1 px-2.5 py-1.5 border border-slate-200 rounded-lg text-[9px] font-bold text-slate-600 hover:bg-slate-50 transition-all whitespace-nowrap">
+                                This Month <ChevronDown className="w-3 h-3" />
+                            </button>
+                        </div>
+                        <div className="flex items-center gap-3 mb-3">
+                            <div className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-sm bg-emerald-500"></div><span className="text-[9px] font-bold text-slate-500 uppercase">Cash</span></div>
+                            <div className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-sm bg-purple-500"></div><span className="text-[9px] font-bold text-slate-500 uppercase">UPI</span></div>
+                            <div className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-sm bg-orange-400"></div><span className="text-[9px] font-bold text-slate-500 uppercase">Unpaid</span></div>
+                        </div>
+                        <div className="h-36 w-full">
+                            <ResponsiveContainer width="100%" height="100%">
+                                <BarChart data={paymentData} margin={{ top: 0, right: 0, left: -20, bottom: 0 }} barGap={1} barCategoryGap="30%">
+                                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                                    <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 8, fontWeight: 700, fill: '#94a3b8' }} dy={8} />
+                                    <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 8, fontWeight: 700, fill: '#94a3b8' }} tickFormatter={(val) => '\u20B9'+val} />
+                                    <RechartsTooltip cursor={{fill: 'rgba(0,0,0,0.03)'}} contentStyle={{ borderRadius: '8px', border: '1px solid #e2e8f0', fontSize: '10px', fontWeight: 'bold' }} />
+                                    <Bar dataKey="Cash" fill="#10b981" radius={[3, 3, 0, 0]} maxBarSize={8} />
+                                    <Bar dataKey="UPI" fill="#8b5cf6" radius={[3, 3, 0, 0]} maxBarSize={8} />
+                                    <Bar dataKey="Unpaid" fill="#fb923c" radius={[3, 3, 0, 0]} maxBarSize={8} />
+                                </BarChart>
+                            </ResponsiveContainer>
+                        </div>
+                        <div className="flex justify-between pt-3 border-t border-slate-100 mt-1">
+                            <div><span className="text-[9px] font-black text-slate-500 uppercase">Cash</span> <span className="text-[9px] font-black text-emerald-500 ml-1">\u20B9{donutData[0].value}</span></div>
+                            <div><span className="text-[9px] font-black text-slate-500 uppercase">UPI</span> <span className="text-[9px] font-black text-purple-500 ml-1">\u20B9{donutData[1].value}</span></div>
+                            <div><span className="text-[9px] font-black text-slate-500 uppercase">Unpaid</span> <span className="text-[9px] font-black text-orange-500 ml-1">\u20B9{donutData[2].value}</span></div>
+                        </div>
+                    </div>
+
+                    {/* Collections Split Donut */}
+                    <div className="lg:col-span-1 bg-white rounded-2xl border border-slate-200 p-5 shadow-sm">
+                        <h3 className="text-[10px] font-black text-slate-800 uppercase tracking-widest mb-4">Collections Split</h3>
+                        <div className="relative h-36">
                             <ResponsiveContainer width="100%" height="100%">
                                 <PieChart>
-                                    <Pie data={donutData} innerRadius={50} outerRadius={70} paddingAngle={2} dataKey="value" stroke="none">
+                                    <Pie data={donutData} innerRadius={46} outerRadius={62} paddingAngle={3} dataKey="value" stroke="none" startAngle={90} endAngle={-270}>
                                         {donutData.map((entry, index) => (
                                             <Cell key={`cell-${index}`} fill={DONUT_COLORS[index % DONUT_COLORS.length]} />
                                         ))}
                                     </Pie>
-                                    <RechartsTooltip contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)', fontSize: '10px', fontWeight: 'bold' }} />
+                                    <RechartsTooltip contentStyle={{ borderRadius: '8px', border: '1px solid #e2e8f0', fontSize: '10px', fontWeight: 'bold' }} />
                                 </PieChart>
                             </ResponsiveContainer>
+                            <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                                <span className="text-sm font-black text-slate-800">\u20B9{(donutData[0].value + donutData[1].value).toLocaleString()}</span>
+                                <span className="text-[7px] font-bold text-slate-400 uppercase tracking-widest">Total Collection</span>
+                            </div>
                         </div>
-                        <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none mt-4">
-                            <span className="text-sm font-black text-slate-800">₹{(donutData[0].value + donutData[1].value).toLocaleString()}</span>
-                            <span className="text-[7px] font-bold text-slate-500 uppercase tracking-widest">Total Collection</span>
+                        <div className="space-y-2 mt-3 border-t border-slate-100 pt-3">
+                            {donutData.map((entry, i) => {
+                                const total = donutData[0].value + donutData[1].value + donutData[2].value;
+                                const pct = total === 0 ? 0 : Math.round((entry.value / total) * 100);
+                                return (
+                                    <div key={i} className="flex items-center justify-between text-[9px] font-bold">
+                                        <div className="flex items-center gap-2 text-slate-600 uppercase">
+                                            <div className="w-2 h-2 rounded-full" style={{ backgroundColor: DONUT_COLORS[i] }}></div>
+                                            {entry.name}
+                                        </div>
+                                        <div className="flex items-center gap-3">
+                                            <span className="text-slate-400">{pct}%</span>
+                                            <span className="text-slate-700 font-black">\u20B9{entry.value}</span>
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                            <div className="flex items-center justify-between text-[9px] font-black text-slate-700 uppercase pt-2 border-t border-slate-100">
+                                <span>Total</span>
+                                <span>\u20B9{donutData[0].value + donutData[1].value + donutData[2].value}</span>
+                            </div>
                         </div>
                     </div>
-                    <div className="mt-4 space-y-2">
-                        {donutData.map((entry, i) => {
-                            const total = donutData[0].value + donutData[1].value + donutData[2].value;
-                            const pct = total === 0 ? 0 : Math.round((entry.value / total) * 100);
-                            return (
-                                <div key={i} className="flex items-center justify-between text-[9px] font-black tracking-widest">
-                                    <div className="flex items-center gap-2 text-slate-700 uppercase">
-                                        <div className="w-2 h-2 rounded-full" style={{ backgroundColor: DONUT_COLORS[i] }}></div>
-                                        {entry.name}
+
+                    {/* Quick Actions */}
+                    <div className="lg:col-span-1 bg-white rounded-2xl border border-slate-200 p-5 shadow-sm">
+                        <h3 className="text-[10px] font-black text-slate-800 uppercase tracking-widest mb-4">Quick Actions</h3>
+                        <div className="grid grid-cols-2 gap-3">
+                            {[
+                                { label: 'New Bill', icon: FileText, path: '/pos/billing' },
+                                { label: 'Appointments', icon: Calendar, path: '/pos/appointments' },
+                                { label: 'Invoices', icon: FileText, path: '/pos/invoices' },
+                                { label: 'Packages', icon: Box, path: '/pos/packages' },
+                            ].map((action, i) => (
+                                <button
+                                    key={i}
+                                    onClick={() => navigate(action.path)}
+                                    className="w-full min-h-[120px] flex flex-col items-center justify-center gap-2.5 rounded-xl border-2 border-[#B4912B]/20 bg-[#B4912B]/5 hover:bg-[#B4912B]/10 hover:border-[#B4912B]/40 transition-all group"
+                                >
+                                    <div className="w-10 h-10 rounded-xl bg-white border border-[#B4912B]/20 flex items-center justify-center group-hover:border-[#B4912B]/40 transition-all shadow-sm">
+                                        <action.icon className="w-5 h-5 text-[#B4912B]" />
                                     </div>
-                                    <div className="flex items-center gap-3">
-                                        <span className="text-slate-400">{pct}%</span>
-                                        <span className="text-slate-800">₹{entry.value}</span>
-                                    </div>
-                                </div>
-                            );
-                        })}
-                        <div className="flex items-center justify-between text-[10px] font-black text-slate-800 uppercase tracking-widest pt-2 border-t border-slate-100 mt-2">
-                            <span>Total</span>
-                            <span>₹{donutData[0].value + donutData[1].value + donutData[2].value}</span>
+                                    <span className="text-[9px] font-black text-[#B4912B] uppercase tracking-widest">{action.label}</span>
+                                </button>
+                            ))}
+
+
                         </div>
                     </div>
                 </div>
-            </div>
 
-            {/* Unified Tabs Row */}
-            <div className="flex items-center gap-2 bg-white p-1.5 rounded-3xl border border-slate-200 shadow-sm overflow-x-auto no-scrollbar mb-2">
-                {[
-                    { id: 'today', label: 'Today', icon: Calendar, filterType: 'date' },
-                    { id: 'all_time', label: 'All Time', icon: FileText, filterType: 'date' },
-                    { id: 'all_inv', label: 'All Invoices', icon: FileText, filterType: 'type' },
-                    { id: 'service', label: 'Services', icon: FileText, filterType: 'type' },
-                    { id: 'product', label: 'Products', icon: Box, filterType: 'type' }
-                ].map(f => {
-                    const isActive = (f.filterType === 'date' && dateFilter === (f.id === 'all_time' ? 'all' : f.id)) ||
-                                     (f.filterType === 'type' && typeFilter === (f.id === 'all_inv' ? 'all' : f.id));
-                    return (
-                        <button
-                            key={f.id}
-                            onClick={() => {
-                                if (f.id === 'all_inv') {
-                                    setTypeFilter('all');
-                                    setDateFilter('all');
-                                } else if (f.id === 'all_time') {
-                                    setDateFilter('all');
-                                    setTypeFilter('all');
-                                } else {
-                                    if (f.filterType === 'date') setDateFilter(f.id);
-                                    if (f.filterType === 'type') setTypeFilter(f.id);
-                                }
-                                setPage(1);
-                            }}
-                            className={`flex-1 min-w-[120px] flex items-center justify-center gap-2 px-4 py-3 text-[10px] font-black uppercase tracking-widest transition-all rounded-2xl whitespace-nowrap ${isActive ? 'bg-[#B4912B] text-white shadow-md' : 'text-slate-500 hover:text-slate-800 hover:bg-slate-50'}`}
-                        >
-                            <f.icon className="w-3.5 h-3.5 shrink-0" /> {f.label}
+                {/* Invoice Table */}
+                <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+                    <div className="px-6 py-4 flex items-center justify-between border-b border-slate-100">
+                        <div className="flex items-center gap-2">
+                            <FileText className="w-4 h-4 text-slate-400" />
+                            <span className="text-[10px] font-black text-slate-700 uppercase tracking-widest">Invoice List</span>
+                        </div>
+                        <button className="text-[9px] font-black text-slate-400 hover:text-[#B4912B] uppercase tracking-widest transition-colors">
+                            View All &rarr;
                         </button>
-                    );
-                })}
-            </div>
+                    </div>
 
-            {/* Table */}
-            <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden min-h-[400px] flex flex-col p-2">
-                <div className="p-4 flex items-center justify-between border-b border-slate-100">
-                    <div className="flex items-center gap-2">
-                        <div className="p-1.5 bg-slate-100 rounded-2xl text-slate-500">
-                            <FileText className="w-4 h-4" />
+                    {loading ? (
+                        <div className="py-20 flex flex-col items-center justify-center text-center">
+                            <Loader2 className="w-8 h-8 text-[#B4912B] animate-spin mb-3" />
+                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em]">Loading invoice ledger...</p>
                         </div>
-                        <h3 className="text-[10px] font-black text-slate-800 uppercase tracking-widest">Invoice List</h3>
-                    </div>
-                    <button className="text-[9px] font-black text-slate-500 hover:text-slate-800 uppercase tracking-widest transition-colors">
-                        View All →
-                    </button>
-                </div>
-                {loading ? (
-                    <div className="flex-1 flex flex-col items-center justify-center py-24 text-center">
-                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em]">Loading invoice ledger...</p>
-                    </div>
-                ) : paginated.length === 0 ? (
-                    <div className="flex-1 flex flex-col items-center justify-center py-24 text-center">
-                        <div className="w-16 h-16 bg-slate-50 border border-slate-200 rounded-2xl flex items-center justify-center mb-4 text-slate-300">
-                            <Search className="w-8 h-8" />
+                    ) : paginated.length === 0 ? (
+                        <div className="py-20 flex flex-col items-center justify-center text-center">
+                            <div className="w-16 h-16 bg-slate-50 border border-slate-200 rounded-2xl flex items-center justify-center mb-4">
+                                <FileText className="w-7 h-7 text-slate-300" />
+                            </div>
+                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em]">No matching invoices found</p>
                         </div>
-                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em]">No matching invoices found</p>
-                    </div>
-                ) : (
-                    <div className="flex-1 overflow-x-auto">
-                        <table className="w-full text-left border-collapse min-w-[800px]">
-                            <thead>
-                                <tr className="text-[9px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-100">
-                                    <th className="px-4 py-4 w-[15%]">Invoice No.</th>
-                                    <th className="px-4 py-4 w-[15%]">Date & Time</th>
-                                    <th className="px-4 py-4 w-[20%]">Customer</th>
-                                    <th className="px-4 py-4 w-[15%]">Payment Method</th>
-                                    <th className="px-4 py-4 w-[15%] text-right">Amount</th>
-                                    <th className="px-4 py-4 w-[10%] text-center">Status</th>
-                                    <th className="px-4 py-4 w-[10%] text-center">Action</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-slate-100/50">
-                                {paginated.map(inv => (
-                                    <tr key={inv._id} className="hover:bg-slate-50 transition-colors group">
-                                        <td className="px-4 py-4 font-black text-slate-800 uppercase tracking-tighter truncate" title={inv.invoiceNumber}>{inv.invoiceNumber}</td>
-                                        <td className="px-4 py-4 text-slate-500 text-[10px] font-bold uppercase tracking-tight truncate">
-                                            {formatDate(inv.createdAt)}
-                                        </td>
-                                        <td className="px-4 py-4 truncate">
-                                            <div className="font-black text-slate-800 text-[10px] uppercase tracking-tight truncate" title={inv.customerId?.name || 'Guest'}>
-                                                {inv.customerId?.name || 'Guest'}
-                                            </div>
-                                            {inv.customerId?.phone && (
-                                                <div className="text-[9px] font-bold text-slate-400 mt-0.5 tracking-tight">
-                                                    {inv.customerId.phone}
-                                                </div>
-                                            )}
-                                        </td>
-                                        <td className="px-4 py-4">
-                                            <span className="flex items-center gap-1.5 font-black text-slate-700 text-[9px] uppercase tracking-widest">
-                                                {inv.paymentMethod === 'online' ? 'UPI' : (inv.paymentMethod || 'Cash').toUpperCase()}
-                                            </span>
-                                        </td>
-                                        <td className="px-4 py-4 text-right font-black text-slate-800 tracking-tighter text-sm">₹{Number(inv.total || 0).toLocaleString()}</td>
-                                        <td className="px-4 py-4 text-center">
-                                            <span className={`inline-flex items-center px-2 py-0.5 text-[8px] font-black uppercase tracking-widest rounded ${(inv.paymentStatus || '').toLowerCase() === 'paid' ? 'bg-emerald-50 text-emerald-600' : 'bg-orange-50 text-orange-600'}`}>
-                                                {(inv.paymentStatus || '').toLowerCase() === 'paid' ? 'Paid' : 'Pend'}
-                                            </span>
-                                        </td>
-                                        <td className="px-4 py-4 text-center">
-                                            <div className="flex items-center justify-center gap-2">
+                    ) : (
+                        <div className="overflow-x-auto">
+                            <table className="w-full text-left border-collapse min-w-[800px]">
+                                <thead>
+                                    <tr className="text-[9px] font-black text-slate-400 uppercase tracking-widest bg-slate-50 border-b border-slate-200">
+                                        <th className="px-6 py-4">Invoice No.</th>
+                                        <th className="px-6 py-4">
+                                            <span className="flex items-center gap-1">Date &amp; Time <ChevronDown className="w-3 h-3" /></span>
+                                        </th>
+                                        <th className="px-6 py-4">Customer</th>
+                                        <th className="px-6 py-4">Payment Method</th>
+                                        <th className="px-6 py-4 text-right">Amount</th>
+                                        <th className="px-6 py-4 text-center">Status</th>
+                                        <th className="px-6 py-4 text-center">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-slate-100">
+                                    {paginated.map(inv => (
+                                        <tr key={inv._id} className="hover:bg-slate-50/70 transition-colors group">
+                                            <td className="px-6 py-4 font-black text-slate-800 text-xs uppercase tracking-tight">{inv.invoiceNumber}</td>
+                                            <td className="px-6 py-4 text-slate-500 text-xs font-semibold">{formatDate(inv.createdAt)}</td>
+                                            <td className="px-6 py-4">
+                                                <div className="font-bold text-slate-800 text-xs">{inv.customerId?.name || 'Guest'}</div>
+                                                {inv.customerId?.phone && (
+                                                    <div className="text-[9px] font-semibold text-slate-400 mt-0.5">{inv.customerId.phone}</div>
+                                                )}
+                                            </td>
+                                            <td className="px-6 py-4">
+                                                <span className="flex items-center gap-1.5 text-xs font-semibold text-slate-600">
+                                                    {getMethodIcon(inv.paymentMethod)}
+                                                    {inv.paymentMethod === 'online' ? 'UPI' : (inv.paymentMethod || 'Cash').toUpperCase()}
+                                                </span>
+                                            </td>
+                                            <td className="px-6 py-4 text-right font-black text-slate-800 text-sm">\u20B9{Number(inv.total || 0).toLocaleString()}</td>
+                                            <td className="px-6 py-4 text-center">
+                                                <span className={`inline-flex items-center px-2.5 py-1 text-[8px] font-black uppercase tracking-widest rounded-full ${(inv.paymentStatus || '').toLowerCase() === 'paid' ? 'bg-emerald-50 text-emerald-600 border border-emerald-200' : 'bg-orange-50 text-orange-600 border border-orange-200'}`}>
+                                                    {(inv.paymentStatus || '').toLowerCase() === 'paid' ? 'Paid' : 'Pending'}
+                                                </span>
+                                            </td>
+                                            <td className="px-6 py-4 text-center">
                                                 <button
                                                     onClick={() => setSelectedInvoice(inv)}
-                                                    className="px-4 py-1.5 border border-slate-200 bg-white hover:bg-[#B4912B] hover:text-white transition-all shadow-sm flex items-center gap-2 text-[10px] font-black uppercase tracking-widest rounded-2xl text-slate-600"
+                                                    className="p-2 rounded-xl border border-slate-200 bg-white hover:bg-[#B4912B] hover:border-[#B4912B] hover:text-white transition-all text-slate-500 group-hover:border-slate-300"
                                                     title="View Details"
                                                 >
                                                     <Eye className="w-3.5 h-3.5" />
                                                 </button>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
-                )}
-
-                {/* Pagination */}
-                {totalPages > 1 && (
-                    <div className="px-6 py-4 border-t border-slate-100 flex items-center justify-between bg-slate-50/50">
-                        <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">Total Invoices: {filtered.length}</p>
-                        <div className="flex gap-2">
-                            <button disabled={page <= 1} onClick={() => setPage(p => p - 1)} className="px-4 py-2 rounded-2xl border border-slate-200 bg-white text-slate-500 hover:text-[#B4912B] hover:border-[#B4912B] disabled:opacity-30 transition-all active:scale-95 shadow-sm uppercase font-black text-[9px] tracking-widest">
-                                <ChevronLeft className="w-4 h-4" />
-                            </button>
-                            <div className="px-6 py-2 rounded-2xl border border-slate-200 bg-white flex items-center shadow-sm">
-                                <span className="text-[10px] font-black text-slate-800 uppercase tracking-widest">Page {page} <span className="text-slate-300 mx-2">/</span> {totalPages}</span>
-                            </div>
-                            <button disabled={page >= totalPages} onClick={() => setPage(p => p + 1)} className="px-4 py-2 rounded-2xl border border-slate-200 bg-white text-slate-500 hover:text-[#B4912B] hover:border-[#B4912B] disabled:opacity-30 transition-all active:scale-95 shadow-sm uppercase font-black text-[9px] tracking-widest">
-                                <ChevronRight className="w-4 h-4" />
-                            </button>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
                         </div>
-                    </div>
-                )}
+                    )}
+
+                    {totalPages > 1 && (
+                        <div className="px-6 py-4 border-t border-slate-100 flex items-center justify-between bg-white">
+                            <p className="text-[10px] font-semibold text-slate-400">Total: {filtered.length} invoices</p>
+                            <div className="flex gap-2">
+                                <button disabled={page <= 1} onClick={() => setPage(p => p - 1)} className="px-3 py-1.5 rounded-lg border border-slate-200 bg-white text-slate-500 hover:text-[#B4912B] hover:border-[#B4912B] disabled:opacity-30 transition-all">
+                                    <ChevronLeft className="w-4 h-4" />
+                                </button>
+                                <div className="px-4 py-1.5 rounded-lg border border-slate-200 bg-white flex items-center">
+                                    <span className="text-[10px] font-black text-slate-700">Page {page} / {totalPages}</span>
+                                </div>
+                                <button disabled={page >= totalPages} onClick={() => setPage(p => p + 1)} className="px-3 py-1.5 rounded-lg border border-slate-200 bg-white text-slate-500 hover:text-[#B4912B] hover:border-[#B4912B] disabled:opacity-30 transition-all">
+                                    <ChevronRight className="w-4 h-4" />
+                                </button>
+                            </div>
+                        </div>
+                    )}
+                </div>
             </div>
 
             {/* Invoice Detail Modal */}
             {selectedInvoice && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-                    <div className="fixed -inset-[100vmax] bg-black/60 backdrop-blur-sm" onClick={() => setSelectedInvoice(null)} />
-                    <div className="bg-surface rounded-none w-full max-w-lg p-0 shadow-[0_0_50px_rgba(0,0,0,0.5)] animate-in zoom-in-95 duration-300 border border-border overflow-hidden relative z-10">
-                        <div className="flex items-center justify-between p-5 bg-surface-alt border-b border-border relative overflow-hidden">
-                            <div className="absolute top-0 right-0 w-24 h-24 bg-primary/5 -mr-10 -mt-10 rotate-45 pointer-events-none" />
-                            <div className="relative z-10">
-                                <p className="text-[9px] font-black text-primary uppercase tracking-[0.3em] mb-1">Invoice Protocol</p>
-                                <h2 className="text-xl font-black text-text uppercase tracking-tighter">{selectedInvoice.invoiceNumber}</h2>
-                                <p className="text-[9px] font-black text-text-muted mt-1 uppercase tracking-[0.2em] opacity-60 flex items-center gap-2">
+                    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setSelectedInvoice(null)} />
+                    <div className="bg-white rounded-2xl w-full max-w-lg shadow-2xl animate-in zoom-in-95 duration-200 overflow-hidden relative z-10 border border-slate-200">
+                        <div className="flex items-center justify-between px-6 py-5 bg-slate-50 border-b border-slate-200">
+                            <div>
+                                <p className="text-[9px] font-black text-[#B4912B] uppercase tracking-[0.3em] mb-1">Invoice Protocol</p>
+                                <h2 className="text-xl font-black text-slate-900 uppercase tracking-tight">{selectedInvoice.invoiceNumber}</h2>
+                                <p className="text-[9px] font-semibold text-slate-400 mt-1 flex items-center gap-1.5">
                                     <Clock className="w-3 h-3" /> {formatDate(selectedInvoice.createdAt)}
                                 </p>
                             </div>
-                            <button onClick={() => setSelectedInvoice(null)} className="p-2.5 bg-surface border border-border hover:bg-background transition-all group active:scale-90 relative z-10 shadow-sm">
-                                <X className="w-5 h-5 text-text-muted group-hover:text-text" />
+                            <button onClick={() => setSelectedInvoice(null)} className="p-2 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 transition-all">
+                                <X className="w-5 h-5 text-slate-500" />
                             </button>
                         </div>
 
-                        <div className="p-6 space-y-6 max-h-[60vh] overflow-y-auto scrollbar-thin bg-background">
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                <div className="bg-surface-alt/50 border border-border p-4">
-                                    <p className="text-[9px] font-black text-text-muted uppercase tracking-widest mb-1">Customer</p>
-                                    <p className="text-sm font-black text-text uppercase tracking-tight">{selectedInvoice.customerId?.name || 'Guest'}</p>
+                        <div className="p-6 space-y-5 max-h-[60vh] overflow-y-auto">
+                            <div className="grid grid-cols-3 gap-3">
+                                <div className="bg-slate-50 border border-slate-200 rounded-xl p-3">
+                                    <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-1">Customer</p>
+                                    <p className="text-xs font-black text-slate-800">{selectedInvoice.customerId?.name || 'Guest'}</p>
                                     {selectedInvoice.customerId?.phone && (
-                                        <p className="text-[10px] font-black text-primary mt-1 tracking-widest">{selectedInvoice.customerId.phone}</p>
+                                        <p className="text-[9px] font-bold text-[#B4912B] mt-0.5">{selectedInvoice.customerId.phone}</p>
                                     )}
                                 </div>
-                                <div className="bg-surface-alt/50 border border-border p-4">
-                                    <p className="text-[9px] font-black text-text-muted uppercase tracking-widest mb-1">Outlet</p>
-                                    <p className="text-sm font-black text-text uppercase tracking-tight">{selectedInvoice.outletId?.name || 'Main Outlet'}</p>
+                                <div className="bg-slate-50 border border-slate-200 rounded-xl p-3">
+                                    <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-1">Outlet</p>
+                                    <p className="text-xs font-black text-slate-800">{selectedInvoice.outletId?.name || 'Main Outlet'}</p>
                                 </div>
-                                <div className="bg-surface-alt/50 border border-border p-4">
-                                    <p className="text-[9px] font-black text-text-muted uppercase tracking-widest mb-1">Staff</p>
-                                    <p className="text-sm font-black text-text uppercase tracking-tight">
+                                <div className="bg-slate-50 border border-slate-200 rounded-xl p-3">
+                                    <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-1">Staff</p>
+                                    <p className="text-xs font-black text-slate-800">
                                         {[...new Set(selectedInvoice.items?.flatMap(item =>
                                             item.stylistIds?.map(s => typeof s === 'object' ? s.name : s) || []
                                         ).filter(Boolean))].join(', ') || selectedInvoice.staffId?.name || 'System'}
@@ -1172,131 +1191,109 @@ export default function POSInvoicesPage() {
                                 </div>
                             </div>
 
-                            <div className="space-y-3">
-                                <div className="flex items-center gap-4">
-                                    <div className="h-px bg-border flex-1" />
-                                    <p className="text-[9px] font-black text-text-muted uppercase tracking-[0.3em]">Session Ledger</p>
-                                    <div className="h-px bg-border flex-1" />
+                            <div>
+                                <div className="flex items-center gap-3 mb-3">
+                                    <div className="h-px bg-slate-200 flex-1" />
+                                    <p className="text-[9px] font-black text-slate-400 uppercase tracking-[0.3em]">Session Ledger</p>
+                                    <div className="h-px bg-slate-200 flex-1" />
                                 </div>
                                 <div className="space-y-2">
                                     {selectedInvoice.items?.map((item, i) => (
-                                        <div key={i} className="flex justify-between items-center p-3 bg-surface border border-border/50 group hover:border-primary/30 transition-all cursor-default">
+                                        <div key={i} className="flex justify-between items-center px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl hover:border-[#B4912B]/30 transition-all">
                                             <div>
-                                                <p className="font-black text-text uppercase text-[11px] tracking-tight group-hover:text-primary transition-colors">{item.name}</p>
-                                                <p className="text-[9px] text-text-muted font-black uppercase tracking-[0.1em] mt-0.5 italic">
-                                                    Qty: {item.quantity} • {item.type}
+                                                <p className="font-black text-slate-800 text-xs uppercase">{item.name}</p>
+                                                <p className="text-[9px] text-slate-400 font-semibold mt-0.5">
+                                                    Qty: {item.quantity} â€¢ {item.type}
                                                     {item.stylistIds?.length > 0 && (
-                                                        <span className="text-primary ml-1 font-bold">
-                                                            • Staff: {item.stylistIds.map(s => typeof s === 'object' ? s.name : s).join(', ')}
-                                                        </span>
+                                                        <span className="text-[#B4912B] ml-1">â€¢ Staff: {item.stylistIds.map(s => typeof s === 'object' ? s.name : s).join(', ')}</span>
                                                     )}
                                                 </p>
                                             </div>
-                                            <div className="text-right">
-                                                <span className="font-black text-text text-sm tracking-tighter">Rs.{(item.total ?? (item.price * item.quantity) ?? 0).toLocaleString()}</span>
-                                            </div>
+                                            <span className="font-black text-slate-800 text-sm">\u20B9{(item.total != null ? item.total : (item.price * item.quantity) || 0).toLocaleString()}</span>
                                         </div>
                                     ))}
                                 </div>
                             </div>
 
-                            <div className="bg-surface-alt/30 border border-border p-4 space-y-3">
-                                <div className="flex justify-between text-[10px] font-black text-text-muted uppercase tracking-widest">
+                            <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-2.5">
+                                <div className="flex justify-between text-[10px] font-semibold text-slate-500">
                                     <span>Taxable Value</span>
-                                    <span>Rs.{(selectedInvoice.baseAmount || selectedInvoice.subtotal || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                                    <span>\u20B9{(selectedInvoice.baseAmount || selectedInvoice.subtotal || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                                 </div>
                                 {selectedInvoice.cgst > 0 && (
-                                    <div className="flex justify-between text-[10px] font-black text-text uppercase tracking-widest">
-                                        <span>
-                                            CGST {selectedInvoice.items?.every(i => i.type === 'service') ? `(${(selectedInvoice.serviceGstPercent || selectedInvoice.gstPercent || 5) / 2}%)` :
-                                                selectedInvoice.items?.every(i => i.type === 'product') ? `(${(selectedInvoice.productGstPercent || selectedInvoice.gstPercent || 10) / 2}%)` :
-                                                    (selectedInvoice.serviceGstPercent === selectedInvoice.productGstPercent) ? `(${(selectedInvoice.serviceGstPercent || selectedInvoice.gstPercent || 5) / 2}%)` : ''}
-                                        </span>
-                                        <span>{selectedInvoice.includingGst ? '(Included)' : `+Rs.${selectedInvoice.cgst?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}</span>
-                                        {selectedInvoice.includingGst && <span>Rs.{selectedInvoice.cgst?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>}
+                                    <div className="flex justify-between text-[10px] font-semibold text-slate-500">
+                                        <span>CGST {selectedInvoice.items?.every(i => i.type === 'service') ? `(${(selectedInvoice.serviceGstPercent || selectedInvoice.gstPercent || 5) / 2}%)` : ''}</span>
+                                        <span>{selectedInvoice.includingGst ? '(Included)' : `+\u20B9${selectedInvoice.cgst?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}</span>
                                     </div>
                                 )}
                                 {selectedInvoice.sgst > 0 && (
-                                    <div className="flex justify-between text-[10px] font-black text-text uppercase tracking-widest">
-                                        <span>
-                                            SGST {selectedInvoice.items?.every(i => i.type === 'service') ? `(${(selectedInvoice.serviceGstPercent || selectedInvoice.gstPercent || 5) / 2}%)` :
-                                                selectedInvoice.items?.every(i => i.type === 'product') ? `(${(selectedInvoice.productGstPercent || selectedInvoice.gstPercent || 10) / 2}%)` :
-                                                    (selectedInvoice.serviceGstPercent === selectedInvoice.productGstPercent) ? `(${(selectedInvoice.serviceGstPercent || selectedInvoice.gstPercent || 5) / 2}%)` : ''}
-                                        </span>
-                                        <span>{selectedInvoice.includingGst ? '(Included)' : `+Rs.${selectedInvoice.sgst?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}</span>
-                                        {selectedInvoice.includingGst && <span>Rs.{selectedInvoice.sgst?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>}
+                                    <div className="flex justify-between text-[10px] font-semibold text-slate-500">
+                                        <span>SGST {selectedInvoice.items?.every(i => i.type === 'service') ? `(${(selectedInvoice.serviceGstPercent || selectedInvoice.gstPercent || 5) / 2}%)` : ''}</span>
+                                        <span>{selectedInvoice.includingGst ? '(Included)' : `+\u20B9${selectedInvoice.sgst?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}</span>
                                     </div>
                                 )}
                                 {selectedInvoice.igst > 0 && (
-                                    <div className="flex justify-between text-[10px] font-black text-text uppercase tracking-widest">
+                                    <div className="flex justify-between text-[10px] font-semibold text-slate-500">
                                         <span>IGST ({selectedInvoice.gstPercent}%)</span>
-                                        <span>{selectedInvoice.includingGst ? '(Included)' : `+Rs.${selectedInvoice.igst?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}</span>
-                                        {selectedInvoice.includingGst && <span>Rs.{selectedInvoice.igst?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>}
+                                        <span>{selectedInvoice.includingGst ? '(Included)' : `+\u20B9${selectedInvoice.igst?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}</span>
                                     </div>
                                 )}
                                 {(!selectedInvoice.cgst && !selectedInvoice.sgst && !selectedInvoice.igst && (selectedInvoice.tax || 0) > 0) && (
-                                    <div className="flex justify-between text-[10px] font-black text-text uppercase tracking-widest">
-                                        <span>Tax (GST {selectedInvoice.gstPercent}%)</span>
-                                        <span>{selectedInvoice.includingGst ? '(Included)' : `+Rs.${selectedInvoice.tax?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}</span>
-                                        {selectedInvoice.includingGst && <span>Rs.{selectedInvoice.tax?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>}
+                                    <div className="flex justify-between text-[10px] font-semibold text-slate-500">
+                                        <span>GST ({selectedInvoice.gstPercent}%)</span>
+                                        <span>{selectedInvoice.includingGst ? '(Included)' : `+\u20B9${selectedInvoice.tax?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}</span>
                                     </div>
                                 )}
                                 {selectedInvoice.discount > 0 && (
-                                    <div className="flex justify-between text-[10px] font-black text-emerald-600 uppercase tracking-widest">
+                                    <div className="flex justify-between text-[10px] font-bold text-emerald-600">
                                         <span>Discount</span>
-                                        <span>-Rs.{selectedInvoice.discount?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                                        <span>-\u20B9{selectedInvoice.discount?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                                     </div>
                                 )}
                                 {(selectedInvoice.membershipDiscount || 0) > 0 && (
-                                    <div className="flex justify-between text-[10px] font-black text-emerald-600 uppercase tracking-widest">
+                                    <div className="flex justify-between text-[10px] font-bold text-emerald-600">
                                         <span>Membership Disc</span>
-                                        <span>-Rs.{(selectedInvoice.membershipDiscount || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                                        <span>-\u20B9{(selectedInvoice.membershipDiscount || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                                     </div>
                                 )}
                                 {(selectedInvoice.walletRedeemed || 0) > 0 && (
-                                    <div className="flex justify-between text-[10px] font-black text-emerald-600 uppercase tracking-widest">
+                                    <div className="flex justify-between text-[10px] font-bold text-emerald-600">
                                         <span>Wallet Used</span>
-                                        <span>-Rs.{(selectedInvoice.walletRedeemed || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                                        <span>-\u20B9{(selectedInvoice.walletRedeemed || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                                     </div>
                                 )}
                                 {(selectedInvoice.previousDueCollected || 0) > 0 && (
-                                    <div className="flex justify-between text-[10px] font-black text-blue-600 uppercase tracking-widest">
+                                    <div className="flex justify-between text-[10px] font-bold text-blue-600">
                                         <span>Prev. Due Collected</span>
-                                        <span>+Rs.{(selectedInvoice.previousDueCollected || 0).toLocaleString()}</span>
+                                        <span>+\u20B9{(selectedInvoice.previousDueCollected || 0).toLocaleString()}</span>
                                     </div>
                                 )}
-                                <div className="border-t border-border pt-3 mt-1 flex justify-between items-center">
-                                    <div className="flex flex-col gap-1">
-                                        <div className="flex items-center gap-2">
-                                            <p className="text-[8px] font-black text-text-muted uppercase tracking-[0.1em]">Invoice Total</p>
-                                            <p className="text-[11px] font-black text-text">Rs.{selectedInvoice.total?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
-                                        </div>
-                                        <div>
-                                            <p className="text-[9px] font-black text-primary uppercase tracking-[0.3em]">Grand Total</p>
-                                            <p className="text-xl font-black text-text tracking-tighter uppercase whitespace-nowrap">Rs.{((selectedInvoice.total || 0) + (selectedInvoice.previousDueCollected || 0)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
-                                        </div>
+                                <div className="border-t border-slate-200 pt-3 flex justify-between items-end">
+                                    <div>
+                                        <p className="text-[8px] font-bold text-[#B4912B] uppercase tracking-widest">Grand Total</p>
+                                        <p className="text-xl font-black text-slate-900">\u20B9{((selectedInvoice.total || 0) + (selectedInvoice.previousDueCollected || 0)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
                                     </div>
-                                    <div className="flex flex-col gap-1.5 text-right">
-                                        <p className={`text-[8px] font-black uppercase tracking-widest ${selectedInvoice.paymentStatus === 'paid' ? 'text-emerald-500' : 'text-orange-500'}`}>
+                                    <div className="text-right">
+                                        <span className={`inline-flex px-2.5 py-1 text-[8px] font-black uppercase tracking-widest rounded-full ${selectedInvoice.paymentStatus === 'paid' ? 'bg-emerald-50 text-emerald-600 border border-emerald-200' : 'bg-orange-50 text-orange-600 border border-orange-200'}`}>
                                             {selectedInvoice.paymentStatus?.toUpperCase()}
-                                        </p>
-                                        <div className="space-y-1">
+                                        </span>
+                                        <div className="space-y-1 mt-2">
                                             {selectedInvoice.payments?.map((p, idx) => (
                                                 <div key={idx} className="flex items-center justify-end gap-1.5">
-                                                    <span className="text-[8px] font-black text-text-muted uppercase tracking-widest">{p.method === 'online' ? 'UPI' : p.method?.toUpperCase()}</span>
-                                                    <span className="text-[11px] font-black text-text tracking-tighter">₹{p.amount?.toLocaleString()}</span>
+                                                    <span className="text-[8px] font-bold text-slate-400 uppercase">{p.method === 'online' ? 'UPI' : p.method?.toUpperCase()}</span>
+                                                    <span className="text-xs font-black text-slate-700">\u20B9{p.amount?.toLocaleString()}</span>
                                                 </div>
                                             ))}
                                             {(selectedInvoice.walletRedeemed || 0) > 0 && (
                                                 <div className="flex items-center justify-end gap-1.5">
-                                                    <span className="text-[8px] font-black text-emerald-600 uppercase tracking-widest">Wallet</span>
-                                                    <span className="text-[11px] font-black text-emerald-600 tracking-tighter">₹{selectedInvoice.walletRedeemed?.toLocaleString()}</span>
+                                                    <span className="text-[8px] font-bold text-emerald-600 uppercase">Wallet</span>
+                                                    <span className="text-xs font-black text-emerald-600">\u20B9{selectedInvoice.walletRedeemed?.toLocaleString()}</span>
                                                 </div>
                                             )}
                                             {selectedInvoice.paymentStatus !== 'paid' && (
-                                                <div className="flex items-center justify-end gap-1.5 pt-1 border-t border-dashed border-orange-500/20 mt-1">
-                                                    <span className="text-[8px] font-black text-orange-600 uppercase tracking-widest">Balance Due</span>
-                                                    <span className="text-[11px] font-black text-orange-600 tracking-tighter">₹{(selectedInvoice.dueAmount || 0).toLocaleString()}</span>
+                                                <div className="flex items-center justify-end gap-1.5 pt-1 border-t border-dashed border-orange-300 mt-1">
+                                                    <span className="text-[8px] font-bold text-orange-600 uppercase">Balance Due</span>
+                                                    <span className="text-xs font-black text-orange-600">\u20B9{(selectedInvoice.dueAmount || 0).toLocaleString()}</span>
                                                 </div>
                                             )}
                                         </div>
@@ -1305,38 +1302,38 @@ export default function POSInvoicesPage() {
                             </div>
                         </div>
 
-                        <div className="p-4 bg-surface-alt border-t border-border grid grid-cols-2 sm:grid-cols-4 gap-2">
+                        <div className="px-5 py-4 bg-slate-50 border-t border-slate-200 grid grid-cols-2 sm:grid-cols-4 gap-2">
                             <button
                                 disabled={!!isGeneratingPDF}
                                 onClick={() => handleDownloadPDF('pos')}
-                                className="py-3 bg-emerald-600 text-white font-black text-[9px] uppercase tracking-wider hover:bg-emerald-700 transition-all flex items-center justify-center gap-2 disabled:opacity-50 shadow-lg shadow-emerald-600/20 active:scale-95"
+                                className="py-2.5 bg-emerald-500 text-white font-black text-[9px] uppercase tracking-wider hover:bg-emerald-600 transition-all flex items-center justify-center gap-2 disabled:opacity-50 rounded-xl"
                             >
                                 {isGeneratingPDF === 'pos' ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Printer className="w-3.5 h-3.5" />}
-                                <span>Receipt</span>
+                                Receipt
                             </button>
                             <button
                                 disabled={!!isGeneratingPDF}
                                 onClick={() => handleDownloadPDF('standard')}
-                                className="py-3 bg-slate-900 text-white font-black text-[9px] uppercase tracking-wider hover:bg-black transition-all flex items-center justify-center gap-2 disabled:opacity-50 shadow-lg shadow-slate-900/20 active:scale-95"
+                                className="py-2.5 bg-slate-800 text-white font-black text-[9px] uppercase tracking-wider hover:bg-slate-900 transition-all flex items-center justify-center gap-2 disabled:opacity-50 rounded-xl"
                             >
                                 {isGeneratingPDF === 'standard' ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <FileText className="w-3.5 h-3.5" />}
-                                <span>A4 Bill</span>
+                                A4 Bill
                             </button>
                             <button
                                 disabled={isSendingWhatsApp === selectedInvoice._id}
                                 onClick={() => sendWhatsAppBill(selectedInvoice)}
-                                className="py-3 bg-[#25D366] text-white font-black text-[9px] uppercase tracking-wider hover:bg-[#128C7E] transition-all flex items-center justify-center gap-2 disabled:opacity-50 shadow-lg shadow-[#25D366]/20 active:scale-95"
+                                className="py-2.5 bg-[#25D366] text-white font-black text-[9px] uppercase tracking-wider hover:bg-[#128C7E] transition-all flex items-center justify-center gap-2 disabled:opacity-50 rounded-xl"
                             >
                                 {isSendingWhatsApp === selectedInvoice._id ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <MessageCircle className="w-3.5 h-3.5" />}
-                                <span>WhatsApp</span>
+                                WhatsApp
                             </button>
                             <button
                                 disabled={isSendingEmail === selectedInvoice._id}
                                 onClick={() => sendEmailBill(selectedInvoice)}
-                                className="py-3 bg-indigo-600 text-white font-black text-[9px] uppercase tracking-wider hover:bg-indigo-700 transition-all flex items-center justify-center gap-2 disabled:opacity-50 shadow-lg shadow-indigo-600/20 active:scale-95"
+                                className="py-2.5 bg-indigo-600 text-white font-black text-[9px] uppercase tracking-wider hover:bg-indigo-700 transition-all flex items-center justify-center gap-2 disabled:opacity-50 rounded-xl"
                             >
                                 {isSendingEmail === selectedInvoice._id ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Mail className="w-3.5 h-3.5" />}
-                                <span>Email</span>
+                                Email
                             </button>
                         </div>
                     </div>

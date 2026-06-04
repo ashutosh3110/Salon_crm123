@@ -1,9 +1,9 @@
 import { useState, useMemo, useEffect, useCallback, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import { 
-    Calculator, FileText, Download, CheckCircle2, Search, 
+import {
+    Calculator, FileText, Download, CheckCircle2, Search,
     ChevronDown, Calendar, X, Edit2, Eye, Printer, DollarSign, Clock, Check, Settings,
-    Filter, RefreshCw, AlertCircle, MessageCircle
+    Filter, RefreshCw, AlertCircle, MessageCircle, Wallet, Users, Store, Plus
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useBusiness } from '../../../contexts/BusinessContext';
@@ -30,15 +30,18 @@ export default function PayrollManager() {
     const [year, setYear] = useState(new Date().getFullYear());
     const [records, setRecords] = useState([]);
     const [filterOutlet, setFilterOutlet] = useState('All');
-    
+
     const [isOutletDropdownOpen, setIsOutletDropdownOpen] = useState(false);
     const dropdownRef = useRef(null);
-    
+
     const [isMonthDropdownOpen, setIsMonthDropdownOpen] = useState(false);
     const monthRef = useRef(null);
-    
+
     const [isYearDropdownOpen, setIsYearDropdownOpen] = useState(false);
     const yearRef = useRef(null);
+
+    const [isStaffDropdownOpen, setIsStaffDropdownOpen] = useState(false);
+    const staffDropdownRef = useRef(null);
 
     useEffect(() => {
         const handleClickOutside = (event) => {
@@ -50,6 +53,9 @@ export default function PayrollManager() {
             }
             if (yearRef.current && !yearRef.current.contains(event.target)) {
                 setIsYearDropdownOpen(false);
+            }
+            if (staffDropdownRef.current && !staffDropdownRef.current.contains(event.target)) {
+                setIsStaffDropdownOpen(false);
             }
         };
         document.addEventListener("mousedown", handleClickOutside);
@@ -440,43 +446,46 @@ export default function PayrollManager() {
     };
 
     return (
-        <div className="space-y-6 text-left bg-surface rounded-2xl p-6 border border-border/40 transition-colors">
+        <div className="space-y-6 text-left bg-transparent transition-colors pb-8">
 
             {/* Dynamic Outlet-wise Payout Cards */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700/80 shadow-sm flex items-center justify-between group hover:border-primary transition-all">
-                    <div className="space-y-1">
-                        <p className="text-[10px] font-black text-slate-450 dark:text-slate-500 uppercase tracking-widest">Payout Budget</p>
-                        <h3 className="text-2xl font-black text-slate-850 dark:text-slate-100 tracking-tight">₹{stats.total.toLocaleString()}</h3>
+                <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex items-center gap-5">
+                    <div className="w-14 h-14 rounded-2xl bg-indigo-50 flex items-center justify-center text-indigo-600 shrink-0">
+                        <Wallet className="w-6 h-6" />
                     </div>
-                    <div className="p-3 bg-primary/10 text-primary border border-primary/20 rounded-xl transition-all group-hover:bg-primary group-hover:text-white">
-                        <DollarSign className="w-5 h-5" />
-                    </div>
-                </div>
-
-                <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700/80 shadow-sm flex items-center justify-between group hover:border-emerald-500 transition-all">
-                    <div className="space-y-1">
-                        <p className="text-[10px] font-black text-slate-450 dark:text-slate-500 uppercase tracking-widest">Settled Staff</p>
-                        <h3 className="text-2xl font-black text-emerald-600 dark:text-emerald-450 tracking-tight">{stats.paid} Members</h3>
-                    </div>
-                    <div className="p-3 bg-emerald-500/10 text-emerald-600 border border-emerald-500/20 rounded-xl transition-all group-hover:bg-emerald-500 group-hover:text-white">
-                        <CheckCircle2 className="w-5 h-5" />
+                    <div>
+                        <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Payout Budget</p>
+                        <h3 className="text-2xl font-black text-slate-800 tracking-tight mt-0.5">₹{stats.total.toLocaleString()}</h3>
+                        <p className="text-[11px] font-semibold text-slate-400 mt-1">Total budget for selected period</p>
                     </div>
                 </div>
 
-                <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700/80 shadow-sm flex items-center justify-between group hover:border-amber-500 transition-all">
-                    <div className="space-y-1">
-                        <p className="text-[10px] font-black text-slate-450 dark:text-slate-500 uppercase tracking-widest">Awaiting Settlement</p>
-                        <h3 className="text-2xl font-black text-amber-600 dark:text-amber-400 tracking-tight">{stats.pending} Members</h3>
+                <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex items-center gap-5">
+                    <div className="w-14 h-14 rounded-2xl bg-emerald-50 flex items-center justify-center text-emerald-600 shrink-0">
+                        <Users className="w-6 h-6" />
                     </div>
-                    <div className="p-3 bg-amber-500/10 text-amber-600 border border-amber-500/20 rounded-xl transition-all group-hover:bg-amber-500 group-hover:text-white">
-                        <Clock className="w-5 h-5" />
+                    <div>
+                        <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Settled Staff</p>
+                        <h3 className="text-2xl font-black text-slate-800 tracking-tight mt-0.5">{stats.paid} Members</h3>
+                        <p className="text-[11px] font-semibold text-slate-400 mt-1">Employees with completed payroll</p>
+                    </div>
+                </div>
+
+                <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex items-center gap-5">
+                    <div className="w-14 h-14 rounded-2xl bg-orange-50 flex items-center justify-center text-orange-500 shrink-0">
+                        <Clock className="w-6 h-6" />
+                    </div>
+                    <div>
+                        <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Awaiting Settlement</p>
+                        <h3 className="text-2xl font-black text-slate-800 tracking-tight mt-0.5">{stats.pending} Members</h3>
+                        <p className="text-[11px] font-semibold text-slate-400 mt-1">Pending payroll settlement</p>
                     </div>
                 </div>
             </div>
 
             {/* Toolbar Panel */}
-            <div className="bg-surface-alt p-4 rounded-2xl border border-border/40 shadow-sm flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4 transition-colors">
+            <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4 transition-colors">
 
                 <div className="flex items-center flex-col sm:flex-row gap-3">
                     {/* Period selection */}
@@ -485,17 +494,17 @@ export default function PayrollManager() {
                         <div className="relative w-full sm:w-auto" ref={monthRef}>
                             <button
                                 onClick={() => setIsMonthDropdownOpen(!isMonthDropdownOpen)}
-                                className="flex items-center justify-between w-full sm:min-w-[100px] gap-2 bg-surface border border-border/40 rounded-xl px-3 py-1.5 shadow-sm text-xs transition-colors hover:bg-surface-alt active:scale-[0.98]"
+                                className="flex items-center justify-between w-full sm:min-w-[100px] gap-2 bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs transition-colors hover:bg-slate-50"
                             >
                                 <div className="flex items-center gap-2">
-                                    <Calendar className="w-3.5 h-3.5 text-text-muted" />
-                                    <span className="font-bold text-foreground">
+                                    <Calendar className="w-4 h-4 text-slate-500" />
+                                    <span className="font-bold text-slate-700">
                                         {['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][month - 1]}
                                     </span>
                                 </div>
-                                <ChevronDown className={`w-3.5 h-3.5 text-text-muted transition-transform duration-200 ${isMonthDropdownOpen ? 'rotate-180' : ''}`} />
+                                <ChevronDown className={`w-3.5 h-3.5 text-slate-400 transition-transform duration-200 ${isMonthDropdownOpen ? 'rotate-180' : ''}`} />
                             </button>
-                            
+
                             <AnimatePresence>
                                 {isMonthDropdownOpen && (
                                     <motion.div
@@ -503,7 +512,7 @@ export default function PayrollManager() {
                                         animate={{ opacity: 1, y: 0, scale: 1 }}
                                         exit={{ opacity: 0, y: -5, scale: 0.95 }}
                                         transition={{ duration: 0.15 }}
-                                        className="absolute left-0 mt-2 w-full sm:w-32 bg-surface border border-border/40 rounded-xl shadow-lg z-[100] overflow-hidden"
+                                        className="absolute left-0 mt-2 w-full sm:w-32 bg-white border border-slate-200 rounded-xl shadow-lg z-[100] overflow-hidden"
                                     >
                                         <div className="py-1 max-h-60 overflow-y-auto custom-scrollbar">
                                             {['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'].map((m, i) => (
@@ -513,11 +522,10 @@ export default function PayrollManager() {
                                                         setMonth(i + 1);
                                                         setIsMonthDropdownOpen(false);
                                                     }}
-                                                    className={`w-full text-left px-4 py-2.5 text-xs font-bold transition-colors ${
-                                                        month === i + 1
-                                                            ? 'bg-primary/10 text-primary' 
-                                                            : 'text-foreground hover:bg-surface-alt hover:text-primary'
-                                                    }`}
+                                                    className={`w-full text-left px-4 py-2 text-xs font-bold transition-colors ${month === i + 1
+                                                        ? 'bg-indigo-50 text-indigo-600'
+                                                        : 'text-slate-700 hover:bg-slate-50'
+                                                        }`}
                                                 >
                                                     {m}
                                                 </button>
@@ -532,14 +540,17 @@ export default function PayrollManager() {
                         <div className="relative w-full sm:w-auto" ref={yearRef}>
                             <button
                                 onClick={() => setIsYearDropdownOpen(!isYearDropdownOpen)}
-                                className="flex items-center justify-between w-full sm:min-w-[90px] gap-2 bg-surface border border-border/40 rounded-xl px-3 py-1.5 shadow-sm text-xs transition-colors hover:bg-surface-alt active:scale-[0.98]"
+                                className="flex items-center justify-between w-full sm:min-w-[90px] gap-2 bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs transition-colors hover:bg-slate-50"
                             >
-                                <span className="font-bold text-foreground mx-auto">
-                                    {year}
-                                </span>
-                                <ChevronDown className={`w-3.5 h-3.5 text-text-muted transition-transform duration-200 ${isYearDropdownOpen ? 'rotate-180' : ''}`} />
+                                <div className="flex items-center gap-2">
+                                    <Store className="w-4 h-4 text-slate-500" />
+                                    <span className="font-bold text-slate-700">
+                                        {year}
+                                    </span>
+                                </div>
+                                <ChevronDown className={`w-3.5 h-3.5 text-slate-400 transition-transform duration-200 ${isYearDropdownOpen ? 'rotate-180' : ''}`} />
                             </button>
-                            
+
                             <AnimatePresence>
                                 {isYearDropdownOpen && (
                                     <motion.div
@@ -547,7 +558,7 @@ export default function PayrollManager() {
                                         animate={{ opacity: 1, y: 0, scale: 1 }}
                                         exit={{ opacity: 0, y: -5, scale: 0.95 }}
                                         transition={{ duration: 0.15 }}
-                                        className="absolute left-0 mt-2 w-full sm:w-32 bg-surface border border-border/40 rounded-xl shadow-lg z-[100] overflow-hidden"
+                                        className="absolute left-0 mt-2 w-full sm:w-32 bg-white border border-slate-200 rounded-xl shadow-lg z-[100] overflow-hidden"
                                     >
                                         <div className="py-1 max-h-60 overflow-y-auto custom-scrollbar">
                                             {[2024, 2025, 2026, 2027].map(y => (
@@ -557,11 +568,10 @@ export default function PayrollManager() {
                                                         setYear(y);
                                                         setIsYearDropdownOpen(false);
                                                     }}
-                                                    className={`w-full text-left px-4 py-2.5 text-xs font-bold transition-colors ${
-                                                        year === y
-                                                            ? 'bg-primary/10 text-primary' 
-                                                            : 'text-foreground hover:bg-surface-alt hover:text-primary'
-                                                    }`}
+                                                    className={`w-full text-left px-4 py-2 text-xs font-bold transition-colors ${year === y
+                                                        ? 'bg-indigo-50 text-indigo-600'
+                                                        : 'text-slate-700 hover:bg-slate-50'
+                                                        }`}
                                                 >
                                                     {y}
                                                 </button>
@@ -577,17 +587,17 @@ export default function PayrollManager() {
                     <div className="relative w-full sm:w-auto" ref={dropdownRef}>
                         <button
                             onClick={() => setIsOutletDropdownOpen(!isOutletDropdownOpen)}
-                            className="flex items-center justify-between w-full sm:min-w-[140px] gap-2 bg-surface border border-border/40 rounded-xl px-3 py-1.5 shadow-sm text-xs transition-colors hover:bg-surface-alt active:scale-[0.98]"
+                            className="flex items-center justify-between w-full sm:min-w-[140px] gap-2 bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs transition-colors hover:bg-slate-50"
                         >
                             <div className="flex items-center gap-2">
-                                <Filter className="w-3.5 h-3.5 text-text-muted" />
-                                <span className="font-bold text-foreground">
+                                <FileText className="w-4 h-4 text-slate-500" />
+                                <span className="font-bold text-slate-700">
                                     {filterOutlet === 'All' ? 'All Outlets' : filterOutlet}
                                 </span>
                             </div>
-                            <ChevronDown className={`w-3.5 h-3.5 text-text-muted transition-transform duration-200 ${isOutletDropdownOpen ? 'rotate-180' : ''}`} />
+                            <ChevronDown className={`w-3.5 h-3.5 text-slate-400 transition-transform duration-200 ${isOutletDropdownOpen ? 'rotate-180' : ''}`} />
                         </button>
-                        
+
                         <AnimatePresence>
                             {isOutletDropdownOpen && (
                                 <motion.div
@@ -595,7 +605,7 @@ export default function PayrollManager() {
                                     animate={{ opacity: 1, y: 0, scale: 1 }}
                                     exit={{ opacity: 0, y: -5, scale: 0.95 }}
                                     transition={{ duration: 0.15 }}
-                                    className="absolute left-0 mt-2 w-full sm:w-48 bg-surface border border-border/40 rounded-xl shadow-lg z-[100] overflow-hidden"
+                                    className="absolute left-0 mt-2 w-full sm:w-48 bg-white border border-slate-200 rounded-xl shadow-lg z-[100] overflow-hidden"
                                 >
                                     <div className="py-1 max-h-60 overflow-y-auto custom-scrollbar">
                                         {uniqueOutlets.map(o => (
@@ -605,11 +615,10 @@ export default function PayrollManager() {
                                                     setFilterOutlet(o);
                                                     setIsOutletDropdownOpen(false);
                                                 }}
-                                                className={`w-full text-left px-4 py-2.5 text-xs font-bold transition-colors ${
-                                                    filterOutlet === o 
-                                                        ? 'bg-primary/10 text-primary' 
-                                                        : 'text-foreground hover:bg-surface-alt hover:text-primary'
-                                                }`}
+                                                className={`w-full text-left px-4 py-2 text-xs font-bold transition-colors ${filterOutlet === o
+                                                    ? 'bg-indigo-50 text-indigo-600'
+                                                    : 'text-slate-700 hover:bg-slate-50'
+                                                    }`}
                                             >
                                                 {o === 'All' ? 'All Outlets' : o}
                                             </button>
@@ -622,19 +631,20 @@ export default function PayrollManager() {
 
                     <button
                         onClick={() => setIndividualModal(true)}
-                        className="flex w-full sm:w-auto justify-center px-4 py-2 bg-primary hover:bg-primary-dark text-white rounded-xl text-xs font-bold shadow-md hover:shadow-lg hover:shadow-primary/10 active:scale-95 transition-all"
+                        className="flex w-full sm:w-auto items-center justify-center gap-2 px-4 py-2 bg-[#B4912B] hover:bg-[#9a7b24] text-white rounded-lg text-xs font-bold shadow-sm transition-all"
                     >
+                        <Plus className="w-3.5 h-3.5" />
                         Create Pay Slip
                     </button>
                 </div>
 
                 <div className="flex items-center flex-col sm:flex-row gap-3">
                     <div className="relative w-full sm:w-60">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" />
                         <input
                             type="text"
                             placeholder="Search employee name..."
-                            className="w-full pl-9 pr-4 py-2 rounded-xl bg-surface border border-border/40 text-xs font-semibold text-foreground focus:ring-2 focus:ring-primary/10 focus:border-primary outline-none transition-all placeholder-text-muted"
+                            className="w-full pl-9 pr-4 py-2 rounded-lg bg-white border border-slate-200 text-xs font-semibold text-slate-700 focus:ring-1 focus:ring-slate-300 focus:border-slate-300 outline-none transition-all placeholder-slate-400"
                             value={searchTerm}
                             onChange={e => setSearchTerm(e.target.value)}
                         />
@@ -642,22 +652,22 @@ export default function PayrollManager() {
 
                     <button
                         onClick={exportCSV}
-                        className="flex w-full sm:w-auto items-center justify-center gap-1.5 px-3 py-2 border border-border/40 hover:bg-surface-alt text-foreground rounded-xl text-xs font-bold transition-all shadow-sm active:scale-95"
+                        className="flex w-full sm:w-auto items-center justify-center gap-1.5 px-4 py-2 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 rounded-lg text-xs font-bold transition-all shadow-sm"
                     >
-                        <Download className="w-3.5 h-3.5 text-text-muted" />
+                        <Download className="w-3.5 h-3.5 text-slate-500" />
                         Export
                     </button>
                 </div>
             </div>
 
             {/* Payroll Sheet Table */}
-            <div className="bg-surface rounded-2xl border border-border/40 shadow-sm overflow-hidden relative min-h-[300px] transition-colors">
+            <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden relative min-h-[350px] transition-colors">
 
                 {loading && (
-                    <div className="absolute inset-0 z-10 bg-surface/70 backdrop-blur-[1px] flex items-center justify-center">
-                        <div className="flex items-center gap-2 px-4 py-2 bg-surface-alt rounded-xl border border-border/40 shadow-md">
-                            <RefreshCw className="w-4 h-4 text-primary animate-spin" />
-                            <span className="text-xs font-bold text-text-muted uppercase tracking-widest animate-pulse">Syncing Payroll...</span>
+                    <div className="absolute inset-0 z-10 bg-white/70 backdrop-blur-[1px] flex items-center justify-center">
+                        <div className="flex items-center gap-2 px-4 py-2 bg-white rounded-lg border border-slate-200 shadow-sm">
+                            <RefreshCw className="w-4 h-4 text-[#B4912B] animate-spin" />
+                            <span className="text-xs font-bold text-slate-500 uppercase tracking-widest animate-pulse">Syncing Payroll...</span>
                         </div>
                     </div>
                 )}
@@ -665,60 +675,72 @@ export default function PayrollManager() {
                 <div className="overflow-x-auto w-full max-w-[100vw]">
                     <table className="w-full text-left border-collapse min-w-[900px]">
                         <thead>
-                            <tr className="bg-surface-alt border-b border-border/40 text-left">
-                                <th className="px-6 py-4 text-[10px] font-extrabold text-text-muted uppercase tracking-widest whitespace-nowrap">Employee Details</th>
-                                <th className="px-6 py-4 text-[10px] font-extrabold text-text-muted uppercase tracking-widest whitespace-nowrap">Attendance Cycle</th>
-                                <th className="px-6 py-4 text-[10px] font-extrabold text-text-muted uppercase tracking-widest whitespace-nowrap">Base Salary</th>
-                                <th className="px-6 py-4 text-[10px] font-extrabold text-text-muted uppercase tracking-widest whitespace-nowrap">Net Settlement</th>
-                                <th className="px-6 py-4 text-[10px] font-extrabold text-text-muted uppercase tracking-widest whitespace-nowrap">Status</th>
-                                <th className="px-6 py-4 text-[10px] font-extrabold text-text-muted uppercase tracking-widest text-right whitespace-nowrap">Actions</th>
+                            <tr className="bg-slate-50 border-b border-slate-200 text-left">
+                                <th className="px-6 py-4 text-[10px] font-black text-slate-700 uppercase tracking-widest whitespace-nowrap">Employee Details</th>
+                                <th className="px-6 py-4 text-[10px] font-black text-slate-700 uppercase tracking-widest whitespace-nowrap text-center">Attendance Cycle</th>
+                                <th className="px-6 py-4 text-[10px] font-black text-slate-700 uppercase tracking-widest whitespace-nowrap text-center">Base Salary</th>
+                                <th className="px-6 py-4 text-[10px] font-black text-slate-700 uppercase tracking-widest whitespace-nowrap text-center">Net Settlement</th>
+                                <th className="px-6 py-4 text-[10px] font-black text-slate-700 uppercase tracking-widest whitespace-nowrap text-center">Status</th>
+                                <th className="px-6 py-4 text-[10px] font-black text-slate-700 uppercase tracking-widest text-right whitespace-nowrap">Actions</th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-slate-100 dark:divide-slate-750/50">
+                        <tbody className="divide-y divide-slate-100">
                             {filtered.length === 0 && !loading && (
                                 <tr>
-                                    <td colSpan="6" className="px-6 py-16 text-center">
-                                        <FileText className="w-12 h-12 text-slate-200 dark:text-slate-700 mx-auto mb-3" />
-                                        <p className="text-xs font-bold text-slate-400 dark:text-slate-550 uppercase tracking-wider">No payroll logs found for this cycle.</p>
+                                    <td colSpan="6" className="px-6 py-24 text-center">
+                                        <div className="flex flex-col items-center justify-center">
+                                            <img src="/vector iamge 4.png" alt="No Payroll" className="w-48 h-48 object-contain mb-4" />
+                                            <h3 className="text-sm font-black text-slate-800 tracking-tight mb-1">No payroll logs found for this cycle.</h3>
+                                            <p className="text-xs font-semibold text-slate-500 mb-6">
+                                                Payroll records will appear here once payslips are created.
+                                            </p>
+                                            <button
+                                                onClick={() => setIndividualModal(true)}
+                                                className="flex items-center gap-2 px-5 py-2.5 bg-[#B4912B] text-white text-xs font-bold rounded-lg hover:bg-[#9a7b24] transition-colors shadow-sm"
+                                            >
+                                                <Plus className="w-4 h-4" />
+                                                Create Pay Slip
+                                            </button>
+                                        </div>
                                     </td>
                                 </tr>
                             )}
                             {filtered.map(record => (
-                                <tr key={record._id} className="hover:bg-slate-50/30 dark:hover:bg-slate-750/30 transition-colors">
+                                <tr key={record._id} className="hover:bg-slate-50/50 transition-colors">
 
                                     <td className="px-6 py-4">
                                         <div className="flex items-center gap-3">
-                                            <div className="w-9 h-9 rounded-xl bg-slate-100 dark:bg-slate-700 border border-slate-200/50 dark:border-slate-650/40 flex items-center justify-center text-slate-500 dark:text-slate-400 font-extrabold text-xs shrink-0 overflow-hidden shadow-inner">
+                                            <div className="w-9 h-9 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-600 font-extrabold text-xs shrink-0 overflow-hidden shadow-sm">
                                                 {record.staffId?.name?.split(' ').map(n => n[0]).join('').toUpperCase()}
                                             </div>
                                             <div className="text-left leading-tight">
-                                                <p className="text-xs font-bold text-slate-800 dark:text-slate-100">{record.staffId?.name}</p>
+                                                <p className="text-xs font-bold text-slate-800">{record.staffId?.name}</p>
                                                 <div className="flex items-center gap-1.5 mt-0.5">
-                                                    <span className="text-[10px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wider">{record.staffId?.role || 'Member'}</span>
-                                                    <span className="w-1 h-1 rounded-full bg-slate-300 dark:bg-slate-600" />
-                                                    <span className="text-[9px] text-primary/75 dark:text-primary-light font-extrabold uppercase bg-primary/5 px-1.5 py-0.5 border border-primary/10 rounded">{record.staffId?.outletId?.name || 'No Outlet'}</span>
+                                                    <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">{record.staffId?.role || 'Member'}</span>
+                                                    <span className="w-1 h-1 rounded-full bg-slate-300" />
+                                                    <span className="text-[9px] text-[#B4912B] font-extrabold uppercase bg-[#B4912B]/10 px-1.5 py-0.5 border border-[#B4912B]/20 rounded">{record.staffId?.outletId?.name || 'No Outlet'}</span>
                                                 </div>
                                             </div>
                                         </div>
                                     </td>
 
-                                    <td className="px-6 py-4">
-                                        <div className="flex items-center gap-2 text-xs font-bold text-slate-700 dark:text-slate-250">
+                                    <td className="px-6 py-4 text-center">
+                                        <div className="inline-flex items-center gap-2 text-xs font-bold text-slate-700">
                                             <span className="text-emerald-600 font-extrabold">{record.presentDays} Present</span>
-                                            <span className="text-slate-300 dark:text-slate-650">/</span>
-                                            <span className="text-slate-400 dark:text-slate-500 font-medium">{record.workingDays} working</span>
+                                            <span className="text-slate-300">/</span>
+                                            <span className="text-slate-500 font-medium">{record.workingDays} working</span>
                                         </div>
                                     </td>
 
-                                    <td className="px-6 py-4 text-xs font-bold text-slate-700 dark:text-slate-300">
+                                    <td className="px-6 py-4 text-xs font-bold text-slate-700 text-center">
                                         ₹{record.baseSalary?.toLocaleString()}
                                     </td>
 
-                                    <td className="px-6 py-4">
-                                        <p className="text-xs font-black text-primary dark:text-slate-105">₹{record.netSalary?.toLocaleString()}</p>
+                                    <td className="px-6 py-4 text-center">
+                                        <p className="text-xs font-black text-slate-800">₹{record.netSalary?.toLocaleString()}</p>
                                     </td>
 
-                                    <td className="px-6 py-4">
+                                    <td className="px-6 py-4 text-center">
                                         <span className={`px-2.5 py-1 text-[9px] font-black uppercase tracking-widest border rounded-lg ${STATUS_META[record.status]?.cls || 'bg-slate-50 text-slate-400 border-slate-200'}`}>
                                             {record.status}
                                         </span>
@@ -726,12 +748,12 @@ export default function PayrollManager() {
 
                                     <td className="px-6 py-4 text-right">
                                         <div className="flex items-center justify-end gap-2">
-                                            <button onClick={() => handleEdit(record)} className="p-2 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-400 hover:text-primary hover:border-primary bg-transparent hover:bg-slate-50 dark:hover:bg-slate-750 transition-all" title="Adjust Salary Parameters"><Settings className="w-4 h-4" /></button>
-                                            <button onClick={() => generateSlip(record)} className="p-2 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-400 hover:text-emerald-500 hover:border-emerald-500 bg-transparent hover:bg-slate-50 dark:hover:bg-slate-750 transition-all" title="Print Salary Slip"><Printer className="w-4 h-4" /></button>
+                                            <button onClick={() => handleEdit(record)} className="p-2 rounded-lg border border-slate-200 text-slate-400 hover:text-[#B4912B] hover:border-[#B4912B] bg-transparent hover:bg-slate-50 transition-all" title="Adjust Salary Parameters"><Settings className="w-4 h-4" /></button>
+                                            <button onClick={() => generateSlip(record)} className="p-2 rounded-lg border border-slate-200 text-slate-400 hover:text-emerald-500 hover:border-emerald-500 bg-transparent hover:bg-slate-50 transition-all" title="Print Salary Slip"><Printer className="w-4 h-4" /></button>
                                             <button
                                                 onClick={() => sendWhatsAppPayroll(record)}
                                                 disabled={sendingWhatsApp === record._id}
-                                                className="p-2 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-450 hover:text-emerald-500 hover:border-emerald-500 bg-transparent hover:bg-slate-50 dark:hover:bg-slate-750 transition-all disabled:opacity-50 animate-pulse-slow"
+                                                className="p-2 rounded-lg border border-slate-200 text-slate-400 hover:text-emerald-500 hover:border-emerald-500 bg-transparent hover:bg-slate-50 transition-all disabled:opacity-50"
                                                 title="Send Payslip on WhatsApp"
                                             >
                                                 {sendingWhatsApp === record._id ? (
@@ -741,7 +763,7 @@ export default function PayrollManager() {
                                                 )}
                                             </button>
                                             {record.status !== 'paid' && (
-                                                <button onClick={() => updateStatus(record._id, 'paid')} className="p-2 rounded-xl bg-primary hover:bg-primary-dark text-white border border-transparent hover:shadow-lg hover:shadow-primary/10 active:scale-95 transition-all" title="Mark as Paid"><Check className="w-4 h-4" /></button>
+                                                <button onClick={() => updateStatus(record._id, 'paid')} className="p-2 rounded-lg bg-[#B4912B] hover:bg-[#9a7b24] text-white border border-transparent shadow-sm active:scale-95 transition-all" title="Mark as Paid"><Check className="w-4 h-4" /></button>
                                             )}
                                         </div>
                                     </td>
@@ -751,25 +773,28 @@ export default function PayrollManager() {
                         </tbody>
                     </table>
                 </div>
+            </div>
 
-                <div className="px-6 py-3 border-t border-slate-150 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/40 flex items-center gap-2 transition-colors">
-                    <AlertCircle className="w-3.5 h-3.5 text-primary shrink-0" />
-                    <p className="text-[10px] text-slate-450 dark:text-slate-550 font-bold uppercase tracking-wider leading-none">
-                        Payroll summary automatically reflects the active month and outlet filter selection.
-                    </p>
+            <div className="p-4 border border-blue-100 bg-blue-50/50 rounded-2xl flex items-center gap-4 transition-colors mb-4">
+                <div className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center shrink-0">
+                    <span className="text-white text-lg font-black italic">i</span>
                 </div>
+                <p className="text-xs text-slate-500 font-semibold leading-tight">
+                    Payroll summary automatically reflects the active month and outlet filter selection.<br />
+                    Data is updated in real-time.
+                </p>
             </div>
 
             {createPortal(
                 <AnimatePresence>
                     {individualModal && (
-                        <div 
+                        <div
                             className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm no-print"
                             onClick={() => setIndividualModal(false)}
                         >
-                            <motion.div 
-                                initial={{ opacity: 0, scale: 0.95 }} 
-                                animate={{ opacity: 1, scale: 1 }} 
+                            <motion.div
+                                initial={{ opacity: 0, scale: 0.95 }}
+                                animate={{ opacity: 1, scale: 1 }}
                                 exit={{ opacity: 0, scale: 0.95 }}
                                 className="bg-white dark:bg-slate-800 w-full max-w-xl rounded-2xl border border-slate-200 dark:border-slate-700 shadow-2xl relative flex flex-col max-h-[90vh] transition-all"
                                 onClick={e => e.stopPropagation()}
@@ -784,25 +809,66 @@ export default function PayrollManager() {
                                 </div>
 
                                 <div className="p-6 overflow-y-auto space-y-5 flex-1">
-                                    {/* Staff Selection */}
-                                    <div className="space-y-1">
-                                        <label className="text-[10px] font-black text-slate-500 dark:text-slate-450 ml-1 uppercase">Select Staff Member</label>
-                                        <select value={individualForm.staffId} onChange={e => {
-                                            const s = staff.find(st => st._id === e.target.value);
-                                            setIndividualForm(prev => ({
-                                                ...prev,
-                                                staffId: e.target.value,
-                                                baseSalary: s?.hrProfile?.baseSalary || 0
-                                            }));
-                                        }}
-                                            className="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-slate-750 border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-700 dark:text-slate-200 focus:ring-2 focus:ring-primary/10 focus:border-primary outline-none uppercase cursor-pointer">
-                                            <option value="">Choose Staff...</option>
-                                            {addableStaff.map(s => (
-                                                <option key={s._id} value={s._id} className="bg-white dark:bg-slate-800">
-                                                    {s.name} ({s.role}) — {s.outletId?.name || 'No Outlet'}
-                                                </option>
-                                            ))}
-                                        </select>
+                                    {/* Staff Selection Custom Dropdown */}
+                                    <div className="space-y-1" ref={staffDropdownRef}>
+                                        <label className="text-[10px] font-black text-slate-550 dark:text-slate-450 ml-1 uppercase">Select Staff Member</label>
+                                        <div className="relative">
+                                            <button
+                                                type="button"
+                                                onClick={() => setIsStaffDropdownOpen(!isStaffDropdownOpen)}
+                                                className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 text-xs font-bold text-slate-700 focus:border-primary outline-none uppercase flex items-center justify-between"
+                                            >
+                                                <span>
+                                                    {individualForm.staffId
+                                                        ? (() => {
+                                                            const s = staff.find(st => st._id === individualForm.staffId);
+                                                            return s ? `${s.name} (${s.role}) — ${s.outletId?.name || 'No Outlet'}` : 'Choose Staff...';
+                                                        })()
+                                                        : 'Choose Staff...'}
+                                                </span>
+                                                <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform duration-200 ${isStaffDropdownOpen ? 'rotate-180' : ''}`} />
+                                            </button>
+
+                                            <AnimatePresence>
+                                                {isStaffDropdownOpen && (
+                                                    <motion.div
+                                                        initial={{ opacity: 0, y: -5, scale: 0.95 }}
+                                                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                                                        exit={{ opacity: 0, y: -5, scale: 0.95 }}
+                                                        transition={{ duration: 0.15 }}
+                                                        className="absolute left-0 mt-2 w-full bg-white border border-slate-200 rounded-xl shadow-lg z-[100] overflow-hidden"
+                                                    >
+                                                        <div className="py-1 max-h-60 overflow-y-auto custom-scrollbar">
+                                                            {addableStaff.map(s => (
+                                                                <button
+                                                                    key={s._id}
+                                                                    type="button"
+                                                                    onClick={() => {
+                                                                        setIndividualForm(prev => ({
+                                                                            ...prev,
+                                                                            staffId: s._id,
+                                                                            baseSalary: s.hrProfile?.baseSalary || 0
+                                                                        }));
+                                                                        setIsStaffDropdownOpen(false);
+                                                                    }}
+                                                                    className={`w-full text-left px-4 py-2.5 text-xs font-bold transition-colors uppercase ${individualForm.staffId === s._id
+                                                                            ? 'bg-[#B4912B]/10 text-[#B4912B]'
+                                                                            : 'text-slate-700 hover:bg-slate-50'
+                                                                        }`}
+                                                                >
+                                                                    {s.name} ({s.role}) — {s.outletId?.name || 'No Outlet'}
+                                                                </button>
+                                                            ))}
+                                                            {addableStaff.length === 0 && (
+                                                                <div className="px-4 py-3 text-xs font-semibold text-slate-400 uppercase text-center">
+                                                                    No staff available for selection
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    </motion.div>
+                                                )}
+                                            </AnimatePresence>
+                                        </div>
                                     </div>
 
                                     <div className="grid grid-cols-2 gap-4">
@@ -877,13 +943,13 @@ export default function PayrollManager() {
             {createPortal(
                 <AnimatePresence>
                     {showDetails && (
-                        <div 
+                        <div
                             className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm no-print"
                             onClick={() => setShowDetails(null)}
                         >
-                            <motion.div 
-                                initial={{ opacity: 0, scale: 0.95 }} 
-                                animate={{ opacity: 1, scale: 1 }} 
+                            <motion.div
+                                initial={{ opacity: 0, scale: 0.95 }}
+                                animate={{ opacity: 1, scale: 1 }}
                                 exit={{ opacity: 0, scale: 0.95 }}
                                 className="bg-white border border-slate-200 w-full max-w-xl rounded-xl relative flex flex-col max-h-[90vh] transition-all text-left"
                                 onClick={e => e.stopPropagation()}
@@ -896,8 +962,8 @@ export default function PayrollManager() {
                                         </h2>
                                         <p className="text-[10px] font-bold text-primary uppercase mt-1 tracking-wider">{showDetails.staffId?.name} · {month}/{year}</p>
                                     </div>
-                                    <button 
-                                        onClick={() => setShowDetails(null)} 
+                                    <button
+                                        onClick={() => setShowDetails(null)}
                                         className="p-2 rounded-xl hover:bg-slate-100 text-slate-400 hover:text-rose-500 transition-colors"
                                     >
                                         <X className="w-5 h-5" />
@@ -908,39 +974,39 @@ export default function PayrollManager() {
                                     <div className="grid grid-cols-2 gap-4">
                                         <div className="space-y-1">
                                             <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-1">Base Salary (₹)</label>
-                                            <input 
-                                                type="number" 
-                                                value={detailForm.baseSalary} 
-                                                onChange={e => setDetailForm({...detailForm, baseSalary: Number(e.target.value)})}
-                                                className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 text-xs font-bold text-slate-900 focus:border-primary outline-none" 
+                                            <input
+                                                type="number"
+                                                value={detailForm.baseSalary}
+                                                onChange={e => setDetailForm({ ...detailForm, baseSalary: Number(e.target.value) })}
+                                                className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 text-xs font-bold text-slate-900 focus:border-primary outline-none"
                                             />
                                         </div>
                                         <div className="space-y-1">
                                             <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-1">Working Days</label>
-                                            <input 
-                                                type="number" 
-                                                value={detailForm.workingDays} 
+                                            <input
+                                                type="number"
+                                                value={detailForm.workingDays}
                                                 disabled
-                                                className="w-full px-4 py-3 rounded-xl bg-slate-100 border border-slate-200 text-xs font-bold text-slate-400 cursor-not-allowed outline-none" 
+                                                className="w-full px-4 py-3 rounded-xl bg-slate-100 border border-slate-200 text-xs font-bold text-slate-400 cursor-not-allowed outline-none"
                                             />
                                         </div>
                                         <div className="space-y-1">
                                             <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-1">Present Count</label>
-                                            <input 
-                                                type="number" 
-                                                step="0.5" 
-                                                value={detailForm.presentDays} 
-                                                onChange={e => setDetailForm({...detailForm, presentDays: Number(e.target.value)})}
-                                                className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 text-xs font-bold text-slate-900 focus:border-primary outline-none" 
+                                            <input
+                                                type="number"
+                                                step="0.5"
+                                                value={detailForm.presentDays}
+                                                onChange={e => setDetailForm({ ...detailForm, presentDays: Number(e.target.value) })}
+                                                className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 text-xs font-bold text-slate-900 focus:border-primary outline-none"
                                             />
                                         </div>
                                         <div className="space-y-1">
                                             <label className="text-[9px] font-black text-emerald-600 uppercase tracking-widest block mb-1">Incentive (₹)</label>
-                                            <input 
-                                                type="number" 
-                                                value={detailForm.incentive} 
-                                                onChange={e => setDetailForm({...detailForm, incentive: Number(e.target.value)})}
-                                                className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 text-xs font-bold text-emerald-600 focus:border-emerald-500 outline-none" 
+                                            <input
+                                                type="number"
+                                                value={detailForm.incentive}
+                                                onChange={e => setDetailForm({ ...detailForm, incentive: Number(e.target.value) })}
+                                                className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 text-xs font-bold text-emerald-600 focus:border-emerald-500 outline-none"
                                             />
                                         </div>
                                     </div>
@@ -948,41 +1014,41 @@ export default function PayrollManager() {
                                     <div className="grid grid-cols-3 gap-4">
                                         <div className="space-y-1">
                                             <label className="text-[9px] font-black text-rose-600 uppercase tracking-widest block mb-1">Deductions (₹)</label>
-                                            <input 
-                                                type="number" 
-                                                value={detailForm.otherDeductions} 
-                                                onChange={e => setDetailForm({...detailForm, otherDeductions: Number(e.target.value)})}
-                                                className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 text-xs font-bold text-rose-600 focus:border-rose-500 outline-none" 
+                                            <input
+                                                type="number"
+                                                value={detailForm.otherDeductions}
+                                                onChange={e => setDetailForm({ ...detailForm, otherDeductions: Number(e.target.value) })}
+                                                className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 text-xs font-bold text-rose-600 focus:border-rose-500 outline-none"
                                             />
                                         </div>
                                         <div className="space-y-1">
                                             <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-1">Overtime (₹)</label>
-                                            <input 
-                                                type="number" 
-                                                value={detailForm.overtime} 
-                                                onChange={e => setDetailForm({...detailForm, overtime: Number(e.target.value)})}
-                                                className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 text-xs font-bold text-slate-900 focus:border-primary outline-none" 
+                                            <input
+                                                type="number"
+                                                value={detailForm.overtime}
+                                                onChange={e => setDetailForm({ ...detailForm, overtime: Number(e.target.value) })}
+                                                className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 text-xs font-bold text-slate-900 focus:border-primary outline-none"
                                             />
                                         </div>
                                         <div className="space-y-1">
                                             <label className="text-[9px] font-black text-violet-600 uppercase tracking-widest block mb-1">Advance Deducted (₹)</label>
-                                            <input 
-                                                type="number" 
-                                                value={detailForm.advanceSalary || 0} 
+                                            <input
+                                                type="number"
+                                                value={detailForm.advanceSalary || 0}
                                                 disabled
-                                                className="w-full px-4 py-3 rounded-xl bg-slate-100 border border-slate-200 text-xs font-bold text-slate-400 cursor-not-allowed outline-none" 
+                                                className="w-full px-4 py-3 rounded-xl bg-slate-100 border border-slate-200 text-xs font-bold text-slate-400 cursor-not-allowed outline-none"
                                             />
                                         </div>
                                     </div>
 
                                     <div className="space-y-1">
                                         <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-1">Adjustments Notes</label>
-                                        <textarea 
-                                            rows={2} 
-                                            value={detailForm.notes} 
-                                            onChange={e => setDetailForm({...detailForm, notes: e.target.value})}
-                                            className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 text-xs font-medium text-slate-900 focus:border-primary outline-none resize-none transition-all placeholder-slate-400" 
-                                            placeholder="Type reason for parameters adjustments..." 
+                                        <textarea
+                                            rows={2}
+                                            value={detailForm.notes}
+                                            onChange={e => setDetailForm({ ...detailForm, notes: e.target.value })}
+                                            className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 text-xs font-medium text-slate-900 focus:border-primary outline-none resize-none transition-all placeholder-slate-400"
+                                            placeholder="Type reason for parameters adjustments..."
                                         />
                                     </div>
                                 </div>
@@ -993,15 +1059,15 @@ export default function PayrollManager() {
                                         <h3 className="text-xl font-black text-slate-950 tracking-tight mt-0.5">₹{calculateNet().toLocaleString()}</h3>
                                     </div>
                                     <div className="flex gap-2">
-                                        <button 
-                                            type="button" 
-                                            onClick={() => setShowDetails(null)} 
+                                        <button
+                                            type="button"
+                                            onClick={() => setShowDetails(null)}
                                             className="px-6 py-2.5 border border-slate-200 bg-white text-slate-600 hover:bg-slate-100 rounded-xl font-bold text-xs transition-all"
                                         >
                                             Cancel
                                         </button>
-                                        <button 
-                                            onClick={saveDetails} 
+                                        <button
+                                            onClick={saveDetails}
                                             disabled={isSaving}
                                             className="px-6 py-2.5 bg-slate-900 text-white hover:bg-primary rounded-xl font-bold text-xs shadow-lg transition-all flex items-center gap-1.5"
                                         >

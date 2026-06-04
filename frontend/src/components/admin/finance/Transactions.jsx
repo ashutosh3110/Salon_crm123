@@ -17,7 +17,13 @@ import {
     DollarSign, 
     Wallet, 
     CreditCard, 
-    Info 
+    Info,
+    Download,
+    Upload,
+    Landmark,
+    MoreVertical,
+    Store,
+    MapPin
 } from 'lucide-react';
 import api from '../../../services/api';
 import { useBusiness } from '../../../contexts/BusinessContext';
@@ -247,84 +253,147 @@ export default function Transactions({ outletId }) {
         setPage(1);
     };
 
+    const incomeTxns = transactions.filter(t => t.type === 'income');
+    const expenseTxns = transactions.filter(t => t.type === 'expense');
+    const totalIncome = incomeTxns.reduce((sum, t) => sum + t.amount, 0);
+    const totalExpense = expenseTxns.reduce((sum, t) => sum + t.amount, 0);
+    const netBalance = totalIncome - totalExpense;
+
     return (
-        <div className="flex flex-col h-full slide-right overflow-y-auto no-scrollbar pb-10">
+        <div className="flex flex-col h-full slide-right overflow-y-auto no-scrollbar pb-10 bg-white">
             {/* Header */}
-            <div className="p-8 border-b border-border bg-surface/30">
-                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
-                    <div>
-                        <h2 className="text-xl font-bold text-text tracking-tight">Finance Ledger & Transactions</h2>
-                        <p className="text-sm text-text-secondary mt-1 font-medium">
-                            Manage cash flow, bank transactions, transfers, and owner investments.
-                        </p>
+            <div className="px-8 py-6 border-b border-slate-100 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+                <div>
+                    <h2 className="text-xl font-bold text-slate-800 tracking-tight">Finance Ledger & Transactions</h2>
+                    <p className="text-sm text-slate-500 mt-1">
+                        Manage cash flow, bank transactions, transfers, and owner investments.
+                    </p>
+                </div>
+                <button
+                    type="button"
+                    onClick={() => setIsOpen(true)}
+                    className="flex items-center gap-2 px-5 py-2.5 bg-[#B4912B] text-white text-xs font-bold rounded-lg hover:bg-[#9a7b24] transition-colors shadow-sm"
+                >
+                    <Plus className="w-4 h-4" />
+                    Record Transaction
+                </button>
+            </div>
+
+            {/* Stats Cards */}
+            <div className="px-8 py-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 border-b border-slate-100 bg-white">
+                {/* Income Card */}
+                <div className="p-4 rounded-xl border border-emerald-100 bg-white flex items-center gap-4 shadow-sm">
+                    <div className="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-500 flex items-center justify-center shrink-0 border border-emerald-100">
+                        <Download className="w-6 h-6" />
                     </div>
-                    <div className="flex gap-3 w-full md:w-auto">
-                        <button
-                            type="button"
-                            onClick={() => setIsOpen(true)}
-                            className="flex-1 md:flex-initial flex items-center justify-center gap-2 px-5 py-2.5 bg-primary text-white text-xs font-bold rounded-xl hover:shadow-lg hover:shadow-primary/20 hover:scale-[1.02] active:scale-95 transition-all"
-                        >
-                            <Plus className="w-4 h-4" />
-                            Record Transaction
-                        </button>
+                    <div>
+                        <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-0.5">Total Income</p>
+                        <h3 className="text-xl font-black text-emerald-600 leading-tight">₹{totalIncome.toLocaleString('en-IN')}</h3>
+                        <p className="text-[10px] font-bold text-slate-400 mt-0.5">{incomeTxns.length} Transactions</p>
+                    </div>
+                </div>
+
+                {/* Expense Card */}
+                <div className="p-4 rounded-xl border border-rose-100 bg-white flex items-center gap-4 shadow-sm">
+                    <div className="w-12 h-12 rounded-xl bg-rose-50 text-rose-500 flex items-center justify-center shrink-0 border border-rose-100">
+                        <Upload className="w-6 h-6" />
+                    </div>
+                    <div>
+                        <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-0.5">Total Expense</p>
+                        <h3 className="text-xl font-black text-rose-600 leading-tight">-₹{Math.abs(totalExpense).toLocaleString('en-IN')}</h3>
+                        <p className="text-[10px] font-bold text-slate-400 mt-0.5">{expenseTxns.length} Transactions</p>
+                    </div>
+                </div>
+
+                {/* Net Balance Card */}
+                <div className="p-4 rounded-xl border border-blue-100 bg-white flex items-center gap-4 shadow-sm">
+                    <div className="w-12 h-12 rounded-xl bg-blue-50 text-blue-500 flex items-center justify-center shrink-0 border border-blue-100">
+                        <Wallet className="w-6 h-6" />
+                    </div>
+                    <div>
+                        <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-0.5">Net Balance</p>
+                        <h3 className="text-xl font-black text-blue-600 leading-tight">₹{netBalance.toLocaleString('en-IN')}</h3>
+                        <p className="text-[10px] font-bold text-slate-400 mt-0.5">This Period</p>
+                    </div>
+                </div>
+
+                {/* Total Transactions Card */}
+                <div className="p-4 rounded-xl border border-purple-100 bg-white flex items-center gap-4 shadow-sm">
+                    <div className="w-12 h-12 rounded-xl bg-purple-50 text-purple-500 flex items-center justify-center shrink-0 border border-purple-100">
+                        <Landmark className="w-6 h-6" />
+                    </div>
+                    <div>
+                        <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-0.5">Total Transactions</p>
+                        <h3 className="text-xl font-black text-purple-600 leading-tight">{transactions.length}</h3>
+                        <p className="text-[10px] font-bold text-slate-400 mt-0.5">All Transactions</p>
                     </div>
                 </div>
             </div>
 
             {/* Filters Bar */}
-            <div className="px-8 py-5 border-b border-border bg-surface-alt flex flex-col sm:flex-row flex-wrap gap-4 items-stretch sm:items-center">
-                <div className="flex items-center gap-2 text-text-muted text-xs font-bold uppercase tracking-wider mb-2 sm:mb-0">
+            <div className="px-8 py-5 border-b border-slate-100 bg-white flex flex-col sm:flex-row flex-wrap gap-4 items-stretch sm:items-center">
+                <div className="relative flex-1 min-w-[200px]">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                    <input
+                        type="text"
+                        placeholder="Search by description, reference, or notes..."
+                        className="w-full pl-9 pr-4 py-2 border border-slate-200 rounded-lg text-xs font-semibold focus:outline-none focus:border-slate-300 transition-colors"
+                    />
+                </div>
+
+                <div className="w-32">
+                    <CustomDropdown
+                        value={filterType}
+                        onChange={(v) => { setFilterType(v); setPage(1); }}
+                        options={[
+                            { value: 'income', label: 'Income' },
+                            { value: 'expense', label: 'Expense' }
+                        ]}
+                        placeholder="All Types"
+                    />
+                </div>
+
+                <div className="w-32">
+                    <CustomDropdown
+                        value={filterAccount}
+                        onChange={(v) => { setFilterAccount(v); setPage(1); }}
+                        options={[
+                            { value: 'cash', label: 'Cash' },
+                            { value: 'bank', label: 'Bank' }
+                        ]}
+                        placeholder="All Accounts"
+                    />
+                </div>
+
+                <div className="flex items-center gap-2">
+                    <div className="relative">
+                        <input
+                            type="date"
+                            value={filterStart}
+                            onChange={(e) => { setFilterStart(e.target.value); setPage(1); }}
+                            className="px-3 py-2 border border-slate-200 rounded-lg text-xs font-semibold focus:outline-none focus:border-slate-300 w-32"
+                        />
+                    </div>
+                    <span className="text-slate-400 text-xs font-bold px-1">to</span>
+                    <div className="relative">
+                        <input
+                            type="date"
+                            value={filterEnd}
+                            onChange={(e) => { setFilterEnd(e.target.value); setPage(1); }}
+                            className="px-3 py-2 border border-slate-200 rounded-lg text-xs font-semibold focus:outline-none focus:border-slate-300 w-32"
+                        />
+                    </div>
+                </div>
+
+                <button className="flex items-center gap-2 px-4 py-2 border border-slate-200 rounded-lg text-xs font-bold text-slate-600 hover:bg-slate-50 transition-colors">
                     <Filter className="w-3.5 h-3.5" />
-                    <span>Filters:</span>
-                </div>
+                    Filters
+                </button>
 
-                <CustomDropdown
-                    value={filterType}
-                    onChange={(v) => { setFilterType(v); setPage(1); }}
-                    options={[
-                        { value: 'income', label: 'Income' },
-                        { value: 'expense', label: 'Expense' }
-                    ]}
-                    placeholder="All Types"
-                />
-
-                <CustomDropdown
-                    value={filterAccount}
-                    onChange={(v) => { setFilterAccount(v); setPage(1); }}
-                    options={[
-                        { value: 'cash', label: 'Cash' },
-                        { value: 'bank', label: 'Bank' }
-                    ]}
-                    placeholder="All Accounts"
-                />
-
-                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full sm:w-auto">
-                    <input
-                        type="date"
-                        value={filterStart}
-                        placeholder="Start Date"
-                        onChange={(e) => { setFilterStart(e.target.value); setPage(1); }}
-                        className="px-3 py-1.5 bg-surface border border-border/40 text-foreground rounded-lg text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-primary/10 w-full sm:w-auto"
-                    />
-                    <span className="text-text-muted text-xs font-bold text-center sm:text-left">to</span>
-                    <input
-                        type="date"
-                        value={filterEnd}
-                        placeholder="End Date"
-                        onChange={(e) => { setFilterEnd(e.target.value); setPage(1); }}
-                        className="px-3 py-1.5 bg-surface border border-border/40 text-foreground rounded-lg text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-primary/10 w-full sm:w-auto"
-                    />
-                </div>
-
-                {(filterType || filterAccount || filterCategory || filterStart || filterEnd) && (
-                    <button
-                        type="button"
-                        onClick={handleClearFilters}
-                        className="text-xs font-bold text-rose-500 hover:text-rose-700 transition-colors uppercase tracking-wider ml-auto"
-                    >
-                        Clear Filters
-                    </button>
-                )}
+                <button onClick={handleClearFilters} className="flex items-center gap-2 px-4 py-2 border border-slate-200 rounded-lg text-xs font-bold text-slate-600 hover:bg-slate-50 transition-colors">
+                    <RefreshCw className="w-3.5 h-3.5" />
+                    Reset
+                </button>
             </div>
 
             {/* Table Container */}
@@ -336,92 +405,100 @@ export default function Transactions({ outletId }) {
                 )}
 
                 {loading ? (
-                    <div className="py-24 flex flex-col justify-center items-center gap-3 text-text-muted text-sm font-bold">
-                        <RefreshCw className="w-6 h-6 animate-spin text-primary" />
+                    <div className="py-24 flex flex-col justify-center items-center gap-3 text-slate-400 text-sm font-bold">
+                        <RefreshCw className="w-6 h-6 animate-spin text-[#B4912B]" />
                         <span>Loading transactions...</span>
                     </div>
                 ) : transactions.length === 0 ? (
-                    <div className="py-20 border border-dashed border-border rounded-2xl flex flex-col justify-center items-center text-center p-8 bg-surface-alt">
-                        <ArrowDownUp className="w-12 h-12 text-text-muted mb-4 opacity-55" />
-                        <h4 className="text-base font-bold text-text">No Transactions Found</h4>
-                        <p className="text-xs text-text-secondary max-w-sm mt-1">
+                    <div className="py-24 text-center bg-white flex flex-col items-center justify-center rounded-2xl border border-slate-200 shadow-sm">
+                        <img src="/vector iamge 4.png" alt="No Transactions" className="w-48 h-48 object-contain mb-6" />
+                        <h3 className="text-sm font-black text-slate-800 uppercase tracking-widest mb-2">No Transactions Found</h3>
+                        <p className="text-[11px] font-bold text-slate-500 max-w-sm mb-6">
                             Is range ya filters me koi entry nahi mili. Nayi transactions add karein ya filters badlein.
                         </p>
                     </div>
                 ) : (
-                    <div className="bg-surface border border-border rounded-2xl overflow-hidden shadow-sm">
+                    <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
                         <div className="overflow-x-auto">
                             <table className="w-full text-left border-collapse">
                                 <thead>
-                                    <tr className="bg-surface/30 border-b border-border text-[10px] font-bold text-text-muted uppercase tracking-wider">
-                                        <th className="px-6 py-4">Date</th>
-                                        <th className="px-6 py-4">Type</th>
-                                        <th className="px-6 py-4">Category</th>
-                                        <th className="px-6 py-4">Outlet</th>
-                                        <th className="px-6 py-4">Account</th>
-                                        <th className="px-6 py-4">Payment Method</th>
-                                        <th className="px-6 py-4 text-right">Amount</th>
+                                    <tr className="bg-white border-b border-slate-200 text-[10px] font-black text-slate-800 uppercase tracking-widest">
+                                        <th className="px-6 py-4"><div className="flex items-center gap-1">Date <ArrowDownUp className="w-3 h-3 text-slate-400" /></div></th>
+                                        <th className="px-6 py-4"><div className="flex items-center gap-1">Type <ArrowDownUp className="w-3 h-3 text-slate-400" /></div></th>
+                                        <th className="px-6 py-4"><div className="flex items-center gap-1">Category <ArrowDownUp className="w-3 h-3 text-slate-400" /></div></th>
+                                        <th className="px-6 py-4"><div className="flex items-center gap-1">Outlet <ArrowDownUp className="w-3 h-3 text-slate-400" /></div></th>
+                                        <th className="px-6 py-4"><div className="flex items-center gap-1">Account <ArrowDownUp className="w-3 h-3 text-slate-400" /></div></th>
+                                        <th className="px-6 py-4"><div className="flex items-center gap-1">Payment Method <ArrowDownUp className="w-3 h-3 text-slate-400" /></div></th>
+                                        <th className="px-6 py-4 text-right"><div className="flex items-center justify-end gap-1">Amount <ArrowDownUp className="w-3 h-3 text-slate-400" /></div></th>
+                                        <th className="px-6 py-4 text-center">Actions</th>
                                     </tr>
                                 </thead>
-                                <tbody className="divide-y divide-border/50 text-xs font-semibold text-text-secondary">
+                                <tbody className="divide-y divide-slate-100 text-xs font-semibold text-slate-700 bg-white">
                                     {transactions.map((t) => {
-                                        const isIncome = t.type === 'income';
+                                        const isIncome = t.type === 'income' || t.category === 'Owner Investment';
+                                        
                                         return (
-                                            <tr key={t._id} className="hover:bg-surface/10 transition-colors">
-                                                <td className="px-6 py-4 font-medium whitespace-nowrap">
-                                                    {new Date(t.date).toLocaleDateString('en-IN', {
-                                                        day: 'numeric',
-                                                        month: 'short',
-                                                        year: 'numeric'
-                                                    })}
-                                                </td>
-                                                <td className="px-6 py-4 whitespace-nowrap font-bold">
-                                                    {t.type === 'transfer' ? (
-                                                        <span className="px-2.5 py-1 rounded-xl text-[10px] uppercase bg-blue-50 text-blue-700 border border-blue-200/50">
-                                                            Transfer
+                                            <tr key={t._id} className="hover:bg-slate-50/50 transition-colors relative group">
+                                                {/* Left Indicator line */}
+                                                <td className="absolute left-0 top-0 bottom-0 w-1 rounded-r-sm bg-transparent group-hover:bg-transparent" style={{ backgroundColor: isIncome ? '#10b981' : '#f43f5e' }}></td>
+                                                
+                                                <td className="pl-6 pr-6 py-4 font-bold whitespace-nowrap">
+                                                    <div className="flex flex-col">
+                                                        <span className="text-slate-800">
+                                                            {new Date(t.date).toLocaleDateString('en-GB', {
+                                                                day: '2-digit', month: 'short', year: 'numeric'
+                                                            })}
                                                         </span>
-                                                    ) : t.category === 'Owner Investment' || t.category === 'Owner Withdrawal' ? (
-                                                        <span className="px-2.5 py-1 rounded-xl text-[10px] uppercase bg-violet-50 text-violet-700 border border-violet-200/50">
-                                                            Invest
+                                                        <span className="text-[10px] text-slate-500 font-medium">
+                                                            {new Date(t.date).toLocaleTimeString('en-US', {
+                                                                hour: '2-digit', minute: '2-digit'
+                                                            })}
                                                         </span>
-                                                    ) : t.type === 'income' ? (
-                                                        <span className="px-2.5 py-1 rounded-xl text-[10px] uppercase bg-emerald-50 text-emerald-700 border border-emerald-200/50">
-                                                            Income
-                                                        </span>
-                                                    ) : (
-                                                        <span className="px-2.5 py-1 rounded-xl text-[10px] uppercase bg-rose-50 text-rose-700 border border-rose-200/50">
-                                                            Expense
-                                                        </span>
-                                                    )}
-                                                </td>
-                                                <td className="px-6 py-4 font-bold text-text whitespace-nowrap">
-                                                    {t.category}
+                                                    </div>
                                                 </td>
                                                 <td className="px-6 py-4 whitespace-nowrap">
-                                                    <span className="font-bold text-text-secondary">
-                                                        {outlets.find(o => String(o._id || o.id) === String(t.outletId))?.name || 'All Outlets / Not Specified'}
+                                                    <span className={`px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${isIncome ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600'}`}>
+                                                        {t.type === 'transfer' ? 'Transfer' : isIncome ? 'Income' : 'Expense'}
+                                                    </span>
+                                                </td>
+                                                <td className="px-6 py-4 whitespace-nowrap">
+                                                    <div className="flex flex-col">
+                                                        <span className="font-bold text-slate-800">{t.category}</span>
+                                                        <span className="text-[10px] font-medium text-slate-500">{t.description || 'General entry'}</span>
+                                                    </div>
+                                                </td>
+                                                <td className="px-6 py-4 whitespace-nowrap">
+                                                    <span className="flex items-center gap-1.5 font-bold text-slate-700">
+                                                        <Store className="w-3.5 h-3.5 text-slate-400" />
+                                                        {outlets.find(o => String(o._id || o.id) === String(t.outletId))?.name || 'Main Branch'}
                                                     </span>
                                                 </td>
                                                 <td className="px-6 py-4 capitalize whitespace-nowrap">
-                                                    <span className="flex items-center gap-1.5 font-bold">
-                                                        {t.accountType === 'cash' ? (
-                                                            <Wallet className="w-3.5 h-3.5 text-orange-500" />
-                                                        ) : (
-                                                            <CreditCard className="w-3.5 h-3.5 text-blue-500" />
-                                                        )}
+                                                    <span className="flex items-center gap-1.5 font-bold text-slate-700">
+                                                        <Wallet className="w-3.5 h-3.5 text-[#B4912B]" />
                                                         {t.accountType === 'cash' ? 'Cash' : 'Bank'}
                                                     </span>
                                                 </td>
-                                                <td className="px-6 py-4 uppercase font-bold whitespace-nowrap">
-                                                    {t.paymentMethod?.replace('_', ' ')}
+                                                <td className="px-6 py-4 uppercase whitespace-nowrap">
+                                                    <span className="px-2 py-1 bg-slate-100 text-slate-600 rounded text-[10px] font-black tracking-widest">
+                                                        {t.paymentMethod?.replace('_', ' ') || 'CASH'}
+                                                    </span>
                                                 </td>
-                                                 <td className="px-6 py-4 text-right whitespace-nowrap">
-                                                     <span className={`font-bold text-sm ${
-                                                         isIncome ? 'text-emerald-600' : 'text-rose-600'
-                                                     }`}>
-                                                         {isIncome ? '+' : '-'} ₹{t.amount.toLocaleString('en-IN')}
-                                                     </span>
-                                                 </td>
+                                                <td className="px-6 py-4 text-right whitespace-nowrap">
+                                                    <span className={`font-black text-sm ${isIncome ? 'text-emerald-600' : 'text-rose-600'}`}>
+                                                        {isIncome ? '+' : '-'} ₹{t.amount.toLocaleString('en-IN')}
+                                                    </span>
+                                                </td>
+                                                <td className="px-6 py-4 text-center whitespace-nowrap">
+                                                    <div className="flex items-center justify-center gap-2">
+                                                        <button className="p-1.5 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-md transition-colors border border-slate-200">
+                                                            <Download className="w-3.5 h-3.5" />
+                                                        </button>
+                                                        <button className="p-1.5 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-md transition-colors border border-slate-200">
+                                                            <MoreVertical className="w-3.5 h-3.5" />
+                                                        </button>
+                                                    </div>
+                                                </td>
                                             </tr>
                                         );
                                     })}
@@ -430,8 +507,8 @@ export default function Transactions({ outletId }) {
                         </div>
 
                         {/* Pagination Bar */}
-                        <div className="px-6 py-4 bg-surface/10 border-t border-border flex justify-between items-center">
-                            <span className="text-xs font-bold text-text-muted">
+                        <div className="px-6 py-4 bg-white border-t border-slate-200 flex justify-between items-center">
+                            <span className="text-xs font-bold text-slate-500">
                                 Showing {transactions.length} of {totalResults} entries
                             </span>
                             <div className="flex gap-2">
@@ -439,18 +516,18 @@ export default function Transactions({ outletId }) {
                                     type="button"
                                     disabled={page === 1}
                                     onClick={() => setPage((p) => p - 1)}
-                                    className="p-1.5 rounded-lg border border-border bg-white text-text-secondary disabled:opacity-50 disabled:cursor-not-allowed hover:bg-surface/30 transition-colors"
+                                    className="p-1.5 rounded-lg border border-slate-200 bg-white text-slate-600 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-slate-50 transition-colors"
                                 >
                                     <ChevronLeft className="w-4 h-4" />
                                 </button>
-                                <span className="flex items-center text-xs font-bold px-3 text-text-secondary">
+                                <span className="flex items-center text-xs font-bold px-3 text-slate-600">
                                     Page {page} of {totalPages}
                                 </span>
                                 <button
                                     type="button"
                                     disabled={page === totalPages}
                                     onClick={() => setPage((p) => p + 1)}
-                                    className="p-1.5 rounded-lg border border-border bg-white text-text-secondary disabled:opacity-50 disabled:cursor-not-allowed hover:bg-surface/30 transition-colors"
+                                    className="p-1.5 rounded-lg border border-slate-200 bg-white text-slate-600 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-slate-50 transition-colors"
                                 >
                                     <ChevronRight className="w-4 h-4" />
                                 </button>

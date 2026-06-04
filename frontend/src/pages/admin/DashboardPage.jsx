@@ -59,10 +59,10 @@ export default function DashboardPage() {
             const distanceToMonday = currentDay === 0 ? -6 : 1 - currentDay;
             const monday = new Date(now);
             monday.setDate(now.getDate() + distanceToMonday);
-            
+
             const sunday = new Date(monday);
             sunday.setDate(monday.getDate() + 6);
-            
+
             const options = { month: 'short', day: 'numeric' };
             const start = monday.toLocaleDateString('en-US', options);
             const end = sunday.toLocaleDateString('en-US', { ...options, year: 'numeric' });
@@ -70,7 +70,7 @@ export default function DashboardPage() {
         } else {
             const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
             const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0);
-            
+
             const options = { month: 'short', day: 'numeric' };
             const start = firstDay.toLocaleDateString('en-US', options);
             const end = lastDay.toLocaleDateString('en-US', { ...options, year: 'numeric' });
@@ -79,8 +79,8 @@ export default function DashboardPage() {
     }, [selectedRange]);
 
     const totalPeriodRevenue = useMemo(() => {
-        return selectedRange === 'month' 
-            ? (payload?.stats?.thisMonthRev ?? 0) 
+        return selectedRange === 'month'
+            ? (payload?.stats?.thisMonthRev ?? 0)
             : (payload?.stats?.thisWeekRev ?? 0);
     }, [payload, selectedRange]);
 
@@ -205,8 +205,8 @@ export default function DashboardPage() {
                 icon = Users;
             }
 
-            let title = item.service && item.service !== 'N/A' 
-                ? `Booking: ${item.service} (${item.client})` 
+            let title = item.service && item.service !== 'N/A'
+                ? `Booking: ${item.service} (${item.client})`
                 : `New client: ${item.client}`;
 
             let timeLabel = `Today, ${item.time || '10:30 AM'}`;
@@ -214,11 +214,11 @@ export default function DashboardPage() {
                 const dateVal = new Date(item.createdAt);
                 const now = new Date();
                 const isToday = dateVal.toDateString() === now.toDateString();
-                
+
                 const yesterday = new Date();
                 yesterday.setDate(now.getDate() - 1);
                 const isYesterday = dateVal.toDateString() === yesterday.toDateString();
-                
+
                 if (isToday) {
                     timeLabel = `Today, ${item.time}`;
                 } else if (isYesterday) {
@@ -246,14 +246,14 @@ export default function DashboardPage() {
             const stats = payload?.stats || {};
             const revData = revenueData || [];
             const activity = liveRecentActivity || [];
-            
+
             let csvContent = "data:text/csv;charset=utf-8,";
-            
+
             // Section 1: Business Stats Summary
             csvContent += "BUSINESS PERFORMANCE SUMMARY\n";
             csvContent += `Generated On,${new Date().toLocaleString()}\n`;
             csvContent += `Reporting Range,${selectedRange === 'week' ? 'Weekly' : 'Monthly'}\n\n`;
-            
+
             csvContent += "Metric,Value\n";
             csvContent += `Total Outlets,${stats.outlets ?? 0}\n`;
             csvContent += `Total Bookings,${stats.bookingsTotal ?? 0}\n`;
@@ -261,7 +261,7 @@ export default function DashboardPage() {
             csvContent += `Staff Members,${stats.staff ?? 0}\n`;
             csvContent += `WhatsApp Credits,${stats.whatsappCredits ?? 0}\n`;
             csvContent += `This Period Revenue,INR ${totalPeriodRevenue}\n\n`;
-            
+
             // Section 2: Revenue Breakdown
             csvContent += "REVENUE DATA POINTS\n";
             csvContent += "Period/Day,Revenue (INR)\n";
@@ -269,7 +269,7 @@ export default function DashboardPage() {
                 csvContent += `${item.name},${item.revenue}\n`;
             });
             csvContent += "\n";
-            
+
             // Section 3: Recent Activity Log
             csvContent += "RECENT BUSINESS ACTIVITY LOG\n";
             csvContent += "Activity details,Time,Category,Amount\n";
@@ -277,7 +277,7 @@ export default function DashboardPage() {
                 const title = item.service && item.service !== 'N/A' ? `Booking: ${item.service}` : 'New Client Registration';
                 csvContent += `"${title} (${item.client})",${item.time || 'N/A'},${item.amount ? 'Paid' : 'Pending'},${item.amount || 0}\n`;
             });
-            
+
             const encodedUri = encodeURI(csvContent);
             const link = document.createElement("a");
             link.setAttribute("href", encodedUri);
@@ -285,7 +285,7 @@ export default function DashboardPage() {
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
-            
+
             toast.success("Business report exported successfully!");
         } catch (e) {
             console.error("Failed to export business report:", e);
@@ -307,7 +307,7 @@ export default function DashboardPage() {
                         Here's what's happening with your business today.
                     </p>
                 </div>
-                
+
                 {/* Datepicker dropdown and export report buttons */}
                 <div className="flex items-center gap-3">
                     <div className="relative z-50">
@@ -348,7 +348,7 @@ export default function DashboardPage() {
                             </>
                         )}
                     </div>
-                    
+
                     <button
                         type="button"
                         onClick={handleExportReport}
@@ -360,68 +360,68 @@ export default function DashboardPage() {
                 </div>
             </div>
 
-             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
-                 {activeStats.map((stat, i) => (
-                      <Link
-                          to={stat.path}
-                          key={i}
-                          className={`!rounded-[16px] !border p-3.5 shadow-[0_2px_8px_-3px_rgba(0,0,0,0.04)] group flex flex-col justify-between min-h-[118px] transition-all hover:-translate-y-0.5 active:scale-[0.98] hover:shadow-md ${stat.cardBgClass} ${stat.cardBorderClass}`}
-                      >
-                          {/* Upper Section: Icon on Left, Column of Labels on Right */}
-                          <div className="flex !items-start gap-3 !text-left">
-                              {/* Rounded Square Icon */}
-                              <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${stat.iconBgClass}`} style={{ borderRadius: '12px' }}>
-                                  <stat.icon className={`w-4 h-4 ${stat.iconColorClass}`} strokeWidth={2} />
-                              </div>
-                              
-                              {/* Label + Value + Subtitle */}
-                              <div className="flex flex-col !items-start !text-left">
-                                  <span 
-                                      style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '0.03em' }} 
-                                      className="uppercase text-slate-500 dark:text-slate-450 leading-none mb-1.5 !text-left"
-                                  >
-                                     {stat.label}
-                                  </span>
-                                  <h3 
-                                      style={{ fontSize: '24px', fontWeight: 850 }} 
-                                      className="text-slate-800 dark:text-slate-50 leading-none tracking-tight !text-left"
-                                  >
-                                      <AnimatedCounter value={stat.value} prefix={stat.prefix} />
-                                  </h3>
-                                  <span 
-                                      style={{ fontSize: '12px', fontWeight: 500 }} 
-                                      className="text-slate-500 dark:text-slate-400 mt-1.5 !text-left"
-                                  >
-                                      {stat.subtitle}
-                                  </span>
-                              </div>
-                          </div>
- 
-                          {/* View link at the bottom left */}
-                          <div 
-                              style={{ fontSize: '11px', fontWeight: 700 }} 
-                              className="flex !items-center gap-1 mt-auto pt-2 transition-all opacity-90 group-hover:opacity-100 whitespace-nowrap !text-left !justify-start"
-                          >
-                              <span className={stat.iconColorClass}>{stat.linkText}</span>
-                              <span 
-                                  style={{ fontSize: '12px' }} 
-                                  className={`inline-block transition-transform duration-200 group-hover:translate-x-1 leading-none ${stat.iconColorClass}`}
-                              >
-                                 →
-                             </span>
-                         </div>
-                     </Link>
-                 ))}
-             </div>
- 
-             <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
-                 <div className="lg:col-span-2 !bg-white dark:!bg-slate-900 p-5 !rounded-[24px] !border !border-slate-100 dark:!border-slate-800 shadow-[0_2px_12px_-3px_rgba(0,0,0,0.04)] group hover:shadow-md transition-all !overflow-hidden flex flex-col justify-between">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+                {activeStats.map((stat, i) => (
+                    <Link
+                        to={stat.path}
+                        key={i}
+                        className={`!rounded-[16px] !border p-3.5 shadow-[0_2px_8px_-3px_rgba(0,0,0,0.04)] group flex flex-col justify-between min-h-[118px] transition-all hover:-translate-y-0.5 active:scale-[0.98] hover:shadow-md ${stat.cardBgClass} ${stat.cardBorderClass}`}
+                    >
+                        {/* Upper Section: Icon on Left, Column of Labels on Right */}
+                        <div className="flex !items-start gap-3 !text-left">
+                            {/* Rounded Square Icon */}
+                            <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${stat.iconBgClass}`} style={{ borderRadius: '12px' }}>
+                                <stat.icon className={`w-4 h-4 ${stat.iconColorClass}`} strokeWidth={2} />
+                            </div>
+
+                            {/* Label + Value + Subtitle */}
+                            <div className="flex flex-col !items-start !text-left">
+                                <span
+                                    style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '0.03em' }}
+                                    className="uppercase text-slate-500 dark:text-slate-450 leading-none mb-1.5 !text-left"
+                                >
+                                    {stat.label}
+                                </span>
+                                <h3
+                                    style={{ fontSize: '24px', fontWeight: 850 }}
+                                    className="text-slate-800 dark:text-slate-50 leading-none tracking-tight !text-left"
+                                >
+                                    <AnimatedCounter value={stat.value} prefix={stat.prefix} />
+                                </h3>
+                                <span
+                                    style={{ fontSize: '12px', fontWeight: 500 }}
+                                    className="text-slate-500 dark:text-slate-400 mt-1.5 !text-left"
+                                >
+                                    {stat.subtitle}
+                                </span>
+                            </div>
+                        </div>
+
+                        {/* View link at the bottom left */}
+                        <div
+                            style={{ fontSize: '11px', fontWeight: 700 }}
+                            className="flex !items-center gap-1 mt-auto pt-2 transition-all opacity-90 group-hover:opacity-100 whitespace-nowrap !text-left !justify-start"
+                        >
+                            <span className={stat.iconColorClass}>{stat.linkText}</span>
+                            <span
+                                style={{ fontSize: '12px' }}
+                                className={`inline-block transition-transform duration-200 group-hover:translate-x-1 leading-none ${stat.iconColorClass}`}
+                            >
+                                →
+                            </span>
+                        </div>
+                    </Link>
+                ))}
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+                <div className="lg:col-span-2 !bg-white dark:!bg-slate-900 p-5 !rounded-[24px] !border !border-slate-100 dark:!border-slate-800 shadow-[0_2px_12px_-3px_rgba(0,0,0,0.04)] group hover:shadow-md transition-all !overflow-hidden flex flex-col justify-between">
                     <div>
                         {/* Header: Title + Custom Dropdown Toggle */}
                         <div className="flex items-center justify-between mb-4">
                             <h2 className="text-base font-bold text-slate-800 dark:text-slate-100 tracking-tight">Revenue Trends ({selectedRange === 'month' ? 'Monthly' : 'Weekly'})</h2>
                             <div className="relative z-50">
-                                <button 
+                                <button
                                     onClick={() => setDropdownOpen(!dropdownOpen)}
                                     type="button"
                                     className="flex items-center gap-2 pl-3 pr-7 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-[11px] font-bold text-slate-500 dark:text-slate-400 cursor-pointer shadow-sm focus:outline-none focus:ring-1 focus:ring-slate-350 transition-all select-none min-h-[30px]"
@@ -480,24 +480,24 @@ export default function DashboardPage() {
                                 <AreaChart data={revenueData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                                     <defs>
                                         <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
-                                            <stop offset="5%" stopColor="#A57C1E" stopOpacity={0.15}/>
-                                            <stop offset="95%" stopColor="#A57C1E" stopOpacity={0}/>
+                                            <stop offset="5%" stopColor="#A57C1E" stopOpacity={0.15} />
+                                            <stop offset="95%" stopColor="#A57C1E" stopOpacity={0} />
                                         </linearGradient>
                                     </defs>
                                     <CartesianGrid strokeDasharray="4 4" vertical={false} strokeOpacity={0.15} />
-                                    <XAxis 
-                                        dataKey="name" 
-                                        axisLine={false} 
-                                        tickLine={false} 
-                                        tick={{ fontSize: 11, fontWeight: 700, fill: '#94a3b8' }} 
+                                    <XAxis
+                                        dataKey="name"
+                                        axisLine={false}
+                                        tickLine={false}
+                                        tick={{ fontSize: 11, fontWeight: 700, fill: '#94a3b8' }}
                                     />
-                                    <YAxis 
-                                        axisLine={false} 
-                                        tickLine={false} 
+                                    <YAxis
+                                        axisLine={false}
+                                        tickLine={false}
                                         tick={{ fontSize: 11, fontWeight: 700, fill: '#94a3b8' }}
                                         tickFormatter={(val) => `₹${val}`}
                                     />
-                                    <Tooltip 
+                                    <Tooltip
                                         content={({ active, payload }) => {
                                             if (active && payload && payload.length) {
                                                 return (
@@ -514,12 +514,12 @@ export default function DashboardPage() {
                                             return null;
                                         }}
                                     />
-                                    <Area 
-                                        type="monotone" 
-                                        dataKey="revenue" 
-                                        stroke="#A57C1E" 
-                                        strokeWidth={3} 
-                                        fillOpacity={1} 
+                                    <Area
+                                        type="monotone"
+                                        dataKey="revenue"
+                                        stroke="#A57C1E"
+                                        strokeWidth={3}
+                                        fillOpacity={1}
                                         fill="url(#colorRevenue)"
                                         activeDot={{ r: 6, fill: '#A57C1E', strokeWidth: 2, stroke: '#fff' }}
                                         dot={{ r: 4, fill: '#A57C1E', strokeWidth: 0 }}
@@ -549,7 +549,7 @@ export default function DashboardPage() {
                                 }
                             }
                             const isPositive = !pctText.startsWith('-');
-                            
+
                             return (
                                 <div key={idx} className="bg-slate-50/50 dark:bg-slate-800/20 border border-slate-100/60 dark:border-slate-800 rounded-xl p-3 text-left">
                                     <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider block mb-1">
@@ -559,11 +559,10 @@ export default function DashboardPage() {
                                         <span className="text-[15px] font-black text-slate-800 dark:text-slate-200 whitespace-nowrap">
                                             ₹{item.value.toLocaleString('en-IN')}
                                         </span>
-                                        <span className={`inline-flex items-center px-1.5 py-0.5 rounded-full text-[9px] font-bold ${
-                                            isPositive 
-                                                ? 'bg-[#ECFDF5] dark:bg-[#059669]/10 text-[#059669] dark:text-[#34D399]' 
+                                        <span className={`inline-flex items-center px-1.5 py-0.5 rounded-full text-[9px] font-bold ${isPositive
+                                                ? 'bg-[#ECFDF5] dark:bg-[#059669]/10 text-[#059669] dark:text-[#34D399]'
                                                 : 'bg-rose-50 dark:bg-rose-950/15 text-rose-600 dark:text-rose-400'
-                                        }`}>
+                                            }`}>
                                             {pctText}
                                         </span>
                                     </div>
@@ -577,16 +576,16 @@ export default function DashboardPage() {
                     {/* Service Split Card */}
                     <div className="!bg-white dark:!bg-slate-900 p-5 !rounded-[24px] !border !border-slate-100 dark:!border-slate-800 shadow-[0_2px_12px_-3px_rgba(0,0,0,0.04)] group hover:shadow-md transition-all !overflow-hidden text-left">
                         <h2 className="text-base font-bold text-slate-855 dark:text-slate-100 tracking-tight mb-3">Service Split</h2>
-                        <div className="flex items-center gap-2 justify-between flex-wrap sm:flex-nowrap">
+                        <div className="flex items-center justify-center gap-8 flex-wrap sm:flex-nowrap mt-2">
                             {/* Donut Chart */}
-                            <div className="h-[125px] w-[125px] relative shrink-0 mx-auto">
+                            <div className="h-[125px] w-[125px] relative shrink-0">
                                 <ResponsiveContainer width="100%" height="100%">
                                     <PieChart>
-                                        <Pie 
-                                            data={serviceDistribution} 
-                                            dataKey="value" 
-                                            innerRadius={36} 
-                                            outerRadius={54} 
+                                        <Pie
+                                            data={serviceDistribution}
+                                            dataKey="value"
+                                            innerRadius={36}
+                                            outerRadius={54}
                                             paddingAngle={4}
                                         >
                                             {serviceDistribution.map((entry, index) => (
@@ -602,18 +601,16 @@ export default function DashboardPage() {
                                     <span style={{ fontSize: '7.5px', lineHeight: '10px' }} className="font-bold text-slate-400 dark:text-slate-550 uppercase tracking-wider">Services</span>
                                 </div>
                             </div>
- 
+
                             {/* Custom Legend */}
-                            <div className="flex flex-col gap-1.5 w-full min-w-0 pl-2">
+                            <div className="flex flex-col gap-2 shrink-0">
                                 {serviceDistribution.slice(0, 5).map((item, idx) => {
-                                    const pct = totalServices > 0 ? Math.round((item.value / totalServices) * 100) : 0;
                                     return (
-                                        <div key={idx} className="flex items-center justify-between text-xs gap-3">
-                                            <div className="flex items-center gap-1.5 min-w-0">
+                                        <div key={idx} className="flex items-center text-xs gap-3">
+                                            <div className="flex items-center gap-2 min-w-0">
                                                 <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: item.color }} />
                                                 <span className="font-bold text-slate-600 dark:text-slate-350 truncate">{item.name}</span>
                                             </div>
-                                            <span className="font-black text-slate-800 dark:text-slate-200 shrink-0">{item.value} ({pct}%)</span>
                                         </div>
                                     );
                                 })}
@@ -623,7 +620,7 @@ export default function DashboardPage() {
                             </div>
                         </div>
                     </div>
- 
+
                     {/* Recent Activity Card */}
                     <div className="!bg-white dark:!bg-slate-900 p-5 !rounded-[24px] !border !border-slate-100 dark:!border-slate-800 shadow-[0_2px_12px_-3px_rgba(0,0,0,0.04)] group hover:shadow-md transition-all !overflow-hidden text-left">
                         <div className="flex items-center justify-between mb-3">
@@ -658,7 +655,7 @@ export default function DashboardPage() {
                         </div>
                     </div>
                 </div>
-                </div>
+            </div>
 
             {showLowCreditAlert && (
                 <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-[9999] flex items-center justify-center p-4 text-left">
@@ -675,7 +672,7 @@ export default function DashboardPage() {
 
                         <div className="space-y-4">
                             <p className="text-xs font-bold text-slate-700 dark:text-slate-350 leading-relaxed uppercase">
-                                Your salon has only <span className="text-rose-600 dark:text-rose-400 font-black">{payload?.stats?.whatsappCredits}</span> WhatsApp credits remaining. 
+                                Your salon has only <span className="text-rose-600 dark:text-rose-400 font-black">{payload?.stats?.whatsappCredits}</span> WhatsApp credits remaining.
                             </p>
                             <p className="text-[10px] font-bold text-slate-450 dark:text-slate-500 uppercase tracking-wider leading-relaxed">
                                 Once credits run out, automated service reminders, wallet notifications, and promotion sharing will stop working. Please recharge your credits immediately.
@@ -683,14 +680,14 @@ export default function DashboardPage() {
                         </div>
 
                         <div className="flex gap-4 pt-8 mt-4 border-t border-slate-100 dark:border-slate-800">
-                            <button 
-                                onClick={() => setShowLowCreditAlert(false)} 
+                            <button
+                                onClick={() => setShowLowCreditAlert(false)}
                                 className="flex-1 py-3 border border-slate-200 dark:border-slate-700 rounded-xl text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-700 transition-all"
                             >
                                 Dismiss
                             </button>
-                            <Link 
-                                to="/admin/whatsapp-credits" 
+                            <Link
+                                to="/admin/whatsapp-credits"
                                 onClick={() => setShowLowCreditAlert(false)}
                                 className="flex-1 py-3 bg-rose-600 hover:bg-rose-700 text-white font-bold text-[10px] uppercase tracking-[0.2em] shadow-lg rounded-xl text-center flex items-center justify-center transition-all"
                             >
