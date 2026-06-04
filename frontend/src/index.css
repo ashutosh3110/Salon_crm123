@@ -216,6 +216,17 @@
     color: #64748B !important;
   }
 
+  .text-white-force,
+  html:not(.dark) .admin-panel .text-white-force {
+    color: #ffffff !important;
+  }
+
+  .text-white-muted-force,
+  html:not(.dark) .admin-panel .text-white-muted-force {
+    color: rgba(255, 255, 255, 0.7) !important;
+  }
+
+
 
   html:not(.dark) .new-theme .group:hover .group-hover\:text-white\/40 {
     color: #334155 !important;
@@ -1510,9 +1521,14 @@ html:not(.dark) .fixed.inset-0 .commission-dark-card *,
 html:not(.dark) .commission-dark-card,
 html:not(.dark) .commission-dark-card *,
 html:not(.dark) [class*="bg-slate-900"],
-html:not(.dark) [class*="bg-slate-900"] * {
+html:not(.dark) [class*="bg-slate-900"] *,
+html:not(.dark) [class*="bg-[#0F172A]"],
+html:not(.dark) [class*="bg-[#0F172A]"] *,
+html:not(.dark) [class*="bg-[#0f172a]"],
+html:not(.dark) [class*="bg-[#0f172a]"] * {
   color: #ffffff !important;
 }
+
 
 /* Specific heading text color */
 html:not(.dark) .admin-panel .commission-dark-card .commission-title,
