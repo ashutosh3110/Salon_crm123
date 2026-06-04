@@ -3214,7 +3214,6 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                                         <span className="text-[11px] font-bold uppercase tracking-wider">Add Custom Service</span>
                                     </button>
                                 </div>
-                            )}
                         </div>
 
                         {/* KPI ROW */}

@@ -3,10 +3,12 @@ import { createPortal } from 'react-dom';
 import {
     Plus, Search, Phone, Edit, Trash2, TrendingUp,
     ClipboardList, Calendar, Clock, CheckCircle,
-    ChevronDown, Eye, X
+    ChevronDown, Eye, X, Filter, RefreshCw
 } from 'lucide-react';
 import api from '../../services/api';
 import { useBusiness } from '../../contexts/BusinessContext';
+import CustomDropdown from '../../components/common/CustomDropdown';
+import toast from 'react-hot-toast';
 
 /* ─── Constants ───────────────────────────────────────────────────────── */
 
@@ -115,10 +117,10 @@ export default function InquiryPage() {
         const converted = inquiries.filter(i => i.status === 'converted').length;
         const rate = total > 0 ? Math.round((converted / total) * 100) : 0;
         return [
-            { label: 'Total Enquiries', value: total, icon: ClipboardList, trend: '' },
-            { label: 'Needs Follow-up', value: pending, icon: Clock, trend: '' },
-            { label: 'Converted', value: converted, icon: CheckCircle, trend: '' },
-            { label: 'Conversion Rate', value: `${rate}%`, icon: TrendingUp, trend: '' },
+            { label: 'Total Enquiries', value: total, icon: ClipboardList, color: '#D97706', iconBg: '#FEF3C7', subtext: 'Logged Leads' },
+            { label: 'Needs Follow-up', value: pending, icon: Clock, color: '#9333EA', iconBg: '#F3E8FF', subtext: 'Action Required' },
+            { label: 'Converted', value: converted, icon: CheckCircle, color: '#16A34A', iconBg: '#DCFCE7', subtext: 'Converted Bookings' },
+            { label: 'Conversion Rate', value: `${rate}%`, icon: TrendingUp, color: '#2563EB', iconBg: '#DBEAFE', subtext: 'Success Ratio' },
         ];
     }, [inquiries]);
 
@@ -179,23 +181,28 @@ export default function InquiryPage() {
         try {
             if (editingInquiry) {
                 await api.patch(`/inquiries/${editingInquiry.id || editingInquiry._id}`, payload);
+                toast.success('Enquiry updated successfully');
             } else {
                 await api.post('/inquiries', payload);
+                toast.success('Enquiry created successfully');
             }
             await fetchInquiries();
             closeModal();
         } catch (error) {
             console.error('[Inquiry] Save failed:', error);
+            toast.error(error.response?.data?.message || 'Failed to save enquiry');
         }
     };
 
     const handleDelete = async (id) => {
-        if (!confirm('Delete this enquiry?')) return;
+        if (!confirm('Are you sure you want to delete this enquiry?')) return;
         try {
             await api.delete(`/inquiries/${id}`);
+            toast.success('Enquiry deleted successfully');
             await fetchInquiries();
         } catch (error) {
             console.error('[Inquiry] Delete failed:', error);
+            toast.error('Failed to delete enquiry');
         }
     };
 
@@ -206,9 +213,11 @@ export default function InquiryPage() {
         }
         try {
             await api.patch(`/inquiries/${id}`, { status: newStatus });
+            toast.success(`Status updated to ${STATUS_STYLES[newStatus]?.label || newStatus}`);
             await fetchInquiries();
         } catch (error) {
             console.error('[Inquiry] Status update failed:', error);
+            toast.error('Failed to update status');
         }
     };
 
@@ -255,213 +264,362 @@ export default function InquiryPage() {
     }
 
     return (
-        <div className="space-y-4 animate-reveal text-left max-w-[1600px] mx-auto pb-8">
-            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 px-1">
-                <div className="text-left font-mono">
-                    <h1 className="text-xl font-black text-text uppercase italic tracking-tight leading-none">Customer Enquiries</h1>
-                    <p className="text-[9px] font-black text-text-muted mt-1 uppercase tracking-[0.2em] italic">Track enquiries and convert them into bookings</p>
+        <div className="space-y-6 animate-reveal text-left max-w-[1600px] mx-auto pb-8 font-sans">
+            <style>{`
+                .action-btn-custom svg, .action-btn-custom svg * {
+                    color: #475569 !important;
+                    stroke: #475569 !important;
+                }
+                .action-btn-custom:hover svg, .action-btn-custom:hover svg * {
+                    color: #B4912B !important;
+                    stroke: #B4912B !important;
+                }
+                .dark .action-btn-custom svg, .dark .action-btn-custom svg * {
+                    color: #94a3b8 !important;
+                    stroke: #94a3b8 !important;
+                }
+                .dark .action-btn-custom:hover svg, .dark .action-btn-custom:hover svg * {
+                    color: #ffffff !important;
+                    stroke: #ffffff !important;
+                }
+            `}</style>
+            {/* Header Section */}
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6 px-1">
+                <div className="leading-none flex items-center gap-3">
+                    <ClipboardList className="w-7 h-7 text-[#B4912B]" />
+                    <div className="text-left">
+                        <div className="flex items-center gap-2">
+                            <h1 className="text-2xl font-black text-text uppercase tracking-tight leading-none">Customer Enquiries</h1>
+                            <span className="px-2.5 py-1 bg-[#B4912B]/10 text-[#B4912B] text-[10px] font-black rounded-full leading-none">
+                                {inquiries.length} Total
+                            </span>
+                        </div>
+                        <p className="text-[10px] font-bold text-text-muted mt-2 uppercase tracking-wider opacity-60 leading-none">Track client leads, manage callbacks, and convert them to salon bookings</p>
+                    </div>
                 </div>
-                <button
-                    onClick={() => { closeModal(); setShowModal(true); }}
-                    className="flex items-center gap-2 bg-text text-background px-4 py-2 text-[9px] font-black uppercase tracking-[0.15em] shadow-lg hover:bg-primary hover:text-white transition-all font-mono"
-                >
-                    <Plus className="w-3.5 h-3.5" /> Add Enquiry
-                </button>
+                <div className="flex gap-2">
+                    <button
+                        onClick={fetchInquiries}
+                        className="flex items-center justify-center w-10 h-10 rounded-xl border border-slate-200 dark:border-slate-800 text-slate-500 hover:text-slate-950 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-850 transition-all cursor-pointer active:scale-95 shadow-sm"
+                        title="Reload Enquiries"
+                    >
+                        <RefreshCw className="w-4 h-4" />
+                    </button>
+                    <button
+                        onClick={() => { closeModal(); setShowModal(true); }}
+                        className="flex items-center gap-2 bg-[#B4912B] hover:bg-black dark:hover:bg-white dark:hover:text-black text-white px-5 py-2.5 text-[10px] font-black uppercase tracking-widest shadow-md transition-all rounded-xl active:scale-95 cursor-pointer border-none"
+                    >
+                        <Plus className="w-3.5 h-3.5" /> Add Enquiry
+                    </button>
+                </div>
             </div>
 
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+            {/* Statistics Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 {stats.map((stat, i) => (
-                    <div key={i} className="bg-white p-4 border border-border flex flex-col justify-between group hover:border-primary transition-all">
-                        <div className="flex items-center justify-between mb-2">
-                            <div className="flex items-center gap-2">
-                                <stat.icon className="w-3.5 h-3.5 text-text-muted group-hover:text-primary transition-colors" />
-                                <p className="text-[8px] font-black text-text-muted uppercase tracking-widest font-mono">{stat.label}</p>
-                            </div>
+                    <div key={i} className="bg-white dark:bg-slate-900 p-4.5 border border-slate-100 dark:border-slate-800/80 flex items-center gap-4 group hover:border-black dark:hover:border-white transition-all min-h-[100px] relative overflow-hidden rounded-[16px] shadow-sm">
+                        <div className="w-12 h-12 rounded-full flex items-center justify-center shrink-0 animate-pulse-subtle" style={{ backgroundColor: stat.iconBg }}>
+                            <stat.icon className="w-5 h-5" style={{ color: stat.color }} strokeWidth={2.5} />
                         </div>
-                        <h3 className="text-xl font-black text-text tracking-tighter uppercase font-mono italic leading-none">{stat.value}</h3>
+                        <div className="flex flex-col text-left">
+                            <span className="text-[9px] font-bold text-text-muted uppercase tracking-wider">{stat.label}</span>
+                            <h3 className="text-xl font-black tracking-tight uppercase leading-none mt-1 text-text italic font-mono">
+                                {stat.value}
+                            </h3>
+                            <span className="text-[8px] font-bold text-text-muted uppercase tracking-[0.2em] mt-1 opacity-60">
+                                {stat.subtext}
+                            </span>
+                        </div>
                     </div>
                 ))}
             </div>
 
-            <div className="bg-white p-2 border border-border shadow-sm flex flex-col md:flex-row gap-2">
-                <div className="relative flex-grow">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-text-muted" />
+            {/* Filters Section */}
+            <div className="bg-white dark:bg-slate-900 p-2 border border-slate-100 dark:border-slate-800 flex flex-col md:flex-row gap-3 rounded-xl items-center shadow-sm">
+                <div className="flex items-center gap-3 flex-1 h-10 px-4 w-full">
+                    <Search className="w-4 h-4 text-slate-400 shrink-0" />
                     <input
                         type="text"
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
-                        placeholder="SEARCH..."
-                        className="w-full pl-9 pr-3 py-1.5 bg-surface border border-border text-[11px] font-bold focus:border-primary outline-none transition-all uppercase font-mono"
+                        placeholder="Search enquiries by name, phone or interest..."
+                        className="w-full h-full text-[11px] font-bold uppercase tracking-wider outline-none text-neutral-800 dark:text-neutral-200 bg-transparent border-none shadow-none placeholder-slate-400"
                     />
                 </div>
-                <div className="flex flex-wrap gap-2">
-                    <select
-                        value={filterOutlet}
-                        onChange={(e) => setFilterOutlet(e.target.value)}
-                        className="px-3 py-1.5 bg-surface border border-border text-[11px] font-bold outline-none focus:border-primary font-mono uppercase bg-white min-w-[150px] cursor-pointer"
-                    >
-                        <option value="All">All Outlets</option>
-                        {outlets.map(o => (
-                            <option key={o._id || o.id} value={o._id || o.id}>{o.name}</option>
-                        ))}
-                    </select>
+                
+                <div className="flex flex-wrap gap-2 w-full md:w-auto items-center justify-end">
+                    <div className="min-w-[160px] h-9">
+                        <CustomDropdown
+                            value={filterOutlet}
+                            onChange={setFilterOutlet}
+                            options={[
+                                { label: 'ALL OUTLETS', value: 'All' },
+                                ...outlets.map(o => ({ label: o.name.toUpperCase(), value: o._id || o.id }))
+                            ]}
+                            className="w-full h-full [&>.custom-dropdown-trigger]:h-full [&>.custom-dropdown-trigger]:!py-0 [&>.custom-dropdown-trigger]:shadow-none [&>.custom-dropdown-trigger]:bg-transparent [&>.custom-dropdown-trigger]:!text-[10px]"
+                        />
+                    </div>
+                    
+                    <div className="min-w-[140px] h-9">
+                        <CustomDropdown
+                            value={filterStatus}
+                            onChange={setFilterStatus}
+                            options={[
+                                { label: 'ALL STATUSES', value: 'All' },
+                                ...STATUSES.map(s => ({ label: (STATUS_STYLES[s]?.label || s).toUpperCase(), value: s }))
+                            ]}
+                            className="w-full h-full [&>.custom-dropdown-trigger]:h-full [&>.custom-dropdown-trigger]:!py-0 [&>.custom-dropdown-trigger]:shadow-none [&>.custom-dropdown-trigger]:bg-transparent [&>.custom-dropdown-trigger]:!text-[10px]"
+                        />
+                    </div>
 
-                    <select
-                        value={filterStatus}
-                        onChange={(e) => setFilterStatus(e.target.value)}
-                        className="px-3 py-1.5 bg-surface border border-border text-[11px] font-bold outline-none focus:border-primary font-mono uppercase bg-white min-w-[130px] cursor-pointer"
-                    >
-                        <option value="All">All Statuses</option>
-                        {STATUSES.map(s => (
-                            <option key={s} value={s}>{STATUS_STYLES[s]?.label || s}</option>
-                        ))}
-                    </select>
-
-                    <select
-                        value={filterSource}
-                        onChange={(e) => setFilterSource(e.target.value)}
-                        className="px-3 py-1.5 bg-surface border border-border text-[11px] font-bold outline-none focus:border-primary font-mono uppercase bg-white min-w-[130px] cursor-pointer"
-                    >
-                        <option value="All">All Sources</option>
-                        {SOURCES.map(s => (
-                            <option key={s} value={s}>{s}</option>
-                        ))}
-                    </select>
+                    <div className="min-w-[140px] h-9">
+                        <CustomDropdown
+                            value={filterSource}
+                            onChange={setFilterSource}
+                            options={[
+                                { label: 'ALL SOURCES', value: 'All' },
+                                ...SOURCES.map(s => ({ label: s.toUpperCase(), value: s }))
+                            ]}
+                            className="w-full h-full [&>.custom-dropdown-trigger]:h-full [&>.custom-dropdown-trigger]:!py-0 [&>.custom-dropdown-trigger]:shadow-none [&>.custom-dropdown-trigger]:bg-transparent [&>.custom-dropdown-trigger]:!text-[10px]"
+                        />
+                    </div>
                 </div>
             </div>
 
-            <div className="bg-white border border-border shadow-sm overflow-visible min-h-[400px]">                <div className="overflow-x-auto overflow-y-visible no-scrollbar">
-                <table className="w-full text-left border-collapse min-w-[1000px] relative">
-                    <thead>
-                        <tr className="bg-surface font-mono border-b border-border">
-                            <th className="px-4 py-3 text-[9px] font-black text-text-muted uppercase tracking-widest">Customer</th>
-                            <th className="px-4 py-3 text-[9px] font-black text-text-muted uppercase tracking-widest">Outlet</th>
-                            <th className="px-4 py-3 text-[9px] font-black text-text-muted uppercase tracking-widest">Source</th>
-                            <th className="px-4 py-3 text-[9px] font-black text-text-muted uppercase tracking-widest">Interest</th>
-                            <th className="px-4 py-3 text-[9px] font-black text-text-muted uppercase tracking-widest">Status</th>
-                            <th className="px-4 py-3 text-[9px] font-black text-text-muted uppercase tracking-widest text-right">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody className="divide-y divide-border">
-                        {filtered.length === 0 ? (
-                            <tr><td colSpan="6" className="px-6 py-20 text-center uppercase font-black text-[10px] font-mono opacity-20">No enquiries</td></tr>
-                        ) : (
-                            filtered.map((inq) => {
-                                const stStyle = STATUS_STYLES[inq.status] || STATUS_STYLES['new'];
-                                return (
-                                    <tr key={inq.id} className="hover:bg-primary/[0.02]">
-                                        <td className="px-4 py-2">
-                                            <div className="font-black text-text text-[11px] uppercase font-mono italic">{inq.name}</div>
-                                            <div className="text-[9px] text-text-muted font-mono">{inq.phone}</div>
-                                        </td>
-                                        <td className="px-4 py-2">
-                                            <span className="text-[9px] font-bold uppercase font-mono bg-slate-100 text-slate-800 px-2 py-0.5 border border-slate-200">{inq.outletId?.name || 'All Outlets'}</span>
-                                        </td>
-                                        <td className="px-4 py-2">
-                                            <span className="text-[8px] font-black uppercase font-mono border border-border px-2 py-0.5">{inq.source}</span>
-                                        </td>
-                                        <td className="px-4 py-2 uppercase font-mono text-[9px]">{inq.serviceInterest || '—'}</td>
-                                        <td className="px-4 py-2">
-                                            <select
-                                                value={inq.status}
-                                                onChange={(e) => changeStatus(inq.id, e.target.value)}
-                                                className={`text-[8px] font-black border uppercase tracking-widest font-mono px-2 py-1 cursor-pointer outline-none ${stStyle.bg} ${stStyle.text} ${stStyle.border}`}
-                                            >
-                                                {STATUSES.map((status) => (
-                                                    <option key={status} value={status} className="bg-white text-text uppercase font-mono text-[9px]">
-                                                        {STATUS_STYLES[status]?.label || status}
-                                                    </option>
-                                                ))}
-                                            </select>
-                                        </td>
-                                        <td className="px-4 py-2 text-right">
-                                            <button onClick={() => setViewingInquiry(inq)} className="p-1 text-slate-500 hover:text-primary transition-colors" title="View Details"><Eye className="w-3.5 h-3.5" /></button>
-                                            <button onClick={() => openEdit(inq)} className="p-1" title="Edit"><Edit className="w-3 h-3" /></button>
-                                            <button onClick={() => handleDelete(inq.id)} className="p-1 text-rose-500" title="Delete"><Trash2 className="w-3 h-3" /></button>
-                                        </td>
-                                    </tr>
-                                );
-                            })
-                        )}
-                    </tbody>
-                </table>
-            </div>
+            {/* Table Registry */}
+            <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 shadow-sm rounded-[20px] overflow-hidden pt-5 px-6 pb-3">
+                <div className="overflow-x-auto no-scrollbar">
+                    <table className="w-full text-left border-collapse min-w-[1000px] relative">
+                        <thead>
+                            <tr className="border-b border-slate-100 dark:border-slate-800 font-sans">
+                                <th className="px-4 py-3 text-[9px] font-black text-text-muted uppercase tracking-widest">Customer Details</th>
+                                <th className="px-4 py-3 text-[9px] font-black text-text-muted uppercase tracking-widest">Outlet</th>
+                                <th className="px-4 py-3 text-[9px] font-black text-text-muted uppercase tracking-widest">Source</th>
+                                <th className="px-4 py-3 text-[9px] font-black text-text-muted uppercase tracking-widest">Interest / Service</th>
+                                <th className="px-4 py-3 text-[9px] font-black text-text-muted uppercase tracking-widest">Lead Status</th>
+                                <th className="px-4 py-3 text-[9px] font-black text-text-muted uppercase tracking-widest text-right">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-50 dark:divide-slate-850">
+                            {filtered.length === 0 ? (
+                                <tr>
+                                    <td colSpan="6" className="px-6 py-20 text-center uppercase font-black text-[10px] font-mono opacity-30">
+                                        No enquiries found matching criteria
+                                    </td>
+                                </tr>
+                            ) : (
+                                filtered.map((inq) => {
+                                    const stStyle = STATUS_STYLES[inq.status] || STATUS_STYLES['new'];
+                                    return (
+                                        <tr key={inq.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/40 transition-colors">
+                                            <td className="px-4 py-3.5">
+                                                <div className="font-black text-text text-[11px] uppercase italic">{inq.name}</div>
+                                                <div className="text-[9.5px] text-text-muted font-bold tracking-wide mt-0.5">{inq.phone}</div>
+                                            </td>
+                                            <td className="px-4 py-3.5">
+                                                <span className="text-[9px] font-black uppercase bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 px-2.5 py-1 border border-slate-200 dark:border-slate-700 rounded-lg">
+                                                    {inq.outletId?.name || 'All Outlets'}
+                                                </span>
+                                            </td>
+                                            <td className="px-4 py-3.5">
+                                                <span className="text-[8.5px] font-black uppercase border border-slate-200 dark:border-slate-700 px-2.5 py-1 rounded-lg bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300">
+                                                    {inq.source}
+                                                </span>
+                                            </td>
+                                            <td className="px-4 py-3.5 uppercase text-[10px] font-bold text-text-secondary">
+                                                {inq.serviceInterest || '—'}
+                                            </td>
+                                            <td className="px-4 py-3.5">
+                                                <div className="relative inline-block min-w-[125px]">
+                                                    <select
+                                                        value={inq.status}
+                                                        onChange={(e) => changeStatus(inq.id, e.target.value)}
+                                                        className={`text-[9.5px] font-black border uppercase tracking-wider font-sans px-3 py-1.5 cursor-pointer outline-none w-full rounded-xl appearance-none transition-all pr-8 shadow-sm ${stStyle.bg} ${stStyle.text} ${stStyle.border} hover:shadow-md`}
+                                                    >
+                                                        {STATUSES.map((status) => (
+                                                            <option key={status} value={status} className="bg-white dark:bg-slate-900 text-text dark:text-white uppercase font-sans text-[10px]">
+                                                                {STATUS_STYLES[status]?.label || status}
+                                                            </option>
+                                                        ))}
+                                                    </select>
+                                                    <ChevronDown className={`absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 pointer-events-none ${stStyle.text}`} />
+                                                </div>
+                                            </td>
+                                            <td className="px-4 py-3.5 text-right">
+                                                <div className="flex items-center gap-2 justify-end">
+                                                    <button
+                                                        onClick={() => setViewingInquiry(inq)}
+                                                        className="w-7 h-7 rounded-[8px] border border-slate-200 dark:border-slate-700 flex items-center justify-center hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors shadow-sm cursor-pointer action-btn-custom"
+                                                        title="View details"
+                                                    >
+                                                        <Eye className="w-4 h-4" />
+                                                    </button>
+                                                    <button
+                                                        onClick={() => openEdit(inq)}
+                                                        className="w-7 h-7 rounded-[8px] border border-slate-200 dark:border-slate-700 flex items-center justify-center hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors shadow-sm cursor-pointer action-btn-custom"
+                                                        title="Edit details"
+                                                    >
+                                                        <Edit className="w-3.5 h-3.5" />
+                                                    </button>
+                                                    <button
+                                                        onClick={() => handleDelete(inq.id)}
+                                                        className="w-7 h-7 rounded-[8px] border border-rose-200 bg-rose-50 dark:bg-rose-950/20 dark:border-rose-900 flex items-center justify-center text-rose-500 hover:bg-rose-100 transition-colors shadow-sm cursor-pointer"
+                                                        title="Delete Enquiry"
+                                                    >
+                                                        <Trash2 className="w-3.5 h-3.5 text-rose-500" />
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    );
+                                })
+                            )}
+                        </tbody>
+                    </table>
+                </div>
             </div>
 
             {showModal && createPortal(
-                <div className="fixed inset-0 bg-black/60 backdrop-blur-md z-[9999] flex items-start justify-center p-4 overflow-y-auto pt-10 md:pt-16" onClick={closeModal}>
-                    <div className="bg-white dark:bg-[#1e293b] w-full max-w-sm p-5 border-2 border-text dark:border-slate-700 shadow-2xl relative" onClick={(e) => e.stopPropagation()}>
-                        <button type="button" onClick={closeModal} className="absolute right-4 top-4 text-text-muted hover:text-text dark:hover:text-white transition-colors">
-                            <X className="w-4 h-4" />
-                        </button>
-                        <h2 className="text-sm font-black text-text dark:text-white uppercase italic tracking-tight leading-none mb-4 pb-2 border-b border-border dark:border-slate-700 flex items-center gap-2">
-                            <ClipboardList className="w-4 h-4 text-primary" /> {editingInquiry ? 'Edit Enquiry' : 'Add Enquiry'}
-                        </h2>
-                        <form onSubmit={handleSubmit} className="space-y-3">
-                            <div className="space-y-1 text-left">
-                                <label className="text-[9px] font-black text-text-muted uppercase tracking-wider block font-mono">Name *</label>
-                                <input type="text" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value.toUpperCase() })} required className="w-full px-3 py-2 border border-border text-[11px] font-black uppercase font-mono dark:bg-slate-900 dark:border-slate-700 dark:text-white" placeholder="ENTER NAME" />
+                <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 sm:p-6 bg-[#0f172a]/60 backdrop-blur-sm transition-all overflow-hidden" onClick={closeModal}>
+                    <div className="relative bg-white dark:bg-[#0f172a] shadow-2xl w-full max-w-lg flex flex-col animate-reveal rounded-[24px] max-h-[90vh] overflow-hidden border border-slate-100 dark:border-slate-800" onClick={(e) => e.stopPropagation()}>
+                        {/* Header */}
+                        <div className="flex items-center justify-between px-6 py-5 border-b border-slate-100 dark:border-slate-800 bg-white dark:bg-[#0f172a] sticky top-0 z-20">
+                            <div className="flex items-center gap-3 text-left">
+                                <div className="w-10 h-10 rounded-full bg-[#FEF3C7] dark:bg-[#D97706]/20 flex items-center justify-center shrink-0">
+                                    <ClipboardList className="w-5 h-5 text-[#D97706]" strokeWidth={2.5} />
+                                </div>
+                                <div className="text-left">
+                                    <h2 className="text-base font-black uppercase tracking-tight text-slate-900 dark:text-white leading-none">
+                                        {editingInquiry ? 'Edit Enquiry' : 'Add Enquiry'}
+                                    </h2>
+                                    <p className="text-[9px] font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400 leading-none mt-1">
+                                        {editingInquiry ? 'Update lead credentials' : 'Add new customer lead information'}
+                                    </p>
+                                </div>
                             </div>
-                            <div className="space-y-1 text-left">
-                                <label className="text-[9px] font-black text-text-muted uppercase tracking-wider block font-mono">Phone *</label>
-                                <input type="tel" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} required className="w-full px-3 py-2 border border-border text-[11px] font-black font-mono dark:bg-slate-900 dark:border-slate-700 dark:text-white" placeholder="ENTER PHONE" />
+                            <button
+                                type="button"
+                                onClick={closeModal}
+                                className="w-8 h-8 rounded-full flex items-center justify-center bg-slate-50 hover:bg-rose-50 dark:bg-slate-800 dark:hover:bg-rose-950 text-slate-450 hover:text-rose-500 transition-colors cursor-pointer border-none"
+                            >
+                                <X className="w-4 h-4" />
+                            </button>
+                        </div>
+
+                        {/* Form */}
+                        <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-6 sm:p-8 space-y-4 custom-scrollbar text-left">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div className="space-y-1.5">
+                                    <label className="text-[9px] font-black text-slate-550 dark:text-slate-400 uppercase tracking-widest block font-sans">Name *</label>
+                                    <input
+                                        type="text"
+                                        value={form.name}
+                                        onChange={(e) => setForm({ ...form, name: e.target.value.toUpperCase() })}
+                                        required
+                                        className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 text-xs font-bold tracking-wide focus:border-[#B4912B] focus:ring-4 focus:ring-[#B4912B]/10 outline-none transition-all rounded-xl text-slate-900 dark:text-white placeholder:text-slate-400"
+                                        placeholder="ENTER NAME"
+                                    />
+                                </div>
+                                <div className="space-y-1.5">
+                                    <label className="text-[9px] font-black text-slate-550 dark:text-slate-400 uppercase tracking-widest block font-sans">Phone *</label>
+                                    <input
+                                        type="tel"
+                                        value={form.phone}
+                                        onChange={(e) => setForm({ ...form, phone: e.target.value })}
+                                        required
+                                        className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 text-xs font-bold tracking-wide focus:border-[#B4912B] focus:ring-4 focus:ring-[#B4912B]/10 outline-none transition-all rounded-xl text-slate-900 dark:text-white placeholder:text-slate-400"
+                                        placeholder="ENTER PHONE"
+                                    />
+                                </div>
                             </div>
-                            <div className="space-y-1 text-left">
-                                <label className="text-[9px] font-black text-text-muted uppercase tracking-wider block font-mono">Source</label>
-                                <select value={form.source} onChange={(e) => setForm({ ...form, source: e.target.value })} className="w-full px-3 py-2 border border-border text-[10px] font-black font-mono uppercase bg-white outline-none focus:border-primary dark:bg-slate-900 dark:border-slate-700 dark:text-white">
-                                    {SOURCES.map(s => <option key={s} value={s}>{s}</option>)}
-                                </select>
+
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div className="space-y-1.5">
+                                    <label className="text-[9px] font-black text-slate-550 dark:text-slate-400 uppercase tracking-widest block font-sans">Source</label>
+                                    <select
+                                        value={form.source}
+                                        onChange={(e) => setForm({ ...form, source: e.target.value })}
+                                        className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 text-xs font-bold tracking-wide focus:border-[#B4912B] focus:ring-4 focus:ring-[#B4912B]/10 outline-none transition-all rounded-xl text-slate-900 dark:text-white uppercase"
+                                    >
+                                        {SOURCES.map(s => <option key={s} value={s}>{s}</option>)}
+                                    </select>
+                                </div>
+                                <div className="space-y-1.5">
+                                    <label className="text-[9px] font-black text-slate-550 dark:text-slate-400 uppercase tracking-widest block font-sans">Lead Status</label>
+                                    <select
+                                        value={form.status}
+                                        onChange={(e) => setForm({ ...form, status: e.target.value })}
+                                        className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 text-xs font-bold tracking-wide focus:border-[#B4912B] focus:ring-4 focus:ring-[#B4912B]/10 outline-none transition-all rounded-xl text-slate-900 dark:text-white uppercase"
+                                    >
+                                        {STATUSES.map(s => <option key={s} value={s}>{STATUS_STYLES[s]?.label || s}</option>)}
+                                    </select>
+                                </div>
                             </div>
-                            <div className="space-y-1 text-left">
-                                <label className="text-[9px] font-black text-text-muted uppercase tracking-wider block font-mono">Lead Status</label>
-                                <select value={form.status} onChange={(e) => setForm({ ...form, status: e.target.value })} className="w-full px-3 py-2 border border-border text-[10px] font-black font-mono uppercase bg-white outline-none focus:border-primary dark:bg-slate-900 dark:border-slate-700 dark:text-white">
-                                    {STATUSES.map(s => <option key={s} value={s}>{STATUS_STYLES[s]?.label || s}</option>)}
-                                </select>
-                            </div>
-                            <div className="space-y-1 text-left">
-                                <label className="text-[9px] font-black text-text-muted uppercase tracking-wider block font-mono">Lead Follow-up Reminder</label>
-                                <select value={form.followUpDays} onChange={(e) => setForm({ ...form, followUpDays: Number(e.target.value) })} className="w-full px-3 py-2 border border-border text-[10px] font-black font-mono uppercase bg-white outline-none focus:border-primary dark:bg-slate-900 dark:border-slate-700 dark:text-white">
+
+                            <div className="space-y-1.5">
+                                <label className="text-[9px] font-black text-slate-550 dark:text-slate-400 uppercase tracking-widest block font-sans">Lead Follow-up Reminder</label>
+                                <select
+                                    value={form.followUpDays}
+                                    onChange={(e) => setForm({ ...form, followUpDays: Number(e.target.value) })}
+                                    className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 text-xs font-bold tracking-wide focus:border-[#B4912B] focus:ring-4 focus:ring-[#B4912B]/10 outline-none transition-all rounded-xl text-slate-900 dark:text-white uppercase"
+                                >
                                     {FOLLOW_UP_OPTIONS.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
                                 </select>
                             </div>
-                            <div className="space-y-1 text-left">
-                                <label className="text-[9px] font-black text-text-muted uppercase tracking-wider block font-mono">Outlet *</label>
-                                <select
-                                    value={form.outletId}
-                                    onChange={(e) => setForm({ ...form, outletId: e.target.value, interestedService: '', serviceInterest: '' })}
-                                    required
-                                    className="w-full px-3 py-2 border border-border text-[10px] font-black font-mono uppercase bg-white outline-none focus:border-primary dark:bg-slate-900 dark:border-slate-700 dark:text-white"
-                                >
-                                    <option value="">Select Outlet</option>
-                                    {outlets.map(o => <option key={o._id || o.id} value={o._id || o.id}>{o.name}</option>)}
-                                </select>
+
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div className="space-y-1.5">
+                                    <label className="text-[9px] font-black text-slate-550 dark:text-slate-400 uppercase tracking-widest block font-sans">Outlet *</label>
+                                    <select
+                                        value={form.outletId}
+                                        onChange={(e) => setForm({ ...form, outletId: e.target.value, interestedService: '', serviceInterest: '' })}
+                                        required
+                                        className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 text-xs font-bold tracking-wide focus:border-[#B4912B] focus:ring-4 focus:ring-[#B4912B]/10 outline-none transition-all rounded-xl text-slate-900 dark:text-white uppercase"
+                                    >
+                                        <option value="">Select Outlet</option>
+                                        {outlets.map(o => <option key={o._id || o.id} value={o._id || o.id}>{o.name}</option>)}
+                                    </select>
+                                </div>
+                                <div className="space-y-1.5">
+                                    <label className="text-[9px] font-black text-slate-550 dark:text-slate-400 uppercase tracking-widest block font-sans">Service Interest *</label>
+                                    <select
+                                        value={form.interestedService}
+                                        onChange={handleServiceChange}
+                                        required
+                                        disabled={!form.outletId}
+                                        className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 text-xs font-bold tracking-wide focus:border-[#B4912B] focus:ring-4 focus:ring-[#B4912B]/10 outline-none transition-all rounded-xl text-slate-900 dark:text-white disabled:opacity-50 uppercase"
+                                    >
+                                        <option value="">{!form.outletId ? 'Select Outlet First' : 'Select Service'}</option>
+                                        {filteredServices.map(s => <option key={s._id || s.id} value={s._id || s.id}>{s.name} (₹{s.price})</option>)}
+                                    </select>
+                                </div>
                             </div>
-                            <div className="space-y-1 text-left">
-                                <label className="text-[9px] font-black text-text-muted uppercase tracking-wider block font-mono">Service Interest *</label>
-                                <select
-                                    value={form.interestedService}
-                                    onChange={handleServiceChange}
-                                    required
-                                    disabled={!form.outletId}
-                                    className="w-full px-3 py-2 border border-border text-[10px] font-black font-mono uppercase bg-white outline-none focus:border-primary disabled:opacity-50 dark:bg-slate-900 dark:border-slate-700 dark:text-white"
-                                >
-                                    <option value="">{!form.outletId ? 'Select Outlet First' : 'Select Service'}</option>
-                                    {filteredServices.map(s => <option key={s._id || s.id} value={s._id || s.id}>{s.name} (₹{s.price})</option>)}
-                                </select>
-                            </div>
-                            <div className="space-y-1 text-left">
-                                <label className="text-[9px] font-black text-text-muted uppercase tracking-wider block font-mono">Enquiry Notes</label>
+
+                            <div className="space-y-1.5">
+                                <label className="text-[9px] font-black text-slate-550 dark:text-slate-400 uppercase tracking-widest block font-sans">Enquiry Notes</label>
                                 <textarea
                                     value={form.notes}
                                     onChange={(e) => setForm({ ...form, notes: e.target.value.toUpperCase() })}
-                                    rows={2}
-                                    className="w-full px-3 py-2 border border-border text-[11px] font-black uppercase font-mono resize-none focus:border-primary outline-none dark:bg-slate-900 dark:border-slate-700 dark:text-white"
-                                    placeholder="ENTER DETAILS/NOTES"
+                                    rows={3}
+                                    className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 text-xs font-bold tracking-wide focus:border-[#B4912B] focus:ring-4 focus:ring-[#B4912B]/10 outline-none transition-all rounded-xl text-slate-900 dark:text-white uppercase resize-none"
+                                    placeholder="ENTER DETAILS/NOTES..."
                                 />
                             </div>
-                            <div className="flex gap-2 pt-2">
-                                <button type="button" onClick={closeModal} className="flex-1 py-3 text-[9px] font-black uppercase font-mono border border-border hover:bg-slate-50 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800">Cancel</button>
-                                <button type="submit" className="flex-1 bg-text text-background py-3 font-black uppercase font-mono text-[9px] hover:bg-primary hover:text-white transition-all">Save</button>
+
+                            <div className="flex gap-3 pt-3">
+                                <button
+                                    type="button"
+                                    onClick={closeModal}
+                                    className="flex-1 py-3 text-[10px] font-black uppercase tracking-widest border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-xl transition-all cursor-pointer text-slate-700 dark:text-slate-200"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    type="submit"
+                                    className="flex-1 bg-[#B4912B] hover:bg-black text-white py-3 font-black uppercase tracking-widest text-[10px] hover:text-white transition-all rounded-xl cursor-pointer border-none"
+                                >
+                                    Save Enquiry
+                                </button>
                             </div>
                         </form>
                     </div>
@@ -470,76 +628,98 @@ export default function InquiryPage() {
             )}
 
             {viewingInquiry && createPortal(
-                <div className="fixed inset-0 bg-black/60 backdrop-blur-md z-[9999] flex items-start justify-center p-4 overflow-y-auto pt-10 md:pt-16" onClick={() => setViewingInquiry(null)}>
-                    <div className="bg-white dark:bg-[#1e293b] w-full max-w-sm p-5 border-2 border-text dark:border-slate-700 shadow-2xl space-y-5 text-left font-mono relative" onClick={(e) => e.stopPropagation()}>
-                        <button type="button" onClick={() => setViewingInquiry(null)} className="absolute right-4 top-4 text-text-muted hover:text-text dark:hover:text-white transition-colors">
-                            <X className="w-4 h-4" />
-                        </button>
-                        <div className="border-b border-border dark:border-slate-700 pb-3">
-                            <h2 className="text-sm font-black text-text dark:text-white uppercase italic tracking-tight leading-none flex items-center gap-2">
-                                <ClipboardList className="w-4 h-4 text-primary" /> Enquiry Overview
-                            </h2>
-                            <p className="text-[8px] text-text-muted mt-1 uppercase tracking-wider">Reference_ID: {viewingInquiry.id || viewingInquiry._id}</p>
+                <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 sm:p-6 bg-[#0f172a]/60 backdrop-blur-sm transition-all overflow-hidden" onClick={() => setViewingInquiry(null)}>
+                    <div className="relative bg-white dark:bg-[#0f172a] shadow-2xl w-full max-w-md flex flex-col animate-reveal rounded-[24px] max-h-[90vh] overflow-hidden border border-slate-100 dark:border-slate-800" onClick={(e) => e.stopPropagation()}>
+                        {/* Header */}
+                        <div className="flex items-center justify-between px-6 py-5 border-b border-slate-100 dark:border-slate-800 bg-white dark:bg-[#0f172a] sticky top-0 z-20">
+                            <div className="flex items-center gap-3 text-left">
+                                <div className="w-10 h-10 rounded-full bg-[#DBEAFE] dark:bg-[#2563EB]/25 flex items-center justify-center shrink-0">
+                                    <Eye className="w-5 h-5 text-[#2563EB]" strokeWidth={2.5} />
+                                </div>
+                                <div className="text-left">
+                                    <h2 className="text-base font-black uppercase tracking-tight text-slate-900 dark:text-white leading-none">
+                                        Enquiry Details
+                                    </h2>
+                                    <p className="text-[8.5px] font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400 leading-none mt-1">
+                                        ID: {viewingInquiry.id || viewingInquiry._id}
+                                    </p>
+                                </div>
+                            </div>
+                            <button
+                                type="button"
+                                onClick={() => setViewingInquiry(null)}
+                                className="w-8 h-8 rounded-full flex items-center justify-center bg-slate-50 hover:bg-rose-50 dark:bg-slate-800 dark:hover:bg-rose-950 text-slate-450 hover:text-rose-500 transition-colors cursor-pointer border-none"
+                            >
+                                <X className="w-4 h-4" />
+                            </button>
                         </div>
 
-                        <div className="space-y-4 text-xs font-black uppercase">
+                        {/* Content */}
+                        <div className="flex-1 overflow-y-auto p-6 sm:p-8 space-y-5 text-left text-xs font-bold uppercase tracking-wide text-slate-700 dark:text-slate-200">
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="space-y-0.5">
-                                    <span className="text-[8px] text-text-muted block">Client Identity</span>
-                                    <span className="text-[10px] text-text dark:text-white italic">{viewingInquiry.name}</span>
+                                    <span className="text-[8.5px] text-text-muted block tracking-wider">Client Identity</span>
+                                    <span className="text-[11px] font-black text-slate-900 dark:text-white italic">{viewingInquiry.name}</span>
                                 </div>
                                 <div className="space-y-0.5">
-                                    <span className="text-[8px] text-text-muted block">Contact Number</span>
-                                    <span className="text-[10px] text-text dark:text-white">{viewingInquiry.phone}</span>
+                                    <span className="text-[8.5px] text-text-muted block tracking-wider">Contact Number</span>
+                                    <span className="text-[11px] font-black text-slate-900 dark:text-white">{viewingInquiry.phone}</span>
                                 </div>
                             </div>
 
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="space-y-0.5">
-                                    <span className="text-[8px] text-text-muted block">Source Channel</span>
-                                    <span className="text-[9px] bg-slate-100 dark:bg-slate-900 px-2 py-0.5 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 inline-block mt-0.5">{viewingInquiry.source}</span>
+                                    <span className="text-[8.5px] text-text-muted block tracking-wider">Source Channel</span>
+                                    <span className="text-[9.5px] bg-slate-100 dark:bg-slate-800 px-2.5 py-1 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-250 inline-block mt-1 rounded-lg font-black">{viewingInquiry.source}</span>
                                 </div>
                                 <div className="space-y-0.5">
-                                    <span className="text-[8px] text-text-muted block">Lead Status</span>
-                                    <span className={`text-[9px] border inline-block px-2 py-0.5 mt-0.5 ${STATUS_STYLES[viewingInquiry.status]?.bg || 'bg-sky-50'} ${STATUS_STYLES[viewingInquiry.status]?.text || 'text-sky-700'} ${STATUS_STYLES[viewingInquiry.status]?.border || 'border-sky-200'}`}>
+                                    <span className="text-[8.5px] text-text-muted block tracking-wider">Lead Status</span>
+                                    <span className={`text-[9.5px] border inline-block px-2.5 py-1 mt-1 rounded-lg font-black ${STATUS_STYLES[viewingInquiry.status]?.bg || 'bg-sky-50'} ${STATUS_STYLES[viewingInquiry.status]?.text || 'text-sky-700'} ${STATUS_STYLES[viewingInquiry.status]?.border || 'border-sky-200'}`}>
                                         {STATUS_STYLES[viewingInquiry.status]?.label || viewingInquiry.status}
                                     </span>
                                 </div>
                             </div>
 
-                            <div className="space-y-0.5">
-                                <span className="text-[8px] text-text-muted block">Assigned Outlet</span>
-                                <span className="text-[10px] text-text dark:text-white">{viewingInquiry.outletId?.name || 'All Outlets'}</span>
-                            </div>
-
-                            <div className="space-y-0.5">
-                                <span className="text-[8px] text-text-muted block">Service Interest</span>
-                                <span className="text-[10px] text-text dark:text-white">{viewingInquiry.serviceInterest || '—'}</span>
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="space-y-0.5">
+                                    <span className="text-[8.5px] text-text-muted block tracking-wider">Assigned Outlet</span>
+                                    <span className="text-[10px] font-black text-slate-900 dark:text-white">{viewingInquiry.outletId?.name || 'All Outlets'}</span>
+                                </div>
+                                <div className="space-y-0.5">
+                                    <span className="text-[8.5px] text-text-muted block tracking-wider">Service Interest</span>
+                                    <span className="text-[10px] font-black text-slate-900 dark:text-white">{viewingInquiry.serviceInterest || '—'}</span>
+                                </div>
                             </div>
 
                             {viewingInquiry.followUpDate && (
                                 <div className="space-y-0.5">
-                                    <span className="text-[8px] text-text-muted block">Follow-up Target</span>
-                                    <span className="text-[10px] text-text dark:text-white flex items-center gap-1.5">
-                                        <Calendar className="w-3.5 h-3.5 text-primary" />
+                                    <span className="text-[8.5px] text-text-muted block tracking-wider">Follow-up Target</span>
+                                    <span className="text-[10px] font-black text-slate-900 dark:text-white flex items-center gap-2 mt-1">
+                                        <Calendar className="w-4 h-4 text-[#B4912B]" />
                                         {formatDate(viewingInquiry.followUpDate)}
-                                        <span className={`px-2 py-0.5 text-[8px] border font-black ${getFollowUpLabel(viewingInquiry.followUpDate)?.bg} ${getFollowUpLabel(viewingInquiry.followUpDate)?.color}`}>
+                                        <span className={`px-2.5 py-1 text-[8.5px] border font-black rounded-lg ${getFollowUpLabel(viewingInquiry.followUpDate)?.bg} ${getFollowUpLabel(viewingInquiry.followUpDate)?.color}`}>
                                             {getFollowUpLabel(viewingInquiry.followUpDate)?.text}
                                         </span>
                                     </span>
                                 </div>
                             )}
 
-                            <div className="space-y-1">
-                                <span className="text-[8px] text-text-muted block">Enquiry Notes / Description</span>
-                                <div className="p-3 bg-slate-50 dark:bg-slate-900 border border-border dark:border-slate-700 rounded text-[10px] normal-case text-text dark:text-white font-mono leading-relaxed min-h-[60px] whitespace-pre-wrap">
+                            <div className="space-y-1.5 pt-1">
+                                <span className="text-[8.5px] text-text-muted block tracking-wider">Enquiry Notes / Description</span>
+                                <div className="p-4 bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 rounded-xl text-[10.5px] normal-case text-slate-800 dark:text-slate-200 font-medium leading-relaxed min-h-[80px] whitespace-pre-wrap">
                                     {viewingInquiry.notes || 'No description notes provided for this lead.'}
                                 </div>
                             </div>
-                        </div>
 
-                        <div className="pt-2">
-                            <button type="button" onClick={() => setViewingInquiry(null)} className="w-full py-2.5 text-[9px] font-black uppercase font-mono border border-border hover:bg-slate-50 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800 transition-all">Dismiss Details</button>
+                            <div className="pt-3">
+                                <button
+                                    type="button"
+                                    onClick={() => setViewingInquiry(null)}
+                                    className="w-full py-3 text-[10px] font-black uppercase tracking-widest border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all rounded-xl cursor-pointer text-slate-700 dark:text-slate-200"
+                                >
+                                    Dismiss Overview
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>,
