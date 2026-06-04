@@ -439,9 +439,6 @@ export default function Transactions({ outletId }) {
                                         
                                         return (
                                             <tr key={t._id} className="hover:bg-slate-50/50 transition-colors relative group">
-                                                {/* Left Indicator line */}
-                                                <td className="absolute left-0 top-0 bottom-0 w-1 rounded-r-sm bg-transparent group-hover:bg-transparent" style={{ backgroundColor: isIncome ? '#10b981' : '#f43f5e' }}></td>
-                                                
                                                 <td className="pl-6 pr-6 py-4 font-bold whitespace-nowrap">
                                                     <div className="flex flex-col">
                                                         <span className="text-slate-800">
