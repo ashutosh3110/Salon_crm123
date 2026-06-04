@@ -326,8 +326,10 @@ exports.getLoyaltyMembers = async (req, res) => {
                 walletBalance: customerObj.walletBalance || 0,
                 dueAmount: customerObj.dueAmount || 0,
                 loyaltyPlan: m.planId?.name || 'Standard Plan',
+                loyaltyPlanId: m.planId?._id || null,
                 loyaltyStatus: loyaltyStatus,
                 loyaltyExpiry: m.expiryDate ? new Date(m.expiryDate).toLocaleDateString('en-IN') : 'NEVER',
+                loyaltyExpiryRaw: m.expiryDate || null,
                 createdAt: m.createdAt,
                 updatedAt: m.updatedAt,
                 invoiceId: m.invoiceId || null
@@ -579,5 +581,93 @@ exports.sendManualMembershipReminder = async (req, res) => {
     } catch (err) {
         console.error('Send manual membership reminder error:', err);
         res.status(500).json({ success: false, message: 'Server Error: ' + err.message });
+    }
+};
+
+// @desc    Update loyalty member details (customer profile + membership)
+// @route   PATCH /api/loyalty/members/:id
+// @access  Private (Admin/Manager)
+exports.updateLoyaltyMember = async (req, res) => {
+    try {
+        const customerId = req.params.id;
+        const salonId = req.user.salonId;
+        const { name, phone, loyaltyPoints, walletBalance, loyaltyPlanId, loyaltyStatus, loyaltyExpiry } = req.body;
+
+        // 1. Update Customer Profile details
+        const customer = await Customer.findOne({ _id: customerId, salonId });
+        if (!customer) {
+            return res.status(404).json({ success: false, message: 'Member customer not found' });
+        }
+
+        if (name) customer.name = name;
+        if (phone) {
+            // Check uniqueness
+            if (phone !== customer.phone) {
+                const existingPhone = await Customer.findOne({ phone });
+                if (existingPhone) {
+                    return res.status(400).json({ success: false, message: 'Customer already exists with this phone number' });
+                }
+            }
+            customer.phone = phone;
+        }
+        if (loyaltyPoints !== undefined) customer.loyaltyPoints = Number(loyaltyPoints) || 0;
+        if (walletBalance !== undefined) customer.walletBalance = Number(walletBalance) || 0;
+        await customer.save();
+
+        // 2. Update Customer Membership details
+        let membership = await CustomerMembership.findOne({ customerId, salonId });
+        if (membership) {
+            if (loyaltyPlanId) membership.planId = loyaltyPlanId;
+            if (loyaltyStatus) membership.status = loyaltyStatus;
+            if (loyaltyExpiry) membership.expiryDate = new Date(loyaltyExpiry);
+            await membership.save();
+        }
+
+        res.json({
+            success: true,
+            message: 'Member updated successfully',
+            data: {
+                _id: customer._id,
+                id: customer._id,
+                name: customer.name,
+                phone: customer.phone,
+                loyaltyPoints: customer.loyaltyPoints,
+                totalPoints: customer.loyaltyPoints,
+                walletBalance: customer.walletBalance,
+                loyaltyPlan: membership ? (await membership.populate('planId', 'name')).planId?.name : 'Standard Plan',
+                loyaltyPlanId: membership ? membership.planId?._id || membership.planId : null,
+                loyaltyStatus: membership ? membership.status : 'active',
+                loyaltyExpiry: membership && membership.expiryDate ? new Date(membership.expiryDate).toLocaleDateString('en-IN') : 'NEVER',
+                loyaltyExpiryRaw: membership ? membership.expiryDate : null,
+                createdAt: membership ? membership.createdAt : customer.createdAt,
+            }
+        });
+    } catch (err) {
+        console.error('Update loyalty member error:', err);
+        res.status(500).json({ success: false, message: err.message || 'Server Error' });
+    }
+};
+
+// @desc    Delete/Cancel loyalty membership
+// @route   DELETE /api/loyalty/members/:id
+// @access  Private (Admin/Manager)
+exports.deleteLoyaltyMember = async (req, res) => {
+    try {
+        const customerId = req.params.id;
+        const salonId = req.user.salonId;
+
+        // Find and delete/cancel the membership
+        const membership = await CustomerMembership.findOneAndDelete({ customerId, salonId });
+        if (!membership) {
+            return res.status(404).json({ success: false, message: 'Membership not found' });
+        }
+
+        res.json({
+            success: true,
+            message: 'Membership deleted successfully'
+        });
+    } catch (err) {
+        console.error('Delete loyalty member error:', err);
+        res.status(500).json({ success: false, message: err.message || 'Server Error' });
     }
 };

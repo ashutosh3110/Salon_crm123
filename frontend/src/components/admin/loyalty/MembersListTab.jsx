@@ -1,5 +1,7 @@
+/* eslint-disable */
 import { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
+import toast from 'react-hot-toast';
 import {
     Search,
     Filter,
@@ -65,6 +67,19 @@ export default function MembersListTab() {
     const [showDropdown, setShowDropdown] = useState(false);
     const dropdownRef = useRef(null);
 
+    // Edit Modal State
+    const [editingMember, setEditingMember] = useState(null);
+    const [editForm, setEditForm] = useState({
+        name: '',
+        phone: '',
+        loyaltyPoints: 0,
+        walletBalance: 0,
+        loyaltyPlanId: '',
+        loyaltyStatus: 'active',
+        loyaltyExpiry: ''
+    });
+    const [updating, setUpdating] = useState(false);
+
     useEffect(() => {
         const handleClickOutside = (event) => {
             if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -76,12 +91,12 @@ export default function MembersListTab() {
     }, []);
 
     useEffect(() => {
-        const hasOpenModal = !!selectedMember || !!showAssignModal || !!selectedInvoice;
+        const hasOpenModal = !!selectedMember || !!showAssignModal || !!selectedInvoice || !!editingMember;
         document.body.style.overflow = hasOpenModal ? 'hidden' : 'unset';
         return () => {
             document.body.style.overflow = 'unset';
         };
-    }, [selectedMember, showAssignModal, selectedInvoice]);
+    }, [selectedMember, showAssignModal, selectedInvoice, editingMember]);
 
     useEffect(() => {
         const loadMembers = async () => {
@@ -108,11 +123,13 @@ export default function MembersListTab() {
         loadMembers();
     }, [page, searchTerm, filter, activeOutletId, refreshTrigger]);
 
-    // Load membership plans when assignment modal is shown
+    // Load membership plans when assignment modal or edit modal is shown
     useEffect(() => {
-        if (showAssignModal) {
-            setSelectedOutletId(activeOutletId || '');
-            setPaymentMethod('cash');
+        if (showAssignModal || editingMember) {
+            if (showAssignModal) {
+                setSelectedOutletId(activeOutletId || '');
+                setPaymentMethod('cash');
+            }
             const fetchPlans = async () => {
                 try {
                     const res = await api.get('/loyalty/membership-plans');
@@ -123,7 +140,7 @@ export default function MembersListTab() {
             };
             fetchPlans();
         }
-    }, [showAssignModal, activeOutletId]);
+    }, [showAssignModal, editingMember, activeOutletId]);
 
     // Dynamic, debounced client query
     useEffect(() => {
@@ -215,6 +232,104 @@ export default function MembersListTab() {
             setErrorMessage(err.response?.data?.message || 'Server error occurred.');
         } finally {
             setAssigning(false);
+        }
+    };
+
+    const handleEditClick = (member) => {
+        let expiryDateStr = '';
+        if (member.loyaltyExpiryRaw) {
+            try {
+                const dateObj = new Date(member.loyaltyExpiryRaw);
+                if (!isNaN(dateObj.getTime())) {
+                    expiryDateStr = dateObj.toISOString().split('T')[0];
+                }
+            } catch (e) {
+                console.error("Error parsing loyaltyExpiryRaw:", e);
+            }
+        }
+        if (!expiryDateStr && member.loyaltyExpiry && member.loyaltyExpiry !== 'NEVER') {
+            try {
+                const cleanExpiry = String(member.loyaltyExpiry).replace(/-/g, '/');
+                const parts = cleanExpiry.split('/');
+                if (parts.length === 3) {
+                    const day = parts[0].padStart(2, '0');
+                    const month = parts[1].padStart(2, '0');
+                    const year = parts[2];
+                    expiryDateStr = `${year}-${month}-${day}`;
+                } else {
+                    const dateObj = new Date(cleanExpiry);
+                    if (!isNaN(dateObj.getTime())) {
+                        expiryDateStr = dateObj.toISOString().split('T')[0];
+                    }
+                }
+            } catch (e) {
+                console.error("Error parsing loyaltyExpiry:", e);
+            }
+        }
+        
+        setEditingMember(member);
+        setEditForm({
+            name: member.name || '',
+            phone: member.phone || '',
+            loyaltyPoints: member.loyaltyPoints || 0,
+            walletBalance: member.walletBalance || 0,
+            loyaltyPlanId: member.loyaltyPlanId || '',
+            loyaltyStatus: member.loyaltyStatus || 'active',
+            loyaltyExpiry: expiryDateStr
+        });
+    };
+
+    const handleUpdateMember = async (e) => {
+        e.preventDefault();
+        if (!editForm.name.trim() || !editForm.phone.trim()) {
+            toast.error('Name and Phone are required.');
+            return;
+        }
+        
+        setUpdating(true);
+        try {
+            const res = await api.patch(`/loyalty/members/${editingMember._id || editingMember.id}`, {
+                name: editForm.name,
+                phone: editForm.phone,
+                loyaltyPoints: Number(editForm.loyaltyPoints),
+                walletBalance: Number(editForm.walletBalance),
+                loyaltyPlanId: editForm.loyaltyPlanId || undefined,
+                loyaltyStatus: editForm.loyaltyStatus,
+                loyaltyExpiry: editForm.loyaltyExpiry || undefined
+            });
+            
+            if (res.data?.success) {
+                toast.success('Member updated successfully!');
+                setEditingMember(null);
+                setRefreshTrigger(prev => prev + 1);
+            } else {
+                toast.error(res.data?.message || 'Failed to update member.');
+            }
+        } catch (err) {
+            console.error('Update error:', err);
+            toast.error(err.response?.data?.message || 'Server error occurred while updating member.');
+        } finally {
+            setUpdating(false);
+        }
+    };
+
+    const handleDeleteMember = async (member) => {
+        const confirmCancel = window.confirm(
+            `Are you sure you want to cancel and delete the loyalty membership for ${member.name || 'this client'}?`
+        );
+        if (!confirmCancel) return;
+        
+        try {
+            const res = await api.delete(`/loyalty/members/${member._id || member.id}`);
+            if (res.data?.success) {
+                toast.success('Membership deleted successfully!');
+                setRefreshTrigger(prev => prev + 1);
+            } else {
+                toast.error(res.data?.message || 'Failed to delete membership.');
+            }
+        } catch (err) {
+            console.error('Delete error:', err);
+            toast.error(err.response?.data?.message || 'Server error occurred while deleting membership.');
         }
     };
 
@@ -490,28 +605,60 @@ export default function MembersListTab() {
                                                     <div className="flex flex-col gap-1.5">
                                                         <div className="flex items-center gap-1.5">
                                                             <Clock className="w-3.5 h-3.5 text-slate-400" />
-                                                            <span className="text-xs font-bold text-slate-700">{member.loyaltyExpiry ? new Date(member.loyaltyExpiry).toLocaleDateString('en-IN') : '14/6/2026'}</span>
+                                                            <span className="text-xs font-bold text-slate-700">{member.loyaltyExpiryRaw ? new Date(member.loyaltyExpiryRaw).toLocaleDateString('en-IN') : (member.loyaltyExpiry || 'NEVER')}</span>
                                                         </div>
                                                         <div className="ml-5">
-                                                            <span className="text-[10px] font-bold text-emerald-600 block mb-1">29 days left</span>
-                                                            <div className="w-16 h-1 bg-slate-100 rounded-full overflow-hidden">
-                                                                <div className="h-full bg-emerald-500 w-3/4 rounded-full"></div>
-                                                            </div>
+                                                            {(() => {
+                                                                if (!member.loyaltyExpiryRaw || member.loyaltyExpiry === 'NEVER') {
+                                                                    return (
+                                                                        <>
+                                                                            <span className="text-[10px] font-bold text-slate-500 block mb-1">Never Expires</span>
+                                                                            <div className="w-16 h-1 bg-slate-100 rounded-full overflow-hidden">
+                                                                                <div className="h-full bg-slate-400 w-full rounded-full"></div>
+                                                                            </div>
+                                                                        </>
+                                                                    );
+                                                                }
+                                                                const daysLeft = Math.ceil((new Date(member.loyaltyExpiryRaw) - new Date()) / (1000 * 60 * 60 * 24));
+                                                                const isExpired = daysLeft <= 0;
+                                                                const isExpiringSoon = daysLeft > 0 && daysLeft <= 7;
+                                                                
+                                                                const textColor = isExpired ? 'text-rose-500' : isExpiringSoon ? 'text-orange-500' : 'text-emerald-600';
+                                                                const barColor = isExpired ? 'bg-rose-500' : isExpiringSoon ? 'bg-orange-500' : 'bg-emerald-500';
+                                                                const progressPercent = isExpired ? 0 : Math.min(100, (daysLeft / 30) * 100);
+                                                                
+                                                                return (
+                                                                    <>
+                                                                        <span className={`text-[10px] font-bold ${textColor} block mb-1`}>
+                                                                            {isExpired ? 'Expired' : `${daysLeft} days left`}
+                                                                        </span>
+                                                                        <div className="w-16 h-1 bg-slate-100 rounded-full overflow-hidden">
+                                                                            <div className={`h-full ${barColor} rounded-full`} style={{ width: `${progressPercent}%` }}></div>
+                                                                        </div>
+                                                                    </>
+                                                                );
+                                                            })()}
                                                         </div>
                                                     </div>
                                                 </td>
                                                 <td className="px-6 py-4">
                                                     <div className="flex items-center justify-center gap-2">
                                                         <button
-                                                            onClick={() => setSelectedMember(member)}
+                                                            onClick={() => { console.log('Eye clicked', member); setSelectedMember(member); }}
                                                             className="w-8 h-8 flex items-center justify-center rounded-lg bg-slate-50 border border-slate-200 text-slate-500 hover:text-[#B4912B] hover:border-[#B4912B]/30 hover:bg-[#B4912B]/5 transition-all"
                                                         >
                                                             <Eye size={14} />
                                                         </button>
-                                                        <button className="w-8 h-8 flex items-center justify-center rounded-lg bg-slate-50 border border-slate-200 text-slate-500 hover:text-blue-600 hover:border-blue-600/30 hover:bg-blue-50 transition-all">
+                                                        <button 
+                                                            onClick={() => { console.log('Edit clicked', member); handleEditClick(member); }}
+                                                            className="w-8 h-8 flex items-center justify-center rounded-lg bg-slate-50 border border-slate-200 text-slate-500 hover:text-blue-600 hover:border-blue-600/30 hover:bg-blue-50 transition-all"
+                                                        >
                                                             <Edit2 size={14} />
                                                         </button>
-                                                        <button className="w-8 h-8 flex items-center justify-center rounded-lg bg-rose-50 border border-rose-100 text-rose-500 hover:bg-rose-500 hover:text-white hover:border-rose-500 transition-all">
+                                                        <button 
+                                                            onClick={() => { console.log('Delete clicked', member); handleDeleteMember(member); }}
+                                                            className="w-8 h-8 flex items-center justify-center rounded-lg bg-rose-50 border border-rose-100 text-rose-500 hover:bg-rose-500 hover:text-white hover:border-rose-500 transition-all"
+                                                        >
                                                             <Trash2 size={14} />
                                                         </button>
                                                     </div>
@@ -554,45 +701,41 @@ export default function MembersListTab() {
             </div>
 
             {/* Member Details Modal */}
-            <AnimatePresence>
-                {selectedMember && createPortal(
+            {selectedMember && createPortal(
+                <div
+                    className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-[#0f172a]/60 backdrop-blur-sm transition-all overflow-hidden"
+                    onClick={() => setSelectedMember(null)}
+                >
                     <div
-                        className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm"
-                        onClick={() => setSelectedMember(null)}
+                        className="bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-800 w-full max-w-lg overflow-hidden shadow-2xl rounded-xl font-sans text-slate-800 dark:text-slate-200 flex flex-col max-h-[85vh] overflow-y-auto admin-panel"
+                        onClick={e => e.stopPropagation()}
                     >
-                        <motion.div
-                            initial={{ opacity: 0, scale: 0.95, y: 20 }}
-                            animate={{ opacity: 1, scale: 1, y: 0 }}
-                            exit={{ opacity: 0, scale: 0.95, y: 20 }}
-                            className="bg-white border border-slate-200 w-full max-w-lg overflow-hidden shadow-2xl rounded-xl font-sans text-slate-800"
-                            onClick={e => e.stopPropagation()}
-                        >
                             {/* Modal Header */}
-                            <div className="bg-white border-b border-slate-100 px-6 py-5 flex items-center justify-between">
+                            <div className="bg-white dark:bg-[#0f172a] border-b border-slate-100 dark:border-slate-800 px-6 py-5 flex items-center justify-between">
                                 <div className="flex items-center gap-3">
-                                    <ShieldCheck className="w-5 h-5 text-primary" />
-                                    <h3 className="text-sm font-black text-slate-900 uppercase tracking-widest italic">Member Protocol Details</h3>
+                                    <ShieldCheck className="w-5 h-5 text-[#B4912B]" />
+                                    <h3 className="text-sm font-black text-slate-900 dark:text-white uppercase tracking-widest italic">Member Protocol Details</h3>
                                 </div>
                                 <button
                                     onClick={() => setSelectedMember(null)}
-                                    className="p-2 rounded-xl hover:bg-slate-100 text-slate-400 hover:text-rose-500 transition-colors"
+                                    className="p-2 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 hover:text-rose-500 transition-colors"
                                 >
                                     <X size={20} />
                                 </button>
                             </div>
 
                             {/* Modal Body */}
-                            <div className="p-8 space-y-6">
+                            <div className="p-8 space-y-6 text-left">
                                 {/* Profile Header */}
                                 <div className="flex items-center gap-5">
-                                    <div className="w-16 h-16 bg-primary/10 border-2 border-primary/20 flex items-center justify-center text-primary text-2xl font-black italic shadow-inner">
+                                    <div className="w-16 h-16 bg-[#B4912B]/10 border-2 border-[#B4912B]/20 flex items-center justify-center text-[#B4912B] text-2xl font-black italic shadow-inner">
                                         {(selectedMember.name || 'U')[0]}
                                     </div>
                                     <div>
-                                        <h4 className="text-xl font-black text-slate-900 italic tracking-tight leading-none">
+                                        <h4 className="text-xl font-black text-slate-900 dark:text-white italic tracking-tight leading-none">
                                             {selectedMember.name || 'Unknown Client'}
                                         </h4>
-                                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] mt-2">
+                                        <p className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.3em] mt-2">
                                             {maskPhone(selectedMember.phone || '', user?.role)}
                                         </p>
                                     </div>
@@ -600,78 +743,232 @@ export default function MembersListTab() {
 
                                 {/* Subscription Grid */}
                                 <div className="grid grid-cols-2 gap-4">
-                                    <div className="p-4 bg-slate-50 border border-slate-200 group hover:border-primary/30 transition-all text-left">
-                                        <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-1.5">Current Tier</span>
-                                        <span className="text-sm font-black text-primary uppercase italic">{selectedMember.loyaltyPlan || 'STANDARD'}</span>
+                                    <div className="p-4 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-800 group hover:border-[#B4912B]/30 transition-all text-left">
+                                        <span className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest block mb-1.5">Current Tier</span>
+                                        <span className="text-sm font-black text-[#B4912B] uppercase italic">{selectedMember.loyaltyPlan || 'STANDARD'}</span>
                                     </div>
-                                    <div className="p-4 bg-slate-50 border border-slate-200 group hover:border-emerald-500/30 transition-all text-left">
-                                        <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-1.5">Protocol Status</span>
+                                    <div className="p-4 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-800 group hover:border-emerald-500/30 transition-all text-left">
+                                        <span className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest block mb-1.5">Protocol Status</span>
                                         <StatusBadge status={selectedMember.loyaltyStatus || 'active'} />
                                     </div>
-                                    <div className="p-4 bg-slate-50 border border-slate-200 group hover:border-slate-300 transition-all text-left">
-                                        <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-1.5">Activation Date</span>
-                                        <span className="text-sm font-black text-slate-900 italic">{new Date(selectedMember.createdAt).toLocaleDateString()}</span>
+                                    <div className="p-4 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-800 group hover:border-slate-300 dark:hover:border-slate-700 transition-all text-left">
+                                        <span className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest block mb-1.5">Activation Date</span>
+                                        <span className="text-sm font-black text-slate-900 dark:text-white italic">
+                                            {selectedMember.createdAt && !isNaN(new Date(selectedMember.createdAt).getTime()) ? new Date(selectedMember.createdAt).toLocaleDateString('en-IN') : '-'}
+                                        </span>
                                     </div>
-                                    <div className="p-4 bg-slate-50 border border-slate-200 group hover:border-slate-300 transition-all text-left">
-                                        <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-1.5">Expiry Timeline</span>
-                                        <span className="text-sm font-black text-slate-900 italic">{selectedMember.loyaltyExpiry || 'NEVER'}</span>
+                                    <div className="p-4 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-800 group hover:border-slate-300 dark:hover:border-slate-700 transition-all text-left">
+                                        <span className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest block mb-1.5">Expiry Timeline</span>
+                                        <span className="text-sm font-black text-slate-900 dark:text-white italic">{selectedMember.loyaltyExpiry || 'NEVER'}</span>
                                     </div>
                                 </div>
 
                                 {/* Points Wallet */}
-                                <div className="p-6 bg-primary/5 border border-primary/20 flex items-center justify-between">
+                                <div className="p-6 bg-[#B4912B]/5 dark:bg-[#B4912B]/10 border border-[#B4912B]/20 flex items-center justify-between">
                                     <div className="flex items-center gap-3">
-                                        <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                                            <Star className="w-5 h-5 text-primary" fill="currentColor" />
+                                        <div className="w-10 h-10 rounded-full bg-[#B4912B]/10 flex items-center justify-center">
+                                            <Star className="w-5 h-5 text-[#B4912B]" fill="currentColor" />
                                         </div>
                                         <div className="text-left">
-                                            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block leading-none mb-1">Accumulated Points</span>
-                                            <span className="text-xs font-bold text-slate-500 uppercase tracking-tighter">Loyalty Ledger Balance</span>
+                                            <span className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest block leading-none mb-1">Accumulated Points</span>
+                                            <span className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-tighter">Loyalty Ledger Balance</span>
                                         </div>
                                     </div>
-                                    <div className="text-3xl font-black text-primary italic tracking-tighter">
+                                    <div className="text-3xl font-black text-[#B4912B] italic tracking-tighter">
                                         {Number(selectedMember.totalPoints || 0)}
                                     </div>
                                 </div>
                             </div>
 
                             {/* Modal Footer */}
-                            <div className="bg-slate-50 border-t border-slate-100 px-6 py-4 flex justify-end">
+                            <div className="bg-slate-50 dark:bg-slate-900/50 border-t border-slate-100 dark:border-slate-800 px-6 py-4 flex justify-end">
                                 <button
                                     onClick={() => setSelectedMember(null)}
-                                    className="px-6 py-2.5 bg-slate-900 hover:bg-primary text-white text-[10px] font-black uppercase tracking-[0.2em] transition-all shadow-lg rounded-xl"
+                                    className="px-6 py-2.5 bg-slate-900 dark:bg-slate-800 hover:bg-[#B4912B] dark:hover:bg-[#B4912B] text-white text-[10px] font-black uppercase tracking-[0.2em] transition-all shadow-lg rounded-xl"
                                 >
                                     Close Registry
                                 </button>
                             </div>
-                        </motion.div>
-                    </div>,
-                    document.body
-                )}
-            </AnimatePresence>
+                    </div>
+                </div>,
+                document.body
+            )}
+
+            {/* Edit Member Profile Modal */}
+            {editingMember && createPortal(
+                <div
+                    className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-[#0f172a]/60 backdrop-blur-sm transition-all overflow-hidden"
+                    onClick={() => setEditingMember(null)}
+                >
+                    <div
+                        className="bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-800 w-full max-w-lg overflow-hidden shadow-2xl rounded-xl font-sans text-slate-800 dark:text-slate-200 flex flex-col max-h-[85vh] overflow-y-auto admin-panel"
+                        onClick={e => e.stopPropagation()}
+                    >
+                            {/* Modal Header */}
+                            <div className="bg-white dark:bg-[#0f172a] border-b border-slate-100 dark:border-slate-800 px-6 py-5 flex items-center justify-between shrink-0">
+                                <div className="flex items-center gap-3">
+                                    <Settings className="w-5 h-5 text-[#B4912B]" />
+                                    <h3 className="text-sm font-black text-slate-900 dark:text-white uppercase tracking-widest italic">Modify Member Profile</h3>
+                                </div>
+                                <button
+                                    onClick={() => setEditingMember(null)}
+                                    className="p-2 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 hover:text-rose-500 transition-colors"
+                                >
+                                    <X size={20} />
+                                </button>
+                            </div>
+
+                            {/* Modal Body / Form */}
+                            <form onSubmit={handleUpdateMember} className="p-8 space-y-5 text-left overflow-y-auto no-scrollbar flex-1">
+                                {/* Basic Info Section Title */}
+                                <div>
+                                    <h4 className="text-[10px] font-black text-[#B4912B] uppercase tracking-[0.2em] mb-4">Customer Details</h4>
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                        <div>
+                                            <label className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest block mb-1.5">Full Name</label>
+                                            <input
+                                                type="text"
+                                                required
+                                                value={editForm.name}
+                                                onChange={e => setEditForm(prev => ({ ...prev, name: e.target.value }))}
+                                                className="w-full h-11 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-4 text-xs font-bold text-slate-950 dark:text-white focus:border-[#B4912B] outline-none transition-all shadow-sm rounded-xl"
+                                                placeholder="Enter full name"
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest block mb-1.5">Phone Number</label>
+                                            <input
+                                                type="text"
+                                                required
+                                                value={editForm.phone}
+                                                onChange={e => setEditForm(prev => ({ ...prev, phone: e.target.value }))}
+                                                className="w-full h-11 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-4 text-xs font-bold text-slate-950 dark:text-white focus:border-[#B4912B] outline-none transition-all shadow-sm rounded-xl"
+                                                placeholder="Enter phone number"
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="h-[1px] bg-slate-100 dark:bg-slate-800" />
+
+                                {/* Balances / Ledger Section */}
+                                <div>
+                                    <h4 className="text-[10px] font-black text-[#B4912B] uppercase tracking-[0.2em] mb-4">Financial Ledger</h4>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div>
+                                            <label className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest block mb-1.5">Loyalty Points</label>
+                                            <input
+                                                type="number"
+                                                min="0"
+                                                value={editForm.loyaltyPoints}
+                                                onChange={e => setEditForm(prev => ({ ...prev, loyaltyPoints: Number(e.target.value) }))}
+                                                className="w-full h-11 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-4 text-xs font-bold text-slate-950 dark:text-white focus:border-[#B4912B] outline-none transition-all shadow-sm rounded-xl"
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest block mb-1.5">Wallet Balance (₹)</label>
+                                            <input
+                                                type="number"
+                                                min="0"
+                                                step="0.01"
+                                                value={editForm.walletBalance}
+                                                onChange={e => setEditForm(prev => ({ ...prev, walletBalance: Number(e.target.value) }))}
+                                                className="w-full h-11 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-4 text-xs font-bold text-slate-950 dark:text-white focus:border-[#B4912B] outline-none transition-all shadow-sm rounded-xl"
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="h-[1px] bg-slate-100 dark:bg-slate-800" />
+
+                                {/* Subscription Section */}
+                                <div>
+                                    <h4 className="text-[10px] font-black text-[#B4912B] uppercase tracking-[0.2em] mb-4">Membership Subscription</h4>
+                                    <div className="space-y-4">
+                                        <div>
+                                            <label className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest block mb-1.5">Assigned Plan</label>
+                                            <select
+                                                value={editForm.loyaltyPlanId}
+                                                onChange={e => setEditForm(prev => ({ ...prev, loyaltyPlanId: e.target.value }))}
+                                                className="w-full h-11 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-4 text-xs font-bold text-slate-950 dark:text-white focus:border-[#B4912B] outline-none transition-all shadow-sm rounded-xl"
+                                            >
+                                                <option value="">-- No Active Plan / Standard --</option>
+                                                {plans.map(p => (
+                                                    <option key={p._id || p.id} value={p._id || p.id}>
+                                                        {p.name} - ₹{p.price} ({p.duration} Days)
+                                                    </option>
+                                                ))}
+                                            </select>
+                                        </div>
+
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <div>
+                                                <label className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest block mb-1.5">Status</label>
+                                                <select
+                                                    value={editForm.loyaltyStatus}
+                                                    onChange={e => setEditForm(prev => ({ ...prev, loyaltyStatus: e.target.value }))}
+                                                    className="w-full h-11 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-4 text-xs font-bold text-slate-950 dark:text-white focus:border-[#B4912B] outline-none transition-all shadow-sm rounded-xl"
+                                                >
+                                                    <option value="active">Active</option>
+                                                    <option value="expired">Expired</option>
+                                                    <option value="cancelled">Cancelled</option>
+                                                </select>
+                                            </div>
+                                            <div>
+                                                <label className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest block mb-1.5">Expiry Date</label>
+                                                <input
+                                                    type="date"
+                                                    value={editForm.loyaltyExpiry}
+                                                    style={{ colorScheme: 'dark' }}
+                                                    onChange={e => setEditForm(prev => ({ ...prev, loyaltyExpiry: e.target.value }))}
+                                                    className="w-full h-11 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-4 text-xs font-bold text-slate-950 dark:text-white focus:border-[#B4912B] outline-none transition-all shadow-sm rounded-xl"
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </form>
+
+                            {/* Modal Footer / Actions */}
+                            <div className="bg-slate-50 dark:bg-slate-900/50 border-t border-slate-100 dark:border-slate-800 px-8 py-4 flex justify-end gap-3 shrink-0">
+                                <button
+                                    type="button"
+                                    onClick={() => setEditingMember(null)}
+                                    className="px-6 py-2.5 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 bg-white dark:bg-slate-800 text-[10px] font-black uppercase tracking-[0.2em] rounded-xl transition-all"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    onClick={handleUpdateMember}
+                                    disabled={updating}
+                                    className="px-6 py-2.5 bg-slate-900 dark:bg-slate-850 text-white text-[10px] font-black uppercase tracking-[0.2em] hover:bg-[#B4912B] dark:hover:bg-[#B4912B] transition-all disabled:opacity-50 flex items-center gap-2 rounded-xl shadow-lg"
+                                >
+                                    {updating ? 'Saving...' : 'Save Adjustments'}
+                                </button>
+                            </div>
+                    </div>
+                </div>,
+                document.body
+            )}
 
             {/* Assign Membership Plan Modal */}
-            <AnimatePresence>
-                {showAssignModal && createPortal(
+            {showAssignModal && createPortal(
+                <div
+                    className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm"
+                    onClick={() => {
+                        setShowAssignModal(false);
+                        setSelectedCustomerId('');
+                        setSelectedCustomer(null);
+                        setSelectedPlanId('');
+                        setSearchCustomerTerm('');
+                        setErrorMessage('');
+                        setSuccessMessage('');
+                    }}
+                >
                     <div
-                        className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm"
-                        onClick={() => {
-                            setShowAssignModal(false);
-                            setSelectedCustomerId('');
-                            setSelectedCustomer(null);
-                            setSelectedPlanId('');
-                            setSearchCustomerTerm('');
-                            setErrorMessage('');
-                            setSuccessMessage('');
-                        }}
+                        className="bg-white border border-slate-200 w-full max-w-lg overflow-hidden shadow-2xl rounded-xl font-sans text-slate-800 flex flex-col max-h-[90vh]"
+                        onClick={e => e.stopPropagation()}
                     >
-                        <motion.div
-                            initial={{ opacity: 0, scale: 0.95, y: 20 }}
-                            animate={{ opacity: 1, scale: 1, y: 0 }}
-                            exit={{ opacity: 0, scale: 0.95, y: 20 }}
-                            className="bg-white border border-slate-200 w-full max-w-lg overflow-hidden shadow-2xl rounded-xl font-sans text-slate-800 flex flex-col max-h-[90vh]"
-                            onClick={e => e.stopPropagation()}
-                        >
                             {/* Modal Header */}
                             <div className="bg-white border-b border-slate-100 px-6 py-5 flex items-center justify-between shrink-0">
                                 <div className="flex items-center gap-3">
@@ -990,26 +1287,21 @@ export default function MembersListTab() {
                                     {assigning ? 'Activating...' : 'Activate Subscription'}
                                 </button>
                             </div>
-                        </motion.div>
+                        </div>
                     </div>,
                     document.body
                 )}
-            </AnimatePresence>
 
             {/* Invoice Preview Modal (Standard/Thermal) */}
-            <AnimatePresence>
-                {selectedInvoice && createPortal(
+            {selectedInvoice && createPortal(
+                <div
+                    className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm no-print"
+                    onClick={() => setSelectedInvoice(null)}
+                >
                     <div
-                        className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm no-print"
-                        onClick={() => setSelectedInvoice(null)}
+                        className="bg-white border border-slate-200 w-full max-w-2xl overflow-hidden shadow-2xl rounded-xl font-sans flex flex-col max-h-[90vh]"
+                        onClick={e => e.stopPropagation()}
                     >
-                        <motion.div
-                            initial={{ opacity: 0, scale: 0.95, y: 20 }}
-                            animate={{ opacity: 1, scale: 1, y: 0 }}
-                            exit={{ opacity: 0, scale: 0.95, y: 20 }}
-                            className="bg-white border border-slate-200 w-full max-w-2xl overflow-hidden shadow-2xl rounded-xl font-sans flex flex-col max-h-[90vh]"
-                            onClick={e => e.stopPropagation()}
-                        >
                             {/* Modal Header */}
                             <div className="bg-white border-b border-slate-100 px-6 py-5 flex items-center justify-between shrink-0">
                                 <div className="flex items-center gap-3">
@@ -1241,11 +1533,10 @@ export default function MembersListTab() {
                                     <Printer className="w-4 h-4" /> Print Receipt
                                 </button>
                             </div>
-                        </motion.div>
+                        </div>
                     </div>,
                     document.body
                 )}
-            </AnimatePresence>
         </div>
     );
 }
