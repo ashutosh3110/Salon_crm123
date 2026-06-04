@@ -1,0 +1,521 @@
+﻿commit c70e25d0438f7d875eb516870d6e5b7a4d9cd85a
+Author: chiragjeevanani <chiragjeevanani333@gmail.com>
+Date:   Wed Jun 3 16:12:31 2026 +0530
+
+    pos
+
+diff --git a/frontend/src/pages/pos/POSBillingPage.jsx b/frontend/src/pages/pos/POSBillingPage.jsx
+index 71518b4..598c305 100644
+--- a/frontend/src/pages/pos/POSBillingPage.jsx
++++ b/frontend/src/pages/pos/POSBillingPage.jsx
+@@ -7,7 +7,7 @@ import {
+     Sparkles, User, UserPlus, ArrowRight, Percent, Info,
+     Tag, Star, Wallet, Printer, Banknote, Smartphone, FileText, Download,
+     ShoppingBag, CreditCard, Ticket, Gift, History, Calendar, Globe, Building2, ChevronDown,
+-    AlertTriangle, CheckCircle2, UserMinus, LayoutGrid, ArrowDown, ChevronLeft, Crown
++    AlertTriangle, CheckCircle2, UserMinus, LayoutGrid, ArrowDown, ChevronLeft, Crown, Clock
+ } from 'lucide-react';
+ import api from '../../services/api';
+ import {
+@@ -1586,76 +1586,90 @@ export default function POSBillingPage() {
+     return (
+         <div className="flex flex-col h-[calc(100vh-125px)] lg:h-[calc(100vh-115px)] mt-0 overflow-hidden bg-slate-50">
+             {/* Top Bar: Outlet and Client */}
+-            <div className="flex items-center justify-between px-4 py-3 bg-white border-b border-slate-200 shrink-0">
++            <div className="flex items-center justify-start gap-8 px-6 py-4 bg-white border-b border-slate-200 shrink-0">
+                 {/* Outlet */}
+-                <div className="relative">
+-                    <button
+-                        onClick={() => !(appointmentId || orderId) && setShowOutletPickerMain(!showOutletPickerMain)}
+-                        className={`flex items-center gap-2 text-sm font-bold text-slate-800 ${(appointmentId || orderId) ? 'opacity-80 cursor-not-allowed' : ''}`}
+-                    >
+-                        <Building2 className="w-4 h-4 text-slate-400" />
+-                        <span className="uppercase tracking-tight">
+-                            {(() => {
+-                                const booking = appointmentId ? businessBookings?.find(b => b._id === appointmentId) : null;
+-                                const order = orderId ? businessOrders?.find(o => o._id === orderId) : null;
+-                                const bOutletId = (booking || order) ? (booking?.outletId?._id || booking?.outletId || order?.outletId?._id || order?.outletId) : activeOutletId;
+-                                const sel = outlets.find(o => String(o._id) === String(bOutletId));
+-                                return sel ? sel.name : 'Select Outlet';
+-                            })()}
+-                        </span>
+-                        {!(appointmentId || orderId) && <ChevronDown className="w-4 h-4 text-slate-400" />}
+-                    </button>
+-                    <AnimatePresence>
+-                        {showOutletPickerMain && !appointmentId && (
+-                            <motion.div
+-                                initial={{ opacity: 0, y: 6 }}
+-                                animate={{ opacity: 1, y: 0 }}
+-                                exit={{ opacity: 0, y: 6 }}
+-                                className="absolute top-full left-0 mt-2 bg-white border border-slate-200 shadow-xl rounded-xl overflow-hidden z-[80] min-w-[200px]"
+-                            >
+-                                {outlets.map(o => (
+-                                    <button
+-                                        key={o._id}
+-                                        onClick={() => { setActiveOutletId(o._id); setShowOutletPickerMain(false); }}
+-                                        className={`w-full text-left px-4 py-3 text-xs font-bold uppercase border-b border-slate-100 last:border-0 hover:bg-slate-50 transition-colors ${String(o._id) === String(activeOutletId) ? 'text-primary bg-primary/5' : 'text-slate-800'}`}
+-                                    >
+-                                        {o.name}
+-                                    </button>
+-                                ))}
+-                            </motion.div>
+-                        )}
+-                    </AnimatePresence>
++                <div className="flex flex-col">
++                    <div className="flex items-center gap-1.5 text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1.5">
++                        <Building2 className="w-3.5 h-3.5 text-slate-400" /> OUTLET
++                    </div>
++                    <div className="relative">
++                        <button
++                            onClick={() => !(appointmentId || orderId) && setShowOutletPickerMain(!showOutletPickerMain)}
++                            className={`flex items-center gap-3 bg-white border border-slate-200 rounded-xl p-2 h-[52px] w-[280px] shadow-sm text-left ${(appointmentId || orderId) ? 'opacity-80 cursor-not-allowed' : ''}`}
++                        >
++                            <div className="w-9 h-9 rounded-lg bg-[#0f172a] flex items-center justify-center font-bold shrink-0 overflow-hidden">
++                                <Building2 className="w-5 h-5 text-[#B4912B]" />
++                            </div>
++                            <div className="flex-1 min-w-0">
++                                <span className="block text-xs font-bold text-slate-800 uppercase truncate">
++                                    {(() => {
++                                        const booking = appointmentId ? businessBookings?.find(b => b._id === appointmentId) : null;
++                                        const order = orderId ? businessOrders?.find(o => o._id === orderId) : null;
++                                        const bOutletId = (booking || order) ? (booking?.outletId?._id || booking?.outletId || order?.outletId?._id || order?.outletId) : activeOutletId;
++                                        const sel = outlets.find(o => String(o._id) === String(bOutletId));
++                                        return sel ? sel.name : 'Select Outlet';
++                                    })()}
++                                </span>
++                            </div>
++                            {!(appointmentId || orderId) && <ChevronDown className="w-4 h-4 text-slate-400 shrink-0" />}
++                        </button>
++                        <AnimatePresence>
++                            {showOutletPickerMain && !appointmentId && (
++                                <motion.div
++                                    initial={{ opacity: 0, y: 6 }}
++                                    animate={{ opacity: 1, y: 0 }}
++                                    exit={{ opacity: 0, y: 6 }}
++                                    className="absolute top-full left-0 mt-2 bg-white border border-slate-200 shadow-xl rounded-xl overflow-hidden z-[80] min-w-[200px]"
++                                >
++                                    {outlets.map(o => (
++                                        <button
++                                            key={o._id}
++                                            onClick={() => { setActiveOutletId(o._id); setShowOutletPickerMain(false); }}
++                                            className={`w-full text-left px-4 py-3 text-xs font-bold uppercase border-b border-slate-100 last:border-0 hover:bg-slate-50 transition-colors ${String(o._id) === String(activeOutletId) ? 'text-[#B4912B] bg-[#B4912B]/5' : 'text-slate-800'}`}
++                                        >
++                                            {o.name}
++                                        </button>
++                                    ))}
++                                </motion.div>
++                            )}
++                        </AnimatePresence>
++                    </div>
+                 </div>
+ 
+                 {/* Client Search */}
+-                <div className="flex items-center gap-4">
+-                    <div className="flex items-center gap-2 font-bold text-slate-600 text-sm uppercase tracking-widest">
+-                        <User className="w-4 h-4" /> Client
++                <div className="flex flex-col">
++                    <div className="flex items-center gap-1.5 text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1.5">
++                        <User className="w-3.5 h-3.5 text-slate-400" /> CLIENT
+                     </div>
+                     <div className="flex items-center gap-2">
+                         {selectedClient ? (
+-                            <div className="flex items-center gap-3 bg-white border border-slate-200 rounded-full pl-4 pr-1 py-1 shadow-sm">
+-                                <div className="flex flex-col">
+-                                    <span className="text-xs font-bold text-slate-900 uppercase">{selectedClient.name}</span>
+-                                    <span className="text-[10px] text-slate-500 font-semibold">{maskPhone(selectedClient.phone, user?.role)}</span>
++                            <div className="flex items-center justify-between bg-white border border-slate-200 rounded-xl p-2 shadow-sm w-[320px] h-[52px]">
++                                <div className="flex items-center gap-3 min-w-0">
++                                    <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-600 font-bold shrink-0">
++                                        <User className="w-4 h-4" />
++                                    </div>
++                                    <div className="flex flex-col min-w-0">
++                                        <span className="text-xs font-bold text-slate-900 uppercase truncate">{selectedClient.name}</span>
++                                        <span className="text-[10px] text-slate-500 font-semibold">{maskPhone(selectedClient.phone, user?.role)}</span>
++                                    </div>
+                                 </div>
+-                                <button onClick={() => setSelectedClient(null)} className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-400 hover:text-rose-500 hover:bg-rose-50 transition-all">
++                                <button onClick={() => setSelectedClient(null)} className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-400 hover:text-rose-500 hover:bg-rose-50 transition-all shrink-0">
+                                     <X className="w-4 h-4" />
+                                 </button>
+                             </div>
+                         ) : (
+-                            <div className="relative group">
+-                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
++                            <div className="relative w-[320px]">
++                                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                                 <input
+                                     type="text"
+                                     placeholder="Search client name or mobile..."
+                                     value={searchClient}
+                                     onChange={(e) => setSearchClient(e.target.value)}
+-                                    className="w-[280px] pl-10 pr-4 py-2 bg-white border border-slate-200 text-sm font-semibold rounded-full outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all shadow-sm"
++                                    className="w-full pl-11 pr-12 py-3 bg-white border border-slate-200 text-xs font-semibold rounded-xl outline-none focus:border-[#B4912B] focus:ring-2 focus:ring-[#B4912B]/10 transition-all shadow-sm h-[52px]"
+                                 />
+                                 <button 
+                                     onClick={() => setShowNewClient(true)}
+-                                    className="absolute right-2 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-600 transition-colors"
++                                    className="absolute right-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-lg bg-slate-50 hover:bg-slate-100 flex items-center justify-center text-slate-600 border border-slate-200 transition-colors"
+                                 >
+                                     <UserPlus className="w-4 h-4" />
+                                 </button>
+@@ -1676,23 +1690,23 @@ export default function POSBillingPage() {
+                                 setActiveTab('services');
+                                 setServiceMode('services');
+                             }}
+-                            className={`flex-1 py-4 px-6 rounded-xl font-black text-sm uppercase tracking-widest flex items-center justify-center gap-2 transition-all shadow-sm ${
++                            className={`flex-1 py-4 px-6 rounded-xl font-black text-sm uppercase tracking-widest flex items-center justify-center gap-2 transition-all shadow-sm border ${
+                                 activeTab === 'services' && serviceMode === 'services'
+-                                    ? 'bg-[#B4912B] text-white'
+-                                    : 'bg-white text-slate-500 hover:bg-slate-100 border border-slate-200'
++                                    ? 'bg-[#B4912B] text-white border-[#B4912B]'
++                                    : 'bg-white text-slate-500 hover:bg-slate-50 border-slate-200'
+                             }`}
+                         >
+-                            <Scissors className="w-4 h-4" /> SERVICES
++                            <span className="font-bold text-base">%</span> SERVICES
+                         </button>
+                         <button
+                             onClick={() => {
+                                 setActiveTab('products');
+                                 setServiceMode('products');
+                             }}
+-                            className={`flex-1 py-4 px-6 rounded-xl font-black text-sm uppercase tracking-widest flex items-center justify-center gap-2 transition-all shadow-sm ${
++                            className={`flex-1 py-4 px-6 rounded-xl font-black text-sm uppercase tracking-widest flex items-center justify-center gap-2 transition-all shadow-sm border ${
+                                 activeTab === 'products'
+-                                    ? 'bg-[#B4912B] text-white'
+-                                    : 'bg-white text-slate-500 hover:bg-slate-100 border border-slate-200'
++                                    ? 'bg-[#B4912B] text-white border-[#B4912B]'
++                                    : 'bg-white text-slate-500 hover:bg-slate-50 border-slate-200'
+                             }`}
+                         >
+                             <Package className="w-4 h-4" /> PRODUCTS
+@@ -1702,13 +1716,12 @@ export default function POSBillingPage() {
+                     {/* Category Header */}
+                     <div className="flex items-center justify-between mb-4 shrink-0 px-2">
+                         <div className="flex items-center gap-2">
+-                            <button className="text-slate-400 hover:text-slate-800 transition-colors">
+-                                <ChevronLeft className="w-5 h-5" />
++                            <button className="text-slate-500 hover:text-slate-800 transition-colors flex items-center gap-1 font-bold text-sm">
++                                <ChevronLeft className="w-4 h-4" /> FACIAL SERVICES
+                             </button>
+-                            <h2 className="text-sm font-bold text-slate-800 uppercase tracking-wider">FACIAL SERVICES</h2>
+                         </div>
+                         <div className="flex items-center gap-4">
+-                            <span className="bg-slate-200 text-slate-600 px-3 py-1 rounded-full text-xs font-bold shadow-inner">
++                            <span className="bg-[#B4912B]/10 text-[#B4912B] px-3.5 py-1 rounded-full text-xs font-bold border border-[#B4912B]/20">
+                                 {filteredItems.length} Services
+                             </span>
+                             <button className="text-slate-400 hover:text-slate-800 transition-colors">
+@@ -1730,21 +1743,20 @@ export default function POSBillingPage() {
+                                 <button
+                                     key={item.id || item._id}
+                                     onClick={() => addToCart(item)}
+-                                    className={`bg-white rounded-xl p-4 flex items-start gap-4 text-left hover:shadow-md transition-all active:scale-95 border ${
++                                    className={`bg-white rounded-xl p-4 flex items-center gap-4 text-left hover:shadow-md transition-all active:scale-95 border ${
+                                         isSelected ? 'border-[#B4912B] shadow-sm ring-1 ring-[#B4912B]/50' : 'border-slate-200'
+                                     }`}
+                                 >
+                                     <div className="w-12 h-12 rounded-full bg-[#fdfaf2] border border-[#f3e7c8] flex items-center justify-center shrink-0 overflow-hidden text-[#B4912B]">
+-                                        {/* Mocking icons based on name slightly, or just generic */}
+-                                        <Sparkles className="w-6 h-6 opacity-80" />
++                                        <Sparkles className="w-5 h-5 opacity-80" />
+                                     </div>
+                                     <div className="flex flex-col flex-1 overflow-hidden">
+                                         <h4 className="text-xs font-bold text-slate-900 leading-tight mb-1 truncate">{item.name}</h4>
+-                                        <p className="text-[10px] font-semibold text-slate-500 mb-2 flex items-center gap-1">
+-                                            <span className="w-3 h-3 rounded-full border border-slate-300 flex items-center justify-center text-[7px]">≡ƒòÆ</span>
+-                                            {item.duration || 60} min
+-                                        </p>
+-                                        <p className="text-sm font-bold text-slate-800 mt-auto">Γé╣{item.price}</p>
++                                        <div className="flex items-center gap-1 mb-2">
++                                            <Clock className="w-3 h-3 text-slate-400" />
++                                            <span className="text-[10px] font-semibold text-slate-500">{item.duration || 60} min</span>
++                                        </div>
++                                        <p className="text-xs font-black text-[#B4912B]">Γé╣{item.price}</p>
+                                     </div>
+                                 </button>
+                             );
+@@ -1753,10 +1765,10 @@ export default function POSBillingPage() {
+                         <button
+                             className="bg-white rounded-xl p-4 flex items-center justify-center gap-3 text-left hover:bg-slate-50 transition-all border-2 border-dashed border-[#B4912B]/30 h-full min-h-[100px]"
+                         >
+-                            <div className="w-8 h-8 rounded-full bg-[#fdfaf2] text-[#B4912B] flex items-center justify-center">
+-                                <Plus className="w-5 h-5" />
++                            <div className="w-8 h-8 rounded-full bg-[#fdfaf2] text-[#B4912B] flex items-center justify-center border border-[#B4912B]/20">
++                                <Plus className="w-4 h-4" />
+                             </div>
+-                            <span className="text-xs font-bold text-[#B4912B]">Add Custom Service</span>
++                            <span className="text-xs font-black uppercase tracking-wider text-[#B4912B]">Add Custom Service</span>
+                         </button>
+                     </div>
+ 
+@@ -1852,31 +1864,33 @@ export default function POSBillingPage() {
+                     </div>
+ 
+                     {/* Summary Totals & Payment Row */}
+-                    <div className="mt-4 bg-white rounded-xl p-4 border border-slate-200 shadow-sm flex items-center justify-between shrink-0 overflow-x-auto gap-4">
+-                        <div className="flex gap-6 shrink-0">
+-                            <div className="flex flex-col">
+-                                <span className="text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-1">SUBTOTAL</span>
+-                                <span className="text-sm font-bold text-slate-900">Γé╣{totals.subtotal.toFixed(2)}</span>
++                    <div className="mt-4 bg-white rounded-xl p-4 border border-slate-200 shadow-sm flex flex-col md:flex-row items-stretch md:items-center justify-between shrink-0 gap-4 overflow-x-auto">
++                        <div className="flex flex-wrap items-center gap-4 shrink-0">
++                            <div className="bg-slate-50 border border-slate-100 rounded-xl px-4 py-2.5 min-w-[90px]">
++                                <span className="block text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">SUBTOTAL</span>
++                                <span className="text-sm font-black text-slate-800">Γé╣{totals.subtotal.toFixed(2)}</span>
+                             </div>
+-                            <div className="flex flex-col">
+-                                <span className="text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-1">CGST ({(totals.serviceGstRate)/2}%)</span>
+-                                <span className="text-sm font-bold text-slate-900">Γé╣{totals.cgst.toFixed(2)}</span>
++                            <div className="bg-slate-50 border border-slate-100 rounded-xl px-4 py-2.5 min-w-[95px]">
++                                <span className="block text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">CGST ({(totals.serviceGstRate)/2}%)</span>
++                                <span className="text-sm font-black text-slate-800">Γé╣{totals.cgst.toFixed(2)}</span>
+                             </div>
+-                            <div className="flex flex-col">
+-                                <span className="text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-1">SGST ({(totals.serviceGstRate)/2}%)</span>
+-                                <span className="text-sm font-bold text-slate-900">Γé╣{totals.sgst.toFixed(2)}</span>
++                            <div className="bg-slate-50 border border-slate-100 rounded-xl px-4 py-2.5 min-w-[95px]">
++                                <span className="block text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">SGST ({(totals.serviceGstRate)/2}%)</span>
++                                <span className="text-sm font-black text-slate-800">Γé╣{totals.sgst.toFixed(2)}</span>
+                             </div>
+-                            <div className="flex flex-col bg-rose-50 border border-rose-100 px-3 py-1.5 rounded-lg">
+-                                <span className="text-[9px] font-bold text-slate-600 uppercase tracking-widest mb-1 flex items-center gap-1"><Tag className="w-3 h-3 text-rose-400"/> DISCOUNT</span>
+-                                <span className="text-sm font-bold text-slate-900">Γé╣{totals.discount.toFixed(0)}</span>
++                            <div className="bg-rose-50/60 border border-rose-100 rounded-xl px-4 py-2.5 min-w-[100px]">
++                                <span className="text-[9px] font-black text-rose-600 uppercase tracking-widest mb-1 flex items-center gap-1">
++                                    <Tag className="w-3 h-3 text-rose-400" /> DISCOUNT
++                                </span>
++                                <span className="block text-sm font-black text-rose-700">Γé╣{totals.discount.toFixed(0)}</span>
+                             </div>
+                         </div>
+ 
+-                        <div className="flex gap-4 shrink-0 pl-6 border-l border-slate-200">
++                        <div className="flex flex-wrap items-center gap-4 shrink-0 md:pl-6 md:border-l border-slate-200">
+                             <div className="flex flex-col">
+-                                <span className="text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-1">PAYMENT DATE</span>
+-                                <div className="flex items-center gap-2 border border-slate-200 rounded-lg px-3 py-1.5 bg-white w-[130px]">
+-                                    <Calendar className="w-4 h-4 text-slate-400" />
++                                <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">PAYMENT DATE</span>
++                                <div className="flex items-center gap-2 border border-slate-200 rounded-xl px-3 py-2 bg-white w-[145px] h-[44px] shadow-sm">
++                                    <Calendar className="w-4 h-4 text-[#B4912B]" />
+                                     <input 
+                                         type="date" 
+                                         className="w-full text-xs font-bold outline-none text-slate-800 bg-transparent"
+@@ -1886,9 +1900,9 @@ export default function POSBillingPage() {
+                                 </div>
+                             </div>
+                             <div className="flex flex-col">
+-                                <span className="text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-1">CASH PAYMENT</span>
+-                                <div className="flex items-center gap-2 border border-slate-200 rounded-lg px-3 py-1.5 bg-white w-[120px]">
+-                                    <Banknote className="w-4 h-4 text-slate-400" />
++                                <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">CASH PAYMENT</span>
++                                <div className="flex items-center gap-1.5 border border-slate-200 rounded-xl px-3 py-2 bg-white w-[125px] h-[44px] shadow-sm">
++                                    <Banknote className="w-4 h-4 text-emerald-500" />
+                                     <span className="text-xs font-bold text-slate-400">Γé╣</span>
+                                     <input 
+                                         type="number" 
+@@ -1900,9 +1914,9 @@ export default function POSBillingPage() {
+                                 </div>
+                             </div>
+                             <div className="flex flex-col">
+-                                <span className="text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-1">ONLINE/UPI</span>
+-                                <div className="flex items-center gap-2 border border-slate-200 rounded-lg px-3 py-1.5 bg-white w-[120px]">
+-                                    <Smartphone className="w-4 h-4 text-slate-400" />
++                                <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">ONLINE/UPI</span>
++                                <div className="flex items-center gap-1.5 border border-slate-200 rounded-xl px-3 py-2 bg-white w-[125px] h-[44px] shadow-sm">
++                                    <Smartphone className="w-4 h-4 text-blue-500" />
+                                     <span className="text-xs font-bold text-slate-400">Γé╣</span>
+                                     <input 
+                                         type="number" 
+@@ -1918,88 +1932,88 @@ export default function POSBillingPage() {
+                 </div>
+ 
+                 {/* ΓöÇΓöÇΓöÇ RIGHT PANEL: Cart & Checkout ΓöÇΓöÇΓöÇ */}
+-                <div className="w-[380px] lg:w-[420px] flex flex-col h-full overflow-hidden shrink-0">
+-                    <div className="flex items-center justify-between mb-3 px-1 shrink-0">
+-                        <h3 className="text-sm font-bold flex items-center gap-2 text-slate-800 uppercase tracking-wider">
+-                            <ShoppingBag className="w-4 h-4" /> CART ITEMS ({cart.length})
++                <div className="w-[380px] lg:w-[420px] flex flex-col h-full overflow-hidden shrink-0 bg-white border-l border-slate-200 p-4">
++                    <div className="flex items-center justify-between mb-4 shrink-0">
++                        <h3 className="text-xs font-black flex items-center gap-2 text-slate-800 uppercase tracking-widest">
++                            <ShoppingBag className="w-4 h-4 text-[#B4912B]" /> CART ITEMS ({cart.length})
+                         </h3>
+-                        <button className="text-xs font-bold text-slate-500 hover:text-slate-800 transition-colors flex items-center gap-1">
++                        <button className="text-[10px] font-bold text-slate-400 hover:text-slate-700 transition-colors flex items-center gap-1">
+                             <ChevronLeft className="w-4 h-4" /> Collapse
+                         </button>
+                     </div>
+ 
+-                    <div className="flex-1 overflow-y-auto custom-scrollbar space-y-3 pb-4">
++                    <div className="flex-1 overflow-y-auto custom-scrollbar space-y-3 pb-4 pr-1">
+                         {cart.length === 0 ? (
+-                            <div className="p-8 text-center text-slate-400 border-2 border-dashed border-slate-200 rounded-xl bg-white">
+-                                <ShoppingCart className="w-8 h-8 mx-auto mb-2 opacity-50" />
+-                                <p className="text-xs font-bold uppercase tracking-widest">Cart is Empty</p>
++                            <div className="p-8 text-center text-slate-400 border border-dashed border-slate-200 rounded-xl bg-slate-50/50">
++                                <ShoppingCart className="w-8 h-8 mx-auto mb-2 opacity-40 text-slate-400" />
++                                <p className="text-[10px] font-black uppercase tracking-widest">Cart is Empty</p>
+                             </div>
+                         ) : (
+                             cart.map((item, idx) => (
+-                                <div key={idx} className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm flex flex-col relative">
++                                <div key={idx} className="bg-slate-50/40 border border-slate-200 rounded-xl p-4 shadow-sm flex flex-col relative transition-all hover:border-slate-300">
+                                     {/* Item Header */}
+                                     <div className="flex justify-between items-start mb-3">
+-                                        <h4 className="text-xs font-bold text-slate-900 pr-8">{item.name}</h4>
++                                        <h4 className="text-xs font-bold text-slate-900 pr-8 uppercase tracking-wide leading-tight">{item.name}</h4>
+                                         <button 
+                                             onClick={() => removeItem(idx)}
+-                                            className="absolute top-4 right-4 text-rose-400 hover:text-rose-600 hover:bg-rose-50 p-1.5 rounded-full transition-colors"
++                                            className="absolute top-4 right-4 text-slate-400 hover:text-rose-600 hover:bg-rose-50 p-1 rounded-full transition-all"
+                                         >
+-                                            <Trash2 className="w-4 h-4" />
++                                            <Trash2 className="w-3.5 h-3.5" />
+                                         </button>
+                                     </div>
+ 
+                                     {/* Price/Tax/Qty/Discount Grid */}
+-                                    <div className="grid grid-cols-4 gap-2 mb-4">
+-                                        <div className="flex flex-col gap-1">
+-                                            <span className="text-[8px] font-black text-slate-500 uppercase tracking-widest">PRICE</span>
+-                                            <span className="text-xs font-bold text-slate-900">Γé╣{item.price}</span>
++                                    <div className="grid grid-cols-4 gap-3 mb-3 bg-white border border-slate-100 rounded-xl p-3">
++                                        <div className="flex flex-col justify-between">
++                                            <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest">PRICE</span>
++                                            <span className="text-xs font-black text-slate-800">Γé╣{item.price}</span>
+                                         </div>
+-                                        <div className="flex flex-col gap-1">
+-                                            <span className="text-[8px] font-black text-slate-500 uppercase tracking-widest">TAX</span>
+-                                            <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-1 py-0.5 rounded text-center w-fit">
++                                        <div className="flex flex-col justify-between">
++                                            <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest">TAX</span>
++                                            <span className="text-[9px] font-bold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded text-center w-fit border border-emerald-100">
+                                                 {item.isInclusiveTax ? 'INCL' : `${totals.serviceGstRate}%`}
+                                             </span>
+                                         </div>
+-                                        <div className="flex flex-col gap-1">
+-                                            <span className="text-[8px] font-black text-slate-500 uppercase tracking-widest">QTY</span>
+-                                            <div className="flex items-center border border-slate-200 rounded-md overflow-hidden h-6 w-16">
+-                                                <button onClick={() => updateQty(idx, -1)} className="w-5 h-full hover:bg-slate-50 flex items-center justify-center text-slate-500"><Minus className="w-2.5 h-2.5"/></button>
+-                                                <span className="flex-1 text-[10px] font-bold text-center border-x border-slate-200">{item.quantity}</span>
+-                                                <button onClick={() => updateQty(idx, 1)} className="w-5 h-full hover:bg-slate-50 flex items-center justify-center text-slate-500"><Plus className="w-2.5 h-2.5"/></button>
++                                        <div className="flex flex-col justify-between">
++                                            <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest">QTY</span>
++                                            <div className="flex items-center border border-slate-200 rounded-lg overflow-hidden h-7 w-20 bg-slate-50">
++                                                <button onClick={() => updateQty(idx, -1)} className="w-6 h-full hover:bg-slate-100 flex items-center justify-center text-slate-500"><Minus className="w-2.5 h-2.5"/></button>
++                                                <span className="flex-1 text-[10px] font-black text-center text-slate-800 border-x border-slate-200 bg-white">{item.quantity}</span>
++                                                <button onClick={() => updateQty(idx, 1)} className="w-6 h-full hover:bg-slate-100 flex items-center justify-center text-slate-500"><Plus className="w-2.5 h-2.5"/></button>
+                                             </div>
+                                         </div>
+-                                        <div className="flex flex-col gap-1">
+-                                            <span className="text-[8px] font-black text-slate-500 uppercase tracking-widest">DISCOUNT</span>
+-                                            <div className="flex items-center border border-slate-200 rounded-md h-6 w-[70px] bg-white">
+-                                                <button className="px-1.5 text-[9px] font-bold text-slate-500 border-r border-slate-200 bg-slate-50">%</button>
+-                                                <input type="number" className="w-full text-[10px] font-bold text-center outline-none bg-transparent" placeholder="0" />
++                                        <div className="flex flex-col justify-between">
++                                            <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest">DISCOUNT</span>
++                                            <div className="flex items-center border border-slate-200 rounded-lg h-7 w-20 bg-slate-50">
++                                                <button className="px-1.5 text-[9px] font-black text-slate-500 border-r border-slate-200 bg-slate-100">%</button>
++                                                <input type="number" className="w-full text-[10px] font-bold text-center outline-none bg-white h-full" placeholder="0" />
+                                             </div>
+                                         </div>
+                                     </div>
+ 
+                                     {/* Assign Stylists */}
+-                                    <div className="flex flex-col gap-1 border-t border-slate-100 pt-3">
+-                                        <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest flex items-center gap-1.5">
++                                    <div className="flex flex-col gap-1.5 border-t border-slate-100 pt-3">
++                                        <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-1">
+                                             <User className="w-3 h-3 text-slate-400" /> ASSIGN STYLISTS
+                                         </span>
+                                         <div className="relative">
+                                             <button 
+                                                 onClick={() => setOpenStaffIdx(openStaffIdx === idx ? null : idx)}
+-                                                className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 flex items-center justify-between text-xs font-bold text-slate-600 hover:border-slate-300 transition-colors"
++                                                className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 flex items-center justify-between text-xs font-bold text-slate-600 hover:border-slate-300 hover:bg-slate-50 transition-all min-h-[38px] shadow-sm"
+                                             >
+                                                 {(item.staffIds || []).length > 0 ? (
+                                                     <div className="flex flex-wrap gap-1">
+                                                         {item.staffIds.map(sId => {
+                                                             const s = businessStaff.find(st => String(st._id) === String(sId));
+                                                             return (
+-                                                                <span key={sId} className="bg-slate-200 text-slate-700 px-2 py-0.5 rounded flex items-center gap-1">
++                                                                <span key={sId} className="bg-slate-100 text-slate-700 px-2 py-0.5 rounded-lg border border-slate-200 flex items-center gap-1 text-[10px] font-bold">
+                                                                     {s?.name} <X className="w-3 h-3 cursor-pointer hover:text-rose-500" onClick={(e) => { e.stopPropagation(); toggleStaffInItem(idx, sId); }}/>
+                                                                 </span>
+                                                             );
+                                                         })}
+                                                     </div>
+                                                 ) : (
+-                                                    "Select Stylists"
++                                                    <span className="text-slate-400">Select Stylists</span>
+                                                 )}
+                                                 <ChevronDown className="w-4 h-4 text-slate-400" />
+                                             </button>
+@@ -2009,13 +2023,13 @@ export default function POSBillingPage() {
+                                                         initial={{ opacity: 0, y: 5 }}
+                                                         animate={{ opacity: 1, y: 0 }}
+                                                         exit={{ opacity: 0, y: 5 }}
+-                                                        className="absolute top-full left-0 right-0 z-[100] mt-1 bg-white border border-slate-200 shadow-xl rounded-xl overflow-hidden max-h-48 custom-scrollbar"
++                                                        className="absolute top-full left-0 right-0 z-[100] mt-1.5 bg-white border border-slate-200 shadow-xl rounded-xl overflow-hidden max-h-48 custom-scrollbar"
+                                                     >
+                                                         {businessStaff.map(s => (
+                                                             <button 
+                                                                 key={s._id}
+                                                                 onClick={() => { toggleStaffInItem(idx, s._id); setOpenStaffIdx(null); }}
+-                                                                className="w-full text-left px-4 py-2 hover:bg-slate-50 text-xs font-bold border-b border-slate-100 last:border-0"
++                                                                className="w-full text-left px-4 py-2.5 hover:bg-slate-50 text-xs font-bold border-b border-slate-100 last:border-0 transition-colors"
+                                                             >
+                                                                 {s.name}
+                                                             </button>
+@@ -2029,22 +2043,22 @@ export default function POSBillingPage() {
+                             ))
+                         )}
+ 
+-                        <button className="w-full border border-dashed border-slate-300 rounded-xl py-3 flex items-center justify-center gap-2 text-xs font-bold text-slate-500 hover:bg-white transition-colors bg-white/50">
+-                            <FileText className="w-4 h-4" /> + Add Note (Optional)
++                        <button className="w-full border border-dashed border-slate-300 rounded-xl py-3 flex items-center justify-center gap-2 text-xs font-bold text-slate-500 hover:bg-slate-50 transition-colors bg-white">
++                            <FileText className="w-4 h-4 text-slate-400" /> + Add Note (Optional)
+                         </button>
+                     </div>
+ 
+                     {/* Dark Checkout Widget */}
+-                    <div className="bg-[#0f172a] rounded-2xl p-5 shadow-2xl shrink-0 border border-slate-800 relative overflow-hidden">
+-                        <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 rounded-full blur-3xl" />
++                    <div className="bg-[#0f172a] rounded-2xl p-5 shadow-2xl shrink-0 border border-slate-800 relative overflow-hidden mt-2">
++                        <div className="absolute top-0 right-0 w-32 h-32 bg-[#B4912B]/10 rounded-full blur-3xl" />
+                         <div className="flex justify-between items-start mb-6 relative z-10">
+                             <div className="flex flex-col">
+                                 <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">NET BILL</span>
+-                                <span className="text-xl font-bold text-white">Γé╣{totals.currentBillTotal.toFixed(2)}</span>
++                                <span className="text-xl font-black text-white">Γé╣{totals.currentBillTotal.toFixed(2)}</span>
+                             </div>
+                             <div className="flex flex-col items-end">
+-                                <span className="text-[10px] font-black text-[#cca839] uppercase tracking-widest mb-1">TOTAL TO PAY</span>
+-                                <span className="text-xl font-bold text-[#cca839]">Γé╣{totals.total.toFixed(2)}</span>
++                                <span className="text-[10px] font-black text-[#B4912B] uppercase tracking-widest mb-1">TOTAL TO PAY</span>
++                                <span className="text-xl font-black text-[#B4912B]">Γé╣{totals.total.toFixed(2)}</span>
+                             </div>
+                         </div>
+ 
+@@ -2057,16 +2071,16 @@ export default function POSBillingPage() {
+                         </button>
+ 
+                         <div className="grid grid-cols-4 gap-2 mt-4 relative z-10">
+-                            <button className="py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white text-[10px] font-black uppercase tracking-widest rounded-lg flex items-center justify-center gap-1.5 transition-colors">
++                            <button className="py-2.5 bg-emerald-600/90 hover:bg-emerald-600 text-white text-[9px] font-black uppercase tracking-widest rounded-xl flex items-center justify-center gap-1 transition-colors">
+                                 <Banknote className="w-3.5 h-3.5" /> CASH
+                             </button>
+-                            <button className="py-2.5 bg-blue-600 hover:bg-blue-500 text-white text-[10px] font-black uppercase tracking-widest rounded-lg flex items-center justify-center gap-1.5 transition-colors">
++                            <button className="py-2.5 bg-blue-600/90 hover:bg-blue-600 text-white text-[9px] font-black uppercase tracking-widest rounded-xl flex items-center justify-center gap-1 transition-colors">
+                                 <CreditCard className="w-3.5 h-3.5" /> CARD
+                             </button>
+-                            <button className="py-2.5 bg-purple-600 hover:bg-purple-500 text-white text-[10px] font-black uppercase tracking-widest rounded-lg flex items-center justify-center gap-1.5 transition-colors">
++                            <button className="py-2.5 bg-purple-600/90 hover:bg-purple-600 text-white text-[9px] font-black uppercase tracking-widest rounded-xl flex items-center justify-center gap-1 transition-colors">
+                                 <Smartphone className="w-3.5 h-3.5" /> UPI
+                             </button>
+-                            <button className="py-2.5 bg-orange-600 hover:bg-orange-500 text-white text-[10px] font-black uppercase tracking-widest rounded-lg flex items-center justify-center gap-1.5 transition-colors">
++                            <button className="py-2.5 bg-orange-600/90 hover:bg-orange-600 text-white text-[9px] font-black uppercase tracking-widest rounded-xl flex items-center justify-center gap-1 transition-colors">
+                                 <Wallet className="w-3.5 h-3.5" /> WALLET
+                             </button>
+                         </div>
