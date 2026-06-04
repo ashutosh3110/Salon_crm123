@@ -1684,11 +1684,10 @@ export default function POSBillingPage() {
                                     setServiceMode('bookings');
                                     setSelectedCategory('All');
                                 }}
-                                className={`px-4 py-1.5 text-xs font-semibold uppercase tracking-wider rounded-md transition-all ${
-                                    activeTab === 'services' && serviceMode === 'bookings'
-                                        ? '!bg-[#cca839] !text-slate-950 shadow-sm font-black'
-                                        : '!bg-transparent !text-slate-400 hover:!text-slate-200'
-                                }`}
+                                className={`px-4 py-1.5 text-xs font-semibold uppercase tracking-wider rounded-md transition-all ${activeTab === 'services' && serviceMode === 'bookings'
+                                    ? '!bg-[#cca839] !text-slate-950 shadow-sm font-black'
+                                    : '!bg-transparent !text-slate-400 hover:!text-slate-200'
+                                    }`}
                             >Completed Bookings</button>
                             <button
                                 onClick={() => {
@@ -1696,11 +1695,10 @@ export default function POSBillingPage() {
                                     setServiceMode('orders');
                                     setSelectedCategory('All');
                                 }}
-                                className={`px-4 py-1.5 text-xs font-semibold uppercase tracking-wider rounded-md transition-all ${
-                                    activeTab === 'services' && serviceMode === 'orders'
-                                        ? '!bg-[#cca839] !text-slate-950 shadow-sm font-black'
-                                        : '!bg-transparent !text-slate-400 hover:!text-slate-200'
-                                }`}
+                                className={`px-4 py-1.5 text-xs font-semibold uppercase tracking-wider rounded-md transition-all ${activeTab === 'services' && serviceMode === 'orders'
+                                    ? '!bg-[#cca839] !text-slate-950 shadow-sm font-black'
+                                    : '!bg-transparent !text-slate-400 hover:!text-slate-200'
+                                    }`}
                             >Completed Orders</button>
                         </div>
                     </div>
@@ -2969,11 +2967,11 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                     .qi-outlet-btn:hover { border-color: #C69A20 !important; }
                     .qi-client-input { background-color: #ffffff !important; border-color: #e2e8f0 !important; color: #1e293b !important; }
                     .qi-client-input:focus { border-color: #C69A20 !important; outline: none !important; }
-                    /* ---- Right column dark ---- */
-                    .qi-right { background-color: #0F172A !important; }
+                    /* ---- Right column light ---- */
+                    .qi-right { background-color: #f8fafc !important; border-left: 1px solid #e2e8f0 !important; }
                     .qi-cart-item { background-color: #ffffff !important; color: #1e293b !important; }
                     .qi-cart-item * { color: inherit; }
-                    .qi-bottom-card { background-color: #0A0F1E !important; border-color: rgba(255,255,255,0.08) !important; }
+                    .qi-bottom-card { background-color: #0A0F1E !important; border-color: rgba(255,255,255,0.08) !important; border-radius: 0.75rem !important; }
                 `}</style>
 
                 <div className="flex-1 min-h-0 flex flex-col lg:flex-row overflow-hidden">
@@ -3405,11 +3403,11 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                     {/* ══ END LEFT COLUMN ══ */}
 
 
-                    {/* ══════════════ RIGHT COLUMN (dark navy) ══════════════ */}
-                    <div className="qi-right w-full lg:w-[460px] flex flex-col overflow-hidden min-h-[300px] lg:h-full">
+                    {/* ══════════════ RIGHT COLUMN (light theme) ══════════════ */}
+                    <div className="qi-right w-full lg:w-[460px] flex flex-col overflow-hidden min-h-[300px] lg:h-full bg-slate-50 border-l border-slate-200">
 
                         {/* Cart Header */}
-                        <div className="flex items-center justify-between px-5 py-3.5 shrink-0" style={{ borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
+                        <div className="flex items-center justify-between px-5 py-3.5 shrink-0 border-b border-slate-200 bg-white">
                             <div className="flex items-center gap-2.5">
                                 <ShoppingCart className="w-4 h-4" style={{ color: '#C69A20' }} />
                                 <h3 className="text-[11px] font-black uppercase tracking-widest" style={{ color: '#C69A20' }}>Cart Items ({qCart.length})</h3>
@@ -3417,15 +3415,12 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                             <div className="flex items-center gap-2">
                                 <button
                                     onClick={() => { setQCart([]); setQPayments({ cash: 0, online: 0 }); setIsPaymentEdited(false); }}
-                                    className="text-[10px] font-black uppercase tracking-widest transition-colors"
-                                    style={{ color: '#f87171' }}
+                                    className="text-[10px] font-black uppercase tracking-widest text-rose-500 hover:text-rose-600 transition-colors"
                                 >
                                     Clear All
                                 </button>
-                                <div className="w-px h-4 mx-1" style={{ background: 'rgba(255,255,255,0.1)' }} />
-                                <button onClick={onClose} className="p-1 transition-colors" style={{ color: 'rgba(255,255,255,0.4)' }}
-                                    onMouseOver={e => e.currentTarget.style.color = 'rgba(255,255,255,0.8)'}
-                                    onMouseOut={e => e.currentTarget.style.color = 'rgba(255,255,255,0.4)'}>
+                                <div className="w-px h-4 mx-1 bg-slate-300" />
+                                <button onClick={onClose} className="p-1 text-slate-400 hover:text-slate-600 transition-colors">
                                     <X className="w-5 h-5" />
                                 </button>
                             </div>
@@ -3434,71 +3429,67 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                         {/* Cart Items */}
                         <div className="flex-1 overflow-y-auto qi-scroll p-3 space-y-3">
                             {qCart.length === 0 ? (
-                                <div className="h-full flex flex-col items-center justify-center text-center py-16 space-y-3" style={{ color: 'rgba(255,255,255,0.15)' }}>
-                                    <ShoppingBag className="w-14 h-14" />
+                                <div className="h-full flex flex-col items-center justify-center text-center py-16 space-y-3 text-slate-400">
+                                    <ShoppingBag className="w-14 h-14 opacity-50" />
                                     <p className="text-xs font-bold uppercase tracking-widest">Select services to begin</p>
                                 </div>
                             ) : qCart.map((item, idx) => (
-                                <div key={idx} className="qi-cart-item rounded-xl p-4 flex flex-col space-y-3 relative shadow-sm">
+                                <div key={idx} className="qi-cart-item bg-white rounded-xl p-4 flex flex-col space-y-3 relative shadow-sm border border-slate-200">
                                     {/* Item name + delete */}
                                     <div className="flex justify-between items-start">
-                                        <p className="text-[12px] font-black uppercase leading-tight pr-8 line-clamp-2" style={{ color: '#1e293b' }}>{item.name}</p>
+                                        <p className="text-[12px] font-black uppercase leading-tight pr-8 line-clamp-2 text-slate-900">{item.name}</p>
                                         <button
                                             onClick={() => setQCart(qCart.filter((_, i) => i !== idx))}
-                                            className="absolute top-3 right-3 w-7 h-7 rounded-lg flex items-center justify-center transition-all"
-                                            style={{ border: '1px solid #fecaca', background: '#fff1f2', color: '#ef4444' }}
-                                            onMouseOver={e => { e.currentTarget.style.background = '#ef4444'; e.currentTarget.style.color = '#fff'; }}
-                                            onMouseOut={e => { e.currentTarget.style.background = '#fff1f2'; e.currentTarget.style.color = '#ef4444'; }}
+                                            className="absolute top-3 right-3 w-7 h-7 rounded-lg flex items-center justify-center transition-all border border-rose-200 bg-rose-50 text-rose-500 hover:bg-rose-500 hover:text-white"
                                         >
                                             <Trash2 className="w-3.5 h-3.5" />
                                         </button>
                                     </div>
 
                                     {/* Price / Tax / Qty / Discount */}
-                                    <div className="grid grid-cols-4 gap-2" style={{ borderTop: '1px solid #f1f5f9', paddingTop: '10px' }}>
+                                    <div className="grid grid-cols-4 gap-2 border-t border-slate-100 pt-2.5">
                                         <div className="flex flex-col gap-1">
-                                            <span className="text-[9px] font-black uppercase tracking-widest" style={{ color: '#64748b' }}>Price</span>
-                                            <p className="text-[12px] font-black" style={{ color: '#1e293b' }}>&#8377;{item.price}</p>
+                                            <span className="text-[9px] font-black uppercase tracking-widest text-slate-500">Price</span>
+                                            <p className="text-[12px] font-black text-slate-900">&#8377;{item.price}</p>
                                         </div>
                                         <div className="flex flex-col gap-1">
-                                            <span className="text-[9px] font-black uppercase tracking-widest" style={{ color: '#64748b' }}>Tax</span>
+                                            <span className="text-[9px] font-black uppercase tracking-widest text-slate-500">Tax</span>
                                             {(() => {
                                                 const isIncl = (item.isInclusiveTax === true || String(item.isInclusiveTax) === 'true' || (item.isInclusiveTax === undefined && !!fiscal?.inclusiveTax));
                                                 const rate = item.type === 'service' ? totals.serviceGstRate : totals.productGstRate;
                                                 return isIncl
-                                                    ? <span className="text-[10px] font-black px-2 py-0.5 rounded-md leading-none w-fit" style={{ background: '#d1fae5', color: '#065f46' }}>{rate}%</span>
-                                                    : <span className="text-[10px] font-black px-2 py-0.5 rounded-md leading-none w-fit" style={{ background: '#dbeafe', color: '#1d4ed8' }}>Excl.</span>;
+                                                    ? <span className="text-[10px] font-black px-2 py-0.5 rounded-md leading-none w-fit bg-emerald-100 text-emerald-800">{rate}%</span>
+                                                    : <span className="text-[10px] font-black px-2 py-0.5 rounded-md leading-none w-fit bg-blue-100 text-blue-800">Excl.</span>;
                                             })()}
                                         </div>
                                         <div className="flex flex-col gap-1">
-                                            <span className="text-[9px] font-black uppercase tracking-widest" style={{ color: '#64748b' }}>Qty</span>
-                                            <div className="flex items-center rounded-lg overflow-hidden h-6 w-fit" style={{ border: '1px solid #e2e8f0', background: '#fff' }}>
-                                                <button type="button" onClick={() => updateQQty(idx, -1)} className="px-1.5 h-full flex items-center hover:bg-slate-50" style={{ borderRight: '1px solid #e2e8f0', color: '#64748b' }}>
+                                            <span className="text-[9px] font-black uppercase tracking-widest text-slate-500">Qty</span>
+                                            <div className="flex items-center rounded-lg overflow-hidden h-6 w-fit border border-slate-200 bg-white">
+                                                <button type="button" onClick={() => updateQQty(idx, -1)} className="px-1.5 h-full flex items-center hover:bg-slate-50 border-r border-slate-200 text-slate-500">
                                                     <Minus className="w-3 h-3" />
                                                 </button>
-                                                <span className="px-2 text-[11px] font-black h-full flex items-center" style={{ color: '#1e293b' }}>{item.quantity}</span>
-                                                <button type="button" onClick={() => updateQQty(idx, 1)} className="px-1.5 h-full flex items-center hover:bg-slate-50" style={{ borderLeft: '1px solid #e2e8f0', color: '#64748b' }}>
+                                                <span className="px-2 text-[11px] font-black h-full flex items-center text-slate-900">{item.quantity}</span>
+                                                <button type="button" onClick={() => updateQQty(idx, 1)} className="px-1.5 h-full flex items-center hover:bg-slate-50 border-l border-slate-200 text-slate-500">
                                                     <Plus className="w-3 h-3" />
                                                 </button>
                                             </div>
                                         </div>
                                         <div className="flex flex-col gap-1">
-                                            <span className="text-[9px] font-black uppercase tracking-widest" style={{ color: '#64748b' }}>Discount</span>
-                                            <div className="flex items-center rounded-lg h-6 overflow-hidden w-[90px]" style={{ border: '1px solid #e2e8f0', background: '#fff' }}>
+                                            <span className="text-[9px] font-black uppercase tracking-widest text-slate-500">Discount</span>
+                                            <div className="flex items-center rounded-lg h-6 overflow-hidden w-[90px] border border-slate-200 bg-white">
                                                 <button type="button"
                                                     onClick={() => updateQItemMembershipDiscount(idx, 'percentage', item.membershipDiscountValue || 0)}
-                                                    className="px-1.5 text-[10px] font-black h-full"
-                                                    style={{ borderRight: '1px solid #e2e8f0', background: (item.membershipDiscountType || 'percentage') === 'percentage' ? '#1e293b' : 'transparent', color: (item.membershipDiscountType || 'percentage') === 'percentage' ? '#fff' : '#64748b' }}
+                                                    className="px-1.5 text-[10px] font-black h-full border-r border-slate-200"
+                                                    style={{ background: (item.membershipDiscountType || 'percentage') === 'percentage' ? '#1e293b' : 'transparent', color: (item.membershipDiscountType || 'percentage') === 'percentage' ? '#fff' : '#64748b' }}
                                                 >%</button>
                                                 <button type="button"
                                                     onClick={() => updateQItemMembershipDiscount(idx, 'fixed', item.membershipDiscountValue || 0)}
-                                                    className="px-1.5 text-[10px] font-black h-full"
-                                                    style={{ borderRight: '1px solid #e2e8f0', background: item.membershipDiscountType === 'fixed' ? '#1e293b' : 'transparent', color: item.membershipDiscountType === 'fixed' ? '#fff' : '#64748b' }}
+                                                    className="px-1.5 text-[10px] font-black h-full border-r border-slate-200"
+                                                    style={{ background: item.membershipDiscountType === 'fixed' ? '#1e293b' : 'transparent', color: item.membershipDiscountType === 'fixed' ? '#fff' : '#64748b' }}
                                                 >&#8377;</button>
                                                 <input
                                                     type="number"
-                                                    className="flex-1 text-[11px] font-black outline-none text-center h-full"
-                                                    style={{ background: 'transparent', color: '#1e293b' }}
+                                                    className="flex-1 text-[11px] font-black outline-none text-center h-full bg-transparent text-slate-900"
                                                     value={item.membershipDiscountValue || 0}
                                                     onChange={e => updateQItemMembershipDiscount(idx, item.membershipDiscountType || 'percentage', Math.max(0, Number(e.target.value) || 0))}
                                                 />
@@ -3508,48 +3499,45 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
 
                                     {/* Stylist Assignment */}
                                     {item.type === 'service' && (
-                                        <div className="relative" style={{ borderTop: '1px solid #f1f5f9', paddingTop: '10px' }} id={`staff-dropdown-container-${idx}`}>
-                                            <label className="flex items-center gap-1.5 text-[9px] font-black uppercase tracking-widest mb-1.5" style={{ color: '#64748b' }}>
+                                        <div className="relative border-t border-slate-100 pt-2.5 mt-2" id={`staff-dropdown-container-${idx}`}>
+                                            <label className="flex items-center gap-1.5 text-[9px] font-black uppercase tracking-widest mb-1.5 text-slate-500">
                                                 <User className="w-3 h-3" /> Assign Stylists
                                             </label>
                                             <div
-                                                className="min-h-[32px] rounded-lg px-2 py-1.5 flex flex-wrap gap-1.5 items-center cursor-pointer transition-colors"
-                                                style={{ border: '1px solid #e2e8f0', background: '#fff' }}
+                                                className="min-h-[32px] rounded-lg px-2 py-1.5 flex flex-wrap gap-1.5 items-center cursor-pointer transition-colors border border-slate-200 bg-white hover:border-slate-300"
                                                 onClick={() => setOpenStaffIdx(openStaffIdx === idx ? null : idx)}
                                             >
                                                 {(item.staffIds || []).length > 0 ? (
                                                     item.staffIds.map(sId => {
                                                         const s = staff.find(st => String(st._id) === String(sId));
                                                         return (
-                                                            <div key={sId} className="flex items-center gap-1 text-[10px] font-bold pl-2 pr-1.5 py-0.5 rounded-md" style={{ background: '#f1f5f9', border: '1px solid #e2e8f0', color: '#475569' }}>
+                                                            <div key={sId} className="flex items-center gap-1 text-[10px] font-bold pl-2 pr-1.5 py-0.5 rounded-md bg-slate-100 border border-slate-200 text-slate-700">
                                                                 <span className="uppercase">{s?.name || 'Stylist'}</span>
-                                                                <button onClick={e => { e.stopPropagation(); toggleStaffInItem(idx, sId); }} className="w-3.5 h-3.5 rounded flex items-center justify-center hover:bg-slate-200">
+                                                                <button onClick={e => { e.stopPropagation(); toggleStaffInItem(idx, sId); }} className="w-3.5 h-3.5 rounded flex items-center justify-center hover:bg-slate-300 transition-colors">
                                                                     <X className="w-2 h-2" />
                                                                 </button>
                                                             </div>
                                                         );
                                                     })
                                                 ) : (
-                                                    <span className="text-[11px] italic px-1" style={{ color: '#94a3b8' }}>Assign stylist…</span>
+                                                    <span className="text-[11px] italic px-1 text-slate-400">Assign stylist…</span>
                                                 )}
-                                                <ChevronDown className="w-3.5 h-3.5 ml-auto shrink-0" style={{ color: '#94a3b8' }} />
+                                                <ChevronDown className="w-3.5 h-3.5 ml-auto shrink-0 text-slate-400" />
                                             </div>
                                             <AnimatePresence>
                                                 {openStaffIdx === idx && (
                                                     <motion.div initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 4 }}
-                                                        className="absolute top-full left-0 right-0 z-[100] mt-1 shadow-2xl rounded-xl overflow-hidden"
-                                                        style={{ background: '#fff', border: '1px solid #e2e8f0' }}>
-                                                        <div className="max-h-[140px] overflow-y-auto qi-scroll">
+                                                        className="absolute top-full left-0 right-0 z-[100] mt-1 shadow-xl rounded-xl overflow-hidden bg-white border border-slate-200">
+                                                        <div className="max-h-[140px] overflow-y-auto custom-scrollbar">
                                                             {qFilteredStaff.map(s => {
                                                                 const isSelected = (item.staffIds || []).includes(String(s._id));
                                                                 return (
                                                                     <button key={s._id}
                                                                         onClick={e => { e.stopPropagation(); toggleStaffInItem(idx, s._id); setOpenStaffIdx(null); }}
-                                                                        className="w-full px-3 py-2 text-left flex items-center justify-between border-b border-slate-100 last:border-0 transition-colors hover:bg-slate-50"
-                                                                        style={{ background: isSelected ? 'rgba(198,154,32,0.05)' : undefined }}
+                                                                        className={`w-full px-3 py-2 text-left flex items-center justify-between border-b border-slate-100 last:border-0 transition-colors hover:bg-slate-50 ${isSelected ? 'bg-amber-50/50' : ''}`}
                                                                     >
-                                                                        <span className="text-xs font-bold uppercase" style={{ color: isSelected ? '#C69A20' : '#1e293b' }}>{s.name}</span>
-                                                                        {isSelected && <Check className="w-3.5 h-3.5" style={{ color: '#C69A20' }} />}
+                                                                        <span className={`text-xs font-bold uppercase ${isSelected ? 'text-[#C69A20]' : 'text-slate-800'}`}>{s.name}</span>
+                                                                        {isSelected && <Check className="w-3.5 h-3.5 text-[#C69A20]" />}
                                                                     </button>
                                                                 );
                                                             })}
@@ -3565,29 +3553,28 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
 
                         {/* Add Note */}
                         <div className="px-3 pb-2 shrink-0">
-                            <div className="flex items-center gap-2 rounded-xl p-3" style={{ border: '1px solid rgba(255,255,255,0.08)', background: 'rgba(255,255,255,0.04)' }}>
-                                <FileText className="w-4 h-4 flex-shrink-0" style={{ color: 'rgba(255,255,255,0.25)' }} />
+                            <div className="flex items-center gap-2 rounded-xl p-3 border border-slate-200 bg-white shadow-sm transition-colors focus-within:border-primary/50 focus-within:ring-2 focus-within:ring-primary/10">
+                                <FileText className="w-4 h-4 flex-shrink-0 text-slate-400" />
                                 <input
                                     type="text"
                                     placeholder="+ Add Note (Optional)"
-                                    className="w-full border-0 outline-none text-xs font-medium"
-                                    style={{ background: 'transparent', color: 'rgba(255,255,255,0.6)', caretColor: '#C69A20' }}
+                                    className="w-full border-0 outline-none text-xs font-bold bg-transparent text-slate-700 placeholder:text-slate-400"
                                 />
                             </div>
                         </div>
 
                         {/* NET BILL + FINALIZE CARD */}
                         <div className="px-3 pb-3 shrink-0">
-                            <div className="qi-bottom-card rounded-xl p-4" style={{ border: '1px solid rgba(255,255,255,0.08)' }}>
+                            <div className="qi-bottom-card rounded-xl p-4 shadow-lg border border-transparent">
                                 {/* Amounts */}
-                                <div className="flex items-start justify-between mb-4">
+                                <div className="flex items-start justify-between mb-4 text-white">
                                     <div>
-                                        <span className="text-[9px] font-bold uppercase tracking-widest block" style={{ color: 'rgba(255,255,255,0.35)' }}>Net Bill</span>
-                                        <span className="text-xl font-black font-mono block mt-0.5" style={{ color: '#ffffff' }}>&#8377;{totals.total.toFixed(2)}</span>
+                                        <span className="text-[10px] font-bold uppercase tracking-widest block opacity-70">Net Bill</span>
+                                        <span className="text-xl font-black font-mono block mt-0.5 text-white">&#8377;{totals.total.toFixed(2)}</span>
                                     </div>
                                     <div className="text-right">
-                                        <span className="text-[9px] font-bold uppercase tracking-widest block" style={{ color: 'rgba(255,255,255,0.35)' }}>Total to Pay</span>
-                                        <span className="text-2xl font-black font-mono block mt-0.5" style={{ color: '#C69A20' }}>&#8377;{totals.totalWithPrevDue.toFixed(2)}</span>
+                                        <span className="text-[10px] font-bold uppercase tracking-widest block opacity-70">Total to Pay</span>
+                                        <span className="text-2xl font-black font-mono block mt-0.5 text-yellow-500">&#8377;{totals.totalWithPrevDue.toFixed(2)}</span>
                                     </div>
                                 </div>
 
@@ -3595,17 +3582,17 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                                 <button
                                     onClick={handleConfirm}
                                     disabled={isProcessing || qCart.length === 0}
-                                    className="w-full py-3.5 font-black text-[11px] uppercase tracking-widest rounded-xl flex items-center justify-center gap-2 shadow-lg transition-all mb-3"
+                                    className="w-full py-3.5 font-black text-[12px] uppercase tracking-widest rounded-xl flex items-center justify-center gap-2 shadow-lg transition-all mb-4 text-white disabled:bg-slate-700 disabled:text-slate-400 disabled:shadow-none"
                                     style={{
-                                        background: (isProcessing || qCart.length === 0) ? '#334155' : '#C69A20',
-                                        color: (isProcessing || qCart.length === 0) ? 'rgba(255,255,255,0.3)' : '#fff'
+                                        background: (isProcessing || qCart.length === 0) ? '#334155' : '#b48325',
+                                        color: (isProcessing || qCart.length === 0) ? '#94a3b8' : '#ffffff'
                                     }}
-                                    onMouseOver={e => { if (!isProcessing && qCart.length > 0) e.currentTarget.style.background = '#B8881C'; }}
-                                    onMouseOut={e => { if (!isProcessing && qCart.length > 0) e.currentTarget.style.background = '#C69A20'; }}
+                                    onMouseOver={e => { if (!isProcessing && qCart.length > 0) e.currentTarget.style.background = '#9c701c'; }}
+                                    onMouseOut={e => { if (!isProcessing && qCart.length > 0) e.currentTarget.style.background = '#b48325'; }}
                                 >
-                                    {isProcessing ? <Loader2 className="w-4 h-4 animate-spin" /> : (
+                                    {isProcessing ? <Loader2 className="w-5 h-5 animate-spin" /> : (
                                         <>
-                                            <CreditCard className="w-4 h-4" />
+                                            <CreditCard className="w-5 h-5" />
                                             <span>Finalize Bill</span>
                                         </>
                                     )}
@@ -3614,22 +3601,25 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                                 {/* Payment Pills */}
                                 <div className="grid grid-cols-4 gap-2">
                                     {[
-                                        { label: 'Cash', icon: Banknote, activeCheck: () => qPayments.cash > 0 && qPayments.online === 0 && qRedeemWallet === 0, action: () => { setIsPaymentEdited(true); setQPayments({ cash: totals.totalWithPrevDue, online: 0 }); setQRedeemWallet(0); }, activeColor: '#10b981', activeShadow: 'rgba(16,185,129,0.3)', inactiveColor: '#10b981' },
-                                        { label: 'Card', icon: CreditCard, activeCheck: () => qPayments.online > 0 && qPayments.cash === 0 && qRedeemWallet === 0, action: () => { setIsPaymentEdited(true); setQPayments({ cash: 0, online: totals.totalWithPrevDue }); setQRedeemWallet(0); }, activeColor: '#3b82f6', activeShadow: 'rgba(59,130,246,0.3)', inactiveColor: '#3b82f6' },
-                                        { label: 'UPI', icon: Smartphone, activeCheck: () => qPayments.online > 0 && qPayments.cash === 0 && qRedeemWallet === 0, action: () => { setIsPaymentEdited(true); setQPayments({ cash: 0, online: totals.totalWithPrevDue }); setQRedeemWallet(0); }, activeColor: '#8b5cf6', activeShadow: 'rgba(139,92,246,0.3)', inactiveColor: '#8b5cf6' },
-                                        { label: 'Wallet', icon: Wallet, activeCheck: () => qRedeemWallet > 0, action: () => { if (qClientWalletBalance > 0) { setQRedeemWallet(qRedeemWallet > 0 ? 0 : Math.min(qClientWalletBalance, totals.totalWithPrevDue)); } else { toast.error('Client has no wallet balance'); } }, activeColor: '#f59e0b', activeShadow: 'rgba(245,158,11,0.3)', inactiveColor: '#f59e0b' },
-                                    ].map(({ label, icon: Icon, activeCheck, action, activeColor, activeShadow, inactiveColor }) => {
+                                        { label: 'Cash', icon: Banknote, activeCheck: () => qPayments.cash > 0 && qPayments.online === 0 && qRedeemWallet === 0, action: () => { setIsPaymentEdited(true); setQPayments({ cash: totals.totalWithPrevDue, online: 0 }); setQRedeemWallet(0); }, bg: '#22c55e', hoverBg: '#16a34a' },
+                                        { label: 'Card', icon: CreditCard, activeCheck: () => qPayments.online > 0 && qPayments.cash === 0 && qRedeemWallet === 0, action: () => { setIsPaymentEdited(true); setQPayments({ cash: 0, online: totals.totalWithPrevDue }); setQRedeemWallet(0); }, bg: '#3b82f6', hoverBg: '#2563eb' },
+                                        { label: 'UPI', icon: Smartphone, activeCheck: () => qPayments.online > 0 && qPayments.cash === 0 && qRedeemWallet === 0, action: () => { setIsPaymentEdited(true); setQPayments({ cash: 0, online: totals.totalWithPrevDue }); setQRedeemWallet(0); }, bg: '#8b5cf6', hoverBg: '#7c3aed' },
+                                        { label: 'Wallet', icon: Wallet, activeCheck: () => qRedeemWallet > 0, action: () => { if (qClientWalletBalance > 0) { setQRedeemWallet(qRedeemWallet > 0 ? 0 : Math.min(qClientWalletBalance, totals.totalWithPrevDue)); } else { toast.error('Client has no wallet balance'); } }, bg: '#f59e0b', hoverBg: '#d97706' },
+                                    ].map(({ label, icon: Icon, activeCheck, action, bg, hoverBg }) => {
                                         const isActive = activeCheck();
                                         return (
                                             <button
                                                 key={label}
                                                 onClick={action}
-                                                className="py-2.5 rounded-xl text-[10px] font-black uppercase tracking-wider flex flex-col items-center gap-1 transition-all"
+                                                className="py-2 rounded-lg text-[10px] font-black uppercase tracking-wider flex flex-col items-center gap-1 transition-all border-none"
                                                 style={{
-                                                    background: isActive ? activeColor : `${inactiveColor}18`,
-                                                    color: isActive ? '#fff' : inactiveColor,
-                                                    boxShadow: isActive ? `0 4px 12px ${activeShadow}` : 'none'
+                                                    background: bg,
+                                                    color: '#ffffff',
+                                                    opacity: isActive ? 1 : 0.9,
+                                                    transform: isActive ? 'scale(1.02)' : 'scale(1)'
                                                 }}
+                                                onMouseOver={e => { e.currentTarget.style.background = hoverBg; e.currentTarget.style.opacity = 1; }}
+                                                onMouseOut={e => { e.currentTarget.style.background = bg; e.currentTarget.style.opacity = isActive ? 1 : 0.9; }}
                                             >
                                                 <Icon className="w-4 h-4" />
                                                 <span>{label}</span>
