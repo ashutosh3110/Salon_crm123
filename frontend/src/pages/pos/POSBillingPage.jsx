@@ -3205,7 +3205,7 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                                     }}
                                 />
                                 {qSearchItem && (
-                                    <button 
+                                    <button
                                         type="button"
                                         onClick={() => setQSearchItem('')}
                                         className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
