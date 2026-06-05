@@ -1685,8 +1685,8 @@ export default function POSBillingPage() {
                                     setSelectedCategory('All');
                                 }}
                                 className={`px-4 py-1.5 text-xs font-semibold uppercase tracking-wider rounded-md transition-all ${activeTab === 'services' && serviceMode === 'bookings'
-                                    ? '!bg-[#cca839] !text-slate-950 shadow-sm font-black'
-                                    : '!bg-transparent !text-slate-400 hover:!text-slate-200'
+                                    ? '!bg-[#cca839] !text-white shadow-sm font-black'
+                                    : '!bg-transparent !text-slate-500 hover:!text-slate-700 dark:!text-slate-400 dark:hover:!text-slate-200'
                                     }`}
                             >Completed Bookings</button>
                             <button
@@ -1696,8 +1696,8 @@ export default function POSBillingPage() {
                                     setSelectedCategory('All');
                                 }}
                                 className={`px-4 py-1.5 text-xs font-semibold uppercase tracking-wider rounded-md transition-all ${activeTab === 'services' && serviceMode === 'orders'
-                                    ? '!bg-[#cca839] !text-slate-950 shadow-sm font-black'
-                                    : '!bg-transparent !text-slate-400 hover:!text-slate-200'
+                                    ? '!bg-[#cca839] !text-white shadow-sm font-black'
+                                    : '!bg-transparent !text-slate-500 hover:!text-slate-700 dark:!text-slate-400 dark:hover:!text-slate-200'
                                     }`}
                             >Completed Orders</button>
                         </div>
@@ -3180,25 +3180,25 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                                     {qCategories.map(cat => {
                                         const n = cat.name.toLowerCase();
                                         const isProduct = qActiveTab === 'products';
-                                        
+
                                         let bg = 'bg-slate-50 dark:bg-slate-800/50';
                                         let iconColor = 'text-slate-500';
                                         let Icon = isProduct ? Package : Tag;
                                         let sub = isProduct ? 'Other products' : 'Other services';
                                         let border = 'border border-transparent';
 
-                                        if (n === 'all') { 
-                                            bg = 'bg-[#fffbeb] dark:bg-amber-900/20'; 
-                                            iconColor = 'text-[#f59e0b]'; 
-                                            Icon = LayoutGrid; 
-                                            sub = isProduct ? 'View all products' : 'View all services'; 
-                                            border = 'border-b-[3px] border-b-[#f59e0b] border-t border-t-[#fde68a] border-l border-l-[#fde68a] border-r border-r-[#fde68a]'; 
+                                        if (n === 'all') {
+                                            bg = 'bg-[#fffbeb] dark:bg-amber-900/20';
+                                            iconColor = 'text-[#f59e0b]';
+                                            Icon = LayoutGrid;
+                                            sub = isProduct ? 'View all products' : 'View all services';
+                                            border = 'border-b-[3px] border-b-[#f59e0b] border-t border-t-[#fde68a] border-l border-l-[#fde68a] border-r border-r-[#fde68a]';
                                         }
                                         else if (n.includes('color')) { bg = 'bg-[#fff1f2] dark:bg-rose-900/20'; iconColor = 'text-[#f43f5e]'; Icon = Brush; sub = 'Color & highlights'; border = 'border border-[#ffe4e6] dark:border-rose-900/50'; }
                                         else if (n.includes('care') || n.includes('wash') || n.includes('spa') || n.includes('shampoo')) { bg = 'bg-[#eff6ff] dark:bg-blue-900/20'; iconColor = 'text-[#3b82f6]'; Icon = Droplet; sub = isProduct ? 'Hair care' : 'Care & treatments'; border = 'border border-[#dbeafe] dark:border-blue-900/50'; }
                                         else if (n.includes('cut') || n.includes('hair')) { bg = 'bg-[#ecfdf5] dark:bg-emerald-900/20'; iconColor = 'text-[#10b981]'; Icon = Scissors; sub = 'Hair styling'; border = 'border border-[#d1fae5] dark:border-emerald-900/50'; }
                                         else if (n.includes('facial') || n.includes('face') || n.includes('makeup') || n.includes('skin') || n.includes('cream')) { bg = 'bg-[#f5f3ff] dark:bg-purple-900/20'; iconColor = 'text-[#8b5cf6]'; Icon = Sparkles; sub = isProduct ? 'Skin care' : 'Beauty & makeup'; border = 'border border-[#ede9fe] dark:border-purple-900/50'; }
-                                        else if (isProduct) { 
+                                        else if (isProduct) {
                                             const palettes = [
                                                 { b: 'bg-indigo-50 dark:bg-indigo-900/20', c: 'text-indigo-500', br: 'border border-indigo-100 dark:border-indigo-900/50' },
                                                 { b: 'bg-violet-50 dark:bg-violet-900/20', c: 'text-violet-500', br: 'border border-violet-100 dark:border-violet-900/50' },
@@ -3212,7 +3212,7 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                                             let hash = 0;
                                             for (let i = 0; i < cat.name.length; i++) hash += cat.name.charCodeAt(i);
                                             const p = palettes[hash % palettes.length];
-                                            bg = p.b; iconColor = p.c; Icon = Package; sub = 'Retail product'; border = p.br; 
+                                            bg = p.b; iconColor = p.c; Icon = Package; sub = 'Retail product'; border = p.br;
                                         }
 
                                         const isSelected = qSelectedCategory === cat.name;
@@ -3225,7 +3225,7 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                                             >
                                                 <div className="w-10 h-10 rounded-[12px] bg-white dark:bg-slate-800 flex items-center justify-center flex-shrink-0 shadow-sm overflow-hidden">
                                                     {cat.image ? (
-                                                        <img src={getImageUrl(cat.image)} className="w-full h-full object-cover" alt={cat.name} onError={(e) => { e.target.style.display='none'; e.target.nextSibling.style.display='flex'; }} />
+                                                        <img src={getImageUrl(cat.image)} className="w-full h-full object-cover" alt={cat.name} onError={(e) => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'flex'; }} />
                                                     ) : null}
                                                     <Icon className={`w-5 h-5 ${iconColor}`} strokeWidth={2} style={{ display: cat.image ? 'none' : 'block' }} />
                                                 </div>
@@ -3258,7 +3258,7 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                                                     >
                                                         <div className="w-12 h-12 rounded-[14px] overflow-hidden flex items-center justify-center flex-shrink-0 border border-amber-100 bg-amber-50/40 transition-all group-hover:scale-105">
                                                             {img && (
-                                                                <img src={getImageUrl(img)} alt={item.name} className="w-full h-full object-cover" onError={(e) => { e.target.style.display='none'; e.target.nextSibling.style.display='flex'; }} />
+                                                                <img src={getImageUrl(img)} alt={item.name} className="w-full h-full object-cover" onError={(e) => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'flex'; }} />
                                                             )}
                                                             {qActiveTab === 'services' ? (
                                                                 <Scissors className="w-5 h-5" style={{ color: '#C69A20', display: img ? 'none' : 'block' }} strokeWidth={1.5} />
@@ -3651,13 +3651,11 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                                 <button
                                     onClick={handleConfirm}
                                     disabled={isProcessing || qCart.length === 0}
-                                    className="w-full py-3.5 font-black text-[12px] uppercase tracking-widest rounded-xl flex items-center justify-center gap-2 shadow-lg transition-all mb-4 text-white disabled:bg-slate-700 disabled:text-slate-400 disabled:shadow-none"
+                                    className={`w-full py-3.5 font-black text-[12px] uppercase tracking-widest rounded-xl flex items-center justify-center gap-2 shadow-lg transition-all mb-4 text-white ${(isProcessing || qCart.length === 0) ? 'opacity-50 cursor-not-allowed' : 'hover:shadow-xl hover:-translate-y-0.5'}`}
                                     style={{
-                                        background: (isProcessing || qCart.length === 0) ? '#334155' : '#b48325',
-                                        color: (isProcessing || qCart.length === 0) ? '#94a3b8' : '#ffffff'
+                                        background: '#B4912B',
+                                        color: '#ffffff'
                                     }}
-                                    onMouseOver={e => { if (!isProcessing && qCart.length > 0) e.currentTarget.style.background = '#9c701c'; }}
-                                    onMouseOut={e => { if (!isProcessing && qCart.length > 0) e.currentTarget.style.background = '#b48325'; }}
                                 >
                                     {isProcessing ? <Loader2 className="w-5 h-5 animate-spin" /> : (
                                         <>
