@@ -3125,6 +3125,10 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                                                     style={{ background: '#fff', border: '1px solid #e2e8f0' }}>
                                                     {qFilteredClients.length > 0 ? (
                                                         <div className="max-h-[220px] overflow-y-auto qi-scroll">
+                                                            <style>{`
+                                                                html body button div.client-avatar-amber { color: #d97706 !important; -webkit-text-fill-color: #d97706 !important; }
+                                                                html body button div.client-avatar-amber-due { color: #b45309 !important; -webkit-text-fill-color: #b45309 !important; }
+                                                            `}</style>
                                                             {qFilteredClients.map((c, idx) => (
                                                                 <button
                                                                     id={`q-client-item-${idx}`}
@@ -3132,7 +3136,7 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                                                                     onClick={() => handleSelectClient(c)}
                                                                     className={`w-full px-4 py-3 text-left border-b border-slate-100 last:border-0 flex items-center gap-3 transition-colors ${idx === qFocusedClientIndex ? 'bg-amber-50' : 'hover:bg-slate-50'}`}
                                                                 >
-                                                                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center font-bold text-xs flex-shrink-0 ${Number(c.dueAmount || 0) > 0 ? 'bg-amber-100 text-amber-700' : 'bg-amber-50 text-amber-600'}`}>
+                                                                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center font-bold text-xs flex-shrink-0 ${Number(c.dueAmount || 0) > 0 ? 'bg-amber-100 text-amber-700 client-avatar-amber-due' : 'bg-amber-50 text-amber-600 client-avatar-amber'}`}>
                                                                         {c.name.charAt(0).toUpperCase()}
                                                                     </div>
                                                                     <div className="flex-1 min-w-0">
@@ -3839,13 +3843,12 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                         className="fixed inset-0 backdrop-blur-sm z-[110] flex items-center justify-center p-4"
                         style={{ background: 'rgba(15,23,42,0.8)' }}>
                         <motion.form initial={{ scale: 0.9, y: 10 }} animate={{ scale: 1, y: 0 }} onSubmit={handleQuickCreateClient}
-                            className="w-full max-w-sm rounded-2xl shadow-2xl overflow-hidden"
-                            style={{ background: '#fff', border: '1px solid #e2e8f0' }}>
-                            <div className="p-5 flex justify-between items-center" style={{ background: '#f8fafc', borderBottom: '1px solid #e2e8f0' }}>
-                                <h4 className="text-xs font-bold uppercase flex items-center gap-2" style={{ color: '#1e293b' }}>
-                                    <UserPlus className="w-4 h-4" style={{ color: '#C69A20' }} /> New Quick Client
+                            className="w-full max-w-sm rounded-2xl shadow-2xl overflow-hidden bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
+                            <div className="p-5 flex justify-between items-center bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-800/50">
+                                <h4 className="text-xs font-bold uppercase flex items-center gap-2 text-slate-900 dark:text-white">
+                                    <UserPlus className="w-4 h-4 text-amber-600" /> New Quick Client
                                 </h4>
-                                <button type="button" onClick={() => setShowNewClient(false)} style={{ color: '#94a3b8' }} className="hover:text-red-500">
+                                <button type="button" onClick={() => setShowNewClient(false)} className="text-slate-400 hover:text-red-500 dark:hover:text-red-400 transition-colors">
                                     <X className="w-5 h-5" />
                                 </button>
                             </div>
@@ -3856,10 +3859,9 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                                     { label: 'Referral Code (Optional)', key: 'appliedReferralCode', type: 'text', placeholder: 'e.g. WAP-XXXXXX', required: false },
                                 ].map(({ label, key, type, placeholder, required }) => (
                                     <div key={key} className="space-y-1.5">
-                                        <label className="text-xs font-semibold uppercase" style={{ color: '#64748b' }}>{label}</label>
+                                        <label className="text-xs font-semibold uppercase text-slate-500 dark:text-slate-400">{label}</label>
                                         <input required={required} type={type} placeholder={placeholder}
-                                            className="w-full p-3 text-sm font-bold rounded-xl outline-none"
-                                            style={{ background: '#f8fafc', border: '1px solid #e2e8f0', color: '#1e293b' }}
+                                            className="w-full p-3 text-sm font-bold rounded-xl outline-none bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:border-amber-500 dark:focus:border-amber-500 transition-colors"
                                             value={newClientForm[key] || ''}
                                             onChange={e => setNewClientForm({ ...newClientForm, [key]: key === 'phone' ? e.target.value.replace(/\D/g, '').slice(0, 10) : key === 'appliedReferralCode' ? e.target.value.toUpperCase().trim() : e.target.value })}
                                         />
@@ -3871,10 +3873,9 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                                         { label: 'Anniversary', key: 'anniversary' },
                                     ].map(({ label, key }) => (
                                         <div key={key} className="space-y-1.5">
-                                            <label className="text-xs font-semibold uppercase" style={{ color: '#64748b' }}>{label}</label>
+                                            <label className="text-xs font-semibold uppercase text-slate-500 dark:text-slate-400">{label}</label>
                                             <input type="date" max={new Date().toISOString().split('T')[0]}
-                                                className="w-full p-3 text-xs font-bold rounded-xl outline-none"
-                                                style={{ background: '#f8fafc', border: '1px solid #e2e8f0', color: '#1e293b' }}
+                                                className="w-full p-3 text-xs font-bold rounded-xl outline-none bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:border-amber-500 dark:focus:border-amber-500 transition-colors"
                                                 value={newClientForm[key]}
                                                 onChange={e => setNewClientForm({ ...newClientForm, [key]: e.target.value })}
                                             />
@@ -3882,7 +3883,7 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                                     ))}
                                 </div>
                             </div>
-                            <div className="p-6" style={{ background: '#f8fafc', borderTop: '1px solid #e2e8f0' }}>
+                            <div className="p-6 bg-slate-50 dark:bg-slate-800/50 border-t border-slate-200 dark:border-slate-800/50">
                                 <button type="submit" disabled={isSubmittingClient}
                                     className="w-full py-3 text-white font-bold text-xs uppercase tracking-wider rounded-xl shadow-lg disabled:opacity-50 transition-all"
                                     style={{ background: '#C69A20' }}
