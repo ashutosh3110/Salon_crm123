@@ -194,10 +194,12 @@ export default function NewBookingPage() {
     const filteredStaff = useMemo(() => {
         const term = searchTerms.staff.trim().toLowerCase();
         return staff.filter(s => {
-            const isStylist = (s.role || '').toLowerCase().includes('styl');
-            const matchesOutlet = !s.outletId || s.outletId === selection.outletId;
+            const staffOutletId = s.outletId?._id || s.outletId;
+            const matchesOutlet = !staffOutletId || staffOutletId === selection.outletId;
             const matchesSearch = s.name.toLowerCase().includes(term);
-            return isStylist && matchesOutlet && matchesSearch;
+            const roleLower = (s.role || '').toLowerCase();
+            const isExcludedRole = ['admin', 'accountant', 'receptionist'].includes(roleLower);
+            return !isExcludedRole && matchesOutlet && matchesSearch && s.status !== 'inactive';
         });
     }, [staff, selection.outletId, searchTerms.staff]);
 
@@ -268,6 +270,7 @@ export default function NewBookingPage() {
             return;
         }
 
+        setLoading(true);
         try {
             const appointmentDate = new Date(`${selection.date}T${selection.time}`);
             
@@ -289,6 +292,8 @@ export default function NewBookingPage() {
             navigate('/admin/bookings');
         } catch (err) {
             toast(err.message || 'Booking failed');
+        } finally {
+            setLoading(false);
         }
     };
 

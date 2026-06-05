@@ -112,7 +112,7 @@ export default function PromotionsPage() {
         usageLimit: 1,
         usageLimitPerCustomer: 1,
         isActive: true,
-        activationMode: 'AUTO',
+        activationMode: 'COUPON',
         couponCode: '',
         applicableOn: 'BOTH',
         outletIds: []
@@ -175,8 +175,8 @@ export default function PromotionsPage() {
                 startDate: form.startDate ? new Date(form.startDate) : undefined,
                 endDate: form.endDate ? new Date(form.endDate) : undefined,
                 isActive: !!form.isActive,
-                activationMode: form.activationMode || 'AUTO',
-                couponCode: form.activationMode === 'COUPON' ? String(form.couponCode).toUpperCase() : undefined,
+                activationMode: 'COUPON',
+                couponCode: String(form.couponCode).toUpperCase(),
                 totalUsageLimit: Number(form.usageLimit) || 1,
                 usageLimitPerCustomer: Number(form.usageLimitPerCustomer) || 1,
                 applicableOn: form.applicableOn,
@@ -200,7 +200,7 @@ export default function PromotionsPage() {
                 usageLimit: 1,
                 usageLimitPerCustomer: 1,
                 isActive: true,
-                activationMode: 'AUTO',
+                activationMode: 'COUPON',
                 couponCode: '',
                 applicableOn: 'BOTH',
                 outletIds: []
@@ -327,7 +327,7 @@ export default function PromotionsPage() {
                 <button
                     onClick={() => {
                         setEditing(null);
-                        setForm({ name: '', type: 'percentage', value: '', startDate: '', endDate: '', usageLimit: 1, usageLimitPerCustomer: 1, isActive: true, activationMode: 'AUTO', couponCode: '', applicableOn: 'BOTH', outletIds: [] });
+                        setForm({ name: '', type: 'percentage', value: '', startDate: '', endDate: '', usageLimit: 1, usageLimitPerCustomer: 1, isActive: true, activationMode: 'COUPON', couponCode: '', applicableOn: 'BOTH', outletIds: [] });
                         setShowModal(true);
                     }}
                     className="flex items-center justify-center gap-1.5 bg-primary/10 text-primary border border-primary px-4 py-2 rounded-2xl text-[9px] font-black uppercase tracking-[0.15em] shadow-[0_0_12px_rgba(234,179,8,0.4)] hover:shadow-[0_0_20px_rgba(234,179,8,0.6)] transition-all whitespace-nowrap cursor-pointer"
@@ -489,18 +489,9 @@ export default function PromotionsPage() {
                                         <input type="number" value={form.usageLimitPerCustomer} onChange={(e) => setForm({ ...form, usageLimitPerCustomer: e.target.value })} required className="w-full px-4 py-3 rounded-xl bg-white border border-border text-xs font-bold uppercase tracking-widest focus:border-primary outline-none transition-all text-text" />
                                     </div>
                                 </div>
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div className="space-y-2">
-                                        <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">How It Applies</label>
-                                        <select value={form.activationMode || 'AUTO'} onChange={(e) => setForm({ ...form, activationMode: e.target.value })} className="w-full px-4 py-3 rounded-xl bg-white border border-border text-xs font-bold uppercase tracking-widest focus:border-primary outline-none transition-all cursor-pointer text-text">
-                                            <option value="AUTO">Automatic</option>
-                                            <option value="COUPON">Coupon Code</option>
-                                        </select>
-                                    </div>
-                                    <div className="space-y-2">
-                                        <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Code</label>
-                                        <input placeholder="CODE10" type="text" value={form.couponCode} onChange={(e) => setForm({ ...form, couponCode: e.target.value.toUpperCase() })} className="w-full px-4 py-3 rounded-xl bg-white border border-border text-xs font-bold uppercase tracking-widest focus:border-primary outline-none transition-all text-text disabled:opacity-40 disabled:bg-surface" disabled={form.activationMode !== 'COUPON'} />
-                                    </div>
+                                <div className="space-y-2">
+                                    <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Code</label>
+                                    <input placeholder="CODE10" type="text" value={form.couponCode} onChange={(e) => setForm({ ...form, couponCode: e.target.value.toUpperCase() })} className="w-full px-4 py-3 rounded-xl bg-white border border-border text-xs font-bold uppercase tracking-widest focus:border-primary outline-none transition-all text-text" />
                                 </div>
                                 <div className="grid grid-cols-2 gap-4">
                                     <div className="space-y-2">

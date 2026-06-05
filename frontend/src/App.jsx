@@ -701,9 +701,10 @@ function App() {
                         <Route element={<CustomerAppWrapper />}>
                           <Route path="/app/login" element={<AppLoginPage />} />
                           <Route path="/app/gender" element={<GenderSelectPage />} />
-                          <Route path="/app/booking" element={<AppSharedBookingPage />} />
+                          <Route path="/app/shared-booking" element={<AppSharedBookingPage />} />
                           <Route element={<AppLayout />}>
                             <Route path="/app" element={<AppHomePage />} />
+                            <Route path="/app/booking" element={<AppBookingPage />} />
                             <Route path="/app/nearby-outlets" element={<NearbyOutletsPage />} />
                             <Route path="/app/salon/:id" element={<SalonProfilePage />} />
                             <Route path="/app/wallet" element={<AppWalletPage />} />
