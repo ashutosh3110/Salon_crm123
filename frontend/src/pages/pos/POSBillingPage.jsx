@@ -1886,8 +1886,10 @@ export default function POSBillingPage() {
                                                 <p className="text-xs font-bold truncate">{item.name}</p>
                                                 <div className="flex flex-col">
                                                     <p className="text-xs font-bold text-primary leading-none mt-1">₹{(item.price * item.quantity).toFixed(2)}</p>
-                                                    {(item.isInclusiveTax === true || String(item.isInclusiveTax) === 'true' || (item.isInclusiveTax === undefined && fiscal.inclusiveTax)) && (
+                                                    {(item.isInclusiveTax === true || String(item.isInclusiveTax) === 'true' || (item.isInclusiveTax === undefined && fiscal.inclusiveTax)) ? (
                                                         <span className="text-[9px] font-semibold uppercase text-emerald-600 mt-1">INCLUDING GST</span>
+                                                    ) : (
+                                                        <span className="text-[9px] font-semibold uppercase text-blue-600 mt-1">EXCLUDING GST</span>
                                                     )}
                                                     {(item.type === 'service' || item.type === 'product') && (
                                                         <div className="mt-1.5 flex items-center gap-1 bg-primary/5 border border-primary/10 rounded-lg p-1 transition-all w-fit">
@@ -3456,6 +3458,11 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                                     <div className="flex flex-col shrink-0 px-4">
                                         <span className="text-[9px] font-black uppercase tracking-widest" style={{ color: '#64748b' }}>
                                             CGST {totals.serviceGstRate > 0 ? `(${totals.serviceGstRate / 2}%)` : ''}
+                                            {totals.cgst > totals.cgstExcl ? (
+                                                <span className="text-emerald-600 dark:text-emerald-400/80 ml-1 font-bold text-[8px]">(INCL)</span>
+                                            ) : (
+                                                <span className="text-blue-600 dark:text-blue-400/80 ml-1 font-bold text-[8px]">(EXCL)</span>
+                                            )}
                                         </span>
                                         <span className="text-[13px] font-black font-mono mt-0.5" style={{ color: '#1e293b' }}>&#8377;{totals.cgst.toFixed(2)}</span>
                                     </div>
@@ -3465,6 +3472,11 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                                     <div className="flex flex-col shrink-0 px-4">
                                         <span className="text-[9px] font-black uppercase tracking-widest" style={{ color: '#64748b' }}>
                                             SGST {totals.serviceGstRate > 0 ? `(${totals.serviceGstRate / 2}%)` : ''}
+                                            {totals.sgst > totals.sgstExcl ? (
+                                                <span className="text-emerald-600 dark:text-emerald-400/80 ml-1 font-bold text-[8px]">(INCL)</span>
+                                            ) : (
+                                                <span className="text-blue-600 dark:text-blue-400/80 ml-1 font-bold text-[8px]">(EXCL)</span>
+                                            )}
                                         </span>
                                         <span className="text-[13px] font-black font-mono mt-0.5" style={{ color: '#1e293b' }}>&#8377;{totals.sgst.toFixed(2)}</span>
                                     </div>
@@ -3621,8 +3633,8 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                                                 const isIncl = (item.isInclusiveTax === true || String(item.isInclusiveTax) === 'true' || (item.isInclusiveTax === undefined && !!fiscal?.inclusiveTax));
                                                 const rate = item.type === 'service' ? totals.serviceGstRate : totals.productGstRate;
                                                 return isIncl
-                                                    ? <span className="-ml-2.5 text-[10px] font-black px-2 py-0.5 rounded-md leading-none w-fit bg-emerald-100 dark:bg-emerald-950/40 border border-emerald-100 dark:border-emerald-900/30 tax-badge-incl">{rate}%</span>
-                                                    : <span className="-ml-2.5 text-[10px] font-black px-2 py-0.5 rounded-md leading-none w-fit bg-blue-100 dark:bg-blue-950/40 border border-blue-100 dark:border-blue-900/30 tax-badge-excl">Excl.</span>;
+                                                    ? <span className="-ml-2.5 text-[10px] font-black px-2 py-0.5 rounded-md leading-none w-fit bg-emerald-100 dark:bg-emerald-950/40 border border-emerald-100 dark:border-emerald-900/30 tax-badge-incl">{rate}% (Incl.)</span>
+                                                    : <span className="-ml-2.5 text-[10px] font-black px-2 py-0.5 rounded-md leading-none w-fit bg-blue-100 dark:bg-blue-950/40 border border-blue-100 dark:border-blue-900/30 tax-badge-excl">{rate}% (Excl.)</span>;
                                             })()}
                                         </div>
                                         <div className="flex flex-col gap-1">

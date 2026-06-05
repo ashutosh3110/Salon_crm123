@@ -91,7 +91,7 @@ export function calculateTotals({
             const discType = item.membershipDiscountType || 'fixed';
             const discVal = Number(item.membershipDiscountValue !== undefined ? item.membershipDiscountValue : item.originalBooking.membershipDiscount) || 0;
             if (discType === 'percentage') {
-                totalMembershipDiscount += (itemPrice * discVal) / 100;
+                totalMembershipDiscount += ((itemPrice * qty) * discVal) / 100;
             } else {
                 totalMembershipDiscount += discVal;
             }
@@ -101,7 +101,7 @@ export function calculateTotals({
                 const discType = item.membershipDiscountType;
                 const discVal = Number(item.membershipDiscountValue) || 0;
                 if (discType === 'percentage') {
-                    totalMembershipDiscount += (itemPrice * discVal) / 100;
+                    totalMembershipDiscount += ((itemPrice * qty) * discVal) / 100;
                 } else {
                     totalMembershipDiscount += discVal;
                 }
@@ -109,13 +109,13 @@ export function calculateTotals({
                 const plan = activeMembership.planId;
                 if (item.type === 'service') {
                     if (plan.serviceDiscountType === 'percentage') {
-                        totalMembershipDiscount += (itemPrice * (Number(plan.serviceDiscountValue) || 0)) / 100;
+                        totalMembershipDiscount += ((itemPrice * qty) * (Number(plan.serviceDiscountValue) || 0)) / 100;
                     } else {
                         totalMembershipDiscount += (Number(plan.serviceDiscountValue) || 0);
                     }
                 } else if (item.type === 'product') {
                     if (plan.productDiscountType === 'percentage') {
-                        totalMembershipDiscount += (itemPrice * (Number(plan.productDiscountValue) || 0)) / 100;
+                        totalMembershipDiscount += ((itemPrice * qty) * (Number(plan.productDiscountValue) || 0)) / 100;
                     } else {
                         totalMembershipDiscount += (Number(plan.productDiscountValue) || 0);
                     }
