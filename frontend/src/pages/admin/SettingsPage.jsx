@@ -295,8 +295,8 @@ export default function SettingsPage({ section: propSection }) {
 
     const tabClass = (id) =>
         `px-4 py-2 rounded-lg text-[10px] font-bold uppercase tracking-widest transition-all border flex items-center ${activeTab === id
-            ? 'bg-primary text-primary-foreground border-primary shadow-md shadow-primary/20'
-            : 'bg-surface text-text-muted border-border hover:border-primary/40'
+            ? '!bg-[#B4912B] !border-[#B4912B] text-white shadow-[0_4px_6px_-1px_rgba(180,145,43,0.2)]'
+            : 'bg-surface text-text-muted border-border hover:border-[#B4912B]/40 dark:hover:border-[#B4912B]/40'
         }`;
 
     return (
@@ -316,7 +316,11 @@ export default function SettingsPage({ section: propSection }) {
                     { id: 'terms', label: 'Terms & Conditions' },
                     { id: 'booking-link', label: 'Booking Link' },
                 ].map((t) => (
-                    <Link key={t.id} to={`/admin/settings/${t.id}`} className={tabClass(t.id)}>
+                    <Link 
+                        key={t.id} 
+                        to={`/admin/settings/${t.id}`} 
+                        className={tabClass(t.id)}
+                    >
                         {t.id === 'booking-link' && <LinkIcon className="w-3.5 h-3.5 mr-1.5" />}
                         {t.label}
                     </Link>
@@ -1049,8 +1053,8 @@ export default function SettingsPage({ section: propSection }) {
                         <div className="space-y-5 text-left">
                             <div>
                                 <div className="flex items-center gap-3">
-                                    <div className="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center">
-                                        <LinkIcon className="w-5 h-5 text-purple-600" />
+                                    <div className="w-10 h-10 rounded-full bg-purple-100 dark:bg-purple-500/20 flex items-center justify-center">
+                                        <LinkIcon className="w-5 h-5 text-purple-600 dark:text-purple-400" />
                                     </div>
                                     <div>
                                         <h2 className="text-[14px] font-bold text-gray-900 tracking-tight">Online Appointment Booking Page</h2>
@@ -1131,8 +1135,8 @@ export default function SettingsPage({ section: propSection }) {
                                     </h3>
                                     <ul className="space-y-5">
                                         <li className="flex items-start gap-3.5">
-                                            <div className="w-8 h-8 rounded-full bg-purple-100 flex items-center justify-center shrink-0 mt-0.5">
-                                                <MessageSquare className="w-4 h-4 text-purple-600" />
+                                            <div className="w-8 h-8 rounded-full bg-purple-100 dark:bg-purple-500/20 flex items-center justify-center shrink-0 mt-0.5">
+                                                <MessageSquare className="w-4 h-4 text-purple-600 dark:text-purple-400" />
                                             </div>
                                             <div>
                                                 <strong className="text-[12px] text-gray-900 font-bold block mb-0.5">WhatsApp / Instagram Bio</strong>
@@ -1140,8 +1144,8 @@ export default function SettingsPage({ section: propSection }) {
                                             </div>
                                         </li>
                                         <li className="flex items-start gap-3.5">
-                                            <div className="w-8 h-8 rounded-full bg-purple-100 flex items-center justify-center shrink-0 mt-0.5">
-                                                <QrCode className="w-4 h-4 text-purple-600" />
+                                            <div className="w-8 h-8 rounded-full bg-purple-100 dark:bg-purple-500/20 flex items-center justify-center shrink-0 mt-0.5">
+                                                <QrCode className="w-4 h-4 text-purple-600 dark:text-purple-400" />
                                             </div>
                                             <div>
                                                 <strong className="text-[12px] text-gray-900 font-bold block mb-0.5">Printed QR Code</strong>
@@ -1149,8 +1153,8 @@ export default function SettingsPage({ section: propSection }) {
                                             </div>
                                         </li>
                                         <li className="flex items-start gap-3.5">
-                                            <div className="w-8 h-8 rounded-full bg-purple-100 flex items-center justify-center shrink-0 mt-0.5">
-                                                <MessageSquare className="w-4 h-4 text-purple-600" />
+                                            <div className="w-8 h-8 rounded-full bg-purple-100 dark:bg-purple-500/20 flex items-center justify-center shrink-0 mt-0.5">
+                                                <MessageSquare className="w-4 h-4 text-purple-600 dark:text-purple-400" />
                                             </div>
                                             <div>
                                                 <strong className="text-[12px] text-gray-900 font-bold block mb-0.5">SMS & WhatsApp Alerts</strong>
@@ -1174,18 +1178,18 @@ export default function SettingsPage({ section: propSection }) {
 
                                 <div className="flex flex-col md:flex-row items-center justify-between gap-3 overflow-x-auto pb-2">
                                     {[
-                                        { step: '01', title: 'Details', desc: 'Name & Phone with quick OTP verification', icon: <UserIcon className="w-5 h-5 text-purple-600" /> },
-                                        { step: '02', title: 'Outlet', desc: 'Choose Nearby or All branches', icon: <MapPin className="w-5 h-5 text-purple-600" /> },
-                                        { step: '03', title: 'Services', desc: 'Select required service catalog', icon: <ClipboardList className="w-5 h-5 text-purple-600" /> },
-                                        { step: '04', title: 'Stylist', desc: 'Pick preferred staff expert', icon: <UserCheck className="w-5 h-5 text-purple-600" /> },
-                                        { step: '05', title: 'Booking', desc: 'Select Date & Time slot, and confirm', icon: <CalendarDays className="w-5 h-5 text-purple-600" /> },
+                                        { step: '01', title: 'Details', desc: 'Name & Phone with quick OTP verification', icon: <UserIcon className="w-5 h-5 text-purple-600 dark:text-purple-400" /> },
+                                        { step: '02', title: 'Outlet', desc: 'Choose Nearby or All branches', icon: <MapPin className="w-5 h-5 text-purple-600 dark:text-purple-400" /> },
+                                        { step: '03', title: 'Services', desc: 'Select required service catalog', icon: <ClipboardList className="w-5 h-5 text-purple-600 dark:text-purple-400" /> },
+                                        { step: '04', title: 'Stylist', desc: 'Pick preferred staff expert', icon: <UserCheck className="w-5 h-5 text-purple-600 dark:text-purple-400" /> },
+                                        { step: '05', title: 'Booking', desc: 'Select Date & Time slot, and confirm', icon: <CalendarDays className="w-5 h-5 text-purple-600 dark:text-purple-400" /> },
                                     ].map((s, i, arr) => (
                                         <div key={s.step} className="flex items-center flex-1 min-w-[130px]">
                                             <div className="bg-white border border-gray-200 p-5 rounded-2xl flex flex-col items-center text-center relative shadow-sm flex-1 min-h-[150px] justify-center w-full">
-                                                <div className="absolute top-3 left-3 w-6 h-6 rounded-full bg-purple-50 border border-purple-100 flex items-center justify-center text-[10px] font-bold text-purple-700">
+                                                <div className="absolute top-3 left-3 w-6 h-6 rounded-full bg-purple-50 dark:bg-purple-500/10 border border-purple-100 dark:border-purple-500/20 flex items-center justify-center text-[10px] font-bold text-purple-700 dark:text-purple-400">
                                                     {s.step}
                                                 </div>
-                                                <div className="mb-3 mt-4 w-12 h-12 rounded-full bg-purple-100 flex items-center justify-center">
+                                                <div className="mb-3 mt-4 w-12 h-12 rounded-full bg-purple-100 dark:bg-purple-500/20 flex items-center justify-center">
                                                     {s.icon}
                                                 </div>
                                                 <h4 className="text-[11px] font-bold text-gray-900 mb-1">{s.title}</h4>
@@ -1209,14 +1213,14 @@ export default function SettingsPage({ section: propSection }) {
 
             {/* Bottom Banner for Booking Link */}
             {activeTab === 'booking-link' && (
-                <div className="bg-white border border-slate-100 rounded-2xl px-6 flex items-center justify-between shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)] overflow-hidden relative">
+                <div className="bg-white dark:bg-slate-800/50 border border-slate-100 dark:border-slate-700 rounded-2xl px-6 flex items-center justify-between shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)] overflow-hidden relative">
                     <div className="flex items-center gap-4 py-5 z-10 w-full md:w-2/3">
-                        <div className="w-[52px] h-[52px] rounded-full bg-[#f0fdf4] flex items-center justify-center shrink-0">
-                            <ShieldCheck className="w-6 h-6 text-[#16a34a]" strokeWidth={2.5} />
+                        <div className="w-[52px] h-[52px] rounded-2xl bg-[#f0fdf4] dark:bg-green-500/10 flex items-center justify-center shrink-0">
+                            <ShieldCheck className="w-6 h-6 text-[#16a34a] dark:text-green-500" strokeWidth={2.5} />
                         </div>
                         <div className="flex flex-col justify-center">
-                            <h3 className="text-[15px] font-black text-slate-900 tracking-tight mb-1">We're here to help!</h3>
-                            <p className="text-[12px] font-medium text-slate-500">
+                            <h3 className="text-[15px] font-black text-slate-900 dark:text-slate-100 tracking-tight mb-1">We're here to help!</h3>
+                            <p className="text-[12px] font-medium text-slate-500 dark:text-slate-400">
                                 Your satisfaction is our priority. Reach out anytime.
                             </p>
                         </div>
