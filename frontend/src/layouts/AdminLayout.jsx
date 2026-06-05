@@ -388,6 +388,7 @@ export default function AdminLayout() {
                 .dark .admin-panel button:has(svg.lucide-eye):not(aside *),
                 .dark .admin-panel button:has(svg.lucide-edit):not(aside *),
                 .dark .admin-panel button:has(svg.lucide-edit-2):not(aside *),
+                .dark .admin-panel button:has(svg.lucide-ban):not(aside *),
                 .dark .admin-panel button:has(svg.lucide-trash-2):not(aside *),
                 .dark .admin-panel button:has(svg.lucide-trash):not(aside *),
                 .dark .admin-panel button:has(svg.lucide-settings):not(aside *),
@@ -405,6 +406,7 @@ export default function AdminLayout() {
                 .dark .admin-panel button:has(svg.lucide-eye):not(aside *):hover,
                 .dark .admin-panel button:has(svg.lucide-edit):not(aside *):hover,
                 .dark .admin-panel button:has(svg.lucide-edit-2):not(aside *):hover,
+                .dark .admin-panel button:has(svg.lucide-ban):not(aside *):hover,
                 .dark .admin-panel button:has(svg.lucide-trash-2):not(aside *):hover,
                 .dark .admin-panel button:has(svg.lucide-trash):not(aside *):hover,
                 .dark .admin-panel button:has(svg.lucide-settings):not(aside *):hover,
@@ -704,6 +706,8 @@ export default function AdminLayout() {
                 .dark .admin-panel button[class*="border-"]:not(aside *),
                 .dark .admin-panel button:has(svg.lucide-eye):not(aside *),
                 .dark .admin-panel button:has(svg.lucide-edit):not(aside *),
+                .dark .admin-panel button:has(svg.lucide-ban):not(aside *),
+                .dark .admin-panel button:has(svg.lucide-trash-2):not(aside *),
                 .dark .admin-panel button:has(svg.lucide-trash):not(aside *),
                 .dark .admin-panel button:has(svg.lucide-plus):not(.bg-primary):not([class*="bg-primary"]):not(aside *),
                 .dark .admin-panel [class*="border-border"] button:not(aside *):not(.bg-primary):not([class*="bg-primary"]) {
@@ -717,6 +721,8 @@ export default function AdminLayout() {
                 .dark .admin-panel button[class*="border-"]:not(aside *):hover,
                 .dark .admin-panel button:has(svg.lucide-eye):not(aside *):hover,
                 .dark .admin-panel button:has(svg.lucide-edit):not(aside *):hover,
+                .dark .admin-panel button:has(svg.lucide-ban):not(aside *):hover,
+                .dark .admin-panel button:has(svg.lucide-trash-2):not(aside *):hover,
                 .dark .admin-panel button:has(svg.lucide-trash):not(aside *):hover,
                 .dark .admin-panel [class*="border-border"] button:not(aside *):not(.bg-primary):not([class*="bg-primary"]):hover {
                     background-color: #121826 !important;

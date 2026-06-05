@@ -270,7 +270,10 @@ export default function AppBookingPage() {
             }
             return ['Stylist', 'Slots', 'Confirm & Book'];
         }
-        return ['Details', 'Outlet', 'Services', 'Stylist', 'Slots', 'Confirm & Book'];
+        if (!isCustomerAuthenticated) {
+            return ['Details', 'Outlet', 'Services', 'Stylist', 'Slots', 'Confirm & Book'];
+        }
+        return ['Outlet', 'Services', 'Stylist', 'Slots', 'Confirm & Book'];
     }, [isPreselected, isCustomerAuthenticated]);
 
     const virtualStep = useMemo(() => {
@@ -287,6 +290,9 @@ export default function AppBookingPage() {
                 if (step === 5) return 2; // Confirm & Book
                 return 0;
             }
+        }
+        if (isCustomerAuthenticated) {
+            return Math.max(0, step - 1);
         }
         return step;
     }, [isPreselected, isCustomerAuthenticated, step]);
@@ -307,7 +313,8 @@ export default function AppBookingPage() {
                 navigate(-1);
             }
         } else {
-            if (step > 0) goTo(step - 1);
+            const minStep = isCustomerAuthenticated ? 1 : 0;
+            if (step > minStep) goTo(step - 1);
             else navigate(-1);
         }
     };
@@ -501,7 +508,7 @@ export default function AppBookingPage() {
         };
     }, [customer?._id]);
 
-    // Auto-skip steps for pre-selected flow if authenticated
+    // Auto-skip steps based on auth status
     useEffect(() => {
         if (!isLoading && !authLoading) {
             const isPreselectedFlow = Boolean(preSelectedServiceId);
@@ -509,6 +516,16 @@ export default function AppBookingPage() {
                 if (isCustomerAuthenticated) {
                     if (step < 3) {
                         goTo(3);
+                    }
+                } else {
+                    if (step !== 0) {
+                        goTo(0);
+                    }
+                }
+            } else {
+                if (isCustomerAuthenticated) {
+                    if (step === 0) {
+                        goTo(1);
                     }
                 } else {
                     if (step !== 0) {
@@ -691,13 +708,61 @@ export default function AppBookingPage() {
         });
     }, [businessStaff, activeSalonId, salon?._id, currentOutlet]);
 
-    const tax = useMemo(() => {
-        const sGst = Number(platformSettings?.serviceGst || 18);
-        // Assuming AppBookingPage only deals with services for now
-        return (totalPrice - membershipDiscount - promoDiscount) * (sGst / 100);
-    }, [totalPrice, membershipDiscount, promoDiscount, platformSettings]);
+    const billingBreakdown = useMemo(() => {
+        let totalTax = 0;
+        let totalFinal = 0;
+        let totalTaxable = 0;
+        let isAnyInclusive = false;
+        let isAnyExclusive = false;
 
-    const finalPrice = Math.max(0, totalPrice - membershipDiscount - promoDiscount + tax);
+        selectedServices.forEach(s => {
+            const sGst = Number(s.gst !== undefined && s.gst !== null ? s.gst : (platformSettings?.serviceGst || 18));
+            const isInclusive = s.isInclusiveTax === true || String(s.isInclusiveTax) === 'true';
+            
+            if (isInclusive) {
+                isAnyInclusive = true;
+            } else {
+                isAnyExclusive = true;
+            }
+
+            // Proportion of this service's price relative to total un-discounted price
+            const proportion = totalPrice > 0 ? (s.price / totalPrice) : 0;
+            const allocatedMembership = membershipDiscount * proportion;
+            const allocatedPromo = promoDiscount * proportion;
+            const netPrice = Math.max(0, s.price - allocatedMembership - allocatedPromo);
+
+            if (isInclusive) {
+                const serviceTaxable = netPrice / (1 + (sGst / 100));
+                const serviceTax = netPrice - serviceTaxable;
+                totalTaxable += serviceTaxable;
+                totalTax += serviceTax;
+                totalFinal += netPrice;
+            } else {
+                const serviceTax = netPrice * (sGst / 100);
+                totalTaxable += netPrice;
+                totalTax += serviceTax;
+                totalFinal += (netPrice + serviceTax);
+            }
+        });
+
+        const roundedTax = Number(totalTax.toFixed(2));
+        const roundedCGST = Number((roundedTax / 2).toFixed(2));
+        const roundedSGST = Number((roundedTax - roundedCGST).toFixed(2));
+        const roundedFinal = Number(totalFinal.toFixed(2));
+        const roundedTaxable = Number(totalTaxable.toFixed(2));
+
+        return {
+            taxable: roundedTaxable,
+            tax: roundedTax,
+            finalPrice: roundedFinal,
+            cgst: roundedCGST,
+            sgst: roundedSGST,
+            isAnyInclusive,
+            isAnyExclusive
+        };
+    }, [selectedServices, totalPrice, membershipDiscount, promoDiscount, platformSettings]);
+
+    const { tax, finalPrice, cgst, sgst } = billingBreakdown;
 
     const applyPromo = async (codeOverride) => {
         const raw = codeOverride ?? couponCode;
@@ -1143,8 +1208,8 @@ export default function AppBookingPage() {
                     </div>
                     <div className="space-y-2 pt-4 border-t border-dashed border-black/10 dark:border-white/10 italic">
                         <div className="flex justify-between text-[11px] font-bold uppercase tracking-widest opacity-40">
-                            <span>Subtotal</span>
-                            <span>₹{totalPrice.toLocaleString()}</span>
+                            <span>{billingBreakdown.isAnyInclusive ? 'Base Price (Excl. GST)' : 'Subtotal'}</span>
+                            <span>₹{billingBreakdown.isAnyInclusive ? billingBreakdown.taxable.toFixed(2) : totalPrice.toLocaleString()}</span>
                         </div>
                         {membershipDiscount > 0 && (
                             <div className="flex justify-between text-[11px] font-bold uppercase tracking-widest text-[#C8956C]">
@@ -1154,21 +1219,21 @@ export default function AppBookingPage() {
                         )}
                         <div className="space-y-1 py-1 border-t border-black/5 dark:border-white/5 opacity-60">
                             <div className="flex justify-between text-[11px] font-bold uppercase tracking-widest">
-                                <span>GST ({platformSettings?.serviceGst || 18}% - Excluding)</span>
-                                <span>+ ₹{Math.round(tax).toLocaleString()}</span>
+                                <span>GST ({billingBreakdown.isAnyInclusive ? 'Included' : 'Excluding'})</span>
+                                <span>{billingBreakdown.isAnyInclusive ? '' : '+ '}₹{tax.toFixed(2)}</span>
                             </div>
                             <div className="flex justify-between text-[9px] pl-2 font-medium italic opacity-60">
-                                <span>CGST ({(platformSettings?.serviceGst || 18) / 2}%)</span>
-                                <span>+ ₹{Math.round(tax / 2).toLocaleString()}</span>
+                                <span>CGST ({billingBreakdown.isAnyInclusive ? 'Included' : `${(platformSettings?.serviceGst || 18) / 2}%`})</span>
+                                <span>{billingBreakdown.isAnyInclusive ? '' : '+ '}₹{cgst.toFixed(2)}</span>
                             </div>
                             <div className="flex justify-between text-[9px] pl-2 font-medium italic opacity-60">
-                                <span>SGST ({(platformSettings?.serviceGst || 18) / 2}%)</span>
-                                <span>+ ₹{Math.round(tax / 2).toLocaleString()}</span>
+                                <span>SGST ({billingBreakdown.isAnyInclusive ? 'Included' : `${(platformSettings?.serviceGst || 18) / 2}%`})</span>
+                                <span>{billingBreakdown.isAnyInclusive ? '' : '+ '}₹{sgst.toFixed(2)}</span>
                             </div>
                         </div>
                         <div className="flex justify-between text-base pt-2 uppercase font-black tracking-tighter">
                             <span style={{ color: colors.textMuted }}>Total Payable</span>
-                            <span className="text-[#C8956C]">₹{Math.round(finalPrice).toLocaleString()}</span>
+                            <span className="text-[#C8956C]">₹{finalPrice.toFixed(2)}</span>
                         </div>
                     </div>
                 </motion.div>
@@ -1564,7 +1629,7 @@ export default function AppBookingPage() {
                                                         <div className="text-left space-y-1">
                                                             <p className="text-sm font-bold text-text">{svc.name}</p>
                                                             <p className="text-[9px] text-text-muted uppercase font-bold tracking-widest">
-                                                                {svc.duration} min · ₹{svc.price}
+                                                                {svc.duration} min · ₹{svc.price} {svc.isInclusiveTax ? 'incl. GST' : '+ GST'}
                                                             </p>
                                                         </div>
                                                         <div className={`w-5 h-5 rounded-full border flex items-center justify-center transition-colors ${isSelected ? 'bg-[#C8956C] border-[#C8956C]' : 'border-border'}`}>
@@ -1817,7 +1882,12 @@ export default function AppBookingPage() {
                                             <h3 className="text-sm font-bold uppercase tracking-tight" style={{ color: colors.text }}>{svc.name}</h3>
                                             <p className="text-[8px] font-black uppercase tracking-widest mt-0.5 opacity-40" style={{ color: colors.textMuted }}>{svc.category} · {svc.duration} MIN</p>
                                         </div>
-                                        <div className="ml-auto text-[11px] font-bold text-[#C8956C]" style={{ fontFamily: "'Poppins', sans-serif" }}>₹{svc.price}</div>
+                                        <div className="ml-auto text-[11px] font-bold text-[#C8956C] flex flex-col items-end" style={{ fontFamily: "'Poppins', sans-serif" }}>
+                                            <span>₹{svc.price}</span>
+                                            <span className="text-[7px] font-bold text-text-muted uppercase tracking-tighter opacity-60">
+                                                {svc.isInclusiveTax ? 'incl. GST' : '+ GST'}
+                                            </span>
+                                        </div>
                                     </div>
                                 ))}
                             </div>
@@ -1950,8 +2020,8 @@ export default function AppBookingPage() {
                             {/* Billing totals */}
                             <div className="space-y-2 pt-4 border-t border-dashed border-black/10 dark:border-white/10 uppercase font-black tracking-tight">
                                 <div className="flex justify-between items-center opacity-40 text-xs">
-                                    <span style={{ color: colors.text }}>Subtotal</span>
-                                    <span style={{ color: colors.text }}>₹{totalPrice.toLocaleString()}</span>
+                                    <span style={{ color: colors.text }}>{billingBreakdown.isAnyInclusive ? 'Base Price (Excl. GST)' : 'Subtotal'}</span>
+                                    <span style={{ color: colors.text }}>₹{billingBreakdown.isAnyInclusive ? billingBreakdown.taxable.toFixed(2) : totalPrice.toLocaleString()}</span>
                                 </div>
                                 {membershipDiscount > 0 && (
                                     <div className="flex justify-between items-center text-xs">
@@ -1973,21 +2043,21 @@ export default function AppBookingPage() {
                                 )}
                                 <div className="space-y-1 py-1 border-t border-black/5 dark:border-white/5 opacity-60">
                                     <div className="flex justify-between items-center text-xs">
-                                        <span style={{ color: colors.text }}>GST ({platformSettings?.serviceGst || 18}% - Excluding)</span>
-                                        <span style={{ color: colors.text }}>+ ₹{Math.round(tax).toLocaleString()}</span>
+                                        <span style={{ color: colors.text }}>GST ({billingBreakdown.isAnyInclusive ? 'Included' : 'Excluding'})</span>
+                                        <span style={{ color: colors.text }}>{billingBreakdown.isAnyInclusive ? '' : '+ '}₹{tax.toFixed(2)}</span>
                                     </div>
                                     <div className="flex justify-between items-center text-[10px] pl-2 font-medium italic opacity-60">
-                                        <span>CGST ({(platformSettings?.serviceGst || 18) / 2}%)</span>
-                                        <span>+ ₹{Math.round(tax / 2).toLocaleString()}</span>
+                                        <span>CGST ({billingBreakdown.isAnyInclusive ? 'Included' : `${(platformSettings?.serviceGst || 18) / 2}%`})</span>
+                                        <span>{billingBreakdown.isAnyInclusive ? '' : '+ '}₹{cgst.toFixed(2)}</span>
                                     </div>
                                     <div className="flex justify-between items-center text-[10px] pl-2 font-medium italic opacity-60">
-                                        <span>SGST ({(platformSettings?.serviceGst || 18) / 2}%)</span>
-                                        <span>+ ₹{Math.round(tax / 2).toLocaleString()}</span>
+                                        <span>SGST ({billingBreakdown.isAnyInclusive ? 'Included' : `${(platformSettings?.serviceGst || 18) / 2}%`})</span>
+                                        <span>{billingBreakdown.isAnyInclusive ? '' : '+ '}₹{sgst.toFixed(2)}</span>
                                     </div>
                                 </div>
                                 <div className="flex justify-between text-2xl pt-2">
                                     <span style={{ color: colors.textMuted }}>Total</span>
-                                    <span className="text-[#C8956C] px-1">₹{Math.round(finalPrice).toLocaleString()}</span>
+                                    <span className="text-[#C8956C] px-1">₹{finalPrice.toFixed(2)}</span>
                                 </div>
                                 {loyaltySettings?.active && (
                                     <div className="flex justify-between items-center py-2 px-3 mt-2 rounded-xl bg-[#C8956C]/5 border border-[#C8956C]/20">

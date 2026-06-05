@@ -24,6 +24,20 @@ import {
 } from 'lucide-react';
 import { useBusiness } from '../../contexts/BusinessContext';
 import { toast } from 'react-hot-toast';
+import { API_BASE_URL } from '../../services/api';
+
+// Image URL Resolver
+const getImageUrl = (path) => {
+    if (!path) return null;
+    
+    if (path.includes('wapixo.com/uploads') && !path.includes('api.wapixo.com/uploads')) {
+        path = path.replace('wapixo.com/uploads', 'api.wapixo.com/uploads');
+    }
+    
+    if (path.startsWith('http')) return path;
+    const baseUrl = API_BASE_URL.endsWith('/api') ? API_BASE_URL.slice(0, -4) : API_BASE_URL.replace(/\/api\//, '/');
+    return `${baseUrl}${path.startsWith('/') ? '' : '/'}${path}`;
+};
 
 const statusColors = {
     upcoming: 'bg-blue-50 text-blue-600 border-blue-100',
@@ -102,6 +116,7 @@ export default function BookingDetailPage() {
     }, [id, bookings, invoices]);
 
     const handleUpdateStatus = async (status) => {
+        if (isUpdating) return;
         try {
             setIsUpdating(true);
             await updateBookingStatus(id, status);
@@ -115,6 +130,7 @@ export default function BookingDetailPage() {
     };
 
     const handleUpdatePaymentStatus = async (paymentStatus) => {
+        if (isUpdating) return;
         try {
             setIsUpdating(true);
             await updateBookingStatus(id, { paymentStatus });
@@ -128,6 +144,7 @@ export default function BookingDetailPage() {
     };
 
     const handleReassignStaff = async (staffId) => {
+        if (isUpdating) return;
         try {
             setIsUpdating(true);
             await updateBookingStatus(id, { staffId });
@@ -341,45 +358,72 @@ export default function BookingDetailPage() {
                                         <p className="text-sm font-black italic font-mono">₹{(booking.subtotal || 0).toFixed(2)}</p>
                                     </div>
                                     
-                                    {booking.membershipDiscount > 0 && (
-                                        <div className="flex items-center justify-between text-rose-500/80">
-                                            <p className="text-[10px] font-black uppercase tracking-widest">Membership Discount</p>
+                                    <div className="flex items-center justify-between text-rose-500/80">
+                                        <p className="text-[10px] font-black uppercase tracking-widest">Membership Discount</p>
+                                        {booking.membershipDiscount > 0 ? (
                                             <p className="text-sm font-black italic font-mono">-₹{(booking.membershipDiscount || 0).toFixed(2)}</p>
-                                        </div>
-                                    )}
+                                        ) : (
+                                            <p className="text-sm font-black italic font-mono">-</p>
+                                        )}
+                                    </div>
 
-                                    {booking.promoDiscount > 0 && (
-                                        <div className="flex items-center justify-between text-emerald-500/80">
-                                            <p className="text-[10px] font-black uppercase tracking-widest">Promo Discount</p>
+                                    <div className="flex items-center justify-between text-[#B4912B]">
+                                        <p className="text-[10px] font-black uppercase tracking-widest">
+                                            Coupon {booking.couponCode ? `(${booking.couponCode})` : ''}
+                                        </p>
+                                        {booking.promoDiscount > 0 ? (
                                             <p className="text-sm font-black italic font-mono">-₹{(booking.promoDiscount || 0).toFixed(2)}</p>
-                                        </div>
-                                    )}
+                                        ) : (
+                                            <p className="text-sm font-black italic font-mono">-</p>
+                                        )}
+                                    </div>
 
                                     {/* Calculated values for display consistency */}
                                     {(() => {
-                                        const taxable = (booking.subtotal || 0) - (booking.membershipDiscount || 0) - (booking.promoDiscount || 0);
+                                        const isInclusive = booking.serviceId?.isInclusiveTax === true || String(booking.serviceId?.isInclusiveTax) === 'true';
                                         const gstPercent = booking.tax > 0 ? 
-                                            Math.round((booking.tax / (taxable || 1)) * 100) : 
+                                            Math.round((booking.tax / (((booking.subtotal || 0) - (booking.membershipDiscount || 0) - (booking.promoDiscount || 0) - (isInclusive ? booking.tax : 0)) || 1)) * 100) : 
                                             (platformSettings?.serviceGst || 18);
-                                        const tax = booking.tax > 0 ? booking.tax : (taxable * (gstPercent / 100));
-                                        const total = booking.tax > 0 ? booking.totalPrice : (taxable + tax);
+                                        
+                                        const tax = booking.tax > 0 ? booking.tax : (isInclusive ? 
+                                            ((booking.subtotal || 0) - (booking.membershipDiscount || 0) - (booking.promoDiscount || 0)) * (1 - 1 / (1 + gstPercent / 100)) : 
+                                            ((booking.subtotal || 0) - (booking.membershipDiscount || 0) - (booking.promoDiscount || 0)) * (gstPercent / 100));
+                                        
+                                        const total = booking.tax > 0 ? booking.totalPrice : (isInclusive ? 
+                                            ((booking.subtotal || 0) - (booking.membershipDiscount || 0) - (booking.promoDiscount || 0)) : 
+                                            ((booking.subtotal || 0) - (booking.membershipDiscount || 0) - (booking.promoDiscount || 0)) + tax);
+
+                                        const cgst = Number((tax / 2).toFixed(2));
+                                        const sgst = Number((tax - cgst).toFixed(2));
+                                        const taxable = total - tax;
 
                                         return (
                                             <>
                                                 <div className="flex items-center justify-between opacity-80 border-t border-border/50 pt-2">
-                                                    <p className="text-[10px] font-black text-text uppercase tracking-widest">Taxable Amount</p>
+                                                    <p className="text-[10px] font-black text-text uppercase tracking-widest">
+                                                        {isInclusive ? 'Base Price (Excl. GST)' : 'Taxable Amount (Excl. GST)'}
+                                                    </p>
                                                     <p className="text-sm font-black italic font-mono">₹{taxable.toFixed(2)}</p>
                                                 </div>
 
                                                 <div className="flex items-center justify-between text-primary/80">
                                                     <p className="text-[10px] font-black uppercase tracking-widest">
-                                                        GST ({gstPercent}%)
+                                                        CGST ({(gstPercent / 2).toFixed(1)}% {isInclusive ? 'Incl.' : 'Excl.'})
                                                     </p>
-                                                    <p className="text-sm font-black italic font-mono">+₹{tax.toFixed(2)}</p>
+                                                    <p className="text-sm font-black italic font-mono">{isInclusive ? '' : '+'}₹{cgst.toFixed(2)}</p>
+                                                </div>
+
+                                                <div className="flex items-center justify-between text-primary/80">
+                                                    <p className="text-[10px] font-black uppercase tracking-widest">
+                                                        SGST ({(gstPercent / 2).toFixed(1)}% {isInclusive ? 'Incl.' : 'Excl.'})
+                                                    </p>
+                                                    <p className="text-sm font-black italic font-mono">{isInclusive ? '' : '+'}₹{sgst.toFixed(2)}</p>
                                                 </div>
 
                                                 <div className="pt-3 border-t border-border flex items-center justify-between">
-                                                    <p className="text-[11px] font-black text-text uppercase tracking-widest">Total Payable</p>
+                                                    <p className="text-[11px] font-black text-text uppercase tracking-widest">
+                                                        Total Payable ({isInclusive ? 'Incl. GST' : 'Excl. GST'})
+                                                    </p>
                                                     <p className="text-xl font-black text-primary italic font-mono tracking-tighter">₹{total.toFixed(2)}</p>
                                                 </div>
                                             </>
@@ -390,96 +434,23 @@ export default function BookingDetailPage() {
                         </div>
                     </div>
 
-                    {/* Internal Notes */}
-                    <div className="bg-surface border border-border rounded-2xl p-5 space-y-4 shadow-sm">
-                        <div className="flex items-center justify-between pb-3 border-b border-border">
-                            <div className="flex items-center gap-2">
-                                <h3 className="text-[11px] font-black text-text uppercase tracking-widest">Internal Admin Notes</h3>
-                                <FileText className="w-3.5 h-3.5 !text-rose-500" />
-                            </div>
-                            <button 
-                                onClick={() => setIsEditingNotes(!isEditingNotes)}
-                                className="text-[9px] font-black text-primary hover:underline italic uppercase tracking-widest"
-                            >
-                                {isEditingNotes ? 'Cancel Editing' : 'Edit Note'}
-                            </button>
-                        </div>
-                        {isEditingNotes ? (
-                            <div className="space-y-3 animate-in fade-in zoom-in-95 duration-200">
-                                <textarea 
-                                    className="w-full p-4 bg-surface-alt border border-border rounded-2xl text-[11px] font-bold text-text uppercase font-mono h-24 focus:border-primary/50 transition-all resize-none outline-none shadow-inner"
-                                    value={notes}
-                                    onChange={(e) => setNotes(e.target.value)}
-                                    placeholder="Add secure internal notes..."
-                                />
-                                <div className="flex justify-end gap-3">
-                                    <button 
-                                        onClick={() => setIsEditingNotes(false)}
-                                        className="px-6 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest text-text-muted hover:bg-surface-alt transition-all"
-                                    >
-                                        Discard
-                                    </button>
-                                    <button 
-                                        onClick={async () => {
-                                            try {
-                                                await updateBookingStatus(id, { notes });
-                                                setIsEditingNotes(false);
-                                            } catch (e) {}
-                                        }}
-                                        className="px-8 py-2 bg-primary text-white rounded-xl text-[9px] font-black uppercase tracking-widest shadow-lg shadow-primary/20 hover:brightness-110 transition-all"
-                                    >
-                                        Sync Note
-                                    </button>
-                                </div>
-                            </div>
-                        ) : (
-                            <div className="p-4 rounded-2xl bg-surface-alt/30 border border-border/50 italic text-[11px] font-medium text-text-muted leading-relaxed">
-                                {notes || 'No secure internal logs recorded for this transaction.'}
-                            </div>
-                        )}
-                    </div>
+
                 </div>
 
                 {/* Right Column - Intelligence & Metadata */}
                 <div className="lg:col-span-4 space-y-4">
                     {/* Customer Intelligence Card */}
-                    <div className="bg-surface border border-border rounded-2xl overflow-hidden shadow-sm customer-intelligence-header">
-                        <style>{`
-                            html body #root .customer-intelligence-header h2,
-                            html body #root .customer-intelligence-header h2 *,
-                            .customer-intelligence-header h2 {
-                                color: #ffffff !important;
-                            }
-                            html body #root .customer-intelligence-header h3,
-                            html body #root .customer-intelligence-header h3 *,
-                            .customer-intelligence-header h3 {
-                                color: rgba(255, 255, 255, 0.5) !important;
-                            }
-                            html body #root .customer-intelligence-header .loyalty-gold,
-                            html body #root .customer-intelligence-header .loyalty-gold *,
-                            .customer-intelligence-header .loyalty-gold {
-                                color: #B4912B !important;
-                                border-color: rgba(180, 145, 43, 0.3) !important;
-                                background-color: rgba(180, 145, 43, 0.15) !important;
-                            }
-                            html body #root .customer-intelligence-header .avatar-gold,
-                            html body #root .customer-intelligence-header .avatar-gold *,
-                            .customer-intelligence-header .avatar-gold {
-                                color: #B4912B !important;
-                                border-color: rgba(255, 255, 255, 0.1) !important;
-                                background-color: rgba(255, 255, 255, 0.1) !important;
-                            }
-                        `}</style>
-                        <div className="p-5 bg-[#0f172a] relative">
-                            <div className="absolute right-0 top-0 w-32 h-32 bg-[#B4912B]/10 -mr-16 -mt-16 rotate-45" />
-                            <h3 className="text-[10px] font-black uppercase tracking-[0.3em] mb-8">Customer Intelligence</h3>
+                    <div className="bg-surface border border-border rounded-2xl overflow-hidden shadow-sm">
+                        <div className="p-5 bg-slate-50 dark:bg-slate-900 border-b border-border relative">
+                            <div className="absolute right-0 top-0 w-32 h-32 bg-[#B4912B]/5 -mr-16 -mt-16 rotate-45" />
+                            <h3 className="text-[10px] font-black uppercase tracking-[0.3em] mb-8 text-slate-500 dark:text-slate-400">Customer Intelligence</h3>
                             <div className="flex items-center gap-5 relative z-10">
-                                <div className="w-12 h-12 rounded-2xl backdrop-blur-md border flex items-center justify-center font-black text-xl shadow-xl avatar-gold">
+                                <div className="w-12 h-12 rounded-2xl border flex items-center justify-center font-black text-xl shadow-sm bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20">
                                     {client.name?.[0] || 'G'}
                                 </div>
                                 <div>
-                                    <h2 className="text-xl font-black uppercase tracking-tight leading-none mb-1">{client.name || 'GUEST'}</h2>
-                                    <span className="px-3 py-1 text-[8px] font-black uppercase tracking-widest rounded-xl border loyalty-gold">
+                                    <h2 className="text-xl font-black uppercase tracking-tight leading-none mb-2 text-slate-800 dark:text-slate-100">{client.name || 'GUEST'}</h2>
+                                    <span className="px-3 py-1 text-[8px] font-black uppercase tracking-widest rounded-xl border bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20">
                                         Loyalty Rank: Gold
                                     </span>
                                 </div>
@@ -497,20 +468,6 @@ export default function BookingDetailPage() {
                                 </div>
                             </div>
 
-                            <div className="grid grid-cols-2 gap-3">
-                                <div className="p-3 rounded-xl bg-surface-alt border border-border/50 text-center">
-                                    <p className="text-[9px] font-black text-text-muted uppercase tracking-widest mb-1">Total Visits</p>
-                                    <p className="text-lg font-black text-text italic font-mono">{client.totalVisits || 0}</p>
-                                </div>
-                                <div className="p-3 rounded-xl bg-surface-alt border border-border/50 text-center">
-                                    <p className="text-[9px] font-black text-text-muted uppercase tracking-widest mb-1">Total Spent</p>
-                                    <p className="text-lg font-black text-text italic font-mono">₹{client.totalSpend || 0}</p>
-                                </div>
-                            </div>
-
-                            <button className="w-full py-3 rounded-xl bg-surface-alt border border-border hover:bg-black hover:text-white hover:border-black transition-all text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-3 group">
-                                View History <History className="w-4 h-4 !text-indigo-500 group-hover:rotate-12 transition-transform" />
-                            </button>
                         </div>
                     </div>
 
@@ -521,12 +478,25 @@ export default function BookingDetailPage() {
                             <div className="w-10 h-10 rounded-2xl bg-rose-500/10 text-rose-500 flex items-center justify-center shrink-0">
                                 <MapPin className="w-5 h-5 !text-rose-500" />
                             </div>
-                            <div className="space-y-2">
-                                <p className="text-xs font-black text-text uppercase tracking-tight">{booking.outletId?.name || 'Main Outlet'}</p>
-                                <p className="text-[10px] font-bold text-text-muted leading-relaxed">
-                                    {booking.outletId?.address?.street || 'Shop No 19/2 Bike Gally Kismat Nagar, CST Road, near Kanakia, Kurla West, Kurla, Mumbai, Maharashtra 400070, India, Konkan Division, Maharashtra 400070'}
-                                </p>
-                            </div>
+                            {(() => {
+                                const outlet = booking.outlet || booking.outletId || {};
+                                const venueName = outlet.name || 'Main Outlet';
+                                const venueAddress = [
+                                    outlet.address?.street || (typeof outlet.address === 'string' ? outlet.address : ''),
+                                    outlet.address?.city,
+                                    outlet.address?.state,
+                                    outlet.address?.pincode
+                                ].filter(Boolean).join(', ') || 'Address Not Specified';
+
+                                return (
+                                    <div className="space-y-2">
+                                        <p className="text-xs font-black text-text uppercase tracking-tight">{venueName}</p>
+                                        <p className="text-[10px] font-bold text-text-muted leading-relaxed">
+                                            {venueAddress}
+                                        </p>
+                                    </div>
+                                );
+                            })()}
                         </div>
                     </div>
 
@@ -555,59 +525,86 @@ export default function BookingDetailPage() {
             </div>
             {/* Reassign Staff Modal */}
             {isReassignModalOpen && createPortal(
-                <div className="fixed inset-0 bg-[#0f172a]/80 backdrop-blur-sm z-[9999] flex items-center justify-center p-4">
-                    <div className="bg-white dark:bg-[#1e293b] w-full max-w-md rounded-2xl border border-slate-200/80 dark:border-slate-700/80 shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200">
-                        {/* Header */}
-                        <div className="flex items-center justify-between p-6 border-b border-slate-100 dark:border-slate-700/50">
-                            <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
-                                    <RotateCcw className="w-5 h-5 !text-primary !stroke-primary" />
-                                </div>
-                                <div>
-                                    <h3 className="text-lg font-bold text-slate-900 dark:text-white !text-slate-900">Reassign Expert</h3>
-                                    <p className="text-xs text-slate-500 dark:text-slate-400 !text-slate-500">Select new professional for this session</p>
-                                </div>
-                            </div>
-                            <button 
-                                onClick={() => setIsReassignModalOpen(false)}
-                                className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors"
+                <div className="fixed inset-0 bg-[#0f172a]/60 backdrop-blur-md z-[9999] flex items-center justify-center p-4">
+                    <div className="admin-panel w-full max-w-md">
+                        <div 
+                            style={{ backgroundColor: 'var(--background)', borderColor: 'var(--border)' }}
+                            className="w-full rounded-[28px] border shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200"
+                        >
+                            {/* Header */}
+                            <div 
+                                style={{ backgroundColor: 'var(--card)', borderBottomColor: 'var(--border)' }}
+                                className="flex items-center justify-between p-6 pb-5 border-b"
                             >
-                                <XCircle className="w-5 h-5 !text-slate-500 !stroke-slate-500" />
-                            </button>
-                        </div>
-
-                        {/* List */}
-                        <div className="p-6 max-h-[400px] overflow-y-auto no-scrollbar space-y-3">
-                            {staff.filter(s => s._id !== booking.staffId?._id).map(s => (
-                                <button
-                                    key={s._id}
-                                    onClick={() => handleReassignStaff(s._id)}
-                                    className="w-full flex items-center justify-between p-3.5 rounded-xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200/60 dark:border-slate-700/50 hover:border-primary/50 hover:bg-primary/[0.03] dark:hover:bg-primary/[0.02] transition-all group cursor-pointer text-left"
+                                <div className="flex items-center gap-4">
+                                    <div className="w-12 h-12 rounded-2xl bg-amber-500/10 dark:bg-amber-500/20 flex items-center justify-center text-[#B4912B]">
+                                        <RotateCcw className="w-5 h-5 text-[#B4912B]" />
+                                    </div>
+                                    <div className="text-left">
+                                        <h3 style={{ color: 'var(--foreground)' }} className="text-base font-black uppercase tracking-tight font-mono leading-none">Reassign Specialist</h3>
+                                        <p style={{ color: 'var(--muted-foreground)' }} className="text-[10px] font-bold uppercase tracking-wider mt-1.5">Select a new professional for this session</p>
+                                    </div>
+                                </div>
+                                <button 
+                                    onClick={() => !isUpdating && setIsReassignModalOpen(false)}
+                                    style={{ borderColor: 'var(--border)' }}
+                                    className="w-8 h-8 rounded-xl flex items-center justify-center border hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-all disabled:opacity-50"
+                                    disabled={isUpdating}
                                 >
-                                    <div className="flex items-center gap-4">
-                                        <div className="w-10 h-10 rounded-xl bg-primary/10 dark:bg-primary/20 flex items-center justify-center font-bold text-primary text-sm uppercase !text-primary">
-                                            {s.name?.[0]}
-                                        </div>
-                                        <div>
-                                            <p className="text-sm font-bold text-slate-900 dark:text-white group-hover:!text-primary transition-colors !text-slate-900">{s.name}</p>
-                                            <p className="text-xs text-slate-500 dark:text-slate-400 capitalize !text-slate-500">{s.role?.replace('_', ' ')}</p>
-                                        </div>
-                                    </div>
-                                    <div className="w-6 h-6 rounded-full bg-primary/10 text-primary flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all">
-                                        <CheckCircle2 className="w-4 h-4 !text-primary" />
-                                    </div>
+                                    <XCircle style={{ color: 'var(--muted-foreground)' }} className="w-4 h-4 hover:text-rose-500" />
                                 </button>
-                            ))}
-                        </div>
+                            </div>
 
-                        {/* Footer */}
-                        <div className="p-4 bg-slate-50 dark:bg-slate-800/30 border-t border-slate-100 dark:border-slate-700/50 flex justify-end gap-3">
-                            <button 
-                                onClick={() => setIsReassignModalOpen(false)}
-                                className="px-5 py-2.5 rounded-xl text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all !text-slate-900"
+                            {/* List */}
+                            <div 
+                                style={{ backgroundColor: 'var(--background)' }}
+                                className="p-6 max-h-[380px] overflow-y-auto no-scrollbar space-y-3"
                             >
-                                Cancel
-                            </button>
+                                {staff.filter(s => s.role.toLowerCase() === 'stylish' && s._id !== booking.staffId?._id).length > 0 ? (
+                                    staff.filter(s => s.role.toLowerCase() === 'stylish' && s._id !== booking.staffId?._id).map(s => (
+                                        <button
+                                            key={s._id}
+                                            disabled={isUpdating}
+                                            onClick={() => handleReassignStaff(s._id)}
+                                            style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}
+                                            className="w-full flex items-center justify-between p-4 rounded-2xl border hover:border-[#B4912B]/40 hover:bg-[#B4912B]/5 transition-all group cursor-pointer text-left disabled:opacity-50 disabled:cursor-not-allowed"
+                                        >
+                                            <div className="flex items-center gap-4">
+                                                <div className="w-12 h-12 rounded-xl bg-amber-500/10 dark:bg-amber-500/20 border border-border overflow-hidden flex items-center justify-center font-black text-[#B4912B] text-base uppercase shrink-0 relative">
+                                                    {s.avatar ? (
+                                                        <img src={getImageUrl(s.avatar)} className="w-full h-full object-cover absolute inset-0" onError={(e) => { e.target.style.display = 'none'; }} />
+                                                    ) : null}
+                                                    <span className="relative z-10">{s.name?.[0]}</span>
+                                                </div>
+                                                <div>
+                                                    <p style={{ color: 'var(--foreground)' }} className="text-sm font-black group-hover:text-[#B4912B] transition-colors uppercase italic font-mono">{s.name}</p>
+                                                    <p style={{ color: 'var(--muted-foreground)' }} className="text-[10px] font-bold uppercase tracking-widest mt-1 capitalize">{s.role?.replace('_', ' ')}</p>
+                                                </div>
+                                            </div>
+                                            <div className="w-7 h-7 rounded-xl bg-amber-500/10 text-[#B4912B] flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all border border-amber-500/20">
+                                                <CheckCircle2 className="w-4 h-4" />
+                                            </div>
+                                        </button>
+                                    ))
+                                ) : (
+                                    <div style={{ color: 'var(--muted-foreground)' }} className="text-center py-10 uppercase text-[10px] font-black tracking-widest">No other staff members available</div>
+                                )}
+                            </div>
+
+                            {/* Footer */}
+                            <div 
+                                style={{ backgroundColor: 'var(--card)', borderTopColor: 'var(--border)' }}
+                                className="p-5 border-t flex justify-end gap-3"
+                            >
+                                <button 
+                                    disabled={isUpdating}
+                                    onClick={() => setIsReassignModalOpen(false)}
+                                    style={{ borderColor: 'var(--border)', color: 'var(--muted-foreground)' }}
+                                    className="px-6 py-3 rounded-xl text-[10px] font-black hover:bg-slate-200/50 dark:hover:bg-slate-800 uppercase tracking-wider transition-all disabled:opacity-50 border"
+                                >
+                                    Cancel
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>,

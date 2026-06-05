@@ -41,7 +41,7 @@ exports.getBookings = async (req, res) => {
 
         const bookings = await Booking.find(filter)
             .populate('clientId', 'name phone email')
-            .populate('serviceId', 'name price duration')
+            .populate('serviceId', 'name price duration isInclusiveTax gst')
             .populate('staffId', 'name profileImage')
             .populate('outletId', 'name address city')
             .populate('salonId', 'name logo')
@@ -240,7 +240,7 @@ exports.createBooking = async (req, res) => {
 
         const populated = await Booking.findById(booking._id)
             .populate('clientId', 'name phone email')
-            .populate('serviceId', 'name price duration')
+            .populate('serviceId', 'name price duration isInclusiveTax gst')
             .populate('staffId', 'name profileImage')
             .populate('outletId', 'name address city')
             .populate('salonId', 'name logo');
@@ -446,7 +446,7 @@ exports.updateStatus = async (req, res) => {
             // Fetch fully populated booking for notifications
             const populated = await Booking.findById(booking._id)
                 .populate('clientId', 'name phone email')
-                .populate('serviceId', 'name price duration')
+                .populate('serviceId', 'name price duration isInclusiveTax gst')
                 .populate('staffId', 'name')
                 .populate('outletId', 'name address city')
                 .populate('salonId', 'name logo businessName');
@@ -756,7 +756,7 @@ exports.getCustomerBookings = async (req, res) => {
 
         const totalCount = await Booking.countDocuments({ clientId: customerId });
         const bookings = await Booking.find({ clientId: customerId })
-            .populate('serviceId', 'name price duration')
+            .populate('serviceId', 'name price duration isInclusiveTax gst')
             .populate('staffId', 'name profileImage')
             .populate('outletId', 'name address city')
             .populate('salonId', 'name logo')
@@ -785,7 +785,7 @@ exports.getBookingDetails = async (req, res) => {
         const { bookingId } = req.params;
         const booking = await Booking.findById(bookingId)
             .populate('clientId', 'name phone email totalVisits totalSpend')
-            .populate('serviceId', 'name price duration description')
+            .populate('serviceId', 'name price duration description isInclusiveTax gst')
             .populate('staffId', 'name profileImage phone')
             .populate('outletId', 'name address city phone')
             .populate('salonId', 'name logo businessName');

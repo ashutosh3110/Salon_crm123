@@ -85,8 +85,8 @@ export default function ServiceDetailPage() {
                             <h1 className="text-xl font-black text-slate-900 tracking-tight uppercase italic break-all leading-tight">{service.name}</h1>
                             <span className={`px-2.5 py-0.5 rounded-full text-[8px] font-black uppercase tracking-[0.2em] border shrink-0 ${
                                 service.status === 'active' 
-                                ? 'bg-emerald-50 text-emerald-600 border-emerald-100' 
-                                : 'bg-rose-50 text-rose-600 border-rose-100'
+                                ? 'bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400 border-emerald-100 dark:border-emerald-900/30' 
+                                : 'bg-rose-50 dark:bg-rose-950/30 text-rose-600 dark:text-rose-400 border-rose-100 dark:border-rose-900/30'
                             }`}>
                                 {service.status}
                             </span>
@@ -188,7 +188,7 @@ export default function ServiceDetailPage() {
                                             <p className="text-xs font-black text-slate-900 uppercase">{service.gst}% APPLIED</p>
                                         </div>
                                     </div>
-                                    <div className="px-1.5 py-0.5 bg-blue-100 text-blue-700 rounded text-[8px] font-black shrink-0">MANDATORY</div>
+                                    <div className="px-1.5 py-0.5 bg-blue-100 dark:bg-blue-950/30 text-blue-700 dark:text-blue-400 border border-blue-200/20 dark:border-blue-900/30 rounded text-[8px] font-black shrink-0">MANDATORY</div>
                                 </div>
                             </div>
                         </div>

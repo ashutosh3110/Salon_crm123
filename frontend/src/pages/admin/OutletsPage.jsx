@@ -108,7 +108,7 @@ export default function OutletsPage() {
                 </div>
                 <button
                     onClick={() => navigate('/admin/outlets/new')}
-                    className="flex items-center gap-2 bg-black text-white px-5 py-2.5 text-[10px] font-black uppercase tracking-widest shadow-md hover:bg-neutral-800 transition-all !rounded-xl active:scale-95"
+                    className="flex items-center gap-2 bg-[#B4912B] hover:bg-[#A57C1E] text-white px-5 py-2.5 text-[10px] font-black uppercase tracking-widest shadow-md transition-all !rounded-xl active:scale-95 cursor-pointer"
                 >
                     <Plus className="w-3.5 h-3.5" /> Add New Salon
                 </button>
@@ -268,7 +268,7 @@ export default function OutletsPage() {
 
                                 <button
                                     onClick={() => navigate(`/admin/outlets/${outlet._id}`)}
-                                    className="group/btn w-full mt-4 py-3 bg-black text-white text-[10px] font-black uppercase tracking-[0.2em] hover:bg-neutral-800 transition-all flex items-center justify-center gap-1.5 !rounded-xl"
+                                    className="group/btn w-full mt-4 py-3 bg-[#B4912B] hover:bg-[#A57C1E] text-white text-[10px] font-black uppercase tracking-[0.2em] transition-all flex items-center justify-center gap-1.5 !rounded-xl cursor-pointer"
                                 >
                                     Access Panel <ChevronRight className="w-3 h-3 group-hover/btn:translate-x-1 transition-transform" />
                                 </button>

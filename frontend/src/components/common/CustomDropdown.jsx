@@ -63,9 +63,6 @@ export default function CustomDropdown({ options = [], value, onChange, label, c
                         boxShadow: '0 8px 30px rgba(0,0,0,0.10), 0 2px 8px rgba(0,0,0,0.06)',
                     }}
                 >
-                    {/* Top accent bar */}
-                    <div className="h-0.5 w-full bg-gradient-to-r from-primary via-primary/60 to-transparent" />
-
                     <div className="py-1 max-h-48 overflow-y-auto scrollbar-thin scrollbar-thumb-slate-200 scrollbar-track-transparent hover:scrollbar-thumb-slate-300">
                         {normalizedOptions.map((opt, idx) => {
                             const isSelected = value === opt.value;

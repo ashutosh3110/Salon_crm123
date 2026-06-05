@@ -1012,6 +1012,15 @@ export function BusinessProvider({ children }) {
             const payload = typeof data === 'string' ? { status: data } : data;
             const r = await api.patch(`/bookings/${id}/status`, payload);
             const updated = r.data.data;
+            
+            if (payload.staffId) {
+                const staffMember = staff.find(s => String(s._id || s.id) === String(payload.staffId));
+                if (staffMember) {
+                    updated.staffId = staffMember;
+                    updated.staff = staffMember;
+                }
+            }
+            
             setBookings(p => p.map(b => b._id === id ? normalizeBooking({ ...b, ...updated }) : b));
             if (payload.status) toast.success(`Status updated: ${payload.status.toUpperCase()}`);
             if (payload.paymentStatus) toast.success(`Payment status: ${payload.paymentStatus.toUpperCase()}`);
@@ -1020,7 +1029,7 @@ export function BusinessProvider({ children }) {
             toast.error('Update failed');
             throw err;
         }
-    }, []);
+    }, [staff]);
 
     const checkoutPOS = useCallback(async (data) => {
         try {

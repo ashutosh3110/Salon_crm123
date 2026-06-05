@@ -218,7 +218,7 @@ export default function ServiceList({ services = [], onDelete, onToggleStatus, o
                         onClick={() => setViewMode('grid')}
                         className={`flex-1 flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all duration-200 cursor-pointer ${
                             viewMode === 'grid'
-                                ? 'bg-primary !text-white shadow-md border border-primary'
+                                ? '!bg-[#B4912B] !text-white shadow-md border-[1px] !border-[#B4912B]'
                                 : 'text-text-muted hover:text-foreground'
                         }`}
                     >
@@ -230,7 +230,7 @@ export default function ServiceList({ services = [], onDelete, onToggleStatus, o
                         onClick={() => setViewMode('table')}
                         className={`flex-1 flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all duration-200 cursor-pointer ${
                             viewMode === 'table'
-                                ? 'bg-primary !text-white shadow-md border border-primary'
+                                ? '!bg-[#B4912B] !text-white shadow-md border-[1px] !border-[#B4912B]'
                                 : 'text-text-muted hover:text-foreground'
                         }`}
                     >
