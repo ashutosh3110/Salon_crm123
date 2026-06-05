@@ -279,7 +279,85 @@ export default function SubscriptionPage() {
     };
 
     return (
-        <div className="space-y-4 pb-6 font-sans min-h-screen bg-[#fafbfc] px-2">
+        <div className="space-y-4 pb-6 font-sans min-h-screen bg-[#fafbfc] px-2 subscription-page-wrapper">
+            <style>{`
+                .dark .subscription-page-wrapper {
+                    background-color: #121826 !important;
+                }
+                .dark .subscription-page-wrapper .bg-white {
+                    background-color: #1e293b !important;
+                }
+                .dark .subscription-page-wrapper .border-slate-100,
+                .dark .subscription-page-wrapper .border-slate-100\\/80,
+                .dark .subscription-page-wrapper .border-slate-100\\/50 {
+                    border-color: rgba(255, 255, 255, 0.08) !important;
+                }
+                .dark .subscription-page-wrapper .text-slate-900,
+                .dark .subscription-page-wrapper .text-slate-700 {
+                    color: #f8fafc !important;
+                }
+                .dark .subscription-page-wrapper .text-slate-500,
+                .dark .subscription-page-wrapper .text-slate-400 {
+                    color: #cbd5e1 !important;
+                }
+                .dark .subscription-page-wrapper .bg-\\[\\#fafbfc\\] {
+                    background-color: #121826 !important;
+                }
+                .dark .subscription-page-wrapper .h-px.bg-slate-100 {
+                    background-color: rgba(255, 255, 255, 0.08) !important;
+                }
+                .dark .subscription-page-wrapper .md\\:border-l.border-slate-200 {
+                    border-color: rgba(255, 255, 255, 0.08) !important;
+                }
+                .dark .subscription-page-wrapper .bg-\\[\\#f3e8ff\\] {
+                    background-color: rgba(147, 51, 234, 0.15) !important;
+                }
+                .dark .subscription-page-wrapper .text-\\[\\#9333ea\\] {
+                    color: #c084fc !important;
+                }
+                .dark .subscription-page-wrapper .bg-\\[\\#ecfdf5\\] {
+                    background-color: rgba(16, 185, 129, 0.15) !important;
+                }
+                .dark .subscription-page-wrapper .text-\\[\\#10b981\\] {
+                    color: #34d399 !important;
+                }
+                .dark .subscription-page-wrapper .bg-\\[\\#eff6ff\\] {
+                    background-color: rgba(59, 130, 246, 0.15) !important;
+                }
+                .dark .subscription-page-wrapper .text-\\[\\#3b82f6\\] {
+                    color: #60a5fa !important;
+                }
+                .dark .subscription-page-wrapper .bg-\\[\\#fff7ed\\] {
+                    background-color: rgba(245, 158, 11, 0.15) !important;
+                }
+                .dark .subscription-page-wrapper .text-\\[\\#f59e0b\\] {
+                    color: #fbbf24 !important;
+                }
+                .dark .subscription-page-wrapper .bg-blue-100 {
+                    background-color: rgba(59, 130, 246, 0.15) !important;
+                }
+                .dark .subscription-page-wrapper .text-blue-600 {
+                    color: #60a5fa !important;
+                }
+                .dark .subscription-page-wrapper .bg-teal-100 {
+                    background-color: rgba(20, 184, 166, 0.15) !important;
+                }
+                .dark .subscription-page-wrapper .text-teal-600 {
+                    color: #2dd4bf !important;
+                }
+                .dark .subscription-page-wrapper .bg-purple-100 {
+                    background-color: rgba(168, 85, 247, 0.15) !important;
+                }
+                .dark .subscription-page-wrapper .text-purple-600 {
+                    color: #c084fc !important;
+                }
+                .dark .subscription-page-wrapper .bg-amber-100 {
+                    background-color: rgba(245, 158, 11, 0.15) !important;
+                }
+                .dark .subscription-page-wrapper .text-amber-500 {
+                    color: #fbbf24 !important;
+                }
+            `}</style>
             <AnimatePresence>
                 {showSuccess && (
                     <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="fixed top-20 left-1/2 -translate-x-1/2 z-[100] bg-emerald-600 text-white px-4 py-2 shadow-lg flex items-center gap-3 border border-emerald-500/50 rounded-xl">

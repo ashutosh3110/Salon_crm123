@@ -836,12 +836,12 @@ export default function DashboardPage() {
                         <h2 className="text-base font-bold text-slate-800 dark:text-slate-100 tracking-tight mb-4">Quick Actions</h2>
                         <div className="grid grid-cols-3 gap-2.5">
                             {[
-                                { label: 'New Booking', icon: CalendarPlus, path: '/admin/bookings/new', colorClass: 'text-amber-600 dark:text-amber-450', bgClass: 'bg-amber-50 dark:bg-amber-950/20' },
-                                { label: 'Calendar View', icon: Calendar, path: '/admin/bookings', colorClass: 'text-emerald-600 dark:text-emerald-450', bgClass: 'bg-emerald-50 dark:bg-emerald-950/20' },
-                                { label: 'Booking Registry', icon: List, path: '/admin/bookings', colorClass: 'text-blue-600 dark:text-blue-450', bgClass: 'bg-blue-50 dark:bg-blue-950/20' },
-                                { label: 'Direct Booking', icon: UserPlus, path: '/admin/bookings/new', colorClass: 'text-violet-600 dark:text-violet-450', bgClass: 'bg-violet-50 dark:bg-violet-950/20' },
-                                { label: 'Reports', icon: FileText, path: '/admin/finance/reports', colorClass: 'text-rose-600 dark:text-rose-450', bgClass: 'bg-rose-50 dark:bg-rose-950/20' },
-                                { label: 'WhatsApp Credits', icon: MessageSquare, path: '/admin/whatsapp-credits', colorClass: 'text-cyan-600 dark:text-cyan-450', bgClass: 'bg-cyan-50 dark:bg-cyan-950/20' }
+                                { label: 'New Booking', icon: CalendarPlus, path: '/admin/bookings/new', colorClass: '!text-amber-600 dark:!text-[#fbbf24]', bgClass: 'bg-amber-50 dark:bg-[#fbbf24]/15' },
+                                { label: 'Calendar View', icon: Calendar, path: '/admin/bookings', colorClass: '!text-emerald-600 dark:!text-[#34d399]', bgClass: 'bg-emerald-50 dark:bg-[#34d399]/15' },
+                                { label: 'Booking Registry', icon: List, path: '/admin/bookings', colorClass: '!text-blue-600 dark:!text-[#60a5fa]', bgClass: 'bg-blue-50 dark:bg-[#60a5fa]/15' },
+                                { label: 'Direct Booking', icon: UserPlus, path: '/admin/bookings/new', colorClass: '!text-violet-600 dark:!text-[#a78bfa]', bgClass: 'bg-violet-50 dark:bg-[#a78bfa]/15' },
+                                { label: 'Reports', icon: FileText, path: '/admin/finance/reports', colorClass: '!text-rose-600 dark:!text-[#fb7185]', bgClass: 'bg-rose-50 dark:bg-[#fb7185]/15' },
+                                { label: 'WhatsApp Credits', icon: MessageSquare, path: '/admin/whatsapp-credits', colorClass: '!text-cyan-600 dark:!text-[#22d3ee]', bgClass: 'bg-cyan-50 dark:bg-[#22d3ee]/15' }
                             ].map((action, idx) => (
                                 <Link
                                     key={idx}
