@@ -44,6 +44,43 @@ exports.createInquiry = async (req, res) => {
         // Auto-assign salon context if logged in
         if (req.user && req.user.salonId) {
             payload.salonId = req.user.salonId;
+        } else {
+            // Check if there is a bearer token passed from customer side
+            let token;
+            if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
+                token = req.headers.authorization.split(' ')[1];
+            }
+            if (token) {
+                try {
+                    const jwt = require('jsonwebtoken');
+                    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+                    const Customer = require('../Models/Customer');
+                    const customerUser = await Customer.findById(decoded.id);
+                    if (customerUser) {
+                        payload.salonId = customerUser.salonId;
+                        if (!payload.name) payload.name = customerUser.name;
+                        if (!payload.phone) payload.phone = customerUser.phone;
+                        if (!payload.email) payload.email = customerUser.email;
+                    } else {
+                        // Check User, Staff, Salon
+                        const User = require('../Models/User');
+                        let account = await User.findById(decoded.id);
+                        if (!account) {
+                            const Staff = require('../Models/Staff');
+                            account = await Staff.findById(decoded.id);
+                        }
+                        if (!account) {
+                            const Salon = require('../Models/Salon');
+                            account = await Salon.findById(decoded.id);
+                        }
+                        if (account) {
+                            payload.salonId = account.salonId || account._id;
+                        }
+                    }
+                } catch (err) {
+                    console.error('[Inquiry Controller] Auth decode failed:', err.message);
+                }
+            }
         }
 
         const inquiry = await Inquiry.create(payload);
