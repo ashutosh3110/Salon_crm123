@@ -552,17 +552,17 @@ export default function SettingsPage({ section: propSection }) {
                             {/* Main Card Header */}
                             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between pb-6 border-b border-gray-100 gap-4 pt-2">
                                 <div className="flex items-center gap-4">
-                                    <div className="w-12 h-12 rounded-2xl bg-[#F6F4FF] flex items-center justify-center shrink-0">
-                                        <ShieldCheck className="w-6 h-6 text-[#7F56D9]" />
+                                    <div className="w-12 h-12 rounded-2xl bg-[#F6F4FF] dark:bg-purple-500/20 flex items-center justify-center shrink-0">
+                                        <ShieldCheck className="w-6 h-6 text-[#7F56D9] dark:text-purple-400" />
                                     </div>
                                     <div>
-                                        <h2 className="text-[17px] font-bold text-gray-900 tracking-tight">Security</h2>
-                                        <p className="text-[13px] text-gray-500 font-medium mt-0.5">
+                                        <h2 className="text-[17px] font-bold text-gray-900 dark:text-slate-100 tracking-tight">Security</h2>
+                                        <p className="text-[13px] text-gray-500 dark:text-slate-400 font-medium mt-0.5">
                                             Keep your account secure by using a strong password.
                                         </p>
                                     </div>
                                 </div>
-                                <div className="flex items-center gap-2 px-3 py-1.5 bg-[#ECFDF3] border border-[#D1FADF] rounded-xl text-[#027A48]">
+                                <div className="flex items-center gap-2 px-3 py-1.5 bg-[#ECFDF3] dark:bg-green-500/10 border border-[#D1FADF] dark:border-green-500/20 rounded-xl text-[#027A48] dark:text-green-400">
                                     <ShieldCheck className="w-4 h-4" />
                                     <span className="text-xs font-bold">Your account is secure</span>
                                 </div>
@@ -580,12 +580,12 @@ export default function SettingsPage({ section: propSection }) {
                                         </div>
 
                                         {/* Row 1-2, Col 2: Password Strength */}
-                                        <div className="border border-gray-100 rounded-xl p-5 bg-white shadow-sm shadow-green-900/5 md:row-span-2 flex flex-col justify-center">
+                                        <div className="border border-gray-100 dark:border-slate-700 rounded-xl p-5 bg-white dark:bg-slate-800 shadow-sm shadow-green-900/5 md:row-span-2 flex flex-col justify-center">
                                             <div className="flex flex-col gap-4">
                                                 <div className="flex items-center gap-3">
-                                                    <ShieldCheck className="w-5 h-5 text-[#12B76A]" />
-                                                    <span className="text-[13px] font-bold text-gray-700">
-                                                        Password strength <span className="text-[#12B76A]">Strong</span>
+                                                    <ShieldCheck className="w-5 h-5 text-[#12B76A] dark:text-green-400" />
+                                                    <span className="text-[13px] font-bold text-gray-700 dark:text-slate-200">
+                                                        Password strength <span className="text-[#12B76A] dark:text-green-400">Strong</span>
                                                     </span>
                                                 </div>
                                                 <div className="flex gap-1.5 h-1.5">
@@ -602,8 +602,8 @@ export default function SettingsPage({ section: propSection }) {
                                                         'Contains a special character'
                                                     ].map((item, idx) => (
                                                         <div key={idx} className="flex items-center gap-2">
-                                                            <CheckCircle2 className="w-4 h-4 text-[#12B76A] fill-[#12B76A]/20" />
-                                                            <span className="text-xs font-medium text-gray-600">{item}</span>
+                                                            <CheckCircle2 className="w-4 h-4 text-[#12B76A] dark:text-green-400 fill-[#12B76A]/20 dark:fill-green-400/20" />
+                                                            <span className="text-xs font-medium text-gray-600 dark:text-slate-400">{item}</span>
                                                         </div>
                                                     ))}
                                                 </div>
@@ -612,7 +612,7 @@ export default function SettingsPage({ section: propSection }) {
 
                                         {/* Row 2, Col 1: Current Password */}
                                         <div className="space-y-2">
-                                            <label className="text-[11px] font-bold text-gray-700 uppercase tracking-widest block">
+                                            <label className="text-[11px] font-bold text-gray-700 dark:text-slate-400 uppercase tracking-widest block">
                                                 CURRENT PASSWORD
                                             </label>
                                             <PasswordField
@@ -620,15 +620,15 @@ export default function SettingsPage({ section: propSection }) {
                                                 onChange={(e) => setPasswordForm({ ...passwordForm, currentPassword: e.target.value })}
                                                 placeholder="••••••••"
                                                 required
-                                                inputClassName="w-full px-4 py-3 rounded-xl allow-curve border border-gray-200 text-sm font-medium text-gray-900 focus:border-primary outline-none transition-all bg-white shadow-sm"
-                                                buttonClassName="text-gray-400 hover:text-gray-600 pr-3"
+                                                inputClassName="w-full pl-4 pr-12 py-3 rounded-xl allow-curve border border-gray-200 dark:border-slate-700 text-sm font-medium text-gray-900 dark:text-slate-100 focus:border-primary outline-none transition-all bg-white dark:bg-slate-800 shadow-sm"
+                                                buttonClassName="text-gray-400 hover:text-gray-600 dark:hover:text-slate-300 pr-3"
                                             />
-                                            <p className="text-[11px] text-gray-500 font-medium pt-1">Enter your current password</p>
+                                            <p className="text-[11px] text-gray-500 dark:text-slate-500 font-medium pt-1">Enter your current password</p>
                                         </div>
 
                                         {/* Row 3, Col 1: New Password */}
                                         <div className="space-y-2">
-                                            <label className="text-[11px] font-bold text-gray-700 uppercase tracking-widest block">
+                                            <label className="text-[11px] font-bold text-gray-700 dark:text-slate-400 uppercase tracking-widest block">
                                                 NEW PASSWORD
                                             </label>
                                             <PasswordField
@@ -637,15 +637,15 @@ export default function SettingsPage({ section: propSection }) {
                                                 placeholder="••••••••"
                                                 required
                                                 minLength={8}
-                                                inputClassName="w-full px-4 py-3 rounded-xl allow-curve border border-gray-200 text-sm font-medium text-gray-900 focus:border-primary outline-none transition-all bg-white shadow-sm"
-                                                buttonClassName="text-gray-400 hover:text-gray-600 pr-3"
+                                                inputClassName="w-full pl-4 pr-12 py-3 rounded-xl allow-curve border border-gray-200 dark:border-slate-700 text-sm font-medium text-gray-900 dark:text-slate-100 focus:border-primary outline-none transition-all bg-white dark:bg-slate-800 shadow-sm"
+                                                buttonClassName="text-gray-400 hover:text-gray-600 dark:hover:text-slate-300 pr-3"
                                             />
-                                            <p className="text-[11px] text-gray-500 font-medium pt-1">Enter your new password</p>
+                                            <p className="text-[11px] text-gray-500 dark:text-slate-500 font-medium pt-1">Enter your new password</p>
                                         </div>
 
                                         {/* Row 3, Col 2: Confirm New Password */}
                                         <div className="space-y-2">
-                                            <label className="text-[11px] font-bold text-gray-700 uppercase tracking-widest block">
+                                            <label className="text-[11px] font-bold text-gray-700 dark:text-slate-400 uppercase tracking-widest block">
                                                 CONFIRM NEW PASSWORD
                                             </label>
                                             <PasswordField
@@ -653,10 +653,10 @@ export default function SettingsPage({ section: propSection }) {
                                                 onChange={(e) => setPasswordForm({ ...passwordForm, confirmPassword: e.target.value })}
                                                 placeholder="••••••••"
                                                 required
-                                                inputClassName="w-full px-4 py-3 rounded-xl allow-curve border border-gray-200 text-sm font-medium text-gray-900 focus:border-primary outline-none transition-all bg-white shadow-sm"
-                                                buttonClassName="text-gray-400 hover:text-gray-600 pr-3"
+                                                inputClassName="w-full pl-4 pr-12 py-3 rounded-xl allow-curve border border-gray-200 dark:border-slate-700 text-sm font-medium text-gray-900 dark:text-slate-100 focus:border-primary outline-none transition-all bg-white dark:bg-slate-800 shadow-sm"
+                                                buttonClassName="text-gray-400 hover:text-gray-600 dark:hover:text-slate-300 pr-3"
                                             />
-                                            <p className="text-[11px] text-gray-500 font-medium pt-1">Re-enter your new password</p>
+                                            <p className="text-[11px] text-gray-500 dark:text-slate-500 font-medium pt-1">Re-enter your new password</p>
                                         </div>
                                     </div>
                                 </div>
@@ -672,7 +672,7 @@ export default function SettingsPage({ section: propSection }) {
                                     <button
                                         type="submit"
                                         disabled={isSaving}
-                                        className="px-6 py-3 bg-[#D99A29] dark:bg-[#D99A29] hover:bg-[#c88d25] dark:hover:bg-[#c88d25] text-white dark:text-white rounded-lg font-bold text-[11px] uppercase tracking-widest transition-colors flex items-center justify-center gap-2 shrink-0 shadow-sm disabled:opacity-50"
+                                        className="px-6 py-3 bg-[#D99A29] dark:!bg-[#B4912B] text-white rounded-lg font-bold text-[11px] uppercase tracking-widest hover:bg-[#c88d25] dark:hover:!bg-[#9A7B25] dark:!border-[#B4912B] transition-colors flex items-center justify-center gap-2 shrink-0 shadow-sm disabled:opacity-50"
                                     >
                                         <Lock className="w-3.5 h-3.5" />
                                         {isSaving ? 'UPDATING…' : 'UPDATE PASSWORD'}
@@ -1265,8 +1265,8 @@ export default function SettingsPage({ section: propSection }) {
             {activeTab === 'security' && (
                 <div className="bg-[#F0FDF4] dark:bg-green-900/10 border border-[#bbf7d0] dark:border-green-500/20 rounded-2xl p-6 sm:p-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 shadow-sm w-full">
                     <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 rounded-full bg-[#16a34a] dark:bg-green-600 flex items-center justify-center shrink-0">
-                            <ShieldCheck className="w-6 h-6 text-white" />
+                        <div className="w-12 h-12 rounded-2xl bg-[#16a34a] dark:bg-green-500/20 flex items-center justify-center shrink-0">
+                            <ShieldCheck className="w-6 h-6 text-white dark:text-green-500" />
                         </div>
                         <div>
                             <h3 className="text-[14px] font-bold text-gray-900 dark:text-slate-100 tracking-tight">Your security matters</h3>
