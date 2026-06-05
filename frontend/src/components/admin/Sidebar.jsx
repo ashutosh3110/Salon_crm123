@@ -174,6 +174,13 @@ export default function Sidebar({ collapsed, setCollapsed, isHovered, setIsHover
                 ]
             },
             {
+                label: 'Overall Reports',
+                icon: ClipboardList,
+                path: '/admin/overall-reports',
+                permission: 'finance_reports',
+                category: 'Operations'
+            },
+            {
                 label: 'HR & Payroll',
                 icon: Briefcase,
                 path: '/admin/hr',

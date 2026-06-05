@@ -56,11 +56,22 @@ export default function SupportPage() {
     const [isFilterOpen, setIsFilterOpen] = useState(false);
     const [isSearchFocused, setIsSearchFocused] = useState(false);
     const filterRef = useRef(null);
+    const [openStatusDropdownId, setOpenStatusDropdownId] = useState(null);
+    const [dropdownPos, setDropdownPos] = useState({ top: 0, left: 0, width: 0 });
+    const statusBtnRefs = useRef({});
+    const [isCategoryOpen, setIsCategoryOpen] = useState(false);
+    const categoryDropdownRef = useRef(null);
 
     useEffect(() => {
         const handleClickOutside = (event) => {
             if (filterRef.current && !filterRef.current.contains(event.target)) {
                 setIsFilterOpen(false);
+            }
+            if (!event.target.closest('.status-dropdown-container')) {
+                setOpenStatusDropdownId(null);
+            }
+            if (categoryDropdownRef.current && !categoryDropdownRef.current.contains(event.target)) {
+                setIsCategoryOpen(false);
             }
         };
         document.addEventListener('mousedown', handleClickOutside);
@@ -119,10 +130,10 @@ export default function SupportPage() {
         const open = tickets.filter(t => t.status === 'open' || t.status === 'in-progress').length;
         const resolved = tickets.filter(t => t.status === 'resolved').length;
         return [
-            { label: 'Total Tickets', value: total, subtitle: 'All time tickets raised', icon: Ticket, bgColor: 'bg-amber-100', iconColor: 'text-amber-600' },
-            { label: 'Active Issues', value: open, subtitle: 'Currently open', icon: Bell, bgColor: 'bg-purple-100', iconColor: 'text-purple-600' },
-            { label: 'Resolved', value: resolved, subtitle: 'Successfully resolved', icon: CheckCircle, bgColor: 'bg-emerald-100', iconColor: 'text-emerald-600' },
-            { label: 'Avg. Help Time', value: '< 4hrs', subtitle: 'Average response time', icon: Clock, bgColor: 'bg-blue-100', iconColor: 'text-blue-600' },
+            { label: 'Total Tickets', value: total, subtitle: 'All time tickets raised', icon: Ticket, bgColor: 'bg-amber-100 dark:bg-amber-500/20', iconColor: 'text-amber-600 dark:text-amber-400' },
+            { label: 'Active Issues', value: open, subtitle: 'Currently open', icon: Bell, bgColor: 'bg-purple-100 dark:bg-purple-500/20', iconColor: 'text-purple-600 dark:text-purple-400' },
+            { label: 'Resolved', value: resolved, subtitle: 'Successfully resolved', icon: CheckCircle, bgColor: 'bg-emerald-100 dark:bg-emerald-500/20', iconColor: 'text-emerald-600 dark:text-emerald-400' },
+            { label: 'Avg. Help Time', value: '< 4hrs', subtitle: 'Average response time', icon: Clock, bgColor: 'bg-blue-100 dark:bg-blue-500/20', iconColor: 'text-blue-600 dark:text-blue-400' },
         ];
     }, [tickets]);
 
@@ -304,7 +315,7 @@ export default function SupportPage() {
                                         className="absolute top-full right-0 w-full mt-2 bg-white border border-border rounded-xl shadow-lg z-50 overflow-hidden py-1"
                                     >
                                         {[
-                                            { value: 'All', label: 'ALL STATUS' },
+                                            { value: 'All', label: 'ALL' },
                                             { value: 'pending', label: 'PENDING' },
                                             { value: 'in-progress', label: 'IN PROGRESS' },
                                             { value: 'resolved', label: 'RESOLVED' },
@@ -327,13 +338,19 @@ export default function SupportPage() {
 
                     <div className="bg-white border border-border shadow-sm overflow-hidden min-h-[400px] rounded-2xl">
                         <div className="overflow-x-auto">
-                            <table className="w-full text-left border-collapse min-w-[700px]">
+                            <table className="w-full text-left border-collapse table-fixed min-w-[700px]">
+                                <colgroup>
+                                    <col style={{ width: '40%' }} />
+                                    <col style={{ width: '25%' }} />
+                                    <col style={{ width: '20%' }} />
+                                    <col style={{ width: '15%' }} />
+                                </colgroup>
                                 <thead>
                                     <tr className="bg-surface border-b border-border">
                                         <th className="px-5 py-4 text-[10px] font-bold text-text-muted uppercase tracking-wider">ID & Subject</th>
                                         <th className="px-5 py-4 text-[10px] font-bold text-text-muted uppercase tracking-wider">Category</th>
                                         <th className="px-5 py-4 text-[10px] font-bold text-text-muted uppercase tracking-wider">Status</th>
-                                        <th className="px-5 py-4 text-[10px] font-bold text-text-muted uppercase tracking-wider text-right">Actions</th>
+                                        <th className="px-5 py-4 text-[10px] font-bold text-text-muted uppercase tracking-wider text-center">Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-border">
@@ -357,7 +374,7 @@ export default function SupportPage() {
                                                     <td className="px-5 py-4 cursor-pointer" onClick={() => handleSelectTicket(t._id)}>
                                                         <div className="flex items-center gap-2 mb-1">
                                                             <div className="text-[12px] font-bold text-text tracking-tight uppercase">#{t._id?.slice(-6) || '1AD301'}</div>
-                                                            <button onClick={(e) => { e.stopPropagation(); navigator.clipboard.writeText(t._id); showToast('Copied to clipboard'); }} className="text-text-muted hover:text-text transition-colors">
+                                                            <button onClick={(e) => { e.stopPropagation(); navigator.clipboard.writeText(t._id); showToast('Copied to clipboard'); }} className="text-amber-500 hover:text-amber-600 dark:text-amber-400 dark:hover:text-amber-300 transition-colors">
                                                                 <Copy className="w-3.5 h-3.5" />
                                                             </button>
                                                             {['admin', 'manager'].includes(user?.role) && t.userId && (
@@ -377,29 +394,103 @@ export default function SupportPage() {
                                                     </td>
                                                     <td className="px-5 py-4" onClick={(e) => e.stopPropagation()}>
                                                         {['admin', 'manager', 'superadmin'].includes(userRole) ? (
-                                                            <select
-                                                                value={t.status}
-                                                                onChange={(e) => handleUpdateStatus(t._id, e.target.value)}
-                                                                className={`inline-flex items-center px-3 py-1.5 text-[10px] font-bold border uppercase tracking-wider rounded-full outline-none cursor-pointer appearance-none text-center bg-white ${stStyle.text} ${stStyle.border}`}
-                                                            >
-                                                                <option value="pending">PENDING</option>
-                                                                <option value="in-progress">IN PROGRESS</option>
-                                                                <option value="resolved">RESOLVED</option>
-                                                                <option value="closed">CLOSED</option>
-                                                                <option value="escalated">ESCALATED</option>
-                                                            </select>
+                                                            <div className="status-dropdown-container inline-block">
+                                                                <button
+                                                                    ref={el => statusBtnRefs.current[t._id] = el}
+                                                                    onClick={() => {
+                                                                        if (openStatusDropdownId === t._id) {
+                                                                            setOpenStatusDropdownId(null);
+                                                                        } else {
+                                                                            const rect = statusBtnRefs.current[t._id]?.getBoundingClientRect();
+                                                                            if (rect) {
+                                                                                setDropdownPos({
+                                                                                    top: rect.bottom + window.scrollY + 6,
+                                                                                    left: rect.left + window.scrollX,
+                                                                                    width: Math.max(rect.width, 160),
+                                                                                });
+                                                                            }
+                                                                            setOpenStatusDropdownId(t._id);
+                                                                        }
+                                                                    }}
+                                                                    className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-[10px] font-bold border uppercase tracking-wider rounded-full outline-none cursor-pointer bg-surface ${stStyle.text} ${stStyle.border} transition-all hover:brightness-95 dark:hover:brightness-110`}
+                                                                >
+                                                                    {stStyle.label}
+                                                                    <ChevronDown className="w-3 h-3 opacity-70" />
+                                                                </button>
+                                                                {openStatusDropdownId === t._id && createPortal(
+                                                                    <AnimatePresence>
+                                                                        <motion.div
+                                                                            key="status-dropdown"
+                                                                            initial={{ opacity: 0, y: 4 }}
+                                                                            animate={{ opacity: 1, y: 0 }}
+                                                                            exit={{ opacity: 0, y: 4 }}
+                                                                            transition={{ duration: 0.15 }}
+                                                                            className="fixed min-w-[160px] bg-white dark:bg-[#1e2433] border border-border rounded-xl overflow-hidden py-1.5 status-dropdown-container"
+                                                                            style={{ zIndex: 99999, boxShadow: '0 10px 40px rgba(0,0,0,0.18)', top: dropdownPos.top, left: dropdownPos.left, width: dropdownPos.width }}
+                                                                        >
+                                                                            {[
+                                                                                { value: 'pending', label: 'PENDING', color: 'text-amber-600 dark:text-amber-400', dot: 'bg-amber-400' },
+                                                                                { value: 'in-progress', label: 'IN PROGRESS', color: 'text-blue-600 dark:text-blue-400', dot: 'bg-blue-400' },
+                                                                                { value: 'resolved', label: 'RESOLVED', color: 'text-emerald-600 dark:text-emerald-400', dot: 'bg-emerald-400' },
+                                                                                { value: 'closed', label: 'CLOSED', color: 'text-slate-600 dark:text-slate-400', dot: 'bg-slate-400' },
+                                                                                { value: 'escalated', label: 'ESCALATED', color: 'text-red-600 dark:text-red-400', dot: 'bg-red-400' }
+                                                                            ].map(opt => (
+                                                                                <div
+                                                                                    key={opt.value}
+                                                                                    className={`px-4 py-2.5 flex items-center gap-2.5 text-[10px] font-bold uppercase tracking-wider cursor-pointer transition-colors ${t.status === opt.value ? 'bg-primary/10' : 'hover:bg-slate-50 dark:hover:bg-white/5'} ${opt.color}`}
+                                                                                    onClick={(e) => {
+                                                                                        e.stopPropagation();
+                                                                                        handleUpdateStatus(t._id, opt.value);
+                                                                                        setOpenStatusDropdownId(null);
+                                                                                    }}
+                                                                                >
+                                                                                    <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${opt.dot}`}></span>
+                                                                                    {opt.label}
+                                                                                    {t.status === opt.value && <span className="ml-auto">✓</span>}
+                                                                                </div>
+                                                                            ))}
+                                                                        </motion.div>
+                                                                    </AnimatePresence>,
+                                                                    document.body
+                                                                )}
+                                                            </div>
                                                         ) : (
-                                                            <span className={`inline-flex items-center px-3 py-1.5 text-[10px] font-bold border uppercase tracking-wider rounded-full bg-white ${stStyle.text} ${stStyle.border}`}>
+                                                            <span className={`inline-flex items-center px-3 py-1.5 text-[10px] font-bold border uppercase tracking-wider rounded-full bg-surface ${stStyle.text} ${stStyle.border}`}>
                                                                 {stStyle.label}
                                                             </span>
                                                         )}
                                                     </td>
-                                                    <td className="px-5 py-4 text-right">
-                                                        <div className="flex items-center justify-end gap-3">
-                                                            <span className="text-[12px] font-bold text-text">{t.lastUpdate || 'Just now'}</span>
-                                                            <button className="p-1 hover:bg-surface rounded-xl text-text transition-colors">
-                                                                <MoreHorizontal className="w-5 h-5" />
+                                                    <td className="px-5 py-4" onClick={(e) => e.stopPropagation()}>
+                                                        <div className="flex items-center justify-center gap-4">
+                                                            <button
+                                                                onClick={() => handleSelectTicket(t._id)}
+                                                                className="p-1 rounded-full transition-transform hover:scale-110"
+                                                                style={{ background: 'transparent', border: 'none', boxShadow: 'none', color: '#3b82f6' }}
+                                                                title="View Details"
+                                                            >
+                                                                <ArrowRight className="w-4 h-4" strokeWidth={2.5} />
                                                             </button>
+                                                            <button
+                                                                onClick={() => {
+                                                                    navigator.clipboard.writeText(t._id);
+                                                                    showToast('Copied to clipboard');
+                                                                }}
+                                                                className="p-1 rounded-full transition-transform hover:scale-110"
+                                                                style={{ background: 'transparent', border: 'none', boxShadow: 'none', color: '#f59e0b' }}
+                                                                title="Copy ID"
+                                                            >
+                                                                <Copy className="w-4 h-4" strokeWidth={2.5} />
+                                                            </button>
+                                                            {['admin', 'manager', 'superadmin'].includes(userRole) && t.status !== 'resolved' && (
+                                                                <button
+                                                                    onClick={() => handleUpdateStatus(t._id, 'resolved')}
+                                                                    className="p-1 rounded-full transition-transform hover:scale-110"
+                                                                    style={{ background: 'transparent', border: 'none', boxShadow: 'none', color: '#10b981' }}
+                                                                    title="Mark Resolved"
+                                                                >
+                                                                    <CheckCircle className="w-4 h-4" strokeWidth={2.5} />
+                                                                </button>
+                                                            )}
                                                         </div>
                                                     </td>
                                                 </tr>
@@ -417,8 +508,8 @@ export default function SupportPage() {
                     <div className="bg-white border border-border p-6 space-y-5 rounded-2xl shadow-sm">
                         <div className="flex items-center justify-between pb-4 border-b border-border">
                             <div className="flex items-center gap-3">
-                                <div className="w-8 h-8 rounded-full bg-amber-100 flex items-center justify-center">
-                                    <HelpCircle className="w-4 h-4 text-amber-600" />
+                                <div className="w-8 h-8 rounded-full bg-amber-100 dark:bg-amber-500/20 flex items-center justify-center">
+                                    <HelpCircle className="w-4 h-4 text-amber-600 dark:text-amber-400" />
                                 </div>
                                 <h2 className="text-[14px] font-bold text-text">Common Questions</h2>
                             </div>
@@ -444,8 +535,8 @@ export default function SupportPage() {
 
                     <div className="bg-white border border-border p-6 rounded-2xl shadow-sm space-y-4">
                         <div className="flex gap-4">
-                            <div className="w-10 h-10 rounded-full bg-amber-50 flex items-center justify-center shrink-0">
-                                <Headphones className="w-5 h-5 text-amber-600" />
+                            <div className="w-10 h-10 rounded-full bg-amber-100 dark:bg-amber-500/20 flex items-center justify-center shrink-0">
+                                <Headphones className="w-5 h-5 text-amber-600 dark:text-amber-400" />
                             </div>
                             <div>
                                 <h3 className="text-[14px] font-bold text-text">Need Direct Help?</h3>
@@ -455,15 +546,15 @@ export default function SupportPage() {
                         <div className="pt-2 flex flex-col gap-3">
                             <div className="flex items-center justify-between text-[12px] font-bold text-text p-3 border border-border rounded-xl shadow-sm">
                                 <div className="flex items-center gap-3">
-                                    <div className="text-text-muted"><MessageSquare className="w-4 h-4" /></div>
+                                    <div className="text-blue-500 dark:text-blue-400"><MessageSquare className="w-4 h-4" /></div>
                                     support@wapixo.com
                                 </div>
-                                <button onClick={() => { navigator.clipboard.writeText('support@wapixo.com'); showToast('Email copied!'); }} className="text-text-muted hover:text-text transition-colors">
+                                <button onClick={() => { navigator.clipboard.writeText('support@wapixo.com'); showToast('Email copied!'); }} className="text-amber-500 hover:text-amber-600 dark:text-amber-400 dark:hover:text-amber-300 transition-colors">
                                     <Copy className="w-4 h-4" />
                                 </button>
                             </div>
                             <div className="flex items-center gap-3 text-[12px] font-bold text-text p-3 border border-border rounded-xl shadow-sm">
-                                <div className="text-text-muted"><Clock className="w-4 h-4" /></div>
+                                <div className="text-purple-500 dark:text-purple-400"><Clock className="w-4 h-4" /></div>
                                 Avg. Response: 4h
                             </div>
                         </div>
@@ -663,14 +754,14 @@ export default function SupportPage() {
             {/* Modal */}
             {showModal && createPortal(
                 <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[9999] flex items-center justify-center p-4" onClick={() => setShowModal(false)}>
-                    <div className="bg-white w-full max-w-md p-8 shadow-2xl relative border border-border overflow-hidden rounded-2xl" onClick={(e) => e.stopPropagation()}>
+                    <div className="bg-card text-card-foreground w-full max-w-md p-8 shadow-2xl relative border border-border overflow-hidden rounded-2xl" onClick={(e) => e.stopPropagation()}>
                         <div className="flex items-center gap-5 mb-8 pb-5 border-b border-border">
-                            <div className="w-12 h-12 flex items-center justify-center rounded-xl" style={{ backgroundColor: '#1e293b', color: '#ffffff' }}>
-                                <LifeBuoy className="w-7 h-7" style={{ color: '#ffffff' }} />
+                            <div className="w-12 h-12 flex items-center justify-center rounded-xl bg-[#B58E29]/10 dark:bg-[#B58E29]/20">
+                                <LifeBuoy className="w-7 h-7 text-[#B58E29]" />
                             </div>
                             <div className="text-left">
-                                <h2 className="text-xl font-bold text-text leading-none transition-colors">New Support Request</h2>
-                                <p className="text-[11px] font-medium text-text-muted uppercase tracking-wider mt-2">
+                                <h2 className="text-xl font-bold text-card-foreground leading-none">New Support Request</h2>
+                                <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider mt-2">
                                     {['admin', 'superadmin', 'manager'].includes(user?.role?.toLowerCase())
                                         ? 'Send a message to our support team'
                                         : 'Send a message to your manager'}
@@ -680,41 +771,79 @@ export default function SupportPage() {
 
                         <form onSubmit={handleSubmit} className="space-y-5">
                             <div className="space-y-2 text-left">
-                                <label className="text-[11px] font-bold text-text-muted uppercase tracking-wider ml-1">Subject</label>
+                                <label className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider ml-1">Subject</label>
                                 <input
                                     type="text"
                                     value={form.subject}
                                     onChange={(e) => setForm({ ...form, subject: e.target.value })}
                                     required
-                                    className="w-full px-4 py-3 bg-surface border border-border text-[13px] font-medium outline-none focus:border-primary rounded-xl transition-all"
+                                    className="w-full px-4 py-3 bg-white dark:bg-[#243044] border border-border text-card-foreground text-[13px] font-medium outline-none focus:border-[#B58E29] focus:ring-1 focus:ring-[#B58E29]/30 rounded-xl transition-all placeholder:text-muted-foreground/60"
                                     placeholder="Brief summary of the issue"
                                 />
                             </div>
-                            <div className="space-y-2 text-left">
-                                <label className="text-[11px] font-bold text-text-muted uppercase tracking-wider ml-1">Category</label>
-                                <select
-                                    value={form.category}
-                                    onChange={(e) => setForm({ ...form, category: e.target.value })}
-                                    className="w-full px-4 py-3 bg-surface border border-border text-[13px] font-bold outline-none focus:border-primary rounded-xl appearance-none cursor-pointer"
-                                >
-                                    {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
-                                </select>
+                            <div className="space-y-2 text-left" ref={categoryDropdownRef}>
+                                <label className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider ml-1">Category</label>
+                                <div className="relative">
+                                    <button
+                                        type="button"
+                                        onClick={() => setIsCategoryOpen(v => !v)}
+                                        className="w-full px-4 py-3 bg-white dark:bg-[#243044] border border-border text-card-foreground text-[13px] font-bold outline-none rounded-xl flex items-center justify-between cursor-pointer transition-all focus:border-[#B58E29] focus:ring-1 focus:ring-[#B58E29]/30"
+                                    >
+                                        <span>{form.category}</span>
+                                        <ChevronDown className={`w-4 h-4 text-muted-foreground transition-transform duration-200 ${isCategoryOpen ? 'rotate-180' : ''}`} />
+                                    </button>
+                                    <AnimatePresence>
+                                        {isCategoryOpen && (
+                                            <motion.div
+                                                initial={{ opacity: 0, y: -6 }}
+                                                animate={{ opacity: 1, y: 0 }}
+                                                exit={{ opacity: 0, y: -6 }}
+                                                transition={{ duration: 0.15 }}
+                                                className="absolute top-full left-0 right-0 mt-1.5 bg-card border border-border rounded-xl overflow-hidden shadow-xl"
+                                                style={{ zIndex: 10000 }}
+                                            >
+                                                {CATEGORIES.map(c => (
+                                                    <div
+                                                        key={c}
+                                                        onClick={() => { setForm({ ...form, category: c }); setIsCategoryOpen(false); }}
+                                                        className={`px-4 py-3 text-[13px] font-medium cursor-pointer transition-colors flex items-center justify-between
+                                                            ${form.category === c
+                                                                ? 'bg-[#B58E29]/10 text-[#B58E29] font-bold'
+                                                                : 'text-card-foreground hover:bg-accent'}`}
+                                                    >
+                                                        {c}
+                                                        {form.category === c && <span className="text-[#B58E29] text-xs">✓</span>}
+                                                    </div>
+                                                ))}
+                                            </motion.div>
+                                        )}
+                                    </AnimatePresence>
+                                </div>
                             </div>
                             <div className="space-y-2 text-left">
-                                <label className="text-[11px] font-bold text-text-muted uppercase tracking-wider ml-1">Detailed Description</label>
+                                <label className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider ml-1">Detailed Description</label>
                                 <textarea
                                     value={form.description}
                                     onChange={(e) => setForm({ ...form, description: e.target.value })}
                                     required
-                                    className="w-full px-4 py-3 bg-surface border border-border text-[13px] font-medium outline-none focus:border-primary rounded-xl resize-none h-28 transition-all"
+                                    className="w-full px-4 py-3 bg-white dark:bg-[#243044] border border-border text-card-foreground text-[13px] font-medium outline-none focus:border-[#B58E29] focus:ring-1 focus:ring-[#B58E29]/30 rounded-xl resize-none h-28 transition-all placeholder:text-muted-foreground/60"
                                     placeholder="Explain your problem or request in detail..."
                                 />
                             </div>
 
                             <div className="flex gap-4 pt-6 border-t border-border mt-2">
-                                <button type="button" onClick={() => setShowModal(false)} className="flex-1 py-3 text-[12px] font-bold uppercase tracking-wider text-text-muted hover:bg-surface rounded-xl transition-colors">Cancel</button>
-                                <button type="submit" className="flex-1 py-3 shadow-lg flex items-center justify-center gap-2 hover:bg-primary rounded-xl transition-all active:scale-95" style={{ backgroundColor: '#1e293b', color: '#ffffff' }}>
-                                    <span className="text-[12px] font-bold uppercase tracking-wider" style={{ color: '#ffffff' }}>Submit Request</span>
+                                <button
+                                    type="button"
+                                    onClick={() => setShowModal(false)}
+                                    className="flex-1 py-3 text-[12px] font-bold uppercase tracking-wider text-muted-foreground hover:bg-accent rounded-xl transition-colors border border-border"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    type="submit"
+                                    className="flex-1 py-3 shadow-lg flex items-center justify-center gap-2 rounded-xl transition-all active:scale-95 bg-[#1e293b] hover:bg-[#2d3f57] dark:bg-[#B58E29] dark:hover:bg-[#a07d24]"
+                                >
+                                    <span className="text-[12px] font-bold uppercase tracking-wider text-white">Submit Request</span>
                                 </button>
                             </div>
                         </form>
@@ -729,10 +858,10 @@ export default function SupportPage() {
                         initial={{ opacity: 0, y: 40 }}
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: 40 }}
-                        className="fixed bottom-10 left-1/2 -translate-x-1/2 z-[100] flex items-center gap-3 px-6 py-3 bg-text text-background rounded-xl shadow-2xl border border-white/10"
+                        className="fixed bottom-10 left-1/2 -translate-x-1/2 z-[100] flex items-center gap-3 px-6 py-3 bg-slate-900 text-white dark:bg-white dark:text-slate-900 rounded-xl shadow-2xl border border-white/10 dark:border-black/10"
                     >
                         <CheckCircle className="w-4 h-4 text-emerald-500" />
-                        <p className="text-[11px] font-bold uppercase tracking-widest">{toast}</p>
+                        <p className="text-[11px] font-bold uppercase tracking-widest text-white dark:text-slate-900">{toast}</p>
                     </motion.div>
                 )}
             </AnimatePresence>

@@ -3125,10 +3125,6 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                                                     style={{ background: '#fff', border: '1px solid #e2e8f0' }}>
                                                     {qFilteredClients.length > 0 ? (
                                                         <div className="max-h-[220px] overflow-y-auto qi-scroll">
-                                                            <style>{`
-                                                                html body button div.client-avatar-amber { color: #d97706 !important; -webkit-text-fill-color: #d97706 !important; }
-                                                                html body button div.client-avatar-amber-due { color: #b45309 !important; -webkit-text-fill-color: #b45309 !important; }
-                                                            `}</style>
                                                             {qFilteredClients.map((c, idx) => (
                                                                 <button
                                                                     id={`q-client-item-${idx}`}
@@ -3136,7 +3132,13 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                                                                     onClick={() => handleSelectClient(c)}
                                                                     className={`w-full px-4 py-3 text-left border-b border-slate-100 last:border-0 flex items-center gap-3 transition-colors ${idx === qFocusedClientIndex ? 'bg-amber-50' : 'hover:bg-slate-50'}`}
                                                                 >
-                                                                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center font-bold text-xs flex-shrink-0 ${Number(c.dueAmount || 0) > 0 ? 'bg-amber-100 text-amber-700 client-avatar-amber-due' : 'bg-amber-50 text-amber-600 client-avatar-amber'}`}>
+                                                                    <div 
+                                                                        className={`w-8 h-8 rounded-lg flex items-center justify-center font-bold text-xs flex-shrink-0 ${Number(c.dueAmount || 0) > 0 ? 'bg-amber-100' : 'bg-amber-50'}`}
+                                                                        style={{ 
+                                                                            color: Number(c.dueAmount || 0) > 0 ? '#b45309' : '#d97706',
+                                                                            WebkitTextFillColor: Number(c.dueAmount || 0) > 0 ? '#b45309' : '#d97706'
+                                                                        }}
+                                                                    >
                                                                         {c.name.charAt(0).toUpperCase()}
                                                                     </div>
                                                                     <div className="flex-1 min-w-0">
@@ -3188,11 +3190,12 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                         {/* Search bar for services/products */}
                         <div className="px-5 py-2 border-b border-slate-100 bg-slate-50/50 flex items-center gap-2 shrink-0">
                             <div className="relative flex-1">
-                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" />
+                                <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-black dark:text-white" />
                                 <input
                                     type="text"
                                     placeholder={qActiveTab === 'services' ? "Search services..." : "Search products..."}
-                                    className="w-full border border-slate-200 rounded-xl pl-9 pr-8 py-1.5 text-xs font-semibold outline-none bg-white text-slate-800 focus:border-amber-500 transition-all dark:bg-slate-800 dark:border-slate-700 dark:text-slate-100"
+                                    className="w-full border border-black dark:border-white/40 rounded-xl py-2 text-xs font-semibold outline-none bg-white text-slate-800 focus:border-black dark:focus:border-white transition-all dark:bg-slate-800 dark:text-slate-100"
+                                    style={{ paddingLeft: '2.6rem', paddingRight: '2.25rem' }}
                                     value={qSearchItem}
                                     onChange={e => {
                                         setQSearchItem(e.target.value);
