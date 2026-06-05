@@ -79,6 +79,7 @@ export default function SettingsPage({ section: propSection }) {
     const [notifications, setNotifications] = useState({ ...DEFAULT_NOTIFICATIONS });
     const [termsList, setTermsList] = useState([]);
     const [newTerm, setNewTerm] = useState('');
+    const termInputRefs = useRef([]);
 
     useEffect(() => {
         if (user) {
@@ -885,12 +886,12 @@ export default function SettingsPage({ section: propSection }) {
                                 {/* Header */}
                                 <div>
                                     <div className="flex items-center gap-4">
-                                        <div className="w-12 h-12 rounded-full bg-amber-100 flex items-center justify-center">
-                                            <FileText className="w-6 h-6 text-amber-600" />
+                                        <div className="w-12 h-12 rounded-2xl bg-amber-100 dark:bg-amber-500/20 flex items-center justify-center">
+                                            <FileText className="w-6 h-6 text-amber-600 dark:text-amber-500" />
                                         </div>
                                         <div>
-                                            <h2 className="text-[16px] font-bold text-gray-900 tracking-tight">Terms & Conditions</h2>
-                                            <p className="text-[12px] text-gray-500 font-medium mt-0.5">
+                                            <h2 className="text-[16px] font-bold text-gray-900 dark:text-slate-100 tracking-tight">Terms & Conditions</h2>
+                                            <p className="text-[12px] text-gray-500 dark:text-slate-400 font-medium mt-0.5">
                                                 These terms will be printed at the bottom of your invoices / bills.
                                             </p>
                                         </div>
@@ -934,18 +935,19 @@ export default function SettingsPage({ section: propSection }) {
                                             {termsList.map((term, idx) => (
                                                 <div
                                                     key={idx}
-                                                    className="flex items-center gap-3 px-3 py-2 border-b border-gray-100 last:border-0 group"
+                                                    className="flex items-center gap-3 px-3 py-2 border-b border-gray-100 dark:border-slate-700/50 last:border-0 group"
                                                 >
                                                     {/* Grip / Number */}
                                                     <div className="flex items-center gap-4 shrink-0">
                                                         <GripVertical className="w-4 h-4 text-gray-400 cursor-grab" />
-                                                        <span className="w-7 h-7 rounded-full bg-gray-100 text-gray-600 text-[11px] font-black flex items-center justify-center">
+                                                        <span className="w-7 h-7 rounded-full bg-gray-100 dark:bg-slate-800 text-gray-600 dark:text-slate-400 text-[11px] font-black flex items-center justify-center">
                                                             {idx + 1}
                                                         </span>
                                                     </div>
 
                                                     {/* Term Text (editable) */}
                                                     <input
+                                                        ref={(el) => (termInputRefs.current[idx] = el)}
                                                         type="text"
                                                         value={term}
                                                         onChange={(e) => {
@@ -953,14 +955,21 @@ export default function SettingsPage({ section: propSection }) {
                                                             updated[idx] = e.target.value;
                                                             setTermsList(updated);
                                                         }}
-                                                        className="flex-1 text-[13px] font-semibold text-gray-800 bg-transparent outline-none py-1 focus:border-b focus:border-amber-500/30 transition-all"
+                                                        className="flex-1 text-[13px] font-semibold text-gray-800 dark:text-slate-200 bg-transparent !border-0 !ring-0 !outline-none focus:!border-0 focus:!ring-0 focus:!outline-none p-0 py-1 transition-all"
                                                     />
 
                                                     {/* Reorder & Delete */}
                                                     <div className="flex items-center gap-2 shrink-0">
                                                         <button
                                                             type="button"
-                                                            className="p-2 border border-gray-200 rounded-lg bg-white hover:bg-gray-50 text-gray-500 transition-all shadow-sm"
+                                                            onClick={() => {
+                                                                if (termInputRefs.current[idx]) {
+                                                                    termInputRefs.current[idx].focus();
+                                                                    const len = termInputRefs.current[idx].value.length;
+                                                                    termInputRefs.current[idx].setSelectionRange(len, len);
+                                                                }
+                                                            }}
+                                                            className="p-2 border border-gray-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 hover:bg-gray-50 dark:hover:bg-slate-700 text-gray-500 dark:text-slate-400 transition-all shadow-sm"
                                                             title="Edit term"
                                                         >
                                                             <Pencil className="w-3.5 h-3.5" />
@@ -968,7 +977,7 @@ export default function SettingsPage({ section: propSection }) {
                                                         <button
                                                             type="button"
                                                             onClick={() => handleRemoveTerm(idx)}
-                                                            className="p-2 border border-rose-100 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-500 transition-all shadow-sm"
+                                                            className="p-2 border border-rose-100 dark:border-rose-900/50 rounded-lg bg-rose-50 dark:bg-rose-500/10 hover:bg-rose-100 dark:hover:bg-rose-500/20 text-rose-500 dark:text-rose-400 transition-all shadow-sm"
                                                             title="Remove term"
                                                         >
                                                             <Trash2 className="w-3.5 h-3.5" />
@@ -988,7 +997,7 @@ export default function SettingsPage({ section: propSection }) {
                                             <button
                                                 type="submit"
                                                 disabled={isSaving}
-                                                className="px-6 py-3 w-full sm:w-auto bg-amber-600 text-white rounded-lg font-bold text-[11px] uppercase tracking-widest hover:bg-amber-700 transition-all text-center flex items-center justify-center gap-2 shadow-sm disabled:opacity-50"
+                                                className="px-6 py-3 w-full sm:w-auto bg-amber-600 dark:!bg-[#B4912B] text-white rounded-lg font-bold text-[11px] uppercase tracking-widest hover:bg-amber-700 dark:hover:!bg-[#9A7B25] dark:!border-[#B4912B] transition-all text-center flex items-center justify-center gap-2 shadow-sm disabled:opacity-50"
                                             >
                                                 <Save className="w-4 h-4" />
                                                 {isSaving ? 'Saving…' : 'Save Terms & Conditions'}
@@ -1005,9 +1014,7 @@ export default function SettingsPage({ section: propSection }) {
                                         <h3 className="text-[11px] font-black text-gray-700 dark:text-slate-300 uppercase tracking-widest">
                                             Invoice Preview
                                         </h3>
-                                        <button className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-gray-600 dark:text-slate-400 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-600 px-4 py-2 rounded-lg hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors shadow-sm">
-                                            <Eye className="w-3.5 h-3.5" /> Preview on Invoice
-                                        </button>
+
                                     </div>
                                     <div className="p-6">
                                         <div className="flex gap-4">
@@ -1117,15 +1124,34 @@ export default function SettingsPage({ section: propSection }) {
                                         >
                                             Open Large QR Code <ExternalLink className="w-3 h-3" />
                                         </a>
-                                        <a
-                                            href={`https://api.qrserver.com/v1/create-qr-code/?size=500x500&data=${encodeURIComponent(
-                                                `${window.location.origin}/app/booking?tenantId=${salon?._id || ''}`
-                                            )}`}
-                                            download="Booking_QR_Code.png"
+                                        <button
+                                            type="button"
+                                            onClick={async () => {
+                                                try {
+                                                    const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=500x500&data=${encodeURIComponent(
+                                                        `${window.location.origin}/app/booking?tenantId=${salon?._id || ''}`
+                                                    )}`;
+                                                    const response = await fetch(qrUrl);
+                                                    if (!response.ok) throw new Error('Network response was not ok');
+                                                    const blob = await response.blob();
+                                                    const url = window.URL.createObjectURL(blob);
+                                                    const link = document.createElement('a');
+                                                    link.href = url;
+                                                    link.setAttribute('download', 'Booking_QR_Code.png');
+                                                    document.body.appendChild(link);
+                                                    link.click();
+                                                    link.remove();
+                                                    window.URL.revokeObjectURL(url);
+                                                    toast.success('QR Code downloaded successfully!');
+                                                } catch (error) {
+                                                    console.error('Error downloading QR code:', error);
+                                                    toast.error('Failed to download QR code. Please try opening the large QR code and saving it manually.');
+                                                }
+                                            }}
                                             className="text-[10px] font-bold text-purple-700 uppercase tracking-widest flex items-center justify-center gap-2 px-5 py-3 border border-purple-200 bg-purple-50 rounded-xl hover:bg-purple-100 transition-colors w-full sm:w-auto"
                                         >
                                             <Download className="w-4 h-4" /> Download QR Code
-                                        </a>
+                                        </button>
                                     </div>
                                 </div>
 
