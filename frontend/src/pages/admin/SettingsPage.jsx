@@ -490,7 +490,7 @@ export default function SettingsPage({ section: propSection }) {
                                     <button
                                         type="submit"
                                         disabled={isSaving}
-                                        className="px-6 py-3 bg-[#D99A29] hover:bg-[#c88d25] text-white rounded-lg font-bold text-[11px] uppercase tracking-widest transition-colors flex items-center justify-center gap-2 shrink-0 shadow-sm disabled:opacity-50"
+                                        className="px-6 py-3 bg-[#B4912B] hover:bg-[#9A7B25] text-white rounded-lg font-bold text-[11px] uppercase tracking-widest transition-colors flex items-center justify-center gap-2 shrink-0 shadow-sm disabled:opacity-50"
                                     >
                                         <Save className="w-4 h-4" />
                                         {isSaving ? 'SAVING…' : 'SAVE PROFILE'}
@@ -685,19 +685,19 @@ export default function SettingsPage({ section: propSection }) {
                     {activeTab === 'business' && (
                         <div className="text-left flex flex-col">
                             {/* Main Card Header */}
-                            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between pb-6 border-b border-gray-100 gap-4 pt-2">
+                            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between pb-6 border-b border-gray-100 dark:border-slate-800 gap-4 pt-2">
                                 <div className="flex items-center gap-4">
-                                    <div className="w-12 h-12 rounded-2xl bg-[#FFF9F0] flex items-center justify-center shrink-0">
+                                    <div className="w-12 h-12 rounded-2xl bg-[#FFF9F0] dark:bg-orange-900/20 flex items-center justify-center shrink-0">
                                         <Building2 className="w-6 h-6 text-[#D99A29]" />
                                     </div>
                                     <div>
-                                        <h2 className="text-[17px] font-bold text-gray-900 tracking-tight">Business & Tax Information</h2>
-                                        <p className="text-[13px] text-gray-500 font-medium mt-0.5">
+                                        <h2 className="text-[17px] font-bold text-gray-900 dark:text-slate-100 tracking-tight">Business & Tax Information</h2>
+                                        <p className="text-[13px] text-gray-500 dark:text-slate-400 font-medium mt-0.5">
                                             Legal name, GST, and defaults — stored on your salon record ( PATCH /tenants/me ).
                                         </p>
                                     </div>
                                 </div>
-                                <div className="flex items-center gap-2 px-3 py-1.5 bg-[#ECFDF3] border border-[#D1FADF] rounded-xl text-[#027A48]">
+                                <div className="flex items-center gap-2 px-3 py-1.5 bg-[#ECFDF3] dark:bg-emerald-900/20 border border-[#D1FADF] dark:border-emerald-500/30 rounded-xl text-[#027A48] dark:text-emerald-400">
                                     <CheckCircle2 className="w-3.5 h-3.5" />
                                     <span className="text-[11px] font-bold">Synced with your account</span>
                                 </div>
@@ -847,16 +847,24 @@ export default function SettingsPage({ section: propSection }) {
                                 {/* Footer (Checkbox and Save button) */}
                                 <div className="pt-6 border-t border-gray-100 flex flex-col sm:flex-row items-center justify-between gap-6">
                                     <div className="flex items-start gap-3">
-                                        <div className="relative flex items-center justify-center mt-0.5 shrink-0">
+                                        <label className="relative flex items-center justify-center mt-0.5 shrink-0 cursor-pointer group">
                                             <input
                                                 type="checkbox"
                                                 id="inclusive"
                                                 checked={fiscal.inclusiveTax}
                                                 onChange={(e) => setFiscal({ ...fiscal, inclusiveTax: e.target.checked })}
-                                                className="peer appearance-none w-5 h-5 rounded border border-[#D99A29] bg-white checked:bg-[#D99A29] checked:border-[#D99A29] cursor-pointer transition-all"
+                                                className="sr-only"
                                             />
-                                            <Check className="w-3.5 h-3.5 text-white absolute pointer-events-none opacity-0 peer-checked:opacity-100 transition-opacity" />
-                                        </div>
+                                            <span className={`w-5 h-5 flex items-center justify-center !rounded-[4px] border-2 transition-all shadow-sm ${
+                                                fiscal.inclusiveTax 
+                                                    ? '!bg-[#D99A29] !border-[#D99A29] dark:!bg-[#B4912B] dark:!border-[#B4912B]' 
+                                                    : 'border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-800 group-hover:border-[#D99A29]'
+                                            }`}>
+                                                {fiscal.inclusiveTax && (
+                                                    <Check className="w-3.5 h-3.5 text-white" strokeWidth={3} />
+                                                )}
+                                            </span>
+                                        </label>
                                         <div>
                                             <label htmlFor="inclusive" className="text-[13px] font-bold text-gray-900 dark:text-slate-100 cursor-pointer select-none">
                                                 Prices are inclusive of tax
@@ -1049,9 +1057,7 @@ export default function SettingsPage({ section: propSection }) {
                                         Build trust and avoid misunderstandings with clear policies.
                                     </p>
                                 </div>
-                                <button className="px-5 py-2.5 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-blue-600 dark:text-blue-400 rounded-lg font-bold text-[11px] hover:bg-blue-50 dark:hover:bg-slate-700 transition-colors flex items-center justify-center gap-2 shrink-0 shadow-sm mt-2 sm:mt-0">
-                                    Learn more <ExternalLink className="w-3.5 h-3.5" />
-                                </button>
+
                             </div>
                         </div>
                     )}
@@ -1265,8 +1271,8 @@ export default function SettingsPage({ section: propSection }) {
             {activeTab === 'security' && (
                 <div className="bg-[#F0FDF4] dark:bg-green-900/10 border border-[#bbf7d0] dark:border-green-500/20 rounded-2xl p-6 sm:p-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 shadow-sm w-full">
                     <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 rounded-2xl bg-[#16a34a] dark:bg-green-500/20 flex items-center justify-center shrink-0">
-                            <ShieldCheck className="w-6 h-6 text-white dark:text-green-500" />
+                        <div className="w-12 h-12 rounded-2xl bg-[#ECFDF3] dark:bg-green-900/20 flex items-center justify-center shrink-0">
+                            <ShieldCheck className="w-6 h-6 text-[#027A48] dark:text-green-500" />
                         </div>
                         <div>
                             <h3 className="text-[14px] font-bold text-gray-900 dark:text-slate-100 tracking-tight">Your security matters</h3>
@@ -1282,10 +1288,10 @@ export default function SettingsPage({ section: propSection }) {
                                 Reach out to our support team for any security related assistance.
                             </p>
                         </div>
-                        <button className="px-5 py-2.5 bg-white dark:bg-slate-800 border border-[#22c55e] dark:border-green-500 text-[#16a34a] dark:text-white rounded-lg font-bold text-xs hover:bg-[#F0FDF4] dark:hover:bg-slate-700 transition-colors flex items-center gap-2 shrink-0 whitespace-nowrap">
+                        <Link to="/admin/support" className="px-5 py-2.5 bg-white dark:bg-slate-800 border border-[#22c55e] dark:border-green-500 text-[#16a34a] dark:text-white rounded-lg font-bold text-xs hover:bg-[#F0FDF4] dark:hover:bg-slate-700 transition-colors flex items-center gap-2 shrink-0 whitespace-nowrap">
                             <Headset className="w-4 h-4" />
                             <span>Contact Support</span>
-                        </button>
+                        </Link>
                     </div>
                 </div>
             )}
@@ -1293,8 +1299,8 @@ export default function SettingsPage({ section: propSection }) {
             {activeTab === 'business' && (
                 <div className="bg-[#F0FDF4] dark:bg-green-900/10 border border-[#bbf7d0] dark:border-green-500/20 rounded-2xl p-6 sm:p-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 shadow-sm w-full mt-6">
                     <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 rounded-full bg-[#16a34a] dark:bg-green-600 flex items-center justify-center shrink-0">
-                            <ShieldCheck className="w-6 h-6 text-white" />
+                        <div className="w-12 h-12 rounded-2xl bg-[#ECFDF3] dark:bg-green-900/20 flex items-center justify-center shrink-0">
+                            <ShieldCheck className="w-6 h-6 text-[#027A48] dark:text-green-500" />
                         </div>
                         <div>
                             <h3 className="text-[14px] font-bold text-gray-900 dark:text-slate-100 tracking-tight">Secure & Compliant</h3>
@@ -1310,10 +1316,10 @@ export default function SettingsPage({ section: propSection }) {
                                 Contact support for any queries related to business & tax information.
                             </p>
                         </div>
-                        <button className="px-5 py-2.5 bg-white dark:bg-slate-800 border border-[#22c55e] dark:border-green-500 text-[#16a34a] dark:text-white rounded-lg font-bold text-xs hover:bg-[#F0FDF4] dark:hover:bg-slate-700 transition-colors flex items-center gap-2 shrink-0 whitespace-nowrap">
+                        <Link to="/admin/support" className="px-5 py-2.5 bg-white dark:bg-slate-800 border border-[#22c55e] dark:border-green-500 text-[#16a34a] dark:text-white rounded-lg font-bold text-xs hover:bg-[#F0FDF4] dark:hover:bg-slate-700 transition-colors flex items-center gap-2 shrink-0 whitespace-nowrap">
                             <Headset className="w-4 h-4" />
                             <span>Contact Support</span>
-                        </button>
+                        </Link>
                     </div>
                 </div>
             )}
@@ -1322,8 +1328,8 @@ export default function SettingsPage({ section: propSection }) {
             {activeTab === 'profile' && (
                 <div className="bg-[#F0FDF4] dark:bg-green-900/10 border border-[#bbf7d0] dark:border-green-500/20 rounded-2xl p-6 sm:p-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 shadow-sm w-full mt-6">
                     <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 rounded-full bg-[#16a34a] dark:bg-green-600 flex items-center justify-center shrink-0">
-                            <ShieldCheck className="w-6 h-6 text-white" />
+                        <div className="w-12 h-12 rounded-2xl bg-[#ECFDF3] dark:bg-green-900/20 flex items-center justify-center shrink-0">
+                            <ShieldCheck className="w-6 h-6 text-[#027A48] dark:text-green-500" />
                         </div>
                         <div>
                             <h3 className="text-[14px] font-bold text-gray-900 dark:text-slate-100 tracking-tight">Your data is safe with us</h3>
@@ -1332,11 +1338,7 @@ export default function SettingsPage({ section: propSection }) {
                             </p>
                         </div>
                     </div>
-                    <div className="flex shrink-0">
-                        <button className="px-5 py-2.5 bg-white dark:bg-slate-800 border border-[#22c55e] dark:border-green-500 text-[#16a34a] dark:text-green-400 rounded-lg font-bold text-xs hover:bg-[#F0FDF4] dark:hover:bg-slate-700 transition-colors flex items-center gap-2 shadow-sm">
-                            Learn about security <ExternalLink className="w-4 h-4" />
-                        </button>
-                    </div>
+
                 </div>
             )}
         </div>

@@ -113,6 +113,7 @@
   }
 
   .dark {
+    color-scheme: dark;
     --wapixo-bg: #050505;
     --wapixo-bg-alt: #0A0A0A;
     --wapixo-text: #FFFFFF;
@@ -634,6 +635,7 @@
 }
 
 .dark {
+  color-scheme: dark;
   --background: #121826;
   --foreground: #f8fafc;
   --card: #1e293b;
