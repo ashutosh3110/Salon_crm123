@@ -7,7 +7,7 @@ import {
     Sparkles, User, UserPlus, ArrowRight, Percent, Info,
     Tag, Star, Wallet, Printer, Banknote, Smartphone, FileText, Download,
     ShoppingBag, CreditCard, Ticket, Gift, History, Calendar, Globe, Building2, ChevronDown,
-    AlertTriangle, CheckCircle2, UserMinus, LayoutGrid, ArrowDown, Clock
+    AlertTriangle, CheckCircle2, UserMinus, LayoutGrid, ArrowDown, Clock, Brush, Droplet
 } from 'lucide-react';
 import api from '../../services/api';
 import {
@@ -2423,7 +2423,7 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
     const [clientPrevDue, setClientPrevDue] = useState(0);
     const [pendingClientSelect, setPendingClientSelect] = useState(null);
     const [showQOutletPicker, setShowQOutletPicker] = useState(false);
-    const [qSelectedCategory, setQSelectedCategory] = useState('All');
+    const [qSelectedCategory, setQSelectedCategory] = useState(null);
     const [qActiveTab, setQActiveTab] = useState('services');
     const [qCollectedPrevDue, setQCollectedPrevDue] = useState(0);
     const [qRedeemWallet, setQRedeemWallet] = useState(0);
@@ -2553,7 +2553,7 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
     }, [qFilteredServices, qFilteredProducts, qActiveTab]);
 
     useEffect(() => {
-        setQSelectedCategory('All');
+        setQSelectedCategory(null);
     }, [qOutletId]);
 
     const qFilteredStaff = useMemo(() => {
@@ -2932,16 +2932,18 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                 initial={{ opacity: 0, scale: 0.97, y: 16 }}
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 transition={{ duration: 0.22, ease: 'easeOut' }}
-                className="w-full max-w-[99vw] h-full sm:h-[97vh] shadow-2xl flex flex-col sm:rounded-2xl overflow-hidden"
-                style={{ background: '#fff', fontFamily: 'inherit' }}
+                className="w-full max-w-[99vw] h-full sm:h-[97vh] shadow-2xl flex flex-col sm:rounded-2xl overflow-hidden bg-white dark:bg-[#0A0F1E]"
+                style={{ fontFamily: 'inherit' }}
             >
                 <style>{`
                     .qi-scroll::-webkit-scrollbar { width: 4px; }
                     .qi-scroll::-webkit-scrollbar-track { background: transparent; }
                     .qi-scroll::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 99px; }
+                    html.dark .qi-scroll::-webkit-scrollbar-thumb { background: #334155; }
                     .qi-noscroll::-webkit-scrollbar { display: none; }
                     .qi-noscroll { -ms-overflow-style: none; scrollbar-width: none; }
-                    /* ---- Force LIGHT mode on left column regardless of dark-mode parent ---- */
+                    
+                    /* ---- LIGHT MODE ---- */
                     .qi-left { background-color: #ffffff !important; color: #1e293b !important; }
                     .qi-left * { color: inherit; }
                     .qi-left h3, .qi-left h4, .qi-left p, .qi-left span:not(.qi-gold):not(.qi-emerald):not(.qi-rose):not(.qi-blue):not(.qi-violet) { color: inherit !important; }
@@ -2951,11 +2953,7 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                     .qi-catcard { background-color: #ffffff !important; border-color: #e2e8f0 !important; }
                     .qi-catcard:hover { border-color: #C69A20 !important; }
                     .qi-svccard { background-color: #ffffff !important; border-color: #e2e8f0 !important; }
-                    .qi-svccard:hover { border-color: #C69A20 !important; box-shadow: 0 2px 12px rgba(180,145,43,0.12); }
-                    .qi-svccard .qi-svc-icon { background-color: rgba(198,154,32,0.08) !important; }
-                    .qi-svccard:hover .qi-svc-icon { background-color: rgba(198,154,32,0.18) !important; }
-                    .qi-svccard .qi-svc-plus { border-color: rgba(198,154,32,0.3) !important; color: #C69A20 !important; }
-                    .qi-svccard:hover .qi-svc-plus { background-color: #C69A20 !important; color: #fff !important; }
+                    .qi-svccard:hover { border-color: #C69A20 !important; box-shadow: 0 4px 15px rgba(180,145,43,0.12); }
                     .qi-breadcrumb { background-color: #ffffff !important; border-bottom-color: #f1f5f9 !important; }
                     .qi-kpi { background-color: #ffffff !important; border-top-color: #f1f5f9 !important; }
                     .qi-strip { background-color: #ffffff !important; border-top-color: #e2e8f0 !important; }
@@ -2967,11 +2965,35 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                     .qi-outlet-btn:hover { border-color: #C69A20 !important; }
                     .qi-client-input { background-color: #ffffff !important; border-color: #e2e8f0 !important; color: #1e293b !important; }
                     .qi-client-input:focus { border-color: #C69A20 !important; outline: none !important; }
-                    /* ---- Right column light ---- */
                     .qi-right { background-color: #f8fafc !important; border-left: 1px solid #e2e8f0 !important; }
                     .qi-cart-item { background-color: #ffffff !important; color: #1e293b !important; }
                     .qi-cart-item * { color: inherit; }
                     .qi-bottom-card { background-color: #0A0F1E !important; border-color: rgba(255,255,255,0.08) !important; border-radius: 0.75rem !important; }
+                    .qi-discount-bg { background-color: #fff1f2 !important; border-color: #fecdd3 !important; }
+                    .qi-discount-text { color: #e11d48 !important; }
+                    .qi-input-bg { background-color: #ffffff !important; border-color: #e2e8f0 !important; }
+
+                    /* ---- DARK MODE OVERRIDES ---- */
+                    html.dark .qi-left { background-color: #0A0F1E !important; color: #f1f5f9 !important; }
+                    html.dark .qi-left input { color: #f1f5f9 !important; }
+                    html.dark .qi-left input::placeholder { color: #64748b !important; }
+                    html.dark .qi-left label { color: #94a3b8 !important; }
+                    html.dark .qi-catcard { background-color: #1e293b !important; border-color: rgba(255,255,255,0.1) !important; }
+                    html.dark .qi-svccard { background-color: #1e293b !important; border-color: rgba(255,255,255,0.05) !important; }
+                    html.dark .qi-breadcrumb { background-color: #0A0F1E !important; border-bottom-color: rgba(255,255,255,0.05) !important; }
+                    html.dark .qi-kpi { background-color: #0A0F1E !important; border-top-color: rgba(255,255,255,0.05) !important; }
+                    html.dark .qi-strip { background-color: #0A0F1E !important; border-top-color: rgba(255,255,255,0.1) !important; }
+                    html.dark .qi-tab-row { background-color: #0A0F1E !important; border-bottom-color: rgba(255,255,255,0.1) !important; }
+                    html.dark .qi-tab-inactive { background-color: #1e293b !important; color: #94a3b8 !important; }
+                    html.dark .qi-topbar { background-color: #0A0F1E !important; border-bottom-color: rgba(255,255,255,0.05) !important; }
+                    html.dark .qi-outlet-btn { background-color: #1e293b !important; border-color: rgba(255,255,255,0.1) !important; color: #f1f5f9 !important; }
+                    html.dark .qi-client-input { background-color: #1e293b !important; border-color: rgba(255,255,255,0.1) !important; color: #f1f5f9 !important; }
+                    html.dark .qi-right { background-color: #0A0F1E !important; border-left: 1px solid rgba(255,255,255,0.05) !important; }
+                    html.dark .qi-cart-item { background-color: #1e293b !important; color: #f1f5f9 !important; }
+                    html.dark .qi-bottom-card { background-color: #111827 !important; border-color: rgba(255,255,255,0.05) !important; }
+                    html.dark .qi-discount-bg { background-color: rgba(225,29,72,0.1) !important; border-color: rgba(225,29,72,0.3) !important; }
+                    html.dark .qi-discount-text { color: #f1f5f9 !important; }
+                    html.dark .qi-input-bg { background-color: #1e293b !important; border-color: rgba(255,255,255,0.1) !important; }
                 `}</style>
 
                 <div className="flex-1 min-h-0 flex flex-col lg:flex-row overflow-hidden">
@@ -3135,85 +3157,141 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                         {/* BREADCRUMB / COUNT BAR */}
                         <div className="qi-breadcrumb flex items-center justify-between px-5 py-2.5 border-b border-slate-100 shrink-0">
                             <div className="flex items-center gap-2">
+                                {qSelectedCategory && (
+                                    <button onClick={() => setQSelectedCategory(null)} className="transition-colors" style={{ color: '#64748b' }}>
+                                        <ChevronDown className="w-4 h-4 rotate-90" strokeWidth={3} />
+                                    </button>
+                                )}
                                 <h3 className="text-[11px] font-black uppercase tracking-widest" style={{ color: '#1e293b' }}>
-                                    {qActiveTab === 'services' ? 'Services' : 'Products'} - {qSelectedCategory}
+                                    {qSelectedCategory || (qActiveTab === 'services' ? 'Service Categories' : 'Product Categories')}
                                 </h3>
                             </div>
                             <span className="text-[10px] font-bold bg-slate-100 border border-slate-200 px-2.5 py-1 rounded-md uppercase tracking-wider" style={{ color: '#475569' }}>
-                                {`${(qActiveTab === 'services' ? qFilteredServices : qFilteredProducts).filter(i => qSelectedCategory === 'All' || i.category === qSelectedCategory).length} Items`}
+                                {qSelectedCategory
+                                    ? `${(qActiveTab === 'services' ? qFilteredServices : qFilteredProducts).filter(i => qSelectedCategory === 'All' || i.category === qSelectedCategory).length} Items`
+                                    : `${qCategories.length} Categories`}
                             </span>
                         </div>
 
                         {/* SERVICE / CATEGORY GRID */}
                         <div className="flex-1 overflow-y-auto qi-scroll px-5 py-3 flex flex-col gap-4">
-                            {/* Horizontal Category Pills */}
-                            <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-1 shrink-0 border-b border-slate-100/60">
-                                {qCategories.map(cat => (
-                                    <button
-                                        key={cat.name}
-                                        onClick={() => setQSelectedCategory(cat.name)}
-                                        className="px-4 py-2 border rounded-full text-[10px] font-black uppercase tracking-wider transition-all whitespace-nowrap cursor-pointer hover:bg-slate-50"
-                                        style={{
-                                            backgroundColor: qSelectedCategory === cat.name ? '#C69A20' : '#ffffff',
-                                            borderColor: qSelectedCategory === cat.name ? '#C69A20' : '#e2e8f0',
-                                            color: qSelectedCategory === cat.name ? '#ffffff' : '#475569'
-                                        }}
-                                    >
-                                        {cat.name}
-                                    </button>
-                                ))}
-                            </div>
+                            {!qSelectedCategory ? (
+                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                                    {qCategories.map(cat => {
+                                        const n = cat.name.toLowerCase();
+                                        const isProduct = qActiveTab === 'products';
+                                        
+                                        let bg = 'bg-slate-50 dark:bg-slate-800/50';
+                                        let iconColor = 'text-slate-500';
+                                        let Icon = isProduct ? Package : Tag;
+                                        let sub = isProduct ? 'Other products' : 'Other services';
+                                        let border = 'border border-transparent';
 
-                            {/* Items Grid */}
-                            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                                {(qActiveTab === 'services' ? qFilteredServices : qFilteredProducts)
-                                    .filter(i => qSelectedCategory === 'All' || i.category === qSelectedCategory)
-                                    .map((item, idx) => {
-                                        const isFocused = idx === qFocusedItemIndex;
-                                        const img = item.image || item.images?.[0];
+                                        if (n === 'all') { 
+                                            bg = 'bg-[#fffbeb] dark:bg-amber-900/20'; 
+                                            iconColor = 'text-[#f59e0b]'; 
+                                            Icon = LayoutGrid; 
+                                            sub = isProduct ? 'View all products' : 'View all services'; 
+                                            border = 'border-b-[3px] border-b-[#f59e0b] border-t border-t-[#fde68a] border-l border-l-[#fde68a] border-r border-r-[#fde68a]'; 
+                                        }
+                                        else if (n.includes('color')) { bg = 'bg-[#fff1f2] dark:bg-rose-900/20'; iconColor = 'text-[#f43f5e]'; Icon = Brush; sub = 'Color & highlights'; border = 'border border-[#ffe4e6] dark:border-rose-900/50'; }
+                                        else if (n.includes('care') || n.includes('wash') || n.includes('spa') || n.includes('shampoo')) { bg = 'bg-[#eff6ff] dark:bg-blue-900/20'; iconColor = 'text-[#3b82f6]'; Icon = Droplet; sub = isProduct ? 'Hair care' : 'Care & treatments'; border = 'border border-[#dbeafe] dark:border-blue-900/50'; }
+                                        else if (n.includes('cut') || n.includes('hair')) { bg = 'bg-[#ecfdf5] dark:bg-emerald-900/20'; iconColor = 'text-[#10b981]'; Icon = Scissors; sub = 'Hair styling'; border = 'border border-[#d1fae5] dark:border-emerald-900/50'; }
+                                        else if (n.includes('facial') || n.includes('face') || n.includes('makeup') || n.includes('skin') || n.includes('cream')) { bg = 'bg-[#f5f3ff] dark:bg-purple-900/20'; iconColor = 'text-[#8b5cf6]'; Icon = Sparkles; sub = isProduct ? 'Skin care' : 'Beauty & makeup'; border = 'border border-[#ede9fe] dark:border-purple-900/50'; }
+                                        else if (isProduct) { 
+                                            const palettes = [
+                                                { b: 'bg-indigo-50 dark:bg-indigo-900/20', c: 'text-indigo-500', br: 'border border-indigo-100 dark:border-indigo-900/50' },
+                                                { b: 'bg-violet-50 dark:bg-violet-900/20', c: 'text-violet-500', br: 'border border-violet-100 dark:border-violet-900/50' },
+                                                { b: 'bg-fuchsia-50 dark:bg-fuchsia-900/20', c: 'text-fuchsia-500', br: 'border border-fuchsia-100 dark:border-fuchsia-900/50' },
+                                                { b: 'bg-rose-50 dark:bg-rose-900/20', c: 'text-rose-500', br: 'border border-rose-100 dark:border-rose-900/50' },
+                                                { b: 'bg-orange-50 dark:bg-orange-900/20', c: 'text-orange-500', br: 'border border-orange-100 dark:border-orange-900/50' },
+                                                { b: 'bg-emerald-50 dark:bg-emerald-900/20', c: 'text-emerald-500', br: 'border border-emerald-100 dark:border-emerald-900/50' },
+                                                { b: 'bg-cyan-50 dark:bg-cyan-900/20', c: 'text-cyan-500', br: 'border border-cyan-100 dark:border-cyan-900/50' },
+                                                { b: 'bg-blue-50 dark:bg-blue-900/20', c: 'text-blue-500', br: 'border border-blue-100 dark:border-blue-900/50' }
+                                            ];
+                                            let hash = 0;
+                                            for (let i = 0; i < cat.name.length; i++) hash += cat.name.charCodeAt(i);
+                                            const p = palettes[hash % palettes.length];
+                                            bg = p.b; iconColor = p.c; Icon = Package; sub = 'Retail product'; border = p.br; 
+                                        }
+
+                                        const isSelected = qSelectedCategory === cat.name;
+
                                         return (
                                             <button
-                                                id={`q-item-item-${idx}`}
-                                                key={item._id}
-                                                onClick={() => addToQCart(item, qActiveTab === 'services' ? 'service' : 'product')}
-                                                className={`border rounded-2xl p-4 flex items-center gap-4 text-left group transition-all relative ${isFocused ? 'ring-2 ring-amber-400' : ''}`}
-                                                style={{ background: '#ffffff', borderColor: isFocused ? '#C69A20' : '#f1f5f9' }}
-                                                onMouseOver={e => { e.currentTarget.style.borderColor = '#C69A20'; e.currentTarget.style.boxShadow = '0 4px 15px rgba(180,145,43,0.08)'; }}
-                                                onMouseOut={e => { e.currentTarget.style.borderColor = isFocused ? '#C69A20' : '#f1f5f9'; e.currentTarget.style.boxShadow = 'none'; }}
+                                                key={cat.name}
+                                                onClick={() => setQSelectedCategory(cat.name)}
+                                                className={`p-3.5 rounded-2xl flex items-center gap-3 transition-all cursor-pointer text-left ${bg} ${border} ${isSelected ? 'ring-2 ring-amber-400 ring-offset-2 ring-offset-white dark:ring-offset-[#0A0F1E]' : ''} hover:scale-[1.02]`}
                                             >
-                                                <div className="w-12 h-12 rounded-full overflow-hidden flex items-center justify-center flex-shrink-0 border border-amber-100 bg-amber-50/40 transition-all group-hover:scale-105">
-                                                    {img ? (
-                                                        <img src={getImageUrl(img)} alt={item.name} className="w-full h-full object-cover" />
-                                                    ) : (
-                                                        qActiveTab === 'services'
-                                                            ? <Scissors className="w-5 h-5" style={{ color: '#C69A20' }} strokeWidth={1.5} />
-                                                            : <Package className="w-5 h-5" style={{ color: '#C69A20' }} strokeWidth={1.5} />
-                                                    )}
+                                                <div className="w-10 h-10 rounded-[12px] bg-white dark:bg-slate-800 flex items-center justify-center flex-shrink-0 shadow-sm overflow-hidden">
+                                                    {cat.image ? (
+                                                        <img src={getImageUrl(cat.image)} className="w-full h-full object-cover" alt={cat.name} onError={(e) => { e.target.style.display='none'; e.target.nextSibling.style.display='flex'; }} />
+                                                    ) : null}
+                                                    <Icon className={`w-5 h-5 ${iconColor}`} strokeWidth={2} style={{ display: cat.image ? 'none' : 'block' }} />
                                                 </div>
-                                                <div className="flex-1 min-w-0 text-left">
-                                                    <p className="text-[12px] font-black tracking-tight leading-tight text-slate-800 line-clamp-1 group-hover:text-slate-900">{item.name}</p>
-                                                    {item.duration && (
-                                                        <div className="flex items-center gap-1 text-[9.5px] font-bold text-slate-400 dark:text-slate-500 mt-1 uppercase tracking-wide">
-                                                            <Clock className="w-3.5 h-3.5 text-amber-500" strokeWidth={2.5} />
-                                                            <span>{item.duration} min</span>
-                                                        </div>
-                                                    )}
-                                                    <p className="text-[12.5px] font-extrabold text-slate-800 mt-1.5">&#8377;{item.price?.toLocaleString('en-IN')}</p>
+                                                <div className="flex-1 min-w-0">
+                                                    <p className="text-[12px] font-black uppercase text-slate-800 dark:text-slate-100 tracking-wider truncate">{cat.name}</p>
+                                                    <p className="text-[10px] font-bold text-slate-500 dark:text-slate-400 truncate mt-0.5">{sub}</p>
                                                 </div>
                                             </button>
                                         );
                                     })}
-                                    <button
-                                        onClick={() => toast('Feature to add custom services coming soon!', { icon: '✨' })}
-                                        className="border-2 border-dashed rounded-xl p-3 flex items-center justify-center gap-2 transition-all"
-                                        style={{ borderColor: '#e2e8f0', color: '#94a3b8' }}
-                                        onMouseOver={e => { e.currentTarget.style.borderColor = '#C69A20'; e.currentTarget.style.color = '#C69A20'; }}
-                                        onMouseOut={e => { e.currentTarget.style.borderColor = '#e2e8f0'; e.currentTarget.style.color = '#94a3b8'; }}
-                                    >
-                                        <Plus className="w-4 h-4" />
-                                        <span className="text-[11px] font-bold uppercase tracking-wider">Add Custom Service</span>
-                                    </button>
                                 </div>
+                            ) : (
+                                <>
+                                    {/* Items Grid */}
+                                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                                        {(qActiveTab === 'services' ? qFilteredServices : qFilteredProducts)
+                                            .filter(i => qSelectedCategory === 'All' || i.category === qSelectedCategory)
+                                            .map((item, idx) => {
+                                                const isFocused = idx === qFocusedItemIndex;
+                                                const img = item.image || item.images?.[0];
+                                                return (
+                                                    <button
+                                                        id={`q-item-item-${idx}`}
+                                                        key={item._id}
+                                                        onClick={() => addToQCart(item, qActiveTab === 'services' ? 'service' : 'product')}
+                                                        className={`qi-svccard border rounded-2xl p-4 flex items-center gap-4 text-left group transition-all relative ${isFocused ? 'ring-2 ring-amber-400' : ''}`}
+                                                        style={{ borderColor: isFocused ? '#C69A20' : '' }}
+                                                        onMouseOver={e => { e.currentTarget.style.borderColor = '#C69A20'; e.currentTarget.style.boxShadow = '0 4px 15px rgba(180,145,43,0.08)'; }}
+                                                        onMouseOut={e => { e.currentTarget.style.borderColor = isFocused ? '#C69A20' : '#f1f5f9'; e.currentTarget.style.boxShadow = 'none'; }}
+                                                    >
+                                                        <div className="w-12 h-12 rounded-[14px] overflow-hidden flex items-center justify-center flex-shrink-0 border border-amber-100 bg-amber-50/40 transition-all group-hover:scale-105">
+                                                            {img && (
+                                                                <img src={getImageUrl(img)} alt={item.name} className="w-full h-full object-cover" onError={(e) => { e.target.style.display='none'; e.target.nextSibling.style.display='flex'; }} />
+                                                            )}
+                                                            {qActiveTab === 'services' ? (
+                                                                <Scissors className="w-5 h-5" style={{ color: '#C69A20', display: img ? 'none' : 'block' }} strokeWidth={1.5} />
+                                                            ) : (
+                                                                <Package className="w-5 h-5" style={{ color: '#C69A20', display: img ? 'none' : 'block' }} strokeWidth={1.5} />
+                                                            )}
+                                                        </div>
+                                                        <div className="flex-1 min-w-0 text-left">
+                                                            <p className="text-[12px] font-black tracking-tight leading-tight text-slate-800 line-clamp-1 group-hover:text-slate-900">{item.name}</p>
+                                                            {item.duration && (
+                                                                <div className="flex items-center gap-1 text-[9.5px] font-bold text-slate-400 dark:text-slate-500 mt-1 uppercase tracking-wide">
+                                                                    <Clock className="w-3.5 h-3.5 text-amber-500" strokeWidth={2.5} />
+                                                                    <span>{item.duration} min</span>
+                                                                </div>
+                                                            )}
+                                                            <p className="text-[12.5px] font-extrabold text-slate-800 mt-1.5">&#8377;{item.price?.toLocaleString('en-IN')}</p>
+                                                        </div>
+                                                    </button>
+                                                );
+                                            })}
+                                        <button
+                                            onClick={() => toast('Feature to add custom services coming soon!', { icon: '✨' })}
+                                            className="border-2 border-dashed rounded-xl p-3 flex items-center justify-center gap-2 transition-all"
+                                            style={{ borderColor: '#e2e8f0', color: '#94a3b8' }}
+                                            onMouseOver={e => { e.currentTarget.style.borderColor = '#C69A20'; e.currentTarget.style.color = '#C69A20'; }}
+                                            onMouseOut={e => { e.currentTarget.style.borderColor = '#e2e8f0'; e.currentTarget.style.color = '#94a3b8'; }}
+                                        >
+                                            <Plus className="w-4 h-4" />
+                                            <span className="text-[11px] font-bold uppercase tracking-wider">Add Custom Service</span>
+                                        </button>
+                                    </div>
+                                </>
+                            )}
                         </div>
 
                         {/* KPI ROW */}
@@ -3302,20 +3380,20 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                                 <div className="flex flex-col shrink-0 px-4 min-w-[100px]">
                                     <span className="text-[9px] font-black uppercase tracking-widest" style={{ color: '#64748b' }}>Discount</span>
                                     <div className="flex items-center gap-1 mt-1">
-                                        <div className="flex items-center rounded-lg overflow-hidden h-[22px]" style={{ border: '1px solid #fecdd3', background: '#fff1f2' }}>
+                                        <div className="qi-discount-bg flex items-center rounded-lg overflow-hidden h-[22px]" style={{ border: '1px solid' }}>
                                             <button
                                                 type="button"
                                                 onClick={() => setQManualDiscount(p => ({ ...p, type: p.type === 'fixed' ? 'percentage' : 'fixed' }))}
-                                                className="px-1.5 text-[10px] font-black h-full flex items-center gap-0.5 border-r"
-                                                style={{ borderColor: '#fecdd3', color: '#e11d48' }}
+                                                className="px-1.5 text-[10px] font-black h-full flex items-center gap-0.5 border-r qi-discount-bg"
+                                                style={{ color: '#fb7185' }}
                                             >
                                                 <Tag className="w-2.5 h-2.5" />
                                                 {qManualDiscount.type === 'fixed' ? ' ₹' : ' %'}
                                             </button>
                                             <input
                                                 type="number"
-                                                className="w-11 text-[11px] font-black outline-none text-center px-1"
-                                                style={{ background: 'transparent', color: '#e11d48' }}
+                                                className="qi-discount-text w-11 text-[11px] font-black outline-none text-center px-1"
+                                                style={{ background: 'transparent' }}
                                                 value={qManualDiscount.value || ''}
                                                 onChange={e => setQManualDiscount({ ...qManualDiscount, value: Number(e.target.value) })}
                                                 placeholder="0"
@@ -3332,8 +3410,8 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                                         <input
                                             type="date"
                                             required
-                                            className="text-[11px] font-black outline-none uppercase cursor-pointer"
-                                            style={{ background: 'transparent', color: '#1e293b', width: 'auto' }}
+                                            className="qi-date-text text-[11px] font-black outline-none uppercase cursor-pointer"
+                                            style={{ background: 'transparent', width: 'auto' }}
                                             value={qPaymentDate}
                                             onChange={e => setQPaymentDate(e.target.value)}
                                         />
@@ -3343,12 +3421,12 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                                 {/* Cash */}
                                 <div className="flex flex-col shrink-0 px-4 min-w-[110px]">
                                     <span className="text-[9px] font-black uppercase tracking-widest" style={{ color: '#64748b' }}>Cash Payment</span>
-                                    <div className="flex items-center gap-1 mt-1 rounded-lg px-2 h-[22px]" style={{ border: '1px solid #e2e8f0', background: '#fff' }}>
+                                    <div className="qi-input-bg flex items-center gap-1 mt-1 rounded-lg px-2 h-[22px]" style={{ border: '1px solid' }}>
                                         <Banknote className="w-3 h-3" style={{ color: '#94a3b8' }} />
                                         <input
                                             type="number"
                                             className="w-14 text-[11px] font-black outline-none font-mono"
-                                            style={{ background: 'transparent', color: '#1e293b' }}
+                                            style={{ background: 'transparent' }}
                                             value={qPayments.cash || ''}
                                             onChange={e => { setIsPaymentEdited(true); setQPayments({ ...qPayments, cash: Number(e.target.value) }); }}
                                             placeholder="0"
@@ -3359,12 +3437,12 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                                 {/* Online/UPI */}
                                 <div className="flex flex-col shrink-0 px-4 min-w-[110px]">
                                     <span className="text-[9px] font-black uppercase tracking-widest" style={{ color: '#64748b' }}>Online/UPI</span>
-                                    <div className="flex items-center gap-1 mt-1 rounded-lg px-2 h-[22px]" style={{ border: '1px solid #e2e8f0', background: '#fff' }}>
+                                    <div className="qi-input-bg flex items-center gap-1 mt-1 rounded-lg px-2 h-[22px]" style={{ border: '1px solid' }}>
                                         <Smartphone className="w-3 h-3" style={{ color: '#94a3b8' }} />
                                         <input
                                             type="number"
                                             className="w-14 text-[11px] font-black outline-none font-mono"
-                                            style={{ background: 'transparent', color: '#1e293b' }}
+                                            style={{ background: 'transparent' }}
                                             value={qPayments.online || ''}
                                             onChange={e => { setIsPaymentEdited(true); setQPayments({ ...qPayments, online: Number(e.target.value) }); }}
                                             placeholder="0"
@@ -3420,9 +3498,9 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                         {/* Cart Items */}
                         <div className="flex-1 overflow-y-auto qi-scroll p-3 space-y-3">
                             {qCart.length === 0 ? (
-                                <div className="h-full flex flex-col items-center justify-center text-center py-16 space-y-3 text-slate-400">
-                                    <ShoppingBag className="w-14 h-14 opacity-50" />
-                                    <p className="text-xs font-bold uppercase tracking-widest">Select services to begin</p>
+                                <div className="h-full flex flex-col items-center justify-center text-center py-16 space-y-4 text-slate-400">
+                                    <img src="/vector image 3.png" alt="Empty Cart" className="w-48 h-48 object-contain opacity-90 mix-blend-multiply dark:mix-blend-normal" />
+                                    <p className="text-[11px] font-black uppercase tracking-widest text-slate-500">Select services to begin</p>
                                 </div>
                             ) : qCart.map((item, idx) => (
                                 <div key={idx} className="qi-cart-item bg-white rounded-xl p-4 flex flex-col space-y-3 relative shadow-sm border border-slate-200">
@@ -3643,17 +3721,17 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                                 </div>
                             </div>
                             <div className="p-6 space-y-4">
-                                <div className="flex items-center gap-4 p-4 rounded-xl" style={{ background: '#fffbeb', border: '1px solid #fde68a' }}>
-                                    <div className="w-12 h-12 rounded-lg flex items-center justify-center font-bold text-lg text-white flex-shrink-0" style={{ background: '#f59e0b' }}>
+                                <div className="flex items-center gap-4 p-4 rounded-xl bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800">
+                                    <div className="w-12 h-12 rounded-lg flex items-center justify-center font-bold text-lg text-white flex-shrink-0 bg-amber-500">
                                         {pendingClientSelect.name.charAt(0).toUpperCase()}
                                     </div>
                                     <div>
-                                        <p className="text-sm font-bold uppercase" style={{ color: '#1e293b' }}>{pendingClientSelect.name}</p>
-                                        <p className="text-xs font-mono mt-0.5" style={{ color: '#64748b' }}>{pendingClientSelect.phone}</p>
+                                        <p className="text-sm font-bold uppercase text-slate-800 dark:text-slate-200">{pendingClientSelect.name}</p>
+                                        <p className="text-xs font-mono mt-0.5 text-slate-500 dark:text-slate-400">{pendingClientSelect.phone}</p>
                                     </div>
                                     <div className="ml-auto text-right">
-                                        <p className="text-xs font-semibold uppercase" style={{ color: '#f59e0b' }}>Owes</p>
-                                        <p className="text-xl font-bold font-mono mt-0.5" style={{ color: '#d97706' }}>&#8377;{clientPrevDue.toFixed(0)}</p>
+                                        <p className="text-xs font-semibold uppercase text-amber-500">Owes</p>
+                                        <p className="text-xl font-bold font-mono mt-0.5 text-amber-600">&#8377;{clientPrevDue.toFixed(0)}</p>
                                     </div>
                                 </div>
                                 <div className="p-3 rounded-xl" style={{ background: '#f0fdf4', border: '1px solid #bbf7d0' }}>

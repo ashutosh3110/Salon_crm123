@@ -450,14 +450,14 @@ export default function SABlogPage() {
                                             type="button"
                                             onClick={(e) => handleSavePost(e, 'draft')}
                                             disabled={uploading}
-                                            className="py-4 !bg-blue-600 hover:!bg-blue-700 !text-white !border-none !shadow-none text-[10px] font-black uppercase tracking-[0.2em] active:scale-[0.98] transition-all rounded-xl disabled:opacity-50"
+                                            className="py-4 !bg-[#B4912B] hover:brightness-110 !text-white !border-none !shadow-none text-[10px] font-black uppercase tracking-[0.2em] active:scale-[0.98] transition-all rounded-xl disabled:opacity-50"
                                         >
                                             Save as Draft
                                         </button>
                                         <button 
                                             type="submit" 
                                             disabled={uploading}
-                                            className="py-4 !bg-emerald-600 hover:!bg-emerald-700 !text-white !border-none !shadow-none text-[10px] font-black uppercase tracking-[0.2em] active:scale-[0.98] transition-all flex items-center justify-center gap-2.5 group disabled:opacity-50 rounded-xl"
+                                            className="py-4 !bg-[#B4912B] hover:brightness-110 !text-white !border-none !shadow-none text-[10px] font-black uppercase tracking-[0.2em] active:scale-[0.98] transition-all flex items-center justify-center gap-2.5 group disabled:opacity-50 rounded-xl"
                                         >
                                             {uploading ? <Loader2 size={14} className="animate-spin" /> : <Globe size={14} />}
                                             {uploading ? 'PUBLISHING...' : 'Publish Article'}
@@ -467,7 +467,7 @@ export default function SABlogPage() {
                                     <button 
                                         type="button" 
                                         onClick={() => setIsEditorOpen(false)} 
-                                        className="w-full py-3 !bg-rose-600 hover:!bg-rose-700 !text-white !border-none !shadow-none text-[10px] font-black uppercase tracking-[0.2em] rounded-xl transition-all text-center active:scale-[0.98]"
+                                        className="w-full py-3 !bg-[#B4912B] hover:brightness-110 !text-white !border-none !shadow-none text-[10px] font-black uppercase tracking-[0.2em] rounded-xl transition-all text-center active:scale-[0.98]"
                                     >
                                         Discard Entry
                                     </button>

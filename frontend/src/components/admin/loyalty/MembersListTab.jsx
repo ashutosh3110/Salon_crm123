@@ -540,10 +540,10 @@ export default function MembersListTab() {
                                     <tr><td colSpan="6" className="px-6 py-10 text-center text-sm font-bold text-slate-500">Loading active members...</td></tr>
                                 ) : members.length === 0 ? (
                                     <tr>
-                                        <td colSpan="6" className="py-20 text-center bg-white">
+                                        <td colSpan="6" className="py-20 text-center bg-surface">
                                             <div className="flex flex-col items-center justify-center gap-3">
-                                                <img src="/vector image 3.png" alt="No members found" className="w-56 h-56 object-contain mix-blend-multiply opacity-90" />
-                                                <p className="text-sm font-black text-slate-400 uppercase tracking-[0.15em]">No members found</p>
+                                                <img src="/vector image 3.png" alt="No members found" className="w-56 h-56 object-contain mix-blend-multiply dark:mix-blend-screen dark:invert opacity-90 dark:opacity-80" />
+                                                <p className="text-sm font-black text-slate-400 dark:text-text uppercase tracking-[0.15em]">No members found</p>
                                             </div>
                                         </td>
                                     </tr>

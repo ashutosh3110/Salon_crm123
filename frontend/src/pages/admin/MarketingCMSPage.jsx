@@ -339,12 +339,12 @@ export default function MarketingCMSPage() {
 
             {/* Navigation & Filters */}
             <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 border-b border-border/40 pb-4">
-                <div className="flex gap-8 overflow-x-auto no-scrollbar pb-2">
+                <div className="flex bg-surface-alt p-1 rounded-full border border-border/40 overflow-x-auto no-scrollbar">
                     {availableTabs.map((tab) => (
                         <button
                             key={tab.id}
                             onClick={() => setActiveTab(tab.id)}
-                            className={`flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] transition-all relative ${activeTab === tab.id ? 'text-primary' : 'text-text-muted hover:text-text'
+                            className={`flex items-center justify-center gap-2 px-6 py-2 text-[8px] font-black uppercase tracking-widest transition-all rounded-full whitespace-nowrap ${activeTab === tab.id ? '!bg-[#B4912B] !text-white shadow-lg' : 'text-text-muted hover:text-text hover:bg-slate-50'
                                 }`}
                         >
                             {tab.label}
@@ -352,9 +352,6 @@ export default function MarketingCMSPage() {
                                 <span className="ml-2 px-1.5 py-0.5 bg-rose-500 text-white text-[8px] font-black rounded-xl animate-pulse">
                                     {pendingExpertsCount}
                                 </span>
-                            )}
-                            {activeTab === tab.id && (
-                                <motion.div layoutId="tab-underline" className="absolute -bottom-[17px] left-0 right-0 h-[2px] bg-primary" />
                             )}
                         </button>
                     ))}
@@ -402,23 +399,23 @@ export default function MarketingCMSPage() {
                                             <button
                                                 onClick={() => window.open(getImageUrl(banner.image), '_blank')}
                                                 title="View Creative"
-                                                className="group p-2 bg-white hover:!bg-[#10b981] rounded-lg transition-colors shadow-md"
+                                                className="group/btn p-2 bg-white hover:!bg-[#10b981] rounded-full transition-colors shadow-md"
                                             >
-                                                <Eye className="w-3.5 h-3.5 !text-slate-800 group-hover:!text-white" />
+                                                <Eye className="w-3.5 h-3.5 !text-slate-800 group-hover/btn:!text-white" />
                                             </button>
                                             <button
                                                 onClick={() => handleEdit('banner', banner)}
                                                 title="Edit Banner"
-                                                className="group p-2 bg-white hover:!bg-[#B4912B] rounded-lg transition-colors shadow-md"
+                                                className="group/btn p-2 bg-white hover:!bg-[#B4912B] rounded-full transition-colors shadow-md"
                                             >
-                                                <Edit className="w-3.5 h-3.5 !text-slate-800 group-hover:!text-white" />
+                                                <Edit className="w-3.5 h-3.5 !text-slate-800 group-hover/btn:!text-white" />
                                             </button>
                                             <button
                                                 onClick={() => handleDelete('banner', banner.id)}
                                                 title="Delete Banner"
-                                                className="group p-2 bg-white hover:!bg-rose-600 rounded-lg transition-colors shadow-md"
+                                                className="group/btn p-2 bg-white hover:!bg-rose-600 rounded-full transition-colors shadow-md"
                                             >
-                                                <Trash2 className="w-3.5 h-3.5 !text-rose-600 group-hover:!text-white" />
+                                                <Trash2 className="w-3.5 h-3.5 !text-rose-600 group-hover/btn:!text-white" />
                                             </button>
                                         </div>
                                         <div className="absolute bottom-3 left-3 flex items-center gap-2">
@@ -484,16 +481,16 @@ export default function MarketingCMSPage() {
                                         <button
                                             onClick={() => handleEdit('offer', offer)}
                                             title="Edit Offer"
-                                            className="group p-2 bg-surface-alt border border-border hover:!bg-[#B4912B] hover:!border-[#B4912B] rounded-lg transition-colors"
+                                            className="group/btn p-2 bg-surface-alt border border-border hover:!bg-[#B4912B] hover:!border-[#B4912B] rounded-full transition-colors"
                                         >
-                                            <Edit className="w-4 h-4 !text-slate-800 group-hover:!text-white" />
+                                            <Edit className="w-4 h-4 !text-slate-800 group-hover/btn:!text-white" />
                                         </button>
                                         <button
                                             onClick={() => handleDelete('offer', offer.id)}
                                             title="Delete Offer"
-                                            className="group p-2 bg-surface-alt border border-border hover:!bg-rose-600 hover:!border-rose-600 rounded-lg transition-colors"
+                                            className="group/btn p-2 bg-surface-alt border border-border hover:!bg-rose-600 hover:!border-rose-600 rounded-full transition-colors"
                                         >
-                                            <Trash2 className="w-4 h-4 !text-rose-600 group-hover:!text-white" />
+                                            <Trash2 className="w-4 h-4 !text-rose-600 group-hover/btn:!text-white" />
                                         </button>
                                     </div>
 
@@ -555,15 +552,15 @@ export default function MarketingCMSPage() {
                                         <div className="absolute top-3 right-3 flex gap-2 z-10">
                                             <button
                                                 onClick={() => handleEdit('lookbook', item)}
-                                                className="group p-2 bg-white hover:!bg-[#B4912B] rounded-lg transition-colors shadow-md"
+                                                className="group/btn p-2 bg-white hover:!bg-[#B4912B] rounded-full transition-colors shadow-md"
                                             >
-                                                <Edit className="w-3.5 h-3.5 !text-slate-800 group-hover:!text-white" />
+                                                <Edit className="w-3.5 h-3.5 !text-slate-800 group-hover/btn:!text-white" />
                                             </button>
                                             <button
                                                 onClick={() => handleDelete('lookbook', item.id)}
-                                                className="group p-2 bg-white hover:!bg-rose-600 rounded-lg transition-colors shadow-md"
+                                                className="group/btn p-2 bg-white hover:!bg-rose-600 rounded-full transition-colors shadow-md"
                                             >
-                                                <Trash2 className="w-3.5 h-3.5 !text-rose-600 group-hover:!text-white" />
+                                                <Trash2 className="w-3.5 h-3.5 !text-rose-600 group-hover/btn:!text-white" />
                                             </button>
                                         </div>
 
@@ -791,7 +788,7 @@ export default function MarketingCMSPage() {
                                                 />
                                                 <label
                                                     htmlFor="banner-upload"
-                                                    className="border-2 border-dashed border-border p-4 flex flex-col items-center justify-center gap-2 bg-slate-50 rounded-xl hover:border-primary/40 transition-all cursor-pointer group overflow-hidden relative min-h-[90px]"
+                                                    className="w-full border-2 border-dashed border-border p-4 flex flex-col items-center justify-center gap-2 bg-slate-50 rounded-xl hover:border-primary/40 transition-all cursor-pointer group overflow-hidden relative min-h-[90px]"
                                                 >
                                                     {isUploading ? (
                                                         <div className="flex flex-col items-center gap-2">
@@ -870,7 +867,7 @@ export default function MarketingCMSPage() {
                                                 />
                                                 <label
                                                     htmlFor="lookbook-upload"
-                                                    className="border-2 border-dashed border-border p-4 flex flex-col items-center justify-center gap-2 bg-slate-50 rounded-xl hover:border-primary/40 transition-all cursor-pointer group overflow-hidden relative min-h-[90px]"
+                                                    className="w-full border-2 border-dashed border-border p-4 flex flex-col items-center justify-center gap-2 bg-slate-50 rounded-xl hover:border-primary/40 transition-all cursor-pointer group overflow-hidden relative min-h-[90px]"
                                                 >
                                                     {isUploading ? (
                                                         <div className="flex flex-col items-center gap-2">
@@ -962,14 +959,14 @@ export default function MarketingCMSPage() {
                                         <button
                                             type="button"
                                             onClick={() => setIsModalOpen(false)}
-                                            className="flex-1 py-3 rounded-lg border border-transparent !bg-rose-500 hover:!bg-rose-600 !text-white text-[10px] font-black uppercase tracking-wider transition-all active:scale-[0.98]"
+                                            className="flex-1 py-3 rounded-lg border border-[#B4912B] bg-transparent hover:bg-[#B4912B]/10 text-[#B4912B] text-[10px] font-black uppercase tracking-wider transition-all active:scale-[0.98]"
                                         >
                                             Abort
                                         </button>
                                         <button
                                             type="submit"
                                             disabled={saving}
-                                            className="flex-[1.5] py-3 rounded-lg border border-transparent !bg-emerald-500 hover:!bg-emerald-600 !text-white text-xs font-black uppercase tracking-wider transition-all active:scale-[0.98] disabled:opacity-50 disabled:active:scale-100"
+                                            className="flex-[1.5] py-3 rounded-lg border border-transparent !bg-[#B4912B] hover:brightness-110 !text-white text-xs font-black uppercase tracking-wider transition-all active:scale-[0.98] disabled:opacity-50 disabled:active:scale-100"
                                         >
                                             {saving ? 'Saving...' : (editingId ? 'Update' : 'Confirm')}
                                         </button>

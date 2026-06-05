@@ -472,10 +472,10 @@ export default function SupportPage() {
             </div>
 
             {/* Bottom Banner */}
-            <div className="bg-[#f8fcf8] border border-emerald-100 rounded-2xl p-6 mt-8 flex items-center justify-between relative overflow-hidden">
+            <div className="bg-surface border border-border rounded-2xl p-6 mt-8 flex items-center justify-between relative overflow-hidden">
                 <div className="flex items-center gap-4 relative z-10">
-                    <div className="w-14 h-14 rounded-xl bg-emerald-100 flex items-center justify-center shrink-0">
-                        <Shield className="w-7 h-7 text-emerald-600" />
+                    <div className="w-14 h-14 rounded-xl bg-[#B4912B]/10 flex items-center justify-center shrink-0">
+                        <Shield className="w-7 h-7 text-[#B4912B]" />
                     </div>
                     <div>
                         <h3 className="text-[16px] font-bold text-text">We're here to help!</h3>
