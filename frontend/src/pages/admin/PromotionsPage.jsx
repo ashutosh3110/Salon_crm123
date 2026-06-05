@@ -1,6 +1,6 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import { Plus, Search, Edit, Trash2, Tag, Calendar, Percent, TrendingUp, BarChart3, X, Share2 } from 'lucide-react';
+import { Plus, Search, Edit, Trash2, Tag, Calendar, Percent, TrendingUp, BarChart3, X, Share2, ChevronDown } from 'lucide-react';
 import api from '../../services/api';
 import { toast } from 'react-hot-toast';
 import { useBusiness } from '../../contexts/BusinessContext';
@@ -23,6 +23,59 @@ const typeColors = {
     combo: 'bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400'
 };
 const CHART_COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'];
+
+function OutletMultiSelect({ outlets, value, onChange }) {
+    const [isOpen, setIsOpen] = useState(false);
+    const ref = useRef(null);
+
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (ref.current && !ref.current.contains(event.target)) {
+                setIsOpen(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
+
+    const selectedCount = value.length === 0 ? outlets.length : value.length;
+    const isAll = value.length === 0;
+
+    return (
+        <div className="relative" ref={ref}>
+            <div 
+                className="w-full h-11 bg-surface-alt border border-border px-4 text-xs font-bold text-text uppercase tracking-widest outline-none focus:bg-surface focus:border-[#B4912B] rounded-xl transition-all flex justify-between items-center cursor-pointer hover:border-[#B4912B]/50"
+                onClick={() => setIsOpen(!isOpen)}
+            >
+                <span className="truncate">
+                    {isAll ? 'All Outlets' : `${selectedCount} Outlet${selectedCount !== 1 ? 's' : ''} Selected`}
+                </span>
+                <ChevronDown size={14} className={`transition-transform shrink-0 ml-2 text-text-muted ${isOpen ? 'rotate-180' : ''}`} />
+            </div>
+
+            {isOpen && (
+                <div className="absolute z-50 w-full mt-2 bg-surface border border-border rounded-xl shadow-xl py-2 max-h-[180px] overflow-y-auto no-scrollbar">
+                    <label className="flex items-center gap-3 cursor-pointer text-xs font-bold uppercase tracking-wider text-text overflow-hidden px-4 py-2.5 hover:bg-[#B4912B]/5 transition-colors">
+                        <input type="checkbox" checked={value.length === 0} onChange={() => onChange([])} className="accent-[#B4912B] w-4 h-4 cursor-pointer shrink-0" />
+                        <span className="truncate">All Outlets</span>
+                    </label>
+                    {outlets && outlets.map(o => (
+                        <label key={o._id} className="flex items-center gap-3 cursor-pointer text-xs font-bold uppercase tracking-wider text-text overflow-hidden px-4 py-2.5 hover:bg-[#B4912B]/5 transition-colors">
+                            <input type="checkbox" checked={value.includes(o._id)} onChange={(e) => {
+                                if (e.target.checked) {
+                                    onChange([...value, o._id]);
+                                } else {
+                                    onChange(value.filter(id => id !== o._id));
+                                }
+                            }} className="accent-[#B4912B] w-4 h-4 cursor-pointer shrink-0" />
+                            <span className="truncate" title={o.name}>{o.name}</span>
+                        </label>
+                    ))}
+                </div>
+            )}
+        </div>
+    );
+}
 
 export default function PromotionsPage() {
     const { outlets } = useBusiness();
@@ -460,29 +513,12 @@ export default function PromotionsPage() {
                                     </div>
                                     <div className="space-y-2">
                                         <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Applicable Outlets</label>
-                                        <div className="border border-border p-3 bg-white max-h-[120px] overflow-y-auto space-y-2 rounded-xl">
-                                            <label className="flex items-center gap-3 cursor-pointer text-xs font-bold uppercase tracking-wider text-text">
-                                                <input type="checkbox" checked={form.outletIds.length === 0} onChange={() => setForm({ ...form, outletIds: [] })} className="accent-primary w-4 h-4 cursor-pointer" />
-                                                All Outlets
-                                            </label>
-                                            {outlets && outlets.map(o => (
-                                                <label key={o._id} className="flex items-center gap-3 cursor-pointer text-xs font-bold uppercase tracking-wider text-text">
-                                                    <input type="checkbox" checked={form.outletIds.includes(o._id)} onChange={(e) => {
-                                                        if (e.target.checked) {
-                                                            setForm({ ...form, outletIds: [...form.outletIds, o._id] });
-                                                        } else {
-                                                            setForm({ ...form, outletIds: form.outletIds.filter(id => id !== o._id) });
-                                                        }
-                                                    }} className="accent-primary w-4 h-4 cursor-pointer" />
-                                                    {o.name}
-                                                </label>
-                                            ))}
-                                        </div>
+                                        <OutletMultiSelect outlets={outlets} value={form.outletIds} onChange={(v) => setForm({...form, outletIds: v})} />
                                     </div>
                                 </div>
                                 <div className="flex gap-4 pt-4 border-t border-border">
                                     <button type="button" onClick={() => setShowModal(false)} className="flex-1 py-4 rounded-xl border border-border text-[11px] font-bold uppercase tracking-[0.2em] text-text-muted hover:bg-surface transition-all">Cancel</button>
-                                    <button type="submit" className="flex-1 py-4 bg-primary text-primary-foreground rounded-xl font-black text-[11px] uppercase tracking-[0.2em] shadow-lg shadow-primary/20 hover:brightness-110 transition-all">{editing ? 'Save Changes' : 'Create Offer'}</button>
+                                    <button type="submit" className="flex-1 py-4 !bg-[#B4912B] !text-white rounded-xl font-black text-[11px] uppercase tracking-[0.2em] shadow-[0_0_15px_rgba(180,145,43,0.3)] hover:brightness-110 transition-all">{editing ? 'Save Changes' : 'Create Offer'}</button>
                                 </div>
                             </form>
                         </div>

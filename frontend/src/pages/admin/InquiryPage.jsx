@@ -42,9 +42,12 @@ const STATUS_STYLES = {
 /* ─── Helpers ─────────────────────────────────────────────────────────── */
 
 function getFollowUpLabel(dateStr) {
-    if (!dateStr) return null;
+    if (!dateStr || dateStr === 'null' || dateStr === 'undefined') return null;
+    const target = new Date(dateStr);
+    if (isNaN(target.getTime())) return null;
+
     const today = new Date(); today.setHours(0, 0, 0, 0);
-    const target = new Date(dateStr); target.setHours(0, 0, 0, 0);
+    target.setHours(0, 0, 0, 0);
     const diff = Math.round((target - today) / 86400000);
     if (diff < 0) return { text: `${Math.abs(diff)} day${Math.abs(diff) !== 1 ? 's' : ''} overdue`, color: 'text-rose-600', bg: 'bg-rose-50' };
     if (diff === 0) return { text: 'Due today', color: 'text-amber-600', bg: 'bg-amber-50' };
@@ -52,7 +55,14 @@ function getFollowUpLabel(dateStr) {
 }
 
 function formatDate(dateStr) {
-    return new Date(dateStr).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' });
+    if (!dateStr || dateStr === 'null' || dateStr === 'undefined') return '';
+    try {
+        const d = new Date(dateStr);
+        if (isNaN(d.getTime())) return '';
+        return d.toLocaleDateString('en-IN', { day: '2-digit', month: 'short' });
+    } catch (e) {
+        return '';
+    }
 }
 
 /* ─── Main Page ───────────────────────────────────────────────────────── */
@@ -476,14 +486,14 @@ export default function InquiryPage() {
                             )}
                         </tbody>
                     </table>
-                </div>
+                </div>                                                                  
             </div>
 
             {showModal && createPortal(
                 <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 sm:p-6 bg-[#0f172a]/60 backdrop-blur-sm transition-all overflow-hidden" onClick={closeModal}>
-                    <div className="relative bg-white dark:bg-[#0f172a] shadow-2xl w-full max-w-lg flex flex-col animate-reveal rounded-[24px] max-h-[90vh] overflow-hidden border border-slate-100 dark:border-slate-800" onClick={(e) => e.stopPropagation()}>
+                    <div role="dialog" className="admin-panel relative bg-white dark:bg-[#0f172a] shadow-2xl w-full max-w-lg flex flex-col animate-reveal rounded-[24px] max-h-[90vh] overflow-hidden border border-slate-100 dark:border-slate-800" onClick={(e) => e.stopPropagation()}>
                         {/* Header */}
-                        <div className="flex items-center justify-between px-6 py-5 border-b border-slate-100 dark:border-slate-800 bg-white dark:bg-[#0f172a] sticky top-0 z-20">
+                        <div className="flex items-center justify-between px-6 py-5 bg-white dark:bg-[#0f172a] sticky top-0 z-20">
                             <div className="flex items-center gap-3 text-left">
                                 <div className="w-10 h-10 rounded-full bg-[#FEF3C7] dark:bg-[#D97706]/20 flex items-center justify-center shrink-0">
                                     <ClipboardList className="w-5 h-5 text-[#D97706]" strokeWidth={2.5} />
@@ -629,9 +639,9 @@ export default function InquiryPage() {
 
             {viewingInquiry && createPortal(
                 <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 sm:p-6 bg-[#0f172a]/60 backdrop-blur-sm transition-all overflow-hidden" onClick={() => setViewingInquiry(null)}>
-                    <div className="relative bg-white dark:bg-[#0f172a] shadow-2xl w-full max-w-md flex flex-col animate-reveal rounded-[24px] max-h-[90vh] overflow-hidden border border-slate-100 dark:border-slate-800" onClick={(e) => e.stopPropagation()}>
+                    <div role="dialog" className="admin-panel relative bg-white dark:bg-[#0f172a] shadow-2xl w-full max-w-md flex flex-col animate-reveal rounded-[24px] max-h-[90vh] overflow-hidden border border-slate-100 dark:border-slate-800" onClick={(e) => e.stopPropagation()}>
                         {/* Header */}
-                        <div className="flex items-center justify-between px-6 py-5 border-b border-slate-100 dark:border-slate-800 bg-white dark:bg-[#0f172a] sticky top-0 z-20">
+                        <div className="flex items-center justify-between px-6 py-5 bg-white dark:bg-[#0f172a] sticky top-0 z-20">
                             <div className="flex items-center gap-3 text-left">
                                 <div className="w-10 h-10 rounded-full bg-[#DBEAFE] dark:bg-[#2563EB]/25 flex items-center justify-center shrink-0">
                                     <Eye className="w-5 h-5 text-[#2563EB]" strokeWidth={2.5} />
@@ -691,14 +701,14 @@ export default function InquiryPage() {
                                 </div>
                             </div>
 
-                            {viewingInquiry.followUpDate && (
+                            {viewingInquiry.followUpDate && getFollowUpLabel(viewingInquiry.followUpDate) && (
                                 <div className="space-y-0.5">
                                     <span className="text-[8.5px] text-text-muted block tracking-wider">Follow-up Target</span>
                                     <span className="text-[10px] font-black text-slate-900 dark:text-white flex items-center gap-2 mt-1">
                                         <Calendar className="w-4 h-4 text-[#B4912B]" />
                                         {formatDate(viewingInquiry.followUpDate)}
-                                        <span className={`px-2.5 py-1 text-[8.5px] border font-black rounded-lg ${getFollowUpLabel(viewingInquiry.followUpDate)?.bg} ${getFollowUpLabel(viewingInquiry.followUpDate)?.color}`}>
-                                            {getFollowUpLabel(viewingInquiry.followUpDate)?.text}
+                                        <span className={`px-2.5 py-1 text-[8.5px] border font-black rounded-lg ${getFollowUpLabel(viewingInquiry.followUpDate)?.bg || ''} ${getFollowUpLabel(viewingInquiry.followUpDate)?.color || ''}`}>
+                                            {getFollowUpLabel(viewingInquiry.followUpDate)?.text || ''}
                                         </span>
                                     </span>
                                 </div>

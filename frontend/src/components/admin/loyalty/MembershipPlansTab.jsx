@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 
 import {
@@ -15,11 +15,60 @@ import {
     X,
     Layout,
     Calendar,
-    Settings
+    Settings,
+    ChevronDown
 } from 'lucide-react';
 import { AnimatePresence } from 'framer-motion';
 import api from '../../../services/api';
 import toast from 'react-hot-toast';
+
+function CustomSelect({ value, onChange, options, className }) {
+    const [isOpen, setIsOpen] = useState(false);
+    const selectRef = useRef(null);
+
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (selectRef.current && !selectRef.current.contains(event.target)) {
+                setIsOpen(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
+
+    const selectedOption = options.find(opt => String(opt.value) === String(value));
+
+    return (
+        <div className="relative" ref={selectRef}>
+            <div 
+                className={`${className} flex justify-between items-center cursor-pointer`}
+                onClick={() => setIsOpen(!isOpen)}
+            >
+                <span className="truncate">{selectedOption ? selectedOption.label : value}</span>
+                <ChevronDown size={14} className={`transition-transform shrink-0 ml-2 ${isOpen ? 'rotate-180' : ''}`} />
+            </div>
+            
+            <AnimatePresence>
+                {isOpen && (
+                    <div className="absolute z-50 w-full mt-2 bg-surface border border-border rounded-xl shadow-xl overflow-hidden max-h-48 overflow-y-auto py-1">
+                        {options.map((opt) => (
+                            <div 
+                                key={opt.value}
+                                className={`px-4 py-2.5 text-xs font-bold cursor-pointer transition-all ${String(value) === String(opt.value) ? 'bg-[#B4912B]/10 text-[#B4912B]' : 'text-text hover:bg-[#B4912B]/5 hover:text-[#B4912B]'}`}
+                                onClick={() => {
+                                    onChange(opt.value);
+                                    setIsOpen(false);
+                                }}
+                            >
+                                {opt.label}
+                            </div>
+                        ))}
+                    </div>
+                )}
+            </AnimatePresence>
+        </div>
+    );
+}
 
 export default function MembershipPlansTab() {
     const [plans, setPlans] = useState([]);
@@ -230,7 +279,7 @@ function MembershipCard({ plan, onEdit, onDelete, onToggle }) {
                     </div>
                 </div>
                 
-                <button onClick={onToggle} className={`w-full py-2 rounded-xl font-bold text-[9px] uppercase tracking-widest transition-all ${plan.isActive ? 'bg-emerald-50 text-emerald-600 hover:bg-emerald-100' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'}`}>
+                <button onClick={onToggle} className={`w-full py-2 rounded-xl font-bold text-[9px] uppercase tracking-widest transition-all ${plan.isActive ? 'bg-[#B4912B]/10 text-[#B4912B] hover:bg-[#B4912B]/20' : 'bg-slate-500/10 text-slate-500 dark:text-slate-400 hover:bg-slate-500/20'}`}>
                     {plan.isActive ? 'STATUS: ACTIVE' : 'STATUS: PAUSED'}
                 </button>
             </div>
@@ -374,7 +423,7 @@ function PlanModal({ plan, serviceOptions = [], onClose, onSave }) {
                 {/* Modal Header */}
                 <div className="px-6 py-5 border-b border-border flex justify-between items-center bg-surface shrink-0">
                     <h2 className="text-sm font-black text-text uppercase tracking-widest flex items-center gap-2">
-                        <Crown className="w-5 h-5 text-primary" />
+                        <Crown className="w-5 h-5 !text-[#B4912B]" />
                         {plan ? 'EDIT MEMBERSHIP PLAN' : 'CREATE MEMBERSHIP PLAN'}
                     </h2>
                     <button 
@@ -423,15 +472,16 @@ function PlanModal({ plan, serviceOptions = [], onClose, onSave }) {
                         </div>
                         <div className="space-y-2">
                             <label className="text-[10px] font-bold text-text-muted uppercase tracking-widest block">PLAN ICON</label>
-                            <select 
+                            <CustomSelect 
                                 className="w-full h-11 bg-surface-alt border border-border px-4 text-xs font-bold text-text uppercase tracking-wider outline-none focus:bg-surface focus:border-primary rounded-xl transition-all" 
                                 value={formData.icon} 
-                                onChange={e => setFormData({ ...formData, icon: e.target.value })}
-                            >
-                                <option value="star">Star</option>
-                                <option value="crown">Crown</option>
-                                <option value="gem">Gem</option>
-                            </select>
+                                onChange={val => setFormData({ ...formData, icon: val })}
+                                options={[
+                                    { value: 'star', label: 'Star' },
+                                    { value: 'crown', label: 'Crown' },
+                                    { value: 'gem', label: 'Gem' }
+                                ]}
+                            />
                         </div>
                     </div>
 
@@ -445,14 +495,14 @@ function PlanModal({ plan, serviceOptions = [], onClose, onSave }) {
                                     <button
                                         type="button"
                                         onClick={() => setFormData({ ...formData, taxType: 'excluding' })}
-                                        className={`py-2 px-1 font-bold text-[10px] uppercase tracking-widest transition-all text-center rounded-lg ${formData.taxType === 'excluding' ? 'bg-primary text-white' : 'text-text-muted hover:bg-surface'}`}
+                                        className={`py-2 px-1 font-bold text-[10px] uppercase tracking-widest transition-all text-center rounded-lg ${formData.taxType === 'excluding' ? '!bg-[#B4912B] !text-white' : 'text-text-muted hover:bg-surface'}`}
                                     >
                                         Excl.
                                     </button>
                                     <button
                                         type="button"
                                         onClick={() => setFormData({ ...formData, taxType: 'including' })}
-                                        className={`py-2 px-1 font-bold text-[10px] uppercase tracking-widest transition-all text-center rounded-lg ${formData.taxType === 'including' ? 'bg-primary text-white' : 'text-text-muted hover:bg-surface'}`}
+                                        className={`py-2 px-1 font-bold text-[10px] uppercase tracking-widest transition-all text-center rounded-lg ${formData.taxType === 'including' ? '!bg-[#B4912B] !text-white' : 'text-text-muted hover:bg-surface'}`}
                                     >
                                         Incl.
                                     </button>
@@ -460,17 +510,18 @@ function PlanModal({ plan, serviceOptions = [], onClose, onSave }) {
                             </div>
                             <div className="space-y-2">
                                 <span className="text-[9px] font-bold text-text-muted uppercase tracking-widest block">GST Rate</span>
-                                <select
+                                <CustomSelect
                                     className="w-full h-11 bg-surface-alt border border-border px-4 text-xs font-bold text-text uppercase tracking-widest outline-none focus:bg-surface focus:border-primary rounded-xl transition-all"
                                     value={formData.taxRate}
-                                    onChange={e => setFormData({ ...formData, taxRate: Number(e.target.value) })}
-                                >
-                                    <option value="0">0% (EXEMPT)</option>
-                                    <option value="5">5% GST</option>
-                                    <option value="12">12% GST</option>
-                                    <option value="18">18% GST</option>
-                                    <option value="28">28% GST</option>
-                                </select>
+                                    onChange={val => setFormData({ ...formData, taxRate: Number(val) })}
+                                    options={[
+                                        { value: 0, label: '0% (EXEMPT)' },
+                                        { value: 5, label: '5% GST' },
+                                        { value: 12, label: '12% GST' },
+                                        { value: 18, label: '18% GST' },
+                                        { value: 28, label: '28% GST' }
+                                    ]}
+                                />
                             </div>
                         </div>
 
@@ -481,7 +532,7 @@ function PlanModal({ plan, serviceOptions = [], onClose, onSave }) {
                                 <span className="text-text-muted uppercase">Base Price:</span>
                                 <span>₹{calculatedBase.toFixed(2)}</span>
                             </div>
-                            <div className="flex justify-between text-xs font-bold text-primary">
+                            <div className="flex justify-between text-xs font-bold !text-[#B4912B]">
                                 <span className="uppercase">GST ({taxRate}%):</span>
                                 <span>{formData.taxType === 'including' ? 'INCLUDED' : '+'} ₹{calculatedTax.toFixed(2)}</span>
                             </div>
@@ -500,7 +551,7 @@ function PlanModal({ plan, serviceOptions = [], onClose, onSave }) {
                             <button 
                                 type="button"
                                 onClick={() => setFormData({ ...formData, benefits: [...formData.benefits, ''] })} 
-                                className="text-[9px] font-bold text-primary uppercase tracking-widest hover:underline"
+                                className="text-[9px] font-bold !text-[#B4912B] uppercase tracking-widest hover:underline"
                             >
                                 + ADD BENEFIT
                             </button>
@@ -539,14 +590,15 @@ function PlanModal({ plan, serviceOptions = [], onClose, onSave }) {
                                     value={formData.serviceDiscountValue} 
                                     onChange={e => setFormData({ ...formData, serviceDiscountValue: Number(e.target.value) })} 
                                 />
-                                <select 
+                                <CustomSelect 
                                     className="w-24 h-11 bg-surface-alt border border-border px-3 text-[10px] font-bold text-text uppercase tracking-tight outline-none focus:bg-surface focus:border-primary rounded-xl transition-all"
                                     value={formData.serviceDiscountType}
-                                    onChange={e => setFormData({ ...formData, serviceDiscountType: e.target.value })}
-                                >
-                                    <option value="percentage">% OFF</option>
-                                    <option value="flat">₹ FLAT</option>
-                                </select>
+                                    onChange={val => setFormData({ ...formData, serviceDiscountType: val })}
+                                    options={[
+                                        { value: 'percentage', label: '% OFF' },
+                                        { value: 'flat', label: '₹ FLAT' }
+                                    ]}
+                                />
                             </div>
                         </div>
 
@@ -561,14 +613,15 @@ function PlanModal({ plan, serviceOptions = [], onClose, onSave }) {
                                     value={formData.productDiscountValue} 
                                     onChange={e => setFormData({ ...formData, productDiscountValue: Number(e.target.value) })} 
                                 />
-                                <select 
+                                <CustomSelect 
                                     className="w-24 h-11 bg-surface-alt border border-border px-3 text-[10px] font-bold text-text uppercase tracking-tight outline-none focus:bg-surface focus:border-primary rounded-xl transition-all"
                                     value={formData.productDiscountType}
-                                    onChange={e => setFormData({ ...formData, productDiscountType: e.target.value })}
-                                >
-                                    <option value="percentage">% OFF</option>
-                                    <option value="flat">₹ FLAT</option>
-                                </select>
+                                    onChange={val => setFormData({ ...formData, productDiscountType: val })}
+                                    options={[
+                                        { value: 'percentage', label: '% OFF' },
+                                        { value: 'flat', label: '₹ FLAT' }
+                                    ]}
+                                />
                             </div>
                         </div>
                     </div>
@@ -578,7 +631,7 @@ function PlanModal({ plan, serviceOptions = [], onClose, onSave }) {
                 <div className="p-6 border-t border-border bg-surface shrink-0">
                     <button 
                         onClick={() => onSave(formData)} 
-                        className="w-full py-4 bg-primary text-primary-foreground font-black text-xs uppercase tracking-widest hover:brightness-110 transition-all shadow-[0_0_15px_rgba(var(--color-primary),0.3)] flex items-center justify-center gap-3 rounded-[1rem]"
+                        className="w-full py-4 !bg-[#B4912B] !text-white font-black text-xs uppercase tracking-widest hover:brightness-110 transition-all shadow-[0_0_15px_rgba(180,145,43,0.3)] flex items-center justify-center gap-3 rounded-[1rem]"
                     >
                         SAVE MEMBERSHIP PLAN <Save size={16} />
                     </button>

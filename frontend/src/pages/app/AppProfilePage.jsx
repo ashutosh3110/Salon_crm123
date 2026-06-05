@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCustomerAuth } from '../../contexts/CustomerAuthContext';
 import { useCustomerTheme } from '../../contexts/CustomerThemeContext';
@@ -6,12 +6,13 @@ import {
     Calendar, Users, ChevronRight, LogOut,
     Shield, HelpCircle, Edit3, Loader2,
     TrendingUp, Info, Star, MessageSquare, Wallet, Heart, Camera,
-    Crown, Gem, History, ShoppingBag, Zap, X
+    Crown, Gem, History, ShoppingBag, Zap, X, ChevronDown
 } from 'lucide-react';
 import { useBusiness } from '../../contexts/BusinessContext';
 import LoyaltyCard from '../../components/app/LoyaltyCard';
 import { useWallet } from '../../contexts/WalletContext';
 import api from '../../services/api';
+import toast from 'react-hot-toast';
 
 export default function AppProfilePage() {
     const { customer, updateCustomer, customerLogout, refreshProfile } = useCustomerAuth();
@@ -23,7 +24,7 @@ export default function AppProfilePage() {
     const [editing, setEditing] = useState(false);
     const [saving, setSaving] = useState(false);
     const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
-    const { addFeedback, activeOutlet, platformSettings } = useBusiness();
+    const { addFeedback, activeOutlet, platformSettings, outlets = [], services = [], activeSalonId } = useBusiness();
     const [review, setReview] = useState({ rating: 5, comment: '', service: 'General', staff: 'Salon Team' });
     const avatarInputRef = useRef(null);
     const [uploadingAvatar, setUploadingAvatar] = useState(false);
@@ -33,6 +34,102 @@ export default function AppProfilePage() {
     const [showReviewModal, setShowReviewModal] = useState(false);
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
     const [isDeleting, setIsDeleting] = useState(false);
+
+    const [showEnquiryModal, setShowEnquiryModal] = useState(false);
+    const [isSubmittingEnquiry, setIsSubmittingEnquiry] = useState(false);
+    const [enquirySubmitted, setEnquirySubmitted] = useState(false);
+    const [enquiryForm, setEnquiryForm] = useState({
+        name: customer?.name || '',
+        phone: customer?.phone || '',
+        email: customer?.email || '',
+        outletId: activeOutlet?._id || activeOutlet?.id || '',
+        interestedService: '',
+        serviceInterest: '',
+        notes: ''
+    });
+
+    useEffect(() => {
+        if (customer) {
+            setEnquiryForm(prev => ({
+                ...prev,
+                name: customer.name || '',
+                phone: customer.phone || '',
+                email: customer.email || '',
+            }));
+        }
+    }, [customer]);
+
+    useEffect(() => {
+        if (activeOutlet) {
+            setEnquiryForm(prev => ({
+                ...prev,
+                outletId: activeOutlet._id || activeOutlet.id || ''
+            }));
+        }
+    }, [activeOutlet]);
+
+    const filteredServices = useMemo(() => {
+        if (!enquiryForm.outletId) return [];
+        return services.filter(s => {
+            if (!s.outletIds || s.outletIds.length === 0) return true;
+            return s.outletIds.includes(enquiryForm.outletId) || s.outletIds.some(id => (id._id || id) === enquiryForm.outletId);
+        });
+    }, [services, enquiryForm.outletId]);
+
+    const handleEnquiryServiceChange = (e) => {
+        const serviceId = e.target.value;
+        const matched = services.find(s => s._id === serviceId || s.id === serviceId);
+        setEnquiryForm(prev => ({
+            ...prev,
+            interestedService: serviceId,
+            serviceInterest: matched ? matched.name : ''
+        }));
+    };
+
+    const handleEnquirySubmit = async (e) => {
+        e.preventDefault();
+        if (!enquiryForm.name.trim() || !enquiryForm.phone.trim() || !enquiryForm.outletId) {
+            toast.error('Please fill all required fields');
+            return;
+        }
+
+        setIsSubmittingEnquiry(true);
+        try {
+            const payload = {
+                name: enquiryForm.name,
+                phone: enquiryForm.phone,
+                email: enquiryForm.email || undefined,
+                salonId: customer?.tenantId || customer?.salonId || activeSalonId,
+                outletId: enquiryForm.outletId,
+                interestedService: enquiryForm.interestedService || undefined,
+                serviceInterest: enquiryForm.serviceInterest || undefined,
+                notes: enquiryForm.notes,
+                source: 'Website',
+                status: 'new'
+            };
+
+            const res = await api.post('/inquiries', payload);
+            if (res.data?.success) {
+                setEnquirySubmitted(true);
+                setEnquiryForm(prev => ({
+                    ...prev,
+                    notes: '',
+                    interestedService: '',
+                    serviceInterest: ''
+                }));
+                toast.success('Enquiry submitted successfully!');
+                setTimeout(() => {
+                    setShowEnquiryModal(false);
+                    setEnquirySubmitted(false);
+                }, 2000);
+            }
+        } catch (err) {
+            console.error('Failed to submit enquiry:', err);
+            toast.error(err.response?.data?.message || 'Failed to submit enquiry');
+        } finally {
+            setIsSubmittingEnquiry(false);
+        }
+    };
 
     const handleDeleteAccount = async () => {
         setIsDeleting(true);
@@ -507,7 +604,11 @@ export default function AppProfilePage() {
                         <span className="flex-1 text-left text-sm font-black italic tracking-tight" style={{ color: colors.text }}>Help & Support</span>
                         <ChevronRight size={16} className="opacity-20" />
                     </button>
-
+                    <button onClick={() => setShowEnquiryModal(true)} className="w-full flex items-center gap-4 p-5 hover:bg-black/5 transition-colors">
+                        <MessageSquare size={18} className="opacity-40" />
+                        <span className="flex-1 text-left text-sm font-black italic tracking-tight" style={{ color: colors.text }}>Salon Enquiry</span>
+                        <ChevronRight size={16} className="opacity-20" />
+                    </button>
                 </div>
             </div>
 
@@ -587,6 +688,124 @@ export default function AppProfilePage() {
                                     className="w-full h-16 bg-[#C8956C] text-white rounded-2xl font-black uppercase tracking-widest text-[11px] disabled:opacity-30 shadow-xl shadow-[#C8956C]/20"
                                 >
                                     {isSubmittingReview ? 'Submitting...' : 'Submit Feedback'}
+                                </button>
+                            </form>
+                        )}
+                    </div>
+                </div>
+            )}
+
+            {showEnquiryModal && (
+                <div className="fixed inset-0 z-[2000] flex items-center justify-center p-4">
+                    <div onClick={() => setShowEnquiryModal(false)} className="absolute inset-0 bg-black/60 backdrop-blur-md" />
+                    <div style={{ background: colors.card }} className="relative w-full max-w-lg rounded-[32px] p-6 sm:p-8 pb-8 sm:pb-10 shadow-2xl max-h-[85vh] overflow-y-auto">
+                        <div className="flex justify-between items-center mb-6">
+                            <h3 className="text-2xl font-black italic tracking-tighter" style={{ color: colors.text }}>Salon Enquiry</h3>
+                            <button onClick={() => setShowEnquiryModal(false)} className="w-10 h-10 rounded-full bg-black/5 flex items-center justify-center"><X size={20} /></button>
+                        </div>
+                        {enquirySubmitted ? (
+                            <div className="py-12 text-center">
+                                <div className="w-20 h-20 bg-emerald-500/10 rounded-[32px] flex items-center justify-center mx-auto mb-6">
+                                    <MessageSquare size={40} className="text-emerald-500" fill="currentColor" />
+                                </div>
+                                <h3 className="text-2xl font-black italic mb-2" style={{ color: colors.text }}>Enquiry Submitted!</h3>
+                                <p className="text-[10px] font-black uppercase tracking-widest opacity-40">Our team will get back to you shortly</p>
+                            </div>
+                        ) : (
+                            <form onSubmit={handleEnquirySubmit} className="space-y-4">
+                                <div className="space-y-1">
+                                    <label className="text-[9px] font-black uppercase tracking-widest opacity-40 ml-2">Name *</label>
+                                    <input 
+                                        type="text"
+                                        required
+                                        value={enquiryForm.name}
+                                        onChange={(e) => setEnquiryForm({...enquiryForm, name: e.target.value})}
+                                        style={{ background: colors.input, color: colors.text, border: `1px solid ${colors.border}` }}
+                                        className="w-full h-12 px-4 rounded-2xl text-xs font-bold focus:border-[#C8956C] outline-none transition-colors !bg-[#141414] dark:!bg-[#141414] !text-white dark:!text-white"
+                                        placeholder="Enter your name"
+                                    />
+                                </div>
+                                <div className="grid grid-cols-2 gap-3">
+                                    <div className="space-y-1">
+                                        <label className="text-[9px] font-black uppercase tracking-widest opacity-40 ml-2">Phone *</label>
+                                        <input 
+                                            type="tel"
+                                            required
+                                            value={enquiryForm.phone}
+                                            onChange={(e) => setEnquiryForm({...enquiryForm, phone: e.target.value})}
+                                            style={{ background: colors.input, color: colors.text, border: `1px solid ${colors.border}` }}
+                                            className="w-full h-12 px-4 rounded-2xl text-xs font-bold focus:border-[#C8956C] outline-none transition-colors !bg-[#141414] dark:!bg-[#141414] !text-white dark:!text-white"
+                                            placeholder="Enter phone number"
+                                        />
+                                    </div>
+                                    <div className="space-y-1">
+                                        <label className="text-[9px] font-black uppercase tracking-widest opacity-40 ml-2">Email</label>
+                                        <input 
+                                            type="email"
+                                            value={enquiryForm.email}
+                                            onChange={(e) => setEnquiryForm({...enquiryForm, email: e.target.value})}
+                                            style={{ background: colors.input, color: colors.text, border: `1px solid ${colors.border}` }}
+                                            className="w-full h-12 px-4 rounded-2xl text-xs font-bold focus:border-[#C8956C] outline-none transition-colors !bg-[#141414] dark:!bg-[#141414] !text-white dark:!text-white"
+                                            placeholder="Enter email address"
+                                        />
+                                    </div>
+                                </div>
+                                <div className="grid grid-cols-2 gap-3">
+                                    <div className="space-y-1">
+                                        <label className="text-[9px] font-black uppercase tracking-widest opacity-40 ml-2">Outlet *</label>
+                                        <div className="relative w-full">
+                                            <select 
+                                                required
+                                                disabled={!!activeOutlet}
+                                                value={enquiryForm.outletId}
+                                                onChange={(e) => setEnquiryForm({...enquiryForm, outletId: e.target.value, interestedService: '', serviceInterest: ''})}
+                                                style={{ backgroundColor: colors.input, color: colors.text, border: `1px solid ${colors.border}` }}
+                                                className="w-full h-12 px-4 pr-10 rounded-2xl text-xs font-bold focus:border-[#C8956C] outline-none transition-colors uppercase appearance-none cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed !bg-[#141414] dark:!bg-[#141414] !text-white dark:!text-white"
+                                            >
+                                                <option value="" style={{ backgroundColor: colors.card, color: colors.text }}>Select Outlet</option>
+                                                {outlets.map(o => (
+                                                    <option key={o._id || o.id} value={o._id || o.id} style={{ backgroundColor: colors.card, color: colors.text }}>{o.name}</option>
+                                                ))}
+                                            </select>
+                                            <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none opacity-45" style={{ color: colors.text }} />
+                                        </div>
+                                    </div>
+                                    <div className="space-y-1">
+                                        <label className="text-[9px] font-black uppercase tracking-widest opacity-40 ml-2">Service of Interest</label>
+                                        <div className="relative w-full">
+                                            <select 
+                                                value={enquiryForm.interestedService}
+                                                onChange={handleEnquiryServiceChange}
+                                                disabled={!enquiryForm.outletId}
+                                                style={{ backgroundColor: enquiryForm.outletId ? colors.input : 'transparent', color: colors.text, border: `1px solid ${colors.border}` }}
+                                                className="w-full h-12 px-4 pr-10 rounded-2xl text-xs font-bold focus:border-[#C8956C] outline-none transition-colors disabled:opacity-40 uppercase appearance-none cursor-pointer !bg-[#141414] dark:!bg-[#141414] !text-white dark:!text-white"
+                                            >
+                                                <option value="" style={{ backgroundColor: colors.card, color: colors.text }}>{!enquiryForm.outletId ? 'Select Outlet First' : 'Select Service'}</option>
+                                                {filteredServices.map(s => (
+                                                    <option key={s._id || s.id} value={s._id || s.id} style={{ backgroundColor: colors.card, color: colors.text }}>{s.name} (₹{s.price})</option>
+                                                ))}
+                                            </select>
+                                            <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none opacity-45" style={{ color: colors.text }} />
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="space-y-1">
+                                    <label className="text-[9px] font-black uppercase tracking-widest opacity-40 ml-2">Message / Notes</label>
+                                    <textarea 
+                                        rows={3}
+                                        value={enquiryForm.notes}
+                                        onChange={(e) => setEnquiryForm({...enquiryForm, notes: e.target.value})}
+                                        style={{ background: colors.input, color: colors.text, border: `1px solid ${colors.border}` }}
+                                        className="w-full p-4 rounded-2xl text-xs font-bold resize-none outline-none focus:border-[#C8956C] !bg-[#141414] dark:!bg-[#141414] !text-white dark:!text-white"
+                                        placeholder="Describe your query..."
+                                    />
+                                </div>
+                                <button 
+                                    type="submit" 
+                                    disabled={isSubmittingEnquiry}
+                                    className="w-full h-14 bg-[#C8956C] text-white rounded-2xl font-black uppercase tracking-widest text-[11px] disabled:opacity-30 shadow-xl shadow-[#C8956C]/20 flex items-center justify-center gap-2"
+                                >
+                                    {isSubmittingEnquiry ? <Loader2 size={16} className="animate-spin" /> : 'Submit Enquiry'}
                                 </button>
                             </form>
                         )}
