@@ -544,7 +544,9 @@ export default function Sidebar({ collapsed, setCollapsed, isHovered, setIsHover
                                                 {item.subItems.map((sub) => {
                                                     const isSubActive = sub.path.includes('?')
                                                         ? (location.pathname + location.search) === sub.path
-                                                        : (location.pathname === sub.path || location.pathname.startsWith(sub.path + '/'));
+                                                        : (sub.path === '/pos' || sub.path === '/admin')
+                                                            ? location.pathname === sub.path
+                                                            : (location.pathname === sub.path || location.pathname.startsWith(sub.path + '/'));
                                                     return (
                                                         <NavLink
                                                             key={sub.path}

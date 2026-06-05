@@ -2704,7 +2704,7 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
             itemId: item._id,
             type: type,
             quantity: 1,
-            staffIds: type === 'service' ? (qFilteredStaff.length === 1 ? [typeof qFilteredStaff[0]._id === 'object' ? qFilteredStaff[0]._id?._id : String(qFilteredStaff[0]._id)] : []) : []
+            staffIds: []
         }]);
     };
 
