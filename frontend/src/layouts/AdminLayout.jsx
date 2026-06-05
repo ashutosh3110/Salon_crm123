@@ -1333,7 +1333,13 @@ export default function AdminLayout() {
                 html:not(.dark) .admin-panel [class*="bg-green-"] svg,
                 html:not(.dark) .admin-panel [class*="bg-green-"] svg *,
                 html:not(.dark) .admin-panel [class*="bg-[#DCFCE7]"] svg,
-                html:not(.dark) .admin-panel [class*="bg-[#DCFCE7]"] svg * {
+                html:not(.dark) .admin-panel [class*="bg-[#DCFCE7]"] svg *,
+                html:not(.dark) .admin-panel [class*="bg-[#ECFDF5]"] svg,
+                html:not(.dark) .admin-panel [class*="bg-[#ECFDF5]"] svg *,
+                html:not(.dark) .admin-panel [class*="bg-[#E8FDF0]"] svg,
+                html:not(.dark) .admin-panel [class*="bg-[#E8FDF0]"] svg *,
+                html:not(.dark) .admin-panel [class*="bg-emerald-50"] svg,
+                html:not(.dark) .admin-panel [class*="bg-emerald-50"] svg * {
                     color: #047857 !important;
                     stroke: #047857 !important;
                 }
@@ -1349,7 +1355,9 @@ export default function AdminLayout() {
                 html:not(.dark) .admin-panel [class*="bg-blue-"] svg,
                 html:not(.dark) .admin-panel [class*="bg-blue-"] svg *,
                 html:not(.dark) .admin-panel [class*="bg-[#DBEAFE]"] svg,
-                html:not(.dark) .admin-panel [class*="bg-[#DBEAFE]"] svg * {
+                html:not(.dark) .admin-panel [class*="bg-[#DBEAFE]"] svg *,
+                html:not(.dark) .admin-panel [class*="bg-[#EFF6FF]"] svg,
+                html:not(.dark) .admin-panel [class*="bg-[#EFF6FF]"] svg * {
                     color: #1d4ed8 !important;
                     stroke: #1d4ed8 !important;
                 }

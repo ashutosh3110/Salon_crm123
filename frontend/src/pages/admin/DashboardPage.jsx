@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { TrendingUp, Users, Calendar, Search, Globe, ArrowUpRight, ArrowRight, MessageSquare, Download } from 'lucide-react';
+import { TrendingUp, Users, Calendar, Search, Globe, ArrowUpRight, ArrowRight, MessageSquare, Download, CalendarPlus, List, UserPlus, FileText } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import AnimatedCounter from '../../components/common/AnimatedCounter';
@@ -14,14 +14,29 @@ export default function DashboardPage() {
     const [payload, setPayload] = useState(null);
     const [searchQuery, setSearchQuery] = useState('');
     const [showLowCreditAlert, setShowLowCreditAlert] = useState(false);
-    const [selectedRange, setSelectedRange] = useState('week'); // 'week' or 'month'
+    const [selectedRange, setSelectedRange] = useState('week'); // 'today' | 'week' | 'month' | 'custom'
+    const [startDate, setStartDate] = useState(() => {
+        const d = new Date();
+        d.setDate(d.getDate() - 7);
+        return d.toISOString().split('T')[0];
+    });
+    const [endDate, setEndDate] = useState(() => {
+        return new Date().toISOString().split('T')[0];
+    });
+    const [showCustomRangeModal, setShowCustomRangeModal] = useState(false);
+    const [tempStartDate, setTempStartDate] = useState(startDate);
+    const [tempEndDate, setTempEndDate] = useState(endDate);
     const [dropdownOpen, setDropdownOpen] = useState(false);
     const [headerDropdownOpen, setHeaderDropdownOpen] = useState(false);
 
-    const loadDashboard = useCallback(async (rangeVal = selectedRange) => {
+    const loadDashboard = useCallback(async (rangeVal = selectedRange, start = startDate, end = endDate) => {
         setError(null);
         try {
-            const res = await api.get(`/dashboard/salon?range=${rangeVal}`);
+            let url = `/dashboard/salon?range=${rangeVal}`;
+            if (rangeVal === 'custom') {
+                url += `&startDate=${start}&endDate=${end}`;
+            }
+            const res = await api.get(url);
             if (res.data?.success) {
                 setPayload(res.data.data);
                 const s = res.data.data?.stats || {};
@@ -40,13 +55,13 @@ export default function DashboardPage() {
         } finally {
             setLoading(false);
         }
-    }, [selectedRange]);
+    }, [selectedRange, startDate, endDate]);
 
     useEffect(() => {
-        loadDashboard(selectedRange);
-        const interval = setInterval(() => loadDashboard(selectedRange), 60000);
+        loadDashboard(selectedRange, startDate, endDate);
+        const interval = setInterval(() => loadDashboard(selectedRange, startDate, endDate), 60000);
         return () => clearInterval(interval);
-    }, [loadDashboard, selectedRange]);
+    }, [loadDashboard, selectedRange, startDate, endDate]);
 
     const revenueData = useMemo(() => {
         return payload?.revenueWeek || defaultWeek();
@@ -54,7 +69,9 @@ export default function DashboardPage() {
 
     const headerDateText = useMemo(() => {
         const now = new Date();
-        if (selectedRange === 'week') {
+        if (selectedRange === 'today') {
+            return now.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+        } else if (selectedRange === 'week') {
             const currentDay = now.getDay();
             const distanceToMonday = currentDay === 0 ? -6 : 1 - currentDay;
             const monday = new Date(now);
@@ -67,7 +84,7 @@ export default function DashboardPage() {
             const start = monday.toLocaleDateString('en-US', options);
             const end = sunday.toLocaleDateString('en-US', { ...options, year: 'numeric' });
             return `${start} – ${end}`;
-        } else {
+        } else if (selectedRange === 'month') {
             const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
             const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0);
 
@@ -75,16 +92,22 @@ export default function DashboardPage() {
             const start = firstDay.toLocaleDateString('en-US', options);
             const end = lastDay.toLocaleDateString('en-US', { ...options, year: 'numeric' });
             return `${start} – ${end}`;
+        } else if (selectedRange === 'custom') {
+            const options = { month: 'short', day: 'numeric' };
+            const start = new Date(startDate).toLocaleDateString('en-US', options);
+            const end = new Date(endDate).toLocaleDateString('en-US', { ...options, year: 'numeric' });
+            return `${start} – ${end}`;
         }
-    }, [selectedRange]);
+        return '';
+    }, [selectedRange, startDate, endDate]);
 
     const totalPeriodRevenue = useMemo(() => {
-        return selectedRange === 'month'
-            ? (payload?.stats?.thisMonthRev ?? 0)
-            : (payload?.stats?.thisWeekRev ?? 0);
-    }, [payload, selectedRange]);
+        if (!payload?.revenueWeek) return 0;
+        return payload.revenueWeek.reduce((sum, item) => sum + (item.revenue || 0), 0);
+    }, [payload]);
 
     const periodPctText = useMemo(() => {
+        if (selectedRange !== 'week' && selectedRange !== 'month') return null;
         const current = selectedRange === 'month' ? (payload?.stats?.thisMonthRev ?? 0) : (payload?.stats?.thisWeekRev ?? 0);
         const last = selectedRange === 'month' ? (payload?.stats?.lastMonthRev ?? 0) : (payload?.stats?.lastWeekRev ?? 0);
         if (last > 0) {
@@ -327,6 +350,16 @@ export default function DashboardPage() {
                                     <button
                                         type="button"
                                         onClick={() => {
+                                            setSelectedRange('today');
+                                            setHeaderDropdownOpen(false);
+                                        }}
+                                        className={`w-full text-left px-3.5 py-1.5 text-[11px] font-bold transition-all hover:bg-slate-50 dark:hover:bg-slate-700 block ${selectedRange === 'today' ? '!text-[#B4912B] dark:!text-[#B4912B]' : 'text-slate-500 dark:text-slate-400'}`}
+                                    >
+                                        Today
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => {
                                             setSelectedRange('week');
                                             setHeaderDropdownOpen(false);
                                         }}
@@ -343,6 +376,16 @@ export default function DashboardPage() {
                                         className={`w-full text-left px-3.5 py-1.5 text-[11px] font-bold transition-all hover:bg-slate-50 dark:hover:bg-slate-700 block ${selectedRange === 'month' ? '!text-[#B4912B] dark:!text-[#B4912B]' : 'text-slate-500 dark:text-slate-400'}`}
                                     >
                                         This Month
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            setShowCustomRangeModal(true);
+                                            setHeaderDropdownOpen(false);
+                                        }}
+                                        className={`w-full text-left px-3.5 py-1.5 text-[11px] font-bold transition-all hover:bg-slate-50 dark:hover:bg-slate-700 block ${selectedRange === 'custom' ? '!text-[#B4912B] dark:!text-[#B4912B]' : 'text-slate-500 dark:text-slate-400'}`}
+                                    >
+                                        Custom Range
                                     </button>
                                 </div>
                             </>
@@ -419,20 +462,30 @@ export default function DashboardPage() {
                     <div>
                         {/* Header: Title + Custom Dropdown Toggle */}
                         <div className="flex items-center justify-between mb-4">
-                            <h2 className="text-base font-bold text-slate-800 dark:text-slate-100 tracking-tight">Revenue Trends ({selectedRange === 'month' ? 'Monthly' : 'Weekly'})</h2>
+                            <h2 className="text-base font-bold text-slate-800 dark:text-slate-100 tracking-tight">Revenue Trends ({selectedRange === 'today' ? 'Daily' : selectedRange === 'month' ? 'Monthly' : selectedRange === 'custom' ? 'Custom Range' : 'Weekly'})</h2>
                             <div className="relative z-50">
                                 <button
                                     onClick={() => setDropdownOpen(!dropdownOpen)}
                                     type="button"
                                     className="flex items-center gap-2 pl-3 pr-7 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-[11px] font-bold text-slate-500 dark:text-slate-400 cursor-pointer shadow-sm focus:outline-none focus:ring-1 focus:ring-slate-350 transition-all select-none min-h-[30px]"
                                 >
-                                    <span>{selectedRange === 'month' ? 'This Month' : 'This Week'}</span>
+                                    <span>{selectedRange === 'today' ? 'Today' : selectedRange === 'month' ? 'This Month' : selectedRange === 'custom' ? 'Custom Range' : 'This Week'}</span>
                                     <span className="text-[7px] text-slate-400">▼</span>
                                 </button>
                                 {dropdownOpen && (
                                     <>
                                         <div className="fixed inset-0 z-40 bg-transparent" onClick={() => setDropdownOpen(false)} />
                                         <div className="absolute right-0 mt-1.5 w-32 rounded-lg border border-slate-100 dark:border-slate-700 bg-white dark:bg-slate-800 py-1.5 shadow-lg z-50 transition-all">
+                                            <button
+                                                type="button"
+                                                onClick={() => {
+                                                    setSelectedRange('today');
+                                                    setDropdownOpen(false);
+                                                }}
+                                                className={`w-full text-left px-3.5 py-1.5 text-[11px] font-bold transition-all hover:bg-slate-50 dark:hover:bg-slate-700 block ${selectedRange === 'today' ? '!text-[#B4912B] dark:!text-[#B4912B]' : 'text-slate-500 dark:text-slate-400'}`}
+                                            >
+                                                Today
+                                            </button>
                                             <button
                                                 type="button"
                                                 onClick={() => {
@@ -453,6 +506,16 @@ export default function DashboardPage() {
                                             >
                                                 This Month
                                             </button>
+                                            <button
+                                                type="button"
+                                                onClick={() => {
+                                                    setShowCustomRangeModal(true);
+                                                    setDropdownOpen(false);
+                                                }}
+                                                className={`w-full text-left px-3.5 py-1.5 text-[11px] font-bold transition-all hover:bg-slate-50 dark:hover:bg-slate-700 block ${selectedRange === 'custom' ? '!text-[#B4912B] dark:!text-[#B4912B]' : 'text-slate-500 dark:text-slate-400'}`}
+                                            >
+                                                Custom Range
+                                            </button>
                                         </div>
                                     </>
                                 )}
@@ -467,9 +530,11 @@ export default function DashboardPage() {
                                     <span className="text-2xl font-black text-slate-800 dark:text-slate-100">
                                         ₹{totalPeriodRevenue.toLocaleString('en-IN')}
                                     </span>
-                                    <span className="inline-flex items-center px-2 py-0.5 rounded-xl text-[10px] font-bold bg-[#ECFDF5] dark:bg-[#059669]/10 text-[#059669] dark:text-[#34D399]">
-                                        {periodPctText}
-                                    </span>
+                                    {periodPctText && (
+                                        <span className="inline-flex items-center px-2 py-0.5 rounded-xl text-[10px] font-bold bg-[#ECFDF5] dark:bg-[#059669]/10 text-[#059669] dark:text-[#34D399]">
+                                            {periodPctText}
+                                        </span>
+                                    )}
                                 </div>
                             </div>
                         </div>
@@ -484,7 +549,7 @@ export default function DashboardPage() {
                                             <stop offset="95%" stopColor="#A57C1E" stopOpacity={0} />
                                         </linearGradient>
                                     </defs>
-                                    <CartesianGrid strokeDasharray="4 4" vertical={false} strokeOpacity={0.15} />
+
                                     <XAxis
                                         dataKey="name"
                                         axisLine={false}
@@ -658,6 +723,201 @@ export default function DashboardPage() {
                     </div>
                 </div>
             </div>
+
+            {/* Bookings Overview & Quick Actions */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+                {/* Bookings Overview */}
+                <div className="lg:col-span-2 !bg-white dark:!bg-slate-900 p-5 !rounded-[24px] !border !border-slate-100 dark:!border-slate-800 shadow-[0_2px_12px_-3px_rgba(0,0,0,0.04)] group hover:shadow-md transition-all !overflow-hidden flex flex-col justify-between text-left">
+                    <div>
+                        <h2 className="text-base font-bold text-slate-800 dark:text-slate-100 tracking-tight mb-4">Bookings Overview</h2>
+                        <div className="flex flex-col md:flex-row items-center justify-between gap-6">
+                            {/* Left Side: Stat Cards */}
+                            <div className="grid grid-cols-2 gap-3 w-full md:w-auto flex-1">
+                                {[
+                                    { key: 'pending', label: 'Pending', count: payload?.stats?.bookingStatuses?.pending ?? 0, color: '#f59e0b', textClass: 'text-[#f59e0b]', bgClass: 'bg-[#FEF3C7] dark:bg-[#f59e0b]/10' },
+                                    { key: 'confirmed', label: 'Confirmed', count: payload?.stats?.bookingStatuses?.confirmed ?? 0, color: '#10b981', textClass: 'text-[#10b981]', bgClass: 'bg-[#DCFCE7] dark:bg-[#10b981]/10' },
+                                    { key: 'completed', label: 'Completed', count: payload?.stats?.bookingStatuses?.completed ?? 0, color: '#3b82f6', textClass: 'text-[#3b82f6]', bgClass: 'bg-[#DBEAFE] dark:bg-[#3b82f6]/10' },
+                                    { key: 'cancelled', label: 'Cancelled', count: payload?.stats?.bookingStatuses?.cancelled ?? 0, color: '#ef4444', textClass: 'text-[#ef4444]', bgClass: 'bg-[#FEE2E2] dark:bg-[#ef4444]/10' }
+                                ].map((item, idx) => {
+                                    const rangeBookingsTotal = (payload?.stats?.bookingStatuses?.pending ?? 0) + (payload?.stats?.bookingStatuses?.confirmed ?? 0) + (payload?.stats?.bookingStatuses?.completed ?? 0) + (payload?.stats?.bookingStatuses?.cancelled ?? 0);
+                                    const pct = rangeBookingsTotal > 0 ? ((item.count / rangeBookingsTotal) * 100).toFixed(1) : '0';
+                                    return (
+                                        <div key={idx} className="bg-slate-50/50 dark:bg-slate-800/20 border border-slate-100/60 dark:border-slate-800 rounded-2xl p-4 flex flex-col items-start min-h-[96px] text-left">
+                                            <span style={{ fontSize: '11px', fontWeight: 700 }} className="text-slate-500 dark:text-slate-400 mb-1">{item.label}</span>
+                                            <div className="flex items-baseline gap-2 mt-1">
+                                                <span className="text-xl font-black text-slate-800 dark:text-slate-100">{item.count}</span>
+                                            </div>
+                                            <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-bold mt-2 ${item.bgClass} ${item.textClass}`}>
+                                                <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ backgroundColor: item.color }} />
+                                                <span>{pct}%</span>
+                                            </span>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+
+                            {/* Middle Side: Donut Chart */}
+                            <div className="h-[140px] w-[140px] relative shrink-0">
+                                <ResponsiveContainer width="100%" height="100%">
+                                    <PieChart>
+                                        <Pie
+                                            data={[
+                                                { name: 'Pending', value: payload?.stats?.bookingStatuses?.pending ?? 0, color: '#f59e0b' },
+                                                { name: 'Confirmed', value: payload?.stats?.bookingStatuses?.confirmed ?? 0, color: '#10b981' },
+                                                { name: 'Completed', value: payload?.stats?.bookingStatuses?.completed ?? 0, color: '#3b82f6' },
+                                                { name: 'Cancelled', value: payload?.stats?.bookingStatuses?.cancelled ?? 0, color: '#ef4444' }
+                                            ].filter(d => d.value > 0).length === 0 ? [{ name: 'Empty', value: 1, color: '#e2e8f0' }] : [
+                                                { name: 'Pending', value: payload?.stats?.bookingStatuses?.pending ?? 0, color: '#f59e0b' },
+                                                { name: 'Confirmed', value: payload?.stats?.bookingStatuses?.confirmed ?? 0, color: '#10b981' },
+                                                { name: 'Completed', value: payload?.stats?.bookingStatuses?.completed ?? 0, color: '#3b82f6' },
+                                                { name: 'Cancelled', value: payload?.stats?.bookingStatuses?.cancelled ?? 0, color: '#ef4444' }
+                                            ].filter(d => d.value > 0)}
+                                            dataKey="value"
+                                            innerRadius={42}
+                                            outerRadius={60}
+                                            paddingAngle={3}
+                                        >
+                                            {[
+                                                { name: 'Pending', value: payload?.stats?.bookingStatuses?.pending ?? 0, color: '#f59e0b' },
+                                                { name: 'Confirmed', value: payload?.stats?.bookingStatuses?.confirmed ?? 0, color: '#10b981' },
+                                                { name: 'Completed', value: payload?.stats?.bookingStatuses?.completed ?? 0, color: '#3b82f6' },
+                                                { name: 'Cancelled', value: payload?.stats?.bookingStatuses?.cancelled ?? 0, color: '#ef4444' }
+                                            ].filter(d => d.value > 0).length === 0 ? <Cell fill="#e2e8f0" /> : [
+                                                { name: 'Pending', value: payload?.stats?.bookingStatuses?.pending ?? 0, color: '#f59e0b' },
+                                                { name: 'Confirmed', value: payload?.stats?.bookingStatuses?.confirmed ?? 0, color: '#10b981' },
+                                                { name: 'Completed', value: payload?.stats?.bookingStatuses?.completed ?? 0, color: '#3b82f6' },
+                                                { name: 'Cancelled', value: payload?.stats?.bookingStatuses?.cancelled ?? 0, color: '#ef4444' }
+                                            ].filter(d => d.value > 0).map((entry, index) => (
+                                                <Cell key={index} fill={entry.color} />
+                                            ))}
+                                        </Pie>
+                                    </PieChart>
+                                </ResponsiveContainer>
+                                <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none select-none">
+                                    <span style={{ fontSize: '18px', fontWeight: 900 }} className="text-slate-800 dark:text-slate-100 leading-none">
+                                        {(payload?.stats?.bookingStatuses?.pending ?? 0) + (payload?.stats?.bookingStatuses?.confirmed ?? 0) + (payload?.stats?.bookingStatuses?.completed ?? 0) + (payload?.stats?.bookingStatuses?.cancelled ?? 0)}
+                                    </span>
+                                    <span style={{ fontSize: '7.5px', marginTop: '4px' }} className="font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
+                                        Total
+                                    </span>
+                                </div>
+                            </div>
+
+                            {/* Right Side: Custom Legend */}
+                            <div className="flex flex-col gap-2.5 shrink-0 min-w-[140px] text-left">
+                                {[
+                                    { label: 'Pending', color: '#f59e0b', count: payload?.stats?.bookingStatuses?.pending ?? 0 },
+                                    { label: 'Confirmed', color: '#10b981', count: payload?.stats?.bookingStatuses?.confirmed ?? 0 },
+                                    { label: 'Completed', color: '#3b82f6', count: payload?.stats?.bookingStatuses?.completed ?? 0 },
+                                    { label: 'Cancelled', color: '#ef4444', count: payload?.stats?.bookingStatuses?.cancelled ?? 0 }
+                                ].map((item, idx) => {
+                                    const rangeBookingsTotal = (payload?.stats?.bookingStatuses?.pending ?? 0) + (payload?.stats?.bookingStatuses?.confirmed ?? 0) + (payload?.stats?.bookingStatuses?.completed ?? 0) + (payload?.stats?.bookingStatuses?.cancelled ?? 0);
+                                    const pct = rangeBookingsTotal > 0 ? ((item.count / rangeBookingsTotal) * 100).toFixed(1) : '0';
+                                    return (
+                                        <div key={idx} className="flex items-center justify-between text-xs gap-3">
+                                            <div className="flex items-center gap-2 min-w-0">
+                                                <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: item.color }} />
+                                                <span className="font-bold text-slate-600 dark:text-slate-350 truncate">{item.label}</span>
+                                            </div>
+                                            <span className="text-slate-400 dark:text-slate-500 font-bold shrink-0">
+                                                {item.count} ({pct}%)
+                                            </span>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Quick Actions */}
+                <div className="lg:col-span-1 !bg-white dark:!bg-slate-900 p-5 !rounded-[24px] !border !border-slate-100 dark:!border-slate-800 shadow-[0_2px_12px_-3px_rgba(0,0,0,0.04)] group hover:shadow-md transition-all !overflow-hidden text-left flex flex-col justify-between">
+                    <div>
+                        <h2 className="text-base font-bold text-slate-800 dark:text-slate-100 tracking-tight mb-4">Quick Actions</h2>
+                        <div className="grid grid-cols-3 gap-2.5">
+                            {[
+                                { label: 'New Booking', icon: CalendarPlus, path: '/admin/bookings/new', colorClass: 'text-amber-600 dark:text-amber-450', bgClass: 'bg-amber-50 dark:bg-amber-950/20' },
+                                { label: 'Calendar View', icon: Calendar, path: '/admin/bookings', colorClass: 'text-emerald-600 dark:text-emerald-450', bgClass: 'bg-emerald-50 dark:bg-emerald-950/20' },
+                                { label: 'Booking Registry', icon: List, path: '/admin/bookings', colorClass: 'text-blue-600 dark:text-blue-450', bgClass: 'bg-blue-50 dark:bg-blue-950/20' },
+                                { label: 'Direct Booking', icon: UserPlus, path: '/admin/bookings/new', colorClass: 'text-violet-600 dark:text-violet-450', bgClass: 'bg-violet-50 dark:bg-violet-950/20' },
+                                { label: 'Reports', icon: FileText, path: '/admin/finance/reports', colorClass: 'text-rose-600 dark:text-rose-450', bgClass: 'bg-rose-50 dark:bg-rose-950/20' },
+                                { label: 'WhatsApp Credits', icon: MessageSquare, path: '/admin/whatsapp-credits', colorClass: 'text-cyan-600 dark:text-cyan-450', bgClass: 'bg-cyan-50 dark:bg-cyan-950/20' }
+                            ].map((action, idx) => (
+                                <Link
+                                    key={idx}
+                                    to={action.path}
+                                    className="flex flex-col items-center justify-center p-3 rounded-xl border border-slate-100 dark:border-slate-800 hover:border-slate-200 dark:hover:border-slate-700 bg-slate-50/30 dark:bg-slate-800/10 hover:bg-slate-50/75 dark:hover:bg-slate-800/30 transition-all text-center min-h-[90px] group/item"
+                                >
+                                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center mb-2 shrink-0 ${action.bgClass} transition-transform group-hover/item:scale-110`}>
+                                        <action.icon className={`w-4 h-4 ${action.colorClass}`} />
+                                    </div>
+                                    <span style={{ fontSize: '9.5px', lineHeight: '11px', fontWeight: 700 }} className="text-slate-600 dark:text-slate-300 tracking-wide uppercase break-words block w-full px-1">
+                                        {action.label}
+                                    </span>
+                                </Link>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {showCustomRangeModal && (
+                <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-[9999] flex items-center justify-center p-4 text-left">
+                    <div className="bg-white dark:bg-slate-800 rounded-2xl w-full max-w-sm mx-4 shadow-2xl relative overflow-hidden border border-slate-100 dark:border-slate-700 p-6 text-left">
+                        <div className="flex items-center gap-3 mb-4">
+                            <div className="p-2.5 bg-[#FEF3C7] dark:bg-[#B4912B]/10 text-[#B4912B] rounded-xl">
+                                <Calendar className="w-5 h-5" />
+                            </div>
+                            <div>
+                                <h3 className="text-sm font-black text-slate-850 dark:text-slate-100 uppercase tracking-widest leading-none">Select Date Range</h3>
+                                <p className="text-[9px] text-slate-400 font-bold uppercase tracking-widest mt-1.5">Custom Analytics Range</p>
+                            </div>
+                        </div>
+
+                        <div className="space-y-4 my-6">
+                            <div className="flex flex-col text-left">
+                                <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1.5 text-left">Start Date</label>
+                                <input
+                                    type="date"
+                                    value={tempStartDate}
+                                    onChange={(e) => setTempStartDate(e.target.value)}
+                                    className="w-full px-3 py-2 text-xs border border-slate-200 dark:border-slate-700 rounded-xl bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100"
+                                />
+                            </div>
+                            <div className="flex flex-col text-left">
+                                <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1.5 text-left">End Date</label>
+                                <input
+                                    type="date"
+                                    value={tempEndDate}
+                                    onChange={(e) => setTempEndDate(e.target.value)}
+                                    className="w-full px-3 py-2 text-xs border border-slate-200 dark:border-slate-700 rounded-xl bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100"
+                                />
+                            </div>
+                        </div>
+
+                        <div className="flex gap-3 pt-4 border-t border-slate-100 dark:border-slate-800">
+                            <button
+                                onClick={() => setShowCustomRangeModal(false)}
+                                className="flex-1 py-2.5 border border-slate-200 dark:border-slate-700 rounded-xl text-[9px] font-bold uppercase tracking-widest text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-700 transition-all"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={() => {
+                                    setStartDate(tempStartDate);
+                                    setEndDate(tempEndDate);
+                                    setSelectedRange('custom');
+                                    setShowCustomRangeModal(false);
+                                    loadDashboard('custom', tempStartDate, tempEndDate);
+                                }}
+                                className="flex-1 py-2.5 bg-[#B4912B] hover:bg-[#A57C1E] text-white font-bold text-[9px] uppercase tracking-widest shadow-md rounded-xl text-center flex items-center justify-center transition-all"
+                            >
+                                Apply
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {showLowCreditAlert && (
                 <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-[9999] flex items-center justify-center p-4 text-left">

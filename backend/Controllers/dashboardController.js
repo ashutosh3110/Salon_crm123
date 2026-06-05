@@ -16,6 +16,43 @@ exports.getSalonDashboard = async (req, res) => {
             return res.status(400).json({ success: false, message: 'Salon ID not found in user context' });
         }
 
+        // Get dynamic range
+        const range = req.query.range || 'week';
+        let daysToFetch = 7;
+        let rangeAgo = new Date();
+        let rangeEnd = new Date();
+
+        if (range === 'today') {
+            rangeAgo = new Date();
+            rangeAgo.setHours(0, 0, 0, 0);
+            rangeEnd = new Date();
+            rangeEnd.setHours(23, 59, 59, 999);
+            daysToFetch = 1;
+        } else if (range === 'week') {
+            const today = new Date();
+            const day = today.getDay();
+            const diff = today.getDate() - day + (day === 0 ? -6 : 1);
+            rangeAgo = new Date(today.setDate(diff));
+            rangeAgo.setHours(0, 0, 0, 0);
+            rangeEnd = new Date();
+            rangeEnd.setHours(23, 59, 59, 999);
+            daysToFetch = 7;
+        } else if (range === 'month') {
+            rangeAgo = new Date();
+            rangeAgo.setDate(rangeAgo.getDate() - 30);
+            rangeAgo.setHours(0, 0, 0, 0);
+            rangeEnd = new Date();
+            rangeEnd.setHours(23, 59, 59, 999);
+            daysToFetch = 30;
+        } else if (range === 'custom') {
+            rangeAgo = new Date(req.query.startDate || new Date());
+            rangeAgo.setHours(0, 0, 0, 0);
+            rangeEnd = new Date(req.query.endDate || new Date());
+            rangeEnd.setHours(23, 59, 59, 999);
+            const diffTime = Math.abs(rangeEnd - rangeAgo);
+            daysToFetch = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) || 1;
+        }
+
         // Parallel counts for efficiency
         const [
             outletsCount,
@@ -23,7 +60,8 @@ exports.getSalonDashboard = async (req, res) => {
             customersCount,
             staffCount,
             walletLiability,
-            salonDoc
+            salonDoc,
+            bookingStatusCounts
         ] = await Promise.all([
             Outlet.countDocuments({ salonId }),
             Booking.countDocuments({ salonId }),
@@ -33,66 +71,95 @@ exports.getSalonDashboard = async (req, res) => {
                 { $match: { salonId, type: 'CREDIT' } },
                 { $group: { _id: null, total: { $sum: '$amount' } } }
             ]).then(res => res[0]?.total || 0),
-            Salon.findById(salonId).select('whatsappSettings')
+            Salon.findById(salonId).select('whatsappSettings'),
+            Booking.aggregate([
+                { $match: { salonId, createdAt: { $gte: rangeAgo, $lte: rangeEnd } } },
+                { $group: { _id: '$status', count: { $sum: 1 } } }
+            ])
         ]);
+
+        const bookingStatuses = {
+            pending: 0,
+            confirmed: 0,
+            completed: 0,
+            cancelled: 0
+        };
+        (bookingStatusCounts || []).forEach(item => {
+            if (item._id && bookingStatuses[item._id] !== undefined) {
+                bookingStatuses[item._id] = item.count;
+            }
+        });
 
         const whatsappCredits = salonDoc?.whatsappSettings?.whatsappCredits ?? 0;
 
-        // Get dynamic range
-        const range = req.query.range || 'week';
-        const daysToFetch = range === 'month' ? 30 : 7;
-
-        // Get revenue data for chart
-        let rangeAgo = new Date();
-        if (range === 'week') {
-            const today = new Date();
-            const day = today.getDay();
-            const diff = today.getDate() - day + (day === 0 ? -6 : 1);
-            rangeAgo = new Date(today.setDate(diff));
-            rangeAgo.setHours(0, 0, 0, 0);
-        } else {
-            rangeAgo.setDate(rangeAgo.getDate() - daysToFetch);
-        }
-
-        const revenueData = await Booking.aggregate([
-            { 
-                $match: { 
-                    salonId, 
-                    createdAt: { $gte: rangeAgo },
-                    status: 'completed'
-                } 
-            },
-            {
-                $group: {
-                    _id: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } },
-                    revenue: { $sum: "$totalPrice" },
-                    appointments: { $count: {} }
+        let chartData = [];
+        if (range === 'today') {
+            const hourlyRevenue = await Booking.aggregate([
+                { 
+                    $match: { 
+                        salonId, 
+                        createdAt: { $gte: rangeAgo, $lte: rangeEnd },
+                        status: 'completed'
+                    } 
+                },
+                {
+                    $group: {
+                        _id: { $hour: "$createdAt" },
+                        revenue: { $sum: "$totalPrice" },
+                        appointments: { $count: {} }
+                    }
                 }
-            },
-            { $sort: { "_id": 1 } }
-        ]);
+            ]);
 
-        // Format revenue data for recharts
-        const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-        const chartData = [];
-        for (let i = 0; i < daysToFetch; i++) {
-            const date = new Date(rangeAgo);
-            date.setDate(rangeAgo.getDate() + i);
-            const dateString = date.toISOString().split('T')[0];
-            
-            let label = '';
-            if (range === 'month') {
-                label = date.toLocaleDateString([], { month: 'short', day: 'numeric' });
-            } else {
-                label = days[date.getDay()];
+            // 9 AM to 9 PM IST (representing roughly UTC hours for global standard or simple offset)
+            for (let hour = 9; hour <= 21; hour += 2) {
+                const label = hour === 12 ? '12 PM' : hour > 12 ? `${hour - 12} PM` : `${hour} AM`;
+                const match = hourlyRevenue.find(d => d._id === hour);
+                chartData.push({
+                    name: label,
+                    revenue: match ? match.revenue : 0,
+                    appointments: match ? match.appointments : 0
+                });
             }
-            
-            const match = revenueData.find(d => d._id === dateString);
-            chartData.push({
-                name: label,
-                revenue: match ? match.revenue : 0,
-                appointments: match ? match.appointments : 0
-            });
+        } else {
+            const revenueData = await Booking.aggregate([
+                { 
+                    $match: { 
+                        salonId, 
+                        createdAt: { $gte: rangeAgo, $lte: rangeEnd },
+                        status: 'completed'
+                    } 
+                },
+                {
+                    $group: {
+                        _id: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } },
+                        revenue: { $sum: "$totalPrice" },
+                        appointments: { $count: {} }
+                    }
+                },
+                { $sort: { "_id": 1 } }
+            ]);
+
+            const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+            for (let i = 0; i < daysToFetch; i++) {
+                const date = new Date(rangeAgo);
+                date.setDate(rangeAgo.getDate() + i);
+                const dateString = date.toISOString().split('T')[0];
+                
+                let label = '';
+                if (range === 'month' || range === 'custom') {
+                    label = date.toLocaleDateString([], { month: 'short', day: 'numeric' });
+                } else {
+                    label = days[date.getDay()];
+                }
+                
+                const match = revenueData.find(d => d._id === dateString);
+                chartData.push({
+                    name: label,
+                    revenue: match ? match.revenue : 0,
+                    appointments: match ? match.appointments : 0
+                });
+            }
         }
 
         // Calculate comparison stats for bottom cards (This Week, Last Week, This Month, Last Month)
@@ -169,7 +236,8 @@ exports.getSalonDashboard = async (req, res) => {
                     thisWeekRev,
                     lastWeekRev,
                     thisMonthRev,
-                    lastMonthRev
+                    lastMonthRev,
+                    bookingStatuses
                 },
                 revenueWeek: chartData,
                 recentActivity,
