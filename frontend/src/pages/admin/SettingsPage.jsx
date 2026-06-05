@@ -79,6 +79,7 @@ export default function SettingsPage({ section: propSection }) {
     const [notifications, setNotifications] = useState({ ...DEFAULT_NOTIFICATIONS });
     const [termsList, setTermsList] = useState([]);
     const [newTerm, setNewTerm] = useState('');
+    const termInputRefs = useRef([]);
 
     useEffect(() => {
         if (user) {
@@ -295,8 +296,8 @@ export default function SettingsPage({ section: propSection }) {
 
     const tabClass = (id) =>
         `px-4 py-2 rounded-lg text-[10px] font-bold uppercase tracking-widest transition-all border flex items-center ${activeTab === id
-            ? 'bg-primary text-primary-foreground border-primary shadow-md shadow-primary/20'
-            : 'bg-surface text-text-muted border-border hover:border-primary/40'
+            ? '!bg-[#B4912B] !border-[#B4912B] text-white shadow-[0_4px_6px_-1px_rgba(180,145,43,0.2)]'
+            : 'bg-surface text-text-muted border-border hover:border-[#B4912B]/40 dark:hover:border-[#B4912B]/40'
         }`;
 
     return (
@@ -316,7 +317,11 @@ export default function SettingsPage({ section: propSection }) {
                     { id: 'terms', label: 'Terms & Conditions' },
                     { id: 'booking-link', label: 'Booking Link' },
                 ].map((t) => (
-                    <Link key={t.id} to={`/admin/settings/${t.id}`} className={tabClass(t.id)}>
+                    <Link 
+                        key={t.id} 
+                        to={`/admin/settings/${t.id}`} 
+                        className={tabClass(t.id)}
+                    >
                         {t.id === 'booking-link' && <LinkIcon className="w-3.5 h-3.5 mr-1.5" />}
                         {t.label}
                     </Link>
@@ -485,7 +490,7 @@ export default function SettingsPage({ section: propSection }) {
                                     <button
                                         type="submit"
                                         disabled={isSaving}
-                                        className="px-6 py-3 bg-[#D99A29] hover:bg-[#c88d25] text-white rounded-lg font-bold text-[11px] uppercase tracking-widest transition-colors flex items-center justify-center gap-2 shrink-0 shadow-sm disabled:opacity-50"
+                                        className="px-6 py-3 bg-[#B4912B] hover:bg-[#9A7B25] text-white rounded-lg font-bold text-[11px] uppercase tracking-widest transition-colors flex items-center justify-center gap-2 shrink-0 shadow-sm disabled:opacity-50"
                                     >
                                         <Save className="w-4 h-4" />
                                         {isSaving ? 'SAVING…' : 'SAVE PROFILE'}
@@ -547,17 +552,17 @@ export default function SettingsPage({ section: propSection }) {
                             {/* Main Card Header */}
                             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between pb-6 border-b border-gray-100 gap-4 pt-2">
                                 <div className="flex items-center gap-4">
-                                    <div className="w-12 h-12 rounded-2xl bg-[#F6F4FF] flex items-center justify-center shrink-0">
-                                        <ShieldCheck className="w-6 h-6 text-[#7F56D9]" />
+                                    <div className="w-12 h-12 rounded-2xl bg-[#F6F4FF] dark:bg-purple-500/20 flex items-center justify-center shrink-0">
+                                        <ShieldCheck className="w-6 h-6 text-[#7F56D9] dark:text-purple-400" />
                                     </div>
                                     <div>
-                                        <h2 className="text-[17px] font-bold text-gray-900 tracking-tight">Security</h2>
-                                        <p className="text-[13px] text-gray-500 font-medium mt-0.5">
+                                        <h2 className="text-[17px] font-bold text-gray-900 dark:text-slate-100 tracking-tight">Security</h2>
+                                        <p className="text-[13px] text-gray-500 dark:text-slate-400 font-medium mt-0.5">
                                             Keep your account secure by using a strong password.
                                         </p>
                                     </div>
                                 </div>
-                                <div className="flex items-center gap-2 px-3 py-1.5 bg-[#ECFDF3] border border-[#D1FADF] rounded-xl text-[#027A48]">
+                                <div className="flex items-center gap-2 px-3 py-1.5 bg-[#ECFDF3] dark:bg-green-500/10 border border-[#D1FADF] dark:border-green-500/20 rounded-xl text-[#027A48] dark:text-green-400">
                                     <ShieldCheck className="w-4 h-4" />
                                     <span className="text-xs font-bold">Your account is secure</span>
                                 </div>
@@ -575,12 +580,12 @@ export default function SettingsPage({ section: propSection }) {
                                         </div>
 
                                         {/* Row 1-2, Col 2: Password Strength */}
-                                        <div className="border border-gray-100 rounded-xl p-5 bg-white shadow-sm shadow-green-900/5 md:row-span-2 flex flex-col justify-center">
+                                        <div className="border border-gray-100 dark:border-slate-700 rounded-xl p-5 bg-white dark:bg-slate-800 shadow-sm shadow-green-900/5 md:row-span-2 flex flex-col justify-center">
                                             <div className="flex flex-col gap-4">
                                                 <div className="flex items-center gap-3">
-                                                    <ShieldCheck className="w-5 h-5 text-[#12B76A]" />
-                                                    <span className="text-[13px] font-bold text-gray-700">
-                                                        Password strength <span className="text-[#12B76A]">Strong</span>
+                                                    <ShieldCheck className="w-5 h-5 text-[#12B76A] dark:text-green-400" />
+                                                    <span className="text-[13px] font-bold text-gray-700 dark:text-slate-200">
+                                                        Password strength <span className="text-[#12B76A] dark:text-green-400">Strong</span>
                                                     </span>
                                                 </div>
                                                 <div className="flex gap-1.5 h-1.5">
@@ -597,8 +602,8 @@ export default function SettingsPage({ section: propSection }) {
                                                         'Contains a special character'
                                                     ].map((item, idx) => (
                                                         <div key={idx} className="flex items-center gap-2">
-                                                            <CheckCircle2 className="w-4 h-4 text-[#12B76A] fill-[#12B76A]/20" />
-                                                            <span className="text-xs font-medium text-gray-600">{item}</span>
+                                                            <CheckCircle2 className="w-4 h-4 text-[#12B76A] dark:text-green-400 fill-[#12B76A]/20 dark:fill-green-400/20" />
+                                                            <span className="text-xs font-medium text-gray-600 dark:text-slate-400">{item}</span>
                                                         </div>
                                                     ))}
                                                 </div>
@@ -607,7 +612,7 @@ export default function SettingsPage({ section: propSection }) {
 
                                         {/* Row 2, Col 1: Current Password */}
                                         <div className="space-y-2">
-                                            <label className="text-[11px] font-bold text-gray-700 uppercase tracking-widest block">
+                                            <label className="text-[11px] font-bold text-gray-700 dark:text-slate-400 uppercase tracking-widest block">
                                                 CURRENT PASSWORD
                                             </label>
                                             <PasswordField
@@ -615,15 +620,15 @@ export default function SettingsPage({ section: propSection }) {
                                                 onChange={(e) => setPasswordForm({ ...passwordForm, currentPassword: e.target.value })}
                                                 placeholder="••••••••"
                                                 required
-                                                inputClassName="w-full px-4 py-3 rounded-xl allow-curve border border-gray-200 text-sm font-medium text-gray-900 focus:border-primary outline-none transition-all bg-white shadow-sm"
-                                                buttonClassName="text-gray-400 hover:text-gray-600 pr-3"
+                                                inputClassName="w-full pl-4 pr-12 py-3 rounded-xl allow-curve border border-gray-200 dark:border-slate-700 text-sm font-medium text-gray-900 dark:text-slate-100 focus:border-primary outline-none transition-all bg-white dark:bg-slate-800 shadow-sm"
+                                                buttonClassName="text-gray-400 hover:text-gray-600 dark:hover:text-slate-300 pr-3"
                                             />
-                                            <p className="text-[11px] text-gray-500 font-medium pt-1">Enter your current password</p>
+                                            <p className="text-[11px] text-gray-500 dark:text-slate-500 font-medium pt-1">Enter your current password</p>
                                         </div>
 
                                         {/* Row 3, Col 1: New Password */}
                                         <div className="space-y-2">
-                                            <label className="text-[11px] font-bold text-gray-700 uppercase tracking-widest block">
+                                            <label className="text-[11px] font-bold text-gray-700 dark:text-slate-400 uppercase tracking-widest block">
                                                 NEW PASSWORD
                                             </label>
                                             <PasswordField
@@ -632,15 +637,15 @@ export default function SettingsPage({ section: propSection }) {
                                                 placeholder="••••••••"
                                                 required
                                                 minLength={8}
-                                                inputClassName="w-full px-4 py-3 rounded-xl allow-curve border border-gray-200 text-sm font-medium text-gray-900 focus:border-primary outline-none transition-all bg-white shadow-sm"
-                                                buttonClassName="text-gray-400 hover:text-gray-600 pr-3"
+                                                inputClassName="w-full pl-4 pr-12 py-3 rounded-xl allow-curve border border-gray-200 dark:border-slate-700 text-sm font-medium text-gray-900 dark:text-slate-100 focus:border-primary outline-none transition-all bg-white dark:bg-slate-800 shadow-sm"
+                                                buttonClassName="text-gray-400 hover:text-gray-600 dark:hover:text-slate-300 pr-3"
                                             />
-                                            <p className="text-[11px] text-gray-500 font-medium pt-1">Enter your new password</p>
+                                            <p className="text-[11px] text-gray-500 dark:text-slate-500 font-medium pt-1">Enter your new password</p>
                                         </div>
 
                                         {/* Row 3, Col 2: Confirm New Password */}
                                         <div className="space-y-2">
-                                            <label className="text-[11px] font-bold text-gray-700 uppercase tracking-widest block">
+                                            <label className="text-[11px] font-bold text-gray-700 dark:text-slate-400 uppercase tracking-widest block">
                                                 CONFIRM NEW PASSWORD
                                             </label>
                                             <PasswordField
@@ -648,10 +653,10 @@ export default function SettingsPage({ section: propSection }) {
                                                 onChange={(e) => setPasswordForm({ ...passwordForm, confirmPassword: e.target.value })}
                                                 placeholder="••••••••"
                                                 required
-                                                inputClassName="w-full px-4 py-3 rounded-xl allow-curve border border-gray-200 text-sm font-medium text-gray-900 focus:border-primary outline-none transition-all bg-white shadow-sm"
-                                                buttonClassName="text-gray-400 hover:text-gray-600 pr-3"
+                                                inputClassName="w-full pl-4 pr-12 py-3 rounded-xl allow-curve border border-gray-200 dark:border-slate-700 text-sm font-medium text-gray-900 dark:text-slate-100 focus:border-primary outline-none transition-all bg-white dark:bg-slate-800 shadow-sm"
+                                                buttonClassName="text-gray-400 hover:text-gray-600 dark:hover:text-slate-300 pr-3"
                                             />
-                                            <p className="text-[11px] text-gray-500 font-medium pt-1">Re-enter your new password</p>
+                                            <p className="text-[11px] text-gray-500 dark:text-slate-500 font-medium pt-1">Re-enter your new password</p>
                                         </div>
                                     </div>
                                 </div>
@@ -667,7 +672,7 @@ export default function SettingsPage({ section: propSection }) {
                                     <button
                                         type="submit"
                                         disabled={isSaving}
-                                        className="px-6 py-3 bg-[#D99A29] dark:bg-[#D99A29] hover:bg-[#c88d25] dark:hover:bg-[#c88d25] text-white dark:text-white rounded-lg font-bold text-[11px] uppercase tracking-widest transition-colors flex items-center justify-center gap-2 shrink-0 shadow-sm disabled:opacity-50"
+                                        className="px-6 py-3 bg-[#D99A29] dark:!bg-[#B4912B] text-white rounded-lg font-bold text-[11px] uppercase tracking-widest hover:bg-[#c88d25] dark:hover:!bg-[#9A7B25] dark:!border-[#B4912B] transition-colors flex items-center justify-center gap-2 shrink-0 shadow-sm disabled:opacity-50"
                                     >
                                         <Lock className="w-3.5 h-3.5" />
                                         {isSaving ? 'UPDATING…' : 'UPDATE PASSWORD'}
@@ -680,19 +685,19 @@ export default function SettingsPage({ section: propSection }) {
                     {activeTab === 'business' && (
                         <div className="text-left flex flex-col">
                             {/* Main Card Header */}
-                            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between pb-6 border-b border-gray-100 gap-4 pt-2">
+                            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between pb-6 border-b border-gray-100 dark:border-slate-800 gap-4 pt-2">
                                 <div className="flex items-center gap-4">
-                                    <div className="w-12 h-12 rounded-2xl bg-[#FFF9F0] flex items-center justify-center shrink-0">
+                                    <div className="w-12 h-12 rounded-2xl bg-[#FFF9F0] dark:bg-orange-900/20 flex items-center justify-center shrink-0">
                                         <Building2 className="w-6 h-6 text-[#D99A29]" />
                                     </div>
                                     <div>
-                                        <h2 className="text-[17px] font-bold text-gray-900 tracking-tight">Business & Tax Information</h2>
-                                        <p className="text-[13px] text-gray-500 font-medium mt-0.5">
+                                        <h2 className="text-[17px] font-bold text-gray-900 dark:text-slate-100 tracking-tight">Business & Tax Information</h2>
+                                        <p className="text-[13px] text-gray-500 dark:text-slate-400 font-medium mt-0.5">
                                             Legal name, GST, and defaults — stored on your salon record ( PATCH /tenants/me ).
                                         </p>
                                     </div>
                                 </div>
-                                <div className="flex items-center gap-2 px-3 py-1.5 bg-[#ECFDF3] border border-[#D1FADF] rounded-xl text-[#027A48]">
+                                <div className="flex items-center gap-2 px-3 py-1.5 bg-[#ECFDF3] dark:bg-emerald-900/20 border border-[#D1FADF] dark:border-emerald-500/30 rounded-xl text-[#027A48] dark:text-emerald-400">
                                     <CheckCircle2 className="w-3.5 h-3.5" />
                                     <span className="text-[11px] font-bold">Synced with your account</span>
                                 </div>
@@ -842,16 +847,24 @@ export default function SettingsPage({ section: propSection }) {
                                 {/* Footer (Checkbox and Save button) */}
                                 <div className="pt-6 border-t border-gray-100 flex flex-col sm:flex-row items-center justify-between gap-6">
                                     <div className="flex items-start gap-3">
-                                        <div className="relative flex items-center justify-center mt-0.5 shrink-0">
+                                        <label className="relative flex items-center justify-center mt-0.5 shrink-0 cursor-pointer group">
                                             <input
                                                 type="checkbox"
                                                 id="inclusive"
                                                 checked={fiscal.inclusiveTax}
                                                 onChange={(e) => setFiscal({ ...fiscal, inclusiveTax: e.target.checked })}
-                                                className="peer appearance-none w-5 h-5 rounded border border-[#D99A29] bg-white checked:bg-[#D99A29] checked:border-[#D99A29] cursor-pointer transition-all"
+                                                className="sr-only"
                                             />
-                                            <Check className="w-3.5 h-3.5 text-white absolute pointer-events-none opacity-0 peer-checked:opacity-100 transition-opacity" />
-                                        </div>
+                                            <span className={`w-5 h-5 flex items-center justify-center !rounded-[4px] border-2 transition-all shadow-sm ${
+                                                fiscal.inclusiveTax 
+                                                    ? '!bg-[#D99A29] !border-[#D99A29] dark:!bg-[#B4912B] dark:!border-[#B4912B]' 
+                                                    : 'border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-800 group-hover:border-[#D99A29]'
+                                            }`}>
+                                                {fiscal.inclusiveTax && (
+                                                    <Check className="w-3.5 h-3.5 text-white" strokeWidth={3} />
+                                                )}
+                                            </span>
+                                        </label>
                                         <div>
                                             <label htmlFor="inclusive" className="text-[13px] font-bold text-gray-900 dark:text-slate-100 cursor-pointer select-none">
                                                 Prices are inclusive of tax
@@ -881,12 +894,12 @@ export default function SettingsPage({ section: propSection }) {
                                 {/* Header */}
                                 <div>
                                     <div className="flex items-center gap-4">
-                                        <div className="w-12 h-12 rounded-full bg-amber-100 flex items-center justify-center">
-                                            <FileText className="w-6 h-6 text-amber-600" />
+                                        <div className="w-12 h-12 rounded-2xl bg-amber-100 dark:bg-amber-500/20 flex items-center justify-center">
+                                            <FileText className="w-6 h-6 text-amber-600 dark:text-amber-500" />
                                         </div>
                                         <div>
-                                            <h2 className="text-[16px] font-bold text-gray-900 tracking-tight">Terms & Conditions</h2>
-                                            <p className="text-[12px] text-gray-500 font-medium mt-0.5">
+                                            <h2 className="text-[16px] font-bold text-gray-900 dark:text-slate-100 tracking-tight">Terms & Conditions</h2>
+                                            <p className="text-[12px] text-gray-500 dark:text-slate-400 font-medium mt-0.5">
                                                 These terms will be printed at the bottom of your invoices / bills.
                                             </p>
                                         </div>
@@ -930,18 +943,19 @@ export default function SettingsPage({ section: propSection }) {
                                             {termsList.map((term, idx) => (
                                                 <div
                                                     key={idx}
-                                                    className="flex items-center gap-3 px-3 py-2 border-b border-gray-100 last:border-0 group"
+                                                    className="flex items-center gap-3 px-3 py-2 border-b border-gray-100 dark:border-slate-700/50 last:border-0 group"
                                                 >
                                                     {/* Grip / Number */}
                                                     <div className="flex items-center gap-4 shrink-0">
                                                         <GripVertical className="w-4 h-4 text-gray-400 cursor-grab" />
-                                                        <span className="w-7 h-7 rounded-full bg-gray-100 text-gray-600 text-[11px] font-black flex items-center justify-center">
+                                                        <span className="w-7 h-7 rounded-full bg-gray-100 dark:bg-slate-800 text-gray-600 dark:text-slate-400 text-[11px] font-black flex items-center justify-center">
                                                             {idx + 1}
                                                         </span>
                                                     </div>
 
                                                     {/* Term Text (editable) */}
                                                     <input
+                                                        ref={(el) => (termInputRefs.current[idx] = el)}
                                                         type="text"
                                                         value={term}
                                                         onChange={(e) => {
@@ -949,14 +963,21 @@ export default function SettingsPage({ section: propSection }) {
                                                             updated[idx] = e.target.value;
                                                             setTermsList(updated);
                                                         }}
-                                                        className="flex-1 text-[13px] font-semibold text-gray-800 bg-transparent outline-none py-1 focus:border-b focus:border-amber-500/30 transition-all"
+                                                        className="flex-1 text-[13px] font-semibold text-gray-800 dark:text-slate-200 bg-transparent !border-0 !ring-0 !outline-none focus:!border-0 focus:!ring-0 focus:!outline-none p-0 py-1 transition-all"
                                                     />
 
                                                     {/* Reorder & Delete */}
                                                     <div className="flex items-center gap-2 shrink-0">
                                                         <button
                                                             type="button"
-                                                            className="p-2 border border-gray-200 rounded-lg bg-white hover:bg-gray-50 text-gray-500 transition-all shadow-sm"
+                                                            onClick={() => {
+                                                                if (termInputRefs.current[idx]) {
+                                                                    termInputRefs.current[idx].focus();
+                                                                    const len = termInputRefs.current[idx].value.length;
+                                                                    termInputRefs.current[idx].setSelectionRange(len, len);
+                                                                }
+                                                            }}
+                                                            className="p-2 border border-gray-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 hover:bg-gray-50 dark:hover:bg-slate-700 text-gray-500 dark:text-slate-400 transition-all shadow-sm"
                                                             title="Edit term"
                                                         >
                                                             <Pencil className="w-3.5 h-3.5" />
@@ -964,7 +985,7 @@ export default function SettingsPage({ section: propSection }) {
                                                         <button
                                                             type="button"
                                                             onClick={() => handleRemoveTerm(idx)}
-                                                            className="p-2 border border-rose-100 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-500 transition-all shadow-sm"
+                                                            className="p-2 border border-rose-100 dark:border-rose-900/50 rounded-lg bg-rose-50 dark:bg-rose-500/10 hover:bg-rose-100 dark:hover:bg-rose-500/20 text-rose-500 dark:text-rose-400 transition-all shadow-sm"
                                                             title="Remove term"
                                                         >
                                                             <Trash2 className="w-3.5 h-3.5" />
@@ -984,7 +1005,7 @@ export default function SettingsPage({ section: propSection }) {
                                             <button
                                                 type="submit"
                                                 disabled={isSaving}
-                                                className="px-6 py-3 w-full sm:w-auto bg-amber-600 text-white rounded-lg font-bold text-[11px] uppercase tracking-widest hover:bg-amber-700 transition-all text-center flex items-center justify-center gap-2 shadow-sm disabled:opacity-50"
+                                                className="px-6 py-3 w-full sm:w-auto bg-amber-600 dark:!bg-[#B4912B] text-white rounded-lg font-bold text-[11px] uppercase tracking-widest hover:bg-amber-700 dark:hover:!bg-[#9A7B25] dark:!border-[#B4912B] transition-all text-center flex items-center justify-center gap-2 shadow-sm disabled:opacity-50"
                                             >
                                                 <Save className="w-4 h-4" />
                                                 {isSaving ? 'Saving…' : 'Save Terms & Conditions'}
@@ -1001,9 +1022,7 @@ export default function SettingsPage({ section: propSection }) {
                                         <h3 className="text-[11px] font-black text-gray-700 dark:text-slate-300 uppercase tracking-widest">
                                             Invoice Preview
                                         </h3>
-                                        <button className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-gray-600 dark:text-slate-400 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-600 px-4 py-2 rounded-lg hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors shadow-sm">
-                                            <Eye className="w-3.5 h-3.5" /> Preview on Invoice
-                                        </button>
+
                                     </div>
                                     <div className="p-6">
                                         <div className="flex gap-4">
@@ -1038,9 +1057,7 @@ export default function SettingsPage({ section: propSection }) {
                                         Build trust and avoid misunderstandings with clear policies.
                                     </p>
                                 </div>
-                                <button className="px-5 py-2.5 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-blue-600 dark:text-blue-400 rounded-lg font-bold text-[11px] hover:bg-blue-50 dark:hover:bg-slate-700 transition-colors flex items-center justify-center gap-2 shrink-0 shadow-sm mt-2 sm:mt-0">
-                                    Learn more <ExternalLink className="w-3.5 h-3.5" />
-                                </button>
+
                             </div>
                         </div>
                     )}
@@ -1049,8 +1066,8 @@ export default function SettingsPage({ section: propSection }) {
                         <div className="space-y-5 text-left">
                             <div>
                                 <div className="flex items-center gap-3">
-                                    <div className="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center">
-                                        <LinkIcon className="w-5 h-5 text-purple-600" />
+                                    <div className="w-10 h-10 rounded-full bg-purple-100 dark:bg-purple-500/20 flex items-center justify-center">
+                                        <LinkIcon className="w-5 h-5 text-purple-600 dark:text-purple-400" />
                                     </div>
                                     <div>
                                         <h2 className="text-[14px] font-bold text-gray-900 tracking-tight">Online Appointment Booking Page</h2>
@@ -1113,15 +1130,34 @@ export default function SettingsPage({ section: propSection }) {
                                         >
                                             Open Large QR Code <ExternalLink className="w-3 h-3" />
                                         </a>
-                                        <a
-                                            href={`https://api.qrserver.com/v1/create-qr-code/?size=500x500&data=${encodeURIComponent(
-                                                `${window.location.origin}/app/booking?tenantId=${salon?._id || ''}`
-                                            )}`}
-                                            download="Booking_QR_Code.png"
+                                        <button
+                                            type="button"
+                                            onClick={async () => {
+                                                try {
+                                                    const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=500x500&data=${encodeURIComponent(
+                                                        `${window.location.origin}/app/booking?tenantId=${salon?._id || ''}`
+                                                    )}`;
+                                                    const response = await fetch(qrUrl);
+                                                    if (!response.ok) throw new Error('Network response was not ok');
+                                                    const blob = await response.blob();
+                                                    const url = window.URL.createObjectURL(blob);
+                                                    const link = document.createElement('a');
+                                                    link.href = url;
+                                                    link.setAttribute('download', 'Booking_QR_Code.png');
+                                                    document.body.appendChild(link);
+                                                    link.click();
+                                                    link.remove();
+                                                    window.URL.revokeObjectURL(url);
+                                                    toast.success('QR Code downloaded successfully!');
+                                                } catch (error) {
+                                                    console.error('Error downloading QR code:', error);
+                                                    toast.error('Failed to download QR code. Please try opening the large QR code and saving it manually.');
+                                                }
+                                            }}
                                             className="text-[10px] font-bold text-purple-700 uppercase tracking-widest flex items-center justify-center gap-2 px-5 py-3 border border-purple-200 bg-purple-50 rounded-xl hover:bg-purple-100 transition-colors w-full sm:w-auto"
                                         >
                                             <Download className="w-4 h-4" /> Download QR Code
-                                        </a>
+                                        </button>
                                     </div>
                                 </div>
 
@@ -1131,8 +1167,8 @@ export default function SettingsPage({ section: propSection }) {
                                     </h3>
                                     <ul className="space-y-5">
                                         <li className="flex items-start gap-3.5">
-                                            <div className="w-8 h-8 rounded-full bg-purple-100 flex items-center justify-center shrink-0 mt-0.5">
-                                                <MessageSquare className="w-4 h-4 text-purple-600" />
+                                            <div className="w-8 h-8 rounded-full bg-purple-100 dark:bg-purple-500/20 flex items-center justify-center shrink-0 mt-0.5">
+                                                <MessageSquare className="w-4 h-4 text-purple-600 dark:text-purple-400" />
                                             </div>
                                             <div>
                                                 <strong className="text-[12px] text-gray-900 font-bold block mb-0.5">WhatsApp / Instagram Bio</strong>
@@ -1140,8 +1176,8 @@ export default function SettingsPage({ section: propSection }) {
                                             </div>
                                         </li>
                                         <li className="flex items-start gap-3.5">
-                                            <div className="w-8 h-8 rounded-full bg-purple-100 flex items-center justify-center shrink-0 mt-0.5">
-                                                <QrCode className="w-4 h-4 text-purple-600" />
+                                            <div className="w-8 h-8 rounded-full bg-purple-100 dark:bg-purple-500/20 flex items-center justify-center shrink-0 mt-0.5">
+                                                <QrCode className="w-4 h-4 text-purple-600 dark:text-purple-400" />
                                             </div>
                                             <div>
                                                 <strong className="text-[12px] text-gray-900 font-bold block mb-0.5">Printed QR Code</strong>
@@ -1149,8 +1185,8 @@ export default function SettingsPage({ section: propSection }) {
                                             </div>
                                         </li>
                                         <li className="flex items-start gap-3.5">
-                                            <div className="w-8 h-8 rounded-full bg-purple-100 flex items-center justify-center shrink-0 mt-0.5">
-                                                <MessageSquare className="w-4 h-4 text-purple-600" />
+                                            <div className="w-8 h-8 rounded-full bg-purple-100 dark:bg-purple-500/20 flex items-center justify-center shrink-0 mt-0.5">
+                                                <MessageSquare className="w-4 h-4 text-purple-600 dark:text-purple-400" />
                                             </div>
                                             <div>
                                                 <strong className="text-[12px] text-gray-900 font-bold block mb-0.5">SMS & WhatsApp Alerts</strong>
@@ -1174,18 +1210,18 @@ export default function SettingsPage({ section: propSection }) {
 
                                 <div className="flex flex-col md:flex-row items-center justify-between gap-3 overflow-x-auto pb-2">
                                     {[
-                                        { step: '01', title: 'Details', desc: 'Name & Phone with quick OTP verification', icon: <UserIcon className="w-5 h-5 text-purple-600" /> },
-                                        { step: '02', title: 'Outlet', desc: 'Choose Nearby or All branches', icon: <MapPin className="w-5 h-5 text-purple-600" /> },
-                                        { step: '03', title: 'Services', desc: 'Select required service catalog', icon: <ClipboardList className="w-5 h-5 text-purple-600" /> },
-                                        { step: '04', title: 'Stylist', desc: 'Pick preferred staff expert', icon: <UserCheck className="w-5 h-5 text-purple-600" /> },
-                                        { step: '05', title: 'Booking', desc: 'Select Date & Time slot, and confirm', icon: <CalendarDays className="w-5 h-5 text-purple-600" /> },
+                                        { step: '01', title: 'Details', desc: 'Name & Phone with quick OTP verification', icon: <UserIcon className="w-5 h-5 text-purple-600 dark:text-purple-400" /> },
+                                        { step: '02', title: 'Outlet', desc: 'Choose Nearby or All branches', icon: <MapPin className="w-5 h-5 text-purple-600 dark:text-purple-400" /> },
+                                        { step: '03', title: 'Services', desc: 'Select required service catalog', icon: <ClipboardList className="w-5 h-5 text-purple-600 dark:text-purple-400" /> },
+                                        { step: '04', title: 'Stylist', desc: 'Pick preferred staff expert', icon: <UserCheck className="w-5 h-5 text-purple-600 dark:text-purple-400" /> },
+                                        { step: '05', title: 'Booking', desc: 'Select Date & Time slot, and confirm', icon: <CalendarDays className="w-5 h-5 text-purple-600 dark:text-purple-400" /> },
                                     ].map((s, i, arr) => (
                                         <div key={s.step} className="flex items-center flex-1 min-w-[130px]">
                                             <div className="bg-white border border-gray-200 p-5 rounded-2xl flex flex-col items-center text-center relative shadow-sm flex-1 min-h-[150px] justify-center w-full">
-                                                <div className="absolute top-3 left-3 w-6 h-6 rounded-full bg-purple-50 border border-purple-100 flex items-center justify-center text-[10px] font-bold text-purple-700">
+                                                <div className="absolute top-3 left-3 w-6 h-6 rounded-full bg-purple-50 dark:bg-purple-500/10 border border-purple-100 dark:border-purple-500/20 flex items-center justify-center text-[10px] font-bold text-purple-700 dark:text-purple-400">
                                                     {s.step}
                                                 </div>
-                                                <div className="mb-3 mt-4 w-12 h-12 rounded-full bg-purple-100 flex items-center justify-center">
+                                                <div className="mb-3 mt-4 w-12 h-12 rounded-full bg-purple-100 dark:bg-purple-500/20 flex items-center justify-center">
                                                     {s.icon}
                                                 </div>
                                                 <h4 className="text-[11px] font-bold text-gray-900 mb-1">{s.title}</h4>
@@ -1209,14 +1245,14 @@ export default function SettingsPage({ section: propSection }) {
 
             {/* Bottom Banner for Booking Link */}
             {activeTab === 'booking-link' && (
-                <div className="bg-white border border-slate-100 rounded-2xl px-6 flex items-center justify-between shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)] overflow-hidden relative">
+                <div className="bg-white dark:bg-slate-800/50 border border-slate-100 dark:border-slate-700 rounded-2xl px-6 flex items-center justify-between shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)] overflow-hidden relative">
                     <div className="flex items-center gap-4 py-5 z-10 w-full md:w-2/3">
-                        <div className="w-[52px] h-[52px] rounded-full bg-[#f0fdf4] flex items-center justify-center shrink-0">
-                            <ShieldCheck className="w-6 h-6 text-[#16a34a]" strokeWidth={2.5} />
+                        <div className="w-[52px] h-[52px] rounded-2xl bg-[#f0fdf4] dark:bg-green-500/10 flex items-center justify-center shrink-0">
+                            <ShieldCheck className="w-6 h-6 text-[#16a34a] dark:text-green-500" strokeWidth={2.5} />
                         </div>
                         <div className="flex flex-col justify-center">
-                            <h3 className="text-[15px] font-black text-slate-900 tracking-tight mb-1">We're here to help!</h3>
-                            <p className="text-[12px] font-medium text-slate-500">
+                            <h3 className="text-[15px] font-black text-slate-900 dark:text-slate-100 tracking-tight mb-1">We're here to help!</h3>
+                            <p className="text-[12px] font-medium text-slate-500 dark:text-slate-400">
                                 Your satisfaction is our priority. Reach out anytime.
                             </p>
                         </div>
@@ -1235,8 +1271,8 @@ export default function SettingsPage({ section: propSection }) {
             {activeTab === 'security' && (
                 <div className="bg-[#F0FDF4] dark:bg-green-900/10 border border-[#bbf7d0] dark:border-green-500/20 rounded-2xl p-6 sm:p-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 shadow-sm w-full">
                     <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 rounded-full bg-[#16a34a] dark:bg-green-600 flex items-center justify-center shrink-0">
-                            <ShieldCheck className="w-6 h-6 text-white" />
+                        <div className="w-12 h-12 rounded-2xl bg-[#ECFDF3] dark:bg-green-900/20 flex items-center justify-center shrink-0">
+                            <ShieldCheck className="w-6 h-6 text-[#027A48] dark:text-green-500" />
                         </div>
                         <div>
                             <h3 className="text-[14px] font-bold text-gray-900 dark:text-slate-100 tracking-tight">Your security matters</h3>
@@ -1252,10 +1288,10 @@ export default function SettingsPage({ section: propSection }) {
                                 Reach out to our support team for any security related assistance.
                             </p>
                         </div>
-                        <button className="px-5 py-2.5 bg-white dark:bg-slate-800 border border-[#22c55e] dark:border-green-500 text-[#16a34a] dark:text-white rounded-lg font-bold text-xs hover:bg-[#F0FDF4] dark:hover:bg-slate-700 transition-colors flex items-center gap-2 shrink-0 whitespace-nowrap">
+                        <Link to="/admin/support" className="px-5 py-2.5 bg-white dark:bg-slate-800 border border-[#22c55e] dark:border-green-500 text-[#16a34a] dark:text-white rounded-lg font-bold text-xs hover:bg-[#F0FDF4] dark:hover:bg-slate-700 transition-colors flex items-center gap-2 shrink-0 whitespace-nowrap">
                             <Headset className="w-4 h-4" />
                             <span>Contact Support</span>
-                        </button>
+                        </Link>
                     </div>
                 </div>
             )}
@@ -1263,8 +1299,8 @@ export default function SettingsPage({ section: propSection }) {
             {activeTab === 'business' && (
                 <div className="bg-[#F0FDF4] dark:bg-green-900/10 border border-[#bbf7d0] dark:border-green-500/20 rounded-2xl p-6 sm:p-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 shadow-sm w-full mt-6">
                     <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 rounded-full bg-[#16a34a] dark:bg-green-600 flex items-center justify-center shrink-0">
-                            <ShieldCheck className="w-6 h-6 text-white" />
+                        <div className="w-12 h-12 rounded-2xl bg-[#ECFDF3] dark:bg-green-900/20 flex items-center justify-center shrink-0">
+                            <ShieldCheck className="w-6 h-6 text-[#027A48] dark:text-green-500" />
                         </div>
                         <div>
                             <h3 className="text-[14px] font-bold text-gray-900 dark:text-slate-100 tracking-tight">Secure & Compliant</h3>
@@ -1280,10 +1316,10 @@ export default function SettingsPage({ section: propSection }) {
                                 Contact support for any queries related to business & tax information.
                             </p>
                         </div>
-                        <button className="px-5 py-2.5 bg-white dark:bg-slate-800 border border-[#22c55e] dark:border-green-500 text-[#16a34a] dark:text-white rounded-lg font-bold text-xs hover:bg-[#F0FDF4] dark:hover:bg-slate-700 transition-colors flex items-center gap-2 shrink-0 whitespace-nowrap">
+                        <Link to="/admin/support" className="px-5 py-2.5 bg-white dark:bg-slate-800 border border-[#22c55e] dark:border-green-500 text-[#16a34a] dark:text-white rounded-lg font-bold text-xs hover:bg-[#F0FDF4] dark:hover:bg-slate-700 transition-colors flex items-center gap-2 shrink-0 whitespace-nowrap">
                             <Headset className="w-4 h-4" />
                             <span>Contact Support</span>
-                        </button>
+                        </Link>
                     </div>
                 </div>
             )}
@@ -1292,8 +1328,8 @@ export default function SettingsPage({ section: propSection }) {
             {activeTab === 'profile' && (
                 <div className="bg-[#F0FDF4] dark:bg-green-900/10 border border-[#bbf7d0] dark:border-green-500/20 rounded-2xl p-6 sm:p-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 shadow-sm w-full mt-6">
                     <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 rounded-full bg-[#16a34a] dark:bg-green-600 flex items-center justify-center shrink-0">
-                            <ShieldCheck className="w-6 h-6 text-white" />
+                        <div className="w-12 h-12 rounded-2xl bg-[#ECFDF3] dark:bg-green-900/20 flex items-center justify-center shrink-0">
+                            <ShieldCheck className="w-6 h-6 text-[#027A48] dark:text-green-500" />
                         </div>
                         <div>
                             <h3 className="text-[14px] font-bold text-gray-900 dark:text-slate-100 tracking-tight">Your data is safe with us</h3>
@@ -1302,11 +1338,7 @@ export default function SettingsPage({ section: propSection }) {
                             </p>
                         </div>
                     </div>
-                    <div className="flex shrink-0">
-                        <button className="px-5 py-2.5 bg-white dark:bg-slate-800 border border-[#22c55e] dark:border-green-500 text-[#16a34a] dark:text-green-400 rounded-lg font-bold text-xs hover:bg-[#F0FDF4] dark:hover:bg-slate-700 transition-colors flex items-center gap-2 shadow-sm">
-                            Learn about security <ExternalLink className="w-4 h-4" />
-                        </button>
-                    </div>
+
                 </div>
             )}
         </div>
