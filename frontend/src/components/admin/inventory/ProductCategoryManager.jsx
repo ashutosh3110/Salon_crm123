@@ -213,13 +213,19 @@ export default function ProductCategoryManager() {
                                             </div>
                                         </td>
                                         <td className="pr-8 pl-4 py-6">
+                                            <style>{`
+                                                html body .admin-panel button.edit-metadata-btn svg { stroke: #64748b !important; }
+                                                html body .admin-panel button.edit-metadata-btn:hover svg { stroke: #ffffff !important; }
+                                                html body .admin-panel button.purge-metadata-btn svg { stroke: #f43f5e !important; }
+                                                html body .admin-panel button.purge-metadata-btn:hover svg { stroke: #ffffff !important; }
+                                            `}</style>
                                             <div className="flex items-center justify-start gap-2">
                                                 <button
                                                     onClick={() => handleEdit(cat)}
-                                                    className="group/btn p-2.5 allow-curve rounded-xl border border-border bg-surface !text-slate-500 hover:!bg-slate-800 hover:!text-white hover:!border-slate-800 transition-all active:scale-95 shadow-sm shrink-0"
+                                                    className="group/btn p-2.5 allow-curve rounded-xl border border-border bg-surface !text-slate-500 hover:!bg-slate-800 hover:!text-white hover:!border-slate-800 transition-all active:scale-95 shadow-sm shrink-0 edit-metadata-btn"
                                                     title="Edit Metadata"
                                                 >
-                                                    <Edit2 className="w-4 h-4 !stroke-slate-500 group-hover/btn:!stroke-white" />
+                                                    <Edit2 className="w-4 h-4" />
                                                 </button>
                                                 <button
                                                     onClick={() => {
@@ -227,10 +233,10 @@ export default function ProductCategoryManager() {
                                                             deleteProductCategory(cat._id);
                                                         }
                                                     }}
-                                                    className="group/btn p-2.5 allow-curve rounded-xl border border-border bg-surface !text-slate-500 hover:!bg-rose-500 hover:!text-white hover:!border-rose-500 transition-all active:scale-95 shadow-sm shrink-0"
+                                                    className="group/btn p-2.5 allow-curve rounded-xl border border-border bg-surface !text-slate-500 hover:!bg-rose-500 hover:!text-white hover:!border-rose-500 transition-all active:scale-95 shadow-sm shrink-0 purge-metadata-btn"
                                                     title="Purge Entry"
                                                 >
-                                                    <Trash2 className="w-4 h-4 !stroke-slate-500 group-hover/btn:!stroke-white" />
+                                                    <Trash2 className="w-4 h-4" />
                                                 </button>
                                             </div>
                                         </td>

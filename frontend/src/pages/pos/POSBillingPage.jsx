@@ -3582,11 +3582,29 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                                                 const isIncl = (item.isInclusiveTax === true || String(item.isInclusiveTax) === 'true' || (item.isInclusiveTax === undefined && !!fiscal?.inclusiveTax));
                                                 const rate = item.type === 'service' ? totals.serviceGstRate : totals.productGstRate;
                                                 return isIncl
-                                                    ? <span className="text-[10px] font-black px-2 py-0.5 rounded-md leading-none w-fit bg-emerald-100 text-emerald-800">{rate}%</span>
-                                                    : <span className="text-[10px] font-black px-2 py-0.5 rounded-md leading-none w-fit bg-blue-100 text-blue-800">Excl.</span>;
+                                                    ? <span className="text-[10px] font-black px-2 py-0.5 rounded-md leading-none w-fit bg-emerald-100 text-emerald-800 tax-badge-incl">{rate}%</span>
+                                                    : <span className="text-[10px] font-black px-2 py-0.5 rounded-md leading-none w-fit bg-blue-100 text-blue-800 tax-badge-excl">Excl.</span>;
                                             })()}
                                         </div>
                                         <div className="flex flex-col gap-1">
+                                            <style>{`
+                                                html body #root div button.discount-btn-active,
+                                                html:not(.dark) body #root div button.discount-btn-active { color: #ffffff !important; -webkit-text-fill-color: #ffffff !important; }
+                                                
+                                                html body #root div button.discount-btn-inactive,
+                                                html:not(.dark) body #root div button.discount-btn-inactive { color: #64748b !important; -webkit-text-fill-color: #64748b !important; }
+                                                
+                                                html body #root div input.discount-input,
+                                                html:not(.dark) body #root div input.discount-input { color: #0f172a !important; -webkit-text-fill-color: #0f172a !important; }
+                                                
+                                                html.dark body #root div input.discount-input { color: #ffffff !important; -webkit-text-fill-color: #ffffff !important; }
+                                                
+                                                html body #root div span.tax-badge-incl,
+                                                html:not(.dark) body #root div span.tax-badge-incl { color: #065f46 !important; -webkit-text-fill-color: #065f46 !important; }
+                                                
+                                                html body #root div span.tax-badge-excl,
+                                                html:not(.dark) body #root div span.tax-badge-excl { color: #1e40af !important; -webkit-text-fill-color: #1e40af !important; }
+                                            `}</style>
                                             <span className="text-[9px] font-black uppercase tracking-widest text-slate-500">Qty</span>
                                             <div className="flex items-center rounded-lg overflow-hidden h-6 w-fit border border-slate-200 bg-white">
                                                 <button type="button" onClick={() => updateQQty(idx, -1)} className="px-1.5 h-full flex items-center hover:bg-slate-50 border-r border-slate-200 text-slate-500">
@@ -3600,22 +3618,26 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                                         </div>
                                         <div className="flex flex-col gap-1">
                                             <span className="text-[9px] font-black uppercase tracking-widest text-slate-500">Discount</span>
-                                            <div className="flex items-center rounded-lg h-6 overflow-hidden w-[90px] border border-slate-200 bg-white">
+                                            <div className="flex items-center rounded-lg h-6 overflow-hidden w-[110px] border border-slate-200 bg-white">
                                                 <button type="button"
                                                     onClick={() => updateQItemMembershipDiscount(idx, 'percentage', item.membershipDiscountValue || 0)}
-                                                    className="px-1.5 text-[10px] font-black h-full border-r border-slate-200"
-                                                    style={{ background: (item.membershipDiscountType || 'percentage') === 'percentage' ? '#1e293b' : 'transparent', color: (item.membershipDiscountType || 'percentage') === 'percentage' ? '#fff' : '#64748b' }}
+                                                    className={`px-1.5 text-[10px] font-black h-full border-r border-slate-200 ${(item.membershipDiscountType || 'percentage') === 'percentage' ? 'discount-btn-active' : 'discount-btn-inactive'}`}
+                                                    style={{ background: (item.membershipDiscountType || 'percentage') === 'percentage' ? '#1e293b' : 'transparent' }}
                                                 >%</button>
                                                 <button type="button"
                                                     onClick={() => updateQItemMembershipDiscount(idx, 'fixed', item.membershipDiscountValue || 0)}
-                                                    className="px-1.5 text-[10px] font-black h-full border-r border-slate-200"
-                                                    style={{ background: item.membershipDiscountType === 'fixed' ? '#1e293b' : 'transparent', color: item.membershipDiscountType === 'fixed' ? '#fff' : '#64748b' }}
+                                                    className={`px-1.5 text-[10px] font-black h-full border-r border-slate-200 ${item.membershipDiscountType === 'fixed' ? 'discount-btn-active' : 'discount-btn-inactive'}`}
+                                                    style={{ background: item.membershipDiscountType === 'fixed' ? '#1e293b' : 'transparent' }}
                                                 >&#8377;</button>
                                                 <input
                                                     type="number"
-                                                    className="flex-1 text-[11px] font-black outline-none text-center h-full bg-transparent text-slate-900"
-                                                    value={item.membershipDiscountValue || 0}
-                                                    onChange={e => updateQItemMembershipDiscount(idx, item.membershipDiscountType || 'percentage', Math.max(0, Number(e.target.value) || 0))}
+                                                    className="flex-1 min-w-[40px] text-[11px] font-black outline-none text-center h-full bg-transparent text-slate-900 discount-input"
+                                                    value={item.membershipDiscountValue === 0 ? '' : (item.membershipDiscountValue || '')}
+                                                    placeholder="0"
+                                                    onChange={e => {
+                                                        const val = e.target.value;
+                                                        updateQItemMembershipDiscount(idx, item.membershipDiscountType || 'percentage', val === '' ? 0 : Math.max(0, Number(val)));
+                                                    }}
                                                 />
                                             </div>
                                         </div>
