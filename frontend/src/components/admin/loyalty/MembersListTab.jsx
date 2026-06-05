@@ -449,71 +449,71 @@ export default function MembersListTab() {
 
                 {/* Row 2: Stats Cards */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-                    <div className="bg-white border border-slate-200 rounded-2xl p-5 flex items-center gap-4 shadow-sm">
-                        <div className="w-12 h-12 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center shrink-0">
+                    <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 flex items-center gap-4 shadow-sm">
+                        <div className="w-12 h-12 rounded-xl bg-purple-50 dark:bg-purple-950/30 text-purple-600 dark:text-purple-400 flex items-center justify-center shrink-0">
                             <Users className="w-6 h-6" />
                         </div>
                         <div>
-                            <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest leading-none mb-1">TOTAL MEMBERS</p>
-                            <h3 className="text-2xl font-black text-slate-900 leading-none">{meta.total || members.length}</h3>
-                            <p className="text-[10px] text-purple-500 font-bold mt-1.5 leading-none">Active members</p>
+                            <p className="text-[9px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest leading-none mb-1">TOTAL MEMBERS</p>
+                            <h3 className="text-2xl font-black text-slate-900 dark:text-white leading-none">{meta.total || members.length}</h3>
+                            <p className="text-[10px] text-purple-500 dark:text-purple-400 font-bold mt-1.5 leading-none">Active members</p>
                         </div>
                     </div>
                     
-                    <div className="bg-white border border-slate-200 rounded-2xl p-5 flex items-center gap-4 shadow-sm">
-                        <div className="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
+                    <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 flex items-center gap-4 shadow-sm">
+                        <div className="w-12 h-12 rounded-xl bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
                             <CheckCircle2 className="w-6 h-6" />
                         </div>
                         <div>
-                            <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest leading-none mb-1">ACTIVE MEMBERS</p>
-                            <h3 className="text-2xl font-black text-slate-900 leading-none">{members.filter(m => m.loyaltyStatus === 'active').length}</h3>
-                            <p className="text-[10px] text-emerald-500 font-bold mt-1.5 leading-none">100% of total members</p>
+                            <p className="text-[9px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest leading-none mb-1">ACTIVE MEMBERS</p>
+                            <h3 className="text-2xl font-black text-slate-900 dark:text-white leading-none">{members.filter(m => m.loyaltyStatus === 'active').length}</h3>
+                            <p className="text-[10px] text-emerald-500 dark:text-emerald-400 font-bold mt-1.5 leading-none">100% of total members</p>
                         </div>
                     </div>
 
-                    <div className="bg-white border border-slate-200 rounded-2xl p-5 flex items-center gap-4 shadow-sm">
-                        <div className="w-12 h-12 rounded-xl bg-orange-50 text-orange-500 flex items-center justify-center shrink-0">
+                    <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 flex items-center gap-4 shadow-sm">
+                        <div className="w-12 h-12 rounded-xl bg-orange-50 dark:bg-orange-950/30 text-orange-500 dark:text-orange-400 flex items-center justify-center shrink-0">
                             <Calendar className="w-6 h-6" />
                         </div>
                         <div>
-                            <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest leading-none mb-1">EXPIRING SOON</p>
-                            <h3 className="text-2xl font-black text-slate-900 leading-none">0</h3>
-                            <p className="text-[10px] text-orange-500 font-bold mt-1.5 leading-none">In next 30 days</p>
+                            <p className="text-[9px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest leading-none mb-1">EXPIRING SOON</p>
+                            <h3 className="text-2xl font-black text-slate-900 dark:text-white leading-none">0</h3>
+                            <p className="text-[10px] text-orange-500 dark:text-orange-400 font-bold mt-1.5 leading-none">In next 30 days</p>
                         </div>
                     </div>
 
-                    <div className="bg-white border border-slate-200 rounded-2xl p-5 flex items-center gap-4 shadow-sm">
-                        <div className="w-12 h-12 rounded-xl bg-blue-50 text-blue-500 flex items-center justify-center shrink-0">
+                    <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 flex items-center gap-4 shadow-sm">
+                        <div className="w-12 h-12 rounded-xl bg-blue-50 dark:bg-blue-950/30 text-blue-500 dark:text-blue-400 flex items-center justify-center shrink-0">
                             <FileText className="w-6 h-6" />
                         </div>
                         <div>
-                            <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest leading-none mb-1">TOTAL REVENUE</p>
-                            <h3 className="text-2xl font-black text-slate-900 leading-none">₹0</h3>
-                            <p className="text-[10px] text-blue-500 font-bold mt-1.5 leading-none">From membership sales</p>
+                            <p className="text-[9px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest leading-none mb-1">TOTAL REVENUE</p>
+                            <h3 className="text-2xl font-black text-slate-900 dark:text-white leading-none">₹0</h3>
+                            <p className="text-[10px] text-blue-500 dark:text-blue-400 font-bold mt-1.5 leading-none">From membership sales</p>
                         </div>
                     </div>
 
-                    <div className="bg-white border border-slate-200 rounded-2xl p-5 flex items-center gap-4 shadow-sm">
-                        <div className="w-12 h-12 rounded-xl bg-rose-50 text-rose-500 flex items-center justify-center shrink-0">
+                    <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 flex items-center gap-4 shadow-sm">
+                        <div className="w-12 h-12 rounded-xl bg-rose-50 dark:bg-rose-950/30 text-rose-500 dark:text-rose-400 flex items-center justify-center shrink-0">
                             <Star className="w-6 h-6" />
                         </div>
                         <div>
-                            <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest leading-none mb-1">AVG. MEMBERSHIP AGE</p>
-                            <h3 className="text-2xl font-black text-slate-900 leading-none">5 days</h3>
-                            <p className="text-[10px] text-rose-500 font-bold mt-1.5 leading-none">Average since joined</p>
+                            <p className="text-[9px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest leading-none mb-1">AVG. MEMBERSHIP AGE</p>
+                            <h3 className="text-2xl font-black text-slate-900 dark:text-white leading-none">5 days</h3>
+                            <p className="text-[10px] text-rose-500 dark:text-rose-400 font-bold mt-1.5 leading-none">Average since joined</p>
                         </div>
                     </div>
                 </div>
 
                 {/* Filter Pills */}
-                <div className="bg-white border border-slate-200 rounded-xl p-2 w-fit flex items-center gap-2 shadow-sm">
+                <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-2 w-fit flex items-center gap-2 shadow-sm">
                     {['all', 'active', 'expired'].map((f) => (
                         <button
                             key={f}
                             onClick={() => { setFilter(f); setPage(1); }}
                             className={`px-5 py-2.5 rounded-lg font-bold text-xs capitalize transition-all whitespace-nowrap ${filter === f
                                 ? 'bg-[#B4912B] text-white shadow-sm'
-                                : 'text-slate-600 hover:bg-slate-50'
+                                : 'text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800'
                                 }`}
                         >
                             {f} Members
@@ -645,19 +645,19 @@ export default function MembersListTab() {
                                                     <div className="flex items-center justify-center gap-2">
                                                         <button
                                                             onClick={() => { console.log('Eye clicked', member); setSelectedMember(member); }}
-                                                            className="w-8 h-8 flex items-center justify-center rounded-lg bg-slate-50 border border-slate-200 text-slate-500 hover:text-[#B4912B] hover:border-[#B4912B]/30 hover:bg-[#B4912B]/5 transition-all"
+                                                            className="member-action-btn member-view-btn w-8 h-8 flex items-center justify-center rounded-lg bg-slate-50 border border-slate-200 text-slate-500 hover:text-[#B4912B] hover:border-[#B4912B]/30 hover:bg-[#B4912B]/5 transition-all"
                                                         >
                                                             <Eye size={14} />
                                                         </button>
                                                         <button 
                                                             onClick={() => { console.log('Edit clicked', member); handleEditClick(member); }}
-                                                            className="w-8 h-8 flex items-center justify-center rounded-lg bg-slate-50 border border-slate-200 text-slate-500 hover:text-blue-600 hover:border-blue-600/30 hover:bg-blue-50 transition-all"
+                                                            className="member-action-btn member-edit-btn w-8 h-8 flex items-center justify-center rounded-lg bg-slate-50 border border-slate-200 text-slate-500 hover:text-blue-600 hover:border-blue-600/30 hover:bg-blue-50 transition-all"
                                                         >
                                                             <Edit2 size={14} />
                                                         </button>
                                                         <button 
                                                             onClick={() => { console.log('Delete clicked', member); handleDeleteMember(member); }}
-                                                            className="w-8 h-8 flex items-center justify-center rounded-lg bg-rose-50 border border-rose-100 text-rose-500 hover:bg-rose-500 hover:text-white hover:border-rose-500 transition-all"
+                                                            className="member-action-btn member-delete-btn w-8 h-8 flex items-center justify-center rounded-lg bg-rose-50 border border-rose-100 text-rose-500 hover:bg-rose-500 hover:text-white hover:border-rose-500 transition-all"
                                                         >
                                                             <Trash2 size={14} />
                                                         </button>

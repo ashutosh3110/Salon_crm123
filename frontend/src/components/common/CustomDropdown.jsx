@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { ChevronDown, Check } from 'lucide-react';
 
-export default function CustomDropdown({ options = [], value, onChange, label, className = '', placeholder = 'Select...', showFooter = false }) {
+export default function CustomDropdown({ options = [], value, onChange, label, className = '', placeholder = 'Select...', showFooter = false, icon: Icon }) {
     const [isOpen, setIsOpen] = useState(false);
     const dropdownRef = useRef(null);
 
@@ -35,16 +35,20 @@ export default function CustomDropdown({ options = [], value, onChange, label, c
             <button
                 type="button"
                 onClick={() => setIsOpen(!isOpen)}
-                className={`custom-dropdown-trigger w-full flex items-center justify-between gap-2 px-3 py-2 bg-white border transition-all duration-200 text-left allow-curve rounded-xl
+                className={`custom-dropdown-trigger w-full flex items-center justify-between gap-2 px-3 bg-white border transition-all duration-200 text-left allow-curve rounded-xl
+                    ${className.includes('h-11') ? 'h-11' : 'py-2'}
                     ${isOpen
                         ? 'border-primary shadow-[0_0_0_3px_rgba(var(--color-primary-rgb,99,102,241),0.12)]'
                         : 'border-border hover:border-primary/40 shadow-sm hover:shadow-md'
                     }
                 `}
             >
-                <span className={`text-[11px] font-black uppercase tracking-[0.12em] truncate leading-none ${selectedOption ? 'text-text' : 'text-text-muted'}`}>
-                    {selectedOption?.label ?? placeholder}
-                </span>
+                <div className="flex items-center gap-2 truncate">
+                    {Icon && <Icon className="w-3.5 h-3.5 text-text-muted shrink-0" />}
+                    <span className={`text-[11px] font-black uppercase tracking-[0.12em] truncate leading-none ${selectedOption ? 'text-text' : 'text-text-muted'}`}>
+                        {selectedOption?.label ?? placeholder}
+                    </span>
+                </div>
                 <ChevronDown
                     className={`w-3.5 h-3.5 shrink-0 text-text-muted transition-transform duration-300 ${isOpen ? 'rotate-180 text-primary' : ''}`}
                 />
