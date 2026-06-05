@@ -174,11 +174,18 @@ export default function Sidebar({ collapsed, setCollapsed, isHovered, setIsHover
                 ]
             },
             {
-                label: 'Overall Reports',
+                label: 'Reports',
                 icon: ClipboardList,
                 path: '/admin/overall-reports',
                 permission: 'finance_reports',
-                category: 'Operations'
+                category: 'Operations',
+                subItems: [
+                    { label: 'Sales & Billing', icon: DollarSign, path: '/admin/overall-reports?tab=sales' },
+                    { label: 'Bookings & Services', icon: Calendar, path: '/admin/overall-reports?tab=bookings' },
+                    { label: 'Staff Performance', icon: UserCog, path: '/admin/overall-reports?tab=staff' },
+                    { label: 'Customer & CRM', icon: Users, path: '/admin/overall-reports?tab=customer' },
+                    { label: 'Expenses & Finance', icon: CreditCard, path: '/admin/overall-reports?tab=expenses' },
+                ]
             },
             {
                 label: 'HR & Payroll',
@@ -317,7 +324,10 @@ export default function Sidebar({ collapsed, setCollapsed, isHovered, setIsHover
 
     useEffect(() => {
         const currentlyActiveItems = menuItems
-            .filter(item => item.subItems && item.subItems.some(sub => location.pathname === sub.path))
+            .filter(item => item.subItems && item.subItems.some(sub => {
+                const subPathOnly = sub.path.split('?')[0];
+                return location.pathname === subPathOnly;
+            }))
             .map(item => item.label);
 
         if (currentlyActiveItems.length > 0) {
@@ -532,12 +542,9 @@ export default function Sidebar({ collapsed, setCollapsed, isHovered, setIsHover
                                                 className="overflow-hidden ml-7 pl-4 relative space-y-1 mt-1 before:absolute before:left-0 before:top-0 before:bottom-0 before:w-px before:bg-[#e2e8f0]"
                                             >
                                                 {item.subItems.map((sub) => {
-                                                    const isSubActive = (location.pathname === sub.path || location.pathname.startsWith(sub.path + '/')) &&
-                                                        !item.subItems.some(sibling =>
-                                                            sibling.path !== sub.path &&
-                                                            sibling.path.length > sub.path.length &&
-                                                            (location.pathname === sibling.path || location.pathname.startsWith(sibling.path + '/'))
-                                                        );
+                                                    const isSubActive = sub.path.includes('?')
+                                                        ? (location.pathname + location.search) === sub.path
+                                                        : (location.pathname === sub.path || location.pathname.startsWith(sub.path + '/'));
                                                     return (
                                                         <NavLink
                                                             key={sub.path}

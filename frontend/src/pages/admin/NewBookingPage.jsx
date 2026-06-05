@@ -76,6 +76,62 @@ export default function NewBookingPage() {
     const [activeMembership, setActiveMembership] = useState(null);
     const [fetchingMembership, setFetchingMembership] = useState(false);
 
+    const [couponCode, setCouponCode] = useState('');
+    const [promoDiscount, setPromoDiscount] = useState(0);
+    const [isPromoApplied, setIsPromoApplied] = useState(false);
+
+    // Reset promo if customer changes
+    useEffect(() => {
+        setPromoDiscount(0);
+        setIsPromoApplied(false);
+        setCouponCode('');
+    }, [selection.customerId]);
+
+    const applyPromo = async () => {
+        const code = String(couponCode || '').trim().toUpperCase();
+        if (!code) return;
+        if (!selection.customerId) {
+            toast.error('Please select a customer first');
+            return;
+        }
+
+        try {
+            const original = selectedService?.price || 0;
+            let memberDiscount = 0;
+            if (activeMembership && activeMembership.planId) {
+                const plan = activeMembership.planId;
+                if (plan.serviceDiscountType === 'percentage') {
+                    memberDiscount = Math.round(original * (plan.serviceDiscountValue / 100));
+                } else {
+                    memberDiscount = Math.min(original, plan.serviceDiscountValue);
+                }
+            }
+            const discountableAmount = original - memberDiscount;
+
+            const res = await api.post('/promotions/validate-coupon', {
+                couponCode: code,
+                billAmount: discountableAmount,
+                customerId: selection.customerId,
+            });
+
+            const discount = Number(res?.data?.data?.discount || 0);
+            if (discount > 0) {
+                setPromoDiscount(discount);
+                setIsPromoApplied(true);
+                toast.success(`Coupon applied! Discount of ₹${discount} added.`);
+            } else {
+                setPromoDiscount(0);
+                setIsPromoApplied(false);
+                toast.error('Coupon is valid but discount is ₹0');
+            }
+        } catch (e) {
+            console.error(e);
+            toast.error(e.response?.data?.message || 'Failed to validate coupon');
+            setPromoDiscount(0);
+            setIsPromoApplied(false);
+        }
+    };
+
     const { platformSettings, fetchPlatformSettings } = useBusiness();
 
     useEffect(() => {
@@ -213,7 +269,7 @@ export default function NewBookingPage() {
 
     // Price Calculations
     const priceCalculation = useMemo(() => {
-        if (!selectedService) return { original: 0, discount: 0, subtotal: 0, tax: 0, total: 0 };
+        if (!selectedService) return { original: 0, discount: 0, promoDiscount: 0, subtotal: 0, tax: 0, total: 0, gstRate: 18, isInclusive: false, cgst: 0, sgst: 0 };
         
         const original = selectedService.price || 0;
         let discount = 0;
@@ -227,13 +283,31 @@ export default function NewBookingPage() {
             }
         }
 
-        const subtotal = original - discount;
-        const gstRate = platformSettings?.serviceGst || 18;
-        const tax = Math.round(subtotal * (gstRate / 100));
-        const total = subtotal + tax;
+        const isInclusive = selectedService.isInclusiveTax === true || String(selectedService.isInclusiveTax) === 'true';
+        const gstRate = selectedService.gst !== undefined ? selectedService.gst : (platformSettings?.serviceGst || 18);
+        
+        const netAfterMembership = original - discount;
+        const netAfterPromo = Math.max(0, netAfterMembership - promoDiscount);
 
-        return { original, discount, subtotal, tax, total, gstRate };
-    }, [selectedService, activeMembership, platformSettings]);
+        let subtotal = 0; // Taxable subtotal (Excl. GST)
+        let tax = 0;
+        let total = 0;
+
+        if (isInclusive) {
+            subtotal = Number((netAfterPromo / (1 + (gstRate / 100))).toFixed(2));
+            tax = Number((netAfterPromo - subtotal).toFixed(2));
+            total = Number(netAfterPromo.toFixed(2));
+        } else {
+            subtotal = Number(netAfterPromo.toFixed(2));
+            tax = Number((subtotal * (gstRate / 100)).toFixed(2));
+            total = Number((subtotal + tax).toFixed(2));
+        }
+
+        const cgst = Number((tax / 2).toFixed(2));
+        const sgst = Number((tax - cgst).toFixed(2));
+
+        return { original, discount, promoDiscount, subtotal, tax, total, gstRate, isInclusive, cgst, sgst };
+    }, [selectedService, activeMembership, platformSettings, promoDiscount]);
 
     // Reset pagination on search
     useEffect(() => {
@@ -282,9 +356,14 @@ export default function NewBookingPage() {
                 appointmentDate,
                 time: selection.time,
                 duration: selectedService?.duration || 30,
+                subtotal: priceCalculation.original,
                 totalPrice: priceCalculation.total,
+                tax: priceCalculation.tax,
                 taxAmount: priceCalculation.tax,
+                membershipDiscount: priceCalculation.discount,
                 discountAmount: priceCalculation.discount,
+                promoDiscount: priceCalculation.promoDiscount,
+                couponCode: isPromoApplied ? couponCode : undefined,
                 source: 'admin'
             });
 
@@ -807,26 +886,84 @@ export default function NewBookingPage() {
                                     <p className="text-[10px] font-black text-text-muted font-mono tracking-tighter mt-1 opacity-60 italic">{maskPhone(selectedCustomer?.phone, user?.role)}</p>
                                 </div>
                                 <div className="pt-6 border-t border-border space-y-3">
-                                    <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-widest text-text-muted">
-                                        <span>Base Price</span>
-                                        <span>₹{priceCalculation.original}</span>
+                                <div className="pt-6 border-t border-border space-y-4">
+                                    {/* Coupon application block */}
+                                    <div className="flex items-center gap-2">
+                                        <input
+                                            type="text"
+                                            placeholder="ENTER COUPON CODE"
+                                            value={couponCode}
+                                            onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
+                                            disabled={isPromoApplied}
+                                            className="flex-1 bg-surface-alt border border-border p-3 text-[10px] font-black uppercase tracking-widest outline-none rounded-xl"
+                                        />
+                                        {isPromoApplied ? (
+                                            <button
+                                                onClick={() => {
+                                                    setPromoDiscount(0);
+                                                    setIsPromoApplied(false);
+                                                    setCouponCode('');
+                                                    toast.success('Coupon removed');
+                                                }}
+                                                className="px-4 py-3 bg-rose-500 text-white text-[9px] font-black uppercase tracking-widest rounded-xl hover:bg-rose-600 transition-all shadow-sm"
+                                            >
+                                                Remove
+                                            </button>
+                                        ) : (
+                                            <button
+                                                onClick={applyPromo}
+                                                className="px-6 py-3 bg-[#B8860B] hover:bg-[#997009] text-white text-[9px] font-black uppercase tracking-widest rounded-xl transition-all shadow-sm"
+                                            >
+                                                Apply
+                                            </button>
+                                        )}
                                     </div>
-                                    {priceCalculation.discount > 0 && (
-                                        <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-widest text-emerald-600">
+
+                                    <div className="space-y-3 pt-4 border-t border-dashed border-border">
+                                        <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-widest text-text-muted">
+                                            <span>Service Price (MRP)</span>
+                                            <span>₹{priceCalculation.original}</span>
+                                        </div>
+                                        <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-widest text-text-muted">
                                             <span>Member Discount</span>
-                                            <span>- ₹{priceCalculation.discount}</span>
+                                            <span className={priceCalculation.discount > 0 ? "text-emerald-600 font-bold" : ""}>
+                                                {priceCalculation.discount > 0 ? `- ₹${priceCalculation.discount}` : '-'}
+                                            </span>
                                         </div>
-                                    )}
-                                    <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-widest text-text-muted">
-                                        <span>GST ({priceCalculation.gstRate}%)</span>
-                                        <span>+ ₹{priceCalculation.tax}</span>
-                                    </div>
-                                    <div className="pt-3 border-t border-border flex items-end justify-between">
-                                        <div>
-                                            <p className="text-[8px] font-black text-emerald-600 uppercase tracking-[0.3em] font-mono italic">Final Total</p>
-                                            <p className="text-4xl font-black text-emerald-600 tracking-tighter font-mono italic">₹{priceCalculation.total}</p>
+                                        <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-widest text-text-muted">
+                                            <span>Coupon Discount</span>
+                                            <span className={priceCalculation.promoDiscount > 0 ? "text-[#B8860B] font-bold" : ""}>
+                                                {priceCalculation.promoDiscount > 0 ? `- ₹${priceCalculation.promoDiscount}` : '-'}
+                                            </span>
+                                        </div>
+                                        <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-widest text-text-muted">
+                                            <span>Base Price (Excl. GST)</span>
+                                            <span>₹{Number(priceCalculation.subtotal).toFixed(2)}</span>
+                                        </div>
+                                        <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-widest text-text-muted">
+                                            <span>GST ({priceCalculation.gstRate}% {priceCalculation.isInclusive ? 'Incl.' : 'Excl.'})</span>
+                                            <span>{priceCalculation.isInclusive ? '' : '+ '}₹{priceCalculation.tax}</span>
+                                        </div>
+                                        
+                                        <div className="flex justify-between text-[9px] pl-2 font-bold uppercase tracking-wider opacity-60 italic">
+                                            <span>CGST ({priceCalculation.isInclusive ? 'Included' : `${(priceCalculation.gstRate / 2).toFixed(1)}%`})</span>
+                                            <span>{priceCalculation.isInclusive ? '' : '+ '}₹{priceCalculation.cgst}</span>
+                                        </div>
+                                        <div className="flex justify-between text-[9px] pl-2 font-bold uppercase tracking-wider opacity-60 italic">
+                                            <span>SGST ({priceCalculation.isInclusive ? 'Included' : `${(priceCalculation.gstRate / 2).toFixed(1)}%`})</span>
+                                            <span>{priceCalculation.isInclusive ? '' : '+ '}₹{priceCalculation.sgst}</span>
+                                        </div>
+
+                                        <div className="pt-3 border-t border-border flex items-end justify-between">
+                                            <div>
+                                                <p className="text-[8px] font-black text-emerald-600 uppercase tracking-[0.3em] font-mono italic">
+                                                    Final Total ({priceCalculation.isInclusive ? 'Incl. GST' : 'Excl. GST'})
+                                                </p>
+                                                <p className="text-4xl font-black text-emerald-600 tracking-tighter font-mono italic">₹{priceCalculation.total}</p>
+                                            </div>
                                         </div>
                                     </div>
+                                </div>
                                 </div>
                             </div>
                         </div>

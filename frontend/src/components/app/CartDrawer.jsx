@@ -1,11 +1,13 @@
 import { useEffect } from 'react';
-import { X, ShoppingBag, Plus, Minus, ArrowRight } from 'lucide-react';
+import { X, ShoppingBag, Plus, Minus, ArrowRight, Trash2 } from 'lucide-react';
 import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import { getImageUrl } from '../../utils/imageUtils';
+import { useCart } from '../../contexts/CartContext';
 
 const CartDrawer = ({ isOpen, onClose, cart, total, onUpdateQuantity, onRemove, colors, isLight }) => {
     const navigate = useNavigate();
+    const { clearCart } = useCart();
 
     // Prevent background scroll when drawer is open
     useEffect(() => {
@@ -51,9 +53,24 @@ const CartDrawer = ({ isOpen, onClose, cart, total, onUpdateQuantity, onRemove, 
                                 <h3 className="text-2xl font-black uppercase tracking-tight" style={{ color: colors.text, fontFamily: "'SF Pro Display', sans-serif" }}>Your Bag</h3>
                                 <p className="text-[10px] font-black text-[#C8956C] uppercase tracking-[0.3em]">{cart.length} Selections</p>
                             </div>
-                            <button onClick={onClose} className="w-10 h-10 rounded-full bg-black/5 dark:bg-white/5 flex items-center justify-center">
-                                <X className="w-5 h-5" />
-                            </button>
+                            <div className="flex items-center gap-3">
+                                {cart.length > 0 && (
+                                    <button 
+                                        onClick={() => {
+                                            if (window.confirm("Are you sure you want to clear your cart?")) {
+                                                clearCart();
+                                            }
+                                        }}
+                                        className="w-10 h-10 rounded-full bg-rose-500/10 hover:bg-rose-500/20 flex items-center justify-center text-rose-500 border border-rose-500/20 transition-all shrink-0"
+                                        title="Clear Cart"
+                                    >
+                                        <Trash2 className="w-4.5 h-4.5" />
+                                    </button>
+                                )}
+                                <button onClick={onClose} className="w-10 h-10 rounded-full bg-black/5 dark:bg-white/5 flex items-center justify-center shrink-0">
+                                    <X className="w-5 h-5" />
+                                </button>
+                            </div>
                         </div>
 
                         <div className="flex-1 overflow-y-auto p-8 space-y-6 custom-scrollbar">
@@ -80,7 +97,13 @@ const CartDrawer = ({ isOpen, onClose, cart, total, onUpdateQuantity, onRemove, 
                                                         <span className="w-6 text-center text-[10px] font-black tabular-nums">{item.quantity}</span>
                                                         <button onClick={() => onUpdateQuantity(p._id || p.id, 1)} className="w-7 h-7 flex items-center justify-center opacity-40 hover:opacity-100 transition-opacity"><Plus size={10} /></button>
                                                     </div>
-                                                    <button onClick={() => onRemove(p._id || p.id)} className="text-[9px] font-black text-rose-500 uppercase tracking-widest hover:underline px-2">Remove</button>
+                                                    <button 
+                                                        onClick={() => onRemove(p._id || p.id)} 
+                                                        className="w-8 h-8 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 flex items-center justify-center text-rose-500 border border-rose-500/20 transition-all shrink-0"
+                                                        title="Remove item"
+                                                    >
+                                                        <X className="w-4 h-4" />
+                                                    </button>
                                                 </div>
                                             </div>
                                         </div>

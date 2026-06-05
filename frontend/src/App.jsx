@@ -158,6 +158,7 @@ const StockOverviewPage = lazy(() => import('./pages/admin/StockOverviewPage'));
 const AddProductPage = lazy(() => import('./pages/admin/AddProductPage'));
 const ProductDetailsPage = lazy(() => import('./pages/admin/ProductDetailsPage'));
 const ShopOrdersPage = lazy(() => import('./pages/admin/ShopOrdersPage'));
+const ShopOrderDetailPage = lazy(() => import('./pages/admin/ShopOrderDetailPage'));
 const WhatsAppCreditsPage = lazy(() => import('./pages/admin/WhatsAppCreditsPage'));
 const OverallReportsPage = lazy(() => import('./pages/admin/OverallReportsPage'));
 
@@ -466,6 +467,7 @@ function App() {
                             </Route>
                             <Route element={<ProtectedRoute feature="inventory" permission="inventory_shop_orders" />}>
                                 <Route path="/admin/shop-orders" element={<ShopOrdersPage />} />
+                                <Route path="/admin/shop-orders/:id" element={<ShopOrderDetailPage />} />
                             </Route>
 
                             {/* Finance Routes */}

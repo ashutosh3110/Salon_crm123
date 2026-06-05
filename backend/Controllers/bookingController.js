@@ -1,3 +1,4 @@
+const mongoose = require('mongoose');
 const Booking = require('../Models/Booking');
 const { sendWapixoTemplate } = require('../Utils/whatsapp');
 const { spendWallet } = require('../Utils/walletHelper');

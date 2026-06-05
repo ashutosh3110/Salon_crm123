@@ -134,8 +134,15 @@ export default function ProductManager({ products = [], onDelete, onToggleStatus
                                                 </span>
                                             </div>
                                         </td>
-                                        <td className="px-6 py-4 text-[11px] font-black text-text font-mono italic underline decoration-primary/20">
-                                            ₹{(product.sellingPrice || product.price || 0).toLocaleString()}
+                                        <td className="px-6 py-4">
+                                            <div className="flex flex-col">
+                                                <span className="text-[11px] font-black text-text font-mono italic underline decoration-primary/20">
+                                                    ₹{(product.sellingPrice || product.price || 0).toLocaleString()}
+                                                </span>
+                                                <span className={`text-[8px] font-black uppercase font-mono mt-1 ${product.isInclusiveTax ? 'text-emerald-600' : 'text-amber-600'}`}>
+                                                    {product.isInclusiveTax ? 'Incl. GST' : 'Excl. GST'}
+                                                </span>
+                                            </div>
                                         </td>
                                         <td className="px-6 py-4 text-center">
                                             <div className="flex flex-col items-center">

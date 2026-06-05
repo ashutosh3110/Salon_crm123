@@ -202,13 +202,22 @@ export default function BookingsPage() {
 
     const sourceData = useMemo(() => {
         const counts = {};
+        const colors = {
+            'APP': '#B8860B',
+            'ADMIN': '#3B82F6',
+            'WALK-IN': '#10B981',
+            'WALK_IN': '#10B981',
+            'PHONE': '#F59E0B',
+            'SYSTEM': '#64748B'
+        };
         bookings.forEach(b => {
-            const src = b.source || 'SYSTEM';
+            const src = (b.source || 'ADMIN').toUpperCase();
             counts[src] = (counts[src] || 0) + 1;
         });
         return Object.keys(counts).map(src => ({
             name: src,
-            count: counts[src]
+            value: counts[src],
+            color: colors[src] || '#cbd5e1'
         }));
     }, [bookings]);
 
@@ -375,19 +384,40 @@ export default function BookingsPage() {
 
                 {/* Source Chart */}
                 <div className="!bg-white dark:!bg-slate-900 p-4 !rounded-[24px] !border !border-slate-100 dark:!border-slate-800 shadow-[0_2px_12px_-3px_rgba(0,0,0,0.04)] group hover:shadow-md transition-all !overflow-hidden flex flex-col h-full justify-between">
-                    <div className="flex items-center gap-3 mb-3">
-                        <div className="w-9 h-9 rounded-full flex items-center justify-center shrink-0 bg-amber-200 dark:bg-amber-500/25 border border-amber-300 dark:border-amber-700/40">
-                            <Briefcase className="w-4 h-4 text-amber-800 dark:text-amber-300" />
-                        </div>
-                        <span 
-                            style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '0.03em' }} 
-                            className="uppercase text-slate-500 dark:text-slate-450 leading-none !text-left"
-                        >
-                            SOURCES
-                        </span>
-                    </div>
-                    <div className="flex-1 flex items-center justify-center">
-                        <span className="text-[10px] font-black uppercase text-slate-300 dark:text-slate-700 tracking-widest">ENTRY ANALYSIS</span>
+                    <span 
+                        style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '0.03em' }} 
+                        className="uppercase text-slate-500 dark:text-slate-450 leading-none mb-3 !text-left block font-sans"
+                    >
+                        SOURCES
+                    </span>
+                    <div className="flex items-center gap-3 flex-1">
+                        {sourceData.length > 0 ? (
+                            <>
+                                <div className="w-14 h-14 shrink-0 relative">
+                                    <ResponsiveContainer width="100%" height="100%">
+                                        <PieChart>
+                                            <Pie data={sourceData} innerRadius={16} outerRadius={26} paddingAngle={4} dataKey="value" stroke="transparent">
+                                                {sourceData.map((entry, index) => (
+                                                    <Cell key={`cell-${index}`} fill={entry.color} />
+                                                ))}
+                                            </Pie>
+                                        </PieChart>
+                                    </ResponsiveContainer>
+                                </div>
+                                <div className="flex flex-col justify-center gap-1.5 flex-1">
+                                    {sourceData.slice(0, 4).map(d => (
+                                        <div key={d.name} className="flex items-center gap-1.5">
+                                            <div className="w-2 h-2 rounded-sm shrink-0" style={{ backgroundColor: d.color }} />
+                                            <span className="text-[9px] font-bold text-slate-500 whitespace-nowrap"><span className="font-black text-slate-800 dark:text-slate-200">{d.value}</span> {d.name}</span>
+                                        </div>
+                                    ))}
+                                </div>
+                            </>
+                        ) : (
+                            <div className="flex-1 flex items-center justify-center">
+                                <span className="text-[10px] font-black uppercase text-slate-300 dark:text-slate-700 tracking-widest">ENTRY ANALYSIS</span>
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>
@@ -416,7 +446,7 @@ export default function BookingsPage() {
                             { value: 'month', label: 'This Month' }
                         ]}
                         className="w-full xl:w-32 h-8 bg-surface border border-border/40 rounded-xl shadow-sm hover:shadow-md [&>button]:border-none [&>button]:shadow-none [&>button]:h-full [&>button]:py-0 [&>button]:bg-transparent [&_span]:normal-case [&_span]:text-[11px] [&_span]:font-black [&_span]:text-text-muted flex-1 xl:flex-none"
-                        icon={<CalendarDays className="w-3.5 h-3.5 mr-1 text-text-muted" />}
+                        icon={CalendarDays}
                     />
                     <CustomDropdown
                         value={staffFilter}

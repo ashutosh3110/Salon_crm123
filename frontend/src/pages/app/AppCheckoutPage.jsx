@@ -86,12 +86,44 @@ export default function AppCheckoutPage() {
         ? (activeOutlet?.config?.deliveryCharge || 0)
         : 0;
 
-    const tax = useMemo(() => {
-        const pGst = Number(platformSettings?.productGst || 12);
-        return Math.max(0, cartTotal - membershipDiscount - promoDiscount) * (pGst / 100);
-    }, [cartTotal, membershipDiscount, promoDiscount, platformSettings]);
+    const { cgst, sgst, tax, finalTotal, isInclusive, taxPercent } = useMemo(() => {
+        let totalExclusiveTax = 0;
+        let totalInclusiveTax = 0;
+        const discountRatio = cartTotal > 0 ? Math.max(0, cartTotal - membershipDiscount - promoDiscount) / cartTotal : 0;
+        
+        cart.items.forEach(item => {
+            const p = item.productId;
+            if (!p) return;
+            const price = p.sellingPrice || p.price || 0;
+            const qty = item.quantity || 1;
+            const itemDiscountedPrice = price * qty * discountRatio;
+            const itemGstPercent = Number(p.gstPercent !== undefined ? p.gstPercent : (platformSettings?.productGst || 12));
+            
+            if (p.isInclusiveTax) {
+                const taxVal = itemDiscountedPrice - (itemDiscountedPrice / (1 + itemGstPercent / 100));
+                totalInclusiveTax += taxVal;
+            } else {
+                const taxVal = itemDiscountedPrice * (itemGstPercent / 100);
+                totalExclusiveTax += taxVal;
+            }
+        });
 
-    const finalTotal = Math.max(0, cartTotal - membershipDiscount - promoDiscount + deliveryFee + tax);
+        const overallTax = totalExclusiveTax + totalInclusiveTax;
+        const cgstVal = Number((overallTax / 2).toFixed(2));
+        const sgstVal = Number((overallTax - cgstVal).toFixed(2));
+        
+        const discountedSubtotal = Math.max(0, cartTotal - membershipDiscount - promoDiscount);
+        const totalAmount = discountedSubtotal + deliveryFee + totalExclusiveTax;
+
+        return {
+            cgst: cgstVal,
+            sgst: sgstVal,
+            tax: cgstVal + sgstVal,
+            finalTotal: totalAmount,
+            isInclusive: totalExclusiveTax === 0 && totalInclusiveTax > 0,
+            taxPercent: Number(platformSettings?.productGst || 12)
+        };
+    }, [cart.items, cartTotal, membershipDiscount, promoDiscount, deliveryFee, platformSettings]);
 
     useEffect(() => {
         if (activeOutlet) {
@@ -119,13 +151,14 @@ export default function AppCheckoutPage() {
         if (!couponCode.trim()) return;
         setApplyingCoupon(true);
         try {
+            const ratio = cartTotal > 0 ? (cartTotal - membershipDiscount) / cartTotal : 1;
             const res = await api.post('/promotions/validate-coupon', {
                 couponCode: couponCode.trim().toUpperCase(),
                 outletId: localStorage.getItem('active_outlet_id') || undefined,
                 customerId: customer?._id || undefined,
                 items: cart.items.map(item => ({
                     type: 'product',
-                    price: item.productId.sellingPrice || item.productId.price,
+                    price: (item.productId.sellingPrice || item.productId.price) * ratio,
                     quantity: item.quantity
                 }))
             });
@@ -312,8 +345,16 @@ export default function AppCheckoutPage() {
                         </span>
                     </div>
                     <div className="flex justify-between items-center mb-1">
-                        <span className="text-[10px] font-black uppercase tracking-widest opacity-40">Tax (GST {platformSettings?.productGst || 12}%)</span>
-                        <span className="text-sm font-black italic tracking-tighter" style={{ color: colors.text }}>+ ₹{Math.round(tax)}</span>
+                        <span className="text-[10px] font-black uppercase tracking-widest opacity-40">GST Type</span>
+                        <span className="text-sm font-black italic tracking-tighter" style={{ color: colors.text }}>{isInclusive ? 'INCLUSIVE' : 'EXCLUSIVE'}</span>
+                    </div>
+                    <div className="flex justify-between items-center mb-1">
+                        <span className="text-[10px] font-black uppercase tracking-widest opacity-40">CGST ({taxPercent / 2}%)</span>
+                        <span className="text-sm font-black italic tracking-tighter" style={{ color: colors.text }}>{isInclusive ? '' : '+ '}₹{cgst.toFixed(2)}</span>
+                    </div>
+                    <div className="flex justify-between items-center mb-1">
+                        <span className="text-[10px] font-black uppercase tracking-widest opacity-40">SGST ({taxPercent / 2}%)</span>
+                        <span className="text-sm font-black italic tracking-tighter" style={{ color: colors.text }}>{isInclusive ? '' : '+ '}₹{sgst.toFixed(2)}</span>
                     </div>
                     <div className="flex justify-between items-center mb-6 pt-4 border-t border-dashed" style={{ borderTopColor: colors.border }}>
                         <span className="text-[11px] font-black uppercase tracking-[0.2em] opacity-100" style={{ color: colors.text }}>Grand Total</span>

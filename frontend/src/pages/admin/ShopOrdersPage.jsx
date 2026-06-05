@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { createPortal } from 'react-dom';
 import {
     Search,
@@ -42,6 +42,7 @@ const STATUS_FLOW = {
 };
 
 export default function ShopOrdersPage() {
+    const navigate = useNavigate();
     const { outlets, fetchOutlets } = useBusiness();
     const location = useLocation();
     const [orders, setOrders] = useState([]);
@@ -482,7 +483,7 @@ export default function ShopOrdersPage() {
                                             </td>
                                             <td className="pr-12 pl-6 py-5 text-center">
                                                 <button
-                                                    onClick={() => setSelectedOrder(order)}
+                                                    onClick={() => navigate(`/admin/shop-orders/${order._id}`)}
                                                     className="p-2.5 bg-white border border-slate-200 allow-curve rounded-xl transition-all active:scale-95 shadow-sm text-slate-500 hover:text-slate-800 hover:border-slate-300"
                                                 >
                                                     <Eye className="w-4 h-4" />
