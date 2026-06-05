@@ -199,18 +199,18 @@ export default function BookingDetailPage() {
                             <button 
                                 disabled={isUpdating}
                                 onClick={() => handleUpdateStatus('confirmed')}
-                                className="px-4 py-2 bg-indigo-600 text-white text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-600/20 flex items-center gap-2 disabled:opacity-50"
+                                className="px-4 py-2 bg-primary text-white text-[10px] font-black uppercase tracking-widest rounded-xl hover:brightness-110 transition-all shadow-lg shadow-primary/20 flex items-center gap-2 disabled:opacity-50"
                             >
                                 {isUpdating ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle2 className="w-4 h-4" />} 
-                                Accept Booking
+                                <span className="text-white">Accept Booking</span>
                             </button>
                             <button 
                                 disabled={isUpdating}
                                 onClick={() => handleUpdateStatus('cancelled')}
-                                className="px-4 py-2 bg-rose-50 text-rose-600 text-[10px] font-black uppercase tracking-widest rounded-xl border border-rose-100 hover:bg-rose-100 transition-all flex items-center gap-2 disabled:opacity-50"
+                                className="px-4 py-2 bg-rose-50 text-rose-600 text-[10px] font-black uppercase tracking-widest rounded-xl border border-rose-100 hover:bg-rose-100 transition-all flex items-center gap-2 disabled:opacity-50 !text-rose-600"
                             >
-                                {isUpdating ? <Loader2 className="w-4 h-4 animate-spin" /> : <XCircle className="w-4 h-4" />} 
-                                Reject
+                                {isUpdating ? <Loader2 className="w-4 h-4 animate-spin !text-rose-600" /> : <XCircle className="w-4 h-4 !text-rose-600 !stroke-rose-600" />} 
+                                <span className="!text-rose-600">Reject</span>
                             </button>
                         </>
                     )}
@@ -238,7 +238,7 @@ export default function BookingDetailPage() {
                             <div className="space-y-4">
                                 <div>
                                     <p className="text-[10px] font-black text-text-muted uppercase tracking-widest mb-1.5 flex items-center gap-2">
-                                        <Calendar className="w-3.5 h-3.5 text-primary" /> Appointment Date
+                                        <Calendar className="w-3.5 h-3.5 !text-blue-500" /> Appointment Date
                                     </p>
                                     <p className="text-lg font-black text-text uppercase italic tracking-tight">
                                         {new Date(booking.appointmentDate).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
@@ -246,7 +246,7 @@ export default function BookingDetailPage() {
                                 </div>
                                 <div>
                                     <p className="text-[10px] font-black text-text-muted uppercase tracking-widest mb-1.5 flex items-center gap-2">
-                                        <Clock className="w-3.5 h-3.5 text-primary" /> Time Slot
+                                        <Clock className="w-3.5 h-3.5 !text-amber-500" /> Time Slot
                                     </p>
                                     <p className="text-lg font-black text-text uppercase italic tracking-tight">
                                         {booking.time || 'Not Specified'}
@@ -269,7 +269,7 @@ export default function BookingDetailPage() {
                                     onClick={() => setIsReassignModalOpen(true)}
                                     className="w-full py-2 rounded-xl border border-dashed border-border hover:border-primary/50 hover:text-primary text-[9px] font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2"
                                 >
-                                    <RotateCcw className="w-3.5 h-3.5" /> Reassign Staff
+                                    <RotateCcw className="w-3.5 h-3.5 !text-indigo-500" /> Reassign Staff
                                 </button>
                             </div>
                         </div>
@@ -281,7 +281,7 @@ export default function BookingDetailPage() {
                         <div className="bg-surface border border-border rounded-2xl p-5 space-y-4 shadow-sm">
                             <div className="flex items-center justify-between pb-3 border-b border-border">
                                 <h3 className="text-[11px] font-black text-text uppercase tracking-widest">Service Profile</h3>
-                                <ShieldCheck className="w-4 h-4 text-text-muted opacity-30" />
+                                <ShieldCheck className="w-4 h-4 !text-emerald-500" />
                             </div>
                             <div className="flex items-center justify-between p-4 rounded-2xl bg-surface-alt border border-border/50 group hover:border-primary/30 transition-all">
                                 <div className="space-y-1">
@@ -296,7 +296,7 @@ export default function BookingDetailPage() {
                         <div className="bg-surface border border-border rounded-2xl p-5 space-y-4 shadow-sm">
                             <div className="flex items-center justify-between pb-3 border-b border-border">
                                 <h3 className="text-[11px] font-black text-text uppercase tracking-widest">Payment Transaction</h3>
-                                <CreditCard className="w-4 h-4 text-text-muted opacity-30" />
+                                <CreditCard className="w-4 h-4 !text-violet-500" />
                             </div>
                             
                             <div className="space-y-4">
@@ -395,7 +395,7 @@ export default function BookingDetailPage() {
                         <div className="flex items-center justify-between pb-3 border-b border-border">
                             <div className="flex items-center gap-2">
                                 <h3 className="text-[11px] font-black text-text uppercase tracking-widest">Internal Admin Notes</h3>
-                                <FileText className="w-3.5 h-3.5 text-text-muted opacity-30" />
+                                <FileText className="w-3.5 h-3.5 !text-rose-500" />
                             </div>
                             <button 
                                 onClick={() => setIsEditingNotes(!isEditingNotes)}
@@ -488,11 +488,11 @@ export default function BookingDetailPage() {
                         <div className="p-5 space-y-4">
                             <div className="space-y-3 pb-4 border-b border-border">
                                 <div className="flex items-center gap-4 text-text-muted">
-                                    <Phone className="w-4 h-4 text-primary" />
+                                    <Phone className="w-4 h-4 !text-emerald-500" />
                                     <span className="text-xs font-black font-mono">{client.phone || 'N/A'}</span>
                                 </div>
                                 <div className="flex items-center gap-4 text-text-muted">
-                                    <Mail className="w-4 h-4 text-primary" />
+                                    <Mail className="w-4 h-4 !text-sky-500" />
                                     <span className="text-xs font-black truncate max-w-[200px]">{client.email || 'NO_MAIL_SYNCED'}</span>
                                 </div>
                             </div>
@@ -509,7 +509,7 @@ export default function BookingDetailPage() {
                             </div>
 
                             <button className="w-full py-3 rounded-xl bg-surface-alt border border-border hover:bg-black hover:text-white hover:border-black transition-all text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-3 group">
-                                View History <History className="w-4 h-4 group-hover:rotate-12 transition-transform" />
+                                View History <History className="w-4 h-4 !text-indigo-500 group-hover:rotate-12 transition-transform" />
                             </button>
                         </div>
                     </div>
@@ -518,8 +518,8 @@ export default function BookingDetailPage() {
                     <div className="bg-surface border border-border rounded-2xl p-5 space-y-4 shadow-sm">
                         <h3 className="text-[10px] font-black text-text uppercase tracking-[0.3em] opacity-40">Appointment Venue</h3>
                         <div className="flex gap-4">
-                            <div className="w-10 h-10 rounded-2xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
-                                <MapPin className="w-5 h-5" />
+                            <div className="w-10 h-10 rounded-2xl bg-rose-500/10 text-rose-500 flex items-center justify-center shrink-0">
+                                <MapPin className="w-5 h-5 !text-rose-500" />
                             </div>
                             <div className="space-y-2">
                                 <p className="text-xs font-black text-text uppercase tracking-tight">{booking.outletId?.name || 'Main Outlet'}</p>
@@ -561,18 +561,18 @@ export default function BookingDetailPage() {
                         <div className="flex items-center justify-between p-6 border-b border-slate-100 dark:border-slate-700/50">
                             <div className="flex items-center gap-3">
                                 <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
-                                    <RotateCcw className="w-5 h-5" />
+                                    <RotateCcw className="w-5 h-5 !text-primary !stroke-primary" />
                                 </div>
                                 <div>
-                                    <h3 className="text-lg font-bold text-slate-900 dark:text-white">Reassign Expert</h3>
-                                    <p className="text-xs text-slate-500 dark:text-slate-400">Select new professional for this session</p>
+                                    <h3 className="text-lg font-bold text-slate-900 dark:text-white !text-slate-900">Reassign Expert</h3>
+                                    <p className="text-xs text-slate-500 dark:text-slate-400 !text-slate-500">Select new professional for this session</p>
                                 </div>
                             </div>
                             <button 
                                 onClick={() => setIsReassignModalOpen(false)}
                                 className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors"
                             >
-                                <XCircle className="w-5 h-5" />
+                                <XCircle className="w-5 h-5 !text-slate-500 !stroke-slate-500" />
                             </button>
                         </div>
 
@@ -585,16 +585,16 @@ export default function BookingDetailPage() {
                                     className="w-full flex items-center justify-between p-3.5 rounded-xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200/60 dark:border-slate-700/50 hover:border-primary/50 hover:bg-primary/[0.03] dark:hover:bg-primary/[0.02] transition-all group cursor-pointer text-left"
                                 >
                                     <div className="flex items-center gap-4">
-                                        <div className="w-10 h-10 rounded-xl bg-primary/10 dark:bg-primary/20 flex items-center justify-center font-bold text-primary text-sm uppercase">
+                                        <div className="w-10 h-10 rounded-xl bg-primary/10 dark:bg-primary/20 flex items-center justify-center font-bold text-primary text-sm uppercase !text-primary">
                                             {s.name?.[0]}
                                         </div>
                                         <div>
-                                            <p className="text-sm font-bold text-slate-900 dark:text-white group-hover:text-primary transition-colors">{s.name}</p>
-                                            <p className="text-xs text-slate-500 dark:text-slate-400 capitalize">{s.role?.replace('_', ' ')}</p>
+                                            <p className="text-sm font-bold text-slate-900 dark:text-white group-hover:!text-primary transition-colors !text-slate-900">{s.name}</p>
+                                            <p className="text-xs text-slate-500 dark:text-slate-400 capitalize !text-slate-500">{s.role?.replace('_', ' ')}</p>
                                         </div>
                                     </div>
                                     <div className="w-6 h-6 rounded-full bg-primary/10 text-primary flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all">
-                                        <CheckCircle2 className="w-4 h-4" />
+                                        <CheckCircle2 className="w-4 h-4 !text-primary" />
                                     </div>
                                 </button>
                             ))}
@@ -604,7 +604,7 @@ export default function BookingDetailPage() {
                         <div className="p-4 bg-slate-50 dark:bg-slate-800/30 border-t border-slate-100 dark:border-slate-700/50 flex justify-end gap-3">
                             <button 
                                 onClick={() => setIsReassignModalOpen(false)}
-                                className="px-5 py-2.5 rounded-xl text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all"
+                                className="px-5 py-2.5 rounded-xl text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all !text-slate-900"
                             >
                                 Cancel
                             </button>
