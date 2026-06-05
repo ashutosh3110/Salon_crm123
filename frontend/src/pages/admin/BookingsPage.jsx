@@ -51,6 +51,7 @@ import MiniCalendar from '../../components/admin/MiniCalendar';
 import { useAuth } from '../../contexts/AuthContext';
 import { maskPhone } from '../../utils/phoneUtils';
 import CustomDropdown from '../../components/common/CustomDropdown';
+import { toast } from 'react-hot-toast';
 
 const statusColors = {
     upcoming: 'bg-blue-50 dark:bg-blue-950/30 text-blue-600 dark:text-blue-400 border-blue-100 dark:border-blue-900',
@@ -540,9 +541,9 @@ export default function BookingsPage() {
                         <table className="w-full text-left border-collapse min-w-[1000px]">
                             <thead>
                                 <tr className="bg-surface-alt border-b border-border/40">
+                                    <th className="px-4 py-2 text-[9px] font-bold text-text-muted uppercase tracking-widest">Customer</th>
                                     <th className="px-4 py-2 text-[9px] font-bold text-text-muted uppercase tracking-widest">ID</th>
                                     <th className="px-4 py-2 text-[9px] font-bold text-text-muted uppercase tracking-widest">Date & Time ↓</th>
-                                    <th className="px-4 py-2 text-[9px] font-bold text-text-muted uppercase tracking-widest">Customer</th>
                                     <th className="px-4 py-2 text-[9px] font-bold text-text-muted uppercase tracking-widest">Service</th>
                                     <th className="px-4 py-2 text-[9px] font-bold text-text-muted uppercase tracking-widest">Staff</th>
                                     <th className="px-4 py-2 text-[9px] font-bold text-text-muted uppercase tracking-widest">Outlet</th>
@@ -568,9 +569,31 @@ export default function BookingsPage() {
                                             onClick={() => navigate(`/admin/bookings/${b._id}`)}
                                         >
                                             <td className="px-4 py-2">
+                                                <div className="flex items-center gap-2">
+                                                    <div className="w-7 h-7 bg-purple-500/10 flex items-center justify-center text-[10px] font-black text-purple-600 flex-shrink-0 rounded-lg">
+                                                        {b.client?.name?.[0]?.toUpperCase() || 'C'}
+                                                    </div>
+                                                    <div className="flex flex-col min-w-0">
+                                                        <span className="text-[11px] font-black text-text uppercase tracking-tight leading-none truncate">{b.client?.name || 'UNKNOWN'}</span>
+                                                        <span className="text-[9px] font-bold text-text-muted tracking-wider leading-none flex items-center gap-1 mt-0.5">
+                                                            {maskPhone(b.client?.phone, user?.role) || '—'}
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td className="px-4 py-2">
                                                 <div className="flex items-center gap-1">
                                                     <span className="text-[10px] font-black text-text-secondary uppercase tracking-wider">#{b._id?.slice(-6).toUpperCase() || 'NULL'}</span>
-                                                    <button onClick={(e) => { e.stopPropagation(); navigator.clipboard.writeText(b._id); }} className="text-text-muted hover:text-text transition-colors"><Copy className="w-3 h-3" /></button>
+                                                    <button 
+                                                        onClick={(e) => { 
+                                                            e.stopPropagation(); 
+                                                            navigator.clipboard.writeText(b._id); 
+                                                            toast.success('Booking ID copied to clipboard!');
+                                                        }} 
+                                                        className="text-text-muted hover:text-text transition-colors p-1"
+                                                    >
+                                                        <Copy className="w-3 h-3" />
+                                                    </button>
                                                 </div>
                                             </td>
                                             <td className="px-4 py-2">
@@ -582,19 +605,6 @@ export default function BookingsPage() {
                                                         </span>
                                                         <span className="text-[9px] font-black text-text-muted uppercase tracking-wider leading-none mt-0.5">
                                                             {b.appointmentDate ? new Date(b.appointmentDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '--:--'}
-                                                        </span>
-                                                    </div>
-                                                </div>
-                                            </td>
-                                            <td className="px-4 py-2">
-                                                <div className="flex items-center gap-2">
-                                                    <div className="w-7 h-7 bg-purple-500/10 flex items-center justify-center text-[10px] font-black text-purple-600 flex-shrink-0 rounded-lg">
-                                                        {b.client?.name?.[0]?.toUpperCase() || 'C'}
-                                                    </div>
-                                                    <div className="flex flex-col min-w-0">
-                                                        <span className="text-[11px] font-black text-text uppercase tracking-tight leading-none truncate">{b.client?.name || 'UNKNOWN'}</span>
-                                                        <span className="text-[9px] font-bold text-text-muted tracking-wider leading-none flex items-center gap-1 mt-0.5">
-                                                            {maskPhone(b.client?.phone, user?.role) || '—'}
                                                         </span>
                                                     </div>
                                                 </div>

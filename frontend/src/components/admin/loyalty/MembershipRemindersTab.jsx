@@ -11,11 +11,17 @@ import {
     Smartphone,
     User,
     Sparkles,
-    Loader2
+    Loader2,
+    Download,
+    History,
+    MapPin,
+    ChevronDown
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import api from '../../../services/api';
 import toast from 'react-hot-toast';
+import { useBusiness } from '../../../contexts/BusinessContext';
+import CustomDropdown from '../../common/CustomDropdown';
 
 export default function MembershipRemindersTab() {
     const [reminders, setReminders] = useState([]);
@@ -23,6 +29,9 @@ export default function MembershipRemindersTab() {
     const [search, setSearch] = useState('');
     const [statusFilter, setStatusFilter] = useState('all');
     const [sendingId, setSendingId] = useState(null);
+    const [selectedOutlet, setSelectedOutlet] = useState('all');
+    const [isBulkSending, setIsBulkSending] = useState(false);
+    const { outlets } = useBusiness();
 
     // Load membership reminders from backend
     const loadReminders = async () => {
@@ -47,7 +56,6 @@ export default function MembershipRemindersTab() {
         loadReminders();
     }, [search, statusFilter]);
 
-    // Send manual reminder using WhatsApp API
     const handleSendReminder = async (item) => {
         setSendingId(item.id);
         const toastId = toast.loading(`Sending expiry reminder to ${item.customerName} via WhatsApp...`);
@@ -77,6 +85,68 @@ export default function MembershipRemindersTab() {
         }
     };
 
+    const handleExport = () => {
+        if (reminders.length === 0) {
+            toast.error("No data to export");
+            return;
+        }
+
+        const headers = ['Client Name', 'Phone', 'Membership Plan', 'Price', 'Start Date', 'Expiry Date', 'Status', 'Reminders Sent'];
+        const csvContent = [
+            headers.join(','),
+            ...reminders.map(r => [
+                `"${r.customerName}"`,
+                `"${r.customerPhone}"`,
+                `"${r.membershipPlan}"`,
+                r.amount,
+                new Date(r.startDate).toLocaleDateString('en-IN'),
+                new Date(r.expiryDate).toLocaleDateString('en-IN'),
+                r.status,
+                r.reminderCount
+            ].join(','))
+        ].join('\n');
+
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = `membership_reminders_${new Date().toISOString().split('T')[0]}.csv`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    };
+
+    const handleBulkSend = async () => {
+        const eligibleReminders = reminders.filter(r => r.status === 'expiring_soon' || r.status === 'expired');
+        if (eligibleReminders.length === 0) {
+            toast.error("No pending reminders to send.");
+            return;
+        }
+
+        if (!window.confirm(`Are you sure you want to send reminders to ${eligibleReminders.length} clients?`)) return;
+
+        setIsBulkSending(true);
+        const toastId = toast.loading(`Sending ${eligibleReminders.length} reminders...`);
+        let successCount = 0;
+        let failCount = 0;
+
+        for (const item of eligibleReminders) {
+            try {
+                const res = await api.post(`/loyalty/reminders/${item.id}/send`);
+                if (res.data?.success) {
+                    successCount++;
+                } else {
+                    failCount++;
+                }
+            } catch (err) {
+                failCount++;
+            }
+        }
+
+        toast.success(`Bulk send complete: ${successCount} successful, ${failCount} failed.`, { id: toastId });
+        setIsBulkSending(false);
+        loadReminders(); // Refresh the data to update counts
+    };
+
     // Calculate quick stats locally for current view/data
     const totalActive = reminders.filter(r => r.status === 'active').length;
     const expiringSoon = reminders.filter(r => r.status === 'expiring_soon').length;
@@ -86,11 +156,20 @@ export default function MembershipRemindersTab() {
     return (
         <div className="space-y-4 italic text-left">
             {/* Header section with stark styling */}
-            <div className="flex items-center gap-2">
-                <div className="w-1 h-6 bg-primary" />
-                <div>
-                    <h2 className="text-sm font-black text-foreground uppercase italic tracking-tight leading-none">Membership Expiry Reminders</h2>
-                    <p className="text-[8px] font-black text-text-muted uppercase tracking-widest mt-1">Audit, monitor, and manually dispatch membership renewals via automated WhatsApp API integration</p>
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                <div className="flex items-center gap-2">
+                    <div className="w-1 h-6 bg-primary" />
+                    <div>
+                        <h2 className="text-sm font-black text-foreground uppercase italic tracking-tight leading-none">Membership Expiry Reminders</h2>
+                        <p className="text-[8px] font-black text-text-muted uppercase tracking-widest mt-1">Audit, monitor, and manually dispatch membership renewals via automated WhatsApp API integration.</p>
+                    </div>
+                </div>
+                <div className="flex items-center gap-3">
+
+                    <button onClick={handleBulkSend} disabled={isBulkSending} className="h-9 px-5 rounded-xl bg-[#B4912B] hover:bg-[#9A7B25] text-white flex items-center gap-2 font-bold text-xs transition-colors shadow-sm disabled:opacity-50">
+                        {isBulkSending ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Send className="w-3.5 h-3.5" />}
+                        {isBulkSending ? 'Sending...' : 'Send Bulk Reminder'}
+                    </button>
                 </div>
             </div>
 
@@ -136,19 +215,19 @@ export default function MembershipRemindersTab() {
             {/* Filters and Controls */}
             <div className="flex flex-col lg:flex-row gap-3 justify-between items-start lg:items-center">
                 {/* Status Filter Tabs */}
-                <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-1 lg:pb-0">
+                <div className="flex items-center gap-1.5 no-scrollbar pb-1 lg:pb-0" style={{ overflowX: 'auto' }}>
                     {[
                         { id: 'all', label: 'All Records' },
                         { id: 'active', label: 'Active Only' },
                         { id: 'expiring_soon', label: 'Expiring Soon' },
                         { id: 'expired', label: 'Expired Status' },
-                        { id: 'reminded', label: 'Reminded Logs' },
+                        { id: 'reminded', label: 'Reminder Logs' },
                     ].map(tab => (
                         <button
                             key={tab.id}
                             onClick={() => setStatusFilter(tab.id)}
-                            className={`px-4 py-2 border rounded-xl font-black text-[8px] uppercase tracking-[0.15em] transition-all whitespace-nowrap ${statusFilter === tab.id
-                                ? 'bg-primary text-white border-primary shadow-md shadow-primary/10'
+                            className={`px-4 py-2.5 border rounded-xl font-black text-[9px] uppercase tracking-[0.15em] transition-all whitespace-nowrap ${statusFilter === tab.id
+                                ? 'bg-[#B4912B] text-white border-[#B4912B] shadow-md shadow-[#B4912B]/10'
                                 : 'text-text-muted border-border/40 hover:bg-surface-alt'
                                 }`}
                         >
@@ -157,16 +236,42 @@ export default function MembershipRemindersTab() {
                     ))}
                 </div>
 
-                {/* Search query input */}
-                <div className="relative w-full lg:w-72">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-indigo-500" />
-                    <input
-                        type="text"
-                        placeholder="SEARCH BY NAME OR PHONE..."
-                        value={search}
-                        onChange={e => setSearch(e.target.value)}
-                        className="w-full h-8.5 pl-9 pr-3 bg-surface border rounded-xl border-border/40 text-[8px] font-black uppercase tracking-widest outline-none focus:border-primary transition-all"
-                    />
+                {/* Right controls: Search, Location, Export */}
+                <div className="flex flex-row flex-wrap sm:flex-nowrap items-center gap-2 w-full lg:w-auto flex-1 lg:justify-end mt-2 lg:mt-0">
+                    {/* Search query input */}
+                    <div className="relative flex-1 lg:flex-none lg:w-64">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 dark:text-gray-500" />
+                        <input
+                            type="text"
+                            placeholder="Search by name or phone..."
+                            value={search}
+                            onChange={e => setSearch(e.target.value)}
+                            className="w-full h-9 pl-9 pr-3 bg-white dark:bg-slate-800 border rounded-xl border-border/40 text-xs font-bold text-gray-700 dark:text-slate-200 outline-none focus:border-primary transition-all"
+                        />
+                    </div>
+
+                    {/* Location Dropdown */}
+                    <div className="flex-1 lg:flex-none lg:w-48 shrink-0">
+                        <CustomDropdown
+                            icon={MapPin}
+                            value={selectedOutlet}
+                            onChange={(val) => setSelectedOutlet(val)}
+                            options={[
+                                { value: 'all', label: 'All Locations' },
+                                ...(outlets?.map(outlet => ({
+                                    value: outlet._id || outlet.id,
+                                    label: outlet.name
+                                })) || [])
+                            ]}
+                            placeholder="All Locations"
+                            className="!w-full"
+                        />
+                    </div>
+
+                    {/* Export */}
+                    <button onClick={handleExport} className="h-9 w-9 flex items-center justify-center rounded-xl border border-border/40 bg-white dark:bg-slate-800 hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors text-foreground shadow-sm shrink-0">
+                        <Download className="w-4 h-4" />
+                    </button>
                 </div>
             </div>
 

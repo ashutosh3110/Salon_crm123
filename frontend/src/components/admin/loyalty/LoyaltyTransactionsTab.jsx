@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import {
     ArrowDownUp,
     TrendingUp,
@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import api from '../../../services/api';
 import { useBusiness } from '../../../contexts/BusinessContext';
+import CustomDropdown from '../../common/CustomDropdown';
 
 export default function LoyaltyTransactionsTab() {
     const { outlets, activeOutletId, setActiveOutletId } = useBusiness();
@@ -24,18 +25,6 @@ export default function LoyaltyTransactionsTab() {
     const [page, setPage] = useState(1);
     const [fromDate, setFromDate] = useState('');
     const [toDate, setToDate] = useState('');
-    const [outletDropdownOpen, setOutletDropdownOpen] = useState(false);
-    const outletDropdownRef = useRef(null);
-
-    useEffect(() => {
-        const handleClickOutside = (event) => {
-            if (outletDropdownRef.current && !outletDropdownRef.current.contains(event.target)) {
-                setOutletDropdownOpen(false);
-            }
-        };
-        document.addEventListener('mousedown', handleClickOutside);
-        return () => document.removeEventListener('mousedown', handleClickOutside);
-    }, []);
 
     useEffect(() => {
         const fetchTransactions = async () => {
@@ -63,7 +52,7 @@ export default function LoyaltyTransactionsTab() {
             <div className="flex flex-col lg:flex-row gap-4 justify-between items-start lg:items-center">
                 
                 {/* Filter Pills */}
-                <div className="bg-white dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-xl p-2 w-fit flex items-center gap-2 shadow-sm shrink-0 overflow-x-auto no-scrollbar max-w-full">
+                <div className="bg-white dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-xl p-2 w-fit flex items-center gap-2 shadow-sm shrink-0 no-scrollbar max-w-full" style={{ overflowX: 'auto' }}>
                     {['ALL', 'EARN', 'REDEEM'].map(f => (
                         <button
                             key={f}
@@ -80,37 +69,21 @@ export default function LoyaltyTransactionsTab() {
 
                 <div className="flex flex-wrap items-center gap-3">
                     {/* Outlet Filter */}
-                    <div className="flex items-center gap-2">
-                        <Filter className="w-4 h-4 text-slate-400 dark:text-slate-500" />
-                        <div className="relative shrink-0" ref={outletDropdownRef}>
-                            <button
-                                type="button"
-                                onClick={() => setOutletDropdownOpen(o => !o)}
-                                className="flex items-center justify-between border border-slate-200 dark:border-slate-700 rounded-xl px-4 h-11 bg-white dark:bg-slate-800/80 text-xs font-bold text-slate-700 dark:text-slate-200 whitespace-nowrap shadow-sm hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors min-w-[200px]"
-                            >
-                                <span className="truncate">
-                                    {activeOutletId ? (outlets.find(o => (o._id || o.id) === activeOutletId)?.name || 'Outlet') : 'All Outlets'}
-                                </span>
-                                <ChevronDown className={`w-4 h-4 text-slate-700 dark:text-slate-400 shrink-0 transition-transform ${outletDropdownOpen ? 'rotate-180' : ''}`} strokeWidth={3} />
-                            </button>
-                            {outletDropdownOpen && (
-                                <div className="absolute left-0 top-full mt-2 z-50 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-xl overflow-hidden min-w-full max-h-52 overflow-y-auto">
-                                    <button
-                                        type="button"
-                                        onClick={() => { setActiveOutletId(null); setOutletDropdownOpen(false); }}
-                                        className={`w-full text-left px-4 py-3 text-xs font-bold transition-colors ${!activeOutletId ? 'bg-[#B4912B]/10 text-[#B4912B]' : 'text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/50'}`}
-                                    >All Outlets</button>
-                                    {outlets.map(o => (
-                                        <button
-                                            key={o._id || o.id}
-                                            type="button"
-                                            onClick={() => { setActiveOutletId(o._id || o.id); setOutletDropdownOpen(false); }}
-                                            className={`w-full text-left px-4 py-3 text-xs font-bold transition-colors ${activeOutletId === (o._id || o.id) ? 'bg-[#B4912B]/10 text-[#B4912B]' : 'text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/50'}`}
-                                        >{o.name}</button>
-                                    ))}
-                                </div>
-                            )}
-                        </div>
+                    <div className="flex-1 lg:flex-none lg:w-48 shrink-0">
+                        <CustomDropdown
+                            icon={Filter}
+                            value={activeOutletId || 'all'}
+                            onChange={(val) => setActiveOutletId(val === 'all' ? null : val)}
+                            options={[
+                                { value: 'all', label: 'All Outlets' },
+                                ...(outlets?.map(o => ({
+                                    value: o._id || o.id,
+                                    label: o.name
+                                })) || [])
+                            ]}
+                            placeholder="All Outlets"
+                            className="!w-full h-11 font-bold"
+                        />
                     </div>
 
                     {/* Date Pickers */}
@@ -127,16 +100,6 @@ export default function LoyaltyTransactionsTab() {
                             onChange={(e) => { setPage(1); setToDate(e.target.value); }} 
                             className="h-11 px-3 bg-white dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-bold text-slate-700 dark:text-slate-200 outline-none focus:border-[#B4912B] dark:focus:border-[#B4912B] shadow-sm transition-all uppercase" 
                         />
-                        {(activeOutletId || fromDate || toDate || filter !== 'ALL') && (
-                            <button
-                                type="button"
-                                onClick={() => { setActiveOutletId(null); setFromDate(''); setToDate(''); setFilter('ALL'); setPage(1); }}
-                                className="w-11 h-11 rounded-xl bg-slate-800 dark:bg-slate-700/80 text-white flex items-center justify-center shadow-sm hover:bg-slate-700 dark:hover:bg-slate-600 transition-colors shrink-0 ml-1"
-                                title="Clear Filters"
-                            >
-                                <X size={18} strokeWidth={2.5} />
-                            </button>
-                        )}
                     </div>
                 </div>
             </div>

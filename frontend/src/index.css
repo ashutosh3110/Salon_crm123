@@ -2142,3 +2142,61 @@ html:not(.dark) [class*="bg-emerald-50"][class*="text-emerald-"] {
 html:not(.dark) [class*="bg-orange-50"][class*="text-orange-"] {
     color: #ea580c !important;
 }
+
+/* Dark Mode Overrides for Member List Action Buttons to bypass global rules */
+.dark button.member-action-btn.member-view-btn {
+  background-color: rgba(255, 255, 255, 0.05) !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+  color: #cbd5e1 !important;
+}
+.dark button.member-action-btn.member-view-btn svg {
+  color: #cbd5e1 !important;
+  stroke: #cbd5e1 !important;
+}
+.dark button.member-action-btn.member-view-btn:hover {
+  background-color: rgba(180, 145, 43, 0.15) !important;
+  border-color: rgba(180, 145, 43, 0.4) !important;
+  color: #B4912B !important;
+}
+.dark button.member-action-btn.member-view-btn:hover svg {
+  color: #B4912B !important;
+  stroke: #B4912B !important;
+}
+
+.dark button.member-action-btn.member-edit-btn {
+  background-color: rgba(255, 255, 255, 0.05) !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+  color: #cbd5e1 !important;
+}
+.dark button.member-action-btn.member-edit-btn svg {
+  color: #cbd5e1 !important;
+  stroke: #cbd5e1 !important;
+}
+.dark button.member-action-btn.member-edit-btn:hover {
+  background-color: rgba(59, 130, 246, 0.15) !important;
+  border-color: rgba(59, 130, 246, 0.4) !important;
+  color: #60a5fa !important;
+}
+.dark button.member-action-btn.member-edit-btn:hover svg {
+  color: #60a5fa !important;
+  stroke: #60a5fa !important;
+}
+
+.dark button.member-action-btn.member-delete-btn {
+  background-color: rgba(244, 63, 94, 0.08) !important;
+  border-color: rgba(244, 63, 94, 0.25) !important;
+  color: #fb7185 !important;
+}
+.dark button.member-action-btn.member-delete-btn svg {
+  color: #fb7185 !important;
+  stroke: #fb7185 !important;
+}
+.dark button.member-action-btn.member-delete-btn:hover {
+  background-color: #f43f5e !important;
+  border-color: #f43f5e !important;
+  color: #ffffff !important;
+}
+.dark button.member-action-btn.member-delete-btn:hover svg {
+  color: #ffffff !important;
+  stroke: #ffffff !important;
+}

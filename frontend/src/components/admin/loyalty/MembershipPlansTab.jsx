@@ -207,25 +207,25 @@ function MembershipCard({ plan, onEdit, onDelete, onToggle }) {
     const Icon = plan.icon === 'gem' ? Gem : (plan.icon === 'crown' ? Crown : Star);
     
     // Determine colors based on tier
-    let topBorder = 'bg-slate-200';
-    let iconColor = 'text-slate-400 bg-slate-100';
+    let topBorder = 'bg-slate-200 dark:bg-slate-700';
+    let iconColor = 'text-slate-400 bg-slate-100 dark:bg-slate-800 dark:text-slate-400';
     let checkColor = 'text-slate-400';
-    let badgeBg = 'bg-slate-100 text-slate-700';
+    let badgeBg = 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300';
     
     if (isPro) {
         topBorder = 'bg-[#cca839]';
-        iconColor = 'text-[#cca839] bg-[#cca839]/10';
+        iconColor = 'text-[#cca839] bg-[#cca839]/10 dark:bg-[#cca839]/20';
         checkColor = 'text-[#cca839]';
-        badgeBg = 'bg-[#cca839]/10 text-[#cca839]';
+        badgeBg = 'bg-[#cca839]/10 text-[#cca839] dark:bg-[#cca839]/20 dark:text-[#cca839]';
     } else if (isPremium) {
-        topBorder = 'bg-slate-800';
-        iconColor = 'text-slate-800 bg-slate-100';
+        topBorder = 'bg-slate-800 dark:bg-slate-600';
+        iconColor = 'text-slate-800 bg-slate-100 dark:bg-slate-800 dark:text-slate-300';
         checkColor = 'text-[#cca839]';
-        badgeBg = 'bg-slate-200/60 text-slate-800';
+        badgeBg = 'bg-slate-200/60 text-slate-800 dark:bg-slate-700 dark:text-slate-200';
     }
 
     return (
-        <div className={`relative bg-white border border-slate-200 rounded-2xl overflow-hidden transition-all shadow-sm hover:shadow-md`}>
+        <div className="relative bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden transition-all shadow-sm hover:shadow-md">
             <div className={`h-[5px] w-full ${topBorder}`} />
             <div className="p-4 sm:p-5 text-left">
                 <div className="flex justify-between items-start mb-3">
@@ -233,44 +233,44 @@ function MembershipCard({ plan, onEdit, onDelete, onToggle }) {
                         <Icon size={16} />
                     </div>
                     <div className="flex gap-1.5">
-                        <button onClick={onEdit} className="p-1.5 border border-slate-100 rounded-xl hover:bg-slate-50 text-slate-400 hover:text-[#cca839] transition-all"><Edit2 size={12} /></button>
-                        <button onClick={onDelete} className="p-1.5 border border-slate-100 rounded-xl hover:bg-slate-50 text-slate-400 hover:text-rose-500 transition-all"><Trash2 size={12} /></button>
+                        <button onClick={onEdit} className="p-1.5 border border-slate-100 dark:border-slate-850 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-400 dark:text-slate-500 hover:text-[#cca839] dark:hover:text-[#cca839] transition-all"><Edit2 size={12} /></button>
+                        <button onClick={onDelete} className="p-1.5 border border-slate-100 dark:border-slate-850 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-400 dark:text-slate-500 hover:text-rose-500 transition-all"><Trash2 size={12} /></button>
                     </div>
                 </div>
                 
                 <div className="space-y-0.5 mb-3.5">
-                    <h3 className="text-xs font-black text-slate-900 uppercase tracking-tighter">{plan.name}</h3>
+                    <h3 className="text-xs font-black text-slate-900 dark:text-white uppercase tracking-tighter">{plan.name}</h3>
                     <div className="flex items-baseline gap-1">
-                        <span className="text-lg font-black text-slate-800 tracking-tighter">₹{plan.price}</span>
-                        <span className="text-[8px] font-bold text-slate-500 uppercase">/ {plan.duration} DAYS</span>
+                        <span className="text-lg font-black text-slate-800 dark:text-slate-100 tracking-tighter">₹{plan.price}</span>
+                        <span className="text-[8px] font-bold text-slate-500 dark:text-slate-400 uppercase">/ {plan.duration} DAYS</span>
                     </div>
-                    <div className="text-[8px] font-bold text-slate-500 uppercase">
+                    <div className="text-[8px] font-bold text-slate-500 dark:text-slate-400 uppercase">
                         {plan.taxType === 'including' ? `INCL. ${plan.taxRate}% GST` : `EXCL. ${plan.taxRate}% GST`}
                     </div>
                 </div>
                 
                 <div className="space-y-2 mb-3.5">
                     {plan.benefits.slice(0, 4).map((benefit, i) => (
-                        <div key={i} className="flex items-start gap-2 text-[10px] font-bold text-slate-700">
+                        <div key={i} className="flex items-start gap-2 text-[10px] font-bold text-slate-700 dark:text-slate-300">
                             <Check size={12} className={`${checkColor} shrink-0 mt-0.5`} />
                             <span>{benefit}</span>
                         </div>
                     ))}
                     
                     <div className="pt-2 mt-1 space-y-1.5">
-                        <div className="flex justify-between items-center bg-slate-50 p-1.5 px-3 rounded-xl border border-slate-100">
+                        <div className="flex justify-between items-center bg-slate-50 dark:bg-slate-800/40 p-1.5 px-3 rounded-xl border border-slate-100 dark:border-slate-800/80">
                             <div className="flex items-center gap-1.5">
-                                <Layout size={10} className="text-slate-400" />
-                                <p className="text-[8px] font-black text-slate-700 uppercase tracking-wide">ALL SERVICES</p>
+                                <Layout size={10} className="text-slate-400 dark:text-slate-500" />
+                                <p className="text-[8px] font-black text-slate-700 dark:text-slate-300 uppercase tracking-wide">ALL SERVICES</p>
                             </div>
                             <span className={`px-2 py-0.5 text-[8px] font-black rounded-full uppercase ${badgeBg}`}>
                                 {plan.serviceDiscountValue}{plan.serviceDiscountType === 'percentage' ? '% OFF' : '₹ OFF'}
                             </span>
                         </div>
-                        <div className="flex justify-between items-center bg-slate-50 p-1.5 px-3 rounded-xl border border-slate-100">
+                        <div className="flex justify-between items-center bg-slate-50 dark:bg-slate-800/40 p-1.5 px-3 rounded-xl border border-slate-100 dark:border-slate-800/80">
                             <div className="flex items-center gap-1.5">
-                                <Layout size={10} className="text-slate-400" />
-                                <p className="text-[8px] font-black text-slate-700 uppercase tracking-wide">ALL PRODUCTS</p>
+                                <Layout size={10} className="text-slate-400 dark:text-slate-500" />
+                                <p className="text-[8px] font-black text-slate-700 dark:text-slate-300 uppercase tracking-wide">ALL PRODUCTS</p>
                             </div>
                             <span className={`px-2 py-0.5 text-[8px] font-black rounded-full uppercase ${badgeBg}`}>
                                 {plan.productDiscountValue}{plan.productDiscountType === 'percentage' ? '% OFF' : '₹ OFF'}
@@ -279,7 +279,7 @@ function MembershipCard({ plan, onEdit, onDelete, onToggle }) {
                     </div>
                 </div>
                 
-                <button onClick={onToggle} className={`w-full py-2 rounded-xl font-bold text-[9px] uppercase tracking-widest transition-all ${plan.isActive ? 'bg-[#B4912B]/10 text-[#B4912B] hover:bg-[#B4912B]/20' : 'bg-slate-500/10 text-slate-500 dark:text-slate-400 hover:bg-slate-500/20'}`}>
+                <button onClick={onToggle} className={`w-full py-2 rounded-xl font-bold text-[9px] uppercase tracking-widest transition-all ${plan.isActive ? 'bg-[#B4912B]/10 text-[#B4912B] hover:bg-[#B4912B]/20 dark:bg-[#B4912B]/20 dark:text-[#B4912B] dark:hover:bg-[#B4912B]/30' : 'bg-slate-500/10 text-slate-500 dark:text-slate-400 hover:bg-slate-500/20 dark:hover:bg-slate-500/30'}`}>
                     {plan.isActive ? 'STATUS: ACTIVE' : 'STATUS: PAUSED'}
                 </button>
             </div>
@@ -415,20 +415,64 @@ function PlanModal({ plan, serviceOptions = [], onClose, onSave }) {
                     background-color: #ffffff !important;
                     border-color: #cbd5e1 !important;
                 }
+
+                /* High Specificity Dark Mode Visibility Rules for Loyalty PlanModal */
+                .dark .loyalty-modal-container {
+                    background-color: #121826 !important;
+                    color: #cbd5e1 !important;
+                    border-color: rgba(255, 255, 255, 0.08) !important;
+                }
+                .dark .loyalty-modal-container h2,
+                .dark .loyalty-modal-container h3,
+                .dark .loyalty-modal-container h4,
+                .dark .loyalty-modal-container .text-text {
+                    color: #ffffff !important;
+                }
+                .dark .loyalty-modal-container label,
+                .dark .loyalty-modal-container label.text-text-muted {
+                    color: #94a3b8 !important;
+                }
+                .dark .loyalty-modal-container input,
+                .dark .loyalty-modal-container select,
+                .dark .loyalty-modal-container .custom-select-trigger {
+                    color: #ffffff !important;
+                    background-color: #1e293b !important;
+                    border-color: rgba(255, 255, 255, 0.12) !important;
+                }
+                .dark .loyalty-modal-container .bg-surface-alt,
+                .dark .loyalty-modal-container .p-5.bg-surface-alt {
+                    background-color: #1a2333 !important;
+                    border-color: rgba(255, 255, 255, 0.08) !important;
+                }
+                .dark .loyalty-modal-container .bg-surface {
+                    background-color: #121826 !important;
+                }
+                .dark .loyalty-modal-container .border-b,
+                .dark .loyalty-modal-container .border-t,
+                .dark .loyalty-modal-container .border {
+                    border-color: rgba(255, 255, 255, 0.08) !important;
+                }
+                .dark .loyalty-modal-container button.bg-surface-alt {
+                    background-color: #1e293b !important;
+                }
+                .dark .loyalty-modal-container button.bg-surface-alt:hover {
+                    background-color: rgba(244, 63, 94, 0.15) !important;
+                    border-color: rgba(244, 63, 94, 0.4) !important;
+                }
             `}</style>
             <div 
-                className="relative bg-surface border border-border w-full max-w-lg shadow-2xl rounded-[2rem] flex flex-col max-h-[90vh] text-left overflow-hidden loyalty-modal-container"
+                className="relative bg-surface dark:bg-slate-900 border border-border dark:border-slate-800 w-full max-w-lg shadow-2xl rounded-[2rem] flex flex-col max-h-[90vh] text-left overflow-hidden loyalty-modal-container"
                 onClick={e => e.stopPropagation()}
             >
                 {/* Modal Header */}
-                <div className="px-6 py-5 border-b border-border flex justify-between items-center bg-surface shrink-0">
-                    <h2 className="text-sm font-black text-text uppercase tracking-widest flex items-center gap-2">
+                <div className="px-6 py-5 border-b border-border dark:border-slate-800 flex justify-between items-center bg-surface dark:bg-slate-900 shrink-0">
+                    <h2 className="text-sm font-black text-text dark:text-white uppercase tracking-widest flex items-center gap-2">
                         <Crown className="w-5 h-5 !text-[#B4912B]" />
                         {plan ? 'EDIT MEMBERSHIP PLAN' : 'CREATE MEMBERSHIP PLAN'}
                     </h2>
                     <button 
                         onClick={onClose} 
-                        className="p-2 rounded-xl bg-surface-alt hover:bg-rose-500/10 text-text-muted hover:text-rose-500 transition-all"
+                        className="p-2 rounded-xl bg-surface-alt dark:bg-slate-800 hover:bg-rose-500/10 dark:hover:bg-rose-500/20 text-text-muted hover:text-rose-500 transition-all"
                     >
                         <X size={20} />
                     </button>
@@ -568,7 +612,7 @@ function PlanModal({ plan, serviceOptions = [], onClose, onSave }) {
                                     <button 
                                         type="button"
                                         onClick={() => setFormData({ ...formData, benefits: formData.benefits.filter((_, idx) => idx !== i) })} 
-                                        className="px-4 text-rose-500 border border-border bg-surface-alt hover:bg-rose-50 hover:text-rose-600 hover:border-rose-500 transition-all rounded-xl"
+                                        className="px-4 text-rose-500 border border-border dark:border-slate-800 bg-surface-alt hover:bg-rose-50 dark:hover:bg-rose-950/20 hover:text-rose-600 dark:hover:text-rose-400 hover:border-rose-500 dark:hover:border-rose-900/50 transition-all rounded-xl"
                                     >
                                         <X size={16} />
                                     </button>

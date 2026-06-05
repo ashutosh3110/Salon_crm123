@@ -160,6 +160,15 @@ export default function AppBookingDetailsPage() {
     const taxAmount = booking?.tax ?? 0;
     // Calculate discount if it's explicitly stored OR infer it from the difference
     const membershipDiscount = booking?.membershipDiscount ?? Math.max(0, itemsTotal + taxAmount - totalAmount);
+    const isInclusive = booking?.service?.isInclusiveTax === true || String(booking?.service?.isInclusiveTax) === 'true' || booking?.serviceId?.isInclusiveTax === true || String(booking?.serviceId?.isInclusiveTax) === 'true';
+    const gstPercent = taxAmount > 0 ? Math.round((taxAmount / ((totalAmount - taxAmount) || 1)) * 100) : 18;
+    const taxVal = taxAmount > 0 ? taxAmount : (isInclusive ? 
+        (itemsTotal - membershipDiscount) * (1 - 1 / (1 + gstPercent / 100)) : 
+        (itemsTotal - membershipDiscount) * (gstPercent / 100));
+    
+    const cgstVal = Number((taxVal / 2).toFixed(2));
+    const sgstVal = Number((taxVal - cgstVal).toFixed(2));
+    const taxableVal = totalAmount - cgstVal - sgstVal;
 
     return (
         <motion.div 
@@ -213,8 +222,8 @@ export default function AppBookingDetailsPage() {
 
                         <div className="pt-4 border-t border-dashed border-black/5 dark:border-white/5 space-y-2">
                              <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-widest opacity-40">
-                                 <span>Subtotal</span>
-                                 <span>₹{itemsTotal.toLocaleString()}</span>
+                                 <span>{isInclusive ? 'Base Price (Excl. GST)' : 'Subtotal'}</span>
+                                 <span>₹{isInclusive ? taxableVal.toFixed(2) : itemsTotal.toLocaleString()}</span>
                              </div>
                              {membershipDiscount > 0 && (
                                  <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-widest text-[#C8956C]">
@@ -223,9 +232,19 @@ export default function AppBookingDetailsPage() {
                                  </div>
                              )}
                              {(taxAmount > 0 || !booking.tax) && (
-                                 <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-widest opacity-40">
-                                     <span>GST / Tax</span>
-                                     <span>₹{taxAmount > 0 ? taxAmount.toLocaleString() : Math.round((itemsTotal - membershipDiscount) * 0.18).toLocaleString()}</span>
+                                 <div className="space-y-1.5 py-1 border-t border-black/5 dark:border-white/5">
+                                     <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-widest opacity-40">
+                                         <span>GST ({isInclusive ? 'Included' : 'Excluding'})</span>
+                                         <span>{isInclusive ? '' : '+ '}₹{taxVal.toFixed(2)}</span>
+                                     </div>
+                                     <div className="flex justify-between text-[9px] pl-2 font-bold uppercase tracking-wider opacity-30 italic">
+                                         <span>CGST ({isInclusive ? 'Included' : `${(gstPercent / 2).toFixed(1)}%`})</span>
+                                         <span>{isInclusive ? '' : '+ '}₹{cgstVal.toFixed(2)}</span>
+                                     </div>
+                                     <div className="flex justify-between text-[9px] pl-2 font-bold uppercase tracking-wider opacity-30 italic">
+                                         <span>SGST ({isInclusive ? 'Included' : `${(gstPercent / 2).toFixed(1)}%`})</span>
+                                         <span>{isInclusive ? '' : '+ '}₹{sgstVal.toFixed(2)}</span>
+                                     </div>
                                  </div>
                              )}
                              <div className="flex justify-between items-center pt-2">

@@ -74,7 +74,7 @@ export default function LoyaltyMembershipPage({ tab: initialTab = 'plans' }) {
             </div>
 
             {/* Navigation Tabs - Horizontal Scrollable on Mobile */}
-            <div className="flex overflow-x-auto no-scrollbar bg-white border border-slate-200 rounded-xl shadow-sm w-fit overflow-hidden">
+            <div className="inline-flex no-scrollbar bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm overflow-hidden" style={{ overflowX: 'auto' }}>
                 {TABS.map((tab, idx) => {
                     const isActive = activeTab === tab.id;
                     const Icon = tab.icon;
@@ -84,14 +84,14 @@ export default function LoyaltyMembershipPage({ tab: initialTab = 'plans' }) {
                             onClick={() => navigate(`/admin/loyalty/${tab.id}`)}
                             className={`flex items-center gap-2 px-5 py-3 transition-all duration-300 relative group whitespace-nowrap ${isActive
                                 ? 'bg-[#B4912B] text-white'
-                                : 'text-slate-700 hover:bg-slate-50'
+                                : 'text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/50'
                                 }`}
                         >
-                            <Icon 
-                                className={`transition-colors duration-300 ${isActive ? 'text-white' : 'text-slate-500 group-hover:text-slate-900'}`}
+                            <Icon
+                                className={`transition-colors duration-300 ${isActive ? 'text-white' : 'text-slate-500 dark:text-slate-400 group-hover:text-slate-900 dark:group-hover:text-white'}`}
                                 style={{ width: '16px', height: '16px' }}
                             />
-                            <span 
+                            <span
                                 className="block uppercase tracking-widest transition-colors duration-300"
                                 style={{ fontSize: '9.5px', fontWeight: 800 }}
                             >
