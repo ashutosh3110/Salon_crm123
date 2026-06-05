@@ -444,7 +444,7 @@ export default function RolesPage() {
                 </div>
                 <button
                     onClick={() => { resetForm(); setShowModal(true); }}
-                    className="flex items-center gap-2 bg-[#B4912B] text-white px-5 py-2.5 text-[10px] font-black uppercase tracking-widest shadow-md hover:bg-[#9ca3af] transition-all !rounded-xl active:scale-95"
+                    className="flex items-center gap-2 bg-primary !bg-[#B4912B] hover:!bg-[#A57C1E] text-white px-5 py-2.5 text-[10px] font-black uppercase tracking-widest shadow-md transition-all !rounded-xl active:scale-95 cursor-pointer"
                 >
                     <Plus className="w-3.5 h-3.5" /> Create New Role
                 </button>
@@ -453,8 +453,8 @@ export default function RolesPage() {
             {/* Analytics Grid - 4 Columns */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 <div className="!bg-white dark:!bg-slate-900 p-4 !border-[1.5px] !border-[#e2e8f0] dark:!border-slate-800 flex items-center gap-4 group hover:!border-black dark:hover:!border-white transition-all min-h-[100px] relative !overflow-hidden !rounded-[16px] shadow-sm">
-                    <div className="w-12 h-12 rounded-full flex items-center justify-center shrink-0 !bg-[#FEF3C7]">
-                        <Users className="w-5 h-5" color="#D97706" strokeWidth={2.5} />
+                    <div className="w-12 h-12 rounded-full flex items-center justify-center shrink-0 bg-[#FEF3C7] dark:bg-[#D97706]/15">
+                        <Users className="w-5 h-5 text-[#D97706] dark:text-[#fbbf24]" strokeWidth={2.5} />
                     </div>
                     <div className="flex flex-col text-left">
                         <span className="text-[9px] font-bold text-text-muted uppercase tracking-wider">Total Roles</span>
@@ -468,8 +468,8 @@ export default function RolesPage() {
                 </div>
 
                 <div className="!bg-white dark:!bg-slate-900 p-4 !border-[1.5px] !border-[#e2e8f0] dark:!border-slate-800 flex items-center gap-4 group hover:!border-black dark:hover:!border-white transition-all min-h-[100px] relative !overflow-hidden !rounded-[16px] shadow-sm">
-                    <div className="w-12 h-12 rounded-full flex items-center justify-center shrink-0 !bg-[#F3E8FF]">
-                        <Lock className="w-5 h-5" color="#9333EA" strokeWidth={2.5} />
+                    <div className="w-12 h-12 rounded-full flex items-center justify-center shrink-0 bg-[#F3E8FF] dark:bg-[#9333EA]/15">
+                        <Lock className="w-5 h-5 text-[#9333EA] dark:text-[#c084fc]" strokeWidth={2.5} />
                     </div>
                     <div className="flex flex-col text-left">
                         <span className="text-[9px] font-bold text-text-muted uppercase tracking-wider">Total Permissions</span>
@@ -483,8 +483,8 @@ export default function RolesPage() {
                 </div>
 
                 <div className="!bg-white dark:!bg-slate-900 p-4 !border-[1.5px] !border-[#e2e8f0] dark:!border-slate-800 flex items-center gap-4 group hover:!border-black dark:hover:!border-white transition-all min-h-[100px] relative !overflow-hidden !rounded-[16px] shadow-sm">
-                    <div className="w-12 h-12 rounded-full flex items-center justify-center shrink-0 !bg-[#DCFCE7]">
-                        <UserCheck className="w-5 h-5" color="#16A34A" strokeWidth={2.5} />
+                    <div className="w-12 h-12 rounded-full flex items-center justify-center shrink-0 bg-[#DCFCE7] dark:bg-[#16A34A]/15">
+                        <UserCheck className="w-5 h-5 text-[#16A34A] dark:text-[#4ade80]" strokeWidth={2.5} />
                     </div>
                     <div className="flex flex-col text-left">
                         <span className="text-[9px] font-bold text-text-muted uppercase tracking-wider">Staff Assigned</span>
@@ -498,8 +498,8 @@ export default function RolesPage() {
                 </div>
 
                 <div className="!bg-white dark:!bg-slate-900 p-4 !border-[1.5px] !border-[#e2e8f0] dark:!border-slate-800 flex items-center gap-4 group hover:!border-black dark:hover:!border-white transition-all min-h-[100px] relative !overflow-hidden !rounded-[16px] shadow-sm">
-                    <div className="w-12 h-12 rounded-full flex items-center justify-center shrink-0 !bg-[#DBEAFE]">
-                        <ShieldCheck className="w-5 h-5" color="#2563EB" strokeWidth={2.5} />
+                    <div className="w-12 h-12 rounded-full flex items-center justify-center shrink-0 bg-[#DBEAFE] dark:bg-[#2563EB]/15">
+                        <ShieldCheck className="w-5 h-5 text-[#2563EB] dark:text-[#60a5fa]" strokeWidth={2.5} />
                     </div>
                     <div className="flex flex-col text-left">
                         <span className="text-[9px] font-bold text-text-muted uppercase tracking-wider">Last Updated</span>
@@ -546,13 +546,13 @@ export default function RolesPage() {
 
             {/* Roles Table/Grid */}
             <div className="bg-white border-[1.5px] border-border shadow-sm !rounded-[20px] overflow-hidden pt-5 px-6 pb-3">
-                <div className="hidden md:grid grid-cols-12 gap-3 pb-3 border-b-[1.5px] border-slate-100 px-6">
+                <div className="hidden md:grid grid-cols-12 gap-3 pb-3 border-b-[1.5px] border-slate-100 dark:border-slate-800 px-6">
                     <div className="col-span-3 text-[9px] font-black uppercase tracking-widest text-text">Role Name</div>
                     <div className="col-span-7 text-[9px] font-black uppercase tracking-widest text-text">Permissions Assigned</div>
                     <div className="col-span-2 text-[9px] font-black uppercase tracking-widest text-text text-right">Actions</div>
                 </div>
 
-                <div className="divide-y-[1.5px] divide-slate-100">
+                <div className="divide-y-[1.5px] divide-slate-100 dark:divide-slate-800">
                     {loading ? (
                         <div className="py-20 text-center animate-pulse">
                             <Shield className="w-12 h-12 text-text-muted/20 mx-auto mb-4" />
@@ -566,26 +566,57 @@ export default function RolesPage() {
                     ) : (
                         filteredRoles.map((role) => {
                             const n = role.name.toLowerCase();
-                            let theme = { bg: 'bg-blue-100', text: 'text-blue-600', hex: '#2563EB', icon: Scissors, access: 'Basic Access' };
+                            let theme = { 
+                                bg: 'bg-blue-100 dark:bg-[#2563EB]/15', 
+                                text: 'text-blue-600 dark:text-[#60a5fa]', 
+                                border: 'border-blue-600 dark:border-[#60a5fa]', 
+                                bgBar: 'bg-blue-600 dark:bg-[#60a5fa]', 
+                                icon: Scissors, 
+                                access: 'Basic Access' 
+                            };
                             
-                            if (n === 'admin') theme = { bg: 'bg-[#FEF3C7]', text: 'text-[#D97706]', hex: '#D97706', icon: Crown, access: 'Full Access' };
-                            else if (n.includes('manager')) theme = { bg: 'bg-[#F3E8FF]', text: 'text-[#9333EA]', hex: '#9333EA', icon: User, access: 'Limited Access' };
-                            else if (n.includes('reception') || n.includes('reciption')) theme = { bg: 'bg-[#DCFCE7]', text: 'text-[#16A34A]', hex: '#16A34A', icon: Headset, access: 'Restricted' };
-                            else {
+                            if (n === 'admin') {
+                                theme = { 
+                                    bg: 'bg-[#FEF3C7] dark:bg-[#D97706]/15', 
+                                    text: 'text-[#D97706] dark:text-[#fbbf24]', 
+                                    border: 'border-[#D97706] dark:border-[#fbbf24]', 
+                                    bgBar: 'bg-[#D97706] dark:bg-[#fbbf24]', 
+                                    icon: Crown, 
+                                    access: 'Full Access' 
+                                };
+                            } else if (n.includes('manager')) {
+                                theme = { 
+                                    bg: 'bg-[#F3E8FF] dark:bg-[#9333EA]/15', 
+                                    text: 'text-[#9333EA] dark:text-[#c084fc]', 
+                                    border: 'border-[#9333EA] dark:border-[#c084fc]', 
+                                    bgBar: 'bg-[#9333EA] dark:bg-[#c084fc]', 
+                                    icon: User, 
+                                    access: 'Limited Access' 
+                                };
+                            } else if (n.includes('reception') || n.includes('reciption')) {
+                                theme = { 
+                                    bg: 'bg-[#DCFCE7] dark:bg-[#16A34A]/15', 
+                                    text: 'text-[#16A34A] dark:text-[#4ade80]', 
+                                    border: 'border-[#16A34A] dark:border-[#4ade80]', 
+                                    bgBar: 'bg-[#16A34A] dark:bg-[#4ade80]', 
+                                    icon: Headset, 
+                                    access: 'Restricted' 
+                                };
+                            } else {
                                 const charCode = n.charCodeAt(0) || 0;
                                 const customThemes = [
-                                    { bg: 'bg-indigo-100', text: 'text-indigo-600', hex: '#4F46E5', icon: Shield, access: 'Custom Access' },
-                                    { bg: 'bg-rose-100', text: 'text-rose-600', hex: '#E11D48', icon: UserCog, access: 'Custom Access' },
-                                    { bg: 'bg-cyan-100', text: 'text-cyan-600', hex: '#0891B2', icon: Settings, access: 'Custom Access' },
-                                    { bg: 'bg-fuchsia-100', text: 'text-fuchsia-600', hex: '#C026D3', icon: Star, access: 'Custom Access' },
-                                    { bg: 'bg-emerald-100', text: 'text-emerald-600', hex: '#059669', icon: Briefcase, access: 'Custom Access' },
-                                    { bg: 'bg-blue-100', text: 'text-blue-600', hex: '#2563EB', icon: Scissors, access: 'Basic Access' }
+                                    { bg: 'bg-indigo-100 dark:bg-[#4F46E5]/15', text: 'text-indigo-600 dark:text-[#818cf8]', border: 'border-indigo-600 dark:border-[#818cf8]', bgBar: 'bg-indigo-600 dark:bg-[#818cf8]', icon: Shield, access: 'Custom Access' },
+                                    { bg: 'bg-rose-100 dark:bg-[#E11D48]/15', text: 'text-rose-600 dark:text-[#fb7185]', border: 'border-rose-600 dark:border-[#fb7185]', bgBar: 'bg-rose-600 dark:bg-[#fb7185]', icon: UserCog, access: 'Custom Access' },
+                                    { bg: 'bg-cyan-100 dark:bg-[#0891B2]/15', text: 'text-cyan-600 dark:text-[#22d3ee]', border: 'border-cyan-600 dark:border-[#22d3ee]', bgBar: 'bg-cyan-600 dark:bg-[#22d3ee]', icon: Settings, access: 'Custom Access' },
+                                    { bg: 'bg-fuchsia-100 dark:bg-[#C026D3]/15', text: 'text-fuchsia-600 dark:text-[#e879f9]', border: 'border-fuchsia-600 dark:border-[#e879f9]', bgBar: 'bg-fuchsia-600 dark:bg-[#e879f9]', icon: Star, access: 'Custom Access' },
+                                    { bg: 'bg-emerald-100 dark:bg-[#059669]/15', text: 'text-emerald-600 dark:text-[#34d399]', border: 'border-emerald-600 dark:border-[#34d399]', bgBar: 'bg-emerald-600 dark:bg-[#34d399]', icon: Briefcase, access: 'Custom Access' },
+                                    { bg: 'bg-blue-100 dark:bg-[#2563EB]/15', text: 'text-blue-600 dark:text-[#60a5fa]', border: 'border-blue-600 dark:border-[#60a5fa]', bgBar: 'bg-blue-600 dark:bg-[#60a5fa]', icon: Scissors, access: 'Basic Access' }
                                 ];
                                 theme = customThemes[charCode % customThemes.length];
                             }
 
                             return (
-                                <div key={role._id} className="grid grid-cols-1 md:grid-cols-12 gap-4 py-4 items-start group hover:bg-slate-50/80 transition-colors px-6 rounded-xl mt-1">
+                                <div key={role._id} className="grid grid-cols-1 md:grid-cols-12 gap-4 py-4 items-start group hover:bg-slate-50/80 dark:hover:bg-slate-800/50 transition-colors px-6 rounded-xl mt-1">
                                     {/* Left column */}
                                     <div className="col-span-12 md:col-span-3 flex items-start gap-3 min-w-0">
                                         <div className={`w-9 h-9 rounded-full flex items-center justify-center shrink-0 mt-0.5 ${theme.bg}`}>
@@ -596,7 +627,7 @@ export default function RolesPage() {
                                             <p className="text-[9px] font-bold text-text-muted mt-0.5 tracking-widest opacity-60 break-words w-full">
                                                 {role.description || (n === 'admin' ? 'System Administrator' : 'Custom business role')}
                                             </p>
-                                            <div className={`mt-2 px-2 py-0.5 border-[1.5px] rounded-full text-[8px] font-black uppercase tracking-widest ${theme.text}`} style={{ borderColor: theme.hex }}>
+                                            <div className={`mt-2 px-2 py-0.5 border-[1.5px] rounded-full text-[8px] font-black uppercase tracking-widest ${theme.text} ${theme.border}`}>
                                                 {theme.access}
                                             </div>
                                         </div>
@@ -628,9 +659,9 @@ export default function RolesPage() {
                                                 <span>{role.permissions?.length || 0} / {AVAILABLE_PERMISSIONS.length} perms</span>
                                                 <span>{Math.round(((role.permissions?.length || 0) / AVAILABLE_PERMISSIONS.length) * 100)}%</span>
                                             </div>
-                                            <div className="w-full h-1 bg-slate-100 rounded-full overflow-hidden">
-                                                <div className="h-full rounded-xl transition-all duration-500" 
-                                                     style={{ width: `${Math.round(((role.permissions?.length || 0) / AVAILABLE_PERMISSIONS.length) * 100)}%`, backgroundColor: theme.hex }} />
+                                            <div className="w-full h-1 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                                                <div className={`h-full rounded-xl transition-all duration-500 ${theme.bgBar}`} 
+                                                     style={{ width: `${Math.round(((role.permissions?.length || 0) / AVAILABLE_PERMISSIONS.length) * 100)}%` }} />
                                             </div>
                                         </div>
                                     </div>
@@ -674,10 +705,10 @@ export default function RolesPage() {
                 </div>
 
                 {/* Info Footer */}
-                <div className="mt-3 pt-3 border-t-[1.5px] border-slate-100">
-                    <div className="flex items-center gap-2 p-2 bg-blue-50/50 rounded-lg max-w-fit">
-                        <Info className="w-3 h-3 text-blue-500" />
-                        <span className="text-[8.5px] font-bold text-slate-500 uppercase tracking-widest">Permissions are applied in real-time.</span>
+                <div className="mt-3 pt-3 border-t-[1.5px] border-slate-100 dark:border-slate-800">
+                    <div className="flex items-center gap-2 p-2 bg-blue-50/50 dark:bg-blue-950/25 rounded-lg max-w-fit">
+                        <Info className="w-3 h-3 text-blue-500 dark:text-blue-400" />
+                        <span className="text-[8.5px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest">Permissions are applied in real-time.</span>
                     </div>
                 </div>
             </div>
@@ -695,8 +726,8 @@ export default function RolesPage() {
                         {/* Beautiful Header */}
                         <div className="flex items-center justify-between px-8 py-6 border-b border-slate-100 dark:border-slate-800 bg-white dark:bg-[#0f172a] sticky top-0 z-20">
                             <div className="flex items-center gap-4 text-left">
-                                <div className="w-12 h-12 rounded-full bg-[#FEF3C7] flex items-center justify-center shrink-0">
-                                    <ShieldCheck className="w-6 h-6 text-[#D97706]" strokeWidth={2.5} />
+                                <div className="w-12 h-12 rounded-full bg-[#FEF3C7] dark:bg-[#D97706]/15 flex items-center justify-center shrink-0">
+                                    <ShieldCheck className="w-6 h-6 text-[#D97706] dark:text-[#fbbf24]" strokeWidth={2.5} />
                                 </div>
                                 <div className="text-left">
                                     <h2 className="text-xl font-black uppercase tracking-tight text-slate-900 dark:text-white leading-none mb-1.5">
@@ -755,7 +786,7 @@ export default function RolesPage() {
                                         <h3 className="text-[12px] font-black text-slate-900 dark:text-white uppercase tracking-widest">Assign Permissions</h3>
                                         <p className="text-[9px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mt-1">Select the modules this role can access</p>
                                     </div>
-                                    <div className="px-3 py-1.5 bg-[#FEF3C7] dark:bg-[#D97706]/20 rounded-xl">
+                                    <div className="px-3 py-1 bg-[#FEF3C7] dark:bg-[#D97706]/20 rounded-xl flex items-center justify-center min-h-[26px]">
                                         <span className="text-[10px] font-black text-[#D97706] dark:text-[#FBBF24] uppercase tracking-wider">{form.permissions.length} Selected</span>
                                     </div>
                                 </div>
@@ -802,7 +833,7 @@ export default function RolesPage() {
                                                                 {checkedSubCount}/{groupSubIds.length}
                                                             </span>
                                                         )}
-                                                        <div className={`w-5 h-5 rounded flex items-center justify-center border-2 transition-colors ${isGroupChecked ? 'bg-[#B4912B] border-[#B4912B]' : 'border-slate-400 dark:border-slate-400'}`}>
+                                                        <div className={`w-5 h-5 rounded flex items-center justify-center transition-colors ${isGroupChecked ? 'bg-[#B4912B] border border-[#B4912B] dark:border-transparent dark:ring-2 dark:ring-[#B4912B]' : 'border border-slate-300 dark:border-transparent dark:ring-2 dark:ring-slate-500'}`}>
                                                             {isGroupChecked && <CheckCircle2 className="w-3.5 h-3.5 text-white" />}
                                                         </div>
                                                     </div>
@@ -823,7 +854,7 @@ export default function RolesPage() {
                                                                         : 'bg-white/40 dark:bg-slate-800/20 border border-transparent hover:bg-white/80 dark:hover:bg-slate-800/60'
                                                                         }`}
                                                                 >
-                                                                    <div className={`w-4 h-4 rounded border flex items-center justify-center transition-colors shrink-0 ${isSubChecked ? 'bg-[#B4912B] border-[#B4912B]' : 'bg-white dark:bg-slate-800 border-slate-400 dark:border-slate-400'}`}>
+                                                                    <div className={`w-4 h-4 rounded flex items-center justify-center transition-colors shrink-0 ${isSubChecked ? 'bg-[#B4912B] border border-[#B4912B] dark:border-transparent dark:ring-2 dark:ring-[#B4912B]' : 'bg-white dark:bg-slate-800 border border-slate-300 dark:border-transparent dark:ring-2 dark:ring-slate-500'}`}>
                                                                         {isSubChecked && <div className="w-1.5 h-1.5 bg-white rounded-sm" />}
                                                                     </div>
                                                                     <div className="flex-1 min-w-0 pr-2 text-left">
@@ -864,7 +895,7 @@ export default function RolesPage() {
                                 {!viewMode && (
                                     <button
                                         type="submit"
-                                        className="flex-1 sm:flex-none px-10 py-3.5 bg-[#B4912B] text-white text-[10px] font-black uppercase tracking-widest shadow-lg shadow-[#B4912B]/30 hover:bg-black hover:shadow-black/20 rounded-xl transition-all active:scale-[0.98]"
+                                        className="flex-1 sm:flex-none px-10 py-3.5 bg-primary !bg-[#B4912B] hover:!bg-[#A57C1E] text-white text-[10px] font-black uppercase tracking-widest shadow-lg shadow-[#B4912B]/30 rounded-xl transition-all active:scale-[0.98] cursor-pointer"
                                     >
                                         {editingRole ? 'Save Changes' : 'Create Role'}
                                     </button>

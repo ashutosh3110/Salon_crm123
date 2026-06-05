@@ -270,7 +270,7 @@ export default function ServiceCategories({
             {/* Category Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {filteredCategories.map((cat) => (
-                    <div key={cat._id} className="bg-surface p-4 rounded-2xl border border-border shadow-sm hover:shadow-lg transition-all group relative overflow-hidden">
+                    <div key={cat._id} className="bg-surface p-4 rounded-2xl border border-border shadow-sm hover:shadow-lg transition-all group relative overflow-hidden flex flex-col h-full">
                         <div className="flex justify-between items-start mb-3 relative z-10">
                             <div className="p-1 rounded-xl bg-primary/5 text-primary border border-primary/10 group-hover:scale-105 transition-transform flex items-center gap-1 overflow-hidden w-11 h-11 justify-center">
                                 {cat.image ? (
@@ -303,17 +303,17 @@ export default function ServiceCategories({
                         </div>
 
                         <div
-                            className="relative z-10 cursor-pointer group/content"
+                            className="relative z-10 cursor-pointer group/content flex-1 flex flex-col"
                             onClick={() => navigate('/admin/services/list', { state: { category: cat.name } })}
                         >
-                            <div className="flex items-center gap-1.5 flex-wrap min-w-0 w-full">
+                            <div className="flex items-center gap-1.5 flex-wrap min-w-0 w-full mb-3">
                                 <h3 className="text-base font-bold text-text leading-tight uppercase tracking-tight group-hover/content:text-primary transition-colors break-words break-all min-w-0 flex-1">
                                     {cat.name}
                                 </h3>
                                 <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${cat.status === 'active' ? 'bg-emerald-500' : 'bg-muted-foreground/30'}`} />
                                 <ArrowUpRight className="w-3.5 h-3.5 opacity-0 group-hover/content:opacity-100 group-hover/content:translate-x-0.5 group-hover/content:-translate-y-0.5 transition-all text-primary shrink-0" />
                             </div>
-                            <div className="flex items-center flex-wrap gap-1.5 mt-2">
+                            <div className="flex items-center flex-wrap gap-1.5 mt-auto pt-3">
                                 <div className="flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-surface-alt text-text-secondary text-[8.5px] font-black uppercase tracking-widest border border-border/50">
                                     <Layers className="w-2.5 h-2.5 text-primary" />
                                     {cat.serviceCount} Services
@@ -415,7 +415,7 @@ export default function ServiceCategories({
                                     ) : (
                                         <label
                                             htmlFor="cat-image-input"
-                                            className="flex flex-col items-center justify-center w-full h-32 rounded-xl border-2 border-dashed border-slate-300 dark:border-slate-600 hover:border-primary/50 bg-slate-50 dark:bg-slate-800 cursor-pointer transition-all gap-2"
+                                            className="!flex !flex-col !items-center !justify-center w-full h-32 rounded-xl border-2 border-dashed border-slate-300 dark:border-slate-600 hover:border-primary/50 bg-slate-50 dark:bg-slate-800 cursor-pointer transition-all gap-2"
                                         >
                                             <div className="w-10 h-10 bg-primary/10 flex items-center justify-center text-primary">
                                                 <Camera className="w-6 h-6" />

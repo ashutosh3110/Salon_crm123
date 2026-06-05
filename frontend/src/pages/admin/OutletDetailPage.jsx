@@ -101,11 +101,9 @@ export default function OutletDetailPage() {
                 </button>
             </div>
 
-            {/* Stats Cards */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 {stats.map((stat, i) => (
                     <div key={i} className="bg-surface p-6 rounded-xl border border-border shadow-sm flex items-center justify-between group overflow-hidden relative">
-                        <div className="absolute -right-4 -top-4 w-16 h-16 bg-primary/5 rounded-xl group-hover:scale-110 transition-transform" />
                         <div className="relative z-10">
                             <p className="text-[10px] font-black text-text-muted uppercase tracking-widest mb-1.5">{stat.label}</p>
                             <p className="text-2xl font-black text-text tracking-tight uppercase">{stat.value}</p>

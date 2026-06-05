@@ -34,12 +34,12 @@ import api, { API_BASE_URL } from '../../services/api';
 import { getImageUrl } from '../../utils/imageUtils';
 
 const roleColors = {
-    admin: 'bg-purple-50 dark:bg-purple-950/30 text-purple-600 dark:text-purple-400',
-    manager: 'bg-blue-50 dark:bg-blue-950/30 text-blue-600 dark:text-blue-400',
-    receptionist: 'bg-green-50 dark:bg-green-950/30 text-green-600 dark:text-green-400',
-    stylist: 'bg-pink-50 dark:bg-pink-950/30 text-pink-600 dark:text-pink-400',
-    accountant: 'bg-yellow-50 dark:bg-yellow-950/30 text-yellow-600 dark:text-yellow-400',
-    inventory_manager: 'bg-orange-50 dark:bg-orange-950/30 text-orange-600 dark:text-orange-400',
+    admin: 'bg-purple-50 dark:bg-purple-950/30 !text-purple-600 dark:!text-purple-400',
+    manager: 'bg-blue-50 dark:bg-blue-950/30 !text-blue-600 dark:!text-blue-400',
+    receptionist: 'bg-green-50 dark:bg-green-950/30 !text-green-600 dark:!text-green-400',
+    stylist: 'bg-pink-50 dark:bg-pink-950/30 !text-pink-600 dark:!text-pink-400',
+    accountant: 'bg-yellow-50 dark:bg-yellow-950/30 !text-yellow-600 dark:!text-yellow-400',
+    inventory_manager: 'bg-orange-50 dark:bg-orange-950/30 !text-orange-600 dark:!text-orange-400',
 };
 
 const DEFAULT_AVAILABILITY = {
@@ -57,9 +57,9 @@ const DEFAULT_AVAILABILITY = {
 };
 
 const statusColors = {
-    active: 'bg-green-50 dark:bg-green-950/30 text-green-600 dark:text-green-400 border-green-100 dark:border-green-900',
-    inactive: 'bg-red-50 dark:bg-red-950/30 text-red-600 dark:text-red-400 border-red-100 dark:border-red-900',
-    pending: 'bg-yellow-50 dark:bg-yellow-950/30 text-yellow-600 dark:text-yellow-400 border-yellow-100 dark:border-yellow-900',
+    active: 'bg-green-50 dark:bg-green-950/30 !text-green-600 dark:!text-green-400 border-green-100 dark:border-green-900',
+    inactive: 'bg-red-50 dark:bg-red-950/30 !text-red-600 dark:!text-red-400 border-red-100 dark:border-red-900',
+    pending: 'bg-yellow-50 dark:bg-yellow-950/30 !text-yellow-600 dark:!text-yellow-400 border-yellow-100 dark:border-yellow-900',
 };
 
 export default function StaffPage() {
@@ -389,11 +389,11 @@ export default function StaffPage() {
 
     const getAvatarColor = (name) => {
         const colors = [
-            'bg-amber-50 text-amber-600',
-            'bg-purple-50 text-purple-600',
-            'bg-orange-50 text-orange-600',
-            'bg-emerald-50 text-emerald-600',
-            'bg-blue-50 text-blue-600'
+            'bg-amber-50 dark:bg-amber-500/15 text-amber-600 dark:text-amber-400',
+            'bg-purple-50 dark:bg-purple-500/15 text-purple-600 dark:text-purple-400',
+            'bg-orange-50 dark:bg-orange-500/15 text-orange-600 dark:text-orange-400',
+            'bg-emerald-50 dark:bg-emerald-500/15 text-emerald-600 dark:text-emerald-400',
+            'bg-blue-50 dark:bg-blue-500/15 text-blue-600 dark:text-blue-400'
         ];
         const initial = name ? name.charCodeAt(0) : 0;
         return colors[initial % colors.length];
@@ -401,7 +401,7 @@ export default function StaffPage() {
 
     return (
         <div className="space-y-4 animate-reveal max-w-[1600px] mx-auto pb-8 text-left p-4 md:p-6 bg-[#f8fafc] dark:bg-[#121826] min-h-screen">
-            <div className="bg-white !rounded-[24px] shadow-sm border border-slate-200 p-6 md:p-8 !overflow-hidden">
+            <div className="bg-white dark:bg-slate-900 !rounded-[24px] shadow-sm border border-slate-200 dark:border-slate-800 p-6 md:p-8 !overflow-hidden">
                 {/* Header */}
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 px-2 mt-2 mb-8">
                 <div className="text-left leading-none">
@@ -453,7 +453,7 @@ export default function StaffPage() {
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
                         placeholder="SEARCH BY NAME OR EMAIL..."
-                        className="w-full !pl-14 pr-5 py-3.5 bg-white border border-slate-200 rounded-xl text-[11px] font-black uppercase tracking-widest focus:border-slate-300 outline-none transition-all placeholder:text-slate-300 text-text shadow-sm"
+                        className="w-full !pl-14 pr-5 py-3.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-[11px] font-black uppercase tracking-widest focus:border-slate-300 dark:focus:border-slate-700 outline-none transition-all placeholder:text-slate-300 text-text shadow-sm"
                     />
                 </div>
                 <div className="flex gap-4">
@@ -461,7 +461,7 @@ export default function StaffPage() {
                         <select
                             value={roleFilter === 'all' ? 'All Roles' : roleFilter.toUpperCase()}
                             onChange={(e) => setRoleFilter(e.target.value === 'All Roles' ? 'all' : e.target.value.toLowerCase())}
-                            className="pl-5 pr-10 py-3.5 bg-white border border-slate-200 rounded-xl text-[11px] font-black tracking-widest outline-none focus:border-slate-300 transition-all appearance-none w-44 max-w-[180px] text-slate-700 shadow-sm truncate"
+                            className="pl-5 pr-10 py-3.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-[11px] font-black tracking-widest outline-none focus:border-slate-300 dark:focus:border-slate-700 transition-all appearance-none w-44 max-w-[180px] text-slate-700 dark:text-slate-300 shadow-sm truncate"
                         >
                             <option value="All Roles">All Roles</option>
                             {roles.map(r => (
@@ -476,7 +476,7 @@ export default function StaffPage() {
                         <select
                             value={outletFilter === 'all' ? 'All Salons' : outlets.find(o => o._id === outletFilter)?.name}
                             onChange={(e) => setOutletFilter(e.target.value === 'All Salons' ? 'all' : outlets.find(o => o.name === e.target.value)?._id)}
-                            className="pl-5 pr-10 py-3.5 bg-white border border-slate-200 rounded-xl text-[11px] font-black tracking-widest outline-none focus:border-slate-300 transition-all appearance-none min-w-[160px] text-slate-700 shadow-sm"
+                            className="pl-5 pr-10 py-3.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-[11px] font-black tracking-widest outline-none focus:border-slate-300 dark:focus:border-slate-700 transition-all appearance-none min-w-[160px] text-slate-700 dark:text-slate-300 shadow-sm"
                         >
                             <option value="All Salons">All Salons</option>
                             {outlets.map(o => <option key={o._id} value={o.name}>{o.name}</option>)}
@@ -487,20 +487,20 @@ export default function StaffPage() {
             </div>
 
             {/* Table */}
-            <div className="bg-white !rounded-[24px] !border-[1.5px] border-slate-200 !overflow-hidden min-h-[400px] shadow-sm">
+            <div className="bg-white dark:bg-slate-900 !rounded-[24px] !border-[1.5px] border-slate-200 dark:border-slate-800 !overflow-hidden min-h-[400px] shadow-sm">
                 <div className="overflow-x-auto no-scrollbar">
                     <table className="w-full text-left border-collapse min-w-[900px]">
                         <thead>
-                            <tr className="bg-slate-50 border-b border-slate-200">
-                                <th className="px-6 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">STAFF MEMBER</th>
-                                <th className="px-6 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">CONTACT NUMBER</th>
-                                <th className="px-6 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">ROLE</th>
-                                <th className="px-6 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">PRIMARY SALON</th>
-                                <th className="px-6 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">STATUS</th>
-                                <th className="px-6 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">ACTIONS</th>
+                            <tr className="bg-slate-50 dark:bg-slate-900/50 border-b border-slate-200 dark:border-slate-800">
+                                <th className="px-6 py-5 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">STAFF MEMBER</th>
+                                <th className="px-6 py-5 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">CONTACT NUMBER</th>
+                                <th className="px-6 py-5 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">ROLE</th>
+                                <th className="px-6 py-5 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">PRIMARY SALON</th>
+                                <th className="px-6 py-5 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">STATUS</th>
+                                <th className="px-6 py-5 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest text-center">ACTIONS</th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-slate-50">
+                        <tbody className="divide-y divide-slate-50 dark:divide-slate-800/50">
                             {filteredStaff.length === 0 ? (
                                 <tr>
                                     <td colSpan="6" className="px-6 py-20 text-center">
@@ -514,11 +514,11 @@ export default function StaffPage() {
                                 paginatedStaff.map((s, index) => (
                                     <tr
                                         key={s._id}
-                                        className="hover:bg-slate-50/50 transition-colors group"
+                                        className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors group"
                                     >
                                         <td className="px-6 py-5">
                                             <div className="flex items-center gap-4">
-                                                <div className={`relative w-10 h-10 rounded-full flex items-center justify-center font-black text-[14px] uppercase border border-slate-100 overflow-hidden ${getAvatarColor(s.name)}`}>
+                                                <div className={`relative w-10 h-10 rounded-full flex items-center justify-center font-black text-[14px] uppercase border border-slate-100 dark:border-slate-800/50 overflow-hidden ${getAvatarColor(s.name)}`}>
                                                     <span>{s.name?.charAt(0) || 'U'}</span>
                                                     {s.avatar && (
                                                         <img
@@ -530,23 +530,23 @@ export default function StaffPage() {
                                                     )}
                                                 </div>
                                                 <div>
-                                                    <div className="font-black text-slate-700 text-[12px] uppercase">{s.name}</div>
-                                                    <div className="text-[11px] text-slate-500 font-bold lowercase mt-0.5">{s.email}</div>
+                                                    <div className="font-black text-slate-700 dark:text-slate-200 text-[12px] uppercase">{s.name}</div>
+                                                    <div className="text-[11px] text-slate-500 dark:text-slate-400 font-bold lowercase mt-0.5">{s.email}</div>
                                                 </div>
                                             </div>
                                         </td>
                                         <td className="px-6 py-5">
-                                            <span className="text-[12px] font-black text-slate-700 tracking-tight">
+                                            <span className="text-[12px] font-black text-slate-700 dark:text-slate-200 tracking-tight">
                                                 {maskPhone(s.phone, user?.role)}
                                             </span>
                                         </td>
                                         <td className="px-6 py-5">
-                                            <div className="inline-flex items-center px-3 py-1.5 rounded-lg bg-slate-50 text-[10px] font-black text-slate-500 uppercase tracking-widest border border-slate-100">
+                                            <div className="inline-flex items-center px-3 py-1.5 rounded-lg bg-slate-50 dark:bg-slate-800 text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest border border-slate-100 dark:border-slate-700/50">
                                                 {s.role?.replace('_', ' ')}
                                             </div>
                                         </td>
                                         <td className="px-6 py-5">
-                                            <div className="text-[11px] font-black text-slate-700 uppercase truncate max-w-[150px]">
+                                            <div className="text-[11px] font-black text-slate-700 dark:text-slate-200 uppercase truncate max-w-[150px]">
                                                 {s.outletId?.name || outlets.find(o => o._id === (s.outletId?._id || s.outletId))?.name || 'MAIN UNIT'}
                                             </div>
                                         </td>
@@ -567,25 +567,25 @@ export default function StaffPage() {
                                             <div className="flex items-center justify-center gap-2">
                                                 <button
                                                     onClick={() => setViewingStaff(s)}
-                                                    className="p-2 border border-slate-200 rounded-[12px] text-slate-500 hover:text-slate-800 hover:border-slate-300 transition-all bg-white shadow-sm"
+                                                    className="p-2 border border-slate-200 dark:border-slate-700/80 rounded-[12px] text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200 hover:border-slate-300 dark:hover:border-slate-600 transition-all bg-white dark:bg-slate-800 shadow-sm"
                                                 >
                                                     <Eye className="w-4 h-4" />
                                                 </button>
                                                 <button
                                                     onClick={() => openEdit(s)}
-                                                    className="p-2 border border-slate-200 rounded-[12px] text-slate-500 hover:text-slate-800 hover:border-slate-300 transition-all bg-white shadow-sm"
+                                                    className="p-2 border border-slate-200 dark:border-slate-700/80 rounded-[12px] text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200 hover:border-slate-300 dark:hover:border-slate-600 transition-all bg-white dark:bg-slate-800 shadow-sm"
                                                 >
                                                     <Edit className="w-4 h-4" />
                                                 </button>
                                                 <button
                                                     onClick={() => handleToggleStatus(s._id, s.status || 'active')}
-                                                    className="p-2 border border-slate-200 rounded-[12px] text-slate-500 hover:text-slate-800 hover:border-slate-300 transition-all bg-white shadow-sm"
+                                                    className="p-2 border border-slate-200 dark:border-slate-700/80 rounded-[12px] text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200 hover:border-slate-300 dark:hover:border-slate-600 transition-all bg-white dark:bg-slate-800 shadow-sm"
                                                 >
                                                     <Ban className="w-4 h-4" />
                                                 </button>
                                                 <button
                                                     onClick={() => handleDelete(s._id)}
-                                                    className="p-2 border border-slate-200 rounded-[12px] text-slate-500 hover:text-rose-500 hover:border-slate-300 transition-all bg-white shadow-sm"
+                                                    className="p-2 border border-slate-200 dark:border-slate-700/80 rounded-[12px] text-slate-500 hover:text-rose-500 dark:text-slate-400 dark:hover:text-rose-400 hover:border-slate-300 dark:hover:border-slate-600 transition-all bg-white dark:bg-slate-800 shadow-sm"
                                                 >
                                                     <Trash2 className="w-4 h-4" />
                                                 </button>
@@ -599,8 +599,8 @@ export default function StaffPage() {
                 </div>
 
                 {/* Footer */}
-                <div className="bg-white px-6 py-4 flex items-center justify-between border-t border-slate-200">
-                    <span className="text-[11px] font-black text-slate-500 uppercase tracking-widest">
+                <div className="bg-white dark:bg-slate-900 px-6 py-4 flex items-center justify-between border-t border-slate-200 dark:border-slate-800">
+                    <span className="text-[11px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest">
                         SHOWING {(currentPage - 1) * itemsPerPage + 1} - {Math.min(currentPage * itemsPerPage, filteredStaff.length)} OF {filteredStaff.length} MEMBERS
                     </span>
                     <div className="flex gap-2">
@@ -608,7 +608,7 @@ export default function StaffPage() {
                             type="button"
                             onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
                             disabled={currentPage === 1}
-                            className="px-5 py-2.5 border border-slate-200 rounded-xl text-[10px] font-black text-slate-400 uppercase tracking-widest hover:border-slate-300 transition-all disabled:opacity-30 bg-white"
+                            className="px-5 py-2.5 border border-slate-200 dark:border-slate-700 rounded-xl text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest hover:border-slate-300 dark:hover:border-slate-600 transition-all disabled:opacity-30 bg-white dark:bg-slate-800"
                         >
                             PREVIOUS
                         </button>
@@ -616,7 +616,7 @@ export default function StaffPage() {
                             type="button"
                             onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
                             disabled={currentPage === totalPages || totalPages === 0}
-                            className="px-5 py-2.5 border border-slate-200 rounded-xl text-[10px] font-black text-slate-400 uppercase tracking-widest hover:border-slate-300 transition-all disabled:opacity-30 bg-white"
+                            className="px-5 py-2.5 border border-slate-200 dark:border-slate-700 rounded-xl text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest hover:border-slate-300 dark:hover:border-slate-600 transition-all disabled:opacity-30 bg-white dark:bg-slate-800"
                         >
                             NEXT
                         </button>
@@ -700,7 +700,7 @@ export default function StaffPage() {
                                                         className="w-full h-full object-cover"
                                                     />
                                                 ) : (
-                                                    <Plus className="w-6 h-6 text-text-muted" />
+                                                    <Plus className="w-6 h-6 text-slate-400 dark:text-slate-500" />
                                                 )}
                                             </div>
                                             <input
@@ -713,7 +713,7 @@ export default function StaffPage() {
                                                 className="absolute inset-0 opacity-0 cursor-pointer"
                                             />
                                             <div className="absolute -bottom-1 -right-1 bg-text text-background p-1.5 shadow-lg group-hover/photo:scale-110 transition-transform">
-                                                <Edit className="w-3 h-3" />
+                                                <Edit className="w-3 h-3 text-background" />
                                             </div>
                                         </div>
                                     </div>
@@ -1166,11 +1166,11 @@ export default function StaffPage() {
                                     {viewingStaff.name}
                                 </h2>
                                 <div className="flex items-center gap-2 mt-2">
-                                    <span className={`inline-flex items-center gap-1 px-2 py-0.5 text-[8px] font-black uppercase tracking-tighter border ${roleColors[viewingStaff.role] || 'bg-slate-50 text-slate-500'}`}>
-                                        <Shield className="w-2.5 h-2.5" /> {viewingStaff.role?.replace('_', ' ')}
+                                    <span className={`inline-flex items-center gap-1 px-2 py-0.5 text-[8px] font-black uppercase tracking-tighter border ${roleColors[viewingStaff.role?.toLowerCase()] || 'bg-slate-50 text-slate-500'}`}>
+                                        <Shield className="w-2.5 h-2.5 text-current" /> {viewingStaff.role?.replace('_', ' ')}
                                     </span>
-                                    <span className={`inline-flex items-center gap-1 px-2 py-0.5 text-[8px] font-black uppercase tracking-tighter border ${statusColors[viewingStaff.status || 'active'] || statusColors.active}`}>
-                                        {viewingStaff.status === 'active' || !viewingStaff.status ? <CheckCircle2 className="w-2.5 h-2.5" /> : <XCircle className="w-2.5 h-2.5" />}
+                                    <span className={`inline-flex items-center gap-1 px-2 py-0.5 text-[8px] font-black uppercase tracking-tighter border ${statusColors[viewingStaff.status?.toLowerCase() || 'active'] || statusColors.active}`}>
+                                        {viewingStaff.status?.toLowerCase() === 'active' || !viewingStaff.status ? <CheckCircle2 className="w-2.5 h-2.5 text-current" /> : <XCircle className="w-2.5 h-2.5 text-current" />}
                                         {viewingStaff.status || 'active'}
                                     </span>
                                 </div>

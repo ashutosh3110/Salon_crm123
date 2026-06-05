@@ -192,19 +192,19 @@ export default function ServiceForm({ onSave, onCancel, categories = [], initial
                 <div className={`bg-surface ${isModal ? 'p-4' : 'p-6'} rounded-2xl border border-border shadow-sm ${isModal ? 'space-y-3' : 'space-y-4'} h-fit`}>
                     <div className="flex items-center gap-2 mb-0.5">
                         <Tag className="w-3.5 h-3.5 text-primary" />
-                        <h3 className="text-[9px] font-bold text-text uppercase tracking-widest">1. Basic Details</h3>
+                        <h3 className="text-[11px] font-bold text-text uppercase tracking-widest">1. Basic Details</h3>
                     </div>
 
                     <div className="grid grid-cols-2 gap-3">
                         <div className="space-y-1">
                             <div className="flex justify-between items-center">
-                                <label className="text-[9px] font-bold text-text-muted uppercase tracking-tighter shrink-0">Service Name <span className="text-rose-500">*</span></label>
-                                <span className="text-[8px] font-bold text-text-muted/70">{formData.name.length}/30</span>
+                                <label className="text-[11px] font-bold text-text-muted uppercase tracking-tighter shrink-0">Service Name <span className="text-rose-500">*</span></label>
+                                <span className="text-[10px] font-bold text-text-muted/70">{formData.name.length}/30</span>
                             </div>
                             <input
                                 type="text"
                                 maxLength={30}
-                                className={`w-full px-3 py-1.5 rounded-xl bg-surface-alt border border-border text-[11px] focus:ring-2 focus:ring-primary/20 transition-all font-bold`}
+                                className={`w-full px-3 py-1.5 rounded-xl bg-surface-alt border border-border text-xs focus:ring-2 focus:ring-primary/20 transition-all font-bold`}
                                 placeholder="e.g. Executive Haircut"
                                 value={formData.name}
                                 onChange={(e) => setFormData({ ...formData, name: e.target.value.replace(/[^a-zA-Z0-9\s()&/-]/g, '').slice(0, 30) })}
@@ -212,10 +212,10 @@ export default function ServiceForm({ onSave, onCancel, categories = [], initial
                         </div>
 
                         <div className="space-y-1">
-                            <label className="text-[9px] font-bold text-text-muted uppercase tracking-tighter">Description (Optional)</label>
+                            <label className="text-[11px] font-bold text-text-muted uppercase tracking-tighter">Description (Optional)</label>
                             <input
                                 type="text"
-                                className={`w-full px-3 py-1.5 rounded-xl bg-surface-alt border border-border text-[11px] font-bold`}
+                                className={`w-full px-3 py-1.5 rounded-xl bg-surface-alt border border-border text-xs font-bold`}
                                 placeholder="Brief details..."
                                 value={formData.description}
                                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
@@ -227,14 +227,14 @@ export default function ServiceForm({ onSave, onCancel, categories = [], initial
                         <div className="p-4 rounded-2xl bg-rose-50 border border-rose-100 space-y-3">
                             <div className="flex items-center gap-2 text-rose-600">
                                 <Tag className="w-4 h-4" />
-                                <span className="text-[10px] font-black uppercase tracking-widest">No Categories Found</span>
+                                <span className="text-xs font-black uppercase tracking-widest">No Categories Found</span>
                             </div>
-                            <p className="text-[10px] text-rose-900/60 font-bold leading-relaxed uppercase tracking-tighter">
+                            <p className="text-xs text-rose-900/60 font-bold leading-relaxed uppercase tracking-tighter">
                                 You need categories before adding services.
                             </p>
                             <button
                                 onClick={() => navigate('/admin/services/categories')}
-                                className="w-full py-2 bg-white border border-rose-200 text-rose-600 text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-rose-50 transition-all flex items-center justify-center gap-2 shadow-sm"
+                                className="w-full py-2 bg-white border border-rose-200 text-rose-600 text-xs font-black uppercase tracking-widest rounded-xl hover:bg-rose-50 transition-all flex items-center justify-center gap-2 shadow-sm"
                             >
                                 <Plus className="w-3.5 h-3.5" /> Manage Categories
                             </button>
@@ -265,7 +265,7 @@ export default function ServiceForm({ onSave, onCancel, categories = [], initial
                     )}
 
                     <div className="space-y-1">
-                        <label className="text-[10px] font-bold text-text-muted uppercase tracking-tighter">Service Image</label>
+                        <label className="text-[11px] font-bold text-text-muted uppercase tracking-tighter">Service Image</label>
                         <div className="relative group">
                             {formData.image ? (
                                 <div className="relative aspect-video rounded-2xl overflow-hidden border border-border group">
@@ -275,7 +275,7 @@ export default function ServiceForm({ onSave, onCancel, categories = [], initial
                                         className="w-full h-full object-cover"
                                     />
                                     <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3">
-                                        <label className="p-2 bg-white rounded-xl text-primary cursor-pointer hover:scale-110 transition-transform">
+                                        <label className="p-2 bg-white rounded-xl text-primary cursor-pointer hover:scale-110 transition-transform !mb-0">
                                             <Upload className="w-4 h-4" />
                                             <input type="file" className="hidden" accept="image/*" onChange={handleImageUpload} />
                                         </label>
@@ -288,12 +288,12 @@ export default function ServiceForm({ onSave, onCancel, categories = [], initial
                                     </div>
                                 </div>
                             ) : (
-                                <label className="flex flex-col items-center justify-center h-28 rounded-2xl border-2 border-dashed border-border bg-surface-alt hover:bg-surface hover:border-primary/40 transition-all cursor-pointer group">
+                                <label className="!flex !flex-col !items-center !justify-center !mb-0 h-28 rounded-2xl border-2 border-dashed border-border bg-surface-alt hover:bg-surface hover:border-primary/40 transition-all cursor-pointer group">
                                     <div className="p-2 rounded-xl bg-primary/5 text-text-muted group-hover:text-primary group-hover:bg-primary/10 transition-all">
                                         <ImageIcon className="w-5 h-5" />
                                     </div>
-                                    <p className="text-[9px] font-bold text-text-muted uppercase tracking-widest mt-1">Upload Image</p>
-                                    <p className="text-[7px] text-text-muted opacity-60 mt-0.5 uppercase">MAX {platformSettings?.maxImageSize || 5}{platformSettings?.maxImageSizeUnit || 'MB'} :: WEBP</p>
+                                    <p className="text-[11px] font-bold text-text-muted uppercase tracking-widest mt-1">Upload Image</p>
+                                    <p className="text-[9px] text-text-muted opacity-60 mt-0.5 uppercase">MAX {platformSettings?.maxImageSize || 5}{platformSettings?.maxImageSizeUnit || 'MB'} :: WEBP</p>
                                     <input type="file" className="hidden" accept="image/*" onChange={handleImageUpload} />
                                 </label>
                             )}
@@ -304,7 +304,7 @@ export default function ServiceForm({ onSave, onCancel, categories = [], initial
 
                     {/* Resource Selection */}
                     <div className={`${isModal ? 'pt-3' : 'pt-4'} border-t border-border/50`}>
-                        <label className="text-[9px] font-bold text-text-muted uppercase tracking-widest block mb-2">
+                        <label className="text-[11px] font-bold text-text-muted uppercase tracking-widest block mb-2 !mb-2">
                             Facility Allocation *
                         </label>
                         <div className="grid grid-cols-2 gap-2">
@@ -317,7 +317,7 @@ export default function ServiceForm({ onSave, onCancel, categories = [], initial
                                     }`}
                             >
                                 <Armchair className={`w-4 h-4 shrink-0 ${formData.resourceType === 'chair' ? 'text-white' : 'text-text-muted'}`} />
-                                <span className={`text-[9px] font-black uppercase tracking-tight ${formData.resourceType === 'chair' ? 'text-white' : 'text-text'}`}>Chair</span>
+                                <span className={`text-[11px] font-black uppercase tracking-tight ${formData.resourceType === 'chair' ? 'text-white' : 'text-text'}`}>Chair</span>
                             </div>
 
                             <div
@@ -329,7 +329,7 @@ export default function ServiceForm({ onSave, onCancel, categories = [], initial
                                     }`}
                             >
                                 <DoorClosed className={`w-4 h-4 shrink-0 ${formData.resourceType === 'room' ? 'text-white' : 'text-text-muted'}`} />
-                                <span className={`text-[9px] font-black uppercase tracking-tight ${formData.resourceType === 'room' ? 'text-white' : 'text-text'}`}>Room</span>
+                                <span className={`text-[11px] font-black uppercase tracking-tight ${formData.resourceType === 'room' ? 'text-white' : 'text-text'}`}>Room</span>
                             </div>
                         </div>
                     </div>
@@ -340,17 +340,17 @@ export default function ServiceForm({ onSave, onCancel, categories = [], initial
                     <div className={`bg-surface ${isModal ? 'p-4' : 'p-6'} rounded-2xl border border-border shadow-sm ${isModal ? 'space-y-3' : 'space-y-4'} h-fit`}>
                         <div className="flex items-center gap-2 mb-0.5">
                             <IndianRupee className="w-3.5 h-3.5 text-emerald-500" />
-                            <h3 className="text-[9px] font-bold text-text uppercase tracking-widest">2. Time & Pricing</h3>
+                            <h3 className="text-[11px] font-bold text-text uppercase tracking-widest">2. Time & Pricing</h3>
                         </div>
 
                         <div className="grid grid-cols-3 gap-3">
                             <div className="space-y-1">
-                                <label className="text-[9px] font-bold text-text-muted uppercase tracking-tighter italic">Dur (Min)</label>
+                                <label className="text-[11px] font-bold text-text-muted uppercase tracking-tighter italic !mb-1">Dur (Min)</label>
                                 <div className="relative">
                                     <Clock className="absolute left-2 top-1/2 -translate-y-1/2 w-3 h-3 text-text-muted" />
                                     <input
                                         type="number"
-                                        className={`w-full pl-6 pr-2 py-1.5 rounded-lg bg-surface-alt border border-border text-[11px] font-bold`}
+                                        className={`w-full pl-6 pr-2 py-1.5 rounded-lg bg-surface-alt border border-border text-xs font-bold`}
                                         placeholder="0"
                                         value={formData.duration}
                                         onChange={(e) => setFormData({ ...formData, duration: e.target.value })}
@@ -358,12 +358,12 @@ export default function ServiceForm({ onSave, onCancel, categories = [], initial
                                 </div>
                             </div>
                             <div className="space-y-1">
-                                <label className="text-[9px] font-bold text-text-muted uppercase tracking-tighter italic">Price</label>
+                                <label className="text-[11px] font-bold text-text-muted uppercase tracking-tighter italic !mb-1">Price</label>
                                 <div className="relative">
                                     <span className="absolute left-2 top-1/2 -translate-y-1/2 text-text-muted font-bold text-[10px]">₹</span>
                                     <input
                                         type="number"
-                                        className={`w-full pl-5 pr-2 py-1.5 rounded-lg bg-surface-alt border border-border text-[11px] font-bold text-primary`}
+                                        className={`w-full pl-5 pr-2 py-1.5 rounded-lg bg-surface-alt border border-border text-xs font-bold text-primary`}
                                         placeholder="0"
                                         value={formData.price}
                                         onChange={(e) => setFormData({ ...formData, price: e.target.value })}
@@ -371,10 +371,10 @@ export default function ServiceForm({ onSave, onCancel, categories = [], initial
                                 </div>
                             </div>
                             <div className="space-y-1">
-                                <label className="text-[9px] font-bold text-text-muted uppercase tracking-tighter italic text-emerald-600">Loyalty Pts</label>
+                                <label className="text-[11px] font-bold text-text-muted uppercase tracking-tighter italic text-emerald-600 !mb-1">Loyalty Pts</label>
                                 <input
                                     type="number"
-                                    className={`w-full px-2.5 py-1.5 rounded-lg bg-surface-alt border border-border text-[11px] font-bold text-emerald-600`}
+                                    className={`w-full px-2.5 py-1.5 rounded-lg bg-surface-alt border border-border text-xs font-bold text-emerald-600`}
                                     placeholder="0"
                                     value={formData.loyaltyPoints}
                                     onChange={(e) => setFormData({ ...formData, loyaltyPoints: Math.max(0, parseInt(e.target.value) || 0) })}
@@ -384,9 +384,9 @@ export default function ServiceForm({ onSave, onCancel, categories = [], initial
 
                         <div className="grid grid-cols-2 gap-3 pt-2">
                             <div className="space-y-1">
-                                <label className="text-[9px] font-bold text-text-muted uppercase tracking-tighter italic">Tax Mode</label>
+                                <label className="text-[11px] font-bold text-text-muted uppercase tracking-tighter italic !mb-1">Tax Mode</label>
                                 <select
-                                    className="w-full px-2 py-1.5 rounded-lg bg-surface-alt border border-border text-[9px] font-black uppercase tracking-tighter"
+                                    className="w-full px-2 py-1.5 rounded-lg bg-surface-alt border border-border text-[11px] font-black uppercase tracking-tighter"
                                     value={formData.isInclusiveTax ? 'including' : 'excluding'}
                                     onChange={(e) => setFormData({ ...formData, isInclusiveTax: e.target.value === 'including' })}
                                 >
@@ -395,9 +395,9 @@ export default function ServiceForm({ onSave, onCancel, categories = [], initial
                                 </select>
                             </div>
                             <div className="space-y-1">
-                                <label className="text-[9px] font-bold text-text-muted uppercase tracking-tighter italic">GST Rate (%)</label>
+                                <label className="text-[11px] font-bold text-text-muted uppercase tracking-tighter italic !mb-1">GST Rate (%)</label>
                                 <select
-                                    className="w-full px-2 py-1.5 rounded-lg bg-surface-alt border border-border text-[9px] font-black uppercase tracking-tighter"
+                                    className="w-full px-2 py-1.5 rounded-lg bg-surface-alt border border-border text-[11px] font-black uppercase tracking-tighter"
                                     value={formData.gst}
                                     onChange={(e) => setFormData({ ...formData, gst: Number(e.target.value) })}
                                 >
@@ -412,23 +412,23 @@ export default function ServiceForm({ onSave, onCancel, categories = [], initial
                         <div className="pt-3 border-t border-border/50 flex flex-col gap-3 text-left">
                             <div className="flex items-center justify-between">
                                 <div className="space-y-0.5">
-                                    <label className="text-[10px] font-black uppercase tracking-widest text-text">Is Repeated Service</label>
-                                    <p className="text-[8px] text-text-muted font-bold uppercase tracking-tighter">Enable to send automatic booking reminders to customers.</p>
+                                    <label className="text-xs font-black uppercase tracking-widest text-text !mb-0">Is Repeated Service</label>
+                                    <p className="text-[10px] text-text-muted font-bold uppercase tracking-tighter">Enable to send automatic booking reminders to customers.</p>
                                 </div>
-                                <label className="flex items-center gap-2 cursor-pointer select-none">
+                                <label className="!flex !items-center !gap-2 !mb-0 cursor-pointer select-none">
                                     <input
                                         type="checkbox"
                                         className="w-4 h-4 accent-primary cursor-pointer border"
                                         checked={formData.isRepeated}
                                         onChange={(e) => setFormData({ ...formData, isRepeated: e.target.checked })}
                                     />
-                                    <span className="text-[9px] font-black uppercase tracking-widest text-text">Repeat</span>
+                                    <span className="text-[11px] font-black uppercase tracking-widest text-text">Repeat</span>
                                 </label>
                             </div>
 
                             {formData.isRepeated && (
                                 <div className="flex items-center gap-3 animate-in fade-in duration-200">
-                                    <span className="text-[9px] font-black uppercase tracking-wider text-text-muted">Send Reminder Every</span>
+                                    <span className="text-[11px] font-black uppercase tracking-wider text-text-muted">Send Reminder Every</span>
                                     <input
                                         type="number"
                                         min="1"
@@ -436,7 +436,7 @@ export default function ServiceForm({ onSave, onCancel, categories = [], initial
                                         onChange={(e) => setFormData({ ...formData, reminderDays: Math.max(1, Number(e.target.value) || 30) })}
                                         className="w-20 p-2 bg-surface-alt border border-border text-xs font-bold text-center outline-none focus:border-primary"
                                     />
-                                    <span className="text-[9px] font-black uppercase tracking-wider text-text-muted">Days</span>
+                                    <span className="text-[11px] font-black uppercase tracking-wider text-text-muted">Days</span>
                                 </div>
                             )}
                         </div>
@@ -449,27 +449,27 @@ export default function ServiceForm({ onSave, onCancel, categories = [], initial
                             <div className="flex items-center justify-between">
                                 <div className="flex items-center gap-2">
                                     <Percent className="w-3.5 h-3.5 text-rose-500" />
-                                    <h3 className="text-[9px] font-bold uppercase tracking-widest text-text">4. Commission</h3>
+                                    <h3 className="text-[11px] font-bold uppercase tracking-widest text-text">4. Commission</h3>
                                 </div>
-                                <label className="flex items-center gap-2 cursor-pointer">
+                                <label className="!flex !items-center !gap-2 !mb-0 cursor-pointer">
                                     <div className={`relative w-11 h-6 rounded-full transition-all duration-300 cursor-pointer ${formData.commissionApplicable ? 'bg-primary' : 'bg-slate-200 dark:bg-slate-700 border border-slate-300 dark:border-slate-600'}`} onClick={() => setFormData({ ...formData, commissionApplicable: !formData.commissionApplicable })}>
                                         <div className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full transition-all duration-300 shadow-sm ${formData.commissionApplicable ? 'translate-x-5' : 'translate-x-0'}`} />
                                     </div>
-                                    <span className={`text-[9px] font-black uppercase tracking-widest transition-colors duration-300 ${formData.commissionApplicable ? 'text-primary' : 'text-text-muted'}`}>Active</span>
+                                    <span className={`text-[11px] font-black uppercase tracking-widest transition-colors duration-300 ${formData.commissionApplicable ? 'text-primary' : 'text-text-muted'}`}>Active</span>
                                 </label>
                             </div>
 
                             {formData.commissionApplicable && (
                                 <div className="grid grid-cols-2 gap-3 animate-in fade-in duration-300">
                                     <div className="space-y-1">
-                                        <label className="text-[8px] font-bold text-text-muted uppercase tracking-widest">Type</label>
+                                        <label className="text-[10px] font-bold text-text-muted uppercase tracking-widest !mb-1">Type</label>
                                         <div className="flex bg-surface rounded-lg p-0.5 border border-border">
-                                            <div role="button" onClick={() => setFormData({ ...formData, commissionType: 'percent' })} className={`flex-1 py-1 text-[8px] font-bold rounded-md transition-all text-center cursor-pointer ${formData.commissionType === 'percent' ? 'bg-primary text-white shadow-sm' : 'text-text-muted'}`}>%</div>
-                                            <div role="button" onClick={() => setFormData({ ...formData, commissionType: 'fixed' })} className={`flex-1 py-1 text-[8px] font-bold rounded-md transition-all text-center cursor-pointer ${formData.commissionType === 'fixed' ? 'bg-primary text-white shadow-sm' : 'text-text-muted'}`}>₹</div>
+                                            <div role="button" onClick={() => setFormData({ ...formData, commissionType: 'percent' })} className={`flex-1 py-1 text-[10px] font-bold rounded-md transition-all text-center cursor-pointer ${formData.commissionType === 'percent' ? 'bg-primary text-white shadow-sm' : 'text-text-muted'}`}>%</div>
+                                            <div role="button" onClick={() => setFormData({ ...formData, commissionType: 'fixed' })} className={`flex-1 py-1 text-[10px] font-bold rounded-md transition-all text-center cursor-pointer ${formData.commissionType === 'fixed' ? 'bg-primary text-white shadow-sm' : 'text-text-muted'}`}>₹</div>
                                         </div>
                                     </div>
                                     <div className="space-y-1">
-                                        <label className="text-[8px] font-bold text-text-muted uppercase tracking-widest">Value</label>
+                                        <label className="text-[10px] font-bold text-text-muted uppercase tracking-widest !mb-1">Value</label>
                                         <input
                                             type="number"
                                             className="w-full bg-surface border border-border rounded-lg px-2 py-1 text-xs font-bold text-text outline-none focus:border-primary transition-colors"
@@ -488,10 +488,10 @@ export default function ServiceForm({ onSave, onCancel, categories = [], initial
                             <div className="space-y-1">
                                 <div className="flex items-center gap-2 mb-1">
                                     <Building2 className="w-3.5 h-3.5 text-violet-500" />
-                                    <h3 className="text-[9px] font-bold text-text uppercase tracking-widest">5. Outlets</h3>
+                                    <h3 className="text-[11px] font-bold text-text uppercase tracking-widest">5. Outlets</h3>
                                 </div>
                                 <select
-                                    className="w-full bg-surface-alt border border-border rounded-xl px-2 py-1 text-[10px] font-bold outline-none mt-1"
+                                    className="w-full bg-surface-alt border border-border rounded-xl px-2 py-1 text-xs font-bold outline-none mt-1"
                                     value={formData.outlet}
                                     onChange={(e) => setFormData({ ...formData, outlet: e.target.value })}
                                 >
@@ -502,7 +502,7 @@ export default function ServiceForm({ onSave, onCancel, categories = [], initial
                                 {formData.outlet === 'selected' && (
                                     <div className="mt-2 space-y-1.5 max-h-[180px] overflow-y-auto overflow-x-hidden custom-scrollbar px-1 border-t border-border pt-2">
                                         {outlets.map((o) => (
-                                            <label key={o._id} className="flex items-start gap-2 p-2 bg-surface-alt rounded-lg border border-border/50 hover:border-primary/30 cursor-pointer transition-all">
+                                            <label key={o._id} className="!flex !items-start !gap-2 !mb-0 p-2 bg-surface-alt rounded-lg border border-border/50 hover:border-primary/30 cursor-pointer transition-all">
                                                 <input
                                                     type="checkbox"
                                                     className="w-3.5 h-3.5 mt-0.5 rounded border-border text-primary focus:ring-primary shrink-0"
@@ -515,23 +515,23 @@ export default function ServiceForm({ onSave, onCancel, categories = [], initial
                                                     }}
                                                 />
                                                 <div className="flex flex-col min-w-0">
-                                                    <span className="text-[10px] font-black uppercase text-text tracking-tighter leading-tight break-words">{o.name}</span>
-                                                    {o.address?.city && <span className="text-[8px] font-bold text-text-muted uppercase leading-tight mt-0.5 truncate">{o.address.city}</span>}
+                                                    <span className="text-xs font-black uppercase text-text tracking-tighter leading-tight break-words">{o.name}</span>
+                                                    {o.address?.city && <span className="text-[10px] font-bold text-text-muted uppercase leading-tight mt-0.5 truncate">{o.address.city}</span>}
                                                 </div>
                                             </label>
                                         ))}
-                                        {outlets.length === 0 && <p className="text-[9px] text-text-muted font-bold uppercase italic">No outlets found</p>}
+                                        {outlets.length === 0 && <p className="text-[11px] text-text-muted font-bold uppercase italic">No outlets found</p>}
                                     </div>
                                 )}
                             </div>
                             <div className="space-y-1">
                                 <div className="flex items-center gap-2 mb-1">
                                     <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
-                                    <h3 className="text-[9px] font-bold text-text uppercase tracking-widest">6. Status</h3>
+                                    <h3 className="text-[11px] font-bold text-text uppercase tracking-widest">6. Status</h3>
                                 </div>
                                 <div className="flex bg-surface-alt rounded-xl p-0.5 border border-slate-200 dark:border-slate-800/80">
-                                    <button onClick={() => setFormData({ ...formData, status: 'active' })} className={`flex-1 py-1 text-[9px] font-bold rounded-lg transition-all ${formData.status === 'active' ? '!bg-emerald-500 !text-white shadow-sm' : 'text-text-muted'}`}>ACTIVE</button>
-                                    <button onClick={() => setFormData({ ...formData, status: 'inactive' })} className={`flex-1 py-1 text-[9px] font-bold rounded-lg transition-all ${formData.status === 'inactive' ? '!bg-rose-500 !text-white shadow-sm' : 'text-text-muted'}`}>OFF</button>
+                                    <button onClick={() => setFormData({ ...formData, status: 'active' })} className={`flex-1 py-1 text-[11px] font-bold rounded-lg transition-all ${formData.status === 'active' ? '!bg-emerald-500 !text-white shadow-sm' : 'text-text-muted'}`}>ACTIVE</button>
+                                    <button onClick={() => setFormData({ ...formData, status: 'inactive' })} className={`flex-1 py-1 text-[11px] font-bold rounded-lg transition-all ${formData.status === 'inactive' ? '!bg-rose-500 !text-white shadow-sm' : 'text-text-muted'}`}>OFF</button>
                                 </div>
                             </div>
                         </div>
