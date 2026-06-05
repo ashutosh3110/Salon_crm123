@@ -159,6 +159,7 @@ const AddProductPage = lazy(() => import('./pages/admin/AddProductPage'));
 const ProductDetailsPage = lazy(() => import('./pages/admin/ProductDetailsPage'));
 const ShopOrdersPage = lazy(() => import('./pages/admin/ShopOrdersPage'));
 const WhatsAppCreditsPage = lazy(() => import('./pages/admin/WhatsAppCreditsPage'));
+const OverallReportsPage = lazy(() => import('./pages/admin/OverallReportsPage'));
 
 // POS App - Lazy Loaded
 const POSLayout = lazy(() => import('./layouts/POSLayout'));
@@ -485,6 +486,7 @@ function App() {
                             <Route element={<ProtectedRoute feature="finance" permission="finance_reports" />}>
                                 <Route path="/admin/finance/reports" element={<FinancePage tab="reports" />} />
                                 <Route path="/admin/finance/eod" element={<FinancePage tab="eod" />} />
+                                <Route path="/admin/overall-reports" element={<OverallReportsPage />} />
                             </Route>
 
                             {/* Supplier Routes */}
