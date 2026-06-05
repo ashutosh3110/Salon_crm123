@@ -1163,7 +1163,7 @@ export default function POSInvoicesPage() {
                                     <Clock className="w-3 h-3" /> {formatDate(selectedInvoice.createdAt)}
                                 </p>
                             </div>
-                            <button onClick={() => setSelectedInvoice(null)} className="p-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 transition-all">
+                            <button onClick={() => setSelectedInvoice(null)} className="modal-close-btn p-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 transition-all">
                                 <X className="w-5 h-5 text-slate-500 dark:text-slate-400" />
                             </button>
                         </div>
@@ -1308,31 +1308,31 @@ export default function POSInvoicesPage() {
                                 onClick={() => handleDownloadPDF('pos')}
                                 className="py-2.5 bg-emerald-500 text-white font-black text-[9px] uppercase tracking-wider hover:bg-emerald-600 transition-all flex items-center justify-center gap-2 disabled:opacity-50 rounded-xl"
                             >
-                                {isGeneratingPDF === 'pos' ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Printer className="w-3.5 h-3.5" />}
+                                {isGeneratingPDF === 'pos' ? <Loader2 className="w-3.5 h-3.5 animate-spin text-white stroke-white" /> : <Printer className="w-3.5 h-3.5 text-white stroke-white" />}
                                 Receipt
                             </button>
                             <button
                                 disabled={!!isGeneratingPDF}
                                 onClick={() => handleDownloadPDF('standard')}
-                                className="py-2.5 bg-slate-800 text-white font-black text-[9px] uppercase tracking-wider hover:bg-slate-900 transition-all flex items-center justify-center gap-2 disabled:opacity-50 rounded-xl"
+                                className="py-2.5 bg-slate-700 text-white font-black text-[9px] uppercase tracking-wider hover:bg-slate-800 transition-all flex items-center justify-center gap-2 disabled:opacity-50 rounded-xl shadow-sm"
                             >
-                                {isGeneratingPDF === 'standard' ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <FileText className="w-3.5 h-3.5" />}
+                                {isGeneratingPDF === 'standard' ? <Loader2 className="w-3.5 h-3.5 animate-spin text-white stroke-white" /> : <FileText className="w-3.5 h-3.5 text-white stroke-white" />}
                                 A4 Bill
                             </button>
                             <button
                                 disabled={isSendingWhatsApp === selectedInvoice._id}
                                 onClick={() => sendWhatsAppBill(selectedInvoice)}
-                                className="py-2.5 bg-[#25D366] text-white font-black text-[9px] uppercase tracking-wider hover:bg-[#128C7E] transition-all flex items-center justify-center gap-2 disabled:opacity-50 rounded-xl"
+                                className="py-2.5 bg-[#25D366] text-white font-black text-[9px] uppercase tracking-wider hover:bg-[#128C7E] transition-all flex items-center justify-center gap-2 disabled:opacity-50 rounded-xl shadow-sm"
                             >
-                                {isSendingWhatsApp === selectedInvoice._id ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <MessageCircle className="w-3.5 h-3.5" />}
+                                {isSendingWhatsApp === selectedInvoice._id ? <Loader2 className="w-3.5 h-3.5 animate-spin text-white stroke-white" /> : <MessageCircle className="w-3.5 h-3.5 text-white stroke-white" />}
                                 WhatsApp
                             </button>
                             <button
                                 disabled={isSendingEmail === selectedInvoice._id}
                                 onClick={() => sendEmailBill(selectedInvoice)}
-                                className="py-2.5 bg-indigo-600 text-white font-black text-[9px] uppercase tracking-wider hover:bg-indigo-700 transition-all flex items-center justify-center gap-2 disabled:opacity-50 rounded-xl"
+                                className="py-2.5 bg-indigo-600 text-white font-black text-[9px] uppercase tracking-wider hover:bg-indigo-700 transition-all flex items-center justify-center gap-2 disabled:opacity-50 rounded-xl shadow-sm"
                             >
-                                {isSendingEmail === selectedInvoice._id ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Mail className="w-3.5 h-3.5" />}
+                                {isSendingEmail === selectedInvoice._id ? <Loader2 className="w-3.5 h-3.5 animate-spin text-white stroke-white" /> : <Mail className="w-3.5 h-3.5 text-white stroke-white" />}
                                 Email
                             </button>
                         </div>

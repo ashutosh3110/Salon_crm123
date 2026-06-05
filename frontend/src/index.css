@@ -1606,7 +1606,11 @@ html:not(.dark) .fixed.inset-0 .modal-close-btn {
 .modal-close-btn svg,
 html:not(.dark) .admin-panel .modal-close-btn svg,
 html:not(.dark) [role="dialog"] .modal-close-btn svg,
-html:not(.dark) .fixed.inset-0 .modal-close-btn svg {
+html:not(.dark) .fixed.inset-0 .modal-close-btn svg,
+.modal-close-btn svg *,
+html:not(.dark) .admin-panel .modal-close-btn svg *,
+html:not(.dark) [role="dialog"] .modal-close-btn svg *,
+html:not(.dark) .fixed.inset-0 .modal-close-btn svg * {
   color: #475569 !important;
   stroke: #475569 !important;
   fill: none !important;
@@ -1624,7 +1628,11 @@ html:not(.dark) .fixed.inset-0 .modal-close-btn:hover {
 .modal-close-btn:hover svg,
 html:not(.dark) .admin-panel .modal-close-btn:hover svg,
 html:not(.dark) [role="dialog"] .modal-close-btn:hover svg,
-html:not(.dark) .fixed.inset-0 .modal-close-btn:hover svg {
+html:not(.dark) .fixed.inset-0 .modal-close-btn:hover svg,
+.modal-close-btn:hover svg *,
+html:not(.dark) .admin-panel .modal-close-btn:hover svg *,
+html:not(.dark) [role="dialog"] .modal-close-btn:hover svg *,
+html:not(.dark) .fixed.inset-0 .modal-close-btn:hover svg * {
   color: #f43f5e !important;
   stroke: #f43f5e !important;
 }
@@ -1885,7 +1893,7 @@ html:not(.dark) .fixed.inset-0 input[type="date"] {
 }
 
 /* Cancel button text visibility in portal modals */
-html:not(.dark) .fixed.inset-0 button:not([class*="bg-\[#B4912B\]"]):not([class*="bg-emerald"]):not([class*="bg-rose"]):not([class*="bg-primary"]) {
+html:not(.dark) .fixed.inset-0 button:not([class*="bg-\[\#B4912B\]"]):not([class*="bg-emerald"]):not([class*="bg-rose"]):not([class*="bg-primary"]):not([class*="bg-indigo"]):not([class*="bg-\[\#25D366\]"]):not([class*="bg-slate-700"]) {
   color: #0f172a !important;
 }
 
@@ -1906,6 +1914,19 @@ button.bg-emerald-500 *,
 button.bg-emerald-600 *,
 button[class*="bg-emerald-"] * {
   color: #ffffff !important;
+}
+
+/* Ensure colored action buttons always have white icons - Highly specific to beat global SVG tints */
+html:not(.dark) .admin-panel button.bg-emerald-500 svg,
+html:not(.dark) .admin-panel button.bg-emerald-500 svg *,
+html:not(.dark) .admin-panel button.bg-indigo-600 svg,
+html:not(.dark) .admin-panel button.bg-indigo-600 svg *,
+html:not(.dark) .admin-panel button.bg-\[\#25D366\] svg,
+html:not(.dark) .admin-panel button.bg-\[\#25D366\] svg *,
+html:not(.dark) .admin-panel button.bg-slate-700 svg,
+html:not(.dark) .admin-panel button.bg-slate-700 svg * {
+  color: #ffffff !important;
+  stroke: #ffffff !important;
 }
 
 /* Search bar placeholder and input text in admin panels - light mode */

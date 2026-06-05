@@ -328,8 +328,8 @@ export default function InquiryPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 {stats.map((stat, i) => (
                     <div key={i} className="bg-white dark:bg-slate-900 p-4.5 border border-slate-100 dark:border-slate-800/80 flex items-center gap-4 group hover:border-black dark:hover:border-white transition-all min-h-[100px] relative overflow-hidden rounded-[16px] shadow-sm">
-                        <div className="w-12 h-12 rounded-full flex items-center justify-center shrink-0 animate-pulse-subtle" style={{ backgroundColor: stat.iconBg }}>
-                            <stat.icon className="w-5 h-5" style={{ color: stat.color }} strokeWidth={2.5} />
+                        <div className="w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 animate-pulse-subtle" style={{ backgroundColor: stat.iconBg }}>
+                            <stat.icon className="w-5 h-5" style={{ color: stat.color, stroke: stat.color }} strokeWidth={2.5} />
                         </div>
                         <div className="flex flex-col text-left">
                             <span className="text-[9px] font-bold text-text-muted uppercase tracking-wider">{stat.label}</span>
