@@ -2132,3 +2132,11 @@ html a.bg-\[\#B4912B\] * {
   color: #ffffff !important;
   stroke: #ffffff !important;
 }
+
+/* Status badges visibility override inside dark-mode toggled modals in light mode */
+html:not(.dark) [class*="bg-emerald-50"][class*="text-emerald-"] {
+    color: #059669 !important;
+}
+html:not(.dark) [class*="bg-orange-50"][class*="text-orange-"] {
+    color: #ea580c !important;
+}
