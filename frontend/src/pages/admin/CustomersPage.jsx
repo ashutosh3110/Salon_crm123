@@ -1251,20 +1251,13 @@ function PaymentRemindersView({ onCustomerClick, setWhatsappModal, fetchCustomer
                     </div>
                 ) : (
                     <table className="w-full text-left table-fixed" style={{ minWidth: '800px' }}>
-                        <colgroup>
-                            <col style={{ width: '28%' }} />
-                            <col style={{ width: '15%' }} />
-                            <col style={{ width: '15%' }} />
-                            <col style={{ width: '22%' }} />
-                            <col style={{ width: '20%' }} />
-                        </colgroup>
                         <thead className="bg-surface-alt border-b border-border/40">
                             <tr>
-                                <th className="px-4 py-2 text-[9px] font-bold text-text-muted uppercase tracking-widest w-[22%]" style={{ textAlign: 'left' }}>Client profile</th>
-                                <th className="px-4 py-2 text-[9px] font-bold text-text-muted uppercase tracking-widest text-right w-[18%]" style={{ textAlign: 'right' }}>Dues Amount</th>
-                                <th className="px-4 py-2 text-[9px] font-bold text-text-muted uppercase tracking-widest text-center w-[18%]" style={{ textAlign: 'center' }}>Reminders</th>
-                                <th className="px-4 py-2 text-[9px] font-bold text-text-muted uppercase tracking-widest text-center w-[22%]" style={{ textAlign: 'center' }}>Last Reminded</th>
-                                <th className="px-4 py-2 text-[9px] font-bold text-text-muted uppercase tracking-widest text-center w-[20%]" style={{ textAlign: 'center' }}>Actions</th>
+                                <th className="px-4 py-2 text-[9px] font-bold text-text-muted uppercase tracking-widest" style={{ width: '28%', textAlign: 'left' }}>Client profile</th>
+                                <th className="px-4 py-2 text-[9px] font-bold text-text-muted uppercase tracking-widest" style={{ width: '15%', textAlign: 'center' }}>Dues Amount</th>
+                                <th className="px-4 py-2 text-[9px] font-bold text-text-muted uppercase tracking-widest" style={{ width: '15%', textAlign: 'center' }}>Reminders</th>
+                                <th className="px-4 py-2 text-[9px] font-bold text-text-muted uppercase tracking-widest" style={{ width: '22%', textAlign: 'center' }}>Last Reminded</th>
+                                <th className="px-4 py-2 text-[9px] font-bold text-text-muted uppercase tracking-widest" style={{ width: '20%', textAlign: 'center' }}>Actions</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-border/20">
@@ -1281,23 +1274,29 @@ function PaymentRemindersView({ onCustomerClick, setWhatsappModal, fetchCustomer
                                             </div>
                                         </div>
                                     </td>
-                                    <td className="px-4 py-2.5 overflow-hidden text-left">
-                                        <span className="text-[11px] font-black text-text whitespace-nowrap">
-                                            ₹{(c.dueAmount || 0).toLocaleString()}
-                                        </span>
+                                    <td className="px-4 py-2.5 overflow-hidden" style={{ textAlign: 'center' }}>
+                                        <div className="flex justify-center w-full">
+                                            <span className="text-[11px] font-black text-text whitespace-nowrap">
+                                                ₹{(c.dueAmount || 0).toLocaleString()}
+                                            </span>
+                                        </div>
                                     </td>
-                                    <td className="px-4 py-2.5 overflow-hidden text-left">
-                                        <span className={`inline-flex items-center gap-1 px-2 py-0.5 text-[8px] font-black rounded-md uppercase tracking-wider whitespace-nowrap ${c.paymentReminderCount > 0 ? 'bg-amber-500/10 text-amber-500 border border-amber-500/20' : 'bg-surface-alt text-text-muted border border-border/30'}`}>
-                                            <div className={`w-1 h-1 rounded-full flex-shrink-0 ${c.paymentReminderCount > 0 ? 'bg-amber-500 animate-pulse' : 'bg-text-muted'}`} />
-                                            {c.paymentReminderCount || 0} Sent
-                                        </span>
+                                    <td className="px-4 py-2.5 overflow-hidden" style={{ textAlign: 'center' }}>
+                                        <div className="flex justify-center w-full">
+                                            <span className={`inline-flex items-center gap-1 px-2 py-0.5 text-[8px] font-black rounded-md uppercase tracking-wider whitespace-nowrap ${c.paymentReminderCount > 0 ? 'bg-amber-500/10 text-amber-500 border border-amber-500/20' : 'bg-surface-alt text-text-muted border border-border/30'}`}>
+                                                <div className={`w-1 h-1 rounded-full flex-shrink-0 ${c.paymentReminderCount > 0 ? 'bg-amber-500 animate-pulse' : 'bg-text-muted'}`} />
+                                                {c.paymentReminderCount || 0} Sent
+                                            </span>
+                                        </div>
                                     </td>
-                                    <td className="px-4 py-2.5 overflow-hidden text-left">
-                                        <span className="text-[10px] font-black text-text uppercase leading-none whitespace-nowrap">
-                                            {c.lastPaymentReminderSentAt ? new Date(c.lastPaymentReminderSentAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : 'NEVER'}
-                                        </span>
+                                    <td className="px-4 py-2.5 overflow-hidden" style={{ textAlign: 'center' }}>
+                                        <div className="flex justify-center w-full">
+                                            <span className="text-[10px] font-black text-text uppercase leading-none whitespace-nowrap">
+                                                {c.lastPaymentReminderSentAt ? new Date(c.lastPaymentReminderSentAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : 'NEVER'}
+                                            </span>
+                                        </div>
                                     </td>
-                                    <td className="px-4 py-2 text-center">
+                                    <td className="px-4 py-2" style={{ textAlign: 'center' }}>
                                         <div className="flex items-center justify-center" onClick={e => e.stopPropagation()}>
                                             <button
                                                 onClick={() => handleSendReminder(c)}
