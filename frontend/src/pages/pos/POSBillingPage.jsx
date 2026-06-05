@@ -277,6 +277,14 @@ const autoSendWhatsAppInvoice = async (dbInvoice, salon) => {
     }
 };
 
+const getTodayDateString = () => {
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, '0');
+    const day = String(today.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+};
+
 export default function POSBillingPage() {
     const navigate = useNavigate();
     const { user } = useAuth();
@@ -499,7 +507,7 @@ export default function POSBillingPage() {
 
     // Billing & Payment System Updates
     const [includePreviousDue, setIncludePreviousDue] = useState(false);
-    const [paymentDate, setPaymentDate] = useState('');
+    const [paymentDate, setPaymentDate] = useState(getTodayDateString());
     const [autoSendWhatsApp, setAutoSendWhatsApp] = useState(true);
     const [isWhatsAppSending, setIsWhatsAppSending] = useState(false);
 
@@ -1351,7 +1359,7 @@ export default function POSBillingPage() {
         setSelectedBookingIds([]);
         setSelectedOrderIds([]);
         setIncludePreviousDue(false);
-        setPaymentDate('');
+        setPaymentDate(getTodayDateString());
     };
 
     // ─── Keyboard Shortcuts ───────────────────────────────
@@ -2428,7 +2436,12 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
     const [qCollectedPrevDue, setQCollectedPrevDue] = useState(0);
     const [qRedeemWallet, setQRedeemWallet] = useState(0);
     const [qActiveMembership, setQActiveMembership] = useState(null);
-    const [qPaymentDate, setQPaymentDate] = useState('');
+    const [qPaymentDate, setQPaymentDate] = useState(getTodayDateString());
+    const [qSearchItem, setQSearchItem] = useState('');
+
+    useEffect(() => {
+        setQSearchItem('');
+    }, [qActiveTab]);
 
     const [qFocusedClientIndex, setQFocusedClientIndex] = useState(-1);
     const [qFocusedItemIndex, setQFocusedItemIndex] = useState(-1);
@@ -2512,28 +2525,42 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
     }, [qClient, allWallets]);
 
     const qFilteredServices = useMemo(() => {
-        if (!qOutletId) return (services || []);
-        return (services || []).filter(s => {
-            const sOutletIds = s.outletIds || [];
-            const sOutletId = s.outletId?._id || s.outletId;
-            if (sOutletIds.length === 0 && !sOutletId) return true;
-            const matchPlural = sOutletIds.some(id => String(id?._id || id) === String(qOutletId));
-            const matchSingular = sOutletId && String(sOutletId) === String(qOutletId);
-            return matchPlural || matchSingular;
-        });
-    }, [services, qOutletId]);
+        let list = services || [];
+        if (qOutletId) {
+            list = list.filter(s => {
+                const sOutletIds = s.outletIds || [];
+                const sOutletId = s.outletId?._id || s.outletId;
+                if (sOutletIds.length === 0 && !sOutletId) return true;
+                const matchPlural = sOutletIds.some(id => String(id?._id || id) === String(qOutletId));
+                const matchSingular = sOutletId && String(sOutletId) === String(qOutletId);
+                return matchPlural || matchSingular;
+            });
+        }
+        if (qSearchItem) {
+            const st = qSearchItem.toLowerCase().trim();
+            list = list.filter(s => (s.name || '').toLowerCase().includes(st) || (s.category || '').toLowerCase().includes(st));
+        }
+        return list;
+    }, [services, qOutletId, qSearchItem]);
 
     const qFilteredProducts = useMemo(() => {
-        if (!qOutletId) return (products || []);
-        return (products || []).filter(p => {
-            const pOutletIds = p.outletIds || [];
-            const pOutletId = p.outletId?._id || p.outletId;
-            if (pOutletIds.length === 0 && !pOutletId) return true;
-            const matchPlural = pOutletIds.some(id => String(id?._id || id) === String(qOutletId));
-            const matchSingular = pOutletId && String(pOutletId) === String(qOutletId);
-            return matchPlural || matchSingular;
-        });
-    }, [products, qOutletId]);
+        let list = products || [];
+        if (qOutletId) {
+            list = list.filter(p => {
+                const pOutletIds = p.outletIds || [];
+                const pOutletId = p.outletId?._id || p.outletId;
+                if (pOutletIds.length === 0 && !pOutletId) return true;
+                const matchPlural = pOutletIds.some(id => String(id?._id || id) === String(qOutletId));
+                const matchSingular = pOutletId && String(pOutletId) === String(qOutletId);
+                return matchPlural || matchSingular;
+            });
+        }
+        if (qSearchItem) {
+            const st = qSearchItem.toLowerCase().trim();
+            list = list.filter(p => (p.name || '').toLowerCase().includes(st) || (p.sku || '').toLowerCase().includes(st) || (p.category || '').toLowerCase().includes(st));
+        }
+        return list;
+    }, [products, qOutletId, qSearchItem]);
 
     const qCategories = useMemo(() => {
         const cats = [];
@@ -3152,6 +3179,34 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                             >
                                 <Package className="w-4 h-4" /> Products
                             </button>
+                        </div>
+
+                        {/* Search bar for services/products */}
+                        <div className="px-5 py-2 border-b border-slate-100 bg-slate-50/50 flex items-center gap-2 shrink-0">
+                            <div className="relative flex-1">
+                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" />
+                                <input
+                                    type="text"
+                                    placeholder={qActiveTab === 'services' ? "Search services..." : "Search products..."}
+                                    className="w-full border border-slate-200 rounded-xl pl-9 pr-8 py-1.5 text-xs font-semibold outline-none bg-white text-slate-800 focus:border-amber-500 transition-all dark:bg-slate-800 dark:border-slate-700 dark:text-slate-100"
+                                    value={qSearchItem}
+                                    onChange={e => {
+                                        setQSearchItem(e.target.value);
+                                        if (e.target.value.trim() && !qSelectedCategory) {
+                                            setQSelectedCategory('All');
+                                        }
+                                    }}
+                                />
+                                {qSearchItem && (
+                                    <button 
+                                        type="button"
+                                        onClick={() => setQSearchItem('')}
+                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                                    >
+                                        <X className="w-3 h-3" />
+                                    </button>
+                                )}
+                            </div>
                         </div>
 
                         {/* BREADCRUMB / COUNT BAR */}
