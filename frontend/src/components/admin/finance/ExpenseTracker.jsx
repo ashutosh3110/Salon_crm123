@@ -45,12 +45,12 @@ function pickExpenseRows(res) {
 export default function ExpenseTracker({ outletId }) {
     const [view, setView] = useState('list');
     return (
-        <div className="flex flex-col h-full slide-right overflow-y-auto no-scrollbar pb-10 bg-[#fafafa]">
+        <div className="flex flex-col h-full slide-right overflow-y-auto no-scrollbar pb-10 bg-[#fafafa] dark:bg-transparent">
             {/* Header Section */}
             <div className="px-8 py-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
                 <div>
-                    <h2 className="text-xl font-bold text-slate-800 tracking-tight">Expenses Management</h2>
-                    <p className="text-sm text-slate-500 mt-1">
+                    <h2 className="text-xl font-bold text-slate-800 dark:text-slate-100 tracking-tight">Expenses Management</h2>
+                    <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
                         Track and manage all business expenses in one place.
                     </p>
                 </div>
@@ -58,7 +58,7 @@ export default function ExpenseTracker({ outletId }) {
                     <button
                         type="button"
                         onClick={() => setView('list')}
-                        className={`flex items-center gap-2 px-4 py-2.5 rounded-lg text-xs font-bold transition-all border ${view === 'list' ? 'bg-white border-slate-200 text-slate-700 shadow-sm' : 'border-transparent text-slate-500 hover:text-slate-700 hover:bg-slate-100'}`}
+                        className={`flex items-center gap-2 px-4 py-2.5 rounded-lg text-xs font-bold transition-all border ${view === 'list' ? 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-750 text-slate-700 dark:text-slate-200 shadow-sm' : 'border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/50'}`}
                     >
                         <History className="w-4 h-4" />
                         Expense History
@@ -155,17 +155,17 @@ function ExpenseList({ onAdd, outletId }) {
     return (
         <div className="flex flex-col gap-6 animate-fadeIn pb-8">
             {/* Main Table Card */}
-            <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
+            <div className="bg-white dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/80 rounded-2xl overflow-hidden shadow-sm backdrop-blur-sm">
                 
                 {/* Search & Actions Row */}
-                <div className="px-6 py-5 border-b border-slate-100 flex flex-col sm:flex-row gap-4 items-stretch sm:items-center justify-between bg-white">
+                <div className="px-6 py-5 border-b border-slate-100 dark:border-slate-750 flex flex-col sm:flex-row gap-4 items-stretch sm:items-center justify-between bg-white dark:bg-transparent">
                     <div className="relative flex-1 max-w-md">
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                         <input
                             value={search}
                             onChange={(e) => setSearch(e.target.value)}
                             placeholder="Search category, note, outlet…"
-                            className="w-full pl-9 pr-4 py-2 bg-white border border-slate-200 rounded-lg text-xs font-semibold focus:outline-none focus:border-slate-300 transition-colors"
+                            className="w-full pl-9 pr-4 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-xs font-semibold text-slate-800 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-slate-300 dark:focus:border-slate-600 transition-colors"
                         />
                     </div>
                     <div className="flex items-center gap-3">
@@ -173,7 +173,7 @@ function ExpenseList({ onAdd, outletId }) {
                             type="button"
                             onClick={load}
                             disabled={loading}
-                            className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-lg text-xs font-bold text-slate-700 hover:bg-slate-50 transition-colors disabled:opacity-50"
+                            className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/80 transition-colors disabled:opacity-50"
                         >
                             {loading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <RefreshCw className="w-3.5 h-3.5 text-slate-500" />}
                             Refresh
@@ -181,7 +181,7 @@ function ExpenseList({ onAdd, outletId }) {
                         <button
                             type="button"
                             onClick={exportCsv}
-                            className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-lg text-xs font-bold text-slate-700 hover:bg-slate-50 transition-colors"
+                            className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/80 transition-colors"
                         >
                             <Download className="w-3.5 h-3.5 text-slate-500" />
                             Export CSV
@@ -189,7 +189,7 @@ function ExpenseList({ onAdd, outletId }) {
                         <button
                             type="button"
                             onClick={onAdd}
-                            className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-lg text-xs font-bold text-slate-700 hover:bg-slate-50 transition-colors"
+                            className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/80 transition-colors"
                         >
                             <FileText className="w-3.5 h-3.5 text-slate-500" />
                             New
@@ -201,18 +201,18 @@ function ExpenseList({ onAdd, outletId }) {
                     <div className="px-6 py-3 text-sm font-bold text-rose-600 bg-rose-50 border-b border-rose-100">{error}</div>
                 )}
 
-                <div className="relative min-h-[300px] bg-white">
+                <div className="relative min-h-[300px] bg-white dark:bg-transparent">
                     {loading && (
-                        <div className="absolute inset-0 z-10 flex items-center justify-center bg-white/80">
+                        <div className="absolute inset-0 z-10 flex items-center justify-center bg-white/80 dark:bg-slate-900/80">
                             <RefreshCw className="w-6 h-6 text-[#B4912B] animate-spin" />
                         </div>
                     )}
                     
                     {filtered.length === 0 && !loading ? (
-                        <div className="py-24 text-center bg-white flex flex-col items-center justify-center">
+                        <div className="py-24 text-center bg-white dark:bg-transparent flex flex-col items-center justify-center">
                             <img src="/vector iamge 4.png" alt="No Expenses" className="w-48 h-48 object-contain mb-4" />
-                            <h3 className="text-sm font-black text-slate-800 tracking-tight mb-1">No expenses recorded yet!</h3>
-                            <p className="text-xs font-semibold text-slate-500 mb-6">
+                            <h3 className="text-sm font-black text-slate-800 dark:text-slate-100 tracking-tight mb-1">No expenses recorded yet!</h3>
+                            <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-6">
                                 Save your first expense to keep your records organized.
                             </p>
                             <button
@@ -228,7 +228,7 @@ function ExpenseList({ onAdd, outletId }) {
                     <div className="overflow-x-auto">
                         <table className="w-full text-left border-collapse">
                             <thead>
-                                <tr className="bg-white border-b border-slate-100 text-[10px] font-black text-slate-800 uppercase tracking-widest">
+                                <tr className="bg-white dark:bg-slate-800/40 border-b border-slate-100 dark:border-slate-750 text-[10px] font-black text-slate-800 dark:text-slate-200 uppercase tracking-widest">
                                     <th className="px-6 py-4"><div className="flex items-center gap-1">Date <ArrowDownRight className="w-3 h-3 text-slate-400" /></div></th>
                                     <th className="px-6 py-4">Category & Note</th>
                                     <th className="px-6 py-4">Outlet</th>
@@ -237,11 +237,11 @@ function ExpenseList({ onAdd, outletId }) {
                                     <th className="px-6 py-4 text-center">Actions</th>
                                 </tr>
                             </thead>
-                            <tbody className="divide-y divide-slate-50 bg-white">
+                            <tbody className="divide-y divide-slate-50 dark:divide-slate-750 bg-white dark:bg-transparent">
                                 {filtered.map((exp) => (
-                                    <tr key={exp.id || exp._id} className="hover:bg-slate-50/50 transition-colors">
+                                    <tr key={exp.id || exp._id} className="hover:bg-slate-50/50 dark:hover:bg-slate-750/30 transition-colors">
                                         <td className="px-6 py-4 whitespace-nowrap">
-                                            <span className="text-xs font-bold text-slate-700">
+                                            <span className="text-xs font-bold text-slate-700 dark:text-slate-300">
                                                 {new Date(exp.date || exp.createdAt).toLocaleDateString('en-GB', {
                                                     day: '2-digit', month: 'short', year: 'numeric'
                                                 })}
@@ -249,21 +249,21 @@ function ExpenseList({ onAdd, outletId }) {
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap">
                                             <div className="flex flex-col">
-                                                <span className="font-bold text-slate-800 text-xs">
+                                                <span className="font-bold text-slate-800 dark:text-slate-200 text-xs">
                                                     {labelForCategory(exp.category)}
                                                 </span>
-                                                <span className="text-[10px] text-slate-500 font-medium line-clamp-1 mt-0.5">
+                                                <span className="text-[10px] text-slate-500 dark:text-slate-400 font-medium line-clamp-1 mt-0.5">
                                                     {exp.description || '—'}
                                                 </span>
                                             </div>
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap">
-                                            <span className="text-xs font-bold text-slate-700">
+                                            <span className="text-xs font-bold text-slate-700 dark:text-slate-300">
                                                 {exp.outletId?.name || exp.outletName || '—'}
                                             </span>
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap">
-                                            <span className="text-xs font-black text-slate-800">
+                                            <span className="text-xs font-black text-slate-800 dark:text-slate-100">
                                                 ₹{Number(exp.amount || 0).toLocaleString('en-IN')}
                                             </span>
                                         </td>
@@ -274,11 +274,11 @@ function ExpenseList({ onAdd, outletId }) {
                                                 ) : (
                                                     <CreditCard className="w-3.5 h-3.5 text-[#B4912B]" />
                                                 )}
-                                                <span className="text-xs font-bold text-slate-700">{modeLabel(exp.paymentMethod)}</span>
+                                                <span className="text-xs font-bold text-slate-700 dark:text-slate-300">{modeLabel(exp.paymentMethod)}</span>
                                             </div>
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap text-center">
-                                            <button className="text-slate-400 hover:text-slate-600 transition-colors">
+                                            <button className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-250 transition-colors">
                                                 ...
                                             </button>
                                         </td>
@@ -292,25 +292,25 @@ function ExpenseList({ onAdd, outletId }) {
             </div>
 
             {/* Outlets List Section */}
-            <div className="bg-white border border-slate-200 rounded-2xl shadow-sm p-6">
-                <h3 className="text-sm font-bold text-slate-800 mb-4">Outlets List ({outlets?.length || 0})</h3>
+            <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-sm p-6">
+                <h3 className="text-sm font-bold text-slate-800 dark:text-slate-200 mb-4">Outlets List ({outlets?.length || 0})</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {(outlets || []).map((outlet) => {
-                        const colors = ['bg-indigo-100 text-indigo-600', 'bg-emerald-100 text-emerald-600', 'bg-blue-100 text-blue-600', 'bg-rose-100 text-rose-600', 'bg-amber-100 text-amber-600'];
+                        const colors = ['bg-indigo-100 text-indigo-600 dark:bg-indigo-950/40 dark:text-indigo-400', 'bg-emerald-100 text-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-400', 'bg-blue-100 text-blue-600 dark:bg-blue-950/40 dark:text-blue-400', 'bg-rose-100 text-rose-600 dark:bg-rose-950/40 dark:text-rose-400', 'bg-amber-100 text-amber-600 dark:bg-amber-950/40 dark:text-amber-400'];
                         const colorClass = colors[Math.abs(outlet.name.length) % colors.length];
                         const initials = outlet.name.split(' ').map(w => w[0]).join('').substring(0, 2).toUpperCase();
                         
                         return (
-                            <div key={outlet._id || outlet.id} className="flex items-center justify-between p-4 rounded-xl border border-slate-100 bg-white hover:border-slate-200 hover:shadow-sm transition-all cursor-pointer">
+                            <div key={outlet._id || outlet.id} className="flex items-center justify-between p-4 rounded-xl border border-slate-100 dark:border-slate-750 bg-white dark:bg-slate-850 hover:border-slate-200 dark:hover:border-slate-600 hover:shadow-sm transition-all cursor-pointer">
                                 <div className="flex items-center gap-3">
                                     <div className={`w-10 h-10 rounded-full flex items-center justify-center text-xs font-black shrink-0 ${colorClass}`}>
                                         {initials}
                                     </div>
                                     <div>
-                                        <h4 className="text-xs font-bold text-slate-800">{outlet.name}</h4>
+                                        <h4 className="text-xs font-bold text-slate-800 dark:text-slate-200">{outlet.name}</h4>
                                         <div className="flex items-center gap-1.5 mt-0.5">
                                             <div className="w-1.5 h-1.5 rounded-full bg-emerald-500"></div>
-                                            <span className="text-[10px] font-bold text-emerald-600">Active</span>
+                                            <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400">Active</span>
                                         </div>
                                     </div>
                                 </div>
@@ -321,7 +321,7 @@ function ExpenseList({ onAdd, outletId }) {
                 </div>
             </div>
 
-            <div className="flex items-center justify-center gap-2 text-slate-500 pb-4">
+            <div className="flex items-center justify-center gap-2 text-slate-500 dark:text-slate-400 pb-4">
                 <div className="text-amber-400">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg>
                 </div>
@@ -406,9 +406,9 @@ function ExpenseForm({ onCancel, onSaved, outletId }) {
                     </div>
 
                     <div className="space-y-2">
-                        <label className="text-[10px] font-bold text-text-muted uppercase tracking-widest ml-1">Amount (₹)</label>
+                        <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest ml-1">Amount (₹)</label>
                         <div className="relative group">
-                            <IndianRupee className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-rose-500 transition-colors" />
+                            <IndianRupee className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-rose-500 transition-colors" />
                             <input
                                 required
                                 type="number"
@@ -417,13 +417,13 @@ function ExpenseForm({ onCancel, onSaved, outletId }) {
                                 value={amount}
                                 onChange={(e) => setAmount(e.target.value)}
                                 placeholder="₹ 0.00"
-                                className="w-full pl-10 pr-4 py-2 bg-white border border-border rounded-2xl text-xs font-bold focus:outline-none focus:ring-2 focus:ring-rose-500/10 transition-all"
+                                className="w-full pl-10 pr-4 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl text-xs font-bold text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-rose-500/10 transition-all"
                             />
                         </div>
                     </div>
 
                     <div className="space-y-2 md:col-span-2">
-                        <label className="text-[10px] font-bold text-text-muted uppercase tracking-widest ml-1">Payment mode</label>
+                        <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest ml-1">Payment mode</label>
                         <div className="flex gap-4 pt-1">
                             {[
                                 { key: 'cash', label: 'Cash' },
@@ -433,27 +433,27 @@ function ExpenseForm({ onCancel, onSaved, outletId }) {
                                     key={key}
                                     type="button"
                                     onClick={() => setPaymentMode(key)}
-                                    className={`flex-1 flex flex-col items-center gap-2 p-3 bg-white border rounded-2xl transition-all ${
+                                    className={`flex-1 flex flex-col items-center gap-2 p-3 bg-white dark:bg-slate-900 border rounded-2xl transition-all ${
                                         paymentMode === key
-                                            ? 'border-rose-500 bg-rose-500/5 ring-2 ring-rose-500/20 shadow-sm'
-                                            : 'border-border hover:border-rose-300'
+                                            ? 'border-rose-500 bg-rose-500/5 dark:bg-rose-500/15 ring-2 ring-rose-500/20 shadow-sm'
+                                            : 'border-slate-200 dark:border-slate-700 hover:border-rose-300 dark:hover:border-rose-700'
                                     }`}
                                 >
-                                    <div className={`w-8 h-8 rounded-full flex items-center justify-center ${paymentMode === key ? 'bg-rose-500/10' : 'bg-surface-alt'}`}>
+                                    <div className={`w-8 h-8 rounded-full flex items-center justify-center ${paymentMode === key ? 'bg-rose-500/10' : 'bg-slate-100 dark:bg-slate-800'}`}>
                                         {key === 'cash' ? (
-                                            <Wallet className={`w-4 h-4 ${paymentMode === key ? 'text-rose-500' : 'text-text-muted'}`} />
+                                            <Wallet className={`w-4 h-4 ${paymentMode === key ? 'text-rose-500' : 'text-slate-400'}`} />
                                         ) : (
-                                            <CreditCard className={`w-4 h-4 ${paymentMode === key ? 'text-rose-500' : 'text-text-muted'}`} />
+                                            <CreditCard className={`w-4 h-4 ${paymentMode === key ? 'text-rose-500' : 'text-slate-400'}`} />
                                         )}
                                     </div>
-                                    <span className="text-[10px] font-bold text-text-secondary uppercase tracking-widest">{label}</span>
+                                    <span className="text-[10px] font-bold text-slate-600 dark:text-slate-300 uppercase tracking-widest">{label}</span>
                                 </button>
                             ))}
                         </div>
                     </div>
 
                     <div className="space-y-2">
-                        <label className="text-[10px] font-bold text-text-muted uppercase tracking-widest ml-1">Outlet</label>
+                        <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest ml-1">Outlet</label>
                         <CustomDropdown
                             value={formOutletId}
                             onChange={setFormOutletId}
@@ -469,27 +469,27 @@ function ExpenseForm({ onCancel, onSaved, outletId }) {
                     </div>
 
                     <div className="space-y-2">
-                        <label className="text-[10px] font-bold text-text-muted uppercase tracking-widest ml-1">Date</label>
+                        <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest ml-1">Date</label>
                         <div className="relative">
-                            <Calendar className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
+                            <Calendar className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                             <input
                                 type="date"
                                 required
                                 value={dateStr}
                                 onChange={(e) => setDateStr(e.target.value)}
-                                className="w-full pl-10 pr-4 py-2 bg-white border border-border rounded-2xl text-xs font-bold transition-all"
+                                className="w-full pl-10 pr-4 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl text-xs font-bold text-slate-800 dark:text-slate-100 transition-all"
                             />
                         </div>
                     </div>
 
                     <div className="space-y-2 md:col-span-2">
-                        <label className="text-[10px] font-bold text-text-muted uppercase tracking-widest ml-1">Remarks / notes</label>
+                        <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest ml-1">Remarks / notes</label>
                         <textarea
                             value={notes}
                             onChange={(e) => setNotes(e.target.value)}
                             placeholder="Bill reference, vendor, etc."
                             rows={2}
-                            className="w-full px-4 py-3 bg-white border border-border rounded-2xl text-xs font-bold focus:outline-none focus:ring-2 focus:ring-rose-500/10 transition-all resize-none"
+                            className="w-full px-4 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl text-xs font-bold text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-rose-500/10 transition-all resize-none"
                         />
                     </div>
                 </div>
