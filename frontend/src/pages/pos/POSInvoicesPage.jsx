@@ -4,7 +4,8 @@ import {
     Search, Calendar, Eye, X, Download,
     Clock, CreditCard, Banknote, Smartphone, Ban,
     ChevronLeft, ChevronRight, FileText, Loader2, Store, ChevronDown, Printer,
-    Mail, MessageSquare, MessageCircle, Send, Filter, RefreshCw, MapPin, Box, PlusCircle
+    Mail, MessageSquare, MessageCircle, Send, Filter, RefreshCw, MapPin, Box, PlusCircle,
+    Edit, Trash2
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import api from '../../services/api';
@@ -587,6 +588,7 @@ export default function POSInvoicesPage() {
     const [search, setSearch] = useState('');
     const [dateFilter, setDateFilter] = useState('all');
     const [typeFilter, setTypeFilter] = useState('all');
+    const [chartTimeframe, setChartTimeframe] = useState('this_month');
     const [selectedInvoice, setSelectedInvoice] = useState(null);
     const [page, setPage] = useState(1);
     const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
@@ -610,22 +612,43 @@ export default function POSInvoicesPage() {
     }, [selectedInvoice]);
 
 
+    const loadInvoices = async () => {
+        try {
+            setLoading(true);
+            const response = await api.get(`/pos/invoices?outletId=${activeOutletId || ''}`);
+            const rows = response?.data?.data || response?.data?.results || response?.data || [];
+            setInvoices(Array.isArray(rows) ? rows : []);
+        } catch (error) {
+            console.error('[POSInvoices] Failed to load invoices:', error);
+            setInvoices([]);
+        } finally {
+            setLoading(false);
+        }
+    };
+
     useEffect(() => {
-        const loadInvoices = async () => {
-            try {
-                setLoading(true);
-                const response = await api.get(`/pos/invoices?outletId=${activeOutletId || ''}`);
-                const rows = response?.data?.data || response?.data?.results || response?.data || [];
-                setInvoices(Array.isArray(rows) ? rows : []);
-            } catch (error) {
-                console.error('[POSInvoices] Failed to load invoices:', error);
-                setInvoices([]);
-            } finally {
-                setLoading(false);
-            }
-        };
         loadInvoices();
     }, [activeOutletId]);
+
+    const handleEditInvoice = (inv) => {
+        navigate('/pos/billing', { state: { editInvoice: inv } });
+    };
+
+    const handleDeleteInvoice = async (id) => {
+        if (!window.confirm('Are you sure you want to delete this invoice?')) return;
+        try {
+            const res = await api.delete(`/pos/invoices/${id}`);
+            if (res.data?.success || res.status === 200) {
+                toast.success('Invoice deleted successfully');
+                loadInvoices();
+            } else {
+                toast.error(res.data?.message || 'Failed to delete invoice');
+            }
+        } catch (error) {
+            console.error('[POSInvoices] Failed to delete invoice:', error);
+            toast.error(error.response?.data?.message || 'Error deleting invoice');
+        }
+    };
 
     const handleDownloadPDF = async (type = 'pos') => {
         if (!selectedInvoice) return;
@@ -757,9 +780,39 @@ export default function POSInvoicesPage() {
         });
     }, [invoices, search, dateFilter, typeFilter]);
 
+    const filteredInvoicesForChart = useMemo(() => {
+        if (invoices.length === 0) return [];
+        
+        // Find the most recent invoice date
+        let maxDateStr = invoices[0].createdAt;
+        invoices.forEach(inv => {
+            if (inv.createdAt && inv.createdAt > maxDateStr) {
+                maxDateStr = inv.createdAt;
+            }
+        });
+        
+        const referenceDate = new Date(maxDateStr);
+        
+        return invoices.filter(inv => {
+            if (!inv.createdAt) return false;
+            const date = new Date(inv.createdAt);
+            const diffTime = Math.abs(referenceDate - date);
+            const diffDays = diffTime / (1000 * 60 * 60 * 24);
+            
+            if (chartTimeframe === 'today') {
+                return date.toDateString() === referenceDate.toDateString() || diffDays <= 1;
+            } else if (chartTimeframe === 'this_week') {
+                return diffDays <= 7;
+            } else if (chartTimeframe === 'this_month') {
+                return diffDays <= 30;
+            }
+            return true; // all_time
+        });
+    }, [invoices, chartTimeframe]);
+
     const paymentData = useMemo(() => {
         const grouped = {};
-        invoices.forEach(inv => {
+        filteredInvoicesForChart.forEach(inv => {
             const d = new Date(inv.createdAt).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' });
             if(!grouped[d]) grouped[d] = { name: d, Cash: 0, UPI: 0, Unpaid: 0 };
             const cash = inv.payments?.filter(p=>p.method==='cash').reduce((s,p)=>s+p.amount,0) || 0;
@@ -772,11 +825,11 @@ export default function POSInvoicesPage() {
         const arr = Object.values(grouped).slice(-5);
         if(arr.length === 0) return [{ name: 'Today', Cash: 0, UPI: 0, Unpaid: 0 }];
         return arr;
-    }, [invoices]);
+    }, [filteredInvoicesForChart]);
 
     const donutData = useMemo(() => {
         let cash = 0, upi = 0, unpaid = 0;
-        invoices.forEach(inv => {
+        filteredInvoicesForChart.forEach(inv => {
             const cashAmt = inv.payments?.filter(p=>p.method==='cash').reduce((s,p)=>s+p.amount,0) || 0;
             const upiAmt = inv.payments?.filter(p=>['online','card','upi'].includes(p.method)).reduce((s,p)=>s+p.amount,0) || 0;
             const fallbackTotal = inv.total || 0;
@@ -789,7 +842,7 @@ export default function POSInvoicesPage() {
             { name: 'UPI', value: upi },
             { name: 'Unpaid', value: unpaid }
         ];
-    }, [invoices]);
+    }, [filteredInvoicesForChart]);
     const DONUT_COLORS = ['#10b981', '#8b5cf6', '#f97316'];
 
     const totalPages = Math.ceil(filtered.length / perPage);
@@ -881,10 +934,10 @@ export default function POSInvoicesPage() {
                 {/* Stats Cards */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                     {[
-                        { title: "Total Revenue", badge: "OVERALL", badgeColor: "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300", value: `₹${invoices.reduce((s, i) => s + (i.total || 0), 0).toLocaleString()}`, subtitle: "vs Yesterday ₹0 (0%)", icon: Banknote, areaColor: '#10b981', areaId: 'sg0' },
-                        { title: "Today's Earnings", badge: "TODAY", badgeColor: "bg-emerald-100 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-300", value: `₹${invoices.filter(i => new Date(i.createdAt).toDateString() === new Date().toDateString()).reduce((s, i) => s + (i.total || 0), 0).toLocaleString()}`, subtitle: "vs Yesterday ₹0 (0%)", icon: Calendar, areaColor: '#10b981', areaId: 'sg1' },
-                        { title: "UPI / Card", badge: "DIGITAL", badgeColor: "bg-blue-100 dark:bg-blue-950/40 text-blue-600 dark:text-blue-300", value: `₹${invoices.filter(i => ['online', 'card', 'upi'].includes(i.paymentMethod)).reduce((s, i) => s + (i.total || 0), 0).toLocaleString()}`, subtitle: "vs Yesterday ₹0 (0%)", icon: Smartphone, areaColor: '#3b82f6', areaId: 'sg2' },
-                        { title: "Cash Collected", badge: "PHYSICAL", badgeColor: "bg-orange-100 dark:bg-orange-950/40 text-orange-600 dark:text-orange-300", value: `₹${invoices.filter(i => i.paymentMethod === 'cash' || !i.paymentMethod).reduce((s, i) => s + (i.total || 0), 0).toLocaleString()}`, subtitle: "vs Yesterday ₹0 (0%)", icon: Banknote, areaColor: '#f97316', areaId: 'sg3' }
+                        { title: "Total Revenue", badge: "OVERALL", badgeColor: "bg-slate-100 dark:bg-slate-800 !text-slate-600 dark:!text-slate-300", value: `₹${invoices.reduce((s, i) => s + (i.total || 0), 0).toLocaleString()}`, subtitle: "vs Yesterday ₹0 (0%)", icon: Banknote, iconColor: "!text-primary", areaColor: '#10b981', areaId: 'sg0' },
+                        { title: "Today's Earnings", badge: "TODAY", badgeColor: "bg-emerald-100 dark:bg-emerald-950/40 !text-emerald-700 dark:!text-emerald-300", value: `₹${invoices.filter(i => new Date(i.createdAt).toDateString() === new Date().toDateString()).reduce((s, i) => s + (i.total || 0), 0).toLocaleString()}`, subtitle: "vs Yesterday ₹0 (0%)", icon: Calendar, iconColor: "!text-emerald-600 dark:!text-emerald-400", areaColor: '#10b981', areaId: 'sg1' },
+                        { title: "UPI / Card", badge: "DIGITAL", badgeColor: "bg-blue-100 dark:bg-blue-950/40 !text-blue-700 dark:!text-blue-300", value: `₹${invoices.filter(i => ['online', 'card', 'upi'].includes(i.paymentMethod)).reduce((s, i) => s + (i.total || 0), 0).toLocaleString()}`, subtitle: "vs Yesterday ₹0 (0%)", icon: Smartphone, iconColor: "!text-blue-600 dark:!text-blue-400", areaColor: '#3b82f6', areaId: 'sg2' },
+                        { title: "Cash Collected", badge: "PHYSICAL", badgeColor: "bg-orange-100 dark:bg-orange-950/40 !text-orange-700 dark:!text-orange-300", value: `₹${invoices.filter(i => i.paymentMethod === 'cash' || !i.paymentMethod).reduce((s, i) => s + (i.total || 0), 0).toLocaleString()}`, subtitle: "vs Yesterday ₹0 (0%)", icon: Banknote, iconColor: "!text-amber-600 dark:!text-amber-400", areaColor: '#f97316', areaId: 'sg3' }
                     ].map((stat, i) => (
                         <div key={i} className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5 shadow-sm overflow-hidden relative">
                             <div className="flex items-start justify-between mb-3">
@@ -897,7 +950,7 @@ export default function POSInvoicesPage() {
                                     <p className="text-[9px] text-slate-400 dark:text-slate-500 font-semibold mt-1">{stat.subtitle}</p>
                                 </div>
                                 <div className="w-10 h-10 rounded-full bg-slate-50 dark:bg-slate-850 border border-slate-200 dark:border-slate-800 flex items-center justify-center shrink-0">
-                                    <stat.icon className="w-5 h-5 text-slate-400 dark:text-slate-500" />
+                                    <stat.icon className={`w-5 h-5 ${stat.iconColor}`} />
                                 </div>
                             </div>
                             <div className="h-14 -mx-5 -mb-5 mt-2">
@@ -920,7 +973,7 @@ export default function POSInvoicesPage() {
                 {/* Search + Filters Bar */}
                 <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
                     <div className="relative flex-1">
-                        <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 dark:text-slate-505" />
+                        <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 dark:text-slate-400 [&_*]:!stroke-slate-500 dark:[&_*]:!stroke-slate-400" />
                         <input
                             type="text"
                             value={search}
@@ -930,16 +983,16 @@ export default function POSInvoicesPage() {
                         />
                     </div>
                     <button className="flex items-center gap-2 px-4 py-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-xs font-bold text-slate-600 dark:text-slate-300 shadow-sm hover:bg-slate-50 dark:hover:bg-slate-850 transition-all whitespace-nowrap">
-                        <Calendar className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500" />
+                        <Calendar className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400 [&_*]:!stroke-slate-500 dark:[&_*]:!stroke-slate-400" />
                         01 May 2026 - 28 May 2026
-                        <ChevronDown className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500" />
+                        <ChevronDown className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400 [&_*]:!stroke-slate-500 dark:[&_*]:!stroke-slate-400" />
                     </button>
                     <button className="flex items-center gap-2 px-4 py-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-xs font-bold text-slate-600 dark:text-slate-300 shadow-sm hover:bg-slate-50 dark:hover:bg-slate-850 transition-all">
-                        <Filter className="w-3.5 h-3.5 text-slate-400 dark:text-slate-505" />
+                        <Filter className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400 [&_*]:!stroke-slate-500 dark:[&_*]:!stroke-slate-400" />
                         Filters
                     </button>
                     <button className="flex items-center gap-2 px-4 py-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-xs font-bold text-slate-600 dark:text-slate-300 shadow-sm hover:bg-slate-50 dark:hover:bg-slate-850 transition-all">
-                        <Download className="w-3.5 h-3.5 text-slate-400 dark:text-slate-505" />
+                        <Download className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400 [&_*]:!stroke-slate-500 dark:[&_*]:!stroke-slate-400" />
                         Export
                     </button>
                 </div>
@@ -953,21 +1006,30 @@ export default function POSInvoicesPage() {
                                 <h3 className="text-[10px] font-black text-slate-800 uppercase tracking-widest">Payment Summary</h3>
                                 <p className="text-[9px] text-slate-400 font-semibold mt-0.5">Today's payment collection by method</p>
                             </div>
-                            <button className="flex items-center gap-1 px-2.5 py-1.5 border border-slate-200 rounded-lg text-[9px] font-bold text-slate-600 hover:bg-slate-50 transition-all whitespace-nowrap">
-                                This Month <ChevronDown className="w-3 h-3" />
-                            </button>
+                            <div className="relative">
+                                <select
+                                    value={chartTimeframe}
+                                    onChange={(e) => setChartTimeframe(e.target.value)}
+                                    className="pl-2 pr-6 py-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-[9px] font-bold uppercase tracking-wider outline-none focus:border-[#B4912B] transition-all cursor-pointer appearance-none shadow-sm text-slate-700 dark:text-slate-200"
+                                >
+                                    <option value="this_month">This Month</option>
+                                    <option value="this_week">This Week</option>
+                                    <option value="today">Today</option>
+                                    <option value="all_time">All Time</option>
+                                </select>
+                                <ChevronDown className="absolute right-1.5 top-1/2 -translate-y-1/2 w-2.5 h-2.5 text-slate-400 pointer-events-none" />
+                            </div>
                         </div>
                         <div className="flex items-center gap-3 mb-3">
                             <div className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-sm bg-emerald-500"></div><span className="text-[9px] font-bold text-slate-500 uppercase">Cash</span></div>
                             <div className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-sm bg-purple-500"></div><span className="text-[9px] font-bold text-slate-500 uppercase">UPI</span></div>
                             <div className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-sm bg-orange-400"></div><span className="text-[9px] font-bold text-slate-500 uppercase">Unpaid</span></div>
                         </div>
-                        <div className="h-36 w-full">
+                        <div className="h-36 w-full [&_text]:!stroke-none [&_text_*]:!stroke-none [&_text]:!fill-slate-800 dark:[&_text]:!fill-slate-200 [&_text]:!font-black [&_text_*]:!font-black text-[10px]">
                             <ResponsiveContainer width="100%" height="100%">
                                 <BarChart data={paymentData} margin={{ top: 0, right: 0, left: -20, bottom: 0 }} barGap={1} barCategoryGap="30%">
-                                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                                    <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 8, fontWeight: 500, fill: '#64748b' }} dy={8} />
-                                    <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 8, fontWeight: 500, fill: '#64748b' }} tickFormatter={(val) => '₹'+val} />
+                                    <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 10, fontWeight: 900 }} dy={8} />
+                                    <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 10, fontWeight: 900 }} tickFormatter={(val) => '₹'+val} />
                                     <RechartsTooltip cursor={{fill: 'rgba(0,0,0,0.03)'}} contentStyle={{ borderRadius: '8px', border: '1px solid #e2e8f0', fontSize: '10px', fontWeight: 'bold' }} />
                                     <Bar dataKey="Cash" fill="#10b981" radius={[3, 3, 0, 0]} maxBarSize={8} />
                                     <Bar dataKey="UPI" fill="#8b5cf6" radius={[3, 3, 0, 0]} maxBarSize={8} />
@@ -1041,9 +1103,9 @@ export default function POSInvoicesPage() {
                                     className="w-full min-h-[120px] flex flex-col items-center justify-center gap-2.5 rounded-xl border-2 border-[#B4912B]/20 bg-[#B4912B]/5 hover:bg-[#B4912B]/10 hover:border-[#B4912B]/40 transition-all group"
                                 >
                                     <div className="w-10 h-10 rounded-xl bg-white border border-[#B4912B]/20 flex items-center justify-center group-hover:border-[#B4912B]/40 transition-all shadow-sm">
-                                        <action.icon className="w-5 h-5 text-[#B4912B]" />
+                                        <action.icon className="w-5 h-5 !text-[#B4912B] [&_*]:!stroke-[#B4912B]" />
                                     </div>
-                                    <span className="text-[9px] font-black text-[#B4912B] uppercase tracking-widest">{action.label}</span>
+                                    <span className="text-[9px] font-black !text-[#B4912B] uppercase tracking-widest">{action.label}</span>
                                 </button>
                             ))}
 
@@ -1109,20 +1171,36 @@ export default function POSInvoicesPage() {
                                                     {inv.paymentMethod === 'online' ? 'UPI' : (inv.paymentMethod || 'Cash').toUpperCase()}
                                                 </span>
                                             </td>
-                                            <td className="px-6 py-4 text-right font-black text-slate-800 dark:text-slate-200 text-sm">\u20B9{Number(inv.total || 0).toLocaleString()}</td>
+                                            <td className="px-6 py-4 text-right font-black text-slate-800 dark:text-slate-200 text-sm">₹{Number(inv.total || 0).toLocaleString()}</td>
                                             <td className="px-6 py-4 text-center">
                                                 <span className={`inline-flex items-center px-2.5 py-1 text-[8px] font-black uppercase tracking-widest rounded-full ${(inv.paymentStatus || '').toLowerCase() === 'paid' ? 'bg-emerald-50 dark:bg-emerald-950/20 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/50' : 'bg-orange-50 dark:bg-orange-950/20 text-orange-600 dark:text-orange-400 border border-orange-200 dark:border-orange-800/50'}`}>
                                                     {(inv.paymentStatus || '').toLowerCase() === 'paid' ? 'Paid' : 'Pending'}
                                                 </span>
                                             </td>
                                             <td className="px-6 py-4 text-center">
-                                                <button
-                                                    onClick={() => setSelectedInvoice(inv)}
-                                                    className="p-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:bg-[#B4912B] hover:border-[#B4912B] hover:text-white transition-all text-slate-500 dark:text-slate-400 group-hover:border-slate-300 dark:group-hover:border-slate-700"
-                                                    title="View Details"
-                                                >
-                                                    <Eye className="w-3.5 h-3.5" />
-                                                </button>
+                                                <div className="flex items-center justify-center gap-2">
+                                                    <button
+                                                        onClick={() => setSelectedInvoice(inv)}
+                                                        className="p-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:bg-[#B4912B] hover:border-[#B4912B] hover:text-white text-slate-500 dark:text-slate-400 transition-all group-hover:border-slate-300 dark:group-hover:border-slate-700"
+                                                        title="View Details"
+                                                    >
+                                                        <Eye className="w-3.5 h-3.5" />
+                                                    </button>
+                                                    <button
+                                                        onClick={() => handleEditInvoice(inv)}
+                                                        className="p-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:bg-amber-500 hover:border-amber-500 hover:text-white text-amber-600 dark:text-amber-500 transition-all group-hover:border-slate-300 dark:group-hover:border-slate-700"
+                                                        title="Edit Invoice"
+                                                    >
+                                                        <Edit className="w-3.5 h-3.5" />
+                                                    </button>
+                                                    <button
+                                                        onClick={() => handleDeleteInvoice(inv._id)}
+                                                        className="p-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:bg-red-500 hover:border-red-500 hover:text-white text-red-600 dark:text-red-500 transition-all group-hover:border-slate-300 dark:group-hover:border-slate-700"
+                                                        title="Delete Invoice"
+                                                    >
+                                                        <Trash2 className="w-3.5 h-3.5" />
+                                                    </button>
+                                                </div>
                                             </td>
                                         </tr>
                                     ))}

@@ -545,3 +545,83 @@ exports.getInvoice = async (req, res) => {
         res.status(500).json({ success: false, message: 'Server Error' });
     }
 };
+
+// @desc    Update an invoice
+// @route   PUT /api/pos/invoices/:id
+// @access  Private
+exports.updateInvoice = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const {
+            items,
+            tax,
+            gstPercent,
+            baseAmount,
+            gstAmount,
+            cgst,
+            sgst,
+            subtotal,
+            payments,
+            discount,
+            membershipDiscount,
+            previousDueCollected,
+            dueAmount,
+            paymentStatus
+        } = req.body;
+
+        const invoice = await Invoice.findById(id);
+        if (!invoice) {
+            return res.status(404).json({ success: false, message: 'Invoice not found' });
+        }
+
+        invoice.items = items || invoice.items;
+        invoice.tax = tax !== undefined ? tax : invoice.tax;
+        invoice.gstPercent = gstPercent !== undefined ? gstPercent : invoice.gstPercent;
+        invoice.baseAmount = baseAmount !== undefined ? baseAmount : invoice.baseAmount;
+        invoice.gstAmount = gstAmount !== undefined ? gstAmount : invoice.gstAmount;
+        invoice.cgst = cgst !== undefined ? cgst : invoice.cgst;
+        invoice.sgst = sgst !== undefined ? sgst : invoice.sgst;
+        invoice.subtotal = subtotal !== undefined ? subtotal : invoice.subtotal;
+        invoice.payments = payments || invoice.payments;
+        invoice.discount = discount !== undefined ? discount : invoice.discount;
+        invoice.membershipDiscount = membershipDiscount !== undefined ? membershipDiscount : invoice.membershipDiscount;
+        invoice.previousDueCollected = previousDueCollected !== undefined ? previousDueCollected : invoice.previousDueCollected;
+        invoice.dueAmount = dueAmount !== undefined ? dueAmount : invoice.dueAmount;
+        invoice.paymentStatus = paymentStatus || invoice.paymentStatus;
+        
+        const finalSubtotal = invoice.subtotal;
+        invoice.total = Math.round(Math.max(0, finalSubtotal - invoice.discount - (Number(invoice.membershipDiscount) || 0) + invoice.tax) * 100) / 100;
+
+        await invoice.save();
+
+        const populatedInvoice = await Invoice.findById(invoice._id)
+            .populate('customerId', 'name phone email')
+            .populate('outletId', 'name')
+            .populate('items.stylistIds', 'name');
+
+        res.json({ success: true, data: populatedInvoice });
+    } catch (err) {
+        console.error('POS Update Invoice Error:', err);
+        res.status(500).json({ success: false, message: err.message });
+    }
+};
+
+// @desc    Delete an invoice
+// @route   DELETE /api/pos/invoices/:id
+// @access  Private
+exports.deleteInvoice = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const invoice = await Invoice.findById(id);
+        if (!invoice) {
+            return res.status(404).json({ success: false, message: 'Invoice not found' });
+        }
+
+        await Invoice.findByIdAndDelete(id);
+
+        res.json({ success: true, message: 'Invoice deleted successfully' });
+    } catch (err) {
+        console.error('POS Delete Invoice Error:', err);
+        res.status(500).json({ success: false, message: err.message });
+    }
+};

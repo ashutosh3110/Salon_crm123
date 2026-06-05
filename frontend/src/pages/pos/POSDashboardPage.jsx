@@ -441,7 +441,7 @@ export default function POSDashboardPage() {
                                         <td className="px-6 py-4 text-center text-[10px] font-black text-slate-500 uppercase tracking-widest">{inv.paymentMethod || 'CASH'}</td>
                                         <td className="px-6 py-4 text-right text-[11px] font-black text-text tracking-widest">₹{Number(inv.total || inv.totalAmount || 0).toLocaleString()}</td>
                                         <td className="px-6 py-4 text-right pr-12">
-                                            <span className="text-[10px] font-black text-emerald-500 bg-emerald-50 border border-emerald-100 rounded px-2 py-1 uppercase tracking-widest w-fit">PAID</span>
+                                            <span className="text-[10px] font-black text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-100 dark:border-emerald-900/30 rounded px-2 py-1 uppercase tracking-widest w-fit">PAID</span>
                                         </td>
                                     </tr>
                                 ))

@@ -510,8 +510,9 @@ export default function POSBillingPage() {
     const [paymentDate, setPaymentDate] = useState(getTodayDateString());
     const [autoSendWhatsApp, setAutoSendWhatsApp] = useState(true);
     const [isWhatsAppSending, setIsWhatsAppSending] = useState(false);
+    const [invoiceIdToEdit, setInvoiceIdToEdit] = useState(null);
 
-    // ── Handle Incoming Navigation State (from Appointments) ──
+    // ── Handle Incoming Navigation State (from Appointments or Edit Invoice) ──
     useEffect(() => {
         if (location.state?.preSelectClient) {
             const { name, phone } = location.state.preSelectClient;
@@ -546,7 +547,32 @@ export default function POSBillingPage() {
                 setAppointmentId(location.state.appointmentId);
             }
         }
-    }, [location.state]);
+
+        // Handle Edit Invoice
+        if (location.state?.editInvoice) {
+            const invoice = location.state.editInvoice;
+            if (invoice.customerId) {
+                setSelectedClient(invoice.customerId);
+                setShowClientInfo(true);
+            }
+            if (invoice.items && Array.isArray(invoice.items)) {
+                setCart(invoice.items.map(item => ({
+                    ...item,
+                    itemId: item.itemId?._id || item.itemId || item.id,
+                    quantity: item.quantity,
+                    price: item.price,
+                    name: item.name,
+                    type: item.type,
+                    stylistIds: (item.stylistIds || []).map(s => s._id || s)
+                })));
+            }
+            if (invoice.payments && invoice.payments.length > 0) {
+                setPayments(invoice.payments);
+            }
+            setInvoiceIdToEdit(invoice._id);
+            toast.success(`Loaded Invoice ${invoice.invoiceNumber} for editing.`);
+        }
+    }, [location.state, businessCustomers]);
 
     // Refs
     const searchInputRef = useRef(null);
@@ -1194,7 +1220,12 @@ export default function POSBillingPage() {
                 }
 
                 // REAL BACKEND CALL
-                const response = await api.post('/pos/checkout', checkoutPayload);
+                let response;
+                if (invoiceIdToEdit) {
+                    response = await api.put(`/pos/invoices/${invoiceIdToEdit}`, checkoutPayload);
+                } else {
+                    response = await api.post('/pos/checkout', checkoutPayload);
+                }
                 const dbInvoice = response.data.data || response.data;
 
                 const invoiceData = {
@@ -1360,6 +1391,7 @@ export default function POSBillingPage() {
         setSelectedOrderIds([]);
         setIncludePreviousDue(false);
         setPaymentDate(getTodayDateString());
+        setInvoiceIdToEdit(null);
     };
 
     // ─── Keyboard Shortcuts ───────────────────────────────
@@ -1624,7 +1656,7 @@ export default function POSBillingPage() {
                 <div className="flex gap-2">
                     <button
                         onClick={() => setShowQuickInvoice(true)}
-                        className="px-4 py-1.5 bg-emerald-600 text-white text-xs font-semibold uppercase tracking-wider flex items-center gap-2 hover:bg-emerald-700 active:scale-95 transition-all shadow-lg shadow-emerald-500/20 rounded-lg"
+                        className="px-4 py-1.5 !bg-[#B4912B] hover:!bg-[#9e7f25] !text-white text-xs font-semibold uppercase tracking-wider flex items-center gap-2 active:scale-95 transition-all shadow-lg shadow-[#B4912B]/20 rounded-lg"
                     >
                         <Plus className="w-3.5 h-3.5" /> Quick Invoice
                     </button>
@@ -1771,7 +1803,7 @@ export default function POSBillingPage() {
                         </div>
 
                         {/* CONTENT - Scrollable area */}
-                        <div className="flex-1 p-2 space-y-3 overflow-y-auto custom-scrollbar">
+                        <div className="flex-1 p-2 pb-36 space-y-3 overflow-y-auto custom-scrollbar">
 
                             {/* CLIENT + OUTLET */}
                             <div className="grid grid-cols-2 gap-2">
@@ -1997,7 +2029,7 @@ export default function POSBillingPage() {
                                                     data-payment-idx={i}
                                                     value={p.amount}
                                                     onChange={(e) => updatePayment(i, "amount", Number(e.target.value))}
-                                                    className="w-28 h-8 rounded-lg border border-border px-2 text-right text-xs font-bold outline-none focus:border-primary transition-all pr-8"
+                                                    className="w-28 h-8 rounded-lg border border-border px-2 text-right text-xs font-bold outline-none focus:border-primary transition-all pr-8 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                                                 />
                                                 <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[8px] font-bold text-slate-400">₹</span>
                                             </div>
@@ -3561,7 +3593,7 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                         <div className="flex-1 overflow-y-auto qi-scroll p-3 space-y-3">
                             {qCart.length === 0 ? (
                                 <div className="h-full flex flex-col items-center justify-center text-center py-16 space-y-4 text-slate-400">
-                                    <img src="/vector image 3.png" alt="Empty Cart" className="w-48 h-48 object-contain opacity-90 mix-blend-multiply dark:mix-blend-normal" />
+                                    <img src="/vector image 3.png?v=2" alt="Empty Cart" className="w-48 h-48 object-contain opacity-90 dark:opacity-80" />
                                     <p className="text-[11px] font-black uppercase tracking-widest text-slate-500">Select services to begin</p>
                                 </div>
                             ) : qCart.map((item, idx) => (
@@ -3589,8 +3621,8 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                                                 const isIncl = (item.isInclusiveTax === true || String(item.isInclusiveTax) === 'true' || (item.isInclusiveTax === undefined && !!fiscal?.inclusiveTax));
                                                 const rate = item.type === 'service' ? totals.serviceGstRate : totals.productGstRate;
                                                 return isIncl
-                                                    ? <span className="text-[10px] font-black px-2 py-0.5 rounded-md leading-none w-fit bg-emerald-100 text-emerald-800 tax-badge-incl">{rate}%</span>
-                                                    : <span className="text-[10px] font-black px-2 py-0.5 rounded-md leading-none w-fit bg-blue-100 text-blue-800 tax-badge-excl">Excl.</span>;
+                                                    ? <span className="-ml-2.5 text-[10px] font-black px-2 py-0.5 rounded-md leading-none w-fit bg-emerald-100 dark:bg-emerald-950/40 border border-emerald-100 dark:border-emerald-900/30 tax-badge-incl">{rate}%</span>
+                                                    : <span className="-ml-2.5 text-[10px] font-black px-2 py-0.5 rounded-md leading-none w-fit bg-blue-100 dark:bg-blue-950/40 border border-blue-100 dark:border-blue-900/30 tax-badge-excl">Excl.</span>;
                                             })()}
                                         </div>
                                         <div className="flex flex-col gap-1">
@@ -3609,11 +3641,31 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                                                 html body #root div span.tax-badge-incl,
                                                 html:not(.dark) body #root div span.tax-badge-incl { color: #065f46 !important; -webkit-text-fill-color: #065f46 !important; }
                                                 
+                                                html.dark body #root div span.tax-badge-incl { color: #34d399 !important; -webkit-text-fill-color: #34d399 !important; }
+
                                                 html body #root div span.tax-badge-excl,
                                                 html:not(.dark) body #root div span.tax-badge-excl { color: #1e40af !important; -webkit-text-fill-color: #1e40af !important; }
+                                                
+                                                html.dark body #root div span.tax-badge-excl { color: #60a5fa !important; -webkit-text-fill-color: #60a5fa !important; }
+
+                                                html body #root div input.discount-input,
+                                                html body #root div input.discount-input:focus {
+                                                    outline: none !important;
+                                                    border: none !important;
+                                                    box-shadow: none !important;
+                                                    background: transparent !important;
+                                                }
+                                                html body #root div input.discount-input::-webkit-outer-spin-button,
+                                                html body #root div input.discount-input::-webkit-inner-spin-button {
+                                                    -webkit-appearance: none !important;
+                                                    margin: 0 !important;
+                                                }
+                                                html body #root div input.discount-input {
+                                                    -moz-appearance: textfield !important;
+                                                }
                                             `}</style>
                                             <span className="text-[9px] font-black uppercase tracking-widest text-slate-500">Qty</span>
-                                            <div className="flex items-center rounded-lg overflow-hidden h-6 w-fit border border-slate-200 bg-white">
+                                            <div className="-ml-6 flex items-center rounded-lg overflow-hidden h-6 w-fit border border-slate-200 bg-white">
                                                 <button type="button" onClick={() => updateQQty(idx, -1)} className="px-1.5 h-full flex items-center hover:bg-slate-50 border-r border-slate-200 text-slate-500">
                                                     <Minus className="w-3 h-3" />
                                                 </button>
@@ -3625,7 +3677,7 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                                         </div>
                                         <div className="flex flex-col gap-1">
                                             <span className="text-[9px] font-black uppercase tracking-widest text-slate-500">Discount</span>
-                                            <div className="flex items-center rounded-lg h-6 overflow-hidden w-[110px] border border-slate-200 bg-white">
+                                            <div className="-ml-5 flex items-center rounded-lg h-6 overflow-hidden w-[110px] border border-slate-200 bg-white">
                                                 <button type="button"
                                                     onClick={() => updateQItemMembershipDiscount(idx, 'percentage', item.membershipDiscountValue || 0)}
                                                     className={`px-1.5 text-[10px] font-black h-full border-r border-slate-200 ${(item.membershipDiscountType || 'percentage') === 'percentage' ? 'discount-btn-active' : 'discount-btn-inactive'}`}
@@ -3759,10 +3811,11 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                                     ].map(({ label, icon: Icon, activeCheck, action, bg, hoverBg }) => {
                                         const isActive = activeCheck();
                                         return (
-                                            <button
+                                            <div
+                                                role="button"
                                                 key={label}
                                                 onClick={action}
-                                                className="py-2 rounded-lg text-[10px] font-black uppercase tracking-wider flex flex-col items-center gap-1 transition-all border-none"
+                                                className="py-2 rounded-lg text-[10px] font-black uppercase tracking-wider flex flex-col items-center gap-1 transition-all border-none cursor-pointer"
                                                 style={{
                                                     background: bg,
                                                     color: '#ffffff',
@@ -3774,7 +3827,7 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                                             >
                                                 <Icon className="w-4 h-4" />
                                                 <span>{label}</span>
-                                            </button>
+                                            </div>
                                         );
                                     })}
                                 </div>

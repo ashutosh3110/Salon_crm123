@@ -215,9 +215,6 @@ export default function CustomersPage({ tab = 'directory' }) {
                                 <button onClick={() => window.location.reload()} className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg bg-surface border border-border text-text-muted hover:text-primary transition-all active:scale-95 text-[10px] font-bold uppercase tracking-wider shadow-sm">
                                     <RefreshCw className="w-3.5 h-3.5" /> Refresh
                                 </button>
-                                <button className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-4 py-1.5 rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground text-[10px] font-bold uppercase tracking-wider shadow-md shadow-primary/10 transition-all active:scale-95">
-                                    <FileText className="w-3.5 h-3.5" /> Create Campaign
-                                </button>
                             </div>
                         </>
                     ) : (
@@ -1148,7 +1145,7 @@ function PaymentRemindersView({ onCustomerClick, setWhatsappModal, fetchCustomer
                 </div>
                 <div className="flex flex-wrap items-center gap-4">
                     {/* Toggle Switch */}
-                    <label className="flex items-center gap-2 cursor-pointer select-none group">
+                    <label className="!flex !flex-row !items-center gap-2 cursor-pointer select-none group">
                         <div className={`relative w-9 h-5 rounded-full transition-all duration-300 ${autoReminder ? 'bg-emerald-500' : 'bg-slate-300 dark:bg-slate-750'}`}>
                             <div 
                                 className={`absolute top-0.5 w-4 h-4 rounded-full shadow-sm transition-all duration-300 ${autoReminder ? 'left-[18px]' : 'left-0.5'}`}
@@ -1215,14 +1212,14 @@ function PaymentRemindersView({ onCustomerClick, setWhatsappModal, fetchCustomer
                 </div>
                 <div className="flex flex-wrap items-center gap-2 w-full xl:w-auto">
                     {filteredOutlets && filteredOutlets.length > 0 && (
-                        <div className="bg-surface border border-border/40 rounded-xl shadow-sm px-3 flex-1 xl:flex-none">
+                        <div className="relative bg-surface border border-border/40 rounded-xl shadow-sm flex-1 xl:flex-none flex items-center">
                             <select
                                 value={selectedOutlet}
                                 onChange={(e) => {
                                     setSelectedOutlet(e.target.value);
                                     setPage(1);
                                 }}
-                                className="w-full xl:w-36 py-1.5 bg-transparent text-xs font-semibold text-text outline-none cursor-pointer appearance-none"
+                                className="w-full xl:w-44 pl-3 pr-8 py-1.5 bg-transparent text-xs font-semibold text-text outline-none cursor-pointer appearance-none [&_option]:bg-white [&_option]:dark:bg-slate-900 [&_option]:text-slate-900 [&_option]:dark:text-slate-100"
                             >
                                 <option value="">All Outlets</option>
                                 {filteredOutlets.map(o => (
@@ -1231,6 +1228,7 @@ function PaymentRemindersView({ onCustomerClick, setWhatsappModal, fetchCustomer
                                     </option>
                                 ))}
                             </select>
+                            <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-500 dark:text-slate-400 [&_*]:!stroke-slate-500 dark:[&_*]:!stroke-slate-400 pointer-events-none" />
                         </div>
                     )}
                     <button className="flex items-center justify-center gap-1 px-3 py-1.5 bg-surface border border-border/40 text-text-muted text-xs font-semibold rounded-xl shadow-sm hover:text-primary transition-all flex-1 xl:flex-none shrink-0">
@@ -1302,7 +1300,7 @@ function PaymentRemindersView({ onCustomerClick, setWhatsappModal, fetchCustomer
                                                 onClick={() => handleSendReminder(c)}
                                                 className="flex items-center justify-center gap-1 px-2.5 py-1 bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-500 rounded-lg hover:bg-emerald-500/20 transition-all text-[9px] font-black uppercase tracking-wider active:scale-95"
                                             >
-                                                <Send className="w-3 h-3" /> Transmit Alert
+                                                <Send className="w-3 h-3" /> Resend Reminder
                                             </button>
                                         </div>
                                     </td>
