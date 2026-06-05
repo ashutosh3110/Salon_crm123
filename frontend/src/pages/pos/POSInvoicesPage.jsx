@@ -812,20 +812,20 @@ export default function POSInvoicesPage() {
         }
     };
     return (
-        <div className="min-h-screen bg-[#f5f6fa] pb-12">
+        <div className="min-h-screen bg-[#f5f6fa] dark:bg-[#0b0f19] pb-12 text-slate-800 dark:text-slate-200">
             {/* Top Header */}
-            <div className="bg-white border-b border-slate-200 px-6 md:px-10 py-5">
+            <div className="bg-white dark:bg-[#121826]/80 border-b border-slate-200 dark:border-slate-800 px-6 md:px-10 py-5 backdrop-blur-md">
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                     <div>
-                        <h1 className="text-2xl font-black text-slate-900 uppercase tracking-tight leading-none">INVOICES</h1>
-                        <p className="text-[9px] font-bold text-slate-400 mt-1 uppercase tracking-[0.2em]">History Ledger &amp; Financial Analytics</p>
+                        <h1 className="text-2xl font-black text-slate-900 dark:text-slate-100 uppercase tracking-tight leading-none">INVOICES</h1>
+                        <p className="text-[9px] font-bold text-slate-400 dark:text-slate-500 mt-1 uppercase tracking-[0.2em]">History Ledger &amp; Financial Analytics</p>
                     </div>
                     <div className="flex items-center gap-3 flex-wrap">
                         <div className="relative">
                             <select
                                 value={activeOutletId || ''}
                                 onChange={(e) => setActiveOutletId(e.target.value)}
-                                className="pl-8 pr-8 py-2.5 bg-white border border-slate-200 rounded-xl text-[10px] font-bold uppercase tracking-widest outline-none focus:border-[#B4912B] transition-all cursor-pointer appearance-none shadow-sm text-slate-700"
+                                className="pl-8 pr-8 py-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-[10px] font-bold uppercase tracking-widest outline-none focus:border-[#B4912B] transition-all cursor-pointer appearance-none shadow-sm text-slate-700 dark:text-slate-200"
                             >
                                 <option value="">All Outlets</option>
                                 {(outlets || []).map(o => (
@@ -835,7 +835,7 @@ export default function POSInvoicesPage() {
                             <MapPin className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 pointer-events-none" />
                             <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 pointer-events-none" />
                         </div>
-                        <button className="w-9 h-9 bg-white border border-slate-200 rounded-xl flex items-center justify-center text-slate-500 hover:border-slate-300 transition-all shadow-sm">
+                        <button className="w-9 h-9 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl flex items-center justify-center text-slate-500 dark:text-slate-400 hover:border-slate-300 dark:hover:border-slate-700 transition-all shadow-sm">
                             <RefreshCw className="w-3.5 h-3.5" />
                         </button>
                         <button
@@ -868,7 +868,7 @@ export default function POSInvoicesPage() {
                                     else { if (f.filterType === 'date') setDateFilter(f.id); if (f.filterType === 'type') setTypeFilter(f.id); }
                                     setPage(1);
                                 }}
-                                className={`flex items-center gap-2 px-5 py-2.5 text-[10px] font-bold uppercase tracking-wide transition-all rounded-lg whitespace-nowrap border ${isActive ? 'bg-[#B4912B] text-white border-[#B4912B] shadow-sm' : 'text-slate-500 border-slate-200 bg-white hover:bg-slate-50'}`}
+                                className={`flex items-center gap-2 px-5 py-2.5 text-[10px] font-bold uppercase tracking-wide transition-all rounded-lg whitespace-nowrap border ${isActive ? 'bg-[#B4912B] text-white border-[#B4912B] shadow-sm' : 'text-slate-500 dark:text-slate-400 border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-850'}`}
                             >
                                 <f.icon className="w-3.5 h-3.5 shrink-0" /> {f.label}
                             </button>
@@ -881,23 +881,23 @@ export default function POSInvoicesPage() {
                 {/* Stats Cards */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                     {[
-                        { title: "Total Revenue", badge: "OVERALL", badgeColor: "bg-slate-100 text-slate-600", value: `₹${invoices.reduce((s, i) => s + (i.total || 0), 0).toLocaleString()}`, subtitle: "vs Yesterday ₹0 (0%)", icon: Banknote, areaColor: '#10b981', areaId: 'sg0' },
-                        { title: "Today's Earnings", badge: "TODAY", badgeColor: "bg-emerald-100 text-emerald-600", value: `₹${invoices.filter(i => new Date(i.createdAt).toDateString() === new Date().toDateString()).reduce((s, i) => s + (i.total || 0), 0).toLocaleString()}`, subtitle: "vs Yesterday ₹0 (0%)", icon: Calendar, areaColor: '#10b981', areaId: 'sg1' },
-                        { title: "UPI / Card", badge: "DIGITAL", badgeColor: "bg-blue-100 text-blue-600", value: `₹${invoices.filter(i => ['online', 'card', 'upi'].includes(i.paymentMethod)).reduce((s, i) => s + (i.total || 0), 0).toLocaleString()}`, subtitle: "vs Yesterday ₹0 (0%)", icon: Smartphone, areaColor: '#3b82f6', areaId: 'sg2' },
-                        { title: "Cash Collected", badge: "PHYSICAL", badgeColor: "bg-orange-100 text-orange-600", value: `₹${invoices.filter(i => i.paymentMethod === 'cash' || !i.paymentMethod).reduce((s, i) => s + (i.total || 0), 0).toLocaleString()}`, subtitle: "vs Yesterday ₹0 (0%)", icon: Banknote, areaColor: '#f97316', areaId: 'sg3' }
+                        { title: "Total Revenue", badge: "OVERALL", badgeColor: "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300", value: `₹${invoices.reduce((s, i) => s + (i.total || 0), 0).toLocaleString()}`, subtitle: "vs Yesterday ₹0 (0%)", icon: Banknote, areaColor: '#10b981', areaId: 'sg0' },
+                        { title: "Today's Earnings", badge: "TODAY", badgeColor: "bg-emerald-100 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-300", value: `₹${invoices.filter(i => new Date(i.createdAt).toDateString() === new Date().toDateString()).reduce((s, i) => s + (i.total || 0), 0).toLocaleString()}`, subtitle: "vs Yesterday ₹0 (0%)", icon: Calendar, areaColor: '#10b981', areaId: 'sg1' },
+                        { title: "UPI / Card", badge: "DIGITAL", badgeColor: "bg-blue-100 dark:bg-blue-950/40 text-blue-600 dark:text-blue-300", value: `₹${invoices.filter(i => ['online', 'card', 'upi'].includes(i.paymentMethod)).reduce((s, i) => s + (i.total || 0), 0).toLocaleString()}`, subtitle: "vs Yesterday ₹0 (0%)", icon: Smartphone, areaColor: '#3b82f6', areaId: 'sg2' },
+                        { title: "Cash Collected", badge: "PHYSICAL", badgeColor: "bg-orange-100 dark:bg-orange-950/40 text-orange-600 dark:text-orange-300", value: `₹${invoices.filter(i => i.paymentMethod === 'cash' || !i.paymentMethod).reduce((s, i) => s + (i.total || 0), 0).toLocaleString()}`, subtitle: "vs Yesterday ₹0 (0%)", icon: Banknote, areaColor: '#f97316', areaId: 'sg3' }
                     ].map((stat, i) => (
-                        <div key={i} className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm overflow-hidden relative">
+                        <div key={i} className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5 shadow-sm overflow-hidden relative">
                             <div className="flex items-start justify-between mb-3">
                                 <div>
                                     <div className="flex items-center gap-2 mb-2">
-                                        <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wide">{stat.title}</span>
+                                        <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide">{stat.title}</span>
                                         <span className={`text-[8px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded ${stat.badgeColor}`}>{stat.badge}</span>
                                     </div>
-                                    <p className="text-2xl font-black text-slate-900 tracking-tight">{stat.value}</p>
-                                    <p className="text-[9px] text-slate-400 font-semibold mt-1">{stat.subtitle}</p>
+                                    <p className="text-2xl font-black text-slate-900 dark:text-slate-100 tracking-tight">{stat.value}</p>
+                                    <p className="text-[9px] text-slate-400 dark:text-slate-500 font-semibold mt-1">{stat.subtitle}</p>
                                 </div>
-                                <div className="w-10 h-10 rounded-full bg-slate-50 border border-slate-200 flex items-center justify-center shrink-0">
-                                    <stat.icon className="w-5 h-5 text-slate-400" />
+                                <div className="w-10 h-10 rounded-full bg-slate-50 dark:bg-slate-850 border border-slate-200 dark:border-slate-800 flex items-center justify-center shrink-0">
+                                    <stat.icon className="w-5 h-5 text-slate-400 dark:text-slate-500" />
                                 </div>
                             </div>
                             <div className="h-14 -mx-5 -mb-5 mt-2">
@@ -920,26 +920,26 @@ export default function POSInvoicesPage() {
                 {/* Search + Filters Bar */}
                 <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
                     <div className="relative flex-1">
-                        <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                        <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 dark:text-slate-505" />
                         <input
                             type="text"
                             value={search}
                             onChange={(e) => { setSearch(e.target.value); setPage(1); }}
                             placeholder="Search by invoice number, customer name, or phone..."
-                            className="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl text-xs font-semibold text-slate-700 placeholder:text-slate-400 focus:outline-none focus:border-[#B4912B] transition-all shadow-sm"
+                            className="w-full pl-10 pr-4 py-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-xs font-semibold text-slate-700 dark:text-slate-200 placeholder:text-slate-400 focus:outline-none focus:border-[#B4912B] transition-all shadow-sm"
                         />
                     </div>
-                    <button className="flex items-center gap-2 px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-xs font-bold text-slate-600 shadow-sm hover:bg-slate-50 transition-all whitespace-nowrap">
-                        <Calendar className="w-3.5 h-3.5 text-slate-400" />
+                    <button className="flex items-center gap-2 px-4 py-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-xs font-bold text-slate-600 dark:text-slate-300 shadow-sm hover:bg-slate-50 dark:hover:bg-slate-850 transition-all whitespace-nowrap">
+                        <Calendar className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500" />
                         01 May 2026 - 28 May 2026
-                        <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
+                        <ChevronDown className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500" />
                     </button>
-                    <button className="flex items-center gap-2 px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-xs font-bold text-slate-600 shadow-sm hover:bg-slate-50 transition-all">
-                        <Filter className="w-3.5 h-3.5 text-slate-400" />
+                    <button className="flex items-center gap-2 px-4 py-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-xs font-bold text-slate-600 dark:text-slate-300 shadow-sm hover:bg-slate-50 dark:hover:bg-slate-850 transition-all">
+                        <Filter className="w-3.5 h-3.5 text-slate-400 dark:text-slate-505" />
                         Filters
                     </button>
-                    <button className="flex items-center gap-2 px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-xs font-bold text-slate-600 shadow-sm hover:bg-slate-50 transition-all">
-                        <Download className="w-3.5 h-3.5 text-slate-400" />
+                    <button className="flex items-center gap-2 px-4 py-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-xs font-bold text-slate-600 dark:text-slate-300 shadow-sm hover:bg-slate-50 dark:hover:bg-slate-850 transition-all">
+                        <Download className="w-3.5 h-3.5 text-slate-400 dark:text-slate-505" />
                         Export
                     </button>
                 </div>
@@ -1053,13 +1053,13 @@ export default function POSInvoicesPage() {
                 </div>
 
                 {/* Invoice Table */}
-                <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-                    <div className="px-6 py-4 flex items-center justify-between border-b border-slate-100">
+                <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
+                    <div className="px-6 py-4 flex items-center justify-between border-b border-slate-100 dark:border-slate-800">
                         <div className="flex items-center gap-2">
-                            <FileText className="w-4 h-4 text-slate-400" />
-                            <span className="text-[10px] font-black text-slate-700 uppercase tracking-widest">Invoice List</span>
+                            <FileText className="w-4 h-4 text-slate-400 dark:text-slate-500" />
+                            <span className="text-[10px] font-black text-slate-700 dark:text-slate-300 uppercase tracking-widest">Invoice List</span>
                         </div>
-                        <button className="text-[9px] font-black text-slate-400 hover:text-[#B4912B] uppercase tracking-widest transition-colors">
+                        <button className="text-[9px] font-black text-slate-400 dark:text-slate-500 hover:text-[#B4912B] uppercase tracking-widest transition-colors">
                             View All &rarr;
                         </button>
                     </div>
@@ -1067,20 +1067,20 @@ export default function POSInvoicesPage() {
                     {loading ? (
                         <div className="py-20 flex flex-col items-center justify-center text-center">
                             <Loader2 className="w-8 h-8 text-[#B4912B] animate-spin mb-3" />
-                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em]">Loading invoice ledger...</p>
+                            <p className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.3em]">Loading invoice ledger...</p>
                         </div>
                     ) : paginated.length === 0 ? (
                         <div className="py-20 flex flex-col items-center justify-center text-center">
-                            <div className="w-16 h-16 bg-slate-50 border border-slate-200 rounded-2xl flex items-center justify-center mb-4">
-                                <FileText className="w-7 h-7 text-slate-300" />
+                            <div className="w-16 h-16 bg-slate-50 dark:bg-slate-950/20 border border-slate-200 dark:border-slate-800 rounded-2xl flex items-center justify-center mb-4">
+                                <FileText className="w-7 h-7 text-slate-300 dark:text-slate-700" />
                             </div>
-                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em]">No matching invoices found</p>
+                            <p className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.3em]">No matching invoices found</p>
                         </div>
                     ) : (
                         <div className="overflow-x-auto">
                             <table className="w-full text-left border-collapse min-w-[800px]">
                                 <thead>
-                                    <tr className="text-[9px] font-black text-slate-400 uppercase tracking-widest bg-slate-50 border-b border-slate-200">
+                                    <tr className="text-[9px] font-black text-slate-400 dark:text-slate-555 uppercase tracking-widest bg-slate-50 dark:bg-slate-950/30 border-b border-slate-200 dark:border-slate-800">
                                         <th className="px-6 py-4">Invoice No.</th>
                                         <th className="px-6 py-4">
                                             <span className="flex items-center gap-1">Date &amp; Time <ChevronDown className="w-3 h-3" /></span>
@@ -1092,33 +1092,33 @@ export default function POSInvoicesPage() {
                                         <th className="px-6 py-4 text-center">Action</th>
                                     </tr>
                                 </thead>
-                                <tbody className="divide-y divide-slate-100">
+                                <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                                     {paginated.map(inv => (
-                                        <tr key={inv._id} className="hover:bg-slate-50/70 transition-colors group">
-                                            <td className="px-6 py-4 font-black text-slate-800 text-xs uppercase tracking-tight">{inv.invoiceNumber}</td>
-                                            <td className="px-6 py-4 text-slate-500 text-xs font-semibold">{formatDate(inv.createdAt)}</td>
+                                        <tr key={inv._id} className="hover:bg-slate-50/70 dark:hover:bg-slate-800/40 transition-colors group">
+                                            <td className="px-6 py-4 font-black text-slate-800 dark:text-slate-200 text-xs uppercase tracking-tight">{inv.invoiceNumber}</td>
+                                            <td className="px-6 py-4 text-slate-500 dark:text-slate-400 text-xs font-semibold">{formatDate(inv.createdAt)}</td>
                                             <td className="px-6 py-4">
-                                                <div className="font-bold text-slate-800 text-xs">{inv.customerId?.name || 'Guest'}</div>
+                                                <div className="font-bold text-slate-800 dark:text-slate-200 text-xs">{inv.customerId?.name || 'Guest'}</div>
                                                 {inv.customerId?.phone && (
-                                                    <div className="text-[9px] font-semibold text-slate-400 mt-0.5">{inv.customerId.phone}</div>
+                                                    <div className="text-[9px] font-semibold text-slate-400 dark:text-slate-500 mt-0.5">{inv.customerId.phone}</div>
                                                 )}
                                             </td>
                                             <td className="px-6 py-4">
-                                                <span className="flex items-center gap-1.5 text-xs font-semibold text-slate-600">
+                                                <span className="flex items-center gap-1.5 text-xs font-semibold text-slate-600 dark:text-slate-350">
                                                     {getMethodIcon(inv.paymentMethod)}
                                                     {inv.paymentMethod === 'online' ? 'UPI' : (inv.paymentMethod || 'Cash').toUpperCase()}
                                                 </span>
                                             </td>
-                                            <td className="px-6 py-4 text-right font-black text-slate-800 text-sm">\u20B9{Number(inv.total || 0).toLocaleString()}</td>
+                                            <td className="px-6 py-4 text-right font-black text-slate-800 dark:text-slate-200 text-sm">\u20B9{Number(inv.total || 0).toLocaleString()}</td>
                                             <td className="px-6 py-4 text-center">
-                                                <span className={`inline-flex items-center px-2.5 py-1 text-[8px] font-black uppercase tracking-widest rounded-full ${(inv.paymentStatus || '').toLowerCase() === 'paid' ? 'bg-emerald-50 text-emerald-600 border border-emerald-200' : 'bg-orange-50 text-orange-600 border border-orange-200'}`}>
+                                                <span className={`inline-flex items-center px-2.5 py-1 text-[8px] font-black uppercase tracking-widest rounded-full ${(inv.paymentStatus || '').toLowerCase() === 'paid' ? 'bg-emerald-50 dark:bg-emerald-950/20 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/50' : 'bg-orange-50 dark:bg-orange-950/20 text-orange-600 dark:text-orange-400 border border-orange-200 dark:border-orange-800/50'}`}>
                                                     {(inv.paymentStatus || '').toLowerCase() === 'paid' ? 'Paid' : 'Pending'}
                                                 </span>
                                             </td>
                                             <td className="px-6 py-4 text-center">
                                                 <button
                                                     onClick={() => setSelectedInvoice(inv)}
-                                                    className="p-2 rounded-xl border border-slate-200 bg-white hover:bg-[#B4912B] hover:border-[#B4912B] hover:text-white transition-all text-slate-500 group-hover:border-slate-300"
+                                                    className="p-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:bg-[#B4912B] hover:border-[#B4912B] hover:text-white transition-all text-slate-500 dark:text-slate-400 group-hover:border-slate-300 dark:group-hover:border-slate-700"
                                                     title="View Details"
                                                 >
                                                     <Eye className="w-3.5 h-3.5" />
@@ -1132,16 +1132,16 @@ export default function POSInvoicesPage() {
                     )}
 
                     {totalPages > 1 && (
-                        <div className="px-6 py-4 border-t border-slate-100 flex items-center justify-between bg-white">
-                            <p className="text-[10px] font-semibold text-slate-400">Total: {filtered.length} invoices</p>
+                        <div className="px-6 py-4 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between bg-white dark:bg-slate-900">
+                            <p className="text-[10px] font-semibold text-slate-400 dark:text-slate-500">Total: {filtered.length} invoices</p>
                             <div className="flex gap-2">
-                                <button disabled={page <= 1} onClick={() => setPage(p => p - 1)} className="px-3 py-1.5 rounded-lg border border-slate-200 bg-white text-slate-500 hover:text-[#B4912B] hover:border-[#B4912B] disabled:opacity-30 transition-all">
+                                <button disabled={page <= 1} onClick={() => setPage(p => p - 1)} className="px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-500 dark:text-slate-400 hover:text-[#B4912B] hover:border-[#B4912B] disabled:opacity-30 transition-all">
                                     <ChevronLeft className="w-4 h-4" />
                                 </button>
-                                <div className="px-4 py-1.5 rounded-lg border border-slate-200 bg-white flex items-center">
-                                    <span className="text-[10px] font-black text-slate-700">Page {page} / {totalPages}</span>
+                                <div className="px-4 py-1.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 flex items-center">
+                                    <span className="text-[10px] font-black text-slate-700 dark:text-slate-300">Page {page} / {totalPages}</span>
                                 </div>
-                                <button disabled={page >= totalPages} onClick={() => setPage(p => p + 1)} className="px-3 py-1.5 rounded-lg border border-slate-200 bg-white text-slate-500 hover:text-[#B4912B] hover:border-[#B4912B] disabled:opacity-30 transition-all">
+                                <button disabled={page >= totalPages} onClick={() => setPage(p => p + 1)} className="px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-500 dark:text-slate-400 hover:text-[#B4912B] hover:border-[#B4912B] disabled:opacity-30 transition-all">
                                     <ChevronRight className="w-4 h-4" />
                                 </button>
                             </div>
@@ -1154,36 +1154,36 @@ export default function POSInvoicesPage() {
             {selectedInvoice && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
                     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setSelectedInvoice(null)} />
-                    <div className="bg-white rounded-2xl w-full max-w-lg shadow-2xl animate-in zoom-in-95 duration-200 overflow-hidden relative z-10 border border-slate-200">
-                        <div className="flex items-center justify-between px-6 py-5 bg-slate-50 border-b border-slate-200">
+                    <div className="bg-white dark:bg-slate-900 rounded-2xl w-full max-w-lg shadow-2xl animate-in zoom-in-95 duration-200 overflow-hidden relative z-10 border border-slate-200 dark:border-slate-800">
+                        <div className="flex items-center justify-between px-6 py-5 bg-slate-50 dark:bg-slate-950/40 border-b border-slate-200 dark:border-slate-800">
                             <div>
                                 <p className="text-[9px] font-black text-[#B4912B] uppercase tracking-[0.3em] mb-1">Invoice Protocol</p>
-                                <h2 className="text-xl font-black text-slate-900 uppercase tracking-tight">{selectedInvoice.invoiceNumber}</h2>
-                                <p className="text-[9px] font-semibold text-slate-400 mt-1 flex items-center gap-1.5">
+                                <h2 className="text-xl font-black text-slate-900 dark:text-slate-100 uppercase tracking-tight">{selectedInvoice.invoiceNumber}</h2>
+                                <p className="text-[9px] font-semibold text-slate-400 dark:text-slate-500 mt-1 flex items-center gap-1.5">
                                     <Clock className="w-3 h-3" /> {formatDate(selectedInvoice.createdAt)}
                                 </p>
                             </div>
-                            <button onClick={() => setSelectedInvoice(null)} className="p-2 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 transition-all">
-                                <X className="w-5 h-5 text-slate-500" />
+                            <button onClick={() => setSelectedInvoice(null)} className="p-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 transition-all">
+                                <X className="w-5 h-5 text-slate-500 dark:text-slate-400" />
                             </button>
                         </div>
 
                         <div className="p-6 space-y-5 max-h-[60vh] overflow-y-auto">
                             <div className="grid grid-cols-3 gap-3">
-                                <div className="bg-slate-50 border border-slate-200 rounded-xl p-3">
-                                    <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-1">Customer</p>
-                                    <p className="text-xs font-black text-slate-800">{selectedInvoice.customerId?.name || 'Guest'}</p>
+                                <div className="bg-slate-50 dark:bg-slate-950/20 border border-slate-200 dark:border-slate-800 rounded-xl p-3">
+                                    <p className="text-[8px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-1">Customer</p>
+                                    <p className="text-xs font-black text-slate-800 dark:text-slate-250">{selectedInvoice.customerId?.name || 'Guest'}</p>
                                     {selectedInvoice.customerId?.phone && (
                                         <p className="text-[9px] font-bold text-[#B4912B] mt-0.5">{selectedInvoice.customerId.phone}</p>
                                     )}
                                 </div>
-                                <div className="bg-slate-50 border border-slate-200 rounded-xl p-3">
-                                    <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-1">Outlet</p>
-                                    <p className="text-xs font-black text-slate-800">{selectedInvoice.outletId?.name || 'Main Outlet'}</p>
+                                <div className="bg-slate-50 dark:bg-slate-950/20 border border-slate-200 dark:border-slate-800 rounded-xl p-3">
+                                    <p className="text-[8px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-1">Outlet</p>
+                                    <p className="text-xs font-black text-slate-800 dark:text-slate-250">{selectedInvoice.outletId?.name || 'Main Outlet'}</p>
                                 </div>
-                                <div className="bg-slate-50 border border-slate-200 rounded-xl p-3">
-                                    <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-1">Staff</p>
-                                    <p className="text-xs font-black text-slate-800">
+                                <div className="bg-slate-50 dark:bg-slate-950/20 border border-slate-200 dark:border-slate-800 rounded-xl p-3">
+                                    <p className="text-[8px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-1">Staff</p>
+                                    <p className="text-xs font-black text-slate-800 dark:text-slate-250">
                                         {[...new Set(selectedInvoice.items?.flatMap(item =>
                                             item.stylistIds?.map(s => typeof s === 'object' ? s.name : s) || []
                                         ).filter(Boolean))].join(', ') || selectedInvoice.staffId?.name || 'System'}
@@ -1193,107 +1193,107 @@ export default function POSInvoicesPage() {
 
                             <div>
                                 <div className="flex items-center gap-3 mb-3">
-                                    <div className="h-px bg-slate-200 flex-1" />
-                                    <p className="text-[9px] font-black text-slate-400 uppercase tracking-[0.3em]">Session Ledger</p>
-                                    <div className="h-px bg-slate-200 flex-1" />
+                                    <div className="h-px bg-slate-200 dark:bg-slate-800 flex-1" />
+                                    <p className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.3em]">Session Ledger</p>
+                                    <div className="h-px bg-slate-200 dark:bg-slate-800 flex-1" />
                                 </div>
                                 <div className="space-y-2">
                                     {selectedInvoice.items?.map((item, i) => (
-                                        <div key={i} className="flex justify-between items-center px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl hover:border-[#B4912B]/30 transition-all">
+                                        <div key={i} className="flex justify-between items-center px-4 py-3 bg-slate-50 dark:bg-slate-950/20 border border-slate-200 dark:border-slate-800 rounded-xl hover:border-[#B4912B]/30 transition-all">
                                             <div>
-                                                <p className="font-black text-slate-800 text-xs uppercase">{item.name}</p>
-                                                <p className="text-[9px] text-slate-400 font-semibold mt-0.5">
+                                                <p className="font-black text-slate-800 dark:text-slate-200 text-xs uppercase">{item.name}</p>
+                                                <p className="text-[9px] text-slate-400 dark:text-slate-500 font-semibold mt-0.5">
                                                     Qty: {item.quantity} â€¢ {item.type}
                                                     {item.stylistIds?.length > 0 && (
                                                         <span className="text-[#B4912B] ml-1">â€¢ Staff: {item.stylistIds.map(s => typeof s === 'object' ? s.name : s).join(', ')}</span>
                                                     )}
                                                 </p>
                                             </div>
-                                            <span className="font-black text-slate-800 text-sm">\u20B9{(item.total != null ? item.total : (item.price * item.quantity) || 0).toLocaleString()}</span>
+                                            <span className="font-black text-slate-800 dark:text-slate-200 text-sm">\u20B9{(item.total != null ? item.total : (item.price * item.quantity) || 0).toLocaleString()}</span>
                                         </div>
                                     ))}
                                 </div>
                             </div>
 
-                            <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-2.5">
-                                <div className="flex justify-between text-[10px] font-semibold text-slate-500">
+                            <div className="bg-slate-50 dark:bg-slate-950/20 border border-slate-200 dark:border-slate-800 rounded-xl p-4 space-y-2.5">
+                                <div className="flex justify-between text-[10px] font-semibold text-slate-500 dark:text-slate-400">
                                     <span>Taxable Value</span>
                                     <span>\u20B9{(selectedInvoice.baseAmount || selectedInvoice.subtotal || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                                 </div>
                                 {selectedInvoice.cgst > 0 && (
-                                    <div className="flex justify-between text-[10px] font-semibold text-slate-500">
+                                    <div className="flex justify-between text-[10px] font-semibold text-slate-500 dark:text-slate-400">
                                         <span>CGST {selectedInvoice.items?.every(i => i.type === 'service') ? `(${(selectedInvoice.serviceGstPercent || selectedInvoice.gstPercent || 5) / 2}%)` : ''}</span>
                                         <span>{selectedInvoice.includingGst ? '(Included)' : `+\u20B9${selectedInvoice.cgst?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}</span>
                                     </div>
                                 )}
                                 {selectedInvoice.sgst > 0 && (
-                                    <div className="flex justify-between text-[10px] font-semibold text-slate-500">
+                                    <div className="flex justify-between text-[10px] font-semibold text-slate-500 dark:text-slate-400">
                                         <span>SGST {selectedInvoice.items?.every(i => i.type === 'service') ? `(${(selectedInvoice.serviceGstPercent || selectedInvoice.gstPercent || 5) / 2}%)` : ''}</span>
                                         <span>{selectedInvoice.includingGst ? '(Included)' : `+\u20B9${selectedInvoice.sgst?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}</span>
                                     </div>
                                 )}
                                 {selectedInvoice.igst > 0 && (
-                                    <div className="flex justify-between text-[10px] font-semibold text-slate-500">
+                                    <div className="flex justify-between text-[10px] font-semibold text-slate-500 dark:text-slate-400">
                                         <span>IGST ({selectedInvoice.gstPercent}%)</span>
                                         <span>{selectedInvoice.includingGst ? '(Included)' : `+\u20B9${selectedInvoice.igst?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}</span>
                                     </div>
                                 )}
                                 {(!selectedInvoice.cgst && !selectedInvoice.sgst && !selectedInvoice.igst && (selectedInvoice.tax || 0) > 0) && (
-                                    <div className="flex justify-between text-[10px] font-semibold text-slate-500">
+                                    <div className="flex justify-between text-[10px] font-semibold text-slate-500 dark:text-slate-400">
                                         <span>GST ({selectedInvoice.gstPercent}%)</span>
                                         <span>{selectedInvoice.includingGst ? '(Included)' : `+\u20B9${selectedInvoice.tax?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}</span>
                                     </div>
                                 )}
                                 {selectedInvoice.discount > 0 && (
-                                    <div className="flex justify-between text-[10px] font-bold text-emerald-600">
+                                    <div className="flex justify-between text-[10px] font-bold text-emerald-600 dark:text-emerald-500">
                                         <span>Discount</span>
                                         <span>-\u20B9{selectedInvoice.discount?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                                     </div>
                                 )}
                                 {(selectedInvoice.membershipDiscount || 0) > 0 && (
-                                    <div className="flex justify-between text-[10px] font-bold text-emerald-600">
+                                    <div className="flex justify-between text-[10px] font-bold text-emerald-600 dark:text-emerald-500">
                                         <span>Membership Disc</span>
                                         <span>-\u20B9{(selectedInvoice.membershipDiscount || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                                     </div>
                                 )}
                                 {(selectedInvoice.walletRedeemed || 0) > 0 && (
-                                    <div className="flex justify-between text-[10px] font-bold text-emerald-600">
+                                    <div className="flex justify-between text-[10px] font-bold text-emerald-600 dark:text-emerald-500">
                                         <span>Wallet Used</span>
                                         <span>-\u20B9{(selectedInvoice.walletRedeemed || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                                     </div>
                                 )}
                                 {(selectedInvoice.previousDueCollected || 0) > 0 && (
-                                    <div className="flex justify-between text-[10px] font-bold text-blue-600">
+                                    <div className="flex justify-between text-[10px] font-bold text-blue-600 dark:text-blue-400">
                                         <span>Prev. Due Collected</span>
                                         <span>+\u20B9{(selectedInvoice.previousDueCollected || 0).toLocaleString()}</span>
                                     </div>
                                 )}
-                                <div className="border-t border-slate-200 pt-3 flex justify-between items-end">
+                                <div className="border-t border-slate-200 dark:border-slate-800 pt-3 flex justify-between items-end">
                                     <div>
                                         <p className="text-[8px] font-bold text-[#B4912B] uppercase tracking-widest">Grand Total</p>
-                                        <p className="text-xl font-black text-slate-900">\u20B9{((selectedInvoice.total || 0) + (selectedInvoice.previousDueCollected || 0)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+                                        <p className="text-xl font-black text-slate-900 dark:text-slate-100">\u20B9{((selectedInvoice.total || 0) + (selectedInvoice.previousDueCollected || 0)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
                                     </div>
                                     <div className="text-right">
-                                        <span className={`inline-flex px-2.5 py-1 text-[8px] font-black uppercase tracking-widest rounded-full ${selectedInvoice.paymentStatus === 'paid' ? 'bg-emerald-50 text-emerald-600 border border-emerald-200' : 'bg-orange-50 text-orange-600 border border-orange-200'}`}>
+                                        <span className={`inline-flex px-2.5 py-1 text-[8px] font-black uppercase tracking-widest rounded-full ${selectedInvoice.paymentStatus === 'paid' ? 'bg-emerald-50 dark:bg-emerald-950/20 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/50' : 'bg-orange-50 dark:bg-orange-950/20 text-orange-600 dark:text-orange-400 border border-orange-200 dark:border-orange-800/50'}`}>
                                             {selectedInvoice.paymentStatus?.toUpperCase()}
                                         </span>
                                         <div className="space-y-1 mt-2">
                                             {selectedInvoice.payments?.map((p, idx) => (
                                                 <div key={idx} className="flex items-center justify-end gap-1.5">
-                                                    <span className="text-[8px] font-bold text-slate-400 uppercase">{p.method === 'online' ? 'UPI' : p.method?.toUpperCase()}</span>
-                                                    <span className="text-xs font-black text-slate-700">\u20B9{p.amount?.toLocaleString()}</span>
+                                                    <span className="text-[8px] font-bold text-slate-400 dark:text-slate-555 uppercase">{p.method === 'online' ? 'UPI' : p.method?.toUpperCase()}</span>
+                                                    <span className="text-xs font-black text-slate-700 dark:text-slate-300">\u20B9{p.amount?.toLocaleString()}</span>
                                                 </div>
                                             ))}
                                             {(selectedInvoice.walletRedeemed || 0) > 0 && (
                                                 <div className="flex items-center justify-end gap-1.5">
-                                                    <span className="text-[8px] font-bold text-emerald-600 uppercase">Wallet</span>
-                                                    <span className="text-xs font-black text-emerald-600">\u20B9{selectedInvoice.walletRedeemed?.toLocaleString()}</span>
+                                                    <span className="text-[8px] font-bold text-emerald-600 dark:text-emerald-500 uppercase">Wallet</span>
+                                                    <span className="text-xs font-black text-emerald-600 dark:text-emerald-400">\u20B9{selectedInvoice.walletRedeemed?.toLocaleString()}</span>
                                                 </div>
                                             )}
                                             {selectedInvoice.paymentStatus !== 'paid' && (
-                                                <div className="flex items-center justify-end gap-1.5 pt-1 border-t border-dashed border-orange-300 mt-1">
-                                                    <span className="text-[8px] font-bold text-orange-600 uppercase">Balance Due</span>
-                                                    <span className="text-xs font-black text-orange-600">\u20B9{(selectedInvoice.dueAmount || 0).toLocaleString()}</span>
+                                                <div className="flex items-center justify-end gap-1.5 pt-1 border-t border-dashed border-orange-300 dark:border-orange-850 mt-1">
+                                                    <span className="text-[8px] font-bold text-orange-600 dark:text-orange-450 uppercase">Balance Due</span>
+                                                    <span className="text-xs font-black text-orange-600 dark:text-orange-450">\u20B9{(selectedInvoice.dueAmount || 0).toLocaleString()}</span>
                                                 </div>
                                             )}
                                         </div>
@@ -1302,7 +1302,7 @@ export default function POSInvoicesPage() {
                             </div>
                         </div>
 
-                        <div className="px-5 py-4 bg-slate-50 border-t border-slate-200 grid grid-cols-2 sm:grid-cols-4 gap-2">
+                        <div className="px-5 py-4 bg-slate-50 dark:bg-slate-950/40 border-t border-slate-200 dark:border-slate-800 grid grid-cols-2 sm:grid-cols-4 gap-2">
                             <button
                                 disabled={!!isGeneratingPDF}
                                 onClick={() => handleDownloadPDF('pos')}
