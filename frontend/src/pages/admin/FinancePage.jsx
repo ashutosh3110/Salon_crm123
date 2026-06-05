@@ -56,7 +56,7 @@ function CustomDropdown({ value, onChange, options, placeholder, className = '' 
         <div className="relative w-full sm:w-auto" ref={ref}>
             <button
                 onClick={() => setIsOpen(!isOpen)}
-                className={`flex items-center justify-between w-full sm:min-w-[180px] gap-3 bg-white border border-slate-200 px-6 py-2.5 rounded-full text-xs font-bold uppercase tracking-wider text-slate-800 hover:border-slate-300 transition-all shadow-sm active:scale-[0.98] ${className}`}
+                className={`flex items-center justify-between w-full sm:min-w-[180px] gap-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-6 py-2.5 rounded-full text-xs font-bold uppercase tracking-wider text-slate-800 dark:text-slate-200 hover:border-slate-300 dark:hover:border-slate-600 transition-all shadow-sm active:scale-[0.98] ${className}`}
             >
                 <span className="truncate">
                     {options.find(o => o.value === value)?.label || placeholder}
@@ -226,13 +226,13 @@ export default function FinancePage({ tab = 'dashboard' }) {
             ) : (
                 <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6 text-left mb-2">
                     <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 rounded-xl bg-amber-50 border border-amber-100 flex items-center justify-center shrink-0">
+                        <div className="w-12 h-12 rounded-xl bg-amber-50 dark:bg-amber-950/20 border border-amber-100 dark:border-amber-900/30 flex items-center justify-center shrink-0">
                             <BarChart3 className="w-6 h-6 text-[#B4912B]" />
                         </div>
                         <div className="text-left font-black leading-none">
-                            <h1 className="text-3xl font-black text-slate-900 uppercase tracking-tight leading-none text-left mb-1.5">Finances</h1>
-                            <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest text-left flex items-center gap-2">
-                                <span>Live Workspace</span> <span className="w-1 h-1 rounded-full bg-slate-300"></span> <span>Finance</span> <span className="w-1 h-1 rounded-full bg-slate-300"></span> <span className="text-[#B4912B]">{activeTab.replace('-', ' ')}</span>
+                            <h1 className="text-3xl font-black text-slate-900 dark:text-slate-100 uppercase tracking-tight leading-none text-left mb-1.5">Finances</h1>
+                            <p className="text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest text-left flex items-center gap-2">
+                                <span>Live Workspace</span> <span className="w-1 h-1 rounded-full bg-slate-300 dark:bg-slate-700"></span> <span>Finance</span> <span className="w-1 h-1 rounded-full bg-slate-300 dark:bg-slate-700"></span> <span className="text-[#B4912B]">{activeTab.replace('-', ' ')}</span>
                             </p>
                         </div>
                     </div>
