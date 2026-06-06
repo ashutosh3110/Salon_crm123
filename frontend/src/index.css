@@ -185,6 +185,7 @@
   html:not(.dark) .new-theme a {
     color: var(--wapixo-text-muted) !important;
   }
+
   html:not(.dark) .new-theme a:hover {
     color: var(--wapixo-primary) !important;
   }
@@ -863,6 +864,7 @@ html:not(.dark) .sa-panel [class*="bg-[#DCFCE7]"] svg {
   color: #047857 !important;
   stroke: #047857 !important;
 }
+
 html:not(.dark) .admin-panel [class*="bg-rose-"] svg,
 html:not(.dark) .admin-panel [class*="bg-red-"] svg,
 html:not(.dark) .admin-panel [class*="bg-rose-100"] svg,
@@ -872,6 +874,7 @@ html:not(.dark) .sa-panel [class*="bg-rose-100"] svg {
   color: #b91c1c !important;
   stroke: #b91c1c !important;
 }
+
 html:not(.dark) .admin-panel [class*="bg-blue-"] svg,
 html:not(.dark) .admin-panel [class*="bg-[#DBEAFE]"] svg,
 html:not(.dark) .sa-panel [class*="bg-blue-"] svg,
@@ -879,6 +882,7 @@ html:not(.dark) .sa-panel [class*="bg-[#DBEAFE]"] svg {
   color: #1d4ed8 !important;
   stroke: #1d4ed8 !important;
 }
+
 html:not(.dark) .admin-panel [class*="bg-amber-"] svg,
 html:not(.dark) .admin-panel [class*="bg-yellow-"] svg,
 html:not(.dark) .admin-panel [class*="bg-[#FEF3C7]"] svg,
@@ -888,6 +892,7 @@ html:not(.dark) .sa-panel [class*="bg-[#FEF3C7]"] svg {
   color: #b45309 !important;
   stroke: #b45309 !important;
 }
+
 html:not(.dark) .admin-panel [class*="bg-violet-"] svg,
 html:not(.dark) .admin-panel [class*="bg-purple-"] svg,
 html:not(.dark) .admin-panel [class*="bg-[#F3E8FF]"] svg,
@@ -897,16 +902,19 @@ html:not(.dark) .sa-panel [class*="bg-[#F3E8FF]"] svg {
   color: #6d28d9 !important;
   stroke: #6d28d9 !important;
 }
+
 html:not(.dark) .admin-panel [class*="bg-cyan-"] svg,
 html:not(.dark) .sa-panel [class*="bg-cyan-"] svg {
   color: #0891b2 !important;
   stroke: #0891b2 !important;
 }
+
 html:not(.dark) .admin-panel [class*="bg-fuchsia-"] svg,
 html:not(.dark) .sa-panel [class*="bg-fuchsia-"] svg {
   color: #c026d3 !important;
   stroke: #c026d3 !important;
 }
+
 html:not(.dark) .admin-panel [class*="bg-indigo-"] svg,
 html:not(.dark) .sa-panel [class*="bg-indigo-"] svg {
   color: #4f46e5 !important;
@@ -919,16 +927,19 @@ html:not(.dark) .sa-panel svg[class*="text-[#D97706]"] {
   color: #D97706 !important;
   stroke: #D97706 !important;
 }
+
 html:not(.dark) .admin-panel svg[class*="text-[#9333EA]"],
 html:not(.dark) .sa-panel svg[class*="text-[#9333EA]"] {
   color: #9333EA !important;
   stroke: #9333EA !important;
 }
+
 html:not(.dark) .admin-panel svg[class*="text-[#16A34A]"],
 html:not(.dark) .sa-panel svg[class*="text-[#16A34A]"] {
   color: #16A34A !important;
   stroke: #16A34A !important;
 }
+
 html:not(.dark) .admin-panel svg[class*="text-[#2563EB]"],
 html:not(.dark) .sa-panel svg[class*="text-[#2563EB]"] {
   color: #2563EB !important;
@@ -960,6 +971,7 @@ html:not(.dark) .sa-panel [class*="text-"] svg *,
 html:not(.dark) .sa-panel svg[class*="text-"] * {
   stroke: currentColor !important;
 }
+
 html:not(.dark) .admin-panel [class*="stroke-"] svg *,
 html:not(.dark) .admin-panel svg[class*="stroke-"] *,
 html:not(.dark) .sa-panel [class*="stroke-"] svg *,
@@ -1072,6 +1084,7 @@ html:not(.dark) .sa-panel [class*="bg-[#DCFCE7]"] svg * {
   color: #047857 !important;
   stroke: #047857 !important;
 }
+
 html:not(.dark) .admin-panel [class*="bg-rose-"] svg,
 html:not(.dark) .admin-panel [class*="bg-rose-"] svg *,
 html:not(.dark) .admin-panel [class*="bg-red-"] svg,
@@ -1087,6 +1100,7 @@ html:not(.dark) .sa-panel [class*="bg-rose-100"] svg * {
   color: #b91c1c !important;
   stroke: #b91c1c !important;
 }
+
 html:not(.dark) .admin-panel [class*="bg-blue-"] svg,
 html:not(.dark) .admin-panel [class*="bg-blue-"] svg *,
 html:not(.dark) .admin-panel [class*="bg-[#DBEAFE]"] svg,
@@ -1098,6 +1112,7 @@ html:not(.dark) .sa-panel [class*="bg-[#DBEAFE]"] svg * {
   color: #1d4ed8 !important;
   stroke: #1d4ed8 !important;
 }
+
 html:not(.dark) .admin-panel [class*="bg-amber-"] svg,
 html:not(.dark) .admin-panel [class*="bg-amber-"] svg *,
 html:not(.dark) .admin-panel [class*="bg-yellow-"] svg,
@@ -1113,6 +1128,7 @@ html:not(.dark) .sa-panel [class*="bg-[#FEF3C7]"] svg * {
   color: #b45309 !important;
   stroke: #b45309 !important;
 }
+
 html:not(.dark) .admin-panel [class*="bg-violet-"] svg,
 html:not(.dark) .admin-panel [class*="bg-violet-"] svg *,
 html:not(.dark) .admin-panel [class*="bg-purple-"] svg,
@@ -1128,6 +1144,7 @@ html:not(.dark) .sa-panel [class*="bg-[#F3E8FF]"] svg * {
   color: #6d28d9 !important;
   stroke: #6d28d9 !important;
 }
+
 html:not(.dark) .admin-panel [class*="bg-cyan-"] svg,
 html:not(.dark) .admin-panel [class*="bg-cyan-"] svg *,
 html:not(.dark) .sa-panel [class*="bg-cyan-"] svg,
@@ -1135,6 +1152,7 @@ html:not(.dark) .sa-panel [class*="bg-cyan-"] svg * {
   color: #0891b2 !important;
   stroke: #0891b2 !important;
 }
+
 html:not(.dark) .admin-panel [class*="bg-fuchsia-"] svg,
 html:not(.dark) .admin-panel [class*="bg-fuchsia-"] svg *,
 html:not(.dark) .sa-panel [class*="bg-fuchsia-"] svg,
@@ -1142,6 +1160,7 @@ html:not(.dark) .sa-panel [class*="bg-fuchsia-"] svg * {
   color: #c026d3 !important;
   stroke: #c026d3 !important;
 }
+
 html:not(.dark) .admin-panel [class*="bg-indigo-"] svg,
 html:not(.dark) .admin-panel [class*="bg-indigo-"] svg *,
 html:not(.dark) .sa-panel [class*="bg-indigo-"] svg,
@@ -2086,7 +2105,7 @@ html .admin-panel .rounded-full:has(svg),
 html .admin-panel div[class*="w-"][class*="h-"]:has(svg),
 html .sa-panel .rounded-full:has(svg),
 html .sa-panel div[class*="w-"][class*="h-"]:has(svg) {
-    border-radius: 12px !important;
+  border-radius: 12px !important;
 }
 
 /* Golden buttons / elements text color override to be always white */
@@ -2108,7 +2127,7 @@ html a.bg-\[\#B4912B\],
 html .bg-\[\#B4912B\] *,
 html button.bg-\[\#B4912B\] *,
 html a.bg-\[\#B4912B\] * {
-    color: #ffffff !important;
+  color: #ffffff !important;
 }
 
 /* Specific class for SuperAdmin Login button to ensure high contrast in all modes */
@@ -2116,20 +2135,25 @@ html a.bg-\[\#B4912B\] * {
   background-color: #ffffff !important;
   color: #000000 !important;
 }
+
 .sa-login-submit-btn span {
   color: #000000 !important;
 }
+
 .sa-login-submit-btn svg {
   color: #000000 !important;
   stroke: #000000 !important;
 }
+
 .sa-login-submit-btn:hover {
   background: linear-gradient(to right, var(--color-primary-custom, #B4912B), var(--color-primary-custom-dark, #8B6F23)) !important;
   color: #ffffff !important;
 }
+
 .sa-login-submit-btn:hover span {
   color: #ffffff !important;
 }
+
 .sa-login-submit-btn:hover svg {
   color: #ffffff !important;
   stroke: #ffffff !important;
@@ -2137,10 +2161,11 @@ html a.bg-\[\#B4912B\] * {
 
 /* Status badges visibility override inside dark-mode toggled modals in light mode */
 html:not(.dark) [class*="bg-emerald-50"][class*="text-emerald-"] {
-    color: #059669 !important;
+  color: #059669 !important;
 }
+
 html:not(.dark) [class*="bg-orange-50"][class*="text-orange-"] {
-    color: #ea580c !important;
+  color: #ea580c !important;
 }
 
 /* Dark Mode Overrides for Member List Action Buttons to bypass global rules */
@@ -2149,15 +2174,18 @@ html:not(.dark) [class*="bg-orange-50"][class*="text-orange-"] {
   border-color: rgba(255, 255, 255, 0.1) !important;
   color: #cbd5e1 !important;
 }
+
 .dark button.member-action-btn.member-view-btn svg {
   color: #cbd5e1 !important;
   stroke: #cbd5e1 !important;
 }
+
 .dark button.member-action-btn.member-view-btn:hover {
   background-color: rgba(180, 145, 43, 0.15) !important;
   border-color: rgba(180, 145, 43, 0.4) !important;
   color: #B4912B !important;
 }
+
 .dark button.member-action-btn.member-view-btn:hover svg {
   color: #B4912B !important;
   stroke: #B4912B !important;
@@ -2168,15 +2196,18 @@ html:not(.dark) [class*="bg-orange-50"][class*="text-orange-"] {
   border-color: rgba(255, 255, 255, 0.1) !important;
   color: #cbd5e1 !important;
 }
+
 .dark button.member-action-btn.member-edit-btn svg {
   color: #cbd5e1 !important;
   stroke: #cbd5e1 !important;
 }
+
 .dark button.member-action-btn.member-edit-btn:hover {
   background-color: rgba(59, 130, 246, 0.15) !important;
   border-color: rgba(59, 130, 246, 0.4) !important;
   color: #60a5fa !important;
 }
+
 .dark button.member-action-btn.member-edit-btn:hover svg {
   color: #60a5fa !important;
   stroke: #60a5fa !important;
@@ -2187,15 +2218,18 @@ html:not(.dark) [class*="bg-orange-50"][class*="text-orange-"] {
   border-color: rgba(244, 63, 94, 0.25) !important;
   color: #fb7185 !important;
 }
+
 .dark button.member-action-btn.member-delete-btn svg {
   color: #fb7185 !important;
   stroke: #fb7185 !important;
 }
+
 .dark button.member-action-btn.member-delete-btn:hover {
   background-color: #f43f5e !important;
   border-color: #f43f5e !important;
   color: #ffffff !important;
 }
+
 .dark button.member-action-btn.member-delete-btn:hover svg {
   color: #ffffff !important;
   stroke: #ffffff !important;

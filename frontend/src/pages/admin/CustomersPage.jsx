@@ -33,7 +33,8 @@ import {
     RefreshCw,
     Filter,
     ChevronDown,
-    MessageCircle
+    MessageCircle,
+    Gift
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { createPortal } from 'react-dom';
@@ -258,9 +259,9 @@ export default function CustomersPage({ tab = 'directory' }) {
                                 {/* Primary Action */}
                                 <button
                                     onClick={() => setShowAddModal(true)}
-                                    className="bg-primary text-primary-foreground px-6 h-10 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] shadow-md shadow-primary/10 hover:bg-primary/90 hover:scale-[1.01] active:scale-95 transition-all flex items-center justify-center gap-2"
+                                    className="!bg-[#B4912B] hover:!bg-[#9a7b24] !text-white px-6 h-10 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] shadow-md hover:scale-[1.01] active:scale-95 transition-all flex items-center justify-center gap-2"
                                 >
-                                    <UserPlus className="w-4 h-4" /> Add Customer
+                                    <UserPlus className="w-4 h-4 !text-white" /> Add Customer
                                 </button>
                             </div>
                         </>
@@ -331,28 +332,28 @@ export default function CustomersPage({ tab = 'directory' }) {
                         <div className="flex border-b border-border bg-surface-alt/30 overflow-x-auto no-scrollbar">
                             {hasCrmPermission && (
                                 <>
-                                    <button onClick={() => navigate('/admin/crm/customers')} className={`px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] transition-all whitespace-nowrap relative ${activeTab === 'directory' ? 'bg-surface text-primary' : 'text-text-muted hover:text-text'}`}>
-                                        Directory
+                                    <button onClick={() => navigate('/admin/crm/customers')} className={`px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] transition-all whitespace-nowrap relative flex items-center gap-2 ${activeTab === 'directory' ? 'bg-surface text-primary' : 'text-text-muted hover:text-text'}`}>
+                                        <Users className="w-3.5 h-3.5" /> Directory
                                         {activeTab === 'directory' && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary" />}
                                     </button>
-                                    <button onClick={() => navigate('/admin/crm/wallets')} className={`px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] transition-all whitespace-nowrap relative ${activeTab === 'wallets' ? 'bg-surface text-primary' : 'text-text-muted hover:text-text'}`}>
-                                        Wallets
+                                    <button onClick={() => navigate('/admin/crm/wallets')} className={`px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] transition-all whitespace-nowrap relative flex items-center gap-2 ${activeTab === 'wallets' ? 'bg-surface text-primary' : 'text-text-muted hover:text-text'}`}>
+                                        <Wallet className="w-3.5 h-3.5" /> Wallets
                                         {activeTab === 'wallets' && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary" />}
                                     </button>
-                                    <button onClick={() => navigate('/admin/crm/feedback')} className={`px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] transition-all whitespace-nowrap relative ${activeTab === 'feedback' ? 'bg-surface text-primary' : 'text-text-muted hover:text-text'}`}>
-                                        Feedback
+                                    <button onClick={() => navigate('/admin/crm/feedback')} className={`px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] transition-all whitespace-nowrap relative flex items-center gap-2 ${activeTab === 'feedback' ? 'bg-surface text-primary' : 'text-text-muted hover:text-text'}`}>
+                                        <MessageSquare className="w-3.5 h-3.5" /> Feedback
                                         {activeTab === 'feedback' && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary" />}
                                     </button>
-                                    <button onClick={() => navigate('/admin/crm/reengage')} className={`px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] transition-all whitespace-nowrap relative ${activeTab === 'reengage' ? 'bg-surface text-primary' : 'text-text-muted hover:text-text'}`}>
-                                        Re-engage
+                                    <button onClick={() => navigate('/admin/crm/reengage')} className={`px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] transition-all whitespace-nowrap relative flex items-center gap-2 ${activeTab === 'reengage' ? 'bg-surface text-primary' : 'text-text-muted hover:text-text'}`}>
+                                        <RefreshCw className="w-3.5 h-3.5" /> Re-engage
                                         {activeTab === 'reengage' && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary" />}
                                     </button>
-                                    <button onClick={() => navigate('/admin/crm/bridal')} className={`px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] transition-all whitespace-nowrap relative ${activeTab === 'bridal' ? 'bg-surface text-primary' : 'text-text-muted hover:text-text'}`}>
-                                        Bridal Reminders
+                                    <button onClick={() => navigate('/admin/crm/bridal')} className={`px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] transition-all whitespace-nowrap relative flex items-center gap-2 ${activeTab === 'bridal' ? 'bg-surface text-primary' : 'text-text-muted hover:text-text'}`}>
+                                        <Bell className="w-3.5 h-3.5" /> Bridal Reminders
                                         {activeTab === 'bridal' && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary" />}
                                     </button>
-                                    <button onClick={() => navigate('/admin/crm/birthday-anniversary-reminders')} className={`px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] transition-all whitespace-nowrap relative ${activeTab === 'birthday-anniversary-reminders' ? 'bg-surface text-primary' : 'text-text-muted hover:text-text'}`}>
-                                        Birthday/Anniversary Wishes
+                                    <button onClick={() => navigate('/admin/crm/birthday-anniversary-reminders')} className={`px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] transition-all whitespace-nowrap relative flex items-center gap-2 ${activeTab === 'birthday-anniversary-reminders' ? 'bg-surface text-primary' : 'text-text-muted hover:text-text'}`}>
+                                        <Gift className="w-3.5 h-3.5" /> Birthday/Anniversary Wishes
                                         {activeTab === 'birthday-anniversary-reminders' && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary" />}
                                     </button>
                                 </>
@@ -439,12 +440,12 @@ export default function CustomersPage({ tab = 'directory' }) {
             {/* Add Customer Modal (Portal) */}
             {showAddModal && createPortal(
                 <div className="fixed inset-0 bg-[#0f172a]/80 backdrop-blur-sm z-[200] flex items-center justify-center p-4 animate-in fade-in duration-300" onClick={() => setShowAddModal(false)}>
-                    <div className="bg-white dark:bg-[#1e293b] rounded-2xl w-full max-w-md mx-4 shadow-2xl relative overflow-y-auto max-h-[90vh] hide-scrollbar animate-in slide-in-from-top-4 duration-300 border border-slate-200/50 dark:border-slate-800" onClick={(e) => e.stopPropagation()}>
+                    <div className="bg-white dark:bg-[#1e293b] rounded-2xl w-full max-w-md mx-4 shadow-2xl relative overflow-y-auto max-h-[90vh] hide-scrollbar animate-in slide-in-from-top-4 duration-300 border border-slate-200/50 dark:border-slate-800 admin-panel" onClick={(e) => e.stopPropagation()}>
                         <div className="p-5 bg-white dark:bg-[#1e293b] border-b border-slate-100 dark:border-slate-800 flex justify-between items-center">
                             <h4 className="text-[11px] font-black text-slate-900 dark:text-white uppercase flex items-center gap-2 tracking-widest">
                                 <UserPlus className="w-4 h-4 text-slate-800 dark:text-slate-200" /> Add Customer
                             </h4>
-                            <button type="button" onClick={() => setShowAddModal(false)} className="p-1 border-2 border-slate-900 dark:border-slate-700 text-slate-900 dark:text-slate-300 hover:bg-rose-500 hover:text-white dark:hover:bg-rose-600 transition-colors"><X className="w-4 h-4" /></button>
+                            <button type="button" onClick={() => setShowAddModal(false)} className="p-1 rounded-lg border border-slate-300 bg-slate-50 text-slate-600 hover:bg-rose-500 hover:text-white hover:border-rose-500 dark:border-2 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-rose-600 dark:bg-transparent dark:rounded-none transition-colors"><X className="w-4 h-4" /></button>
                         </div>
 
                         <form onSubmit={handleAddCustomer} className="p-6">
@@ -492,8 +493,7 @@ export default function CustomersPage({ tab = 'directory' }) {
                                             max={new Date().toISOString().split('T')[0]}
                                             value={newCustomerForm.dob}
                                             onChange={(e) => setNewCustomerForm({ ...newCustomerForm, dob: e.target.value })}
-                                            className="w-full bg-[#f8fafc] dark:bg-[#1e293b] border-2 border-slate-900 dark:border-slate-700 p-3 text-xs font-black outline-none focus:border-primary transition-all rounded-xl"
-                                            style={{ color: 'var(--date-input-color, #0f172a)' }}
+                                            className="w-full bg-[#f8fafc] dark:bg-[#1e293b] border-2 border-slate-900 dark:border-slate-700 p-3 text-xs font-black outline-none focus:border-primary transition-all rounded-xl text-slate-900 dark:text-white"
                                         />
                                     </div>
                                     <div className="space-y-1.5">
@@ -503,8 +503,7 @@ export default function CustomersPage({ tab = 'directory' }) {
                                             max={new Date().toISOString().split('T')[0]}
                                             value={newCustomerForm.anniversary}
                                             onChange={(e) => setNewCustomerForm({ ...newCustomerForm, anniversary: e.target.value })}
-                                            className="w-full bg-[#f8fafc] dark:bg-[#1e293b] border-2 border-slate-900 dark:border-slate-700 p-3 text-xs font-black outline-none focus:border-primary transition-all rounded-xl"
-                                            style={{ color: 'var(--date-input-color, #0f172a)' }}
+                                            className="w-full bg-[#f8fafc] dark:bg-[#1e293b] border-2 border-slate-900 dark:border-slate-700 p-3 text-xs font-black outline-none focus:border-primary transition-all rounded-xl text-slate-900 dark:text-white"
                                         />
                                     </div>
                                 </div>
@@ -520,7 +519,7 @@ export default function CustomersPage({ tab = 'directory' }) {
                                 </button>
                                 <button
                                     type="submit"
-                                    className="flex-1 bg-[#B4912B] hover:bg-[#a37f20] text-white border-2 border-[#B4912B] dark:bg-[#B4912B] dark:hover:bg-[#a37f20] dark:border-[#B4912B] py-3.5 font-black text-[10px] uppercase tracking-widest italic hover:text-white transition-all rounded-xl shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,0.15)] active:translate-x-0.5 active:translate-y-0.5 active:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]"
+                                    className="flex-1 !bg-[#B4912B] hover:!bg-[#a37f20] !text-white border-2 !border-[#B4912B] py-3.5 font-black text-[10px] uppercase tracking-widest italic transition-all rounded-xl active:scale-95 duration-150"
                                 >
                                     Add Customer
                                 </button>
@@ -534,17 +533,17 @@ export default function CustomersPage({ tab = 'directory' }) {
             {/* WhatsApp Message Modal (Portal) */}
             {whatsappModal.isOpen && createPortal(
                 <div className="fixed inset-0 bg-[#0f172a]/80 backdrop-blur-sm z-[250] flex items-center justify-center p-4 animate-in fade-in duration-300" onClick={() => setWhatsappModal({ ...whatsappModal, isOpen: false })}>
-                    <div className="bg-white dark:bg-[#1e293b] rounded-2xl w-full max-w-md mx-4 shadow-2xl border border-slate-200/50 dark:border-slate-800 overflow-y-auto max-h-[90vh] hide-scrollbar animate-in zoom-in-95 duration-200" onClick={(e) => e.stopPropagation()}>
+                    <div className="bg-white dark:bg-[#1e293b] rounded-2xl w-full max-w-md mx-4 shadow-2xl border border-slate-200/50 dark:border-slate-800 overflow-y-auto max-h-[90vh] hide-scrollbar animate-in zoom-in-95 duration-200 admin-panel" onClick={(e) => e.stopPropagation()}>
                         <div className="p-5 bg-white dark:bg-[#1e293b] border-b border-slate-100 dark:border-slate-800 flex justify-between items-center">
                             <h4 className="text-[11px] font-black text-slate-900 dark:text-white uppercase flex items-center gap-2 tracking-widest">
                                 <MessageSquare className="w-4 h-4 text-emerald-500" /> Send WhatsApp Message
                             </h4>
-                            <button type="button" onClick={() => setWhatsappModal({ ...whatsappModal, isOpen: false })} className="p-1 border-2 border-slate-900 dark:border-slate-700 text-slate-900 dark:text-slate-300 hover:bg-rose-500 hover:text-white dark:hover:bg-rose-600 transition-colors"><X className="w-4 h-4" /></button>
+                            <button type="button" onClick={() => setWhatsappModal({ ...whatsappModal, isOpen: false })} className="p-1 rounded-lg border border-slate-300 bg-slate-50 text-slate-600 hover:bg-rose-500 hover:text-white hover:border-rose-500 dark:border-2 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-rose-600 dark:bg-transparent dark:rounded-none transition-colors"><X className="w-4 h-4" /></button>
                         </div>
 
                         <div className="p-6 space-y-6">
                             <div className="space-y-4">
-                                <div className="flex items-center gap-3 bg-slate-50 dark:bg-slate-800 border-2 border-slate-900 dark:border-slate-700 p-4 rounded-xl text-left">
+                                <div className="flex items-center gap-3 bg-slate-50 dark:bg-slate-800 p-4 rounded-xl text-left">
                                     <div className="w-10 h-10 bg-slate-900 dark:bg-primary text-white flex items-center justify-center font-black text-xs uppercase rounded-xl">
                                         {whatsappModal.customer?.name?.charAt(0) || '?'}
                                     </div>
@@ -595,7 +594,7 @@ export default function CustomersPage({ tab = 'directory' }) {
                                         }
                                         setWhatsappModal({ ...whatsappModal, isOpen: false });
                                     }}
-                                    className="flex-1 bg-[#B4912B] hover:bg-[#a37f20] text-white border-2 border-[#B4912B] dark:bg-[#B4912B] dark:hover:bg-[#a37f20] dark:border-[#B4912B] py-3.5 font-black text-[10px] uppercase tracking-widest italic hover:text-white transition-all rounded-xl shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,0.15)] active:translate-x-0.5 active:translate-y-0.5 active:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]"
+                                    className="flex-1 !bg-[#B4912B] hover:!bg-[#a37f20] !text-white border-2 !border-[#B4912B] py-3.5 font-black text-[10px] uppercase tracking-widest italic transition-all rounded-xl active:scale-95 duration-150"
                                 >
                                     Send
                                 </button>
@@ -622,7 +621,14 @@ function WalletMonitor({ customers, onCustomerClick, customersMetadata, currentP
     const activeSubTab = 'directory';
 
     const handleBulkRecharge = async () => {
-        if (!bulkAmount || selectedIds.length === 0) return;
+        if (!bulkAmount) {
+            alert('Please enter a recharge amount.');
+            return;
+        }
+        if (selectedIds.length === 0) {
+            alert('Please select at least one customer from the table below first.');
+            return;
+        }
         setIsProcessing(true);
         try {
             const res = await bulkRecharge(selectedIds, Number(bulkAmount), bulkNote || 'Bulk Promotional Credit', bulkExpiry || null);
@@ -657,69 +663,72 @@ function WalletMonitor({ customers, onCustomerClick, customersMetadata, currentP
     };
 
     return (
-        <div className="p-8 space-y-8 animate-reveal">
+        <div className="p-6 pt-4 space-y-4 animate-reveal">
 
 
             {activeSubTab === 'directory' && (
                 <>
-                    <div className="bg-surface border border-border p-6 rounded-2xl flex flex-col md:flex-row items-center gap-6 shadow-sm mb-6">
-                        <div className="flex-1 w-full">
-                            <div className="flex flex-wrap items-end gap-4">
-                                <div className="flex flex-col md:flex-row gap-4 flex-1">
-                                    <div className="space-y-1.5 text-left flex-1 md:flex-initial">
-                                        <label className="block text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest ml-1">Recharge Amount (₹)</label>
-                                        <input
-                                            type="number"
-                                            placeholder="ENTER AMOUNT (₹)"
-                                            disabled={selectedIds.length === 0}
-                                            value={bulkAmount}
-                                            onChange={e => setBulkAmount(e.target.value)}
-                                            className="w-full md:w-48 !p-3 rounded-2xl bg-surface-alt border border-border font-black !text-[10px] !leading-none outline-none focus:border-primary transition-all disabled:opacity-70 !h-11 shadow-sm"
-                                        />
-                                    </div>
-                                    <div className="space-y-1.5 text-left flex-1 md:flex-initial">
-                                        <label className="block text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest ml-1">Description / Notes</label>
-                                        <input
-                                            type="text"
-                                            placeholder="E.G. FESTIVAL PROMO"
-                                            disabled={selectedIds.length === 0}
-                                            value={bulkNote}
-                                            onChange={e => setBulkNote(e.target.value)}
-                                            className="w-full md:w-64 !p-3 rounded-2xl bg-surface-alt border border-border font-black !text-[10px] uppercase !leading-none outline-none focus:border-primary transition-all disabled:opacity-70 !h-11 shadow-sm"
-                                        />
-                                    </div>
-                                    <div className="space-y-1.5 text-left flex-1 md:flex-initial">
-                                        <label className="block text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest ml-1">Expiry Date</label>
-                                        <input
-                                            type="date"
-                                            disabled={selectedIds.length === 0}
-                                            value={bulkExpiry}
-                                            min={new Date().toISOString().split('T')[0]}
-                                            onChange={e => setBulkExpiry(e.target.value)}
-                                            className="w-full md:w-44 !p-3 rounded-2xl bg-surface-alt border border-border font-black !text-[10px] !leading-none outline-none focus:border-primary transition-all disabled:opacity-70 !h-11 shadow-sm"
-                                        />
-                                    </div>
-                                </div>
-                                <button
-                                    onClick={() => handleBulkRecharge()}
-                                    disabled={isProcessing || !bulkAmount || selectedIds.length === 0}
-                                    className="bg-primary text-primary-foreground px-10 py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-[0_0_15px_rgba(var(--color-primary),0.3)] hover:brightness-110 hover:shadow-[0_0_20px_rgba(var(--color-primary),0.5)] hover:scale-[1.02] active:scale-95 disabled:opacity-50 disabled:scale-100 transition-all whitespace-nowrap h-11 flex items-center justify-center"
-                                >
-                                    {isProcessing ? 'Processing...' : `Apply to ${selectedIds.length} Selected`}
-                                </button>
+                    <div className="bg-surface border border-border p-4 rounded-xl flex flex-row flex-wrap items-center justify-between gap-4 shadow-sm mb-6 w-full text-left">
+                        <div className="flex flex-row flex-wrap items-center gap-6 flex-1">
+                            {/* Recharge Amount Field */}
+                            <div className="flex items-center gap-3">
+                                <label className="text-[10px] font-black text-text uppercase tracking-wider whitespace-nowrap">
+                                    Recharge Amount (₹)
+                                </label>
+                                <input
+                                    type="number"
+                                    placeholder="Enter amount (₹)"
+                                    value={bulkAmount}
+                                    onChange={e => setBulkAmount(e.target.value)}
+                                    className="p-2.5 rounded-lg bg-surface border border-border font-medium text-xs outline-none focus:border-primary transition-all w-40 h-10 shadow-sm"
+                                />
+                            </div>
+
+                            {/* Description / Notes Field */}
+                            <div className="flex items-center gap-3">
+                                <label className="text-[10px] font-black text-text uppercase tracking-wider whitespace-nowrap">
+                                    Description / Notes
+                                </label>
+                                <input
+                                    type="text"
+                                    placeholder="e.g. festival, promo"
+                                    value={bulkNote}
+                                    onChange={e => setBulkNote(e.target.value)}
+                                    className="p-2.5 rounded-lg bg-surface border border-border font-medium text-xs outline-none focus:border-primary transition-all w-56 h-10 shadow-sm"
+                                />
+                            </div>
+
+                            {/* Expiry Date Field */}
+                            <div className="flex items-center gap-3">
+                                <label className="text-[10px] font-black text-text uppercase tracking-wider whitespace-nowrap">
+                                    Expiry Date
+                                </label>
+                                <input
+                                    type="date"
+                                    value={bulkExpiry}
+                                    min={new Date().toISOString().split('T')[0]}
+                                    onChange={e => setBulkExpiry(e.target.value)}
+                                    className="p-2.5 rounded-lg bg-surface border border-border font-medium text-xs outline-none focus:border-primary transition-all w-44 h-10 shadow-sm"
+                                />
                             </div>
                         </div>
 
-                        <div className="hidden lg:block w-px h-10 bg-border mx-2" />
-
+                        {/* Action Button */}
+                        <button
+                            onClick={() => handleBulkRecharge()}
+                            disabled={isProcessing}
+                            className="bg-primary text-primary-foreground px-6 py-2.5 rounded-lg text-[10px] font-black uppercase tracking-wider shadow-sm hover:bg-primary/95 active:scale-95 disabled:opacity-50 disabled:scale-100 transition-all flex items-center justify-center cursor-pointer h-10 whitespace-nowrap"
+                        >
+                            {isProcessing ? 'Processing...' : 'Apply to Selected'}
+                        </button>
                     </div>
 
                     <div className="table-responsive border border-border rounded-2xl overflow-hidden shadow-sm">
                         <table className="w-full text-left min-w-[800px]">
                             <thead className="bg-surface-alt border-b border-border">
                                 <tr>
-                                    <th className="p-4 w-24">
-                                        <div className="flex flex-col gap-1">
+                                    <th className="p-4 w-[10%] text-center">
+                                        <div className="flex flex-col gap-1 items-center justify-center">
                                             <div className="flex items-center gap-2">
                                                 <input
                                                     type="checkbox"
@@ -734,15 +743,15 @@ function WalletMonitor({ customers, onCustomerClick, customersMetadata, currentP
                                             {selectedIds.length > 0 && !isSelectingAll && <span className="text-[7px] font-black text-emerald-600 uppercase italic whitespace-nowrap">{selectedIds.length} IDs</span>}
                                         </div>
                                     </th>
-                                    <th className="p-3 text-[10px] font-black uppercase text-text-muted tracking-widest">Customer Directory</th>
-                                    <th className="p-3 text-[10px] font-black uppercase text-text-muted tracking-widest text-right">Available Balance</th>
+                                    <th className="p-3 text-[10px] font-black uppercase text-text-muted tracking-widest w-[45%]">Customer Directory</th>
+                                    <th className="p-3 text-[10px] font-black uppercase text-text-muted tracking-widest w-[45%] text-left">Available Balance</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-border">
                                 {customers.map(c => (
                                     <tr key={c._id} className="hover:bg-surface transition-colors">
-                                        <td className="p-3"><input type="checkbox" checked={selectedIds.includes(c._id)} onChange={() => setSelectedIds(prev => prev.includes(c._id) ? prev.filter(i => i !== c._id) : [...prev, c._id])} /></td>
-                                        <td className="p-3" onClick={() => onCustomerClick(c)}>
+                                        <td className="p-3 w-[10%] text-center"><input type="checkbox" checked={selectedIds.includes(c._id)} onChange={() => setSelectedIds(prev => prev.includes(c._id) ? prev.filter(i => i !== c._id) : [...prev, c._id])} /></td>
+                                        <td className="p-3 w-[45%]" onClick={() => onCustomerClick(c)}>
                                             <div className="flex items-center gap-4 cursor-pointer">
                                                 <div className="w-10 h-10 bg-primary/10 text-primary rounded-xl flex items-center justify-center font-black text-sm">{c.name?.charAt(0) || '?'}</div>
                                                 <div>
@@ -751,7 +760,7 @@ function WalletMonitor({ customers, onCustomerClick, customersMetadata, currentP
                                                 </div>
                                             </div>
                                         </td>
-                                        <td className="p-3 text-right">
+                                        <td className="p-3 w-[45%] text-left">
                                             <span className="text-sm font-black text-emerald-600">₹{(c.walletBalance || 0).toLocaleString()}</span>
                                         </td>
                                     </tr>
@@ -793,54 +802,153 @@ function WalletMonitor({ customers, onCustomerClick, customersMetadata, currentP
 }
 
 function CelebrationReminders({ customers, onSendWhatsApp }) {
-    const today = new Date();
-    const currentMonth = today.getMonth();
-    const currentDate = today.getDate();
+    const parseDate = (dateStr) => {
+        if (!dateStr) return null;
+        let d = new Date(dateStr);
+        if (!isNaN(d.getTime())) {
+            return d;
+        }
 
-    const reminders = customers.filter(c => {
-        if (!c.dob && !c.anniversary) return false;
-        const bday = c.dob ? new Date(c.dob) : null;
-        const anniv = c.anniversary ? new Date(c.anniversary) : null;
-        const isBdayNear = bday && bday.getMonth() === currentMonth && Math.abs(bday.getDate() - currentDate) <= 7;
-        const isAnnivNear = anniv && anniv.getMonth() === currentMonth && Math.abs(anniv.getDate() - currentDate) <= 7;
-        return isBdayNear || isAnnivNear;
-    });
+        // Try parsing DD-MM-YYYY or DD/MM/YYYY formats
+        const parts = dateStr.split(/[-/]/);
+        if (parts.length === 3) {
+            if (parts[0].length === 4) {
+                // YYYY-MM-DD
+                d = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
+            } else if (parts[2].length === 4) {
+                // DD-MM-YYYY
+                d = new Date(parseInt(parts[2]), parseInt(parts[1]) - 1, parseInt(parts[0]));
+            }
+            if (!isNaN(d.getTime())) return d;
+        }
+        return null;
+    };
 
-    if (reminders.length === 0) return null;
+    const getNextOccurrence = (dateStr) => {
+        const parsed = parseDate(dateStr);
+        if (!parsed) return null;
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        const nextDate = new Date(today.getFullYear(), parsed.getMonth(), parsed.getDate());
+
+        if (nextDate < today) {
+            nextDate.setFullYear(today.getFullYear() + 1);
+        }
+        return nextDate;
+    };
+
+    const getCelebrations = () => {
+        const list = [];
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        customers.forEach(c => {
+            if (c.dob) {
+                const nextBday = getNextOccurrence(c.dob);
+                if (nextBday) {
+                    const diff = Math.round((nextBday - today) / (1000 * 60 * 60 * 24));
+                    list.push({
+                        customer: c,
+                        date: c.dob,
+                        nextDate: nextBday,
+                        daysLeft: diff,
+                        type: 'birthday'
+                    });
+                }
+            }
+            if (c.anniversary) {
+                const nextAnniv = getNextOccurrence(c.anniversary);
+                if (nextAnniv) {
+                    const diff = Math.round((nextAnniv - today) / (1000 * 60 * 60 * 24));
+                    list.push({
+                        customer: c,
+                        date: c.anniversary,
+                        nextDate: nextAnniv,
+                        daysLeft: diff,
+                        type: 'anniversary'
+                    });
+                }
+            }
+        });
+
+        list.sort((a, b) => a.daysLeft - b.daysLeft);
+        return list;
+    };
+
+    const celebrations = getCelebrations();
+    if (celebrations.length === 0) return null;
+
+    // Show celebrations happening in the next 30 days, or at least the closest one
+    const reminders = celebrations.filter((item, idx) => idx === 0 || item.daysLeft <= 30).slice(0, 3);
+
+    const formatRelativeDate = (daysLeft) => {
+        if (daysLeft === 0) return 'Today';
+        if (daysLeft === 1) return 'Tomorrow';
+        return `In ${daysLeft} days`;
+    };
+
+    const formatDayMonth = (dateStr) => {
+        const date = parseDate(dateStr);
+        if (!date) return '';
+        const months = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
+        return `${date.getDate()} ${months[date.getMonth()]}`;
+    };
 
     return (
-        <div className="bg-amber-500/5 dark:bg-amber-500/10 border border-amber-500/20 p-3 rounded-2xl flex flex-col gap-2.5 animate-in fade-in slide-in-from-top-2 duration-300">
-            <h3 className="text-[10px] font-black text-amber-600 dark:text-amber-400 uppercase tracking-[0.2em] flex items-center gap-2">
-                <Cake className="w-3.5 h-3.5" /> Birthdays &amp; Anniversaries
-                <span className="ml-auto text-[8px] font-black text-amber-600/70 dark:text-amber-400/60 uppercase bg-amber-500/10 px-2 py-0.5 rounded-xl">{reminders.length} UPCOMING</span>
-            </h3>
-            <div className="flex gap-2.5 overflow-x-auto pb-1 hide-scrollbar">
-                {reminders.map(c => {
-                    const isBday = c.dob && new Date(c.dob).getMonth() === currentMonth;
-                    const type = isBday ? 'birthday' : 'anniversary';
+        <div className="bg-[#fcfbf9] border border-[#f1ebe0] dark:bg-slate-800/40 dark:border-slate-700/60 rounded-2xl p-5 flex flex-col gap-4 animate-in fade-in slide-in-from-top-2 duration-300">
+            <div className="flex items-center justify-between px-1">
+                <h3 className="text-[11px] font-black text-slate-800 dark:text-slate-200 uppercase tracking-[0.15em] flex items-center gap-2">
+                    <Gift className="w-4 h-4 text-[#d19a4e] fill-[#faefe1] dark:fill-amber-500/10" /> Birthdays &amp; Anniversaries
+                </h3>
+                <span className="text-[9px] font-black text-[#8a6829] dark:text-amber-400 bg-[#faefe1] dark:bg-amber-500/20 px-2.5 py-1 rounded-md uppercase tracking-wider">
+                    {reminders.length} Upcoming
+                </span>
+            </div>
+
+            <div className="flex flex-col gap-2">
+                {reminders.map(({ customer: c, date: targetDateStr, daysLeft, type }) => {
+                    const isBday = type === 'birthday';
                     const defaultMsg = isBday
                         ? `Happy Birthday ${c.name}! We wish you a fantastic year ahead filled with joy and beauty.`
                         : `Happy Anniversary ${c.name}! Celebrating your beautiful journey together.`;
 
                     return (
-                        <div key={c._id} className="flex-shrink-0 min-w-[240px] p-2.5 bg-surface border border-border/80 rounded-xl flex items-center justify-between hover:border-amber-500/30 transition-all duration-200">
-                            <div className="flex items-center gap-2">
-                                <div className="w-7 h-7 bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center font-black text-xs rounded-full border border-amber-500/25">
-                                    {c.name?.charAt(0) || '?'}
+                        <div key={`${c._id}-${type}`} className="bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800 rounded-xl p-4 flex items-center justify-between hover:border-slate-300 dark:hover:border-slate-700 transition-all duration-200 shadow-[0_1px_3px_rgba(0,0,0,0.02)]">
+                            <div className="flex items-center gap-8">
+                                {/* Avatar & Name */}
+                                <div className="flex items-center gap-3">
+                                    <div className="w-10 h-10 bg-[#ede9fe] dark:bg-indigo-500/20 !text-indigo-600 dark:!text-indigo-200 flex items-center justify-center font-bold text-base rounded-lg">
+                                        {c.name?.charAt(0)?.toUpperCase() || '?'}
+                                    </div>
+                                    <div className="text-left">
+                                        <p className="text-[12px] font-black text-slate-900 dark:text-white uppercase tracking-wider">{c.name}</p>
+                                        <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 mt-1 uppercase tracking-wider">
+                                            {isBday ? 'Upcoming Birthday' : 'Upcoming Anniversary'}
+                                        </p>
+                                    </div>
                                 </div>
-                                <div className="text-left">
-                                    <p className="text-[11px] font-black text-text uppercase tracking-tight leading-tight">{c.name}</p>
-                                    <p className="text-[8px] font-bold text-text-muted mt-0.5 uppercase tracking-wider">
-                                        {isBday ? '🎂 Birthday' : '🎉 Anniversary'}
-                                    </p>
+
+                                {/* Date Info */}
+                                <div className="flex items-center gap-3">
+                                    <div className="w-10 h-10 bg-[#d1fae5] dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 flex items-center justify-center rounded-lg">
+                                        <Calendar className="w-5 h-5 !text-emerald-600 dark:!text-emerald-400" />
+                                    </div>
+                                    <div className="text-left">
+                                        <p className="text-[12px] font-black text-slate-900 dark:text-white uppercase tracking-wider">{formatDayMonth(targetDateStr)}</p>
+                                        <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 mt-1">
+                                            {formatRelativeDate(daysLeft)}
+                                        </p>
+                                    </div>
                                 </div>
                             </div>
+
                             <button
                                 onClick={() => onSendWhatsApp(c, defaultMsg, type)}
-                                className="flex items-center justify-center w-7 h-7 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg transition-all active:scale-95 shadow-sm shadow-emerald-500/10"
+                                className="group flex items-center justify-center w-8 h-8 bg-emerald-50/50 hover:bg-emerald-500 hover:text-white dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 dark:hover:bg-emerald-600 dark:hover:text-white rounded-lg transition-all active:scale-95 border border-emerald-200 dark:border-emerald-500/20"
                                 title="Send WhatsApp Message"
                             >
-                                <MessageSquare className="w-3.5 h-3.5 text-white" />
+                                <MessageSquare className="w-3.5 h-3.5 !text-emerald-600 dark:!text-emerald-400 group-hover:!text-white" />
                             </button>
                         </div>
                     );
@@ -938,14 +1046,16 @@ function CustomerDirectory({ customers, onCustomerClick, onDelete, onUpdate, sea
                                     <div className="flex items-center justify-start gap-1.5" onClick={e => e.stopPropagation()}>
                                         <button
                                             onClick={() => onUpdate(c._id, { status: c.status === 'active' ? 'inactive' : 'active' })}
-                                            className={`w-7 h-7 flex items-center justify-center border rounded-lg transition-all duration-200 ${c.status === 'inactive' ? 'bg-rose-500 border-rose-500 !text-white shadow-sm shadow-rose-500/20' : 'bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-700 !text-slate-700 dark:!text-slate-300 hover:!text-rose-500 hover:border-rose-500/50 shadow-sm'}`}
+                                            className={`w-7 h-7 flex items-center justify-center rounded-lg transition-all duration-200 ${c.status === 'inactive' ? 'bg-rose-50/50 dark:bg-rose-500/10 !text-rose-500 dark:!text-rose-400 shadow-sm shadow-rose-500/10' : 'bg-white dark:bg-slate-800 !text-slate-700 dark:!text-slate-300 hover:!text-rose-500 hover:bg-rose-50/20 shadow-sm'}`}
+                                            style={{ border: c.status === 'inactive' ? '1px solid #f43f5e' : '1px solid var(--wapixo-border, rgba(0,0,0,0.12))' }}
                                             title={c.status === 'active' ? "Deactivate Customer" : "Activate Customer"}
                                         >
                                             <ShieldAlert className="w-3.5 h-3.5" />
                                         </button>
                                         <button
                                             onClick={() => onUpdate(c._id, { isVIP: !c.isVIP })}
-                                            className={`w-7 h-7 flex items-center justify-center border rounded-lg transition-all duration-200 ${c.isVIP ? 'bg-amber-500 border-amber-500 !text-white shadow-sm shadow-amber-500/20' : 'bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-700 !text-slate-700 dark:!text-slate-300 hover:!text-amber-500 hover:border-amber-500/50 shadow-sm'}`}
+                                            className={`w-7 h-7 flex items-center justify-center rounded-lg transition-all duration-200 ${c.isVIP ? 'bg-amber-50/50 dark:bg-amber-500/10 !text-amber-500 dark:!text-amber-400 shadow-sm shadow-amber-500/10' : 'bg-white dark:bg-slate-800 !text-slate-700 dark:!text-slate-300 hover:!text-amber-500 hover:bg-amber-50/20 shadow-sm'}`}
+                                            style={{ border: c.isVIP ? '1px solid #d97706' : '1px solid var(--wapixo-border, rgba(0,0,0,0.12))' }}
                                             title={c.isVIP ? "Remove VIP Status" : "Mark as VIP"}
                                         >
                                             <Star className={`w-3.5 h-3.5 ${c.isVIP ? 'fill-current' : ''}`} />
@@ -1147,7 +1257,7 @@ function PaymentRemindersView({ onCustomerClick, setWhatsappModal, fetchCustomer
                     {/* Toggle Switch */}
                     <label className="!flex !flex-row !items-center gap-2 cursor-pointer select-none group">
                         <div className={`relative w-9 h-5 rounded-full transition-all duration-300 ${autoReminder ? 'bg-emerald-500' : 'bg-slate-300 dark:bg-slate-750'}`}>
-                            <div 
+                            <div
                                 className={`absolute top-0.5 w-4 h-4 rounded-full shadow-sm transition-all duration-300 ${autoReminder ? 'left-[18px]' : 'left-0.5'}`}
                                 style={{ backgroundColor: '#ffffff' }}
                             />
